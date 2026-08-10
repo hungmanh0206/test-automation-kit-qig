@@ -215,6 +215,7 @@ TASK_ENV=profiles/<TASK>/task.env npm run learn:bugs:apply    # ghi thật vào 
 - **Idempotent**: đã có file thì chỉ **đồng bộ `jira_status`** (rerun chuyển Done → cập nhật), không tạo trùng.
 - Nghiệm thu trên 1 task thật: 7 bug được nạp, module map đúng theo cột `Module`; `risk_score` từ `0 bug` → `7 bug` làm dữ liệu, module có 3 bug được nâng band lên **Medium**.
 - `self_review` **cảnh báo** khi có case FAILED mà `knowledge/bugs/` chưa có entry của task.
+- `self_review` check #6 **knowledge ghi tay**: 3 store `domain/`/`system/`/`decisions/` chỉ có người-ghi được (máy không tự thu) nên rất dễ rỗng mãi. Record đã ghi mà sai schema/PII → **CHẶN**; store rỗng thì chỉ nhắc **khi có tín hiệu**: clarifications đã RESOLVED mà `domain/` rỗng · bộ TC có case phân quyền/trạng thái mà `system/` rỗng · bug Rejected chưa lưu lý do · quyết định quá `expires_at`. Không nhắc chung chung để cảnh báo không thành tiếng ồn.
 
 ---
 
@@ -273,7 +274,7 @@ Nhân mô hình `output_gate` ra TOÀN kit — biến bước quan trọng mọi
 |---|---|---|
 | **`preflight_gate.js` (G1)** | thiếu input bắt buộc / config JSON malformed / (phase2) thiếu testcase canonical = CHẶN | `md_to_xlsx` (phase1) · CI static-check (`--mode generic`) · `npm run preflight` |
 | **`design_gate.js` (G5)** | thiếu cột canonical / rỗng ô lõi testcase = CHẶN; thiếu [Negative]/High-risk thiếu [Boundary]/[Security] = cảnh báo | `md_to_xlsx` (trước gen-gate) · `npm run design:gate` |
-| **`self_review.js` (G9)** | *advisory* — gộp preflight+design+row-quality+execution thành 1 checklist trước finalize (luôn exit 0) | `npm run self-review -- --task <KEY>` · workflow phase2_04 Bước 0 |
+| **`self_review.js` (G9)** | *advisory* — gộp preflight+design+row-quality+execution+learning data+kỷ luật định vị+**knowledge ghi tay** (domain/system/decisions) thành 1 checklist trước finalize (luôn exit 0) | `npm run self-review -- --task <KEY>` · workflow phase2_04 Bước 0 |
 | **`.agent/config/verdict_taxonomy.json` (G4)** | NGUỒN DUY NHẤT: statuses/failureLayers/rerun{2,3}. `output_gate` validate status; prompt trỏ về đây | (config) |
 | **`lib/gate_engine.js` (#2)** | interface GateResult {gateId,status,severity,findings} + `aggregate`/`format` — self_review dùng | (lib) |
 | **`dependency_graph.js` (P2)** | gộp traceability(module→TC→exec) + impact-map(source→tests) → coverageByModule + impactedTests | `npm run dep:graph -- --task <KEY>` |

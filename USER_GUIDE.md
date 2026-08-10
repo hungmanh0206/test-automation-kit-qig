@@ -1173,6 +1173,8 @@ Ngoài Main Flow (Phase 1 → 2 → Re-run), kit có nhóm năng lực **chạy 
 
 `self_review` **chặn** nếu execute xong mà chưa có snapshot/KPI, và **cảnh báo** khi có case FAILED mà `knowledge/bugs/` chưa có entry.
 
+**3 store dưới đây máy KHÔNG tự thu được** (chỉ người/agent ghi) nên `self_review` có check riêng — record sai schema/PII thì **chặn**, còn store rỗng chỉ nhắc **khi có tín hiệu**: clarifications đã RESOLVED mà `domain/` rỗng · bộ TC có case phân quyền/trạng thái mà `system/` rỗng · bug Rejected chưa lưu lý do · quyết định quá `expires_at`. Không có tín hiệu thì không nhắc, để cảnh báo khỏi thành tiếng ồn.
+
 - **Knowledge Base** (`knowledge/`): bộ nhớ học dùng lại xuyên task — chỉ ghi **fact đã qua gate** (bug phải qua Jira gate), không PII/secret, JSON thuần tra theo module/tag (live khởi tạo rỗng; `knowledge/examples/` là mẫu).
 - **Hai nửa của oracle** (ghi tay, có người chốt — không phải máy thu tự động):
   - `knowledge/domain/` — **giá trị đúng là gì** (business rule đã xác nhận, có `source` + `examples {input,expected}`). Skill `domain_recorder`, kiểm `npm run domain:check`.

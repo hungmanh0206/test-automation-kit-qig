@@ -19,6 +19,7 @@ const preflight = require(path.resolve(__dirname, 'preflight_gate'));
 const outputGate = require(path.resolve(__dirname, 'output_gate'));
 const designGate = require(path.resolve(__dirname, 'design_gate'));
 const engine = require(path.resolve(__dirname, 'lib', 'gate_engine'));
+const testcaseModel = require(path.resolve(__dirname, '..', 'lib', 'testcase')); // parser canonical (check #6c)
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
 
@@ -130,6 +131,67 @@ if (statusFile && fs.existsSync(statusFile)) {
   const tot = (out.match(/·\s+(\d+) finding/) || [])[1];
   if (!m && tot && Number(tot) > 0) warnings.push(`${tot} anti-pattern định vị (nợ cũ, không phát sinh thêm) — dọn dần khi đụng lại file đó: \`npm run lint:locator\`.`);
   results.push(engine.toResult('locator discipline (chống bug sai)', { problems, warnings, note: m ? 'có P0 MỚI' : 'không phát sinh P0 mới', severity: engine.SEVERITY.P0 }));
+}
+
+// 6) Knowledge stores GHI TAY (domain/system/decisions) — chống đúng cái bẫy "có store, có validator,
+// nhưng không gate nào gọi ⇒ rỗng mãi". Khác check #4: #4 lo dữ liệu MÁY tự thu (snapshot/KPI/bug),
+// còn 3 store này chỉ có người/agent ghi được nên phải bị nhắc ở đây, không thì y hệt knowledge/ ngày xưa.
+//   - Record đã tồn tại mà sai schema/PII → CHẶN (validator của từng store quyết).
+//   - Store rỗng → chỉ nhắc khi CÓ TÍN HIỆU là task này đáng lẽ phải ghi (không nhắc chung chung).
+{
+  const { spawnSync } = require('child_process');
+  const know = path.join(rc.REPO_ROOT, 'knowledge');
+  const problems = []; const warnings = [];
+  const countJson = (d) => { try { return fs.readdirSync(path.join(know, d)).filter((f) => f.endsWith('.json')).length; } catch (e) { return 0; } };
+
+  // 6a) Validate từng store (chỉ chạy khi có record → store rỗng không bao giờ chặn).
+  for (const [dir, script, label] of [['domain', 'domain_rules.js', 'domain'], ['system', 'system_map.js', 'system'], ['decisions', 'decisions.js', 'decisions']]) {
+    if (!countJson(dir)) continue;
+    const r = spawnSync(process.execPath, [path.join(__dirname, script), '--validate', '--enforce'], { encoding: 'utf8' });
+    if (r.status === 1) {
+      const out = `${r.stdout || ''}${r.stderr || ''}`;
+      const n = (out.match(/✗ (\d+) lỗi CHẶN/) || [])[1] || '?';
+      problems.push(`knowledge/${dir}/: ${n} lỗi schema/PII trong các record đã ghi → chạy \`npm run ${label}:check -- --enforce\` xem chi tiết.`);
+    }
+  }
+
+  // 6b) domain/ — câu trả lời của BA sau Ambiguity Gate CHÍNH LÀ business truth vừa được xác nhận.
+  const clar = taskDir ? path.join(taskDir, 'reports', 'phase1-clarifications.md') : '';
+  if (clar && fs.existsSync(clar)) {
+    const txt = fs.readFileSync(clar, 'utf8');
+    if (/RESOLVED/i.test(txt) && !countJson('domain')) {
+      warnings.push('Có `phase1-clarifications.md` đã RESOLVED (BA/QA đã trả lời) nhưng `knowledge/domain/` RỖNG — câu trả lời đó là business truth, không ghi lại thì task sau phải đi hỏi lại. Skill `domain_recorder`.');
+    }
+  }
+
+  // 6c) system/ — bộ TC có case guard/phân quyền/trạng thái mà chưa có bản đồ nào ⇒ oracle của mấy case đó
+  // đang phải suy từ app (tautology). Dò bằng dấu hiệu trong tiêu đề case, không đoán theo module.
+  if (taskDir && !countJson('system')) {
+    const tcDir = path.join(taskDir, 'test-cases');
+    let hits = 0;
+    try {
+      for (const f of fs.readdirSync(tcDir).filter((x) => x.endsWith('.md'))) {
+        const doc = testcaseModel.parseMarkdown(fs.readFileSync(path.join(tcDir, f), 'utf8'));
+        hits += ((doc && doc.tests) || []).filter((t) => /403|401|không có quyền|khong co quyen|phân quyền|phan quyen|permission|trạng thái|trang thai|đã thanh toán|da thanh toan|đã huỷ|da huy|không được phép|khong duoc phep/i.test(`${t.title || ''} ${t.expected || ''}`)).length;
+      }
+    } catch (e) { /* không có test-cases/ → bỏ qua */ }
+    if (hits) warnings.push(`${hits} case liên quan phân quyền/trạng thái/guard nhưng \`knowledge/system/\` RỖNG — expected của mấy case đó đang không có nguồn trích dẫn (dễ thành "app cho làm ⇒ coi là đúng"). Ghi state machine / ma trận quyền: skill \`system_mapper\`.`);
+  }
+
+  // 6d) decisions/ — bug đã Rejected mà không lưu lý do chính là bug sẽ bị log lại lần sau.
+  {
+    const r = spawnSync(process.execPath, [path.join(__dirname, 'decisions.js')], { encoding: 'utf8' });
+    const out = `${r.stdout || ''}${r.stderr || ''}`;
+    const m = out.match(/(\d+) bug bị Rejected\/Won't-Do mà CHƯA có lý do/);
+    if (m) warnings.push(`${m[1]} bug Rejected/Won't-Do chưa lưu lý do — chính là bug sẽ bị log lại ở task sau. Ghi \`false_positive\`/\`by_design\` kèm lý do dev đưa ra: skill \`decision_recorder\` (\`npm run decisions:check\` để xem tên).`);
+    const exp = out.match(/(\d+) quyết định ĐÃ QUÁ HẠN/);
+    if (exp) warnings.push(`${exp[1]} quyết định đã quá \`expires_at\` mà còn \`active\` — phải kiểm lại, đừng để hạn chế tạm thời thành luật vĩnh viễn.`);
+  }
+
+  const filled = ['domain', 'system', 'decisions'].filter((d) => countJson(d)).length;
+  results.push(engine.toResult('knowledge ghi tay (domain/system/decisions)', {
+    problems, warnings, note: `${filled}/3 store có dữ liệu`, severity: engine.SEVERITY.P1,
+  }));
 }
 
 // ---- Gộp + in qua GateEngine ----
