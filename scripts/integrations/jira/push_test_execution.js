@@ -299,11 +299,35 @@ async function main() {
     return;
   }
 
+  // BATCH theo KÍCH THƯỚC payload để tránh nginx 413 (client_max_body_size ~1MB; evidence base64 rất nặng).
+  // importExecution với testExecutionKey gộp runs theo testKey → append nhiều lần an toàn.
+  // Dùng cho CẢ 2 đường import-vào-execution-có-sẵn: append (--execution) và pre-create (project bắt buộc
+  // custom field) — nếu chỉ batch 1 đường thì đường còn lại vẫn 413 đúng lúc payload to.
+  async function importRunsInBatches(targetExecKey, allTests) {
+    const MAX_BYTES = Number(process.env.XRAY_IMPORT_MAX_BYTES || 600 * 1024);
+    const batches = [];
+    let cur = []; let curBytes = 0;
+    for (const t of allTests) {
+      const tb = Buffer.byteLength(JSON.stringify(t));
+      if (tb > MAX_BYTES) log('WARN', `Test ${t.testKey} nặng ${Math.round(tb / 1024)}KB > ngưỡng batch ${Math.round(MAX_BYTES / 1024)}KB — không chia nhỏ hơn được, có thể vẫn 413. Giảm số/kích thước evidence của case này.`);
+      if (cur.length && curBytes + tb > MAX_BYTES) { batches.push(cur); cur = []; curBytes = 0; }
+      cur.push(t); curBytes += tb;
+    }
+    if (cur.length) batches.push(cur);
+    if (batches.length > 1) log('LOG', `Import batched: ${allTests.length} test → ${batches.length} batch (≤${Math.round(MAX_BYTES / 1024)}KB/batch) để tránh 413.`);
+    let last;
+    for (let i = 0; i < batches.length; i += 1) {
+      last = await client.importExecution({ testExecutionKey: targetExecKey, tests: batches[i] });
+      if (batches.length > 1) log('LOG', `  batch ${i + 1}/${batches.length}: ${batches[i].length} test đã import.`);
+    }
+    return last;
+  }
+
   let res;
   let execKey;
   if (EXECUTION_KEY) {
     // Append vào execution có sẵn: chỉ import runs, không gửi info (tránh set field issue không có trên screen).
-    res = await client.importExecution({ testExecutionKey: EXECUTION_KEY, tests });
+    await importRunsInBatches(EXECUTION_KEY, tests);   // res không dùng ở nhánh này (execKey đã biết)
     execKey = EXECUTION_KEY;
     if (effectivePlanKey) await linkExecutionToPlan(client, effectivePlanKey, null, EXECUTION_KEY);
   } else {
@@ -320,7 +344,7 @@ async function main() {
       const created = await preCreateTestExecution(info, missing, tests[0].testKey);
       execKey = created.key;
       log('LOG', `Đã pre-create Test Execution ${execKey}.`);
-      res = await client.importExecution({ testExecutionKey: created.key, tests });
+      await importRunsInBatches(created.key, tests);   // res không dùng (execKey = created.key)
       if (effectivePlanKey) await linkExecutionToPlan(client, effectivePlanKey, created.id, created.key);
     }
   }
