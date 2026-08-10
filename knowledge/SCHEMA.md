@@ -19,6 +19,7 @@
 knowledge/
 ├── domain/               # business rule ĐÃ XÁC NHẬN (nền của oracle) — versioned, trace covered_by
 ├── system/               # bản đồ HỆ THỐNG: state machine · ma trận phân quyền · surface dùng chung
+├── decisions/            # LÝ DO của quyết định đã chốt (false positive / by design / override / cách test)
 ├── bugs/                 # 1 file JSON / bug đã confirm là product issue (qua gate)
 ├── root_causes/          # root cause đã xác định, gắn module/file
 ├── locators/             # lịch sử locator từng bị heal (Locator Healing — Giai đoạn 2 mới ghi)
@@ -194,6 +195,45 @@ chứng minh hệ thống chặn. `system_map.js` in ma trận + liệt kê cặ
 
 > Kết quả rỗng **không** nghĩa là an toàn — chỉ nghĩa là chưa ai khai surface đó vào knowledge.
 
+## `decisions/<YYYY-MM-DD>__<slug>.json` — LÝ DO của quyết định đã chốt
+
+`domain/` lưu "cái đúng", `system/` lưu "được phép làm gì", `bugs/`+`root_causes/` lưu "cái đã sai".
+Còn thiếu thứ đắt nhất: **vì sao đã kết luận như thế**. Không có nó thì task sau **log lại đúng bug đã bị
+Rejected**, **FAIL đỏ oan** case mà lần trước đã chốt là vướng env, hoặc **mò lại** cách test đã thử thất bại.
+
+```json
+{
+  "id": "DEC-PAYMENT-001",
+  "type": "false_positive",
+  "subject": "IPN trả về mã 00 nhưng đơn chưa chuyển sang PAID — nghi bug xác nhận thanh toán",
+  "decision": "KHÔNG phải bug. Mã 00 của IPN là ACK đã nhận thông báo, không phải xác nhận đã thanh toán.",
+  "rationale": "Dev đọc code handler và xác nhận: 00 chỉ ack cho cổng thanh toán biết hệ thống đã nhận callback; việc chuyển PAID nằm ở bước đối soát sau đó. Jira đã Rejected.",
+  "evidence": "PROJ-28126 (Rejected) + comment của Dev ngày 2026-07-20",
+  "decided_by": "Dev", "decided_at": "2026-07-20",
+  "scope": { "modules": ["Payment"], "tc_ids": ["OPS_PAY_TC_301"], "bug_keys": ["PROJ-28126"] },
+  "status": "active", "tags": ["ipn"]
+}
+```
+
+| Field | Ý nghĩa |
+|---|---|
+| `type` | `false_positive` · `by_design` · `risk_override` · `blocked_pass` · `wont_fix` · `test_approach` |
+| `subject` | **TRIỆU CHỨNG** như lần đầu gặp — đây là thứ dùng để tra cứu lần sau, viết đúng chữ mình sẽ tìm |
+| `decision` / `rationale` | chốt cái gì / **vì sao** (bằng chứng, ai xác nhận, code/spec nào). `rationale` < 20 ký tự = CHẶN |
+| `decided_by` | `BA`\|`Dev`\|`QA-Lead`\|`PO`\|`QA`. `false_positive` **không được** do QA/agent tự chốt |
+| `scope` | `{modules, tc_ids, bug_keys}` — phải có ≥1; không khoanh thì quyết định bị áp sai chỗ |
+| `expires_at` | tuỳ chọn, cho quyết định **tạm thời** (sandbox chết, chờ vendor). Quá hạn mà còn `active` → cảnh báo phải kiểm lại |
+
+**Tra trước khi log bug** (bắt buộc trong workflow `phase2_04`):
+
+```bash
+node scripts/qa/decisions.js --check "<triệu chứng>" [--module <Module>]
+npm run decisions:check          # validate + bug Rejected chưa có lý do + quyết định quá hạn
+```
+
+`decisions:check` đối chiếu `knowledge/bugs/`: bug `Rejected`/`Won't Do` mà **không** có quyết định giải thích
+sẽ bị nêu tên (`‼`) — vì đó chính là bug sẽ được log lại lần sau.
+
 ## `root_causes/<slug>.json`
 
 `<slug>` = `<module-lowercase>-<mô-tả-kebab>`, vd `report-timezone-utc`.
@@ -292,6 +332,6 @@ Index phẳng để tra cứu theo module/tag mà không phải quét toàn bộ
 }
 ```
 
-- `type`: `business_rule` | `system_map` (kèm `subtype`: `state_machine`|`permission_matrix`|`shared_surface`) | `bug` | `root_cause` | `historical_execution` | `locator`.
+- `type`: `business_rule` | `system_map` | `decision` (kèm `subtype`: `state_machine`|`permission_matrix`|`shared_surface`) | `bug` | `root_cause` | `historical_execution` | `locator`.
 - Tra theo module = lọc `entries` theo `module`; tra theo tag = lọc theo `tags`.
 - Mỗi lần thêm/cập nhật entry file → cập nhật `entries` tương ứng + `updated_at`.

@@ -28,6 +28,12 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
    - `Approved and promoted`
    - `Rejected/Deferred`
 4. Với từng fail nghi product bug, kiểm tra gate:
+   - **TRA `knowledge/decisions/` TRƯỚC**: `node scripts/qa/decisions.js --check "<triệu chứng>" --module <Module>`.
+     Nếu khớp một quyết định `false_positive`/`by_design` ⇒ **KHÔNG log lại** (lần trước dev đã kết luận và
+     Jira đã Rejected — log lại là bounce lần hai). Muốn log thì phải có **bằng chứng MỚI khác lần trước**
+     (spec đổi / dev đã fix rồi hồi quy / điều kiện khác) và **ghi rõ điểm khác đó** trong bug. Không khớp
+     ≠ được bỏ qua điều tra. Sau khi triage xong, quyết định mới (bug bị Rejected, case PASS-kèm-note,
+     chốt cách test) phải ghi lại — skill `decision_recorder`, kiểm `npm run decisions:check`.
    - Đã execute thật.
    - Đã rerun đủ để loại flaky/setup/data/prompt issue.
    - **ĐÃ LOẠI `script_error` — bắt buộc, đây là nguồn log-bug-sai số 1.** Rerun **KHÔNG** cứu được lỗi

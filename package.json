@@ -61,7 +61,9 @@
     "domain:check": "node scripts/qa/domain_rules.js",
     "domain:index": "node scripts/qa/domain_rules.js --index",
     "system:check": "node scripts/qa/system_map.js",
-    "system:index": "node scripts/qa/system_map.js --index"
+    "system:index": "node scripts/qa/system_map.js --index",
+    "decisions:check": "node scripts/qa/decisions.js",
+    "decisions:index": "node scripts/qa/decisions.js --index"
   },
   "dependencies": {
     "axe-core": "^4.12.1",

@@ -59,6 +59,10 @@ function main() {
   const KNOW = path.join(rc.REPO_ROOT, 'knowledge');
   const bugs = readJsonDir(path.join(KNOW, 'bugs'));
   const hist = readJsonDir(path.join(KNOW, 'historical_execution'));
+  // QA override band ở task trước được lưu dài hạn trong knowledge/decisions/ (type risk_override).
+  // NHẮC LẠI ở register để QA không phải override tay mỗi lần — vẫn SUGGEST-ONLY: không tự đổi band.
+  const overrides = readJsonDir(path.join(KNOW, 'decisions'))
+    .filter((d) => d && d.type === 'risk_override' && d.status === 'active');
 
   const tod = taskOutputDir();
   const OUT = path.resolve(arg('out', tod ? path.join(tod, 'reports') : path.join(process.cwd(), 'reports')));
@@ -161,12 +165,22 @@ function main() {
     '| Module | Impact | Likelihood | Risk | Band | Cold-start | Drivers (bug thô→hiệu dụng / failRate / src, conf) | QA override |',
     '|---|---|---|---|---|---|---|---|'];
   for (const r of rows) L.push(`| ${r.module} | ${r.impact} | ${r.likelihood} | ${r.risk} | ${r.band} | ${r.cold_start ? 'yes' : ''} | ${r.drivers.bugCount}→${r.drivers.bugEffective}/${r.drivers.failRate}/${r.drivers.impactSource}, c=${r.drivers.confidence} | |`);
+  if (overrides.length) {
+    L.push('', '## QA override đã lưu dài hạn (`knowledge/decisions/`)', '',
+      '> Suggest-only — script KHÔNG tự đổi band. Áp lại nếu vẫn còn đúng; hết hiệu lực thì chuyển `status: superseded`.', '',
+      '| Decision | Module | Chốt | Vì sao | Ngày · người |', '|---|---|---|---|---|');
+    for (const d of overrides) {
+      const mods = ((d.scope || {}).modules || []).join(', ');
+      L.push(`| ${d.id} | ${mods} | ${String(d.decision || '').replace(/\|/g, '\\|')} | ${String(d.rationale || '').replace(/\|/g, '\\|')} | ${d.decided_at} · ${d.decided_by} |`);
+    }
+  }
   L.push('', '> QA: sửa `band_override` + `override_reason` trong `risk-register.json` nếu không đồng ý; `gate_waiver` để miễn gate cho module có lý do.');
   fs.writeFileSync(path.join(OUT, 'risk-register.md'), L.join('\n'), 'utf8');
 
   const high = rows.filter((r) => r.band === 'High').length;
   const unk = rows.filter((r) => r.band === 'UNKNOWN').length;
   console.log(`[risk] Đã tạo: ${path.join(OUT, 'risk-register.md')}`);
+  if (overrides.length) console.log(`[risk] ${overrides.length} QA override đã lưu (knowledge/decisions/) — nhắc lại ở cuối register, KHÔNG tự áp.`);
   console.log(`[risk] ${rows.length} module · ${high} High · ${unk} UNKNOWN (${bugs.length} bug, ${hist.length} snapshot làm dữ liệu)`);
   if (!bugs.length && !hist.length) console.log('[risk] Cold-start: chưa có learning data → band từ Impact/config. QA xác nhận band trước khi bật gate --enforce.');
 }
