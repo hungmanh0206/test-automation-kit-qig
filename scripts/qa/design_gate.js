@@ -69,6 +69,44 @@ function main() {
     rowCount += r.rowCount; problems.push(...r.problems); warnings.push(...r.warnings);
   }
 
+  // UI CATALOG — bộ có case hiển thị thì phải có artifact kiểm kê field/cột, không chỉ có case bằng chữ.
+  // Vì sao chặn: đây là thứ DUY NHẤT bắt được "màn thiếu một trường" / "mọc thêm cột lạ" / "hai màn lệch nhãn"
+  // — case theo bước không thấy vì thiếu field thì mọi step vẫn xanh. Một bộ 530 case thật đã có đủ mục
+  // Display Conformance trong prompt mà vẫn để lọt cả cụm bug loại này, chính vì không ai dựng catalog.
+  // Legacy/ngoại lệ: --no-catalog (phải nêu lý do ở report), hoặc --qa-approved.
+  if (!has('no-catalog') && !QA_APPROVED) {
+    const DISPLAY = /hiển thị|hien thi|format|định dạng|dinh dang|\blabel\b|cột |cot |placeholder|tooltip|empty[- ]state|tiêu đề|tieu de/i;
+    let display = 0; let taskDir = '';
+    for (const f of files) {
+      if (!fs.existsSync(f)) continue;
+      if (!taskDir) {
+        const m = path.resolve(f).split(path.sep);
+        const i = m.lastIndexOf('test-cases');
+        if (i > 0) taskDir = m.slice(0, i).join(path.sep);
+      }
+      try {
+        const doc = testcaseModel.parseMarkdown(fs.readFileSync(f, 'utf8'));
+        display += ((doc && doc.tests) || []).filter((t) => DISPLAY.test(`${t.title || ''} ${t.expected || ''}`)).length;
+      } catch (e) { /* file không parse được đã báo ở trên */ }
+    }
+    if (display && taskDir) {
+      const cat = path.join(taskDir, 'requirements', 'ui_catalog.json');
+      if (!fs.existsSync(cat)) {
+        problems.push(`Bộ có ${display} case hiển thị nhưng THIẾU \`requirements/ui_catalog.json\` — không có kiểm kê field/cột thì thiếu-trường/thừa-cột/lệch-nhãn giữa 2 màn KHÔNG BAO GIỜ lộ ra (mọi step vẫn xanh). Dựng catalog theo schema \`scripts/qa/ui_conformance_check.js\` (table.expectedColumns + fields[] mỗi section), rồi Phase 2 chạy \`node scripts/qa/ui_conformance_check.js --catalog <file>\`. Task cũ/không áp dụng: chạy kèm \`--no-catalog\` và nêu lý do trong report.`);
+      } else {
+        try {
+          const c = JSON.parse(fs.readFileSync(cat, 'utf8'));
+          const screens = Array.isArray(c.screens) ? c.screens : [];
+          if (!screens.length) problems.push('`requirements/ui_catalog.json` có nhưng `screens` RỖNG — catalog rỗng không kiểm được gì.');
+          else {
+            const noInv = screens.filter((s) => !(s.table && (s.table.expectedColumns || []).length) && !((s.fields || []).length));
+            if (noInv.length) warnings.push(`${noInv.length}/${screens.length} màn trong ui_catalog chưa khai \`table.expectedColumns\` lẫn \`fields[]\` (chỉ có texts/tokens) → chưa kiểm kê được tập field: ${noInv.slice(0, 3).map((s) => s.name || '?').join(', ')}`);
+          }
+        } catch (e) { problems.push(`\`requirements/ui_catalog.json\` lỗi JSON: ${e.message}`); }
+      }
+    }
+  }
+
   console.log(`[design] ${fileCount} file · ${rowCount} testcase · ${problems.length} CHẶN · ${warnings.length} cảnh báo${WITH_ROWS ? ' (kèm row-quality)' : ''}.`);
   if (warnings.length) { console.log('\n[design] ⚠ Cảnh báo (nên sửa, không chặn):'); warnings.slice(0, 40).forEach((p) => console.log(`  ~ ${p}`)); if (warnings.length > 40) console.log(`  … +${warnings.length - 40} nữa`); }
   if (!problems.length) { console.log('\n[design] ✓ ĐẠT — đủ cột canonical, không rỗng ô lõi.'); process.exit(0); }

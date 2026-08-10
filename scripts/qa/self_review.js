@@ -245,6 +245,45 @@ if (statusFile && fs.existsSync(statusFile)) {
   }));
 }
 
+// 8) CASE HIỂN THỊ PHẢI VERIFY QUA UI — chạy API cho case màn hình thì lỗi mapping/hiển thị phía FE
+// KHÔNG THỂ lộ ra (bất khả theo định nghĩa, không phải xui). Đây là một trong 4 nguyên nhân làm lọt cụm bug
+// UI ở một dự án thật. Ghép record status với testcase canonical theo tcId để biết case nào thuộc nhóm hiển thị.
+{
+  const problems = []; const warnings = [];
+  let display = 0; let apiOnly = 0;
+  const DISPLAY = /hiển thị|hien thi|format|định dạng|dinh dang|\blabel\b|cột |cot |placeholder|tooltip|empty[- ]state|tiêu đề|tieu de/i;
+  const API_SIGN = /\bAPI\b|HTTP|endpoint|payload|response|POST |GET |PATCH |\/api\//i;
+  const UI_SIGN = /\bUI\b|màn |man |OPS |LMS |form|lưới|grid|cột |cot |hiển thị trên|screenshot|ảnh|anh |tab /i;
+  if (statusFile && fs.existsSync(statusFile) && taskDir) {
+    try {
+      const tcDir = path.join(taskDir, 'test-cases');
+      const byId = new Map();
+      for (const f of (fs.existsSync(tcDir) ? fs.readdirSync(tcDir) : []).filter((x) => x.endsWith('.md'))) {
+        const d = testcaseModel.parseMarkdown(fs.readFileSync(path.join(tcDir, f), 'utf8'));
+        for (const t of (d && d.tests) || []) if (t.tcId) byId.set(String(t.tcId), t);
+      }
+      const doc = JSON.parse(fs.readFileSync(statusFile, 'utf8'));
+      const tests = Array.isArray(doc.tests) ? doc.tests : Object.values(doc.tests || {});
+      const bad = [];
+      for (const r of tests) {
+        if (!/^(PASS|FAIL)/i.test(String(r.status || '').trim())) continue;
+        const t = byId.get(String(r.tcId || ''));
+        if (!t || !DISPLAY.test(`${t.title || ''} ${t.expected || ''}`)) continue;
+        display += 1;
+        const cm = String(r.comment || '');
+        if (API_SIGN.test(cm) && !UI_SIGN.test(cm)) { apiOnly += 1; if (bad.length < 6) bad.push(String(r.tcId)); }
+      }
+      if (apiOnly) {
+        problems.push(`${apiOnly}/${display} case thuộc nhóm HIỂN THỊ nhưng kết luận chỉ dẫn chứng API, không có dấu vết đọc trên màn (${bad.join(', ')}).`);
+        problems.push('→ Case hiển thị PHẢI verify trên UI: chạy API thì lỗi render/mapping phía FE bất khả lộ ra. Dùng API để DỰNG data thì được, phần verify phải đọc trên màn + evidence là ảnh màn đó.');
+      }
+    } catch (e) { /* đã báo ở check execution output */ }
+  }
+  results.push(engine.toResult('case hiển thị verify qua UI', {
+    problems, warnings, skipped: !display, note: display ? `${display} case hiển thị` : 'không có case hiển thị đã execute', severity: engine.SEVERITY.P0,
+  }));
+}
+
 // ---- Gộp + in qua GateEngine ----
 const agg = engine.aggregate(results);
 console.log(engine.format(agg, { title: `SELF-REVIEW (G9) — lượt 2 trước finalize${TASK ? ` · task ${TASK}` : ''}` }));
