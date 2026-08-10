@@ -109,10 +109,11 @@ function gateTestExecution(doc, { fix = false } = {}) {
 
     // 5) G2 (round-3): FAIL phải PHÂN TẦNG lỗi — "không phán được" KHÔNG lọt thành FAIL trơ.
     if (FAIL_RE.test(String(t.status || '').trim())) {
-      const failText = [t.comment, t.rootCause, t.actualResult, t.actual, t.classification, t.failureType, t.category]
+      // `failureLayer` là field CHUẨN (theo verdict_taxonomy) — phải tính, không chỉ dò chữ trong comment.
+      const failText = [t.failureLayer, t.comment, t.rootCause, t.actualResult, t.actual, t.classification, t.failureType, t.category]
         .filter(Boolean).join(' ');
       if (!rules.hasFailureLayer(failText)) {
-        problems.push(`${id}: FAIL nhưng KHÔNG phân tầng lỗi (product/API bug? setup_failure? infra/flaky? thiếu data/quyền?) — nêu rõ tầng + root cause trong comment`);
+        problems.push(`${id}: FAIL nhưng KHÔNG phân tầng lỗi (product/api_bug? setup_failure? script_error? infra/flaky? thiếu data/quyền?) — nêu rõ tầng + root cause trong comment hoặc field failureLayer`);
       }
     }
 

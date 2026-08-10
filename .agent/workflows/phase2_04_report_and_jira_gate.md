@@ -30,6 +30,14 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 4. Với từng fail nghi product bug, kiểm tra gate:
    - Đã execute thật.
    - Đã rerun đủ để loại flaky/setup/data/prompt issue.
+   - **ĐÃ LOẠI `script_error` — bắt buộc, đây là nguồn log-bug-sai số 1.** Rerun **KHÔNG** cứu được lỗi
+     bắt sai element: sai locator thì fail **lặp lại ổn định**, trông y hệt product bug. Trước khi log,
+     phải chứng minh **đã thao tác đúng đối tượng**: (a) evidence highlight **đúng element** đã tương tác,
+     **và** (b) xác minh lại bằng **một đường định vị độc lập** (locator khác/`safe_target.one()`) **hoặc**
+     thao tác tay trên UI. Không chứng minh được → `failureLayer: script_error`
+     (`.agent/config/verdict_taxonomy.json`, `loggableAsBug: false`) → **KHÔNG log Jira**, sửa script rồi chạy lại.
+     Dấu hiệu nghi script_error: giá trị đọc được thuộc section khác · bấm xong màn không đổi như mong đợi ·
+     lỗi biến mất khi làm tay · code dùng `.first()`/`force:true`/`mouse.click(x,y)`/regex `body.innerText`.
    - Expected result đã xác nhận đúng.
    - Actual result có evidence rõ.
 4b. **Gate chất lượng output — THỰC THI, tự chạy (không phải kiểm bằng mắt).**

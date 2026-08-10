@@ -55,7 +55,9 @@
     "jira:testcase-cleanup": "node scripts/integrations/jira/cleanup_xray_tests.js",
     "jira:testcase-cleanup:dry-run": "node scripts/integrations/jira/cleanup_xray_tests.js --dry-run",
     "jira:bug-report": "node scripts/integrations/jira/bug_reporter.js",
-    "jira:bug-report:dry-run": "node scripts/integrations/jira/bug_reporter.js --dry-run"
+    "jira:bug-report:dry-run": "node scripts/integrations/jira/bug_reporter.js --dry-run",
+    "lint:locator": "node scripts/qa/locator_lint.js",
+    "lint:locator:enforce": "node scripts/qa/locator_lint.js --enforce"
   },
   "dependencies": {
     "axe-core": "^4.12.1",

@@ -114,6 +114,24 @@ if (statusFile && fs.existsSync(statusFile)) {
   }
 }
 
+// 5) Locator discipline — chống "bắt sai element → log bug sai" (nguyên nhân số 1 của bug sai).
+// Chỉ báo P0 PHÁT SINH THÊM so với baseline (nợ cũ không chặn), để gate dùng được ngay.
+{
+  const { spawnSync } = require('child_process');
+  const r = spawnSync(process.execPath, [path.join(__dirname, 'locator_lint.js'), '--enforce'], { encoding: 'utf8' });
+  const out = `${r.stdout || ''}${r.stderr || ''}`;
+  const problems = []; const warnings = [];
+  const m = out.match(/CHẶN: (\d+) khoá file\+rule có P0 MỚI/);
+  if (m) {
+    problems.push(`${m[1]} khoá file+rule có anti-pattern định vị P0 MỚI (force:true / .first() cấp trang / click toạ độ / regex body / quét toàn DOM) → dễ bấm-đọc nhầm đối tượng rồi kết luận bug sai.`);
+    (out.match(/^\s{2}\S+::\S+\s+\d+ → \d+$/gm) || []).slice(0, 5).forEach((l) => problems.push(`  ${l.trim()}`));
+    problems.push('→ Sửa theo `.agent/rules/locator_strategy.md` (neo scope → resolve đúng-1 → nghiệm thu kết quả) hoặc dùng `scripts/utils/ui/safe_target.js`. Chạy: `npm run lint:locator`.');
+  }
+  const tot = (out.match(/·\s+(\d+) finding/) || [])[1];
+  if (!m && tot && Number(tot) > 0) warnings.push(`${tot} anti-pattern định vị (nợ cũ, không phát sinh thêm) — dọn dần khi đụng lại file đó: \`npm run lint:locator\`.`);
+  results.push(engine.toResult('locator discipline (chống bug sai)', { problems, warnings, note: m ? 'có P0 MỚI' : 'không phát sinh P0 mới', severity: engine.SEVERITY.P0 }));
+}
+
 // ---- Gộp + in qua GateEngine ----
 const agg = engine.aggregate(results);
 console.log(engine.format(agg, { title: `SELF-REVIEW (G9) — lượt 2 trước finalize${TASK ? ` · task ${TASK}` : ''}` }));

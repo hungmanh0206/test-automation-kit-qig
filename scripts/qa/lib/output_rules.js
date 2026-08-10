@@ -151,6 +151,10 @@ const FAILURE_LAYER = new RegExp([
   'thiếu (data|dữ liệu|quyền|capability|hook|mock|sandbox|account|fixture)',
   'môi trường', '\\binfra\\b', 'hạ tầng', '\\bflaky\\b', 'chập chờn', '\\btimeout\\b',
   'regression', 'dependency', '\\bauth\\b', '\\b[A-Z][A-Z0-9]+-\\d{2,}\\b',
+  // script_error: lỗi CỦA SCRIPT test (bắt sai element/locator mơ hồ, click nhầm, đọc sai vùng).
+  // Bắt buộc nhận diện được — nếu không, FAIL kiểu này bị dồn thành product bug → LOG BUG SAI.
+  'script[_ ]?error', 'lỗi script', 'sai (locator|selector|element)', 'locator (sai|mơ hồ)',
+  'bấm nhầm', 'click nhầm', 'bắt nhầm', 'sai (màn|vùng|section)',
 ].join('|'), 'i');
 const hasFailureLayer = (text) => FAILURE_LAYER.test(String(text || ''));
 
