@@ -18,6 +18,7 @@
 ```
 knowledge/
 ├── domain/               # business rule ĐÃ XÁC NHẬN (nền của oracle) — versioned, trace covered_by
+├── system/               # bản đồ HỆ THỐNG: state machine · ma trận phân quyền · surface dùng chung
 ├── bugs/                 # 1 file JSON / bug đã confirm là product issue (qua gate)
 ├── root_causes/          # root cause đã xác định, gắn module/file
 ├── locators/             # lịch sử locator từng bị heal (Locator Healing — Giai đoạn 2 mới ghi)
@@ -118,6 +119,81 @@ tautology bị cấm). `domain/` là chỗ lưu **sự thật nghiệp vụ đã
 (coverage/pass-rate) · dữ liệu khách/PII · rule chưa ai xác nhận (đang mơ hồ thì thuộc
 `reports/phase1-clarifications.md`, chỉ chuyển vào `domain/` **sau khi** được trả lời).
 
+## `system/<slug>.json` — Bản đồ HỆ THỐNG (sinh ra nghĩa vụ test, không chỉ để đọc)
+
+`domain/` trả lời "giá trị đúng là gì". Nhưng nhiều câu hỏi khi test không phải về giá trị mà về **hệ thống**:
+*"API cho huỷ order đã PAID — bug hay đúng thiết kế?"*, *"role GV gọi được endpoint của Admin — có phải lỗ hổng?"*,
+*"sửa API này thì phải regression module nào?"*. Không có bản đồ thì agent **suy từ app** (app cho làm ⇒ tưởng
+hợp pháp — đúng thứ tautology kit cấm) hoặc log bug đoán rồi bị dev bounce.
+
+3 `type`, chung khối governance (`modules`, `source`, `confirmed_by`, `confirmed_at`, `version`, `status`, `supersedes`, `tags`)
+giống `domain/`. Kiểm: `npm run system:check`.
+
+### `type: "state_machine"` — id `SM-<SLUG>-<NNN>`
+
+```json
+{
+  "id": "SM-ORDER-001", "type": "state_machine", "entity": "Order",
+  "modules": ["Order", "Payment"],
+  "states": ["DRAFT", "TO_PURCHASE", "PAID", "CANCELLED"],
+  "initial": "DRAFT", "terminal": ["PAID", "CANCELLED"],
+  "transitions": [
+    { "from": "DRAFT", "to": "TO_PURCHASE", "trigger": "submit order", "roles": ["Sales"], "guard": "đủ thông tin thanh toán", "covered_by": ["ORDER_TC_012"] }
+  ],
+  "illegal_verified": [
+    { "from": "PAID", "to": "CANCELLED", "expected": "API trả 409, order giữ PAID, doanh thu không đổi", "covered_by": ["ORDER_TC_099"] }
+  ],
+  "source": "FSD Order §4.2 (bảng Trạng thái đơn) + BA confirm 2026-08-10",
+  "confirmed_by": "BA", "confirmed_at": "2026-08-10", "version": 1, "status": "active", "tags": ["revenue"]
+}
+```
+
+| Field | Ý nghĩa |
+|---|---|
+| `states` / `initial` / `terminal` | tập state; `terminal` là state "chốt" (⚑) — chuyển ra khỏi nó thường là bug toàn vẹn dữ liệu |
+| `transitions[]` | **chỉ khai cái HỢP PHÁP**: `from`, `to`, `trigger` (hành động/API), `roles?`, `guard?`, `covered_by[]` |
+| `illegal_verified[]` | cặp bất hợp pháp **đã có case chứng minh bị chặn**: `expected` phải kiểm được (mã 4xx/5xx, state giữ nguyên, số cụ thể) |
+
+**Suy ra nghĩa vụ test**: mọi cặp `(from,to)` không nằm trong `transitions` là **bất hợp pháp** → phải có case
+chứng minh hệ thống chặn. `system_map.js` in ma trận + liệt kê cặp còn trống (ưu tiên `‼` cặp xuất phát từ state
+`terminal`). Nhờ đó "API cho huỷ order đã PAID" trở thành **bug có nguồn trích dẫn** (`SM-ORDER-001`), không phải phỏng đoán.
+
+### `type: "permission_matrix"` — id `PM-<SLUG>-<NNN>`
+
+```json
+{
+  "id": "PM-ORDER-001", "type": "permission_matrix", "modules": ["Order"],
+  "roles": ["Admin", "Sales", "Teacher"], "actions": ["view", "create", "cancel"],
+  "allow": { "Admin": ["view", "create", "cancel"], "Sales": ["view", "create"], "Teacher": [] },
+  "deny_expected": "HTTP 403 + dữ liệu không đổi",
+  "covered_by": { "Teacher:view": ["ORDER_TC_120"] },
+  "source": "FSD Order §7 Ma trận phân quyền", "confirmed_by": "BA",
+  "confirmed_at": "2026-08-10", "version": 1, "status": "active", "tags": ["permission"]
+}
+```
+
+`allow` là **whitelist**: ô role×action không có trong `allow` = **deny** → phải có case guard với oracle
+`deny_expected`. `covered_by` khoá dạng `"role:action"`.
+
+### `type: "shared_surface"` — id `SS-<SLUG>-<NNN>`
+
+```json
+{
+  "id": "SS-ORDERAPI-001", "type": "shared_surface", "surface": "POST /api/v1/orders", "kind": "api",
+  "modules": ["Order"], "consumers": ["Order", "Payment", "Convert order"],
+  "paths": ["src/orders/**"],
+  "risk_note": "3 luồng tạo đơn dùng chung payload — đổi field bắt buộc là hỏng cả 3",
+  "covered_by": ["ORDER_TC_012"],
+  "source": "Swagger /api/v1/docs-json + Dev confirm 2026-08-10", "confirmed_by": "Dev",
+  "confirmed_at": "2026-08-10", "version": 1, "status": "active", "tags": ["api"]
+}
+```
+
+`kind` ∈ `api|component|table|job|config|library`; `consumers` **≥ 2 module** (1 consumer thì không phải dùng chung).
+`paths` (glob code) để đối chiếu git-impact. Tra ai bị ảnh hưởng: `node scripts/qa/system_map.js --impact "<surface>"`.
+
+> Kết quả rỗng **không** nghĩa là an toàn — chỉ nghĩa là chưa ai khai surface đó vào knowledge.
+
 ## `root_causes/<slug>.json`
 
 `<slug>` = `<module-lowercase>-<mô-tả-kebab>`, vd `report-timezone-utc`.
@@ -216,6 +292,6 @@ Index phẳng để tra cứu theo module/tag mà không phải quét toàn bộ
 }
 ```
 
-- `type`: `business_rule` | `bug` | `root_cause` | `historical_execution` | `locator`.
+- `type`: `business_rule` | `system_map` (kèm `subtype`: `state_machine`|`permission_matrix`|`shared_surface`) | `bug` | `root_cause` | `historical_execution` | `locator`.
 - Tra theo module = lọc `entries` theo `module`; tra theo tag = lọc theo `tags`.
 - Mỗi lần thêm/cập nhật entry file → cập nhật `entries` tương ứng + `updated_at`.

@@ -59,7 +59,9 @@
     "lint:locator": "node scripts/qa/locator_lint.js",
     "lint:locator:enforce": "node scripts/qa/locator_lint.js --enforce",
     "domain:check": "node scripts/qa/domain_rules.js",
-    "domain:index": "node scripts/qa/domain_rules.js --index"
+    "domain:index": "node scripts/qa/domain_rules.js --index",
+    "system:check": "node scripts/qa/system_map.js",
+    "system:index": "node scripts/qa/system_map.js --index"
   },
   "dependencies": {
     "axe-core": "^4.12.1",

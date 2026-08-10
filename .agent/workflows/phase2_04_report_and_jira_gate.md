@@ -39,6 +39,12 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
      Dấu hiệu nghi script_error: giá trị đọc được thuộc section khác · bấm xong màn không đổi như mong đợi ·
      lỗi biến mất khi làm tay · code dùng `.first()`/`force:true`/`mouse.click(x,y)`/regex `body.innerText`.
    - Expected result đã xác nhận đúng.
+   - **Bug dạng "hệ thống CHO PHÉP làm X" phải trích bản đồ `knowledge/system/`** (`SM-*` state machine /
+     `PM-*` ma trận quyền) làm nguồn expected. Loại bug này (huỷ đơn đã thanh toán, xoá giao dịch đã xác nhận,
+     role thấp gọi được API role cao) **không thể** chứng minh bằng cách bấm app — app cho làm chính là cái
+     đang nghi sai, lấy app làm expected là tautology. Chưa có bản đồ ⇒ **hỏi BA/Dev xác nhận trước**, ghi
+     `knowledge/system/` (skill `system_mapper`) rồi mới log; hoặc log kèm ghi rõ "chờ BA xác nhận thiết kế".
+     Ngược lại, hành vi nằm trong `transitions`/`allow` mà mình tưởng sai thì **không phải bug** — là mình hiểu sai spec.
    - Actual result có evidence rõ.
 4b. **Gate chất lượng output — THỰC THI, tự chạy (không phải kiểm bằng mắt).**
    - Test Execution: `push_test_execution.js` **tự chạy `scripts/qa/output_gate.js`** trước khi push → CHẶN khi comment run-on/dính debug `key=value`, step thiếu status/evidence, evidence không phải ảnh/video, hoặc case phức tạp thiếu video. Xem/tự sửa trước: `npm run gate:output -- --status <testcase-status.json>` (thêm `--fix` để tự dọn comment).
