@@ -91,7 +91,7 @@ npm run jira:testcase-cleanup -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --pr
 - Không publish từ Markdown nếu Excel đã tồn tại; Excel là canonical source.
 - Không publish thật nếu QA chưa xác nhận `APPROVED`; script publish thật cũng cần `--qa-approved` hoặc `JIRA_TESTCASE_QA_APPROVED=1`.
 - Vì test management dùng Xray, không dùng generic issue type `Test Case` trừ khi Jira project cấu hình riêng như vậy. Mặc định là Xray `Test`.
-- Mỗi Xray `Test` issue phải link về đúng Jira Story/Task từ `JIRA_STORY_KEY` hoặc CLI `--story`, ví dụ `SAPP-3255`.
+- Mỗi Xray `Test` issue phải link về đúng Jira Story/Task từ `JIRA_STORY_KEY` hoặc CLI `--story`, ví dụ `PROJ-123`.
 - Nhóm chính lấy từ business flow trong cột `Module`; label phụ theo layer/risk/priority không thay thế nhóm chính.
 - Test Set theo business flow là optional. Nếu bật, mỗi nhóm chính trong `Module` có một Xray `Test Set`; gắn Test vào Test Set qua `XRAY_TEST_SET_LINK_TYPE`.
 - Nếu Excel không còn TC ID đã publish, không hard delete Xray Test; dùng cleanup để thêm label `deprecated`, `out-of-scope`, `stale-from-excel`.

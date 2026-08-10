@@ -127,7 +127,7 @@ Các bước thực hiện:
    - Sau khi tạo hoặc phát hiện Xray Test đã tồn tại, script phải tạo issue link về `[JIRA_STORY_KEY]` bằng `XRAY_REQUIREMENT_LINK_TYPE`.
    - Mặc định KHÔNG tạo Test Set (nhóm chức năng đã có subfolder Test Repository). Chỉ khi chủ động bật `--with-test-sets` cho nhóm cắt ngang, script mới tạo/tái sử dụng Xray `Test Set` rồi gắn Test tương ứng.
    - Label tối giản, chỉ gắn: marker (`automation-testcase`/`automation-precondition`) + khoá dedup (`task-<TASK_KEY>`, `tc-<TC_ID>`, `pre-<MÃ>`). KHÔNG gắn `group-*`, `layer-*`, `risk-*`, `priority-*`, `xray` (nhóm đã có subfolder Test Repository, priority đã ở field Jira, còn lại là metadata dư thừa/đã thể hiện qua issuetype).
-   - Summary của Test chỉ là tên mô tả (cột `Trường hợp kiểm thử`), KHÔNG thêm prefix `[TC] <TC_ID> -` (TC ID đã ở description + label `tc-*` và Test đã nằm trong folder). Summary Precondition dạng `[<MÃ>] <mô tả>`, vd `[PRE-01] Ops Staff đã đăng nhập OPS`.
+   - Summary của Test chỉ là tên mô tả (cột `Trường hợp kiểm thử`), KHÔNG thêm prefix `[TC] <TC_ID> -` (TC ID đã ở description + label `tc-*` và Test đã nằm trong folder). Summary Precondition dạng `[<MÃ>] <mô tả>`, vd `[PRE-01] Người dùng có quyền phù hợp đã đăng nhập`.
 9. Ghi/cập nhật:
    - `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-publish-summary.md`
    - `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-publish.json`
@@ -141,7 +141,7 @@ Các bước thực hiện:
 Quy tắc bắt buộc:
 - Excel là source of truth. Không publish từ Markdown nếu Excel đã tồn tại.
 - Jira test management tool là Xray: publish testcase thành Xray `Test` issue, không dùng generic `Test Case` nếu project đã cấu hình Xray.
-- Mỗi Xray `Test` issue phải được link về đúng Jira Story/Task `[JIRA_STORY_KEY]` để nhìn được coverage theo task, ví dụ `SAPP-3255`.
+- Mỗi Xray `Test` issue phải được link về đúng Jira Story/Task `[JIRA_STORY_KEY]` để nhìn được coverage theo task, ví dụ `PROJ-123`.
 - Nhóm chính của testcase lấy từ cột `Nhóm chức năng` (fallback đoạn đầu cột `Module` nếu không có), thể hiện qua **subfolder Test Repository** (không dùng label `group-*`, không dùng Test Set theo chức năng). Hạn chế label tối đa: chỉ marker + khoá dedup; không gắn group/layer/risk/priority/xray.
 - KHÔNG dùng Test Set theo nhóm chức năng. Nhóm chức năng đã được thể hiện bằng subfolder Test Repository, nên tạo Test Set theo chức năng nữa là trùng lặp. Mặc định `XRAY_TEST_SET_ENABLED=0`, KHÔNG truyền `--with-test-sets`. Test Set chỉ nên dùng cho nhóm CẮT NGANG chức năng (vd `Smoke`, `Regression`, `Cross-app`) và thường chỉ cần khi execute trên Jira; theo dõi thực thi dùng Test Plan + Test Execution, không phải Test Set.
 - Không publish thật khi QA chưa xác nhận `APPROVED`.

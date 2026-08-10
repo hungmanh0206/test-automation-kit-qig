@@ -14,7 +14,7 @@
  *
  * Dùng CLI:
  *   node scripts/qa/preflight_gate.js --mode generic          # CI/static: config integrity
- *   node scripts/qa/preflight_gate.js --mode phase2 --task SAPP-123
+ *   node scripts/qa/preflight_gate.js --mode phase2 --task <TASK_KEY>
  *   thêm --require a,b (bắt buộc thêm) · --allow-missing x,y (hạ xuống cảnh báo) · --qa-approved (bỏ qua có log)
  * Dùng module: const { runPreflight } = require('./preflight_gate'); const { problems, warnings } = runPreflight({ mode, task });
  * Exit: 0 = đạt (hoặc --qa-approved) · 1 = có CHẶN · 2 = lỗi dùng sai.

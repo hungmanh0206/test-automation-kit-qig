@@ -48,7 +48,7 @@
 - Không publish thật nếu thiếu QA confirmation.
 - Không sửa nội dung testcase trực tiếp trên Xray; authoring ở Excel rồi re-publish (Phase 2 execute đọc bản đã publish từ Xray là bình thường).
 - Với Xray, publish thành Xray `Test` issue; nếu Jira bắt field `Test Type`, cấu hình `XRAY_TEST_TYPE_FIELD_ID`.
-- Mỗi Xray `Test` issue phải link về Story/Task như `SAPP-3255`; nếu link type khác mặc định, cấu hình `XRAY_REQUIREMENT_LINK_TYPE`.
+- Mỗi Xray `Test` issue phải link về Story/Task như `PROJ-123`; nếu link type khác mặc định, cấu hình `XRAY_REQUIREMENT_LINK_TYPE`.
 - Test Set theo business flow là optional; nếu bật, mỗi nhóm chính trong `Module` có một Xray `Test Set` để QA lọc/review theo luồng nghiệp vụ.
 - Nếu Excel bỏ bớt TC sau publish, không xử lý trong step này; chạy `partial-rerun/run_xray_test_cleanup.md` sau Human Review/QA approval để label stale/restore, không hard delete.
 - Không log Jira bug trong step này; bug logging thuộc Phase 2.

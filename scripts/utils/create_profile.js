@@ -23,7 +23,7 @@ if (!TASK_KEY || TASK_KEY.startsWith('--')) {
   process.exit(1);
 }
 if (!/^[A-Z][A-Z0-9]+-\d+$/i.test(TASK_KEY)) {
-  console.error(`TASK_KEY "${TASK_KEY}" không đúng dạng (vd SAPP-24395).`);
+  console.error(`TASK_KEY "${TASK_KEY}" không đúng dạng (vd PROJ-123).`);
   process.exit(1);
 }
 if (!fs.existsSync(TEMPLATE)) { console.error(`Không thấy template: ${TEMPLATE}`); process.exit(1); }

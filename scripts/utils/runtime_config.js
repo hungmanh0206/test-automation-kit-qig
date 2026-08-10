@@ -32,7 +32,7 @@ let taskEnvWarned = false;
 
 // Per-project run profile: file trỏ bởi biến môi trường TASK_ENV.
 // Truyền theo TỪNG lệnh (không set trong .env chung) để cô lập các task chạy song song.
-// VD (PowerShell): $env:TASK_ENV='profiles/SAPP-23439.env'; npm run test:task -- --task SAPP-23439 ...
+// VD (PowerShell): $env:TASK_ENV='profiles/PROJ-123/task.env'; npm run test:task -- --task PROJ-123 ...
 function resolveTaskEnvFile() {
   const profile = process.env.TASK_ENV;
   if (!profile || !String(profile).trim()) return null;

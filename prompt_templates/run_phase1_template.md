@@ -139,7 +139,7 @@ Yêu cầu testcase output:
 - Xác định loại testcase: UI / API / E2E.
 - Phân nhóm rõ từng testcase theo nhóm chính là business flow trong cột `Module` với format:
   `[Nhóm chức năng] / [User Story hoặc màn hình/API/flow cụ thể]`.
-  Nhóm chức năng phải suy ra từ domain/scope và ưu tiên business flow, không phải layer kỹ thuật. Với CRUD có thể dùng `Xem danh sách`, `Tạo`, `Sửa`, `Xóa`; với API/E2E/permission gắn với flow cụ thể thì vẫn đặt vào nhóm flow đó, ví dụ `Tạo / API POST ...`, `Tạo / Ops create exam -> LMS sync`, `Sửa / Permission role teacher cannot edit`. Chỉ dùng `API`, `E2E/Cross-app`, `Permission/Security` làm nhóm chính khi testcase không thuộc business flow cụ thể nào.
+  Nhóm chức năng phải suy ra từ domain/scope và ưu tiên business flow, không phải layer kỹ thuật. Với CRUD có thể dùng `Xem danh sách`, `Tạo`, `Sửa`, `Xóa`; với API/E2E/permission gắn với flow cụ thể thì vẫn đặt vào nhóm flow đó, ví dụ `Tạo / API POST ...`, `Tạo / App 1 tạo bản ghi -> App 2 sync`, `Sửa / Permission role teacher cannot edit`. Chỉ dùng `API`, `E2E/Cross-app`, `Permission/Security` làm nhóm chính khi testcase không thuộc business flow cụ thể nào.
 - Không thêm cột label vào bảng testcase. Khi publish Xray/Jira, label để TỐI THIỂU (chỉ marker `automation-testcase` + khoá dedup `task-*`/`tc-*`); nhóm chức năng KHÔNG dùng label mà thể hiện qua Xray Test Set và subfolder Test Repository (theo sheet chức năng). Không gắn label group/layer/risk/priority/xray.
 - Sau bảng testcase, thêm section `## Phân nhóm testcase` mapping nhóm chức năng -> phạm vi -> TC ID -> tổng.
 - API testcase phải reference method + endpoint + expected status/body.
