@@ -117,6 +117,7 @@ test-automation-kit/
 | Component | Purpose |
 |---|---|
 | [USER_GUIDE.md](USER_GUIDE.md) | Hướng dẫn sử dụng Test Automation Kit cho Team QA. Có thể publish sang Confluence cho team: `CONFLUENCE_PAGE_ID=<id> node scripts/integrations/jira/publish_confluence_page.js [--dry-run]` (dry-run trước, script tự backup page cũ). |
+| [.agent/config/kit-layers.md](.agent/config/kit-layers.md) | **Ranh giới GENERIC (kit dùng chung) vs PROJECT (nội dung dự án)** — tra trước khi sửa: task generic chỉ chạm lớp GENERIC; giao kit cho dự án mới thì bỏ lớp PROJECT. |
 | [CHANGELOG.md](CHANGELOG.md) | Lịch sử thay đổi **kit dùng chung** theo ngày + chủ đề (vấn đề → cách chữa), kèm commit hash. Đọc trước khi nâng cấp kit hoặc khi thấy hành vi lạ sau khi pull. |
 | [QUICKSTART.md](QUICKSTART.md) | Onboarding nhanh cho project mới. |
 | [RULE_GLOBAL.md](RULE_GLOBAL.md) | Quy tắc chung về ngôn ngữ, bảo mật, output và cleanup. |

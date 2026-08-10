@@ -75,6 +75,11 @@ function listFiles(dir, out = []) {
   return out;
 }
 
+// Phân lớp theo `.agent/config/kit-layers.md`: kit GENERIC phải sạch; lớp PROJECT là nội dung của
+// chủ dự án (spec nghiệp vụ, helper login theo app) — báo cáo riêng, không chặn khi làm việc generic.
+const GENERIC_RE = /^tests\/(support\/setup|fe\/(infra|fixtures)|load)\//i;
+const layerOf = (rel) => (GENERIC_RE.test(rel.replace(/\\/g, '/')) || /example/i.test(rel) ? 'generic' : 'project');
+
 function targets() {
   const files = listFiles(path.join(REPO, 'tests')).map((f) => ({ f, scope: 'shared' }));
   if (INCLUDE_TASKS) {
@@ -100,7 +105,10 @@ for (const { f, scope } of targets()) {
     const line = lines[i];
     if (/locator-lint-disable-next-line\s+\S/.test(lines[i - 1] || '')) continue; // bỏ qua CÓ lý do
     for (const r of RULES) {
-      if (r.re.test(line)) findings.push({ file: path.relative(REPO, f), line: i + 1, scope, rule: r, code: line.trim().slice(0, 90) });
+      if (r.re.test(line)) {
+        const rel = path.relative(REPO, f);
+        findings.push({ file: rel, line: i + 1, scope, layer: layerOf(rel), rule: r, code: line.trim().slice(0, 90) });
+      }
     }
   }
 }
@@ -114,6 +122,10 @@ for (const x of findings) byFile.set(x.file, (byFile.get(x.file) || 0) + 1);
 
 console.log(`[locator-lint] quét ${new Set(findings.map((x) => x.file)).size}/${targets().length} file có vi phạm · ${findings.length} finding (P0 ${p0.length}, trong đó shared ${p0Shared.length})`);
 if (!findings.length) { console.log('[locator-lint] ✓ Sạch — không thấy anti-pattern định vị.'); process.exit(0); }
+
+const nGeneric = findings.filter((x) => x.layer === 'generic').length;
+const nProject = findings.filter((x) => x.layer === 'project').length;
+console.log(`[locator-lint] theo lớp (kit-layers.md): GENERIC ${nGeneric} · PROJECT ${nProject}`);
 
 console.log('\n— Theo rule —');
 for (const r of RULES) {
@@ -137,8 +149,16 @@ console.log('Runtime làm đúng: `scripts/utils/ui/safe_target.js` (one/section
 // PHÁT SINH THÊM. Nợ cũ vẫn hiện trong report để dọn dần.
 const BASELINE_FILE = path.resolve(arg('baseline', path.join(REPO, '.agent', 'config', 'locator-lint-baseline.json')));
 const sig = (x) => `${x.file}::${x.rule.id}`;
+const ENFORCE_PROJECT = flag('enforce-project');
 const current = {};
-for (const x of findings) { if (x.rule.sev === 'P0') current[sig(x)] = (current[sig(x)] || 0) + 1; }
+const layerBySig = {};
+for (const x of findings) {
+  if (x.rule.sev !== 'P0') continue;
+  current[sig(x)] = (current[sig(x)] || 0) + 1;
+  layerBySig[sig(x)] = x.layer;
+}
+// Mặc định chỉ CHẶN lớp GENERIC (kit) — lớp PROJECT là trách nhiệm chủ dự án; --enforce-project để chặn cả.
+const inEnforceScope = (k) => (ENFORCE_PROJECT ? true : layerBySig[k] === 'generic');
 
 if (flag('baseline-write')) {
   fs.mkdirSync(path.dirname(BASELINE_FILE), { recursive: true });
@@ -151,7 +171,8 @@ let base = {};
 if (fs.existsSync(BASELINE_FILE)) { try { base = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8')).counts || {}; } catch (e) { base = {}; } }
 const regressions = Object.entries(current)
   .map(([k, n]) => ({ k, n, was: base[k] || 0 }))
-  .filter((x) => x.n > x.was);
+  .filter((x) => x.n > x.was)
+  .filter((x) => inEnforceScope(x.k));
 
 if (regressions.length) {
   console.log('\n— P0 PHÁT SINH THÊM so với baseline —');
