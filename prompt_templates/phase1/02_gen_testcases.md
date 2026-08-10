@@ -370,6 +370,11 @@ Mỗi endpoint liên quan trong Swagger phải có testcase cho các nhóm sau n
 - Unauthorized thiếu token.
 - Forbidden role không đủ quyền.
 - Response schema/business values quan trọng.
+- **HTTP-level contract**: gọi endpoint bằng **method không cho phép** (kỳ vọng `405`, KHÔNG phải `404`/`500`); `Content-Type` sai hoặc thiếu (kỳ vọng `415`); body vượt giới hạn (`413`/chặn có kiểm soát, KHÔNG `500`). Lỗi kiểu này hay bị bỏ vì test chỉ đi "đường đẹp".
+- **Boundary của payload/query** (biên ở tầng API, khác §3 vốn viết cho field UI): chuỗi đúng max vs max+1; số âm / `0`; mảng rỗng `[]` vs thiếu key; `page=0`, `page=-1`, `page` vượt tổng số trang; `page_size` vượt max cho phép; ngày sai định dạng/không tồn tại. Mỗi biên **1 TC riêng**, không gộp.
+- **Idempotency / double-submit**: gửi **lặp cùng payload** (POST tạo, approve, cancel, upload) → KHÔNG tạo bản ghi/giao dịch trùng; retry sau timeout → không nhân đôi side-effect. Bắc cầu §8 (Resilience) nhưng phải có **ở cấp endpoint**.
+- **Contract / backward-compat** (khi endpoint đã có consumer): field mới phải **optional**; KHÔNG đổi kiểu/bỏ field cũ mà không kiểm; enum thêm giá trị mới không làm vỡ consumer. Bắc cầu §17 (Change Impact) — ở đây là case cấp endpoint.
+- **Rate-limit / concurrency** (nếu applicable): endpoint nhạy cảm (login/OTP/thanh toán) gọi dồn dập → khoá/chậm/`429` chứ không brute-force vô hạn; N request đồng thời lên cùng resource → không oversell/double-count. Chi tiết ở §15 và §16; liệt kê ở đây để không bị bỏ sót khi chỉ bám checklist API.
 
 ## 6. E2E Coverage Checklist
 Mỗi luồng liên hệ nhiều hệ thống phải có testcase cho:
@@ -551,6 +556,7 @@ Tự rà và ghi vào `reports/phase1-summary.md` (Coverage Gaps) nếu thiếu:
 - [ ] Mỗi giá trị được TÍNH/tổng/đếm/sort có TC verify bằng **con số cụ thể tự tính** + 1 biên làm tròn; mỗi dữ liệu hiển thị ≥2 nơi có TC so khớp; mỗi mutation có TC so **delta** trước/sau (mục 13).
 - [ ] Mỗi field trống/`-`/`N/A`/`0` nghi ngờ có TC đối chiếu response BE (phân biệt `null`/`""`/`[]`/thiếu key/`0`), FK resolve đúng tên, pagination `total` khớp — không lấy oracle từ build (mục 14).
 - [ ] Mỗi endpoint có id resource có TC IDOR; mỗi chức năng theo role có TC privilege bypass BE; input nhạy cảm có TC injection/XSS stored; body create/update có TC mass-assignment; response không lộ field nhạy cảm (mục 15).
+- [ ] Mỗi endpoint có TC **HTTP-level** (method sai → `405`, content-type sai → `415`, body quá lớn → chặn không `500`); **biên payload/query** (max vs max+1, số âm/`0`, `[]` vs thiếu key, `page=0/-1/vượt`, `page_size` vượt max) tách TC riêng; endpoint **mutation** có TC **idempotency/double-submit**; endpoint đã có consumer có TC **backward-compat** (field mới optional, không đổi kiểu/bỏ field cũ); endpoint nhạy cảm có TC **rate-limit/concurrency** — không áp dụng nhóm nào thì ghi `N/A + lý do` (mục 5).
 - [ ] Nếu có ngưỡng SLA/tải trong scope: có TC đo response time so ngưỡng, large dataset, concurrent — kèm nguồn ngưỡng; không có ngưỡng thì `N/A + lý do` (mục 16).
 - [ ] Nếu story đụng bề mặt dùng chung (data/endpoint/component/rule/status/permission/job): mỗi feature khác bị ảnh hưởng có ≥1 regression smoke + backward-compat; feature nghi ảnh hưởng mà không tự xác minh được đã flag `QA confirm`. Thay đổi cô lập → ghi `N/A: no shared surface` (mục 17).
 
