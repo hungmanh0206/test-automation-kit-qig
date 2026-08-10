@@ -283,22 +283,6 @@
       "summary": "Form Add-on Product báo lỗi \"Only numbers > 5000 are allowed\" khi nhập Price = 170 với Monetary Unit = USD → nghi hệ thố"
     },
     {
-      "type": "decision",
-      "subtype": "by_design",
-      "file": "decisions/2026-08-10__cancel-paid-order-provisional.json",
-      "modules": [
-        "State Transition / Order"
-      ],
-      "tags": [
-        "order",
-        "cancel",
-        "revenue-integrity",
-        "chờ-BA-xác-nhận"
-      ],
-      "status": "active",
-      "summary": "Hủy Order đã thanh toán đủ (status Đã thanh toán / PURCHASED) — API cho hủy, có phải bug toàn vẹn doanh thu?"
-    },
-    {
       "type": "bug",
       "file": "bugs/SAPP-24395__fe-combo-version-history-filter-product-liet-ke-.json",
       "module": "(unmapped)",
@@ -583,6 +567,38 @@
       ],
       "task_key": "SAPP-24395",
       "status": "Done"
+    },
+    {
+      "type": "decision",
+      "subtype": "by_design",
+      "file": "decisions/2026-08-03__cancel-paid-order-admin-override.json",
+      "modules": [
+        "State Transition / Order"
+      ],
+      "tags": [
+        "order",
+        "cancel",
+        "revenue-integrity",
+        "admin-override"
+      ],
+      "status": "active",
+      "summary": "Hủy Order đã thanh toán đủ (status Đã thanh toán / PURCHASED) — API cho hủy, có phải bug toàn vẹn doanh thu?"
+    },
+    {
+      "type": "decision",
+      "subtype": "test_approach",
+      "file": "decisions/2026-08-03__delete-transaction-200-artifact.json",
+      "modules": [
+        "State Transition / Order"
+      ],
+      "tags": [
+        "api",
+        "oracle",
+        "guard",
+        "false-positive-prevention"
+      ],
+      "status": "active",
+      "summary": "DELETE /transactions/{id} luôn trả HTTP 200 — dùng response code để kết luận \"đã xóa được\" có hợp lệ không?"
     }
   ]
 }

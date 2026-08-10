@@ -1,0 +1,19 @@
+{
+  "id": "DEC-ORDERCANCEL-001",
+  "type": "by_design",
+  "subject": "Hủy Order đã thanh toán đủ (status Đã thanh toán / PURCHASED) — API cho hủy, có phải bug toàn vẹn doanh thu?",
+  "decision": "KHÔNG phải bug. Đây là admin-override CỐ Ý: Super Admin được phép cancel/xóa order kể cả khi đã ghi nhận doanh thu; role hạn chế gọi cancel bị 403. Cancel trả HTTP 200, order chuyển CANCEL và hệ thống tự sinh transaction Hoàn phí (hủy kèm ghi nhận hoàn tiền, không phải hủy làm mất dấu doanh thu).",
+  "rationale": "Kết luận GỐC (chỉ test bằng Super Admin) là IMPRECISE — đã re-verify 2026-08-03 bằng role hạn chế: RT (tài khoản không quyền) nhận 403 ở create-order, IDOR-GET và cancel-order ⇒ role-system hoạt động, việc admin cancel được là override có chủ đích chứ không phải thiếu guard. BA xác nhận trực tiếp Super Admin ĐƯỢC phép cancel/xóa order. OPS_PAY_TC_478 execute PASSED trên UAT (UI + API): order PURCHASED đã trả 1.000.000 → cancel → HTTP 200, status = CANCEL, kèm transaction Hoàn phí tự tạo.",
+  "evidence": "reports/BUG_REVERIFICATION.md §C mục C1a + automation/GUARD_REVERIFY_result.json (task SAPP-24395); OPS_PAY_TC_478 PASSED",
+  "decided_by": "BA",
+  "decided_at": "2026-08-03",
+  "scope": {
+    "modules": ["State Transition / Order"],
+    "tc_ids": ["OPS_PAY_TC_478"],
+    "bug_keys": []
+  },
+  "status": "active",
+  "tags": ["order", "cancel", "revenue-integrity", "admin-override"],
+  "_note_scope_limit": "BA chỉ chốt phần QUYỀN (ai được cancel). Chi tiết transaction Hoàn phí tự sinh (số tiền, thời điểm ghi nhận doanh thu) mới là hành vi QUAN SÁT được, chưa có câu trong FSD — nếu cần test sâu phần đó thì phải hỏi BA thêm trước khi lấy làm oracle.",
+  "_note_do_not_confuse": "ĐỪNG suy rộng sang endpoint transaction: `/product-orders/{id}/transactions` (POST) và `/transactions/{id}` (DELETE) THIẾU role+state guard thật (role hạn chế xóa được tx đã confirmed, POST tx làm order CANCELLED sống lại) — đó là BUG đã confirm, không phải override."
+}

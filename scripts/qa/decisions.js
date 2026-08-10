@@ -185,6 +185,12 @@ if (flag('index')) {
     const i = doc.entries.findIndex((x) => x && x.file === rec.file);
     if (i >= 0) doc.entries[i] = rec; else { doc.entries.push(rec); n += 1; }
   }
+  // Dọn entry TRỎ FILE ĐÃ BỊ XOÁ (chỉ của type này) — indexer trước đây chỉ thêm/sửa nên xoá 1 record
+  // là index còn trỏ vào hư không, tra cứu ra kết quả ma.
+  const before = doc.entries.length;
+  doc.entries = doc.entries.filter((e) => !(e && e.type === 'decision') || fs.existsSync(path.join(KNOW, e.file)));
+  const pruned = before - doc.entries.length;
+  if (pruned) console.log(`[decisions] dọn ${pruned} entry trỏ file đã bị xoá.`);
   doc.updated_at = TODAY;
   fs.writeFileSync(idxFile, `${JSON.stringify(doc, null, 2)}\n`, 'utf8');
   console.log(`\n[decisions] index.json: +${n} entry decision (tổng ${doc.entries.length}).`);
