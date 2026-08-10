@@ -226,12 +226,16 @@ Chỉ dùng đúng các giá trị Priority có trong Jira: `Highest`, `High`, `
 | **Low** | Edge case, ảnh hưởng ít, không block luồng chính |
 | **Lowest** | Lỗi nhỏ/cosmetic, typo, hiển thị phụ hoặc tác động rất thấp |
 
+> ⚙️ **Có máy kiểm** (`design_gate` → `scripts/lib/testcase/validate.js`): giá trị ngoài 5 mức trên = **CHẶN**. Lý do không phải hình thức: bug log lên Jira lấy `Priority` **từ chính cột này** (`08_log_bug_jira.md`), giá trị lạ ⇒ Jira không set được ⇒ bug rơi về default, mất luôn tín hiệu ưu tiên.
+
 ## 8. Mức độ rủi ro
 | Level | Khi nào |
 |---|---|
 | **High** | Dữ liệu quan trọng, tài chính, bảo mật, không thể rollback |
 | **Medium** | Ảnh hưởng trung bình, có thể sửa |
 | **Low** | Ảnh hưởng nhỏ, UI/UX, dễ fix |
+
+> ⚙️ **Có máy kiểm**: giá trị ngoài `High|Medium|Low` = **CHẶN** (`risk:gate` ép độ sâu theo cột này, giá trị lạ bị bỏ qua âm thầm). Ngoài ra 2 cột §7/§8 **không được nói ngược nhau** — `rủi ro High` + `ưu tiên Low/Lowest`, hoặc `rủi ro Low` + `ưu tiên Highest` là tự mâu thuẫn ⇒ **cảnh báo**. Chọn theo Impact của module (xem `.agent/config/risk_model.json` §`impact.modules`) thay vì theo cảm tính, để cùng một loại case không bị gán ưu tiên khác nhau giữa các task.
 
 ## 9. Setup Strategy (Hợp đồng tiền điều kiện) — BẮT BUỘC
 
