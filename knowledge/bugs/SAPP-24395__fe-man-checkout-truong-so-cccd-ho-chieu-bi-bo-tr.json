@@ -1,0 +1,15 @@
+{
+  "id": "SAPP-28317",
+  "bug": "[FE] Màn Checkout: trường Số CCCD/Hộ chiếu bị bỏ trống dù API đã trả đủ dữ liệu",
+  "module": "Checkout Thanh toán",
+  "tags": [
+    "checkout",
+    "checkout-thanh-toán"
+  ],
+  "task_key": "SAPP-24395",
+  "detected_phase": "phase2",
+  "confirmed_via_gate": true,
+  "jira_status": "Done",
+  "created_at": "2026-08-07",
+  "tc_id": "OPS_PAY_TC_458"
+}

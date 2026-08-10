@@ -227,6 +227,362 @@
       ],
       "task_key": "SAPP-23439",
       "status": "Done"
+    },
+    {
+      "type": "business_rule",
+      "file": "domain/bieu-phi-becker__price-threshold-by-currency.json",
+      "module": "Biểu phí bán tài khoản thi / Becker USD × tỷ giá",
+      "tags": [
+        "add-on-product",
+        "price",
+        "currency"
+      ],
+      "task_key": null,
+      "status": "active@v1"
+    },
+    {
+      "type": "business_rule",
+      "file": "domain/state-transition-order__over-collect-guard.json",
+      "module": "State Transition / Order",
+      "tags": [
+        "payment",
+        "transaction",
+        "revenue-integrity"
+      ],
+      "task_key": null,
+      "status": "active@v1"
+    },
+    {
+      "type": "system_map",
+      "subtype": "state_machine",
+      "file": "system/order__lifecycle.json",
+      "modules": [
+        "State Transition / Order"
+      ],
+      "tags": [
+        "order",
+        "revenue",
+        "state-machine"
+      ],
+      "status": "active@v1",
+      "summary": "Order: 5 state"
+    },
+    {
+      "type": "decision",
+      "subtype": "false_positive",
+      "file": "decisions/2026-08-05__addon-usd-price-false-positive.json",
+      "modules": [
+        "Biểu phí bán tài khoản thi / Becker USD × tỷ giá"
+      ],
+      "tags": [
+        "add-on-product",
+        "price",
+        "currency"
+      ],
+      "status": "active",
+      "summary": "Form Add-on Product báo lỗi \"Only numbers > 5000 are allowed\" khi nhập Price = 170 với Monetary Unit = USD → nghi hệ thố"
+    },
+    {
+      "type": "decision",
+      "subtype": "by_design",
+      "file": "decisions/2026-08-10__cancel-paid-order-provisional.json",
+      "modules": [
+        "State Transition / Order"
+      ],
+      "tags": [
+        "order",
+        "cancel",
+        "revenue-integrity",
+        "chờ-BA-xác-nhận"
+      ],
+      "status": "active",
+      "summary": "Hủy Order đã thanh toán đủ (status Đã thanh toán / PURCHASED) — API cho hủy, có phải bug toàn vẹn doanh thu?"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-combo-version-history-filter-product-liet-ke-.json",
+      "module": "(unmapped)",
+      "tags": [
+        "combo-version",
+        "ui-filter",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Open"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-clone-version-ngay-prefill-sai-thong-bao-loi-.json",
+      "module": "(unmapped)",
+      "tags": [
+        "clone-version",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-picker-chon-add-on-product-version-cot-price-.json",
+      "module": "(unmapped)",
+      "tags": [
+        "addon-version",
+        "ui-display",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-add-on-order-net-amount-luu-thanh-0-du-form-t.json",
+      "module": "(unmapped)",
+      "tags": [
+        "add-on-order",
+        "net-amount",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-huy-add-on-order-khong-ong-bo-deal-stage-sang.json",
+      "module": "(unmapped)",
+      "tags": [
+        "cancel-order",
+        "hubspot-sync",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-add-on-order-khong-ong-bo-uoc-sang-hubspot-kh.json",
+      "module": "(unmapped)",
+      "tags": [
+        "hubspot-sync",
+        "revenue",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Rejected"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-total-custom-discount-note-hien-thi-sai-on-vi.json",
+      "module": "(unmapped)",
+      "tags": [
+        "discount-note",
+        "usd",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-transaction-them-thu-cong-khong-ong-bo-phuong.json",
+      "module": "(unmapped)",
+      "tags": [
+        "hubspot-sync",
+        "transaction",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Staging"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-add-on-order-paid-amount-luon-bang-0-khong-co.json",
+      "module": "(unmapped)",
+      "tags": [
+        "add-on-order",
+        "paid-amount",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-order-gia-han-dropdown-extension-fee-calculat.json",
+      "module": "Order Gia hạn",
+      "tags": [
+        "service-fee",
+        "order-gia-hạn"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-man-checkout-truong-so-cccd-ho-chieu-bi-bo-tr.json",
+      "module": "Checkout Thanh toán",
+      "tags": [
+        "checkout",
+        "checkout-thanh-toán"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-new-product-go-tu-khoa-o-truong-subject-va-ca.json",
+      "module": "(unmapped)",
+      "tags": [
+        "product-form",
+        "search",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-version-history-current-version-van-co-nut-de.json",
+      "module": "(unmapped)",
+      "tags": [
+        "product-version",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-order-bao-luu-truong-service-fee-khong-phai-c.json",
+      "module": "Order Bảo lưu",
+      "tags": [
+        "ux",
+        "order-bảo-lưu"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-order-bao-luu-service-fee-nhap-vao-bi-luu-tha.json",
+      "module": "Công thức phí Service Fee",
+      "tags": [
+        "revenue-integrity",
+        "công-thức-phí-service-fee"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-link-checkout-khong-hop-le-hien-loi-ky-thuat-.json",
+      "module": "Checkout Thanh toán",
+      "tags": [
+        "ux",
+        "checkout-thanh-toán"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-version-history-product-add-on-combo-cot-crea.json",
+      "module": "(unmapped)",
+      "tags": [
+        "ui-label",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-dropdown-filter-add-on-product-category-hien-.json",
+      "module": "(unmapped)",
+      "tags": [
+        "ui-label",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-create-add-on-product-version-khong-validate-.json",
+      "module": "Quản lý Add-on Product Version",
+      "tags": [
+        "quản-lý-add-on-product-version"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-callback-thanh-toan-trung-lap-lam-paid-amount.json",
+      "module": "Check tiền & Ghi nhận doanh thu",
+      "tags": [
+        "idempotency",
+        "check-tiền-&-ghi-nhận-doanh-thu"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-add-on-product-form-rule-only-numbers-5000-ch.json",
+      "module": "Biểu phí bán tài khoản thi",
+      "tags": [
+        "re-verify",
+        "reopened",
+        "biểu-phí-bán-tài-khoản-thi"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Rejected"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-gia-han-ghi-phi-dich-vu-theo-tb-thang-hoac-ho.json",
+      "module": "Ghi nhận DT theo loại",
+      "tags": [
+        "be",
+        "ghi-nhận-dt-theo-loại"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-add-transaction-over-post-transaction-status-.json",
+      "module": "Permission Security",
+      "tags": [
+        "be",
+        "permission-security"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-delete-transaction-khi-status-a-thanh-toan-ch.json",
+      "module": "Transaction Chuyển đổi",
+      "tags": [
+        "re-verify",
+        "reopened",
+        "transaction-chuyển-đổi"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-add-transaction-order-a-tra-u-van-thu-vuot-ov.json",
+      "module": "State Transition",
+      "tags": [
+        "re-verify",
+        "reopened",
+        "state-transition"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Done"
     }
   ]
 }

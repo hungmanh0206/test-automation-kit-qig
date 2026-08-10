@@ -1,0 +1,19 @@
+{
+  "id": "DEC-ORDERCANCEL-001",
+  "type": "by_design",
+  "subject": "Hủy Order đã thanh toán đủ (status Đã thanh toán / PURCHASED) — API cho hủy, có phải bug toàn vẹn doanh thu?",
+  "decision": "TẠM chấp nhận là đúng thiết kế, KHÔNG log bug revenue-integrity: cancel trả HTTP 200, order chuyển status = CANCEL và hệ thống TỰ SINH transaction \"Hoàn phí\" — tức không phải hủy tự do làm mất dấu doanh thu mà là hủy kèm ghi nhận hoàn tiền.",
+  "rationale": "OPS_PAY_TC_478 đã execute PASSED trên UAT (cả UI và API): order PURCHASED đã trả 1.000.000 → cancel → HTTP 200, status = CANCEL, kèm transaction Hoàn phí được tạo tự động; có evidence ảnh. NHƯNG đây là hành vi QUAN SÁT được, KHÔNG phải điều spec nói: FSD 0426 (snapshot 2026-08-07) chỉ nói Delete → \"cập nhật status = Đã hủy\" mà KHÔNG nêu điều kiện status nào được Delete. Vì vậy quyết định này là TẠM THỜI, chờ BA xác nhận. Nếu BA chốt không được hủy đơn đã thanh toán thì đây là BUG và bản ghi này phải chuyển superseded + cặp Đã thanh toán → Đã hủy trở thành illegal trong SM-ORDER-001.",
+  "evidence": "OPS_PAY_TC_478 (PASSED, evidence trong test-results của SAPP-24395) + FSD 0426 tab 3.1.6.3 / 4.1 (không nêu điều kiện Delete)",
+  "decided_by": "QA-Lead",
+  "decided_at": "2026-08-10",
+  "expires_at": "2026-09-10",
+  "scope": {
+    "modules": ["State Transition / Order"],
+    "tc_ids": ["OPS_PAY_TC_478"],
+    "bug_keys": []
+  },
+  "status": "active",
+  "tags": ["order", "cancel", "revenue-integrity", "chờ-BA-xác-nhận"],
+  "_note_open_question": "Câu cần hỏi BA: đơn đã thanh toán đủ có được hủy không, và nếu được thì transaction Hoàn phí auto-tạo có phải hành vi mong muốn (số tiền, thời điểm ghi nhận doanh thu)? Trả lời xong thì chuyển thành rule trong knowledge/domain/ và cập nhật SM-ORDER-001."
+}

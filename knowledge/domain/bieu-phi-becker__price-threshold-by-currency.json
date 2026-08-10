@@ -1,0 +1,19 @@
+{
+  "id": "BR-ADDONPRICE-001",
+  "module": "Biểu phí bán tài khoản thi / Becker USD × tỷ giá",
+  "rule": "Ngưỡng giá tối thiểu \"Only numbers > 5000\" của field Price trên form Add-on Product CHỈ áp cho Monetary Unit = VND; với USD hệ thống cho phép giá nhỏ hơn 5000.",
+  "applies_when": "form Create/Edit Add-on Product. Đã kiểm với USD; hành vi chính xác của ngưỡng khi Monetary Unit = VND chưa được đo lại trong lần này (chỉ suy từ phạm vi rule).",
+  "examples": [
+    {
+      "input": "Create Add-on Product: Category = BECKER, Test Subject = CMA Part 1, Monetary Unit = USD, Price = 170",
+      "expected": "Save THÀNH CÔNG (toast \"Create add-on product successfully\"); KHÔNG hiện lỗi \"Only numbers > 5000 are allowed\""
+    }
+  ],
+  "source": "SAPP-28130 (Sub-bug của SAPP-24395, đóng Rejected) — re-test 2026-08-05: USD/170 tạo thành công; lưới Add-on Product sẵn có nhiều bản ghi đơn vị USD giá dưới 5000 (170 / 100 / 250)",
+  "confirmed_by": "QA-Lead",
+  "confirmed_at": "2026-08-05",
+  "version": 1,
+  "status": "active",
+  "covered_by": ["OPS_PAY_TC_167"],
+  "tags": ["add-on-product", "price", "currency"]
+}

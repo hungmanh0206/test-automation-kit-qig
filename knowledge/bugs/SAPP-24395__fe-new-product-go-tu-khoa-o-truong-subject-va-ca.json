@@ -1,0 +1,15 @@
+{
+  "id": "SAPP-28315",
+  "bug": "[FE] New Product: gõ từ khóa ở trường Subject (và Category) không gọi API tìm kiếm — chỉ lọc trong danh sách đã tải",
+  "module": "(unmapped)",
+  "tags": [
+    "product-form",
+    "search",
+    "(unmapped)"
+  ],
+  "task_key": "SAPP-24395",
+  "detected_phase": "phase2",
+  "confirmed_via_gate": true,
+  "jira_status": "Done",
+  "created_at": "2026-08-07"
+}

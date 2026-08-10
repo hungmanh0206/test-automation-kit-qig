@@ -1,0 +1,19 @@
+{
+  "id": "BR-ORDERPAY-001",
+  "module": "State Transition / Order",
+  "rule": "Khi order đã trả đủ (Total Amount Due = 0), hệ thống CHẶN tạo thêm transaction thu tiền (over-collect).",
+  "applies_when": "áp cho transaction THU tiền trên order có Total Amount Due = 0 (status Đã thanh toán / PURCHASED). Không áp cho transaction Hoàn phí.",
+  "examples": [
+    {
+      "input": "Order Paid Amount 1.000.000, Total Amount Due 0, status PURCHASED → POST /product-orders/{id}/transactions với amount 500.000",
+      "expected": "HTTP 400, mã lỗi exceptions.order_already_paid; KHÔNG tạo transaction; Paid Amount giữ 1.000.000"
+    }
+  ],
+  "source": "SAPP-28126 (Sub-bug của SAPP-24395, status Done) — log 2026-08-03 khi hệ thống còn trả HTTP 200 và vẫn tạo được transaction thu vượt; re-run 2026-08-10 xác nhận đã chặn: HTTP 400 exceptions.order_already_paid trên order b661d4ba",
+  "confirmed_by": "Dev",
+  "confirmed_at": "2026-08-10",
+  "version": 1,
+  "status": "active",
+  "covered_by": ["OPS_PAY_TC_482"],
+  "tags": ["payment", "transaction", "revenue-integrity"]
+}

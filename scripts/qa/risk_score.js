@@ -122,6 +122,14 @@ function main() {
     return { v: model.impact.default, known: false, src: 'default' };
   };
 
+  // "(unmapped)" KHÔNG phải module: learn_bugs gán nhãn này cho bug thiếu label tcId nên không tra ra
+  // được Module của testcase. Nếu để nó vào bảng thì nó thành một "module" có thể leo lên High (đã gặp:
+  // 13 bug → risk 15) rồi chen vào executeOrder — tức chỉ đường test tới một đối tượng không tồn tại,
+  // đồng thời CHE mất sự thật là các module thật đang thiếu tín hiệu. Tách ra thành cảnh báo dữ liệu.
+  const UNMAPPED = '(unmapped)';
+  const unmapped = modules.get(UNMAPPED);
+  modules.delete(UNMAPPED);
+
   const rows = [];
   for (const e of modules.values()) {
     const imp = impactOf(e);
@@ -165,6 +173,12 @@ function main() {
     '| Module | Impact | Likelihood | Risk | Band | Cold-start | Drivers (bug thô→hiệu dụng / failRate / src, conf) | QA override |',
     '|---|---|---|---|---|---|---|---|'];
   for (const r of rows) L.push(`| ${r.module} | ${r.impact} | ${r.likelihood} | ${r.risk} | ${r.band} | ${r.cold_start ? 'yes' : ''} | ${r.drivers.bugCount}→${r.drivers.bugEffective}/${r.drivers.failRate}/${r.drivers.impactSource}, c=${r.drivers.confidence} | |`);
+  if (unmapped && unmapped.bugCount) {
+    L.push('', '## ⚠ Bug chưa map được module (không tính vào bảng trên)', '',
+      `**${unmapped.bugCount} bug** trong \`knowledge/bugs/\` có \`module: "(unmapped)"\` — thiếu label \`<tcId>\` trên Jira nên không tra ra được cột Module của testcase.`,
+      'Hệ quả: Likelihood của các module THẬT đang thiếu đúng số bug đó (risk bị chấm thấp hơn thực tế).',
+      'Sửa tận gốc ở lúc log bug: bug tạo qua `bug_reporter.js` phải có label `<tcId>`; bug lịch sử thì bổ sung label rồi chạy lại `npm run learn:bugs:apply`.');
+  }
   if (overrides.length) {
     L.push('', '## QA override đã lưu dài hạn (`knowledge/decisions/`)', '',
       '> Suggest-only — script KHÔNG tự đổi band. Áp lại nếu vẫn còn đúng; hết hiệu lực thì chuyển `status: superseded`.', '',
@@ -180,6 +194,7 @@ function main() {
   const high = rows.filter((r) => r.band === 'High').length;
   const unk = rows.filter((r) => r.band === 'UNKNOWN').length;
   console.log(`[risk] Đã tạo: ${path.join(OUT, 'risk-register.md')}`);
+  if (unmapped && unmapped.bugCount) console.log(`[risk] ⚠ ${unmapped.bugCount} bug chưa map được module (thiếu label tcId) → KHÔNG vào bảng; Likelihood các module thật đang thiếu đúng số đó. Xem cuối register.`);
   if (overrides.length) console.log(`[risk] ${overrides.length} QA override đã lưu (knowledge/decisions/) — nhắc lại ở cuối register, KHÔNG tự áp.`);
   console.log(`[risk] ${rows.length} module · ${high} High · ${unk} UNKNOWN (${bugs.length} bug, ${hist.length} snapshot làm dữ liệu)`);
   if (!bugs.length && !hist.length) console.log('[risk] Cold-start: chưa có learning data → band từ Impact/config. QA xác nhận band trước khi bật gate --enforce.');
