@@ -482,6 +482,12 @@ Nếu màn không có đặc tả hiển thị bằng text (chỉ có Figma) →
 - **Phủ option của dropdown/filter (1 case đại diện ở gen, execute vét hết giá trị)**: KHÔNG tạo 1 TC cho mỗi giá trị (nổ số case). Thay vào đó — (a) **kiểm kê option**: 1 TC verify đủ số option + đúng label/thứ tự/default so spec (mục 12/14); (b) **1 case hành vi đại diện**: Dữ liệu Test ghi 1 giá trị mẫu, nhưng steps/expected nêu rõ "lặp qua **tất cả** option, mỗi option lọc đúng tập con của nó" → Phase 2 execute chạy data-driven **vét hết** giá trị (không dừng ở giá trị mẫu); (c) option **khác lớp hành vi** (đổi kết quả/nhánh, ra empty, hiện thêm field, đổi quyền, đổi công thức) → tách TC riêng vì expected khác. Luôn thêm default, empty/no-match, reset, và giao điều kiện khi filter kết hợp.
 - **Conditional display/derivation logic**: field/section chỉ hiện theo điều kiện (role/status/loại) → TC cả nhánh hiện lẫn nhánh ẩn; giá trị auto-derive (default approver, deadline, mã tự sinh, mapping trạng thái) verify đúng công thức + 1 biên.
 - **Timezone/Date logic**: giá trị ngày/giờ tính đúng timezone, qua mốc nửa đêm/đổi ngày, DST nếu có; "hôm nay/tuần này/tháng này" tính đúng biên.
+- **Đối tượng CÓ PHIÊN BẢN / hiệu lực theo thời gian (version, snapshot, bảng giá, cấu hình có ngày áp dụng)** — BẮT BUỘC khi scope có khái niệm "phiên bản" hoặc "hiệu lực từ/đến". Lớp này từng lọt nguyên cụm bug vì chỉ test "tạo bản mới thành công" mà không test **ảnh hưởng lên bản cũ và lên thứ đang trỏ tới bản cũ**:
+  - **Bản cũ bị đóng đúng cách**: tạo bản mới → bản trước phải được set `end date`/hết hiệu lực đúng thời điểm (không để 2 bản cùng hiệu lực, không bỏ trống end date).
+  - **Bản cũ giữ nguyên nội dung lịch sử**: sửa/tạo bản mới KHÔNG được làm đổi hay **ẩn mất** phần tử đã thuộc bản cũ (bản cũ là bằng chứng lịch sử — mất là mất dấu vết đối soát).
+  - **Bản ghi đang trỏ tới bản cũ**: đơn/hợp đồng đã tạo theo bản cũ phải giữ giá trị theo bản cũ, KHÔNG bị kéo theo bản mới.
+  - **Bản "hiện hành" là duy nhất và đúng cái**: đúng 1 bản current tại một thời điểm; action không hợp lệ trên bản current (vd xoá) phải bị chặn.
+  - **Danh sách/filter/lịch sử cập nhật theo**: sau khi tạo bản mới, danh sách phiên bản, bộ lọc và cột dẫn xuất phải phản ánh đúng ngay (không cache cũ, không lệch thứ tự).
 
 ## 14. BE Response Data Conformance Coverage (BẮT BUỘC cho mọi màn/endpoint có dữ liệu từ BE)
 
