@@ -78,9 +78,36 @@ function main() {
 
   // Gom tín hiệu per module.
   const modules = new Map();
-  const ensure = (name) => { if (!modules.has(name)) modules.set(name, { module: name, bugCount: 0, fail: 0, total: 0, tags: new Set() }); return modules.get(name); };
+  const ensure = (name) => { if (!modules.has(name)) modules.set(name, { module: name, bugCount: 0, bugWeighted: 0, fail: 0, total: 0, tags: new Set() }); return modules.get(name); };
   for (const m of Object.keys(model.impact.modules || {})) ensure(m);        // module đã khai (cold-start có giá trị)
-  for (const b of bugs) { if (b.module) { const e = ensure(b.module); e.bugCount++; (b.tags || []).forEach((t) => e.tags.add(String(t).toLowerCase())); } }
+  // VÒNG ĐỜI BUG: bug KHÔNG nặng như nhau mãi mãi. Trước đây đếm mọi bug bằng nhau ⇒ bug đã Done từ
+  // nửa năm trước vẫn kéo Likelihood y như bug mới mở → risk model lệch về QUÁ KHỨ, chỉ vùng từng-hỏng
+  // luôn High dù đã fix xong, còn vùng vừa hỏng lại không nổi lên.
+  // Trọng số mỗi bug = statusWeight(jira_status) × decay(tuổi). Cả 2 tuỳ chỉnh trong risk_model.json;
+  // thiếu config → dùng default ở đây (Done 0.4, half-life 180 ngày).
+  const lk = model.likelihood || {};
+  const statusW = lk.statusWeight || { Open: 1, 'In Progress': 1, Reopened: 1, Done: 0.4, Closed: 0.4, Rejected: 0.1 };
+  const halfLife = Number(lk.halfLifeDays != null ? lk.halfLifeDays : 180);
+  const DAY = 86400000;
+  const ageDays = (b) => {
+    const d = String(b.resolved_at || b.created_at || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return null;               // thiếu ngày → không decay (bảo thủ)
+    const ms = Date.now() - new Date(`${d}T00:00:00Z`).getTime();
+    return ms > 0 ? ms / DAY : 0;
+  };
+  const bugWeightOf = (b) => {
+    const sw = statusW[String(b.jira_status || 'Open')] != null ? statusW[String(b.jira_status || 'Open')] : 1;
+    const age = ageDays(b);
+    const decay = (halfLife > 0 && age != null) ? 0.5 ** (age / halfLife) : 1;
+    return sw * decay;
+  };
+  for (const b of bugs) {
+    if (!b.module) continue;
+    const e = ensure(b.module);
+    e.bugCount += 1;                                  // số bug THÔ (để báo cáo/audit)
+    e.bugWeighted += bugWeightOf(b);                   // số bug HIỆU DỤNG (dùng để chấm Likelihood)
+    (b.tags || []).forEach((t) => e.tags.add(String(t).toLowerCase()));
+  }
   for (const h of hist) for (const [mod, v] of Object.entries(h.modules || {})) { const e = ensure(mod); e.fail += Number(v.fail || 0); e.total += Number(v.total || 0); }
   for (const m of impactModulesTouched) ensure(m);
 
@@ -96,8 +123,9 @@ function main() {
     const imp = impactOf(e);
     const I = imp.v;
     const failRate = e.total > 0 ? e.fail / e.total : 0;
-    const observed = clamp(model.likelihood.bugWeight * Math.min(5, e.bugCount) + model.likelihood.failRateWeight * (failRate * 5), 0, 5);
-    const signals = e.bugCount + e.total;
+    const effBugs = e.bugWeighted || 0;   // bug hiệu dụng sau statusWeight × decay (xem vòng đời bug ở trên)
+    const observed = clamp(model.likelihood.bugWeight * Math.min(5, effBugs) + model.likelihood.failRateWeight * (failRate * 5), 0, 5);
+    const signals = e.bugCount + e.total;   // confidence dựa số tín hiệu THÔ (đã có dữ liệu hay chưa), không phụ thuộc decay
     const confidence = clamp(signals / (model.likelihood.confidenceFull || 5), 0, 1);
     const prior = model.likelihood.prior === 'impact' ? I : Number(model.likelihood.prior);
     const L = clamp(Math.round(confidence * observed + (1 - confidence) * prior), 1, 5);
@@ -109,7 +137,7 @@ function main() {
     rows.push({
       module: e.module, impact: I, likelihood: L, risk, band,
       cold_start: coldStart,
-      drivers: { bugCount: e.bugCount, failRate: Math.round(failRate * 100) / 100, impactSource: imp.src, confidence: Math.round(confidence * 100) / 100 },
+      drivers: { bugCount: e.bugCount, bugEffective: Math.round(effBugs * 100) / 100, failRate: Math.round(failRate * 100) / 100, impactSource: imp.src, confidence: Math.round(confidence * 100) / 100 },
       band_override: null, override_reason: null, gate_waiver: null,
     });
   }
@@ -128,10 +156,11 @@ function main() {
   const L = ['# Risk Register (Risk-Based Testing)', '',
     `> ${register.generatedAt} · Suggest-only — QA chốt/override band. depthPolicy: xem risk_model.json.`,
     '> Cold-start (chưa có bug/historical) → band do **Impact** dẫn; sắc lại khi learning data tích luỹ.',
+    '> Vòng đời bug: Likelihood dùng bug **hiệu dụng** = statusWeight[jira_status] × 0.5^(tuổi/halfLifeDays) — bug đã Done/cũ nhẹ hơn bug mới mở, để risk phản ánh HIỆN TẠI. Tuỳ chỉnh ở risk_model.json §likelihood.',
     '> Thứ tự execute (High trước): ' + (register.executeOrder.join(' → ') || '(trống)'), '',
-    '| Module | Impact | Likelihood | Risk | Band | Cold-start | Drivers (bug/failRate/src, conf) | QA override |',
+    '| Module | Impact | Likelihood | Risk | Band | Cold-start | Drivers (bug thô→hiệu dụng / failRate / src, conf) | QA override |',
     '|---|---|---|---|---|---|---|---|'];
-  for (const r of rows) L.push(`| ${r.module} | ${r.impact} | ${r.likelihood} | ${r.risk} | ${r.band} | ${r.cold_start ? 'yes' : ''} | ${r.drivers.bugCount}/${r.drivers.failRate}/${r.drivers.impactSource}, c=${r.drivers.confidence} | |`);
+  for (const r of rows) L.push(`| ${r.module} | ${r.impact} | ${r.likelihood} | ${r.risk} | ${r.band} | ${r.cold_start ? 'yes' : ''} | ${r.drivers.bugCount}→${r.drivers.bugEffective}/${r.drivers.failRate}/${r.drivers.impactSource}, c=${r.drivers.confidence} | |`);
   L.push('', '> QA: sửa `band_override` + `override_reason` trong `risk-register.json` nếu không đồng ý; `gate_waiver` để miễn gate cho module có lý do.');
   fs.writeFileSync(path.join(OUT, 'risk-register.md'), L.join('\n'), 'utf8');
 
