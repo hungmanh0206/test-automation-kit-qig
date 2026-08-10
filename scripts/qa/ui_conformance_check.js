@@ -40,11 +40,12 @@ function arg(name, def) {
   const i = process.argv.indexOf(`--${name}`);
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : def;
 }
+const IS_CLI = require.main === module;
 const CATALOG = arg('catalog');
-if (!CATALOG || !fs.existsSync(CATALOG)) { console.error(`ERROR: --catalog không tồn tại: ${CATALOG}`); process.exit(2); }
-const catalog = JSON.parse(fs.readFileSync(CATALOG, 'utf8'));
-const OUT = path.resolve(arg('out', path.join(path.dirname(CATALOG), '..', 'test-results', 'conformance')));
-fs.mkdirSync(OUT, { recursive: true });
+if (IS_CLI && (!CATALOG || !fs.existsSync(CATALOG))) { console.error(`ERROR: --catalog không tồn tại: ${CATALOG}`); process.exit(2); }
+const catalog = CATALOG && fs.existsSync(CATALOG) ? JSON.parse(fs.readFileSync(CATALOG, 'utf8')) : { screens: [] };
+const OUT = path.resolve(arg('out', path.join(path.dirname(CATALOG || '.'), '..', 'test-results', 'conformance')));
+if (IS_CLI) fs.mkdirSync(OUT, { recursive: true });
 
 const norm = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
 const hexToRgb = h => { const m = String(h).replace('#', '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i); return m ? [1, 2, 3].map(i => parseInt(m[i], 16)) : null; };
@@ -105,6 +106,31 @@ async function checkScreen(page, base, screen) {
       }
     }
   }
+  // 2b) FIELDS: kiểm kê TẬP field/nhãn của một section (thiếu / thừa / sai thứ tự).
+  // Vì sao cần dù đã có `table` và `texts`: `table` chỉ phủ cột của bảng, `texts` chỉ kiểm TỪNG nhãn đã biết
+  // trước — cả hai đều KHÔNG phát hiện được "section thiếu một trường" hay "màn mọc thêm một trường lạ",
+  // vì không có gì liệt kê tập hợp. Đây đúng là lớp bug hay lọt: thiếu Net Price ở section thông tin sản phẩm,
+  // thừa cột/field không thuộc màn, hai màn cùng dữ liệu nhưng danh sách field lệch nhau.
+  for (const f of screen.fields || []) {
+    const root = (screen.scopeSelector ? scope : page).locator(f.containerSelector).first();
+    if (!(await root.count())) { dev.push({ type: 'fields.no-container', name: f.name, selector: f.containerSelector }); continue; }
+    const actual = (await root.locator(f.labelSelector || 'label').allInnerTexts().catch(() => []))
+      .map((s) => norm(s).replace(/[:*]\s*$/, ''))          // bỏ dấu ':' và '*' bắt buộc ở cuối nhãn
+      .filter((s) => s !== '');
+    const exp = (f.expectedFields || []).map(norm);
+    if (!exp.length) { dev.push({ type: 'fields.no-expected', name: f.name, note: 'catalog khai `fields` mà thiếu expectedFields' }); continue; }
+    const missing = exp.filter((x) => !actual.includes(x));
+    const extra = actual.filter((x) => !exp.includes(x));
+    if (missing.length) dev.push({ type: 'fields.missing', name: f.name, expected: missing, detail: `build có: [${actual.join(' | ')}]` });
+    // mode 'superset' = chấp nhận màn có thêm field ngoài danh sách (dùng khi catalog mới trích một phần).
+    if (extra.length && f.mode !== 'superset') dev.push({ type: 'fields.extra', name: f.name, actual: extra, detail: 'field xuất hiện trên build nhưng KHÔNG có trong tài liệu' });
+    if (f.ordered) {
+      const seq = actual.filter((x) => exp.includes(x));
+      const wrong = exp.filter((x, i) => seq[i] !== undefined && seq[i] !== x);
+      if (wrong.length) dev.push({ type: 'fields.order', name: f.name, expected: exp, actual: seq });
+    }
+  }
+
   // 3) TEXTS: empty-state/label/placeholder exact
   for (const tx of screen.texts || []) {
     const el = (screen.scopeSelector ? scope : page).locator(tx.selector).first();
@@ -133,7 +159,7 @@ async function checkScreen(page, base, screen) {
   return dev;
 }
 
-(async () => {
+if (IS_CLI) (async () => {
   const loginCfg = catalog.login || { site: 'ops' };
   const base = (process.env[(loginCfg.baseUrlEnv) || 'OPS_BASE_URL'] || '').replace(/\/+$/, '');
   const browser = await chromium.launch();
@@ -169,3 +195,5 @@ async function checkScreen(page, base, screen) {
   console.log(`\nReport: ${path.join(OUT, 'conformance_report.md')} | Tổng deviation: ${report.totalDeviations}`);
   process.exit(report.totalDeviations > 0 ? 1 : 0);
 })();
+
+module.exports = { checkScreen };

@@ -127,6 +127,11 @@ Kiểm khi execute:
 - Ghi rõ thiết bị đã test trong Actual; evidence là screenshot ở device emulation.
 
 ## Kỷ luật
+- **Case mapping/đồng bộ: kết luận PHẢI ghi GIÁ TRỊ HAI ĐẦU và so bằng.** ⚙️ `output_gate` **CHẶN** kết luận chỉ ở mức "có dữ liệu" (`populate`, `map đủ field`, `hiển thị đúng`) và **cảnh báo** khi chỉ liệt kê giá trị một phía rồi kết luận `sync_status = SUCCESS`. Lý do không phải hình thức: field lấy nhầm nguồn/nhầm property **vẫn populate**, và trạng thái "đồng bộ thành công" **không** chứng minh bên nhận nhận đúng số. Viết: `OPS Net 4.250.000 = Deal amount 4.250.000` — không viết "đồng bộ đúng".
+- **Case hiển thị/UI phải execute QUA UI.** Chạy API cho case màn hình thì lỗi mapping phía FE **không thể** lộ ra — không phải xui, mà là bất khả theo định nghĩa. Muốn nhanh thì dùng API để **dựng data**, còn phần verify của case đó phải đọc trên màn.
+- **Chạy `ui_conformance_check` với `ui_catalog.json` cho mọi màn trong scope** — đây là thứ duy nhất bắt "thiếu trường / thừa cột / hai màn lệch nhãn"; test theo bước không thấy vì thiếu field vẫn chạy xanh.
+- **Quan sát bất thường phải có NƠI ĐẾN.** Thấy điều lạ mà case vẫn PASS thì ghi chú suông sẽ bốc hơi — đã xảy ra thật: một ghi chú "nghi thiếu cấu hình X" bị bỏ lại, sau đó chính chỗ đó là bug do người khác tìm ra. ⚙️ `output_gate` CHẶN case PASS có từ nghi vấn (`nghi`, `có vẻ`, `chưa rõ`, `cần xác nhận`…) mà không trỏ tới **bug Jira (kèm key)** / **câu hỏi cho BA-Dev** / **quyết định `DEC-*` trong knowledge**.
+- **Chặn kỹ thuật (fixture wall) KHÔNG được tan vào SKIP.** Thử vài lượt không dựng được data rồi đi tiếp = cả vùng đó không ai kiểm mà báo cáo vẫn xanh (đã mất nguyên một họ màn hình vì lý do này). Phải liệt kê thành mục **"Vùng chưa kiểm"** trong report cuối: vùng nào, chặn vì cái gì, cần gì để mở — hoặc ghi `knowledge/decisions/` type `test_approach` kèm `expires_at`. ⚙️ `self-review` CHẶN nếu có case SKIP/BLOCKED mà không có khai báo này.
 - KHÔNG kết luận PASS/FAIL cho case có giá trị đáng ngờ nếu CHƯA đối chiếu response.
 - Response chỉ để **chẩn đoán/phân loại**; **evidence Jira vẫn phải là ẢNH màn UI** hiển thị giá trị đó. Cần chứng minh data BE → render **visual evidence page** hiển thị response đã redact rồi screenshot, KHÔNG đính file JSON thô (theo Evidence rule bên dưới).
 

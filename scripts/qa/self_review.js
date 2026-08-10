@@ -194,6 +194,57 @@ if (statusFile && fs.existsSync(statusFile)) {
   }));
 }
 
+// 7) VÙNG CHƯA KIỂM — chặn kỹ thuật không được tan vào SKIP.
+// Vì sao: rà một task thật thấy cả một họ màn hình (checkout của một loại order) không verify được vì tường
+// fixture; agent thử vài lượt rồi đi tiếp, các case đó nằm im dưới dạng SKIP/BLOCKED giữa hàng trăm record —
+// báo cáo cuối vẫn xanh, và đúng vùng đó sau này lộ ra 3 bug do người khác tìm. Chặn kỹ thuật là THÔNG TIN,
+// phải nổi lên thành mục "vùng chưa kiểm" có tên, không được chìm.
+{
+  const problems = []; const warnings = [];
+  let blocked = 0; const ids = [];
+  if (statusFile && fs.existsSync(statusFile)) {
+    try {
+      const doc = JSON.parse(fs.readFileSync(statusFile, 'utf8'));
+      const tests = Array.isArray(doc.tests) ? doc.tests : Object.values(doc.tests || {});
+      for (const t of tests) {
+        if (!/^(SKIP|BLOCKED|TO ?DO)/i.test(String(t.status || '').trim())) continue;
+        blocked += 1;
+        if (ids.length < 8) ids.push(String(t.tcId || t.id || '?'));
+      }
+    } catch (e) { /* đã báo ở check execution output */ }
+  }
+  if (blocked) {
+    // Thoả điều kiện khi report cuối có mục liệt kê vùng chưa kiểm, HOẶC có quyết định trong knowledge
+    // ghi nhận chặn kỹ thuật (kèm expires_at để buộc quay lại).
+    const reportDir = taskDir ? path.join(taskDir, 'reports') : '';
+    let declared = false;
+    try {
+      for (const f of fs.existsSync(reportDir) ? fs.readdirSync(reportDir) : []) {
+        if (!f.endsWith('.md')) continue;
+        if (/vùng chưa kiểm|vung chua kiem|chưa verify được|coverage gap/i.test(fs.readFileSync(path.join(reportDir, f), 'utf8'))) { declared = true; break; }
+      }
+    } catch (e) { /* bỏ qua */ }
+    if (!declared) {
+      const decDir = path.join(rc.REPO_ROOT, 'knowledge', 'decisions');
+      try {
+        declared = fs.existsSync(decDir) && fs.readdirSync(decDir).filter((f) => f.endsWith('.json')).some((f) => {
+          const d = JSON.parse(fs.readFileSync(path.join(decDir, f), 'utf8'));
+          return d && d.type === 'test_approach' && d.status === 'active' && (d.scope || {}).tc_ids && d.scope.tc_ids.some((x) => ids.includes(String(x)));
+        });
+      } catch (e) { /* bỏ qua */ }
+    }
+    if (!declared) {
+      problems.push(`${blocked} case SKIP/BLOCKED/TO-DO nhưng KHÔNG có mục "Vùng chưa kiểm" trong reports/*.md, cũng không có quyết định \`test_approach\` nào trong knowledge/decisions ghi nhận chặn kỹ thuật (vd ${ids.slice(0, 5).join(', ')}).`);
+      problems.push('→ Liệt kê thành mục có tên: vùng nào chưa verify, chặn vì cái gì, cần gì để mở. Chặn kỹ thuật chìm trong SKIP = báo cáo xanh trên một vùng chưa ai nhìn.');
+    } else {
+      warnings.push(`${blocked} case SKIP/BLOCKED/TO-DO — đã được khai báo thành vùng chưa kiểm. Rà lại xem đã đủ điều kiện mở chưa.`);
+    }
+  }
+  results.push(engine.toResult('vùng chưa kiểm (chặn kỹ thuật)', {
+    problems, warnings, skipped: !blocked, note: blocked ? `${blocked} case chưa verify` : 'không có case bị chặn', severity: engine.SEVERITY.P0,
+  }));
+}
+
 // ---- Gộp + in qua GateEngine ----
 const agg = engine.aggregate(results);
 console.log(engine.format(agg, { title: `SELF-REVIEW (G9) — lượt 2 trước finalize${TASK ? ` · task ${TASK}` : ''}` }));

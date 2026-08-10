@@ -83,6 +83,17 @@ function gateTestExecution(doc, { fix = false } = {}) {
     }
     rules.lintComment(t.comment).forEach((p) => problems.push(`${id}: ${p}`));
 
+    // 1b) Oracle "BẰNG NGUỒN" cho case mapping/đồng bộ — chống PASS rỗng kiểu "có dữ liệu là đạt".
+    // Đo trên một bộ 530 TC thật: 119 case mapping đã PASS thì 7 case kết luận chỉ ở mức populate/map-đủ
+    // (CHẶN) và 56 case chỉ liệt kê giá trị một phía rồi kết luận sync thành công (CẢNH BÁO). Chính lớp này
+    // để lọt cả cụm bug BE↔FE: lấy nhầm nguồn (Contact vs Deal), nhầm property, sai đơn vị khi đẩy đi.
+    const mo = rules.lintMappingOracle({ comment: t.comment });
+    if (mo) (mo.level === 'problem' ? problems : warnings).push(`${id}: ${mo.message}`);
+
+    // 1c) Quan sát BẤT THƯỜNG trong case PASS phải có nơi đến (bug / câu hỏi BA / decision).
+    const sa = rules.lintStrayAnomaly({ status: t.status, comment: t.comment });
+    if (sa) problems.push(`${id}: ${sa.message}`);
+
     // 2) Evidence: gộp case + step.
     const caseEv = evList(t.evidence);
     const steps = Array.isArray(t.steps) ? t.steps : [];

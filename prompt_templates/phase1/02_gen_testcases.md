@@ -455,6 +455,14 @@ Nguyên tắc:
 - **Empty-state text / placeholder / label nút / label tab / tiêu đề màn-modal**: đúng chuỗi tài liệu.
 - **Giá trị "để trống" đúng nghĩa** (vd buổi chưa diễn ra → cột công **trống**, KHÔNG phải `0`).
 
+**BẮT BUỘC sinh ARTIFACT kiểm được, không chỉ sinh case bằng chữ** — đây là chỗ đã từng hỏng: mục 12 này viết đủ nhưng một bộ 530 case thật chỉ có 12% là case hiển thị, không ai dựng catalog, và cả cụm bug "thiếu trường / thừa cột / hai màn lệch nhãn" lọt hết.
+1. Với **mỗi màn trong scope**, thêm 1 dòng vào `<TASK_OUTPUT_DIR>/requirements/ui_catalog.json` (schema: `scripts/qa/ui_conformance_check.js`) gồm:
+   - `table.expectedColumns` — danh sách cột **verbatim + đúng thứ tự** (bắt thiếu/thừa/sai tên cột);
+   - `fields[]` — với **mỗi section/form**: `{containerSelector, expectedFields[]}` = **TẬP field** tài liệu quy định. Đây là thứ duy nhất bắt được "section thiếu 1 trường" và "màn mọc thêm trường lạ" — case theo bước không bao giờ thấy, vì thiếu field thì mọi step vẫn chạy xanh;
+   - `texts[]` cho empty-state/label/tiêu đề.
+2. Màn nào hiển thị **cùng một dữ liệu ở ≥2 chỗ** (vd Create/Edit và Order detail) → khai `fields` cho **cả hai** với cùng `expectedFields`. Lệch nhãn giữa 2 màn chỉ lộ khi cả hai cùng bị đối chiếu với một danh sách.
+3. Phase 2 **phải chạy** `node scripts/qa/ui_conformance_check.js --catalog <ui_catalog.json>`; sai lệch báo ra là bug hiển thị, không được tự bỏ qua.
+
 **Khung hoài nghi bắt buộc**: giả định build CÓ THỂ lệch tài liệu; nhiệm vụ là ĐỐI CHIẾU ngược build vs tài liệu và liệt kê MỌI khác biệt (kể cả nhỏ: hoa/thường, `-` vs `/`, thiếu 1 cột). KHÔNG mặc định build đúng, KHÔNG tự lọc bỏ "lỗi nhỏ".
 
 Nếu màn không có đặc tả hiển thị bằng text (chỉ có Figma) → lấy expected từ Figma; nếu không có cả hai → ghi `N/A + lý do` trong Coverage Gaps, không bỏ qua im lặng.
@@ -482,6 +490,11 @@ Tách riêng khỏi API contract (mục 5, thiên status/schema): nhóm này ki�
 - **Value đúng, không chỉ schema**: response chứa đúng GIÁ TRỊ nghiệp vụ (id/tên/số/trạng thái/quan hệ), không chỉ đúng kiểu. TC assert giá trị cụ thể.
 - **Null vs empty vs missing vs 0**: phân biệt rõ `null` / chuỗi `""` / mảng `[]` / thiếu hẳn key / `0`. TC xác định BE PHẢI trả trạng thái nào theo spec (vd "chưa có công" → field vắng hay `null` hay `0`?), vì UI render mỗi trạng thái mỗi khác.
 - **BE → UI mapping (field trống nghi ngờ)**: mỗi field UI hiển thị trống/`-`/`N/A` phải có TC đối chiếu response — BE có trả giá trị không? BE trả có mà UI trống = **FE bug**; BE trả rỗng trái spec = **BE bug**; cả hai đều là product bug, KHÔNG bỏ qua.
+- **SAI NGUỒN dù CÓ giá trị (điểm mù đắt nhất — bắt buộc)**: field hiển thị đầy đủ, không trống, không lỗi, nhưng lấy từ **đối tượng/property SAI** (vd lấy từ Deal trong khi spec nói lấy từ Contact; đọc nhầm property "học phí nộp thực tế" cho một loại đơn không dùng field đó; tài khoản nhận hiển thị khác tài khoản đã cấu hình). Oracle kiểu "có dữ liệu / populate / hiển thị đúng" **KHÔNG BAO GIỜ** bắt được lớp này — field nhầm nguồn vẫn populate. Vì vậy:
+  - `Kết quả mong đợi` phải khai **HAI ĐẦU**: `<field UI>` = `<nguồn cụ thể>` (object + property), vd `Customer Email = Contact.email của deal đang chọn`, KHÔNG viết "hiển thị đúng email".
+  - Chọn **giá trị phân biệt được nguồn**: cố ý dùng data mà Contact và Deal khác nhau; nếu 2 nguồn trùng giá trị thì case đó **không chứng minh được gì** — phải đổi data hoặc ghi Coverage Gap.
+  - Nếu task có **bảng mapping field** (`requirements/**/field_mapping*.{json,md}` hoặc mapping sheet trong FSD): **mỗi dòng của bảng = ≥1 case đối chiếu giá trị**, không gộp thành 1 case "map đủ field". Ghi tên field nguồn vào `Dữ liệu Test` để truy nguyên.
+- **Định dạng & đơn vị khi đẩy đi**: giá trị gửi sang hệ khác phải đúng **định dạng và đơn vị tiền tệ** của bên nhận (USD ≠ đ; số thập phân; ×100 hay không). Trạng thái "đồng bộ thành công" **KHÔNG** chứng minh giá trị đúng — case phải đọc lại giá trị **ở phía nhận** và so bằng.
 - **Foreign key resolution**: id tham chiếu resolve đúng tên/label (vd `ownerId` → đúng tên owner), không lộ id thô, không `undefined`/`[object Object]`.
 - **Enum/status value**: BE trả đúng tập enum hợp lệ; UI map đúng nhãn từng enum; enum lạ/không map → xử lý an toàn.
 - **Pagination/metadata**: `total`/`page`/`pageSize`/`hasNext` đúng; `total` khớp số bản ghi thực; trang cuối/trang rỗng đúng; đổi pageSize không mất/nhân đôi bản ghi.

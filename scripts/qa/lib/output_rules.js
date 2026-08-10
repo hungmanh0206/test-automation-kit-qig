@@ -170,7 +170,84 @@ const TAUTOLOGY_HINT = new RegExp([
 ].join('|'), 'i');
 const looksTautology = (text) => TAUTOLOGY_HINT.test(String(text || ''));
 
+// ---- Oracle "BẰNG NGUỒN" cho case mapping/đồng bộ dữ liệu ----
+// Vì sao: rà một task thật thấy cả cụm bug BE↔FE mapping lọt lưới vì kết luận chỉ ở mức "CÓ dữ liệu"
+// ("map đủ field", "giá trị populate", "hiển thị đúng") — một field lấy nhầm nguồn/nhầm property VẪN
+// populate nên vẫn PASS. Case mapping chỉ có giá trị khi đối chiếu ĐƯỢC HAI ĐẦU: giá trị hiển thị vs giá trị
+// nguồn. Ở đây chỉ kiểm dấu vết của phép đối chiếu đó trong kết luận — rẻ, nhưng chặn đúng loại PASS rỗng.
+const MAPPING_CASE = new RegExp([
+  'đồng bộ', 'dong bo', '\\bsync\\b', 'hubspot', '\\bdeal\\b',
+  'mapping', 'map (sang|về|vào|từ)', 'ghi nhận (doanh thu|giá trị|số tiền)',
+  'lấy (từ|theo) (contact|deal|api|hubspot|property)', 'hiển thị theo (dữ liệu|api|deal|contact)',
+].join('|'), 'i');
+const isMappingCase = (text) => MAPPING_CASE.test(String(text || ''));
+
+// Kết luận kiểu "có dữ liệu là đạt" — vô dụng làm oracle mapping.
+const PRESENCE_ONLY = new RegExp([
+  'populate', 'có dữ liệu', 'co du lieu', 'không rỗng', 'khong rong', 'not empty',
+  'map đủ', 'đủ field', 'du field', 'đầy đủ (field|trường|thông tin)',
+  'hiển thị đúng', 'hien thi dung', 'hiển thị bình thường', 'render (ok|đúng)',
+].join('|'), 'i');
+
+// Dấu vết ĐỐI CHIẾU 2 đầu: có từ so sánh + ít nhất 2 giá trị cụ thể (số/chuỗi trong nháy/mã định danh).
+const COMPARE_WORD = /(=|==|↔|->|→|\bvs\b|khớp|bằng|so với|so voi|đối chiếu|doi chieu|trùng khớp)/i;
+const VALUE_TOKEN = /("[^"]{1,60}"|'[^']{1,60}'|[\w.+-]+@[\w.-]+|\b\d[\d.,]*\b|\b[a-z_]+_[a-z_]+\b|\b[A-Za-z][A-Za-z0-9]*\.[A-Za-z0-9_]+\b)/g;
+function hasComparedPair(text) {
+  const s = String(text || '');
+  if (!COMPARE_WORD.test(s)) return false;
+  const vals = s.match(VALUE_TOKEN) || [];
+  return new Set(vals.map((v) => v.replace(/["']/g, ''))).size >= 2;
+}
+
+/**
+ * Case mapping/đồng bộ mà kết luận KHÔNG có phép đối chiếu 2 đầu → vấn đề.
+ * @returns {{problem:string}|null}
+ */
+function lintMappingOracle({ title = '', expected = '', comment = '' } = {}) {
+  // Nhận diện trên cả comment: file testcase-status.json KHÔNG mang tiêu đề case, nên khi gate chạy chỉ có
+  // kết luận để dựa vào. Comment của case mapping gần như luôn nhắc "đồng bộ"/"sync"/"HubSpot".
+  if (!isMappingCase(`${title} ${expected} ${comment}`)) return null;
+  if (hasComparedPair(comment)) return null;
+  // Case negative/lỗi: oracle là MÃ LỖI cụ thể (400 + exceptions.x) — đó đã là oracle kiểm được, không đòi cặp giá trị.
+  if (/\b[45]\d\d\b/.test(comment) && /exception|error|lỗi|không (đồng bộ|tạo|lưu)/i.test(comment)) return null;
+  // CHẶN khi kết luận rơi vào mẫu "có dữ liệu là đạt" — mẫu này chắc chắn không bắt được lỗi mapping.
+  if (PRESENCE_ONLY.test(comment)) {
+    return { level: 'problem', message: 'case mapping/đồng bộ nhưng kết luận chỉ ở mức CÓ-dữ-liệu ("populate" / "có dữ liệu" / "map đủ field" / "hiển thị đúng") — field lấy NHẦM NGUỒN vẫn populate nên kết luận kiểu này không thể bắt lỗi mapping. Phải ghi GIÁ TRỊ HAI ĐẦU và so bằng nhau, vd "OPS Net 4.250.000 = Deal amount 4.250.000".' };
+  }
+  // CẢNH BÁO khi chỉ liệt kê giá trị một phía (hay gặp: nêu số phía OPS rồi kết luận sync_status = SUCCESS).
+  return { level: 'warning', message: 'case mapping/đồng bộ nhưng kết luận không nêu PHÉP ĐỐI CHIẾU hai đầu — trạng thái "sync thành công" KHÔNG chứng minh giá trị bên nhận đúng (sai định dạng/sai đơn vị/nhầm property vẫn báo thành công).' };
+}
+
+// ---- Quan sát BẤT THƯỜNG phải có NƠI ĐẾN ----
+// Vì sao: rà một task thật thấy có anomaly đã được NHÌN THẤY và ghi lại trong kết luận ("nghi thiếu cấu hình
+// X", "không đúng như mong đợi") nhưng case vẫn PASS và ghi chú đó không thành bug, không thành câu hỏi BA,
+// không thành decision — sau đó chính chỗ đó là bug thật do người khác tìm ra. Thấy mà mất còn tệ hơn không thấy.
+const ANOMALY_HINT = new RegExp([
+  '\\bnghi\\b', 'nghi ngờ', 'có vẻ', 'co ve', 'hình như', 'hinh nhu',
+  'chưa rõ', 'chua ro', 'không rõ', 'khong ro', 'cần xác nhận', 'can xac nhan',
+  'lạ là', 'bất thường', 'bat thuong', 'chưa đúng', 'chua dung',
+  'không đúng như', 'khong dung nhu', 'khác mong đợi', 'đáng ngờ',
+].join('|'), 'i');
+// Nơi đến hợp lệ: Jira key · id quyết định/rule trong knowledge · câu hỏi đã ghi cho BA/Dev.
+const ANOMALY_SINK = /\b[A-Z][A-Z0-9]+-\d{2,}\b|\bDEC-[A-Z0-9]+-\d{3}\b|\bBR-[A-Z0-9]+-\d{3}\b|\bSM-[A-Z0-9]+-\d{3}\b|hỏi (BA|Dev|QA-Lead|PO)|clarification|coverage gap/i;
+
+/**
+ * PASSED mà kết luận có dấu hiệu bất thường nhưng không trỏ tới bug/câu hỏi/quyết định nào.
+ * @returns {{level:'problem', message:string}|null}
+ */
+function lintStrayAnomaly({ status = '', comment = '' } = {}) {
+  if (!/^pass/i.test(String(status).trim())) return null;
+  const s = String(comment || '');
+  if (!ANOMALY_HINT.test(s)) return null;
+  if (ANOMALY_SINK.test(s)) return null;
+  return {
+    level: 'problem',
+    message: 'case PASS nhưng kết luận có ghi nhận BẤT THƯỜNG mà không trỏ tới đâu — anomaly phải thành 1 trong 3: bug Jira (kèm key), câu hỏi cho BA/Dev (ghi rõ "hỏi BA/Dev" + đưa vào clarifications/coverage gap), hoặc quyết định trong knowledge/decisions (DEC-*). Ghi chú suông sẽ biến mất và chỗ đó thành bug do người khác tìm ra.',
+  };
+}
+
 module.exports = {
+  isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly,
   isVisualEvidence, isVideoEvidence,
   hasDebugTokens, looksRunOn, splitIdeas, looksComplex,
   cleanComment, lintComment, lintEvidence, lintBugHeadings,

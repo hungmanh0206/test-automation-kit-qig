@@ -1,0 +1,41 @@
+<!-- Fixture cho tests/fe/infra/field-inventory.spec.ts.
+     Mô phỏng ĐÚNG 2 lớp bug từng lọt qua automation ở một task thật:
+       - section thông tin sản phẩm THIẾU một trường (Net Price) — vẫn render đẹp, không lỗi
+       - bảng giao dịch THỪA một cột không thuộc màn (Tuition Payment Office)
+     Cả hai đều không làm gãy bất kỳ step nào ⇒ test theo bước sẽ PASS, chỉ kiểm-kê-tập-hợp mới bắt được. -->
+<h2>Add-on Product Info</h2>
+<div id="addon-info">
+  <label>Add-on Product</label><input value="Becker CMA Part 1" />
+  <label>Version</label><input value="v2" />
+  <label>Gross Price</label><input value="5.000.000" />
+  <label>Custom Discount</label><input value="750.000" />
+  <!-- THIẾU: Net Price -->
+</div>
+
+<h2>Transaction List</h2>
+<table id="tx">
+  <thead>
+    <tr>
+      <th>No</th><th>Payment Code</th><th>Amount</th><th>Payment Method</th>
+      <th>Tuition Payment Office</th><!-- THỪA: cột của luồng học phí, không thuộc Add-on Order -->
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>PM-001</td><td>1.000.000</td><td>Chuyển khoản</td><td>-</td><td>Đã thanh toán</td></tr>
+  </tbody>
+</table>
+
+<h2>Order Detail — Course Extension Package</h2>
+<div id="order-detail">
+  <label>Service Fee Type</label><input value="Gia hạn" />
+  <label>Course Extension Package</label><input value="6 tháng" />
+  <label>Amount</label><input value="2.000.000" />
+</div>
+
+<h2>Create/Edit — Course Extension Package</h2>
+<div id="create-edit">
+  <label>Service Fee Type</label><input value="Gia hạn" />
+  <label>Extension Package</label><input value="6 tháng" /><!-- nhãn LỆCH so với màn Order Detail -->
+  <label>Amount</label><input value="2.000.000" />
+</div>
