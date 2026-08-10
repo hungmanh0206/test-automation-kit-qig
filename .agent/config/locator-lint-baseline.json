@@ -2,13 +2,6 @@
   "note": "Hiện trạng P0 lúc bật gate. Gate chỉ CHẶN khi phát sinh THÊM. Dọn nợ cũ thì chạy lại --baseline-write để hạ mốc.",
   "generatedAt": "2026-08-10",
   "counts": {
-    "tests\\fe\\infra\\ensure-expanded.spec.ts::dom-scan-all": 1,
-    "tests\\fe\\infra\\ensure-expanded.spec.ts::coord-click": 1,
-    "tests\\fe\\order\\order-amount.spec.ts::page-first": 3,
-    "tests\\fe\\order\\order-list.spec.ts::page-first": 2,
-    "tests\\fe\\support\\lmsLogin.ts::page-first": 2,
-    "tests\\fe\\support\\opsLogin.ts::page-first": 1,
-    "tests\\fe\\transaction\\transaction-list.spec.ts::page-first": 1,
     "tests\\mobile-web\\SAPP-22827\\batch_final.spec.ts::page-first": 5,
     "tests\\mobile-web\\SAPP-22827\\batch_final.spec.ts::body-regex": 1,
     "tests\\mobile-web\\SAPP-22827\\batch_final.spec.ts::dom-scan-all": 1,

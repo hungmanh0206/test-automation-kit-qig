@@ -1,4 +1,6 @@
 import { expect, type Page } from '@playwright/test';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const T = require('../../../scripts/utils/ui/safe_target');
 
 /*
  * Helper login LMS (SAPP) dùng chung cho suite FE thật. LMS dùng **Keycloak** (auth-code + PKCE):
@@ -30,8 +32,8 @@ export async function loginLms(page: Page): Promise<void> {
   await page.waitForSelector('input[name=username]', { timeout: 45000 });
   await page.fill('input[name=username]', LMS_USER);
   await page.fill('input[name=password]', LMS_PASS);
-  await page.getByRole('button', { name: /login|đăng nhập|sign in/i }).first().click({ timeout: 6000 })
-    .catch(() => page.locator('button[type=submit], #kc-login').first().click({ timeout: 6000 }))
+  await (await T.one(page.getByRole('button', { name: /login|đăng nhập|sign in/i }), { what: 'nút Login Keycloak' })).click({ timeout: 6000 })
+    .catch(async () => (await T.one(page.locator('button[type=submit], #kc-login'), { what: 'nút submit form login' })).click({ timeout: 6000 }))
     .catch(() => page.keyboard.press('Enter'));
   // Thành công = rời khỏi Keycloak (quay về LMS để đổi code lấy token). Sai creds → Keycloak giữ nguyên → fail rõ.
   await page.waitForURL((u) => !KC_HOST_RE.test(u.toString()), { timeout: 30000 }).catch(() => {});

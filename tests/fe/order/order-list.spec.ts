@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { OPS_BASE, haveOpsCreds, loginOps } from '../support/opsLogin';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const T = require('../../../scripts/utils/ui/safe_target');
 
 /*
  * F6 — suite FE THẬT (module Order, Impact 5 — tiền; context SAPP-26523).
@@ -22,11 +24,11 @@ test.describe('@order @smoke Orders list (SAPP-26523)', () => {
 
     // Màn list đúng: nút "New Order" tồn tại (đã biết từ order-amount) — không bấm.
     await expect(
-      page.getByRole('button', { name: /New Order/i }).first(),
+      await T.one(page.getByRole('button', { name: /New Order/i }), { what: 'nút New Order' }),
       'Không thấy nút "New Order" — có thể sai route hoặc màn Orders list đã đổi',
     ).toBeVisible();
 
-    const table = page.locator('.ant-table').first();
+    const table = await T.one(page.locator('.ant-table'), { what: 'grid Orders' });
     await expect(table, 'Grid Orders (.ant-table) không render — màn list có thể lỗi/đổi').toBeVisible();
 
     const headerCount = await page.locator('.ant-table-thead th').count();

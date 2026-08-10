@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { OPS_BASE, haveOpsCreds, loginOps } from '../support/opsLogin';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const T = require('../../../scripts/utils/ui/safe_target');
 
 /*
  * F6 — suite FE THẬT (promote từ SAPP-26276 / Transaction Management, Impact 5 — tiền).
@@ -19,7 +21,7 @@ test.describe('@transaction @smoke Transaction list (SAPP-26276)', () => {
     await page.goto(`${OPS_BASE}/operations/sales/transactions`, { waitUntil: 'networkidle', timeout: 40000 });
     await page.waitForTimeout(2500);
 
-    const table = page.locator('.ant-table').first();
+    const table = await T.one(page.locator('.ant-table'), { what: 'grid Transaction' });
     await expect(table, 'Grid Transaction (.ant-table) không render — màn list có thể lỗi/đổi').toBeVisible();
 
     const headerCount = await page.locator('.ant-table-thead th').count();

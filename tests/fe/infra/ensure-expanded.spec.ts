@@ -42,6 +42,7 @@ test.describe('@infra ensureExpanded — panel nhiều icon giống nhau', () =>
     await page.goto(FIXTURE);
     // Cách cũ: walk-up lấy icon CUỐI rồi click toạ độ (convert_products.js)
     const box = await page.evaluate(() => {
+      // locator-lint-disable-next-line CỐ Ý tái hiện anti-pattern cũ để chứng minh nó click nhầm
       const lab = [...document.querySelectorAll('*')].find((e) => e.children.length <= 1 && (e.textContent || '').trim() === 'Product');
       if (!lab) return null;
       let h = lab.parentElement;
@@ -52,6 +53,7 @@ test.describe('@infra ensureExpanded — panel nhiều icon giống nhau', () =>
       }
       return null;
     });
+    // locator-lint-disable-next-line CỐ Ý dùng click toạ độ để chứng minh nó trúng nhầm
     if (box) await page.mouse.click(box.x, box.y);
     await page.waitForTimeout(300);
     const s = await state(page);

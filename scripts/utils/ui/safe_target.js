@@ -82,6 +82,39 @@ async function section(page, title, opts = {}) {
   return page.locator(`[${MARK}="1"]`);
 }
 
+/**
+ * Neo scope theo CỤM NHÃN: tìm khối NHỎ NHẤT chứa đủ các nhãn cho trước.
+ * Dùng khi panel không có tiêu đề/class ổn định để neo (vd panel summary tiền) — thay vì đọc toàn trang
+ * rồi vớ nhầm số của section khác. Ví dụ: sectionContaining(page, ['Net Amount','Total Amount Due']).
+ */
+async function sectionContaining(page, labels, opts = {}) {
+  const MARK = 'data-xp-scope';
+  const found = await page.evaluate(([lbls, mark]) => {
+    const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+    const own = (e) => norm([...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(''));
+    const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+    document.querySelectorAll(`[${mark}]`).forEach((e) => e.removeAttribute(mark));
+    const nodesFor = (l) => [...document.querySelectorAll('*')].filter((e) => (own(e) === l || own(e) === `${l}:`) && vis(e));
+    const sets = lbls.map(nodesFor);
+    if (sets.some((s) => !s.length)) return { missing: lbls.filter((l, i) => !sets[i].length) };
+    // ancestor chain của node đầu tiên trong nhãn hiếm nhất → chọn ancestor NHỎ NHẤT chứa đủ mọi nhãn
+    const rarest = sets.reduce((a, b) => (a.length <= b.length ? a : b));
+    for (const start of rarest) {
+      let p = start;
+      for (let k = 0; k < 8 && p; k += 1) {
+        const holdsAll = sets.every((set) => set.some((n) => p.contains(n)));
+        if (holdsAll) { p.setAttribute(mark, '1'); return { ok: true, size: norm(p.innerText).length }; }
+        p = p.parentElement;
+      }
+    }
+    return { ok: false };
+  }, [labels, MARK]).catch((e) => ({ error: e.message }));
+  if (found && found.missing) throw scriptError(`không thấy nhãn ${found.missing.map((l) => `"${l}"`).join(', ')} trên màn — kiểm tra đã tới đúng bước/state chưa.`);
+  if (!found || !found.ok) throw scriptError(`không tìm được khối chung chứa đủ nhãn ${labels.map((l) => `"${l}"`).join(', ')} — nhãn nằm rải ở các section khác nhau, cần neo bằng cách khác.`);
+  if (opts.log) console.log(`[safe_target] scope theo cụm nhãn: ${found.size} ký tự nội dung.`);
+  return page.locator(`[${MARK}="1"]`);
+}
+
 /** Đếm overlay đang mở (modal/dropdown). KHÔNG dùng offsetParent (position:fixed luôn null). */
 function overlayCount(page) {
   return page.evaluate(() => {
@@ -121,24 +154,32 @@ async function clickVerified(page, target, opts = {}) {
  * Tìm theo thứ tự: input/textarea gắn nhãn → text ngay sau nhãn trong cùng khối.
  */
 async function readValue(scope, label, opts = {}) {
-  const v = await scope.evaluate((root, lbl) => {
+  const res = await scope.evaluate((root, [lbl, allowMulti]) => {
     const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
     const own = (e) => norm([...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(''));
-    const nodes = [...root.querySelectorAll('*')].filter((e) => own(e) === lbl || own(e) === `${lbl}:`);
+    const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+    const nodes = [...root.querySelectorAll('*')].filter((e) => (own(e) === lbl || own(e) === `${lbl}:`) && vis(e));
+    // MƠ HỒ = LỖI: nhãn xuất hiện ở >1 chỗ (vd "Net Amount" có ở cả summary lẫn bảng con) thì
+    // đọc "cái đầu tiên" là đúng cơ chế lấy nhầm số → oracle sai → bug sai. Bắt buộc thu hẹp scope.
+    if (nodes.length > 1 && !allowMulti) return { ambiguous: nodes.length };
     for (const n of nodes) {
       let box = n;
       for (let k = 0; k < 4 && box; k += 1) {
         const inp = box.querySelector && box.querySelector('input, textarea');
-        if (inp && inp.value !== undefined && inp.value !== '') return inp.value;
+        if (inp && inp.value !== undefined && inp.value !== '') return { value: inp.value };
         box = box.parentElement;
       }
       const sib = n.nextElementSibling;
-      if (sib && norm(sib.innerText)) return norm(sib.innerText);
+      if (sib && norm(sib.innerText)) return { value: norm(sib.innerText) };
       const parentTxt = norm(n.parentElement ? n.parentElement.innerText : '');
-      if (parentTxt.startsWith(lbl)) { const rest = parentTxt.slice(lbl.length).replace(/^[:\s]+/, ''); if (rest) return rest.split('\n')[0]; }
+      if (parentTxt.startsWith(lbl)) { const rest = parentTxt.slice(lbl.length).replace(/^[:\s]+/, ''); if (rest) return { value: rest.split('\n')[0] }; }
     }
-    return null;
-  }, label).catch(() => null);
+    return { value: null };
+  }, [label, !!opts.allowMultiple]).catch(() => ({ value: null }));
+  if (res && res.ambiguous) {
+    throw scriptError(`nhãn "${label}" xuất hiện ${res.ambiguous} chỗ trong scope — thu hẹp scope (section/card) rồi đọc lại; truyền { allowMultiple: true } chỉ khi đã chắc lấy chỗ đầu là đúng.`);
+  }
+  const v = res ? res.value : null;
   if (v === null && !opts.optional) throw scriptError(`không đọc được giá trị của nhãn "${label}" trong scope — kiểm tra nhãn/scope, ĐỪNG fallback regex toàn trang.`);
   return v;
 }
@@ -157,4 +198,4 @@ async function assertScreen(page, { url, heading } = {}) {
   return true;
 }
 
-module.exports = { one, section, clickVerified, readValue, assertScreen, overlayCount, scriptError, ERR };
+module.exports = { one, section, sectionContaining, clickVerified, readValue, assertScreen, overlayCount, scriptError, ERR };

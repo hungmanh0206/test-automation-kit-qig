@@ -1,4 +1,6 @@
 import { expect, type Page } from '@playwright/test';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const T = require('../../../scripts/utils/ui/safe_target');
 
 /*
  * Helper login OPS dùng chung cho suite FE thật (F6). Đọc creds từ env (OPS_* — thường ở
@@ -24,7 +26,7 @@ export async function loginOps(page: Page): Promise<void> {
   await page.goto(`${OPS_BASE}/auth/login`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.fill('input[name=username]', OPS_USER);
   await page.fill('input[name=password]', OPS_PASS);
-  await page.getByRole('button', { name: /sign in|đăng nhập/i }).first().click({ timeout: 6000 })
+  await (await T.one(page.getByRole('button', { name: /sign in|đăng nhập/i }), { what: 'nút đăng nhập OPS' })).click({ timeout: 6000 })
     .catch(() => page.keyboard.press('Enter'));
   await page.waitForTimeout(4500);
   expect(/\/auth\/login/.test(page.url()), 'OPS login thất bại (còn ở /auth/login)').toBeFalsy();
