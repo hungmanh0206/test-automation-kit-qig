@@ -17,6 +17,7 @@
 
 ```
 knowledge/
+├── domain/               # business rule ĐÃ XÁC NHẬN (nền của oracle) — versioned, trace covered_by
 ├── bugs/                 # 1 file JSON / bug đã confirm là product issue (qua gate)
 ├── root_causes/          # root cause đã xác định, gắn module/file
 ├── locators/             # lịch sử locator từng bị heal (Locator Healing — Giai đoạn 2 mới ghi)
@@ -33,12 +34,12 @@ knowledge/
 
 ```json
 {
-  "id": "SAPP-3255",
+  "id": "PROJ-123",
   "bug": "Timezone hiển thị sai ở Report",
   "module": "Report",
   "tags": ["timezone", "report", "display"],
   "root_cause_ref": "root_causes/report-timezone-utc.json",
-  "task_key": "SAPP-3255",
+  "task_key": "PROJ-123",
   "detected_phase": "phase2",
   "confirmed_via_gate": true,
   "jira_status": "Open",
@@ -65,6 +66,58 @@ knowledge/
 > (chỉ seed bug có resolution = fix thật). `confirmed_via_gate` vẫn `true` (bug đã resolved là product bug đã xác nhận).
 > `risk_score.js` đếm mọi bug theo `module` (không lọc theo `source`) nên seed cấp Likelihood ngay; `source` để QA/audit phân biệt.
 
+## `domain/<module-lowercase>__<slug>.json` — Business rule đã XÁC NHẬN (nền của mọi oracle)
+
+**Vì sao cần:** rule của kit **cấm oracle tautological** (expected phải lấy từ spec/business rule, KHÔNG
+suy từ app đang chạy — xem prompt gen §12/§13, `output_gate.looksTautology`). Nhưng nếu KB không lưu
+"đúng là gì" thì mỗi lần agent phải đọc lại Jira/Confluence (dễ miss) hoặc suy từ app (rơi đúng vào
+tautology bị cấm). `domain/` là chỗ lưu **sự thật nghiệp vụ đã được xác nhận**, để oracle luôn **trích được nguồn**.
+
+```json
+{
+  "id": "BR-PAYMENT-004",
+  "module": "Payment",
+  "rule": "Giảm giá VIP và voucher KHÔNG cộng dồn; áp mức lớn hơn",
+  "applies_when": "đơn mua mới; KHÔNG áp cho gia hạn",
+  "examples": [
+    { "input": "VIP 10%, voucher 15%, đơn 600.000", "expected": "giảm 15% = 90.000" }
+  ],
+  "source": "Confluence Pricing v2 §3.2",
+  "confirmed_by": "BA",
+  "confirmed_at": "2026-07-20",
+  "version": 2,
+  "supersedes": "BR-PAYMENT-004@v1",
+  "status": "active",
+  "covered_by": ["PAY_TC_012", "PAY_TC_013"],
+  "tags": ["pricing", "discount"]
+}
+```
+
+| Field | Bắt buộc | Ý nghĩa |
+|---|---|---|
+| `id` | ✓ | `BR-<MODULE>-<NNN>` (in hoa, số 3 chữ số). Ổn định qua các version. |
+| `module` | ✓ | Module nghiệp vụ (khớp cột `Module` của testcase — để `risk_score`/tra cứu gom đúng). |
+| `rule` | ✓ | Phát biểu rule **kiểm được**, 1–2 câu. KHÔNG mô tả màn hình/UI. |
+| `applies_when` |  | Điều kiện áp dụng / ngoại lệ (rất hay là nguồn bug bị bỏ sót). |
+| `examples` | ✓ | ≥1 cặp `{input, expected}` **cụ thể bằng số/giá trị** — đây là thứ biến rule thành oracle dùng được. |
+| `source` | ✓ | Trích dẫn nguồn (tài liệu + mục, hoặc "BA confirm <ngày>"). **Rỗng = không được ghi** (chống rule tự bịa). |
+| `confirmed_by` | ✓ | `BA` \| `Dev` \| `QA-Lead` \| `PO` — ai chốt. |
+| `confirmed_at` | ✓ | ISO date. Dùng để phát hiện TC đã execute TRƯỚC khi rule đổi → cần re-verify. |
+| `version` | ✓ | Bắt đầu `1`; **tăng khi nội dung rule đổi** (không tăng khi chỉ sửa chính tả). |
+| `supersedes` |  | `<id>@v<n>` khi bump version. |
+| `status` | ✓ | `active` \| `superseded` \| `deprecated` (rule bị bỏ — giữ lại để giải thích test cũ). |
+| `covered_by` | ✓ | TC ID lấy rule này làm oracle. **Đây là mắt xích trace ngược**: BA đổi rule → biết ngay TC nào phải cập nhật. Rỗng = rule chưa được test (gap). |
+| `tags` |  | Tra cứu (kebab/lowercase). |
+
+**Vòng đời (bắt buộc, không chỉ ghi thêm):**
+- Rule đổi → **bump `version`**, set `supersedes`, giữ file cũ nếu cần bằng `status: superseded`.
+- `confirmed_at` mới hơn lần execute cuối của TC trong `covered_by` ⇒ TC **stale**, phải chạy lại.
+- Kiểm bằng `node scripts/qa/domain_rules.js --trace --stale` (validate schema + PII + trace TC + stale).
+
+**KHÔNG ghi vào đây:** mô tả UI/label (dùng `requirements/ui_catalog.md` per-task) · số liệu tính được
+(coverage/pass-rate) · dữ liệu khách/PII · rule chưa ai xác nhận (đang mơ hồ thì thuộc
+`reports/phase1-clarifications.md`, chỉ chuyển vào `domain/` **sau khi** được trả lời).
+
 ## `root_causes/<slug>.json`
 
 `<slug>` = `<module-lowercase>-<mô-tả-kebab>`, vd `report-timezone-utc`.
@@ -75,7 +128,7 @@ knowledge/
   "summary": "Backend convert UTC sai timezone khi render Report",
   "module": "Report",
   "affected_files": [],
-  "related_bugs": ["SAPP-3255"],
+  "related_bugs": ["PROJ-123"],
   "status": "open",
   "resolved_at": null
 }
@@ -97,7 +150,7 @@ Snapshot kết quả execute theo module (input cho Dashboard — Giai đoạn 2
 
 ```json
 {
-  "task_key": "SAPP-3255",
+  "task_key": "PROJ-123",
   "date": "2026-07-21",
   "phase": "phase2",
   "unassisted_pass_rate": 0.83,
@@ -123,7 +176,7 @@ Tuân theo `.agent/rules/locator_healing_policy.md`.
   "original": "getByRole('button', { name: 'Lưu' })",
   "healed_to": "getByRole('button', { name: 'Lưu thay đổi' })",
   "confidence_basis": ["accessible_name_exact", "same_role", "same_dom_region"],
-  "task_key": "SAPP-3255",
+  "task_key": "PROJ-123",
   "healed_at": "2026-07-21"
 }
 ```
@@ -145,10 +198,10 @@ Index phẳng để tra cứu theo module/tag mà không phải quét toàn bộ
   "entries": [
     {
       "type": "bug",
-      "file": "bugs/SAPP-3255__timezone-report.json",
+      "file": "bugs/PROJ-123__timezone-report.json",
       "module": "Report",
       "tags": ["timezone", "report"],
-      "task_key": "SAPP-3255",
+      "task_key": "PROJ-123",
       "status": "Open"
     },
     {
@@ -156,13 +209,13 @@ Index phẳng để tra cứu theo module/tag mà không phải quét toàn bộ
       "file": "root_causes/report-timezone-utc.json",
       "module": "Report",
       "tags": ["timezone"],
-      "task_key": "SAPP-3255",
+      "task_key": "PROJ-123",
       "status": "open"
     }
   ]
 }
 ```
 
-- `type`: `bug` | `root_cause` | `historical_execution` | `locator`.
+- `type`: `business_rule` | `bug` | `root_cause` | `historical_execution` | `locator`.
 - Tra theo module = lọc `entries` theo `module`; tra theo tag = lọc theo `tags`.
 - Mỗi lần thêm/cập nhật entry file → cập nhật `entries` tương ứng + `updated_at`.

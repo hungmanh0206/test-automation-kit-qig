@@ -19,6 +19,7 @@ tests/fe/fixtures/**          fixture dùng chung
 tests/**/*example*            spec/script mẫu
 tests/load/**                 k6 script mẫu
 knowledge/SCHEMA.md           schema learning data
+knowledge/examples/**         dữ liệu MẪU minh hoạ (ship kèm kit)
 README.md · USER_GUIDE.md · QUICKSTART.md · RULE_GLOBAL.md · CHANGELOG.md · CLAUDE.md
 playwright.config.js · package.json · eslint/tsconfig · CI (.github/**, .gitlab-ci.yml)
 ```
@@ -31,7 +32,7 @@ playwright.config.js · package.json · eslint/tsconfig · CI (.github/**, .gitl
 .agent/config/project_context.md      khai Sites + env key của dự án (bản generic: *.example.md)
 .env · .env.local · profiles/**       giá trị động/creds
 outputs/**                            artifact theo task (gitignored)
-knowledge/{bugs,root_causes,historical_execution,locators,metrics}/**   learning data của dự án
+knowledge/{domain,bugs,root_causes,historical_execution,locators,metrics}/**   learning data của dự án
 tests/fe/<domain>/**                  spec nghiệp vụ đã promote (vd order/, transaction/)
 tests/fe/auth/**                      smoke auth theo app của dự án
 tests/fe/support/**                   helper login/auth theo app (trừ fixtures/)

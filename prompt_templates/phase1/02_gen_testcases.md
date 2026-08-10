@@ -436,6 +436,7 @@ Nguyên tắc:
 **Nguyên tắc nguồn-sự-thật (QUAN TRỌNG NHẤT — chống oracle tautological):**
 - Giá trị `Kết quả mong đợi` của MỌI case hiển thị phải **TRÍCH NGUYÊN VĂN từ FS/Figma/tài liệu**, TUYỆT ĐỐI KHÔNG lấy từ giao diện build đang chạy. Recon build chỉ để biết *cách locate element*, KHÔNG để lấy *giá trị đúng*. Nếu expected suy từ build → testcase thành "build == build" → vĩnh viễn không bắt được sai lệch so với spec.
 - Mỗi bảng "Name / Data type / Description" (hoặc bảng field/cột) trong FS là **checklist bắt buộc**: sinh case cho từng dòng, không bỏ sót field nào.
+- **Tra `knowledge/domain/` TRƯỚC khi đi tìm lại tài liệu**: business rule đã được BA/Dev xác nhận ở task trước được lưu ở đó (kèm `source` + `examples {input, expected}` cụ thể). Dùng làm oracle và **ghi `id` rule** (vd `BR-PAYMENT-004`) vào `Kết quả mong đợi` hoặc `Assumptions` để truy nguyên. TC nào lấy rule làm oracle thì thêm TC ID vào `covered_by` của rule (skill `domain_recorder`) — nhờ đó BA đổi rule là biết ngay TC nào phải cập nhật. Rule **mới được xác nhận trong task này** cũng phải ghi vào `knowledge/domain/`. Kiểm: `npm run domain:check`.
 
 **Với mỗi màn có bảng/danh sách/field, sinh case ATOMIC — mỗi (phần tử × thuộc tính) là 1 case:**
 - **Tên cột / label**: đúng CHÍNH XÁC từng ký tự theo tài liệu (vd cột phải là `Check-in`, KHÔNG phải `Checkin Time`).

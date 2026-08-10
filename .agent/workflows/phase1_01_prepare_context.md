@@ -31,6 +31,7 @@
    - Nếu CÓ điểm mơ hồ mức **Critical/High** (ảnh hưởng core flow, tính tiền/bảo mật, hoặc không thể sinh expected đúng): xuất **danh sách Q&A đánh số** `Q1, Q2...` vào `<TASK_OUTPUT_DIR>/reports/phase1-clarifications.md`, mỗi câu gồm: câu hỏi rõ ràng + **assumption mặc định đề xuất** (điều agent sẽ giả định nếu QA đồng ý) + phần scope bị chặn nếu chưa trả lời.
    - Ghi `AMBIGUITY_GATE: PENDING` vào `task.md` và **DỪNG** — chờ QA/BA trả lời hoặc xác nhận chấp nhận assumption.
    - Chỉ khi mọi câu Critical/High đã `RESOLVED` (có câu trả lời, hoặc QA tick chấp nhận assumption) mới **phân tích lại + chỉnh** coverage map/scope theo câu trả lời, đổi `AMBIGUITY_GATE: RESOLVED`, rồi mới cho phép sang `phase1_02`. KHÔNG gen bằng hiểu biết cũ trước khi chỉnh theo câu trả lời.
+   - **Ghi business rule vừa được xác nhận vào `knowledge/domain/`** (skill `domain_recorder`): câu trả lời của BA/QA CHÍNH LÀ business truth — mỗi rule 1 file JSON có `source` + `examples {input, expected}` cụ thể + `version`. Đây là nguồn oracle tái dùng xuyên task, thay vì mỗi lần phải đọc lại Jira/Confluence (dễ miss) hoặc suy từ app (tautology bị cấm). Kiểm: `npm run domain:check`.
    - Điểm mơ hồ Medium/Low KHÔNG chặn nhưng **vẫn liệt kê** trong `phase1-clarifications.md` (đánh dấu Non-blocking) để QA thấy hết điểm mờ; nếu QA không trả lời thì tự áp assumption mặc định + ghi Coverage Gaps, vẫn sinh case.
 
 ## Rules
