@@ -13,7 +13,7 @@
  * AN TOÀN: read-only (chỉ navigate + audit) nhưng audit hơi nặng → never-auto, cần --confirm-nonprod
  *   (hoặc LH_CHECK_CONFIRM=1); CHẶN target giống prod.
  * AUTH: login qua env-contract (giống perf_check) đặt cookie/localStorage vào context trước khi audit.
- *   LƯU Ý: app xác thực bằng localStorage token (vd OPS) — Lighthouse điều hướng lại có thể mất localStorage;
+ *   LƯU Ý: app xác thực bằng token lưu ở localStorage — Lighthouse điều hướng lại có thể mất localStorage;
  *   trang cần login mà rớt auth → điểm phản ánh trang /login. Trang public thì không vướng.
  * Evidence (kit chỉ nhận ảnh/video): lưu report Lighthouse (html/json) + chụp PNG bảng điểm 4 nhóm.
  *

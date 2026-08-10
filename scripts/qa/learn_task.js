@@ -18,7 +18,7 @@
  *
  * Dùng:
  *   TASK_ENV=profiles/<TASK>/task.env node scripts/qa/learn_task.js            # 1 task (theo TASK context)
- *   node scripts/qa/learn_task.js --task SAPP-1234 --project-out outputs/<proj>
+ *   node scripts/qa/learn_task.js --task <TASK_KEY> --project-out outputs/<proj>
  *   node scripts/qa/learn_task.js --scan                                        # BACKFILL mọi task đã chạy
  *   [--dry-run] [--force]
  */

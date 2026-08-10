@@ -323,7 +323,7 @@ Nhóm config thường gặp:
 | `*_USERNAME`, `*_PASSWORD` | Account test. |
 | `*_API_BASE_URL`, `*_SWAGGER_URL` | API automation và Swagger/OpenAPI. |
 
-Khi chạy song song nhiều task, chỉ để **giá trị tĩnh** (Figma/Confluence/Jira/Xray/HubSpot API key + base URL) trong `.env` chung; **giá trị động** theo task (`PROJECT_OUTPUT_DIR`, `TASK_KEY`, link story/confluence/figma cụ thể, tài khoản OPS/LMS) đặt trong `profiles/<TASK_KEY>/task.env` và nạp qua biến `TASK_ENV`. Chi tiết ở mục 8.
+Khi chạy song song nhiều task, chỉ để **giá trị tĩnh** (Figma/Confluence/Jira/Xray/HubSpot API key + base URL) trong `.env` chung; **giá trị động** theo task (`PROJECT_OUTPUT_DIR`, `TASK_KEY`, link story/confluence/figma cụ thể, tài khoản đăng nhập từng app) đặt trong `profiles/<TASK_KEY>/task.env` và nạp qua biến `TASK_ENV`. Chi tiết ở mục 8.
 
 Không cấu hình DB credential/connection string generic (`TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*`) và **không dựng state bằng DB**. Ngoại lệ DUY NHẤT: read-only verify/chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatPgClient.ts` (biến `LIB_MASTER_DB_*`, read-only: chỉ SELECT trong transaction READ ONLY) — dùng để khoanh tầng lỗi (vd "field trống do FE hay BE?") khi API/UI không đủ. Kho UAT/PROD tách biệt: chỉ cấu hình creds kho UAT, không cấu hình thì không truy cập. Ghi DB thẳng bỏ qua business logic nên DB chỉ để chẩn đoán, KHÔNG dựng state, KHÔNG phải evidence Jira; PII đọc ra phải mask + không export file. Case cần **dựng** trạng thái backend sâu vẫn bị chặn vì **thiếu capability an toàn (test hook/API/sandbox)** và đánh dấu `Needs hook`/`Manual-only` (xem `tests/support/setup/hooks/README.md`).
 
@@ -1199,7 +1199,7 @@ Ngưỡng perf/load lấy từ **NFR/SLA** (không bịa số). Perf Loại A = 
 - **Manual QUICK** (`prompt_templates/phase1/05_manual_quick.md`): sinh nhanh testcase chạy tay (có cột thực thi) khi requirement đã rõ.
 - **Combinatorial/Pairwise** (`prompt_templates/phase1/06_cross_module.md`): ma trận tổ hợp nhiều biến — mặc định Pairwise + constraints (chống nổ case).
 - **Dashboard** (`npm run dashboard`): tổng hợp coverage/risk/flaky/non-functional theo **SAPP Academy Design System** → `reports/dashboard.html`.
-- **Token Broker** (`tests/fe/support/auth/tokenBroker.ts`): giữ 1 phiên SPA đã login sống rồi lấy **token tươi** mỗi lần gọi API (401/403 → tự refresh → retry). ⇒ **không phải F12 dán token giữa chừng**, `task.env` chỉ cần user/password. Dùng cho cả OPS lẫn LMS.
+- **Token Broker** (`tests/fe/support/auth/tokenBroker.ts`): giữ 1 phiên SPA đã login sống rồi lấy **token tươi** mỗi lần gọi API (401/403 → tự refresh → retry). ⇒ **không phải mở DevTools copy token giữa chừng**, `task.env` chỉ cần user/password. Áp cho mọi SPA gửi `Authorization: Bearer` (token lưu ở localStorage hay do IdP cấp đều được).
 - **`ensureExpanded`** (`scripts/utils/ui/ensure_expanded.js`): mở panel/accordion trên DOM "nhiều icon giống nhau" — thử ứng viên rồi **nghiệm thu bằng sentinel**, tự Escape khi click nhầm modal/dropdown, idempotent. Dùng thay cho click toạ độ chevron (nguồn flaky kinh điển).
 
 > Locator Healing (Phase 2, threshold-gated, opt-in `LOCATOR_HEAL=1`): chỉ heal locator ACTION khi confidence cao, KHÔNG heal locator assertion (chống false PASS).

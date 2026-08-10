@@ -59,7 +59,7 @@ Nguyên tắc đặt nhóm:
 - Với domain khác, thay bằng nhóm phù hợp, ví dụ: `Đăng nhập`, `Đăng ký`, `Thanh toán`, `Giỏ hàng`, `Quản lý hồ sơ`, `Tìm kiếm`, `Thông báo`, `Báo cáo`, `Cấu hình`, `Import/Export`.
 - Với API testcase, nếu endpoint phục vụ rõ một business flow thì nhóm chính vẫn là business flow đó, ví dụ `Tạo / API POST /api/v1/examination`, không tách thành nhóm chính `API`.
 - Chỉ dùng nhóm chính `API` khi testcase kiểm endpoint/platform behavior không thuộc flow nghiệp vụ cụ thể nào.
-- Với E2E/cross-app, nếu flow có business flow rõ thì nhóm chính vẫn là flow đó, ví dụ `Tạo / Ops create exam -> LMS sync`; chỉ dùng `E2E/Cross-app` khi flow chính là sync/tích hợp đa hệ thống.
+- Với E2E/cross-app, nếu flow có business flow rõ thì nhóm chính vẫn là flow đó, ví dụ `Tạo / App 1 tạo bản ghi -> App 2 sync`; chỉ dùng `E2E/Cross-app` khi flow chính là sync/tích hợp đa hệ thống.
 - Với permission/security, nếu permission gắn với flow rõ thì nhóm chính vẫn là flow đó, ví dụ `Sửa / Permission role teacher cannot edit`; chỉ dùng `Permission/Security` khi testcase chủ yếu kiểm auth/role/security độc lập.
 - KHÔNG thêm cột label vào bảng testcase. Khi publish Xray/Jira, label để TỐI THIỂU (marker `automation-testcase` + khoá dedup `task-*`/`tc-*`); nhóm chức năng thể hiện qua Xray Test Set và subfolder Test Repository (theo sheet chức năng), KHÔNG dùng label group/layer/risk/priority/xray.
 - `Khác` chỉ dùng khi requirement không thuộc nhóm nào rõ ràng và phải giải thích trong Coverage Gaps.
@@ -71,7 +71,7 @@ Ví dụ đúng cho cột `Module`:
 - `Sửa / US-04 Edit Exam`
 - `Xóa / US-05 Delete Exam`
 - `Tạo / API POST /api/v1/examination`
-- `Tạo / Ops create exam -> LMS sync`
+- `Tạo / App 1 tạo bản ghi -> App 2 sync`
 - `Permission/Security / Unauthorized access token`
 - `Đăng nhập / Login form`
 - `Thanh toán / Checkout with saved card`

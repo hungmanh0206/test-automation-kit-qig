@@ -24,7 +24,7 @@ flowchart TD
 | Layer | Purpose |
 |---|---|
 | Phase 1 | Đọc requirement/design/API và sinh testcase Markdown + Excel + coverage report + Setup Strategy contract (PRE-NN) + Precondition Execution Matrix; Excel là source of truth **khi gen/publish** và là input cho step publish sau QA confirmation (Phase 2 execute mặc định từ Xray). |
-| Jira Testcase Publish | Step riêng trong phạm vi Phase 1: sau khi QA xác nhận Excel, đọc Excel canonical, tạo/cập nhật Xray `Test` issue, nhóm chức năng qua subfolder Test Repository, gắn label tối thiểu (marker `automation-testcase` + khóa dedup `task-*`/`tc-*`) và link về Jira Story/Task như `SAPP-3255` (mặc định không tạo Test Set, không label group/layer/risk/priority). Excel là source of truth khi authoring/publish; Phase 2 execute mặc định lấy nguồn từ Xray (`TESTCASE_SOURCE=xray`). |
+| Jira Testcase Publish | Step riêng trong phạm vi Phase 1: sau khi QA xác nhận Excel, đọc Excel canonical, tạo/cập nhật Xray `Test` issue, nhóm chức năng qua subfolder Test Repository, gắn label tối thiểu (marker `automation-testcase` + khóa dedup `task-*`/`tc-*`) và link về Jira Story/Task như `PROJ-123` (mặc định không tạo Test Set, không label group/layer/risk/priority). Excel là source of truth khi authoring/publish; Phase 2 execute mặc định lấy nguồn từ Xray (`TESTCASE_SOURCE=xray`). |
 | Xray Test Lifecycle Cleanup | Step thuộc nhánh phụ `partial-rerun`: khi Excel thay đổi sau publish và đã qua Human Review, đối chiếu TC ID với Xray `Test`, đánh dấu stale bằng label cleanup, restore active TC nếu cần và chỉ unlink khỏi Story/Task khi QA xác nhận; không hard delete Test issue. |
 | Phase 2 | Đọc testcase từ nguồn canonical local (mặc định kéo từ Xray, `TESTCASE_SOURCE=xray`; `excel` là opt-out), chạy Precondition Resolution Pass qua UI/API public-business contract, fixture hoặc test hook nếu có → generate/update Playwright/API spec, execute phần automatable, capture evidence và report. Case cần DB/backend internal state được chuyển manual/semi-auto. |
 | Setup Layer | `tests/support/setup/`: factory/hook/fixture/mock/cleanup/contract dùng chung để dựng tiền điều kiện theo contract; không dựng state bằng DB — chỉ read-only verify UAT qua guarded client `db/uatPgClient.ts` (read-only, chỉ SELECT). |
@@ -116,7 +116,7 @@ test-automation-kit/
 
 | Component | Purpose |
 |---|---|
-| [USER_GUIDE.md](USER_GUIDE.md) | Hướng dẫn sử dụng Test Automation Kit cho Team QA. Bản Confluence: *User Guide_QA Workflow w AI* (space LMS) — đẩy bằng `CONFLUENCE_PAGE_ID=<id> node scripts/integrations/jira/publish_confluence_page.js [--dry-run]`. |
+| [USER_GUIDE.md](USER_GUIDE.md) | Hướng dẫn sử dụng Test Automation Kit cho Team QA. Có thể publish sang Confluence cho team: `CONFLUENCE_PAGE_ID=<id> node scripts/integrations/jira/publish_confluence_page.js [--dry-run]` (dry-run trước, script tự backup page cũ). |
 | [CHANGELOG.md](CHANGELOG.md) | Lịch sử thay đổi **kit dùng chung** theo ngày + chủ đề (vấn đề → cách chữa), kèm commit hash. Đọc trước khi nâng cấp kit hoặc khi thấy hành vi lạ sau khi pull. |
 | [QUICKSTART.md](QUICKSTART.md) | Onboarding nhanh cho project mới. |
 | [RULE_GLOBAL.md](RULE_GLOBAL.md) | Quy tắc chung về ngôn ngữ, bảo mật, output và cleanup. |
@@ -137,7 +137,7 @@ test-automation-kit/
 | `scripts/ci/` | `set-gitlab-variables.sh`: khai CI Variables lên GitLab từ `.env.local` qua `glab` (mặc định dry-run, `--apply` để set thật; secret set masked+protected, không in giá trị). |
 | `knowledge/` | Bộ nhớ học (learning loop): bug/root cause/locator heal/snapshot pass-fail đã qua gate → nguồn cho RBT + dashboard. **Thu TỰ ĐỘNG**: reporter `learn_reporter` chạy sau mỗi `playwright test` → `learn_task.js` (KPI + snapshot theo module); bug nạp bằng `learn_bugs.js` (lấy từ Jira theo label `auto-bug`). `knowledge/examples/` là dữ liệu mẫu; `knowledge/` live khởi tạo rỗng. |
 | `scripts/utils/ui/ensure_expanded.js` | Mở panel/accordion ổn định trên DOM "nhiều icon giống nhau": thử ứng viên + nghiệm thu bằng sentinel, tự Escape khi click nhầm modal/dropdown, idempotent. Thay cho click toạ độ chevron (nguồn flaky kinh điển). Regression: `tests/fe/infra/ensure-expanded.spec.ts`. |
-| `tests/fe/support/auth/tokenBroker.ts` | Token Broker: giữ 1 phiên SPA đã login sống → lấy token **tươi** mỗi lần gọi API, 401/403 tự refresh + retry ⇒ execute không đứt vì bearer hết hạn, `task.env` chỉ cần user/password (OPS và LMS). |
+| `tests/fe/support/auth/tokenBroker.ts` | Token Broker: giữ 1 phiên SPA đã login sống → lấy token **tươi** mỗi lần gọi API, 401/403 tự refresh + retry ⇒ execute không đứt vì access token hết hạn giữa lượt chạy, `task.env` chỉ cần user/password. Áp cho mọi SPA gửi `Authorization: Bearer`. |
 | `exploratory/` | Nhánh phụ độc lập (never-auto, charter-based) — dò rủi ro ngoài testcase đã review; draft phải qua `tc_validator` mới tính coverage. |
 | `tests/support/setup/` | Setup layer dùng chung: factory/hook/fixture/mock/cleanup/contract cho Precondition Resolution Pass (xem `tests/support/setup/README.md`). |
 | `profiles/` | Env động theo từng task (`profiles/<TASK_KEY>/task.env`, nạp qua `TASK_ENV`); giá trị tĩnh vẫn ở `.env` chung. Tạo bằng `npm run profile:create -- <TASK_KEY>`. |

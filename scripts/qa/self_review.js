@@ -80,7 +80,7 @@ if (statusFile && fs.existsSync(statusFile)) {
     const hasSnap = fs.existsSync(histDir) && fs.readdirSync(histDir).some((f) => f.startsWith(`${TASK}__`));
     if (!hasSnap) problems.push(`Thiếu knowledge/historical_execution/${TASK}__<date>.json (snapshot pass/fail theo module — input cho risk_score + dashboard)`);
     // KPI chỉ đòi khi task THỰC SỰ có results.json (execute qua Playwright runner). Task chạy bằng
-    // script tự chế không sinh results.json → đòi KPI là CHẶN OAN (đã gặp: SAPP-23439).
+    // script tự chế không sinh results.json → đòi KPI là CHẶN OAN (đã gặp thật).
     const trDir = path.join(path.dirname(statusFile));
     let hasResults = fs.existsSync(path.join(trDir, 'results.json'));
     if (!hasResults && fs.existsSync(trDir)) {

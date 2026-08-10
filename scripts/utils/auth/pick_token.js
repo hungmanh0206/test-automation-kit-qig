@@ -2,7 +2,7 @@
 
 /*
  * pick_token.js (Token Broker — chọn bearer token hiện tại từ localStorage của SPA).
- * SPA OPS tự refresh actToken (dùng cả ngày không login lại) → chỉ cần ĐỌC token tươi từ localStorage.
+ * SPA thường tự refresh access token (dùng cả ngày không login lại) → chỉ cần ĐỌC token tươi từ localStorage.
  * pickToken auto-detect JWT (không cần biết tên key), ưu tiên key act/access/token; nhận cả blob JSON.
  * Pure (dependency-free) → offline-test được. TS broker (tokenBroker.ts) đọc localStorage rồi gọi hàm này.
  */

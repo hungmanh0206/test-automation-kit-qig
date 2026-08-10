@@ -30,10 +30,10 @@ node scripts/qa/lighthouse_check.js --url https://uat-... --no-login --confirm-n
 Catalog block `lighthouse` (schema đầy đủ ở `scripts/qa/README.md`):
 ```json
 { "lighthouse": {
-  "login": { "baseUrlEnv": "OPS_BASE_URL", "loginPath": "/auth/login", "userEnv": "OPS_USERNAME", "passEnv": "OPS_PASSWORD" },
+  "login": { "baseUrlEnv": "<APP>_BASE_URL", "loginPath": "/auth/login", "userEnv": "<APP>_USERNAME", "passEnv": "<APP>_PASSWORD" },
   "formFactor": "desktop",
   "thresholds": { "performance": 50, "accessibility": 90, "seo": 90, "best-practices": 90 },
-  "screens": [ { "name": "OPS Class List", "url": "/classes", "thresholds": { "performance": 40 } } ]
+  "screens": [ { "name": "<Tên màn>", "url": "/<duong-dan>", "thresholds": { "performance": 40 } } ]
 } }
 ```
 
@@ -53,7 +53,7 @@ Catalog block `lighthouse` (schema đầy đủ ở `scripts/qa/README.md`):
 
 ## Constraints
 
-- **Auth localStorage-token (vd OPS)**: Lighthouse điều hướng lại có thể mất localStorage → trang cần login mà rớt
+- **App auth bằng token trong localStorage**: Lighthouse điều hướng lại có thể mất localStorage → trang cần login mà rớt
   auth thì điểm phản ánh trang `/login`. Ưu tiên audit trang public, hoặc app auth bằng cookie/SSO.
 - Read-only (chỉ navigate + audit) nhưng nặng → chỉ chạy non-prod, không nhét vào runner Playwright mặc định.
 - Evidence chỉ ảnh/video: dùng `lighthouse-scores.png` (không đính report `.html/.json` làm evidence Jira).

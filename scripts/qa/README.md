@@ -18,10 +18,10 @@ node scripts/qa/ui_conformance_check.js --catalog <PROJECT_OUTPUT_DIR>/tasks/<TA
 ## Catalog schema (JSON)
 ```jsonc
 {
-  "login": {                    // reuse form login OPS/LMS
-    "baseUrlEnv": "OPS_BASE_URL",
+  "login": {                    // reuse form login của app (env đặt theo app: <APP>_BASE_URL/_USERNAME/_PASSWORD)
+    "baseUrlEnv": "<APP>_BASE_URL",
     "loginPath": "/auth/login",
-    "userEnv": "OPS_USERNAME", "passEnv": "OPS_PASSWORD",
+    "userEnv": "<APP>_USERNAME", "passEnv": "<APP>_PASSWORD",
     "userSelector": "input[name=username]", "passSelector": "input[name=password]",
     "submitSelector": "button:has-text(\"Sign In\")"
   },
@@ -93,7 +93,7 @@ Lưu ý: coverage JS tính `unused` bằng **merge range `count===0`** (range b�
 ## Catalog block `perf`
 ```jsonc
 {
-  "login": { "baseUrlEnv": "OPS_BASE_URL", "loginPath": "/auth/login", "userEnv": "OPS_USERNAME", "passEnv": "OPS_PASSWORD" },
+  "login": { "baseUrlEnv": "<APP>_BASE_URL", "loginPath": "/auth/login", "userEnv": "<APP>_USERNAME", "passEnv": "<APP>_PASSWORD" },
   "perf": {
     "screens": [{
       "name": "Transaction list", "url": "/operations/sales/transactions",
@@ -123,14 +123,14 @@ node scripts/qa/lighthouse_check.js --url https://uat-... --no-login --confirm-n
 ```jsonc
 {
   "lighthouse": {
-    "login": { "baseUrlEnv": "OPS_BASE_URL", "loginPath": "/auth/login", "userEnv": "OPS_USERNAME", "passEnv": "OPS_PASSWORD" },
+    "login": { "baseUrlEnv": "<APP>_BASE_URL", "loginPath": "/auth/login", "userEnv": "<APP>_USERNAME", "passEnv": "<APP>_PASSWORD" },
     "formFactor": "desktop",                                  // desktop (mặc định) | mobile
     "thresholds": { "performance": 50, "accessibility": 90, "seo": 90, "best-practices": 90 },  // điểm PASS per nhóm (0–100)
-    "screens": [{ "name": "OPS Class List", "url": "/classes", "thresholds": { "performance": 40 } }]  // override per màn
+    "screens": [{ "name": "<Tên màn>", "url": "/<duong-dan>", "thresholds": { "performance": 40 } }]  // override per màn
   }
 }
 ```
-Auth localStorage-token (vd OPS): Lighthouse điều hướng lại có thể mất localStorage → ưu tiên trang public hoặc app auth cookie/SSO. Không override → dùng dải điểm chuẩn Lighthouse (không bịa SLA).
+App auth bằng token trong localStorage: Lighthouse điều hướng lại có thể mất localStorage → ưu tiên trang public hoặc app auth cookie/SSO. Không override → dùng dải điểm chuẩn Lighthouse (không bịa SLA).
 
 ---
 
@@ -147,7 +147,7 @@ TASK_ENV=profiles/<TASK>/task.env node scripts/qa/security_check.js --catalog <.
 ```jsonc
 {
   "security": {
-    "baseUrlEnv": "OPS_BASE_URL",
+    "baseUrlEnv": "<APP>_BASE_URL",
     "headerTarget": "/",
     "requiredHeaders": ["strict-transport-security","content-security-policy","x-frame-options","x-content-type-options","referrer-policy"],
     "auth": { "loginPath": "/api/v1/auth/login", "userField": "username", "passField": "password", "tokenPath": "data.accessToken", "scheme": "Bearer" },
@@ -181,7 +181,7 @@ Gọi tay khi cần (vd sau khi execute bằng script tự chế, hoặc backfil
 TASK_ENV=profiles/<TASK>/task.env npm run learn        # 1 task
 npm run learn:backfill                                 # BACKFILL: quét outputs/*/tasks/*/ đã chạy trước đây
 npm run learn -- --scan --dry-run                      # xem trước, không ghi gì
-npm run learn -- --task SAPP-1234 --project-out outputs/<proj> [--force]
+npm run learn -- --task <TASK_KEY> --project-out outputs/<proj> [--force]
 ```
 
 Ghi 3 thứ (theo `knowledge/SCHEMA.md`):
@@ -213,7 +213,7 @@ TASK_ENV=profiles/<TASK>/task.env npm run learn:bugs:apply    # ghi thật vào 
 - **Nguồn canonical**: bug do kit tạo luôn có label `auto-bug` + label `<tcId>`, là sub-task của story ⇒ JQL đúng bộ đó **chỉ học bug ĐÃ QUA GATE** (không dính flaky/setup — đúng `knowledge/SCHEMA.md`).
 - **Module** suy từ `tcId → cột Module` của testcase canonical (dùng chung map với `learn_task.js`).
 - **Idempotent**: đã có file thì chỉ **đồng bộ `jira_status`** (rerun chuyển Done → cập nhật), không tạo trùng.
-- Nghiệm thu: SAPP-23439 → 7 bug thật, module map đúng (`Tạo Timeoff Request`, `Permission`, `Export chấm công`); `risk_score` từ `0 bug` → **`7 bug, 9 snapshot`**, module *Tạo Timeoff Request* lên **Medium** nhờ 3 bug.
+- Nghiệm thu trên 1 task thật: 7 bug được nạp, module map đúng theo cột `Module`; `risk_score` từ `0 bug` → `7 bug` làm dữ liệu, module có 3 bug được nâng band lên **Medium**.
 - `self_review` **cảnh báo** khi có case FAILED mà `knowledge/bugs/` chưa có entry của task.
 
 ---

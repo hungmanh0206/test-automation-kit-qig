@@ -49,8 +49,9 @@ module.exports = defineConfig({
     screenshot: 'only-on-failure',
     video: process.env.PW_VIDEO || 'off',
     trace: process.env.PW_TRACE || 'off',
-    // Tắt cờ automation của Chromium: một số SPA (vd LMS/Keycloak) phát hiện automation → chặn OIDC
-    // redirect / loop trang login trắng. Vô hại với app khác. Xem tests/fe/support/lmsLogin.ts.
+    // Tắt cờ automation của Chromium: một số SPA phát hiện automation → chặn redirect OIDC (Keycloak/
+    // Auth0/Okta…) hoặc loop trang login trắng. Vô hại với app không kiểm tra. Kèm `addInitScript`
+    // override `navigator.webdriver` ở helper login của app.
     // Đã nghiệm thu: arg này KHÔNG làm Firefox/WebKit vỡ (bị bỏ qua) → an toàn để ở global `use`.
     launchOptions: { args: ['--disable-blink-features=AutomationControlled'] },
   },
