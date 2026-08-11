@@ -57,13 +57,28 @@ const num = v => { const m = String(v).match(/-?\d+(\.\d+)?/); return m ? parseF
 async function login(page, cfg) {
   if (!cfg) return;
   const base = (process.env[cfg.baseUrlEnv || 'OPS_BASE_URL'] || '').replace(/\/+$/, '');
-  const user = process.env[cfg.userEnv || 'OPS_USERNAME'];
-  const pass = process.env[cfg.passEnv || 'OPS_PASSWORD'];
+  const userEnv = cfg.userEnv || 'OPS_USERNAME';
+  const passEnv = cfg.passEnv || 'OPS_PASSWORD';
+  const user = process.env[userEnv];
+  const pass = process.env[passEnv];
+  // CHẶN SỚM: thiếu creds thì mọi màn sau đều đọc được 0 cột / 0 field và báo cáo ra một rừng "thiếu hết" —
+  // deviation GIẢ, y hệt kết quả của một app hỏng thật. Đã mắc bẫy này: 26 deviation giả chỉ vì `TASK_ENV`
+  // không được truyền nên env rơi về `.env` không có creds. Báo cáo sai còn tệ hơn không có báo cáo.
+  if (!String(user || '').trim() || !String(pass || '').trim()) {
+    throw new Error(`Thiếu creds đăng nhập: ${userEnv}/${passEnv} rỗng. Truyền profile của task: TASK_ENV=profiles/<TASK_KEY>/task.env`);
+  }
+  if (!base) throw new Error(`Thiếu ${cfg.baseUrlEnv || 'OPS_BASE_URL'} — không biết đăng nhập vào đâu.`);
   await page.goto(base + (cfg.loginPath || '/auth/login'), { waitUntil: 'networkidle', timeout: 45000 });
   await page.fill(cfg.userSelector || 'input[name=username]', user);
   await page.fill(cfg.passSelector || 'input[name=password]', pass);
   await page.click(cfg.submitSelector || 'button:has-text("Sign In")');
   await page.waitForTimeout(cfg.waitAfter || 4500);
+  // CHẶN SỚM (2): creds có nhưng bị sai/lockout/throttle thì vẫn đứng ở màn login. Không kiểm ở đây thì
+  // toàn bộ report phía sau là rác mà vẫn trông như số liệu thật.
+  const stillLogin = await page.locator(cfg.passSelector || 'input[name=password]').count().catch(() => 0);
+  if (stillLogin) {
+    throw new Error(`Đăng nhập KHÔNG thành công — vẫn ở màn login sau khi submit (URL: ${page.url()}). Nghi sai creds hoặc bị throttle/lockout; kiểm tra rồi chạy lại, ĐỪNG đọc report của lần này.`);
+  }
 }
 
 async function runPreSteps(page, base, steps) {
@@ -76,6 +91,46 @@ async function runPreSteps(page, base, steps) {
     else if (s.action === 'wait') await page.waitForTimeout(Number(s.value) || 1000);
     await page.waitForTimeout(400);
   }
+}
+
+/**
+ * Định vị container của một section theo TIÊU ĐỀ ĐANG HIỂN THỊ, rồi dán `data-uicheck` để chọn bằng CSS thuần.
+ *
+ * Vì sao cần: section trên nhiều màn được render bằng div không có class ổn định, nên catalog buộc phải khai
+ * selector đoán-mò và vỡ ngay khi FE đổi class. Chọn theo text thì `:has-text()` chỉ là selector riêng của
+ * Playwright — `document.querySelector` trong trang không hiểu — nên phải resolve trong trang rồi đánh dấu.
+ *
+ * Chọn tổ tiên nào: tổ tiên có NHIỀU HÀNG "nhãn→giá trị" nhất trong 6 cấp (hàng = phần tử con có đúng 2 con lá).
+ * Lấy cả card thì dính luôn field của khối khác → báo thừa oan; lấy quá hẹp thì báo thiếu oan.
+ * @returns {Promise<{ok: boolean, rows: number}>}
+ */
+async function stampSection(page, headingText, mark) {
+  return page.evaluate(({ heading, m }) => {
+    const n = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+    const want = n(heading).replace(/[:*]\s*$/, '').toLowerCase();
+    const leaves = [...document.querySelectorAll('*')].filter((el) => !el.children.length);
+    const head = leaves.find((el) => n(el.textContent).replace(/[:*]\s*$/, '').toLowerCase() === want);
+    if (!head) return { ok: false, rows: 0 };
+    const rowCount = (el) => [...el.children].filter((c) => c.children.length === 2
+      && [...c.children].every((g) => !g.children.length)).length;
+    let node = head.parentElement;
+    let best = null;
+    let bestRows = 0;
+    for (let k = 0; k < 6 && node; k += 1) {
+      // hàng có thể nằm ở con trực tiếp, hoặc trong đúng 1 lớp bọc (card > box > hàng)
+      const direct = rowCount(node);
+      const nested = [...node.children].reduce((mx, c) => Math.max(mx, rowCount(c)), 0);
+      if (direct > bestRows) { best = node; bestRows = direct; }
+      if (nested > bestRows) {
+        const box = [...node.children].find((c) => rowCount(c) === nested);
+        if (box) { best = box; bestRows = nested; }
+      }
+      node = node.parentElement;
+    }
+    if (!best) return { ok: false, rows: 0 };
+    best.setAttribute('data-uicheck', m);
+    return { ok: true, rows: bestRows };
+  }, { heading: headingText, m: mark });
 }
 
 async function checkScreen(page, base, screen) {
@@ -114,15 +169,47 @@ async function checkScreen(page, base, screen) {
   // vì không có gì liệt kê tập hợp. Đây đúng là lớp bug hay lọt: thiếu Net Price ở section thông tin sản phẩm,
   // thừa cột/field không thuộc màn, hai màn cùng dữ liệu nhưng danh sách field lệch nhau.
   for (const f of screen.fields || []) {
-    const root = (screen.scopeSelector ? scope : page).locator(f.containerSelector).first();
-    if (!(await root.count())) { dev.push({ type: 'fields.no-container', name: f.name, selector: f.containerSelector }); continue; }
-    const actual = (await root.locator(f.labelSelector || 'label').allInnerTexts().catch(() => []))
+    let sel = f.containerSelector;
+    if (f.headingText) {
+      const mark = `sec-${(f.name || f.headingText).replace(/[^\w]+/g, '-').toLowerCase()}`;
+      const st = await stampSection(page, f.headingText, mark);
+      if (!st.ok) { dev.push({ type: 'fields.no-container', name: f.name, selector: `headingText="${f.headingText}"` }); continue; }
+      sel = `[data-uicheck="${mark}"]`;
+    }
+    const root = (screen.scopeSelector ? scope : page).locator(sel).first();
+    if (!(await root.count())) { dev.push({ type: 'fields.no-container', name: f.name, selector: sel }); continue; }
+    let actual = (await root.locator(f.labelSelector || 'label').allInnerTexts().catch(() => []))
       .map((s) => norm(s).replace(/[:*]\s*$/, ''))          // bỏ dấu ':' và '*' bắt buộc ở cuối nhãn
       .filter((s) => s !== '');
+    // Layout DIV: không có <label> nào ⇒ selector chặt trả về RỖNG và mọi field sẽ bị báo "thiếu" oan.
+    // Rơi về nhãn suy theo cặp leaf-node liền kề (cùng cách screen_snapshot xử layout div) — chỉ khi
+    // catalog KHÔNG tự khai labelSelector, để không âm thầm đè ý định của người viết catalog.
+    if (!actual.length && !f.labelSelector) {
+      actual = await root.evaluate((el) => {
+        const n = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+        const out = [];
+        [...el.children].forEach((row) => {
+          const kids = [...row.children].filter((g) => !g.children.length);
+          if (kids.length === 2) out.push(n(kids[0].textContent).replace(/[:*]\s*$/, ''));
+        });
+        return out.filter(Boolean);
+      }).catch(() => []);
+      // tiền tố `info.` = ghi chú quan sát, KHÔNG tính là deviation (xem chỗ tách ở dưới)
+      if (actual.length) dev.push({ type: 'info.loose-labels', name: f.name, note: `section không có <label>; đọc ${actual.length} nhãn theo cặp leaf-node` });
+    }
     const exp = (f.expectedFields || []).map(norm);
     if (!exp.length) { dev.push({ type: 'fields.no-expected', name: f.name, note: 'catalog khai `fields` mà thiếu expectedFields' }); continue; }
-    const missing = exp.filter((x) => !actual.includes(x));
-    const extra = actual.filter((x) => !exp.includes(x));
+    // So khớp theo KHOÁ chuẩn hoá (hoa/thường + khoảng trắng quanh '/'), vì "Full Name" vs "Full name" hay
+    // "Số CCCD/Hộ chiếu" vs "Số CCCD/ Hộ chiếu" mà tính là thiếu-VÀ-thừa thì mỗi lệch chữ sinh 2 dòng, nhấn
+    // chìm tín hiệu thật (thiếu field, sai NGÔN NGỮ nhãn). Lệch chữ vẫn là deviation nhưng gom 1 dòng riêng.
+    const key = (s) => norm(s).toLowerCase().replace(/\s*\/\s*/g, '/');
+    const actKey = new Map(actual.map((a) => [key(a), a]));
+    const expKey = new Map(exp.map((e) => [key(e), e]));
+    const missing = exp.filter((x) => !actKey.has(key(x)));
+    const extra = actual.filter((x) => !expKey.has(key(x)));
+    const reworded = exp.filter((x) => actKey.has(key(x)) && actKey.get(key(x)) !== x)
+      .map((x) => ({ tàiLiệu: x, build: actKey.get(key(x)) }));
+    if (reworded.length) dev.push({ type: 'fields.label-text', name: f.name, pairs: reworded, note: 'nhãn khớp về nội dung nhưng lệch hoa/thường hoặc khoảng trắng so với tài liệu' });
     if (missing.length) dev.push({ type: 'fields.missing', name: f.name, expected: missing, detail: `build có: [${actual.join(' | ')}]` });
     // mode 'superset' = chấp nhận màn có thêm field ngoài danh sách (dùng khi catalog mới trích một phần).
     if (extra.length && f.mode !== 'superset') dev.push({ type: 'fields.extra', name: f.name, actual: extra, detail: 'field xuất hiện trên build nhưng KHÔNG có trong tài liệu' });
@@ -168,6 +255,7 @@ if (IS_CLI) (async () => {
   const page = await (await browser.newContext({ viewport: { width: 1600, height: 950 } })).newPage();
   page.setDefaultTimeout(10000);
   const report = { catalog: CATALOG, screens: [], totalDeviations: 0 };
+  let fatal = null;
   try {
     await login(page, loginCfg);
     for (const screen of catalog.screens || []) {
@@ -176,7 +264,11 @@ if (IS_CLI) (async () => {
       await page.waitForTimeout(screen.settle || 3000);
       const shot = path.join(OUT, `${screen.name.replace(/[^A-Za-z0-9]+/g, '_')}.png`);
       await page.screenshot({ path: shot, fullPage: true }).catch(() => {});
-      const dev = await checkScreen(page, base, screen);
+      const all = await checkScreen(page, base, screen);
+      // `info.*` là ghi chú cách đo (vd section không có <label> nên đọc nhãn kiểu lỏng) — hữu ích để đọc lại
+      // báo cáo, nhưng KHÔNG được tính thành deviation, nếu không gate sẽ đỏ vì cách render của FE.
+      const dev = all.filter((d) => !String(d.type).startsWith('info.'));
+      const infos = all.filter((d) => String(d.type).startsWith('info.'));
       // SNAPSHOT bề mặt màn: ghi lại "màn đang có gì" thành dữ liệu, kể cả phần catalog CHƯA khai.
       // Nhờ đó lần sau viết catalog là việc DIFF chứ không phải việc nhớ, và thứ có trên màn mà tài liệu
       // không nói vẫn để lại dấu vết thay vì biến mất. Snapshot KHÔNG phải oracle — chỉ là quan sát.
@@ -192,12 +284,14 @@ if (IS_CLI) (async () => {
         snapshot: snap ? path.relative(OUT, path.join(SNAP_DIR, `${screen.name.replace(/[^A-Za-z0-9]+/g, '_')}.json`)) : null,
         observed: snap ? { labels: snap.labels.length, columns: ((snap.tables || [])[0] || {}).headers || [], currencies: snap.currencies } : null,
         deviations: dev,
+        notes: infos,
       });
       report.totalDeviations += dev.length;
-      console.log(`\n=== ${screen.name} === ${dev.length ? dev.length + ' DEVIATION' : 'OK'}`);
+      console.log(`\n=== ${screen.name} === ${dev.length ? dev.length + ' DEVIATION' : 'OK'}${infos.length ? ` (+${infos.length} ghi chú)` : ''}`);
       dev.forEach(d => console.log('   -', JSON.stringify(d)));
+      infos.forEach(d => console.log('   ·', JSON.stringify(d)));
     }
-  } catch (e) { console.error('FATAL', e.message.slice(0, 200)); }
+  } catch (e) { fatal = e.message.slice(0, 300); console.error('FATAL', fatal); }
   finally { await browser.close(); }
 
   // ghi report md + json
@@ -207,9 +301,13 @@ if (IS_CLI) (async () => {
     md.push(`## ${s.name} — ${s.deviations.length ? '❌ ' + s.deviations.length + ' deviation' : '✅ khớp'}`);
     md.push(`Ảnh: \`${s.screenshot}\``, '');
     if (s.deviations.length) { md.push('| Loại | Chi tiết |', '|---|---|'); s.deviations.forEach(d => { const { type, ...rest } = d; md.push(`| ${type} | ${JSON.stringify(rest)} |`); }); md.push(''); }
+    if ((s.notes || []).length) { md.push('<sub>Ghi chú cách đo (không tính deviation): ' + s.notes.map(n => n.note || n.type).join(' · ') + '</sub>', ''); }
   }
   fs.writeFileSync(path.join(OUT, 'conformance_report.md'), md.join('\n'), 'utf8');
   console.log(`\nReport: ${path.join(OUT, 'conformance_report.md')} | Tổng deviation: ${report.totalDeviations}`);
+  // exit 2 = KHÔNG ĐO ĐƯỢC (khác hẳn exit 0 = đo xong và khớp). Trước đây fatal vẫn exit 0 khi chưa kịp
+  // đo màn nào ⇒ "0 deviation" trông như PASS. "Không phán được" không bao giờ được thành PASS.
+  if (fatal) { console.error(`\n✗ KHÔNG ĐO ĐƯỢC — ${fatal}`); process.exit(2); }
   process.exit(report.totalDeviations > 0 ? 1 : 0);
 })();
 

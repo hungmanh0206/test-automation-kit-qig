@@ -611,6 +611,19 @@
       ],
       "task_key": null,
       "status": "active@v1"
+    },
+    {
+      "type": "business_rule",
+      "file": "domain/add-on-order__customer-info-sync-source.json",
+      "module": "Đồng bộ HubSpot / Add-on Order — Customer Info",
+      "tags": [
+        "add-on-order",
+        "hubspot-sync",
+        "customer-info",
+        "mapping-source"
+      ],
+      "task_key": null,
+      "status": "active@v1"
     }
   ]
 }

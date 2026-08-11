@@ -40,6 +40,15 @@ node scripts/qa/ui_conformance_check.js --catalog <PROJECT_OUTPUT_DIR>/tasks/<TA
       "expectedColumns": ["#","User Name","Type","Class","Lesson Name","Lesson date","Check-in","Check-out","Actual workload","Attendance Status","Status","Error message"],
       "formats": { "Check-in": "^\\d{2}:\\d{2}$", "Check-out": "^\\d{2}:\\d{2}$" }
     },
+    "fields": [{                            // (tùy) KIỂM KÊ TẬP FIELD của một section: thiếu/thừa/lệch nhãn
+      "name": "Customer Info",
+      "headingText": "Customer Info",        // neo section theo TIÊU ĐỀ hiển thị — ưu tiên dùng cái này
+      "containerSelector": "#customer-info", // dùng khi section CÓ selector ổn định (thay cho headingText)
+      "expectedFields": ["Full Name", "Email", "Phone", "Địa Chỉ"],
+      "labelSelector": "label",              // (tùy) mặc định `label`; section layout div sẽ tự rơi về cặp leaf-node
+      "mode": "superset",                    // (tùy) tha field ngoài danh sách — dùng khi mới trích một phần tài liệu
+      "ordered": true                        // (tùy) kiểm cả thứ tự field
+    }],
     "texts":  [{ "name": "empty-state", "selector": ".ant-empty-description", "expected": "No data" }],
     "tokens": [{ "name": "Cancel btn", "selector": "button:has-text(\"Cancel\")",
                  "expected": { "color": "#99A1B7", "border-radius": "6px" },
@@ -54,8 +63,19 @@ node scripts/qa/ui_conformance_check.js --catalog <PROJECT_OUTPUT_DIR>/tasks/<TA
 - `format.mismatch` / `format.col-missing` / `format.no-sample` — dữ liệu không đúng format regex.
 - `text.mismatch` — empty-state/label/placeholder sai chuỗi.
 - `token.color` / `token.size` / `token.no-element` — lệch token design ngoài dung sai.
+- `fields.missing` / `fields.extra` / `fields.order` — section thiếu field / mọc field lạ / sai thứ tự.
+- `fields.label-text` — nhãn khớp nội dung nhưng lệch hoa/thường hoặc khoảng trắng so với tài liệu (gom 1 dòng/section).
+- `fields.no-container` — không định vị được section (`headingText` không có trên màn, hoặc selector sai).
+- `fields.no-expected` — catalog khai `fields` mà quên `expectedFields`.
+- `currency.mixed` — một khối trộn nhiều đơn vị tiền (lớp bug "giá trị USD in ra đ").
+- `info.*` — **ghi chú cách đo, KHÔNG tính deviation** (vd `info.loose-labels`: section không có `<label>` nên nhãn đọc theo cặp leaf-node).
+
+## Mã thoát
+`0` = đo xong, khớp · `1` = đo xong, có deviation · **`2` = KHÔNG ĐO ĐƯỢC** (thiếu creds, login thất bại/throttle, fatal).
+Đừng đọc report của lần exit 2 — thiếu creds thì mọi màn đọc ra 0 cột/0 field và báo cáo trông y như app hỏng thật.
 
 ## Lưu ý
+- **Truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`** khi chạy, nếu không env rơi về `.env` chung (thường không có creds).
 - Catalog là **per-task** (sinh ở Phase 1, mục 2b của `run_phase1_template.md`), nhưng công cụ dùng chung.
 - Màn cần dữ liệu động (vd `batch_job_id`) thì điền URL sau khi có dữ liệu, hoặc dùng `preSteps` điều hướng.
 - Đây là bổ trợ, không thay thế review mắt/vision cho bố cục tổng thể — nhưng bắt trọn phần "exact text/format/column" mà mắt dễ bỏ sót khi bảng dài.

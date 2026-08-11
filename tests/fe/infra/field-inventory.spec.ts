@@ -84,6 +84,48 @@ test.describe('field inventory — bắt thiếu/thừa/lệch mà test theo bư
     expect(typesOf(createEdit)).toContain('fields.extra');   // và mọc 'Extension Package'
   });
 
+  test('layout DIV không có <label> → định vị section theo headingText + đọc nhãn kiểu lỏng, KHÔNG báo thiếu hết', async ({ page }) => {
+    // Đo trên màn thật (Add-on Order create/detail của OPS): section là div, nhãn là div — selector `label`
+    // trả về RỖNG nên phiên bản trước báo thiếu TOÀN BỘ field. Và vì không có class ổn định, khai
+    // containerSelector là giòn ⇒ phải neo theo tiêu đề hiển thị.
+    await page.setContent(`<div class="card"><div class="hd"><span>Customer Info</span></div>
+      <div class="box">
+        <div class="row"><div>Full name:</div><div>IT test</div></div>
+        <div class="row"><div>Email:</div><div>a@b.com</div></div>
+        <div class="row"><div>Số CCCD/ Hộ chiếu:</div><div>001299110011</div></div>
+      </div></div>
+      <div class="card"><div class="hd"><span>Order Amount</span></div>
+      <div class="box"><div class="row"><div>Gross Amount:</div><div>0đ</div></div></div></div>`);
+    const dev = await checkScreen(page, '', {
+      name: 'Detail',
+      fields: [{
+        name: 'Customer Info',
+        headingText: 'Customer Info',
+        expectedFields: ['Full name', 'Email', 'Số CCCD/Hộ chiếu', 'Phone'],
+      }],
+    });
+    // Chỉ THIẾU đúng 'Phone'. Nếu neo section sai (bắt sang card 'Order Amount') hoặc không đọc được nhãn
+    // thì test này đỏ ngay — đó là ý nghĩa của nó.
+    const miss = dev.find((d: any) => d.type === 'fields.missing');
+    expect(miss.expected).toEqual(['Phone']);
+    expect(typesOf(dev)).toContain('info.loose-labels');
+    // 'Số CCCD/ Hộ chiếu' (build) vs 'Số CCCD/Hộ chiếu' (tài liệu): lệch khoảng trắng ⇒ 1 dòng label-text,
+    // KHÔNG được đếm thành thiếu-và-thừa (nếu không mỗi lệch chữ sinh 2 dòng, nhấn chìm tín hiệu thật).
+    const lt = dev.find((d: any) => d.type === 'fields.label-text');
+    expect(lt.pairs).toEqual([{ tàiLiệu: 'Số CCCD/Hộ chiếu', build: 'Số CCCD/ Hộ chiếu' }]);
+    expect(typesOf(dev)).not.toContain('fields.extra');
+  });
+
+  test('headingText không có trên màn → fields.no-container, không âm thầm bỏ qua section', async ({ page }) => {
+    await page.setContent('<div class="card"><span>Order Amount</span></div>');
+    const dev = await checkScreen(page, '', {
+      name: 'Detail',
+      fields: [{ name: 'Customer Info', headingText: 'Customer Info', expectedFields: ['Email'] }],
+    });
+    expect(typesOf(dev)).toContain('fields.no-container');
+    expect(dev.find((d: any) => d.type === 'fields.no-container').selector).toContain('Customer Info');
+  });
+
   test('khai fields mà quên expectedFields → báo ngay, không im lặng bỏ qua', async ({ page }) => {
     await page.goto(FIXTURE);
     const dev = await checkScreen(page, '', {

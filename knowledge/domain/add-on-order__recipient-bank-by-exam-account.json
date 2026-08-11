@@ -15,6 +15,7 @@
   "version": 1,
   "status": "active",
   "covered_by": [],
+  "_coverage_gap": "CỐ Ý để rỗng: bộ canonical có TC_133/136 về đồng bộ Recipient Bank Account nói chung và TC_134/135 về TK theo CHƯƠNG TRÌNH (trước/từ 01/01/2026: ACCA→SAA, CFA→SCFA, CMA→SCMA), nhưng KHÔNG có TC nào phát biểu rule theo LOẠI TÀI KHOẢN THI (CBE ⇒ MB SAPP). Gán các TC đó vào covered_by là khai coverage giả. Cần thêm TC ở lượt gen sau. Lưu ý thêm: rule-theo-chương-trình và rule-theo-loại-TK-thi có thể chồng nhau — cần BA nói rõ cái nào thắng khi cả hai áp được.",
   "tags": ["add-on-order", "recipient-bank", "hubspot-sync"],
   "_verified_note": "Đã kiểm trên UAT 11/08/2026 bằng đơn add-on CBE 09d69dbf-325b-4b02-bb57-4166b728f8fc → tab \"List Transaction\" CỦA ĐƠN (10 cột) cho Recipient Bank Account = MB SAA. Bẫy: bấm tab bắt trúng \"Transaction Management\" ở sidebar = lưới toàn hệ thống (17 cột) — phải chọn href chứa order id mới đúng bảng của đơn.",
   "_open_question": "Giao dịch dòng #1 của đơn đó có TOÀN BỘ trường trống (TK nhận/loại/số tiền/status) — chưa rõ là dòng placeholder của UI hay bản ghi lỗi. Cần dev/BA trả lời, chưa kết luận."
