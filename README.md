@@ -212,6 +212,7 @@ flowchart TD
 | Kiểm business rule (schema/PII/trace TC/stale) | `npm run domain:check` · `npm run domain:check -- --enforce` · `npm run domain:index` |
 | Bản đồ hệ thống + nghĩa vụ test còn trống | `npm run system:check` · `npm run system:check -- --enforce` · `npm run system:index` · `node scripts/qa/system_map.js --impact "<surface>"` |
 | Tra quyết định cũ trước khi log bug | `node scripts/qa/decisions.js --check "<triệu chứng>" --module <Module>` · `npm run decisions:check` · `npm run decisions:index` |
+| Bảng tra skill của kit (sinh lại khi thêm skill) | `npm run skills:index` — sinh `.agent/skills/INDEX.md`; SessionStart hook tự bơm danh sách tên vào context |
 | Kỷ luật định vị element (chống bắt sai UI) | `npm run lint:locator` (báo cáo) · `npm run lint:locator:enforce` (chặn regression MỚI so với baseline `.agent/config/locator-lint-baseline.json`) |
 | Chọn test theo diff + risk/flaky | `npm run select:tests -- [--include-risky 3] [--risk-first]` |
 | Risk register (RBT) | `npm run risk` |
