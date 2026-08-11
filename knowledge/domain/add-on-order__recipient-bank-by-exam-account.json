@@ -1,0 +1,21 @@
+{
+  "id": "BR-ADDONBANK-001",
+  "module": "Đồng bộ HubSpot / Theo Order Type",
+  "rule": "Tài khoản nhận (Recipient Bank Account) của giao dịch thuộc Add-on Order được xác định theo LOẠI TÀI KHOẢN THI của sản phẩm add-on: tài khoản thi CBE ⇒ MB SAPP.",
+  "applies_when": "giao dịch thu phí thuộc Add-on Order. Quan sát trên UAT: Cert ⇒ MB SAA, Becker ⇒ MB SCMA — hai nhánh này CHƯA được BA xác nhận thành rule, chỉ ghi để đối chiếu, KHÔNG dùng làm oracle.",
+  "examples": [
+    {
+      "input": "Add-on Order sản phẩm \"Tài khoản thi MA1 CBE\" (Test Subject MA1), giao dịch thu 1.000.000đ đã thanh toán",
+      "expected": "Recipient Bank Account = MB SAPP (thực tế trên UAT ngày 11/08/2026 là MB SAA ⇒ vi phạm rule, QA đã log bug)"
+    }
+  ],
+  "source": "Sheet tổng hợp bug SAPP-24395 dòng #7, cột \"Meet the need\" do BA/PO ghi: \"Add-on Order với tài khoản thi CBE thì TK nhận phải là MB SAPP\"",
+  "confirmed_by": "BA",
+  "confirmed_at": "2026-08-10",
+  "version": 1,
+  "status": "active",
+  "covered_by": [],
+  "tags": ["add-on-order", "recipient-bank", "hubspot-sync"],
+  "_verified_note": "Đã kiểm trên UAT 11/08/2026 bằng đơn add-on CBE 09d69dbf-325b-4b02-bb57-4166b728f8fc → tab \"List Transaction\" CỦA ĐƠN (10 cột) cho Recipient Bank Account = MB SAA. Bẫy: bấm tab bắt trúng \"Transaction Management\" ở sidebar = lưới toàn hệ thống (17 cột) — phải chọn href chứa order id mới đúng bảng của đơn.",
+  "_open_question": "Giao dịch dòng #1 của đơn đó có TOÀN BỘ trường trống (TK nhận/loại/số tiền/status) — chưa rõ là dòng placeholder của UI hay bản ghi lỗi. Cần dev/BA trả lời, chưa kết luận."
+}

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-08-10",
+  "updated_at": "2026-08-11",
   "entries": [
     {
       "type": "historical_execution",
@@ -599,6 +599,18 @@
       ],
       "status": "active",
       "summary": "DELETE /transactions/{id} luôn trả HTTP 200 — dùng response code để kết luận \"đã xóa được\" có hợp lệ không?"
+    },
+    {
+      "type": "business_rule",
+      "file": "domain/add-on-order__recipient-bank-by-exam-account.json",
+      "module": "Đồng bộ HubSpot / Theo Order Type",
+      "tags": [
+        "add-on-order",
+        "recipient-bank",
+        "hubspot-sync"
+      ],
+      "task_key": null,
+      "status": "active@v1"
     }
   ]
 }
