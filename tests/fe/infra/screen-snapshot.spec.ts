@@ -49,6 +49,23 @@ test.describe('screen_snapshot — thứ có trên màn mà tài liệu không n
     expect(diffWithDoc(snap, {}).notes.join(' ')).toMatch(/trộn|đơn vị tiền/);
   });
 
+  test('layout DIV (không có label/table) → vẫn đọc được nhãn+giá trị, diff vẫn chạy', async ({ page }) => {
+    // Màn Order detail của OPS render bằng div: đo thật thì `labels` = 0 ⇒ snapshot MÙ hoàn toàn.
+    // Nhánh labelsLoose phải cứu được ca này, và diffWithDoc phải tự dùng nó khi `labels` rỗng.
+    await page.setContent(`<div id="ov">
+      <div><div>Gross Amount</div><div>5.400.000đ</div></div>
+      <div><div>Net Price</div><div>5.400.000đ</div></div>
+      <div><div>Test Subject</div><div>MA1</div></div>
+    </div>`);
+    const snap = await snapshotScreen(page, { scopeSelector: '#ov' });
+    expect(snap.labels).toHaveLength(0);                       // đúng: không có <label>/<th> nào
+    expect(snap.labelsLoose).toContain('Net Price');           // nhánh div cứu được
+    expect(snap.pairsLoose.find((p: any) => p.label === 'Test Subject')?.value).toBe('MA1');
+
+    const d = diffWithDoc(snap, { expectedFields: ['Gross Amount', 'Net Price', 'Test Subject', 'Monetary Unit'] });
+    expect(d.missingFields).toEqual(['Monetary Unit']);        // chỉ thiếu đúng 1 field, KHÔNG báo thiếu hết
+  });
+
   test('khối đơn vị thống nhất → KHÔNG cảnh báo (không kêu oan)', async ({ page }) => {
     await page.setContent('<div id="m2"><label>Price</label><span>5.000.000đ</span><label>Net</label><span>4.250.000đ</span></div>');
     const snap = await snapshotScreen(page, { scopeSelector: '#m2' });

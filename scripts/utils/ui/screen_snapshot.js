@@ -57,6 +57,22 @@ async function snapshotScreen(page, opts = {}) {
       pairs.push({ label, value: val });
     }
 
+    // 2b) LAYOUT DIV: nhiều màn detail (Metronic/React) KHÔNG dùng <label>/<dt>/<table> — nhãn và giá trị là
+    // 2 div/span cạnh nhau. Đo thật trên một màn Order detail: khối 1) trả về 0 nhãn ⇒ snapshot MÙ hoàn toàn.
+    // Nên bổ sung nhánh đọc theo LEAF NODE liền kề. Giữ riêng (`labelsLoose`/`pairsLoose`) chứ không trộn vào
+    // `labels`, để hành vi cũ và regression hiện có không đổi; `diffWithDoc` chỉ dùng khi `labels` rỗng.
+    const leaves = [...root.querySelectorAll('div,span,p,td')].filter((el) => !el.children.length && visible(el))
+      .map((el) => norm(el.textContent)).filter((t) => t && t.length <= 80);
+    const looksValue = (t) => /\d/.test(t) || /^(có|không|yes|no|-|N\/A)$/i.test(t);
+    const looksLabel = (t) => t.length >= 2 && t.length <= 60 && !looksValue(t);
+    const labelsLoose = []; const pairsLoose = [];
+    for (let i = 0; i < leaves.length - 1; i += 1) {
+      const a = leaves[i].replace(/[:*]\s*$/, ''); const bNext = leaves[i + 1];
+      if (!looksLabel(a) || !bNext) continue;
+      labelsLoose.push(a);
+      pairsLoose.push({ label: a, value: bNext });
+    }
+
     // 3) Bảng: header + vài dòng đầu (đủ để thấy cột thừa/thiếu và định dạng ô)
     const tableEls = root.tagName === 'TABLE' ? [root] : [...root.querySelectorAll('table')];
     const tables = tableEls.filter(visible).map((t) => ({
@@ -75,7 +91,9 @@ async function snapshotScreen(page, opts = {}) {
     return {
       scope: sc,
       labels,
+      labelsLoose: [...new Set(labelsLoose)],
       pairs,
+      pairsLoose,
       tables,
       currencies: found,
       mixedCurrency: Object.keys(found).length > 1,
@@ -95,7 +113,9 @@ function diffWithDoc(snap, doc = {}) {
   const n = (s) => String(s || '').replace(/\s+/g, ' ').trim();
   const out = { missingFields: [], extraFields: [], missingColumns: [], extraColumns: [], notes: [] };
   if (Array.isArray(doc.expectedFields) && doc.expectedFields.length) {
-    const have = new Set((snap.labels || []).map(n));
+    // Layout div: `labels` rỗng ⇒ dùng `labelsLoose` (nhãn suy từ leaf node liền kề) thay vì báo THIẾU HẾT.
+    const src = (snap.labels && snap.labels.length) ? snap.labels : (snap.labelsLoose || []);
+    const have = new Set(src.map(n));
     const want = doc.expectedFields.map(n);
     out.missingFields = want.filter((x) => !have.has(x));
     out.extraFields = [...have].filter((x) => !want.includes(x));
