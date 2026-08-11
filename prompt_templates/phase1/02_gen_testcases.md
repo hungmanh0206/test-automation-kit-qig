@@ -228,14 +228,43 @@ Chỉ dùng đúng các giá trị Priority có trong Jira: `Highest`, `High`, `
 
 > ⚙️ **Có máy kiểm** (`design_gate` → `scripts/lib/testcase/validate.js`): giá trị ngoài 5 mức trên = **CHẶN**. Lý do không phải hình thức: bug log lên Jira lấy `Priority` **từ chính cột này** (`08_log_bug_jira.md`), giá trị lạ ⇒ Jira không set được ⇒ bug rơi về default, mất luôn tín hiệu ưu tiên.
 
-## 8. Mức độ rủi ro
-| Level | Khi nào |
-|---|---|
-| **High** | Dữ liệu quan trọng, tài chính, bảo mật, không thể rollback |
-| **Medium** | Ảnh hưởng trung bình, có thể sửa |
-| **Low** | Ảnh hưởng nhỏ, UI/UX, dễ fix |
+## 8. Severity (cột thứ 8 — tên cũ "Mức độ rủi ro")
 
-> ⚙️ **Có máy kiểm**: giá trị ngoài `High|Medium|Low` = **CHẶN** (`risk:gate` ép độ sâu theo cột này, giá trị lạ bị bỏ qua âm thầm). Ngoài ra 2 cột §7/§8 **không được nói ngược nhau** — `rủi ro High` + `ưu tiên Low/Lowest`, hoặc `rủi ro Low` + `ưu tiên Highest` là tự mâu thuẫn ⇒ **cảnh báo**. Chọn theo Impact của module (xem `.agent/config/risk_model.json` §`impact.modules`) thay vì theo cảm tính, để cùng một loại case không bị gán ưu tiên khác nhau giữa các task.
+Severity = **hậu quả NẾU case này fail**. Khác §7 `Ưu tiên` (= thứ tự sửa). Hai trục tách nhau là bình thường:
+lỗi cosmetic ở màn thanh toán trước ngày demo = `Trivial` + ưu tiên `High`; mất dữ liệu ở module sprint này
+không ai dùng = `Blocker` + ưu tiên `Medium`.
+
+**Chấm bằng CÂY QUYẾT ĐỊNH — đi từ trên xuống, dừng ở câu ĐÚNG đầu tiên. Không chấm theo cảm giác.**
+
+| # | Câu hỏi phân biệt | Nếu ĐÚNG |
+|---|---|---|
+| 1 | Có **mất/sai dữ liệu không hồi được**, **sai số tiền/doanh thu**, **lộ dữ liệu người khác**, hoặc **hệ thống/luồng chính không dùng được** và KHÔNG có đường vòng? | **Blocker** |
+| 2 | Luồng chính sai/không hoàn thành được, nhưng **có đường vòng** (thao tác khác, sửa tay, làm lại) — hoặc dữ liệu sai nhưng **phát hiện và sửa được** trước khi ảnh hưởng tiền/đối soát? | **Critical** |
+| 3 | Một **chức năng phụ** sai, hoặc luồng chính sai ở **nhánh điều kiện hẹp** (1 loại đơn, 1 role, 1 cấu hình) — người dùng vẫn làm được việc chính? | **Major** |
+| 4 | **Hiển thị/nội dung sai** nhưng dữ liệu bên dưới ĐÚNG: sai nhãn, sai định dạng, sai đơn vị hiển thị, thiếu/thừa trường, sai thứ tự, sai thông báo? | **Minor** |
+| 5 | Chỉ **thẩm mỹ**: lệch spacing/màu/căn lề, typo không gây hiểu sai, tooltip thiếu? | **Trivial** |
+
+**Quy tắc phân định khi lưỡng lự (bắt buộc áp dụng, theo thứ tự):**
+1. **Tiền và dữ liệu thắng mọi thứ** — dính tiền/doanh thu/đối soát mà sai SỐ ⇒ tối thiểu `Critical`, sai không hồi được ⇒ `Blocker`. Sai đơn vị/định dạng *hiển thị* mà số lưu vẫn đúng ⇒ `Minor` (đừng đẩy lên vì thấy chữ "tiền").
+2. **Có đường vòng hay không** là ranh giới `Blocker` / `Critical`. Phải viết đường vòng đó ra trong `Kết quả mong đợi`/`Assumptions`; không nêu được ⇒ coi là không có.
+3. **Phạm vi hẹp không hạ severity của hậu quả** — chỉ hạ khi hậu quả nhẹ. 1 role mất dữ liệu vẫn là `Blocker`. Phạm vi hẹp thuộc §7 `Ưu tiên`.
+4. **Case negative/guard** lấy severity theo **hậu quả nếu guard KHÔNG chặn** (vd thu vượt trên đơn đã trả đủ ⇒ `Critical`), không phải theo độ khó tái hiện.
+5. **Không suy severity từ Impact của module.** Impact ở `risk_model.json` dùng cho risk band cấp module; severity là hậu quả của **chính case này**.
+
+**Ví dụ đã chốt (dùng làm mốc so sánh):**
+
+| Tình huống thật | Severity | Vì sao |
+|---|---|---|
+| Callback thanh toán trùng làm Paid Amount cộng đôi, đối soát lệch | Blocker | sai số tiền, đã ghi nhận, không tự hồi |
+| Đơn đã trả đủ vẫn tạo được giao dịch thu thêm (guard thiếu) | Critical | sai tiền nhưng phát hiện/hủy được trước đối soát |
+| Đồng bộ sang hệ ngoài lấy nhầm nguồn (Contact vs Deal) nên field sai người | Critical | dữ liệu sai bản chất, phải sửa lại thủ công |
+| Order gia hạn thiếu 1 option trong dropdown tính phí | Major | chức năng phụ / nhánh hẹp, việc chính vẫn chạy |
+| Discount 10 USD hiển thị "10đ" (giá trị lưu vẫn đúng) | Minor | sai đơn vị HIỂN THỊ, dữ liệu dưới đúng |
+| Section thiếu trường `Net Price` | Minor | thiếu thông tin hiển thị, không sai dữ liệu |
+| Lệch spacing giữa checkbox và các box còn lại | Trivial | thuần thẩm mỹ |
+
+> ⚙️ **Có máy kiểm**: giá trị ngoài `Blocker|Critical|Major|Minor|Trivial` = **CHẶN** (thang cũ `High|Medium|Low` vẫn tạm nhận cho bộ TC cũ, kèm cảnh báo 1 lần/file — bộ cũ **không cần** chuyển). Ghi giá trị Severity vào cột `Ưu tiên` = **CHẶN** (sai cột). Hai cột §7/§8 **không được nói ngược nhau**: `Blocker/Critical` + ưu tiên `Low/Lowest`, hoặc `Minor/Trivial` + ưu tiên `Highest` ⇒ **cảnh báo**.
+> ⚠️ **Jira hiện CHƯA có field Severity** → giá trị này chỉ sống trong testcase + report, **KHÔNG** đẩy lên Jira. `Priority` của bug vẫn lấy từ cột §7.
 
 ## 9. Setup Strategy (Hợp đồng tiền điều kiện) — BẮT BUỘC
 

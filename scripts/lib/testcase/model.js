@@ -44,7 +44,9 @@ const COL = {
   steps: (n) => n.includes('step') || n.includes('buoc'),
   expected: (n) => n.includes('expected') || n.includes('ket qua'),
   priority: (n) => n.includes('priority') || n.includes('uu tien'),
-  risk: (n) => n.includes('risk') || n.includes('rui ro'),
+  // Cột thứ 8 nhận CẢ tên cũ ("Mức độ rủi ro") và tên mới ("Severity") — thang 5 mức
+  // Blocker|Critical|Major|Minor|Trivial áp từ task mới, bộ TC cũ giữ nguyên header không phải sửa.
+  risk: (n) => n.includes('risk') || n.includes('rui ro') || n.includes('severity'),
   group: (n) => ['nhom chuc nang', 'functional group', 'test group', 'group', 'phan nhom'].includes(n),
 };
 // matcher cột Setup Strategy contract (normalized)
