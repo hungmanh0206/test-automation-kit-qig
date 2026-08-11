@@ -246,8 +246,40 @@ function lintStrayAnomaly({ status = '', comment = '' } = {}) {
   };
 }
 
+// ---- BUG phải TÁI HIỆN ĐƯỢC BẰNG ĐƯỜNG THẬT, và không được chứa suy đoán ----
+// Vì sao: rà lại một dự án thật thấy nhiều bug bị bác vì bản thân TÌNH HUỐNG không có thật —
+//  · gọi thẳng API bằng Super Admin rồi kết luận "thiếu guard" (role thường thực ra bị 403) → phải retract;
+//  · replay tham số đã ký của return-URL vào endpoint nội bộ rồi coi là callback thật → premise sai từ gốc;
+//  · mass-assign field mà UI không bao giờ gửi;
+//  · repro ghi theo Ý ĐỊNH chứ không theo lần chạy thật (bước 1 chưa set đơn vị tiền mà đã ghi là có set).
+// Dev đọc một chi tiết sai là mất tin cả ticket, và lần sau bug thật cũng bị bác theo.
+const API_DIRECT = /\b(POST|PATCH|PUT|DELETE|GET)\s+\/|\/api\/v\d|endpoint|swagger|curl\b|payload/i;
+const REAL_ACTOR = /\bUI\b|màn |man hinh|giao diện|form |lưới|bấm |click|role |quyền |tài khoản |token của|đăng nhập bằng/i;
+const ARTIFICIAL = /replay|giả lập|gia lap|tự bắn|tu ban|inject|bypass|sửa payload|sua payload|gửi thẳng|gui thang|mass[- ]assign|tamper|giả chữ ký|gia chu ky/i;
+const SPECULATION = /\bnghi\b|nghi ngờ|khả năng cao|kha nang cao|có thể do|co the do|nhiều khả năng|nhieu kha nang|đoán|doan la|chắc là|có lẽ/i;
+
+/**
+ * Kiểm "hiện thực" của một bug trước khi log.
+ * @param {{summary?:string, description?:string}} bug
+ * @returns {Array<{level:'problem'|'warning', message:string}>}
+ */
+function lintBugRealism({ summary = '', description = '' } = {}) {
+  const out = [];
+  const text = `${summary}\n${description}`;
+  if (API_DIRECT.test(text) && !REAL_ACTOR.test(text)) {
+    out.push({ level: 'problem', message: 'repro CHỈ đi bằng gọi API trực tiếp, không nêu actor thật (role/tài khoản/đường UI) — gọi bằng tài khoản quyền cao rồi kết luận "thiếu guard" là kết luận SAI: role thường có thể đã bị chặn. Phải nêu rõ gọi bằng token của role nào, và kiểm cả đường UI.' });
+  }
+  if (ARTIFICIAL.test(text) && !/người dùng thật|user thật|đường thật|kịch bản thật|xảy ra trong thực tế/i.test(text)) {
+    out.push({ level: 'problem', message: 'repro dùng thao tác NHÂN TẠO (replay/inject/tamper/mass-assign/gửi thẳng payload) mà không chứng minh actor thật đạt được trạng thái đó — tình huống không xảy ra trong thực tế thì không phải product bug. Nếu vẫn muốn báo, phải nói rõ đây là kịch bản tấn công/kỹ thuật và ai có thể thực hiện.' });
+  }
+  if (SPECULATION.test(description)) {
+    out.push({ level: 'warning', message: 'description chứa SUY ĐOÁN nguyên nhân ("nghi/khả năng cao/có thể do") — mô tả bug chỉ nên có sự kiện quan sát được. Suy đoán sai một chi tiết là dev mất tin cả ticket; muốn gợi ý thì để ở comment và ghi rõ là giả thuyết.' });
+  }
+  return out;
+}
+
 module.exports = {
-  isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly,
+  isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly, lintBugRealism,
   isVisualEvidence, isVideoEvidence,
   hasDebugTokens, looksRunOn, splitIdeas, looksComplex,
   cleanComment, lintComment, lintEvidence, lintBugHeadings,

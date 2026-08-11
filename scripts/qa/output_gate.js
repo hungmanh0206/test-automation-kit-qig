@@ -168,6 +168,11 @@ function gateBug(bug = {}) {
   if (rules.looksRunOn(bug.actualResult)) problems.push(`${id}: "Kết quả hiện tại" run-on (dồn nhiều ý 1 dòng) → mỗi ý 1 dòng/bullet`);
   if (rules.looksRunOn(bug.expectedResult)) problems.push(`${id}: "Kết quả mong muốn" run-on → mỗi ý 1 dòng/bullet`);
   if (Array.isArray(bug.headings)) rules.lintBugHeadings(bug.headings).forEach((p) => problems.push(`${id}: ${p}`));
+  // HIỆN THỰC của repro: tình huống phải có thật, và description không được chứa suy đoán.
+  // Ở mode bug thì CẢ warning cũng chặn: bug là artifact gửi ra ngoài cho dev — sai một chi tiết là mất tin
+  // cả ticket, mà sửa thì chỉ mất 1 phút (chuyển suy đoán xuống comment, nêu rõ role/đường UI đã dùng).
+  rules.lintBugRealism({ summary: bug.summary || bug.title, description: [bug.steps, bug.actualResult, bug.expectedResult, bug.description].filter(Boolean).join('\n') })
+    .forEach((v) => problems.push(`${id}: ${v.message}`));
   return problems;
 }
 
