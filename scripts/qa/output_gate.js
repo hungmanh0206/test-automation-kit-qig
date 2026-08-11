@@ -173,6 +173,9 @@ function gateBug(bug = {}) {
   // cả ticket, mà sửa thì chỉ mất 1 phút (chuyển suy đoán xuống comment, nêu rõ role/đường UI đã dùng).
   rules.lintBugRealism({ summary: bug.summary || bug.title, description: [bug.steps, bug.actualResult, bug.expectedResult, bug.description].filter(Boolean).join('\n') })
     .forEach((v) => problems.push(`${id}: ${v.message}`));
+  // NGUỒN GỐC: repro phải trích từ lần chạy thật (mỗi bước 1 ảnh, hoặc 1 video cho cả chuỗi).
+  rules.lintBugProvenance({ steps: bug.steps, attachments: att, runRef: bug.runRef || bug.runId || bug.evidenceDir })
+    .forEach((v) => problems.push(`${id}: ${v.message}`));
   return problems;
 }
 

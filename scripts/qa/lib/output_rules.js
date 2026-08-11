@@ -278,8 +278,32 @@ function lintBugRealism({ summary = '', description = '' } = {}) {
   return out;
 }
 
+/**
+ * BUG phải TRÍCH TỪ LẦN CHẠY THẬT, không viết lại bằng tay theo trí nhớ/ý định.
+ * Vì sao: một bug đã bị Rejected vì bước ghi "chọn Monetary Unit = USD rồi nhập 170" trong khi lần chạy đó
+ * nhiều khả năng chưa set đơn vị — re-test thì không tái hiện. Regex không thể biết script đã làm gì, nhưng
+ * CÓ THỂ đòi bằng chứng: mỗi bước phải có ảnh của chính bước đó (hoặc 1 video cho cả chuỗi), và bug phải trỏ
+ * được về lần chạy sinh ra nó. Bước nào không có ảnh thì không được viết là đã làm.
+ * @param {{steps?:string, attachments?:string[], runRef?:string}} bug
+ * @returns {Array<{level:'problem', message:string}>}
+ */
+function lintBugProvenance({ steps = '', attachments = [], runRef = '' } = {}) {
+  const out = [];
+  const att = (Array.isArray(attachments) ? attachments : [attachments]).map(String).filter(Boolean);
+  const nStep = new Set(leadingNumbers(steps)).size;
+  const hasVideo = att.some(isVideoEvidence);
+  const nImg = att.filter(isVisualEvidence).length;
+  if (nStep >= 2 && !hasVideo && nImg < nStep) {
+    out.push({ level: 'problem', message: `repro có ${nStep} bước nhưng chỉ ${nImg} ảnh — mỗi bước phải có ảnh CỦA CHÍNH LẦN CHẠY, hoặc 1 video cho cả chuỗi. Thiếu ảnh nghĩa là bước đó đang được viết lại theo ý định chứ không phải theo cái đã chạy (đã có bug bị Rejected vì đúng lỗi này).` });
+  }
+  if (!String(runRef || '').trim() && !att.length) {
+    out.push({ level: 'problem', message: 'bug không trỏ về lần chạy nào (thiếu cả evidence lẫn tham chiếu run/drive) — không audit ngược được thì không phân biệt được "quan sát thật" với "mô tả lại".' });
+  }
+  return out;
+}
+
 module.exports = {
-  isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly, lintBugRealism,
+  isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly, lintBugRealism, lintBugProvenance,
   isVisualEvidence, isVideoEvidence,
   hasDebugTokens, looksRunOn, splitIdeas, looksComplex,
   cleanComment, lintComment, lintEvidence, lintBugHeadings,
