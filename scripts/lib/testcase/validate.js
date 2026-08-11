@@ -67,8 +67,10 @@ function validate(doc) {
     const p = String(tc.priority || '').trim();
     const r = String(tc.risk || '').trim();
     if (!p || !r || !PRIORITY_OK.test(p) || !RISK_OK.test(r)) continue;
-    if (RISK_HIGH.test(r) && /^(low|lowest)$/i.test(p)) warnings.push(`${id}: MÂU THUẪN — \`Mức độ rủi ro\` High (tài chính/bảo mật/không rollback) nhưng \`Ưu tiên\` ${p}; sửa 1 trong 2 cho khớp §7/§8`);
-    if (RISK_LOW.test(r) && /^highest$/i.test(p)) warnings.push(`${id}: MÂU THUẪN — \`Mức độ rủi ro\` Low (UI/UX, dễ fix) nhưng \`Ưu tiên\` Highest; sửa 1 trong 2 cho khớp §7/§8`);
+    // Ô ⚠ của ma trận §7b: không cấm, nhưng phải có lý do dịch bậc — nếu không thì 1 trong 2 cột chấm sai.
+    if (/^blocker$/i.test(r) && /^(medium|low|lowest)$/i.test(p)) warnings.push(`${id}: ô ⚠ trong ma trận §7b — \`Severity\` Blocker nhưng \`Ưu tiên\` ${p}. Hợp lệ khi chức năng CHƯA bật cho người dùng / sắp bỏ; phải ghi lý do dịch bậc trong \`Assumptions\`. Đừng hạ Severity cho "đẹp ô" — phạm vi hẹp là lý do hạ Ưu tiên, không phải hạ Severity.`);
+    else if (RISK_HIGH.test(r) && /^(low|lowest)$/i.test(p)) warnings.push(`${id}: ô ⚠ trong ma trận §7b — \`Severity\` ${r} (mất dữ liệu/sai tiền/bảo mật) nhưng \`Ưu tiên\` ${p}; ghi lý do dịch bậc hoặc sửa 1 trong 2 cột.`);
+    if (RISK_LOW.test(r) && /^highest$/i.test(p)) warnings.push(`${id}: ô ⚠ trong ma trận §7b — \`Severity\` ${r} (hiển thị/thẩm mỹ, dữ liệu dưới đúng) nhưng \`Ưu tiên\` Highest. Hợp lệ khi khách nhìn trực tiếp lúc trả tiền / sắp demo; phải ghi lý do trong \`Assumptions\`.`);
   }
   // 2d) THANG CŨ (set-level, 1 lần/file) — bộ TC cũ dùng High/Medium/Low thì nhắc chuyển, KHÔNG chặn và
   // KHÔNG cảnh báo từng dòng (530 dòng cảnh báo = tiếng ồn, sẽ bị lướt).

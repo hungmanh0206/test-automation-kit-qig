@@ -226,6 +226,32 @@ Chỉ dùng đúng các giá trị Priority có trong Jira: `Highest`, `High`, `
 | **Low** | Edge case, ảnh hưởng ít, không block luồng chính |
 | **Lowest** | Lỗi nhỏ/cosmetic, typo, hiển thị phụ hoặc tác động rất thấp |
 
+### 7b. Ma trận Severity × Priority — bảng quyết định
+
+Severity chấm trước (§8, theo hậu quả). Priority = **lấy Severity làm mốc rồi dịch theo bối cảnh**:
+
+| Dịch | Khi nào (đủ 1 điều kiện là dịch) |
+|---|---|
+| **+1 bậc** | khách/đối tác nhìn thấy trực tiếp · dính tiền đang chạy thật · sắp go-live/demo trong sprint · người dùng cuối không có cách nào đi vòng |
+| **giữ nguyên** | không rơi vào 2 nhóm còn lại |
+| **−1 bậc** | chức năng **chưa bật** cho người dùng · chỉ xảy ra ở nhánh cấu hình hiếm · có workaround dễ và đã hướng dẫn được · chức năng đã có lịch bỏ/thay thế |
+
+**Ma trận hợp lệ** (● mặc định · ○ hợp lệ, nêu lý do dịch bậc trong `Assumptions` · ⚠ phải giải trình, gate cảnh báo):
+
+| Severity ↓ / Priority → | Highest | High | Medium | Low | Lowest |
+|---|---|---|---|---|---|
+| **Blocker** | ● | ○ | ⚠ | ⚠ | ⚠ |
+| **Critical** | ○ | ● | ○ | ⚠ | ⚠ |
+| **Major** | ○ | ○ | ● | ○ | ⚠ |
+| **Minor** | ⚠ | ○ | ○ | ● | ○ |
+| **Trivial** | ⚠ | ⚠ | ○ | ○ | ● |
+
+**Đọc ma trận:**
+- **Đường chéo ● là mặc định** — không có lý do dịch bậc thì chọn ô này.
+- **Ô ⚠ không bị cấm**, nhưng phải viết lý do. Hai ô ⚠ hay đúng nhất trong thực tế: `Blocker` + `Medium/Low` (mất dữ liệu ở chức năng **chưa bật** cho ai) và `Minor/Trivial` + `Highest` (sai hiển thị ở **màn khách nhìn thấy lúc trả tiền**). Không có lý do ⇒ một trong hai cột đang chấm sai.
+- **Đừng hạ Severity để ô trông "đẹp"**. Phạm vi hẹp, chưa ai dùng, sắp bỏ — tất cả đều là lý do hạ **Priority**, không phải hạ Severity. Đây là lỗi chấm sai phổ biến nhất.
+- Nếu trong một bộ testcase mà Severity và Priority **luôn trùng nhau ở mọi dòng** thì một trong hai cột đang được điền máy móc — bảng này vô dụng khi đó.
+
 > ⚙️ **Có máy kiểm** (`design_gate` → `scripts/lib/testcase/validate.js`): giá trị ngoài 5 mức trên = **CHẶN**. Lý do không phải hình thức: bug log lên Jira lấy `Priority` **từ chính cột này** (`08_log_bug_jira.md`), giá trị lạ ⇒ Jira không set được ⇒ bug rơi về default, mất luôn tín hiệu ưu tiên.
 
 ## 8. Severity (cột thứ 8 — tên cũ "Mức độ rủi ro")
