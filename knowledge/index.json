@@ -624,6 +624,140 @@
       ],
       "task_key": null,
       "status": "active@v1"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-add-on-order-nhom-cbe-tai-khoan-nhan-tra-ve-m.json",
+      "module": "(unmapped)",
+      "tags": [
+        "sheet-bug-7",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Pending"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-order-chuyen-oi-chon-original-product-thu-con.json",
+      "module": "Order Chuyển đổi (giảm)",
+      "tags": [
+        "order-chuyển-đổi-(giảm)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Open"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-man-create-order-chuyen-oi-khong-hien-thi-dea.json",
+      "module": "(unmapped)",
+      "tags": [
+        "chuyen-doi",
+        "deal-lost",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Review"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-khong-tao-uoc-order-chuyen-nhuong-hv-nhan-syn.json",
+      "module": "(unmapped)",
+      "tags": [
+        "chuyen-nhuong",
+        "service-fee-order",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Staging"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-man-checkout-service-fee-order-hien-thi-sai-t.json",
+      "module": "(unmapped)",
+      "tags": [
+        "checkout",
+        "service-fee-order",
+        "sheet-stt26",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Staging"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-qr-thanh-toan-service-fee-order-hien-thi-sai-.json",
+      "module": "(unmapped)",
+      "tags": [
+        "checkout",
+        "sheet-stt25",
+        "vietqr",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Staging"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-order-gia-han-extension-course-package-hien-t.json",
+      "module": "(unmapped)",
+      "tags": [
+        "gia-han",
+        "sheet-stt22",
+        "ui-display",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Staging"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-order-detail-add-on-order-section-add-on-prod.json",
+      "module": "(unmapped)",
+      "tags": [
+        "add-on-order",
+        "ui-display",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Staging"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-add-on-order-tien-usd-custom-discount-khong-q.json",
+      "module": "(unmapped)",
+      "tags": [
+        "add-on-order",
+        "usd",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Staging"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-man-checkout-service-fee-order-khoi-thong-tin.json",
+      "module": "(unmapped)",
+      "tags": [
+        "checkout",
+        "service-fee-order",
+        "sheet-stt24",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Staging"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-combo-version-thieu-end-date-version-cu-produ.json",
+      "module": "(unmapped)",
+      "tags": [
+        "combo-version",
+        "sheet-stt21",
+        "ui-filter",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Staging"
     }
   ]
 }

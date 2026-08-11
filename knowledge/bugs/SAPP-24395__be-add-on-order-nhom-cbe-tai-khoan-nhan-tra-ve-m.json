@@ -1,0 +1,14 @@
+{
+  "id": "SAPP-28420",
+  "bug": "[BE] Add-on Order nhóm CBE: tài khoản nhận trả về MB SAA thay vì MB SAPP",
+  "module": "(unmapped)",
+  "tags": [
+    "sheet-bug-7",
+    "(unmapped)"
+  ],
+  "task_key": "SAPP-24395",
+  "detected_phase": "phase2",
+  "confirmed_via_gate": true,
+  "jira_status": "Pending",
+  "created_at": "2026-08-11"
+}

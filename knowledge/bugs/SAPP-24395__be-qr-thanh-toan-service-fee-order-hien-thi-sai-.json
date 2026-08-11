@@ -1,0 +1,16 @@
+{
+  "id": "SAPP-28408",
+  "bug": "[BE] QR thanh toán Service Fee Order hiển thị sai tài khoản thụ hưởng: Recipient Bank Account là SAPP nhưng QR ghi SAA",
+  "module": "(unmapped)",
+  "tags": [
+    "checkout",
+    "sheet-stt25",
+    "vietqr",
+    "(unmapped)"
+  ],
+  "task_key": "SAPP-24395",
+  "detected_phase": "phase2",
+  "confirmed_via_gate": true,
+  "jira_status": "In Staging",
+  "created_at": "2026-08-10"
+}

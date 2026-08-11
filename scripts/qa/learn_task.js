@@ -56,12 +56,23 @@ function buildModuleMap(taskDir) {
     if (!fs.existsSync(dir)) continue;
     for (const f of fs.readdirSync(dir)) {
       const full = path.join(dir, f);
+      // `~$tên.xlsx` là file LOCK của Excel (sinh khi workbook đang mở) — không phải zip nên ExcelJS ném lỗi
+      // ASYNC, lọt khỏi try/catch sync bên dưới và giết cả tiến trình học. Đã xảy ra thật 11/08/2026.
+      if (f.startsWith('~$') || f.startsWith('.~')) continue;
       if (!fs.statSync(full).isFile()) continue;
       let doc = null;
       try {
         if (f.endsWith('.md')) doc = canonical.parseMarkdown(fs.readFileSync(full, 'utf8'));
         else if (f.endsWith('.xlsx') && canonical.parseXlsx) doc = canonical.parseXlsx(full);
       } catch (e) { continue; } // file lỗi/không phải bảng testcase → bỏ qua, không chặn
+      // `parseXlsx` là ASYNC mà hàm này chạy SYNC ⇒ `doc` là Promise và `doc.tests` luôn undefined: đường
+      // xlsx không đóng góp gì mà KHÔNG báo gì. Đo 11/08/2026: mọi task có .xlsx đều có .md kèm nên chưa
+      // mất dữ liệu — nhưng task nào chỉ có .xlsx thì gate mù mà không ai biết. Nên nói to ra.
+      // Sửa đúng: chuyển hàm này + chỗ gọi ở top-level sang async rồi `await`.
+      if (doc && typeof doc.then === 'function') {
+        console.warn(`[learn] BỎ QUA ${f}: parseXlsx là async nhưng buildModuleMap chạy sync ⇒ không đọc được. Dùng bản .md của cùng bộ testcase để có map module.`);
+        doc = null;
+      }
       for (const t of (doc && doc.tests) || []) {
         if (!t.tcId) continue;
         const mod = String(t.module || '').split('/')[0].trim() || '(unmapped)';

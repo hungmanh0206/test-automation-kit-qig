@@ -172,11 +172,17 @@ function realTcIds() {
     if (!fs.existsSync(dir)) continue;
     for (const f of fs.readdirSync(dir)) {
       const full = path.join(dir, f);
+      if (f.startsWith('~$') || f.startsWith('.~')) continue;   // file LOCK của Excel, không phải zip → ExcelJS nổ async
       try {
         if (!fs.statSync(full).isFile()) continue;
         let doc = null;
         if (f.endsWith('.md')) doc = canonical.parseMarkdown(fs.readFileSync(full, 'utf8'));
         else if (f.endsWith('.xlsx') && canonical.parseXlsx) doc = canonical.parseXlsx(full);
+        // parseXlsx ASYNC + hàm này SYNC ⇒ doc là Promise, doc.tests undefined: bỏ sót TC ID mà không báo gì.
+        if (doc && typeof doc.then === 'function') {
+          console.warn(`[system-map] BỎ QUA ${f}: parseXlsx là async nhưng hàm này chạy sync ⇒ TC ID trong file này KHÔNG được tính. Dùng bản .md.`);
+          doc = null;
+        }
         for (const t of (doc && doc.tests) || []) if (t.tcId) ids.add(String(t.tcId));
       } catch (e) { /* file không phải bảng testcase → bỏ qua */ }
     }
