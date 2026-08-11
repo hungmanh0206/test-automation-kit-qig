@@ -279,6 +279,17 @@ if (statusFile && fs.existsSync(statusFile)) {
       }
     } catch (e) { /* đã báo ở check execution output */ }
   }
+  // Catalog CÓ mà CHƯA CHẠY thì cũng bằng không: mắt xích cuối là bằng chứng đã quan sát màn thật.
+  if (display && taskDir) {
+    const cat = path.join(taskDir, 'requirements', 'ui_catalog.json');
+    if (fs.existsSync(cat)) {
+      const confDir = path.join(taskDir, 'test-results', 'conformance');
+      const ran = fs.existsSync(path.join(confDir, 'conformance_report.json'));
+      const snaps = (() => { try { return fs.readdirSync(path.join(confDir, 'snapshots')).filter((f) => f.endsWith('.json')).length; } catch (e) { return 0; } })();
+      if (!ran) problems.push(`Có \`ui_catalog.json\` nhưng CHƯA CHẠY đối chiếu: thiếu \`test-results/conformance/conformance_report.json\`. Catalog không chạy thì không kiểm được gì — chạy \`node scripts/qa/ui_conformance_check.js --catalog ${path.relative(rc.REPO_ROOT, cat).replace(/\\/g, '/')}\`.`);
+      else if (!snaps) warnings.push('Đã chạy conformance nhưng không có snapshot màn nào trong `test-results/conformance/snapshots/` — snapshot là dấu vết "màn đang có gì", thiếu nó thì phần catalog chưa khai vẫn là vùng mù.');
+    }
+  }
   results.push(engine.toResult('case hiển thị verify qua UI', {
     problems, warnings, skipped: !display, note: display ? `${display} case hiển thị` : 'không có case hiển thị đã execute', severity: engine.SEVERITY.P0,
   }));

@@ -35,6 +35,7 @@ const fs = require('fs');
 const path = require('path');
 require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const { chromium } = require('@playwright/test');
+const { snapshotScreen } = require(path.resolve(__dirname, '..', 'utils', 'ui', 'screen_snapshot'));
 
 function arg(name, def) {
   const i = process.argv.indexOf(`--${name}`);
@@ -45,7 +46,8 @@ const CATALOG = arg('catalog');
 if (IS_CLI && (!CATALOG || !fs.existsSync(CATALOG))) { console.error(`ERROR: --catalog không tồn tại: ${CATALOG}`); process.exit(2); }
 const catalog = CATALOG && fs.existsSync(CATALOG) ? JSON.parse(fs.readFileSync(CATALOG, 'utf8')) : { screens: [] };
 const OUT = path.resolve(arg('out', path.join(path.dirname(CATALOG || '.'), '..', 'test-results', 'conformance')));
-if (IS_CLI) fs.mkdirSync(OUT, { recursive: true });
+const SNAP_DIR = path.join(OUT, 'snapshots');
+if (IS_CLI) { fs.mkdirSync(OUT, { recursive: true }); fs.mkdirSync(SNAP_DIR, { recursive: true }); }
 
 const norm = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
 const hexToRgb = h => { const m = String(h).replace('#', '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i); return m ? [1, 2, 3].map(i => parseInt(m[i], 16)) : null; };
@@ -175,7 +177,22 @@ if (IS_CLI) (async () => {
       const shot = path.join(OUT, `${screen.name.replace(/[^A-Za-z0-9]+/g, '_')}.png`);
       await page.screenshot({ path: shot, fullPage: true }).catch(() => {});
       const dev = await checkScreen(page, base, screen);
-      report.screens.push({ name: screen.name, screenshot: path.relative(OUT, shot), deviations: dev });
+      // SNAPSHOT bề mặt màn: ghi lại "màn đang có gì" thành dữ liệu, kể cả phần catalog CHƯA khai.
+      // Nhờ đó lần sau viết catalog là việc DIFF chứ không phải việc nhớ, và thứ có trên màn mà tài liệu
+      // không nói vẫn để lại dấu vết thay vì biến mất. Snapshot KHÔNG phải oracle — chỉ là quan sát.
+      let snap = null;
+      try {
+        snap = await snapshotScreen(page, { scopeSelector: screen.scopeSelector || 'body' });
+        fs.writeFileSync(path.join(SNAP_DIR, `${screen.name.replace(/[^A-Za-z0-9]+/g, '_')}.json`), JSON.stringify(snap, null, 2), 'utf8');
+        if (snap.mixedCurrency) dev.push({ type: 'currency.mixed', detail: `màn trộn ${Object.keys(snap.currencies).join(' + ')} — kiểm đơn vị tiền từng field` });
+      } catch (e) { console.warn(`   ! snapshot lỗi: ${e.message.slice(0, 120)}`); }
+      report.screens.push({
+        name: screen.name,
+        screenshot: path.relative(OUT, shot),
+        snapshot: snap ? path.relative(OUT, path.join(SNAP_DIR, `${screen.name.replace(/[^A-Za-z0-9]+/g, '_')}.json`)) : null,
+        observed: snap ? { labels: snap.labels.length, columns: ((snap.tables || [])[0] || {}).headers || [], currencies: snap.currencies } : null,
+        deviations: dev,
+      });
       report.totalDeviations += dev.length;
       console.log(`\n=== ${screen.name} === ${dev.length ? dev.length + ' DEVIATION' : 'OK'}`);
       dev.forEach(d => console.log('   -', JSON.stringify(d)));
