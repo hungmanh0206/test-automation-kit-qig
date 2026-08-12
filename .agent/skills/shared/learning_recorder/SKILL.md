@@ -1,5 +1,5 @@
 ---
-name: learning-recorder
+name: learning_recorder
 description: Ghi fact đã qua gate (bug đã confirm, root cause, snapshot pass/fail) vào knowledge/ để tái dùng xuyên task. Suggest-only — chỉ lưu dữ liệu, không tự kết luận risk/PASS-FAIL.
 ---
 

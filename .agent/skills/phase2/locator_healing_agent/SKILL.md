@@ -1,5 +1,5 @@
 ---
-name: locator-healing-agent
+name: locator_healing_agent
 description: Khi locator ACTION fail lúc execute, thử fallback chain và tự áp dụng nếu confidence cao (accessible name exact + role + vùng DOM); ghi lịch sử vào knowledge/locators/. KHÔNG heal locator assertion. Threshold-gated, opt-in LOCATOR_HEAL=1.
 ---
 

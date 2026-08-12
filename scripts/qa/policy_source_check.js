@@ -122,6 +122,26 @@ if (fs.existsSync(RULES_DIR)) {
   }
 }
 
+// ─── Skill: frontmatter `name` phải KHỚP tên thư mục ──────────────────────────────────────────────────────
+// Tra cứu skill dùng TÊN THƯ MỤC (đó là tên prompt/workflow/INDEX.md nhắc tới). Frontmatter ghi khác đi thì
+// người đọc file tưởng skill tên A trong khi mọi nơi gọi nó là B — và `skills_index.js` chỉ CẢNH BÁO, không
+// chặn, nên 5/21 skill lệch tên suốt một thời gian mà không ai sửa. Đã dọn hết 12/08/2026 ⇒ chốt lại bằng gate.
+const SKILLS_DIR = path.join(rc.REPO_ROOT, '.agent', 'skills');
+if (fs.existsSync(SKILLS_DIR)) {
+  for (const group of fs.readdirSync(SKILLS_DIR, { withFileTypes: true }).filter((e) => e.isDirectory())) {
+    const groupDir = path.join(SKILLS_DIR, group.name);
+    for (const skill of fs.readdirSync(groupDir, { withFileTypes: true }).filter((e) => e.isDirectory())) {
+      const f = path.join(groupDir, skill.name, 'SKILL.md');
+      if (!fs.existsSync(f)) continue;
+      const m = fs.readFileSync(f, 'utf8').match(/^name:[ \t]*(.+)$/m);
+      const declared = m ? m[1].trim() : '';
+      if (declared && declared !== skill.name) {
+        problems.push(`.agent/skills/${group.name}/${skill.name}/SKILL.md: frontmatter \`name: ${declared}\` LỆCH tên thư mục \`${skill.name}\` — tra cứu dùng tên thư mục, sửa frontmatter cho khớp.`);
+      }
+    }
+  }
+}
+
 for (const w of warns) console.log(`[policy] ⚠ ${w}`);
 if (problems.length) {
   console.error('[policy] ✗ Vi phạm 1-nguồn-policy (F3):');

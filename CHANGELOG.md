@@ -7,6 +7,18 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-12 (f) — vá advisory `brace-expansion` + khoá tên skill bằng gate
+
+**Fixed**
+- **`audit:ci` đỏ thật** (`exit 1`): `brace-expansion` dính advisory DoS (unbounded expansion → OOM). Đo hiện trạng: `low 0 · moderate 2 · **high 1** · critical 0`. `npm audit fix` xử sạch phần `high`; `package.json` **không đổi** (chỉ transitive), `package-lock.json` lệch 24 dòng. Sau vá: `high 0`, `audit:ci` exit 0. Còn 2 `moderate` trong `exceljs` — chưa chạm vì gate chỉ chặn từ `high` và bản vá của nó cần bump major.
+- **Bẫy gặp khi vá, ghi lại để không mắc lại**: `npm audit fix --omit=dev` **xoá luôn devDependencies khỏi `node_modules`** (mất `typescript`, `eslint`) ⇒ `typecheck` và `lint` chuyển đỏ ngay sau đó, trông y như bản vá làm hỏng code. Không phải vậy — chạy `npm install` là khôi phục, bản vá vẫn giữ. Nếu chỉ nhìn "audit xanh rồi" mà không chạy lại toàn bộ gate thì sẽ đẩy một môi trường hỏng lên CI.
+- **5/21 skill lệch frontmatter `name` với tên thư mục** (`git_impact_analyzer` ghi `git-impact-analyzer`, tương tự `requirements_analyzer`, `locator_healing_agent`, `qa_automation_engineer`, `learning_recorder`). Tra cứu skill dùng **tên thư mục** — đó là tên prompt/workflow/`INDEX.md` nhắc tới — nên frontmatter lệch làm người đọc file tưởng skill tên khác. Đã đồng bộ cả 5 + sinh lại `INDEX.md` (21 skill, hết cảnh báo). Kiểm trước khi sửa: không consumer nào trỏ bằng tên gạch-ngang (chỉ chính dòng cảnh báo trong `INDEX.md` và 1 comment) nên đổi là an toàn.
+
+**Added**
+- **`gate:policy` chặn skill lệch tên.** `skills_index.js` phát hiện được chuyện này từ lâu nhưng **chỉ cảnh báo, exit 0**, nên 5 skill lệch tồn đọng mãi — đúng bài học "quy ước không có máy chặn thì không tự khỏi". Blast radius sau khi dọn = 0 nên chặn là an toàn. Nghiệm thu: đổi tạm 1 skill về gạch-ngang → exit 1 kèm đúng thông báo → hoàn nguyên → xanh.
+
+**Nghiệm thu chung:** `audit:ci` · `typecheck` · `lint` · `secret:scan` · `gate:policy` · `preflight` đều exit 0; infra 26/26.
+
 ## 2026-08-12 (e) — `knowledge/` thành dữ liệu công ty, không commit; và LICENSE sai chủ sở hữu
 
 **Bối cảnh.** Rà `LICENSE` thì phát hiện nó vào repo từ commit baseline đầu tiên (`1dbe982`) và **chưa ai sửa**, nên vẫn mang tên chủ sở hữu của template scaffold gốc. Kiểm rộng ra thì lộ việc quan trọng hơn: **mirror GitHub đang PUBLIC** (`gh repo view` → `visibility: PUBLIC`, `licenseInfo: mit`), tức mọi thứ tracked đang công khai dưới MIT.

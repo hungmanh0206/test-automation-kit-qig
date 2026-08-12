@@ -49,8 +49,10 @@ function collect() {
       const fm = frontmatter(p);
       const rel = path.relative(rc.REPO_ROOT, p).replace(/\\/g, '/');
       // KHOÁ theo TÊN THƯ MỤC, không theo frontmatter `name`: prompt/workflow nhắc skill bằng tên thư mục
-      // (vd `git_impact_analyzer`), trong khi 5/21 file ghi frontmatter kiểu gạch-ngang (`git-impact-analyzer`).
-      // Index khoá nhầm khoá thì tra là trượt — đúng kiểu hỏng âm thầm mà index này sinh ra để chống.
+      // (vd `git_impact_analyzer`). Index khoá nhầm khoá thì tra là trượt — đúng kiểu hỏng âm thầm mà index
+      // này sinh ra để chống. Lịch sử: 5/21 skill từng ghi frontmatter kiểu gạch-ngang; cảnh báo ở đây chỉ
+      // nhắc chứ không chặn nên tồn đọng lâu ⇒ 12/08/2026 đã dọn hết và chốt bằng gate trong
+      // `policy_source_check.js` (lệch tên = exit 1). Cảnh báo dưới đây giữ lại để báo sớm ngay khi sinh index.
       const dirName = path.basename(path.dirname(p));
       if (!fm) { rows.push({ name: dirName, file: rel, description: '(THIẾU frontmatter name/description)', group: rel.split('/')[2] || '', broken: true }); continue; }
       rows.push({

@@ -28,5 +28,3 @@
 | `test_data_generator` | shared | `.agent/skills/shared/test_data_generator/SKILL.md` | Sinh test data cụ thể, unique, traceable và rollback được cho Phase 1/Phase 2. |
 
 > 21 skill. Thiếu description: 0.
-
-> ⚠ 5 skill có frontmatter `name` LỆCH tên thư mục. Tra cứu dùng tên thư mục (đó là tên prompt/workflow nhắc); nên sửa frontmatter cho khớp: `git_impact_analyzer` (file ghi `git-impact-analyzer`) · `requirements_analyzer` (file ghi `requirements-analyzer`) · `locator_healing_agent` (file ghi `locator-healing-agent`) · `qa_automation_engineer` (file ghi `qa-automation-engineer`) · `learning_recorder` (file ghi `learning-recorder`)

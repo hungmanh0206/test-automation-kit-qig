@@ -1,5 +1,5 @@
 ---
-name: git-impact-analyzer
+name: git_impact_analyzer
 description: Đọc git diff của branch/PR gắn TASK_KEY, liệt kê file/module thay đổi và phân loại vào 7 bề mặt dùng chung của mục 17 — cấp dữ liệu diff thật làm input cho Bước 1 mục 17 thay vì đọc code đoán. Suggest-only.
 ---
 

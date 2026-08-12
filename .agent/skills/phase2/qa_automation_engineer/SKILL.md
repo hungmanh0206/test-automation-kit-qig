@@ -1,5 +1,5 @@
 ---
-name: qa-automation-engineer
+name: qa_automation_engineer
 description: Generate, update và execute Playwright UI/API automation cho Phase 2.
 ---
 
