@@ -12,8 +12,20 @@
  * Không phụ thuộc gì ngoài path — an toàn để require ở bất kỳ script nào.
  */
 
+// NGUỒN DUY NHẤT của danh sách đuôi file evidence. Đây là thứ THẬT SỰ chặn, nên mọi nơi khác (thông báo lỗi,
+// CLAUDE.md, core_rules.md, RULE_GLOBAL.md) phải khớp với nó — `policy_source_check.js` so 3 tài liệu với
+// hằng số này và CHẶN khi lệch. Đo 12/08/2026: cùng danh sách này từng nằm ở 5 nơi với 4 nội dung khác nhau
+// (CLAUDE.md thiếu `.jpeg`; thông báo của output_gate thiếu `.jpeg` mà lại có `.gif`; code có thêm bmp/mov/m4v
+// mà không tài liệu nào nhắc) ⇒ chép tay giá trị máy-kiểm-được là mời drift.
 const VISUAL_EXT = /\.(png|jpe?g|webp|gif|bmp|mp4|webm|mov|m4v)$/i;
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)$/i;
+
+/** Danh sách đuôi cho người đọc, SINH RA từ regex — đừng viết tay lại ở bất kỳ thông báo nào. */
+const extListText = (re = VISUAL_EXT) => String(re.source)
+  .replace(/^\\\.\(|\)\$$/g, '')
+  .split('|')
+  .map((s) => `.${s.replace('jpe?g', 'jpg/.jpeg')}`)
+  .join('/');
 
 const isVisualEvidence = (p) => VISUAL_EXT.test(String(p || ''));
 const isVideoEvidence = (p) => VIDEO_EXT.test(String(p || ''));
@@ -304,7 +316,7 @@ function lintBugProvenance({ steps = '', attachments = [], runRef = '' } = {}) {
 
 module.exports = {
   isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly, lintBugRealism, lintBugProvenance,
-  isVisualEvidence, isVideoEvidence,
+  isVisualEvidence, isVideoEvidence, VISUAL_EXT, VIDEO_EXT, extListText,
   hasDebugTokens, looksRunOn, splitIdeas, looksComplex,
   cleanComment, lintComment, lintEvidence, lintBugHeadings,
   hasRangeGrouping, leadingNumbers, vagueExpectedLines,

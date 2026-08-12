@@ -42,6 +42,41 @@ if (!fs.existsSync(CORE)) {
   }
 }
 
+// ─── CLAUDE.md: tầng thứ ba, và là tầng NGUY HIỂM NHẤT khi lệch ────────────────────────────────────────────
+// CLAUDE.md được Claude Code tự nạp MỌI session, còn 2 file kia phải mở ra mới đọc. Nên bản drift ở đây là bản
+// có ảnh hưởng lớn nhất mà lại không ai kiểm. Đo 12/08/2026: CLAUDE.md ghi đuôi evidence `.png/.jpg/.webp`
+// (thiếu `.jpeg`) trong khi canonical có `.jpeg` và code chặn thì còn cho cả gif/bmp/mov/m4v.
+const CLAUDE = path.join(rc.REPO_ROOT, 'CLAUDE.md');
+if (!fs.existsSync(CLAUDE)) {
+  warns.push('CLAUDE.md không tồn tại (bỏ qua check tầng auto-load).');
+} else {
+  const claude = fs.readFileSync(CLAUDE, 'utf8');
+  if (!/RULE_GLOBAL\.md/.test(claude)) {
+    problems.push('CLAUDE.md KHÔNG trỏ RULE_GLOBAL.md là canonical → tầng auto-load thành nguồn policy thứ hai.');
+  }
+  // So danh sách đuôi evidence trong TÀI LIỆU với hằng số THẬT SỰ CHẶN trong code.
+  // Đây là loại giá trị máy-kiểm-được: chép tay ra tài liệu thì sớm muộn lệch, mà lệch thì agent tin tài liệu.
+  let rules = null;
+  try { rules = require(path.join(rc.REPO_ROOT, 'scripts', 'qa', 'lib', 'output_rules.js')); } catch (e) { /* thiếu lib → bỏ qua */ }
+  if (rules && rules.VISUAL_EXT) {
+    const allowed = new Set(String(rules.VISUAL_EXT.source).replace(/^\\\.\(|\)\$$/g, '').split('|')
+      .flatMap((s) => (s === 'jpe?g' ? ['jpg', 'jpeg'] : [s])));
+    for (const [name, file] of [['CLAUDE.md', CLAUDE], ['core_rules.md', CORE], ['RULE_GLOBAL.md', RULE_GLOBAL]]) {
+      if (!fs.existsSync(file)) continue;
+      const txt = fs.readFileSync(file, 'utf8');
+      // chỉ xét các cụm liệt kê đuôi kiểu `.png/.jpg/...` để không quét trúng đường dẫn file lẻ
+      const runs = txt.match(/(?:\.[a-z0-9]{2,4}\/){1,}\.[a-z0-9]{2,4}/gi) || [];
+      const listed = new Set(runs.flatMap((r) => r.split('/')).map((s) => s.replace(/^\./, '').toLowerCase()));
+      const bogus = [...listed].filter((e) => !allowed.has(e) && /^(png|jpe?g|webp|gif|bmp|tiff|svg|mp4|webm|mov|m4v|avi|mkv)$/.test(e));
+      if (bogus.length) problems.push(`${name}: liệt kê đuôi evidence KHÔNG được code chấp nhận (${bogus.map((x) => `.${x}`).join(' ')}) — sửa tài liệu hoặc sửa VISUAL_EXT, đừng để 2 luật.`);
+      // ảnh: tài liệu nêu png+jpg thì phải nêu cả jpeg, vì code coi jpg và jpeg như nhau
+      if (listed.has('jpg') && !listed.has('jpeg')) {
+        problems.push(`${name}: nêu \`.jpg\` mà thiếu \`.jpeg\` — code chặn theo \`jpe?g\` nên .jpeg HỢP LỆ; tài liệu thiếu sẽ khiến agent loại oan evidence hợp lệ.`);
+      }
+    }
+  }
+}
+
 for (const w of warns) console.log(`[policy] ⚠ ${w}`);
 if (problems.length) {
   console.error('[policy] ✗ Vi phạm 1-nguồn-policy (F3):');

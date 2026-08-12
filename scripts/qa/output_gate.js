@@ -104,7 +104,8 @@ function gateTestExecution(doc, { fix = false } = {}) {
       problems.push(`${id}: THIẾU evidence ảnh/video (case đã execute bắt buộc có)`);
     }
     const nonVisual = allEv.filter((e) => !rules.isVisualEvidence(e));
-    if (nonVisual.length) problems.push(`${id}: evidence KHÔNG phải ảnh/video: ${nonVisual.map((e) => e.split(/[\\/]/).pop()).join(', ')} (chỉ nhận .png/.jpg/.webp/.gif/.mp4/.webm)`);
+    // Danh sách đuôi SINH RA từ chính regex đang chặn — viết tay lại là in ra danh sách khác với luật thật.
+    if (nonVisual.length) problems.push(`${id}: evidence KHÔNG phải ảnh/video: ${nonVisual.map((e) => e.split(/[\\/]/).pop()).join(', ')} (chỉ nhận ${rules.extListText()})`);
 
     // 3) Step status: mọi step phải có status (không để trống → "TO DO" rối).
     const stepsNoStatus = steps.filter((s) => !String(s.status || '').trim()).length;
