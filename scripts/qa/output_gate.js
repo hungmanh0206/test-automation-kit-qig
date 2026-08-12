@@ -180,14 +180,34 @@ function gateBug(bug = {}) {
   return problems;
 }
 
+/**
+ * Cảnh báo cho bug — KHÔNG chặn, và CỐ Ý tách khỏi `gateBug` để không đổi chữ ký (bug_reporter đang gọi
+ * `gateBug` và mong nhận mảng string). Hiện chỉ có 1 luật: gán tầng FE/BE mà chưa có dấu vết API.
+ * @returns {string[]}
+ */
+function gateBugWarnings(bug = {}) {
+  const id = bug.id || bug.tcId || '(no-id)';
+  const tax = loadTaxonomy();
+  return rules.lintBeVsFeLayer({
+    summary: bug.summary || bug.title,
+    description: [bug.steps, bug.actualResult, bug.expectedResult, bug.description].filter(Boolean).join('\n'),
+    beVsFe: tax.beVsFe,
+  }).map((v) => `${id}: ${v.message}`);
+}
+
 function mainBug() {
   const PREVIEW = arg('preview', '');
   if (!PREVIEW || !fs.existsSync(PREVIEW)) { console.error('[gate] --mode bug cần --preview <bugs.json> (mảng {id,summary,actualResult,expectedResult,attachments})'); process.exit(2); }
   let arr;
   try { const d = JSON.parse(fs.readFileSync(PREVIEW, 'utf8')); arr = Array.isArray(d) ? d : (d.bugs || []); } catch (e) { console.error(`[gate] JSON lỗi: ${e.message}`); process.exit(2); }
   const problems = arr.flatMap((b) => gateBug(b));
-  console.log(`[gate] bug · ${arr.length} bug · ${problems.length} vi phạm.`);
-  if (!problems.length) { console.log('[gate] ✓ ĐẠT — đủ ảnh/video, không run-on.'); process.exit(0); }
+  const warnings = arr.flatMap((b) => gateBugWarnings(b));
+  console.log(`[gate] bug · ${arr.length} bug · ${problems.length} vi phạm${warnings.length ? ` · ${warnings.length} cảnh báo` : ''}.`);
+  if (warnings.length) {
+    console.log('\n[gate] ⚠ CẢNH BÁO (không chặn — xem `.agent/config/verdict_taxonomy.json` mục `beVsFe`):');
+    warnings.forEach((w) => console.log(`  ~ ${w}`));
+  }
+  if (!problems.length) { console.log('\n[gate] ✓ ĐẠT — đủ ảnh/video, không run-on.'); process.exit(0); }
   console.log('\n[gate] ✗ VI PHẠM (RULE_GLOBAL):');
   problems.forEach((p) => console.log(`  - ${p}`));
   console.log('\n  Nhắc: bug cần ≥1 ảnh/video; case phức tạp cần video; Kết quả hiện tại/mong muốn mỗi ý 1 dòng.');
@@ -282,6 +302,6 @@ function main() {
   process.exit(1);
 }
 
-module.exports = { gateTestExecution, gateBug, gateTestcaseRow, parseTestcaseTable, isExecuted, canonStatus, loadTaxonomy };
+module.exports = { gateTestExecution, gateBug, gateBugWarnings, gateTestcaseRow, parseTestcaseTable, isExecuted, canonStatus, loadTaxonomy };
 
 if (require.main === module) main();

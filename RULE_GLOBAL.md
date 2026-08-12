@@ -173,6 +173,21 @@ Với testcase `FAIL`, `Actual Result` phải có:
 | Main error message | Hỗ trợ dev debug. |
 | Evidence path | Đảm bảo audit và Jira triage. |
 
+### Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận
+
+Khi log bug, **CẤM gán tầng lỗi chỉ bằng quan sát giao diện**. Nhìn UI sai chỉ chứng minh *có* lỗi, không chứng minh lỗi *nằm ở đâu*.
+
+| Bước | Yêu cầu |
+|---|---|
+| 1. Bắt API thật | Bắt response của **chính API mà màn đang xem gọi** (`page.on('response', ...)` trong Playwright, hoặc tab Network của DevTools). **Không đoán** tên endpoint. |
+| 2. Đối chiếu | So giá trị trong response với nguồn spec (màn nguồn, HubSpot, FSD). |
+| 3. Kết luận tầng | BE trả **sai/thiếu** → **BE** (`api_bug`). Response **đã đúng và đủ** mà UI hiện sai → **FE**. UI gửi payload thiếu dù người dùng nhập đủ → **FE**. BE nhận payload hợp lệ mà xử lý sai → **BE**. |
+| 4. Khi chưa bắt được API | **Không gán tầng** — ghi rõ *chưa xác định tầng*, tuyệt đối không đoán. |
+
+Evidence cho bug **so sánh hai nơi** (vd Ops vs Checkout, form vs payload, order vs HubSpot) phải là **ảnh GHÉP cả hai trong cùng một hình**, khoanh vùng từng bên và ghi rõ giá trị mỗi bên — không đính hai ảnh rời hoặc chỉ một phía.
+
+Gán sai tầng khiến ticket đi nhầm người và bị dev bounce lại, mất trọn một vòng lặp. Chi tiết máy-đọc: `.agent/config/verdict_taxonomy.json` mục `beVsFe`.
+
 ### Evidence — Quy chuẩn bắt buộc
 
 Áp dụng cho MỌI case đã execute (PASS và FAIL) và MỌI step. Vi phạm bất kỳ điểm nào bên dưới = evidence KHÔNG hợp lệ, KHÔNG được đưa vào report/push Xray/Jira.

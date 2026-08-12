@@ -7,6 +7,20 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-12 (d) — rule "phải bắt API trước khi gán tầng FE/BE" có máy đứng sau
+
+**Bối cảnh.** Khối rule phân tầng FE/BE (`RULE_GLOBAL` §Phân tầng lỗi + dòng digest G4b trong `core_rules` + mục `beVsFe` trong `verdict_taxonomy.json`) đang nằm chưa commit, và cả hai tài liệu gọi `beVsFe` là *"chi tiết máy-đọc"*. Grep ra: **không script nào đọc `beVsFe`** — nó là dữ liệu chết, còn `output_gate` thì chỉ chặn FAIL *không nêu tầng*, chứ không kiểm việc tầng đó có được **chứng minh bằng API** hay không. Tức là rule mạnh nhất của khối đang ở đúng trạng thái mà cả đợt này đi sửa: quy ước không có forcing function, lại còn tự nhận là đã có.
+
+**Added**
+- **`output_rules.lintBeVsFeLayer`** — bug có prefix `[FE]`/`[BE]` (đã gán tầng) mà description KHÔNG có dấu vết API cụ thể (method+path, `/api/v…`, `endpoint`/`swagger`/`curl`/`payload`, hoặc mã status **có từ ngữ cảnh**) ⇒ nêu ra. Lời nhắc lấy **từ `beVsFe.howTo`** trong JSON nên config thành nguồn thật, không còn là mục nằm không. Module giữ nguyên tính thuần: config **truyền vào**, không tự đọc file.
+- **`output_gate.gateBugWarnings`** — kênh cảnh báo riêng cho mode bug. Cố ý **không** đổi chữ ký `gateBug` vì `bug_reporter.js` đang gọi nó và mong nhận mảng string.
+- **`tests/fe/infra/bug-layer-gate.spec.ts`** (6 ca, tổng infra 26/26).
+
+**Mức: CẢNH BÁO, không chặn — đo trước khi chọn.** Chạy luật lên **99 bug auto-bug thật** trên Jira: cả 99 đều có gán tầng, trong đó **71 (72%)** không có dấu vết API trong description. Chặn ngay là đỏ oan gần ba phần tư. Theo tiền lệ `locator_lint`: cảnh báo trước, siết sau khi thói quen đã đổi.
+
+**Fixed (lỗi của chính luật này, do test bắt được)**
+- `STATUS_CODE` bản đầu dùng `[45]\d\d` trần ⇒ **số tiền Việt `5.400.000đ` khớp cụm `400`** (đứng sau dấu chấm nên vẫn thoả `\b`) ⇒ bug chỉ nói về số tiền bị coi là "đã bắt API" và **lọt** cảnh báo. Giờ mã status phải có từ ngữ cảnh (`HTTP`/`status`/`mã lỗi`/`trả về`). Bỏ luôn `\bresponse\b` trần khỏi `API_TRACE` vì từ đó xuất hiện trong văn xuôi quá dễ. Con số blast radius báo ở trên là con số **sau** khi sửa (67% → 72%).
+
 ## 2026-08-12 (c) — rule mồ côi bị chặn bằng máy, và `.agent/rules/` tự giải thích được mình
 
 **Bối cảnh.** Rà tiếp cấu trúc rule sau câu hỏi "sao có cả folder `rules` lẫn `RULE_GLOBAL.md`". Kết luận về tầng hoá: **giữ nguyên 3 tầng** (`CLAUDE.md` auto-load → `core_rules.md` digest → `RULE_GLOBAL.md` canonical) vì mỗi tầng bị một ràng buộc khác, gộp đằng nào cũng lỗ; và **không** dời `RULE_GLOBAL.md` vào `.agent/rules/` vì đang bị 20+ file trỏ tới (kể cả `.claude/settings.json`, task doc trong `outputs/`). Nhưng phần **playbook** thì có lỗ thật.

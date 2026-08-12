@@ -47,6 +47,35 @@ const extListText = (re = VISUAL_EXT) => String(re.source)
   .map((s) => `.${s.replace('jpe?g', 'jpg/.jpeg')}`)
   .join('/');
 
+// Bug đã GÁN TẦNG (prefix `[FE]`/`[BE]`) thì phải có dấu vết API cụ thể — nhìn UI sai chỉ chứng minh CÓ lỗi,
+// không chứng minh lỗi NẰM Ở ĐÂU. Gán sai tầng ⇒ ticket đi nhầm người ⇒ dev bounce ⇒ mất trọn một vòng.
+// `beVsFe` truyền vào từ `.agent/config/verdict_taxonomy.json` (giữ module này thuần, và để JSON là nguồn thật
+// chứ không phải "chi tiết máy-đọc" mà không máy nào đọc).
+const LAYER_PREFIX = /\[(FE|BE)\]/i;
+const API_TRACE = /\b(POST|PATCH|PUT|DELETE|GET)\s+\/|\/api\/v\d|\bendpoint\b|swagger|curl\b|\bpayload\b/i;
+// Mã status PHẢI có từ ngữ cảnh kèm. Bản đầu dùng `[45]\d\d` trần và khớp oan ngay: tiền Việt "5.400.000đ"
+// chứa cụm `400` (đứng sau dấu chấm nên vẫn thoả \b) ⇒ bug chỉ nói về số tiền bị coi là "đã bắt API".
+const STATUS_CODE = /\b(?:HTTP|status(?:\s*code)?|mã\s*(?:lỗi|trạng thái)|trả\s*về)\s*[:=]?\s*[1-5]\d\d\b/i;
+
+/**
+ * @param {{summary?: string, description?: string, beVsFe?: object}} input
+ * @returns {{level: 'warning'|'problem', message: string}[]}
+ */
+function lintBeVsFeLayer({ summary = '', description = '', beVsFe = null } = {}) {
+  if (!LAYER_PREFIX.test(String(summary))) return [];
+  const desc = String(description || '');
+  if (API_TRACE.test(desc) || STATUS_CODE.test(desc)) return [];
+  const layer = (String(summary).match(LAYER_PREFIX) || [])[1] || '';
+  // Lời nhắc lấy TỪ config để sửa một chỗ là đổi mọi nơi.
+  const how = Array.isArray(beVsFe && beVsFe.howTo) ? beVsFe.howTo[0] : 'Bắt response của chính API mà màn đang xem gọi, không đoán endpoint.';
+  // Mức WARNING, không chặn: đo trên 99 bug đã log thì 66 (67%) chưa có dấu vết API ⇒ chặn ngay là đỏ oan
+  // hai phần ba. Theo tiền lệ locator_lint: cảnh báo trước, siết sau khi thói quen đã đổi.
+  return [{
+    level: 'warning',
+    message: `tiêu đề gán tầng [${layer.toUpperCase()}] nhưng description KHÔNG có dấu vết API (method+path, /api/v…, hoặc mã status) → chưa chứng minh được lỗi nằm ở tầng đó. ${how}`,
+  }];
+}
+
 const isVisualEvidence = (p) => VISUAL_EXT.test(String(p || ''));
 const isVideoEvidence = (p) => VIDEO_EXT.test(String(p || ''));
 
@@ -336,6 +365,7 @@ function lintBugProvenance({ steps = '', attachments = [], runRef = '' } = {}) {
 
 module.exports = {
   isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly, lintBugRealism, lintBugProvenance,
+  lintBeVsFeLayer,
   isVisualEvidence, isVideoEvidence, VISUAL_EXT, VIDEO_EXT, extListText, MIME_BY_EXT, mimeOf,
   hasDebugTokens, looksRunOn, splitIdeas, looksComplex,
   cleanComment, lintComment, lintEvidence, lintBugHeadings,

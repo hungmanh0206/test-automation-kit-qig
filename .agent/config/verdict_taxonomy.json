@@ -47,11 +47,11 @@
   "failureLayers": {
     "product_bug": {
       "loggableAsBug": true,
-      "desc": "Lỗi sản phẩm/nghiệp vụ thật."
+      "desc": "Lỗi sản phẩm/nghiệp vụ thật — PHẢI ghi rõ tầng FE hay BE theo quy tắc beVsFe."
     },
     "api_bug": {
       "loggableAsBug": true,
-      "desc": "Lỗi API/contract."
+      "desc": "Lỗi API/contract — dữ liệu BE trả sai/thiếu so với spec."
     },
     "setup_failure": {
       "loggableAsBug": false,
@@ -79,5 +79,17 @@
     "max": 3,
     "purpose": "Rerun case FAIL để loại flaky/setup TRƯỚC khi kết luận product/API bug (và trước khi log Jira)."
   },
-  "principle": "\"Không phán được\" KHÔNG thành PASS. Mỗi verdict xuất trạng thái rõ; FAIL bắt buộc kèm failureLayer. SKIP/BLOCKED_SETUP/SKIP_SETUP/setup_failure KHÔNG log Jira. FAIL lặp lại ổn định KHÔNG đồng nghĩa product bug: rerun chỉ loại flaky, KHÔNG loại được sai-element. Trước khi kết luận product/api_bug phải chứng minh đã thao tác ĐÚNG đối tượng (evidence highlight đúng element + xác minh lại bằng 1 đường định vị độc lập hoặc thao tác tay); nếu không → script_error."
+  "principle": "\"Không phán được\" KHÔNG thành PASS. Mỗi verdict xuất trạng thái rõ; FAIL bắt buộc kèm failureLayer. SKIP/BLOCKED_SETUP/SKIP_SETUP/setup_failure KHÔNG log Jira. FAIL lặp lại ổn định KHÔNG đồng nghĩa product bug: rerun chỉ loại flaky, KHÔNG loại được sai-element. Trước khi kết luận product/api_bug phải chứng minh đã thao tác ĐÚNG đối tượng (evidence highlight đúng element + xác minh lại bằng 1 đường định vị độc lập hoặc thao tác tay); nếu không → script_error.",
+  "beVsFe": {
+    "principle": "CẤM gán tầng FE/BE chỉ bằng quan sát giao diện. Phải đối chiếu dữ liệu API trước khi kết luận.",
+    "howTo": [
+      "Bắt response của chính API mà màn đang xem gọi (page.on(response) hoặc DevTools Network), không đoán tên endpoint.",
+      "So giá trị trong response với nguồn spec (Ops/HubSpot/FSD).",
+      "BE trả SAI hoặc THIẾU dữ liệu → tầng BE (api_bug). Response đã đúng và đủ mà UI hiển thị sai → tầng FE.",
+      "UI gửi payload thiếu/sai dù người dùng đã nhập đủ → FE. BE nhận payload hợp lệ mà xử lý sai → BE.",
+      "Chưa bắt được API thì KHÔNG gán tầng — ghi rõ chưa xác định, không đoán."
+    ],
+    "evidence": "Bug so sánh hai nơi phải có evidence GHÉP cả hai (Ops vs Checkout, form vs payload) trong cùng một ảnh, khoanh vùng từng bên.",
+    "why": "Gán sai tầng làm ticket đi nhầm người, dev bounce lại, mất một vòng lặp."
+  }
 }
