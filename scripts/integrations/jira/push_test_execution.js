@@ -58,6 +58,7 @@ const {
 const { getRunId, getTestResultsDir } = require('../../utils/runtime_config');
 const { XrayCloudClient, isUsableCreds } = require('./xray_cloud');
 const outputGate = require('../../qa/output_gate'); // gate chất lượng comment/evidence/step (RULE_GLOBAL)
+const outputRules = require('../../qa/lib/output_rules'); // 1 nguồn: đuôi evidence hợp lệ + mime tương ứng
 
 loadEnv();
 
@@ -451,13 +452,11 @@ function buildEvidence(evidence) {
   return out;
 }
 
+// Mime lấy từ 1 NGUỒN dùng chung với gate (`output_rules.MIME_BY_EXT`). Trước đây map này là bản chép tay
+// riêng ở đây, nên gate cho qua những đuôi mà uploader không gắn nổi mime (bmp/mov/m4v → octet-stream ⇒ Jira
+// không preview ⇒ reviewer phải tải về, mất hẳn mục đích của evidence).
 function contentTypeOf(file) {
-  const ext = path.extname(file).toLowerCase();
-  return {
-    '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp',
-    '.gif': 'image/gif', '.mp4': 'video/mp4', '.webm': 'video/webm', '.pdf': 'application/pdf',
-    '.txt': 'text/plain', '.json': 'application/json', '.html': 'text/html',
-  }[ext] || 'application/octet-stream';
+  return outputRules.mimeOf(path.extname(file));
 }
 
 function normalizeStepStatusMode(value) {

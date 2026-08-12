@@ -17,8 +17,28 @@
 // hằng số này và CHẶN khi lệch. Đo 12/08/2026: cùng danh sách này từng nằm ở 5 nơi với 4 nội dung khác nhau
 // (CLAUDE.md thiếu `.jpeg`; thông báo của output_gate thiếu `.jpeg` mà lại có `.gif`; code có thêm bmp/mov/m4v
 // mà không tài liệu nào nhắc) ⇒ chép tay giá trị máy-kiểm-được là mời drift.
-const VISUAL_EXT = /\.(png|jpe?g|webp|gif|bmp|mp4|webm|mov|m4v)$/i;
-const VIDEO_EXT = /\.(mp4|webm|mov|m4v)$/i;
+// Tiêu chí chọn đuôi KHÔNG phải "có phải ảnh không" mà là "reviewer xem được NGAY trong Jira, không phải tải
+// về" — evidence tải-về-mới-xem-được thì mất hẳn mục đích. Nên mỗi đuôi ở đây BẮT BUỘC có mime thật trong
+// MIME_BY_EXT (uploader gắn `application/octet-stream` là Jira không preview). `policy_source_check` kiểm ràng
+// buộc đó. Đo 12/08/2026 trên 2224 file evidence thật: png 2182 · webm 28 · jpg 14 · gif/bmp/mov/m4v = 0 ⇒ đã
+// bỏ gif/bmp/mov/m4v (bmp/mov/m4v không có mime nên vốn không preview được; gif 256 màu làm bệt khung đỏ +
+// nhãn, mà chuỗi thao tác đã có luật bắt VIDEO riêng). Cần .mov thật thì THÊM mime + ghi vào RULE_GLOBAL,
+// đừng nới regex một mình.
+const VISUAL_EXT = /\.(png|jpe?g|webp|mp4|webm)$/i;
+const VIDEO_EXT = /\.(mp4|webm)$/i;
+
+/** Mime cho attachment Jira — 1 NGUỒN, dùng bởi cả gate lẫn uploader (push_test_execution). */
+const MIME_BY_EXT = {
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp',
+  '.mp4': 'video/mp4', '.webm': 'video/webm',
+  // Không phải evidence nhưng vẫn có thể đính kèm hợp lệ trong ngữ cảnh khác:
+  '.pdf': 'application/pdf', '.txt': 'text/plain', '.json': 'application/json', '.html': 'text/html',
+};
+const mimeOf = (file) => {
+  const s = String(file || '').toLowerCase();
+  const i = s.lastIndexOf('.');
+  return (i >= 0 && MIME_BY_EXT[s.slice(i)]) || 'application/octet-stream';
+};
 
 /** Danh sách đuôi cho người đọc, SINH RA từ regex — đừng viết tay lại ở bất kỳ thông báo nào. */
 const extListText = (re = VISUAL_EXT) => String(re.source)
@@ -316,7 +336,7 @@ function lintBugProvenance({ steps = '', attachments = [], runRef = '' } = {}) {
 
 module.exports = {
   isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly, lintBugRealism, lintBugProvenance,
-  isVisualEvidence, isVideoEvidence, VISUAL_EXT, VIDEO_EXT, extListText,
+  isVisualEvidence, isVideoEvidence, VISUAL_EXT, VIDEO_EXT, extListText, MIME_BY_EXT, mimeOf,
   hasDebugTokens, looksRunOn, splitIdeas, looksComplex,
   cleanComment, lintComment, lintEvidence, lintBugHeadings,
   hasRangeGrouping, leadingNumbers, vagueExpectedLines,

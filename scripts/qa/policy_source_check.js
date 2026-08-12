@@ -61,6 +61,13 @@ if (!fs.existsSync(CLAUDE)) {
   if (rules && rules.VISUAL_EXT) {
     const allowed = new Set(String(rules.VISUAL_EXT.source).replace(/^\\\.\(|\)\$$/g, '').split('|')
       .flatMap((s) => (s === 'jpe?g' ? ['jpg', 'jpeg'] : [s])));
+    // Mỗi đuôi gate CHO QUA phải có mime thật, nếu không uploader gắn `application/octet-stream` ⇒ Jira không
+    // preview ⇒ reviewer phải tải file về mới xem được, tức evidence không còn làm đúng việc của nó.
+    // Đây là ràng buộc từng bị vi phạm thật: gate nhận .bmp/.mov/.m4v mà mime map không có.
+    if (rules.mimeOf) {
+      const noMime = [...allowed].filter((e) => rules.mimeOf(`.${e}`) === 'application/octet-stream');
+      if (noMime.length) problems.push(`VISUAL_EXT cho qua đuôi KHÔNG có mime (${noMime.map((x) => `.${x}`).join(' ')}) → Jira sẽ không preview. Thêm vào MIME_BY_EXT hoặc bỏ khỏi VISUAL_EXT.`);
+    }
     for (const [name, file] of [['CLAUDE.md', CLAUDE], ['core_rules.md', CORE], ['RULE_GLOBAL.md', RULE_GLOBAL]]) {
       if (!fs.existsSync(file)) continue;
       const txt = fs.readFileSync(file, 'utf8');
