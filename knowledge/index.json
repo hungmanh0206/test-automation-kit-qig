@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-08-11",
+  "updated_at": "2026-08-12",
   "entries": [
     {
       "type": "historical_execution",
@@ -281,18 +281,6 @@
       ],
       "status": "active",
       "summary": "Form Add-on Product báo lỗi \"Only numbers > 5000 are allowed\" khi nhập Price = 170 với Monetary Unit = USD → nghi hệ thố"
-    },
-    {
-      "type": "bug",
-      "file": "bugs/SAPP-24395__fe-combo-version-history-filter-product-liet-ke-.json",
-      "module": "(unmapped)",
-      "tags": [
-        "combo-version",
-        "ui-filter",
-        "(unmapped)"
-      ],
-      "task_key": "SAPP-24395",
-      "status": "Open"
     },
     {
       "type": "bug",
@@ -758,6 +746,42 @@
       ],
       "task_key": "SAPP-24395",
       "status": "In Staging"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__fe-be-order-chuyen-nhuong-hv-nhan-goi-chuyen-nhu.json",
+      "module": "Order Chuyển nhượng (nhận)",
+      "tags": [
+        "order-chuyển-nhượng-(nhận)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "Open"
+    },
+    {
+      "type": "bug",
+      "file": "bugs/SAPP-24395__be-combo-version-oi-ten-product-thanh-vien-lam-c.json",
+      "module": "(unmapped)",
+      "tags": [
+        "combo-version",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-24395",
+      "status": "In Progress"
+    },
+    {
+      "type": "historical_execution",
+      "file": "historical_execution/SAPP-26523__2026-08-10.json",
+      "module": "Tạo",
+      "tags": [
+        "tạo",
+        "hiển-thị",
+        "xem-chi-tiết",
+        "e2e",
+        "sửa",
+        "(unmapped)"
+      ],
+      "task_key": "SAPP-26523",
+      "status": "clean"
     }
   ]
 }

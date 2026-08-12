@@ -82,28 +82,54 @@ function tcIdFromLabels(labels, known) {
   if (!issues.length) { console.log('[learn-bugs] Không có bug nào → knowledge/bugs giữ nguyên (đúng: không có bug thì không học bug).'); return; }
 
   const modMap = taskDir ? learn.buildModuleMap(taskDir) : new Map();
-  const created = []; const synced = []; const skipped = [];
+  const created = []; const synced = []; const skipped = []; const renamedSummary = []; const updated = [];
+
+  // NHẬN DẠNG THEO JIRA KEY, KHÔNG theo tên file.
+  // Trước đây record được tìm bằng `TASK__slugify(summary).json`: sửa tiêu đề bug trên Jira là slug đổi ⇒
+  // coi như bug MỚI ⇒ tạo record trùng, còn record cũ bị bỏ rơi và ĐÓNG BĂNG trạng thái mãi mãi. Hậu quả
+  // không nhìn thấy được: risk_score đếm 1 bug thành 2 (Likelihood phồng) và vòng đời bug tính trên trạng
+  // thái sai. Đo 12/08/2026: 43 record / 42 id — đã có 1 cặp trùng, và 3 bug sắp bị tạo trùng vì đổi tiêu đề.
+  const byId = new Map();
+  const dupIds = new Map();
+  if (fs.existsSync(BUGS_DIR)) {
+    for (const fn of fs.readdirSync(BUGS_DIR).filter((x) => x.endsWith('.json'))) {
+      const p = path.join(BUGS_DIR, fn);
+      const d = learn.readJson(p);
+      if (!d || !d.id) continue;
+      if (byId.has(d.id)) dupIds.set(d.id, [...(dupIds.get(d.id) || [byId.get(d.id).file]), p]);
+      else byId.set(d.id, { file: p, data: d });
+    }
+  }
+  for (const [id, files] of dupIds) {
+    console.warn(`[learn-bugs] ⚠ id ${id} có ${files.length} record: ${files.map((x) => path.basename(x)).join(' · ')} — bug bị ĐẾM TRÙNG trong risk_score. Giữ record khớp tiêu đề Jira hiện tại, xoá cái còn lại.`);
+  }
 
   for (const it of issues) {
     const f = it.fields || {};
     const tcId = tcIdFromLabels(f.labels, knownTc);
     const module = (tcId && modMap.get(tcId)) || '(unmapped)';
-    const file = path.join(BUGS_DIR, `${TASK}__${slugify(f.summary)}.json`);
+    const summary = String(f.summary || '').slice(0, 160);
     const jiraStatus = (f.status && f.status.name) || 'Open';
+    const hit = byId.get(it.key);
 
-    if (fs.existsSync(file)) {
-      // Idempotent: chỉ đồng bộ trạng thái (SCHEMA: cập nhật khi rerun chuyển Done).
-      const cur = learn.readJson(file) || {};
-      if (cur.jira_status !== jiraStatus) {
-        cur.jira_status = jiraStatus;
-        if (APPLY) fs.writeFileSync(file, JSON.stringify(cur, null, 2), 'utf8');
-        synced.push(`${it.key}: ${cur.jira_status} → ${jiraStatus}`);
-      } else skipped.push(it.key);
+    if (hit) {
+      // Idempotent theo KEY: đồng bộ trạng thái, và cả tiêu đề nếu Jira đã sửa (trước đây tiêu đề mới sinh
+      // ra file thứ hai; giờ cập nhật đúng chỗ). Giữ nguyên tên file cũ — tên file không còn là danh tính.
+      const cur = hit.data;
+      const prevStatus = cur.jira_status;
+      const prevBug = cur.bug;
+      let touched = false;
+      if (prevStatus !== jiraStatus) { cur.jira_status = jiraStatus; touched = true; synced.push(`${it.key}: ${prevStatus} → ${jiraStatus}`); }
+      if (prevBug !== summary) { cur.bug = summary; touched = true; renamedSummary.push(`${it.key}: tiêu đề đổi trên Jira → cập nhật tại chỗ (${path.basename(hit.file)})`); }
+      if (touched && APPLY) fs.writeFileSync(hit.file, JSON.stringify(cur, null, 2), 'utf8');
+      if (touched) updated.push({ file: hit.file, rec: cur });   // để index.json cập nhật `status` theo
+      if (!touched) skipped.push(it.key);
       continue;
     }
+    const file = path.join(BUGS_DIR, `${TASK}__${slugify(f.summary)}.json`);
     const rec = {
       id: it.key,
-      bug: String(f.summary || '').slice(0, 160),
+      bug: summary,
       module,
       tags: [...new Set([...(f.labels || []).filter((l) => l !== 'auto-bug' && !knownTc.has(l)), module.toLowerCase().replace(/\s+/g, '-')])].slice(0, 8),
       task_key: TASK,
@@ -118,23 +144,33 @@ function tcIdFromLabels(labels, known) {
   }
 
   // index.json (schema knowledge/SCHEMA.md) — idempotent theo `file`.
-  if (APPLY && created.length) {
+  // Điều kiện là APPLY (không kèm `created.length`): lượt chỉ XOÁ record hoặc chỉ đổi trạng thái vẫn phải
+  // dọn entry mồ côi và cập nhật `status`, nếu không index lệch với đĩa mà không ai biết.
+  if (APPLY) {
     const idxFile = path.join(KNOW, 'index.json');
     const idx = learn.readJson(idxFile) || { version: 1, updated_at: null, entries: [] };
     idx.entries = idx.entries || [];
-    for (const c of created) {
+    for (const c of [...created, ...updated]) {
       const rel = path.relative(KNOW, c.file).replace(/\\/g, '/');
-      const rec = { type: 'bug', file: rel, module: c.rec.module, tags: c.rec.tags, task_key: TASK, status: c.rec.jira_status };
+      const rec = { type: 'bug', file: rel, module: c.rec.module, tags: c.rec.tags, task_key: c.rec.task_key || TASK, status: c.rec.jira_status };
       const i = idx.entries.findIndex((x) => x && x.file === rel);
       if (i >= 0) idx.entries[i] = rec; else idx.entries.push(rec);
     }
+    // DỌN entry mồ côi: xoá một record bug (vd bản trùng) mà index vẫn trỏ vào file không còn tồn tại thì
+    // mọi chỗ tra cứu qua index sẽ ăn đường dẫn chết. Các indexer domain/system/decisions đã dọn, riêng bug
+    // thì chưa — bổ sung cho đồng nhất. Chỉ xét entry `type: 'bug'` để không đụng type khác.
+    const before = idx.entries.length;
+    idx.entries = idx.entries.filter((e) => !(e && e.type === 'bug' && e.file && !fs.existsSync(path.join(KNOW, e.file))));
+    const pruned = before - idx.entries.length;
+    if (pruned) console.log(`[learn-bugs] index.json: dọn ${pruned} entry bug mồ côi (file không còn tồn tại).`);
     idx.updated_at = new Date().toISOString().slice(0, 10);
     fs.writeFileSync(idxFile, JSON.stringify(idx, null, 2), 'utf8');
   }
 
-  console.log(`\n[learn-bugs] ${APPLY ? 'GHI' : 'DRY-RUN'}: mới ${created.length} · đồng bộ trạng thái ${synced.length} · đã có ${skipped.length}`);
+  console.log(`\n[learn-bugs] ${APPLY ? 'GHI' : 'DRY-RUN'}: mới ${created.length} · đồng bộ trạng thái ${synced.length} · tiêu đề đổi ${renamedSummary.length} · không đổi ${skipped.length}`);
   created.slice(0, 10).forEach((c) => console.log(`  + ${c.rec.id} [${c.rec.module}] ${c.rec.bug.slice(0, 60)}`));
-  synced.slice(0, 5).forEach((s) => console.log(`  ~ ${s}`));
+  synced.slice(0, 12).forEach((s) => console.log(`  ~ ${s}`));
+  renamedSummary.slice(0, 8).forEach((s) => console.log(`  ✎ ${s}`));
   const unmapped = created.filter((c) => c.rec.module === '(unmapped)').length;
   if (unmapped) console.log(`  ⚠ ${unmapped} bug không map được module (thiếu testcase canonical hoặc label tcId) → risk_score gom vào "(unmapped)".`);
   if (!APPLY && created.length) console.log('[learn-bugs] Thêm --apply để ghi thật.');
