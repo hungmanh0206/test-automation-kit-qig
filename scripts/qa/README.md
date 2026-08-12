@@ -293,7 +293,7 @@ Nhân mô hình `output_gate` ra TOÀN kit — biến bước quan trọng mọi
 | Gate | Chặn/cảnh báo | Wired |
 |---|---|---|
 | **`preflight_gate.js` (G1)** | thiếu input bắt buộc / config JSON malformed / (phase2) thiếu testcase canonical = CHẶN | `md_to_xlsx` (phase1) · CI static-check (`--mode generic`) · `npm run preflight` |
-| **`design_gate.js` (G5)** | thiếu cột canonical / rỗng ô lõi testcase = CHẶN; thiếu [Negative]/High-risk thiếu [Boundary]/[Security] = cảnh báo | `md_to_xlsx` (trước gen-gate) · `npm run design:gate` |
+| **`design_gate.js` (G5)** | thiếu cột canonical / rỗng ô lõi testcase = CHẶN; bộ có case hiển thị mà thiếu `ui_catalog.json` = CHẶN (`--no-catalog` để bỏ qua, phải nêu lý do); thiếu [Negative]/High-risk thiếu [Boundary]/[Security] = cảnh báo; **bộ có case XOÁ mà không case nào kiểm tầng bản ghi (`db_readonly`) = cảnh báo** (§13b prompt gen — soft-delete và bản ghi mồ côi không phân biệt được trên UI) | `md_to_xlsx` (trước gen-gate) · `npm run design:gate` |
 | **`self_review.js` (G9)** | *advisory* — gộp preflight+design+row-quality+execution+learning data+kỷ luật định vị+**knowledge ghi tay** (domain/system/decisions) thành 1 checklist trước finalize (luôn exit 0) | `npm run self-review -- --task <KEY>` · workflow phase2_04 Bước 0 |
 | **`.agent/config/verdict_taxonomy.json` (G4)** | NGUỒN DUY NHẤT: statuses/failureLayers/rerun{2,3}. `output_gate` validate status; prompt trỏ về đây | (config) |
 | **`lib/gate_engine.js` (#2)** | interface GateResult {gateId,status,severity,findings} + `aggregate`/`format` — self_review dùng | (lib) |

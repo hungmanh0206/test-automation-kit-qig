@@ -315,7 +315,7 @@ Quy tắc:
   - `pre_existing`/`pre_existing_fixture`: định danh fixture cụ thể (id/code/class code), không ghi "user bất kỳ".
   - Endpoint/payload phải lấy từ Swagger đã fetch ở `requirements/swagger/`; KHÔNG bịa endpoint. Nếu Swagger không có cách setup state, đặt `Automation Readiness = Needs hook` hoặc `Manual-only` và ghi rõ hook/manual steps đề xuất.
   - Nếu precondition phụ thuộc precondition khác, ghi `(depends PRE-xx)` trong `Setup Source`.
-- `Setup Verification`: cách xác nhận setup thành công TRƯỚC khi assert, ví dụ `GET /api/v1/resources?parentId={id} trả 3 mục con` hoặc `GET /api/v1/users/{id} trả action_count=2`. Nếu API/UI không expose state cần verify: có thể dùng **read-only UAT DB** qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) làm verification, ví dụ `db_readonly: SELECT count(*) FROM ... WHERE ...`; nếu cả DB UAT cũng không expose → đặt `Automation Readiness = Needs hook`/`Manual-only`. KHÔNG dùng DB để DỰNG state.
+- `Setup Verification`: cách xác nhận setup thành công TRƯỚC khi assert, ví dụ `GET /api/v1/resources?parentId={id} trả 3 mục con` hoặc `GET /api/v1/users/{id} trả action_count=2`. Nếu API/UI không expose state cần verify: có thể dùng **read-only UAT DB** qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) làm verification, ví dụ `db_readonly: SELECT count(*) FROM ... WHERE ...`; nếu cả DB UAT cũng không expose → đặt `Automation Readiness = Needs hook`/`Manual-only`. KHÔNG dùng DB để DỰNG state. *(Đây là verify **tiền điều kiện đã dựng xong chưa**. Verify **kết quả sau khi case chạy mutation** là chuyện khác — xem §13b, và cũng chỉ dùng trong 5 tình huống liệt kê ở đó.)*
 - `Cleanup/Rollback`: hành động rollback cụ thể (ưu tiên scope theo `RUN_ID`) hoặc `none` + lý do. `state_mutation` và data tạo mới BẮT BUỘC có cleanup hoặc lý do không cleanup được.
 - `Automation Readiness`:
   - `Ready`: Phase 2 tự setup hoàn toàn qua `api`/`factory`/`pre_existing` đã verify được bằng UI/API/fixture/hook an toàn. Phase 2 KHÔNG được skip các TC này vì lý do setup.
@@ -543,6 +543,29 @@ Nếu màn không có đặc tả hiển thị bằng text (chỉ có Figma) →
   - **Bản ghi đang trỏ tới bản cũ**: đơn/hợp đồng đã tạo theo bản cũ phải giữ giá trị theo bản cũ, KHÔNG bị kéo theo bản mới.
   - **Bản "hiện hành" là duy nhất và đúng cái**: đúng 1 bản current tại một thời điểm; action không hợp lệ trên bản current (vd xoá) phải bị chặn.
   - **Danh sách/filter/lịch sử cập nhật theo**: sau khi tạo bản mới, danh sách phiên bản, bộ lọc và cột dẫn xuất phải phản ánh đúng ngay (không cache cũ, không lệch thứ tự).
+
+### 13b. Bền vững dữ liệu sau mutation — oracle PHỤ ở TẦNG BẢN GHI (chỉ 5 tình huống dưới)
+
+**KHÔNG tạo TC riêng cho việc "kiểm DB".** Đây là **một dòng verification thêm vào chính case create/edit/delete đã có** — viết vào cột verification dạng `db_readonly: SELECT … FROM … WHERE …` kèm kết quả mong đợi cụ thể (số dòng / giá trị cột). Rải khắp nơi là làm test dính chặt schema, đổi tên cột là gãy hàng loạt.
+
+**Vì sao cần dù đã đọc lại bằng UI/API:** đọc lại bằng `GET`/màn list là **cùng một stack vừa ghi tự nói là đã ghi**. Với CRUD phẳng thì thế đã đủ. Nhưng 5 tình huống sau thì UI/API **không thể** phân biệt được, phải xuống tầng bản ghi:
+
+| Kích hoạt | UI/API mù ở chỗ nào |
+|---|---|
+| **Soft delete vs hard delete** | Sau khi xoá, UI hết thấy và `GET` trả 404 — **giống hệt nhau ở cả hai kiểu**. Spec yêu cầu xoá cứng mà thực tế set `deleted_at` (dữ liệu cá nhân vẫn nằm đó), hoặc ngược lại xoá cứng khi spec cần khôi phục được — cả hai đều nặng và đều vô hình |
+| **Cascade / bản ghi mồ côi** | Xoá/đổi bản ghi cha (course, lớp, học viên) → bản ghi con (enrollment, lịch, điểm danh, tiến độ, mapping) ra sao? Màn cha KHÔNG hiển thị chúng ⇒ orphan tồn tại mà mọi assert vẫn xanh |
+| **Field không render trên màn** | `sync_status`, cột audit (`updated_by`/`updated_at`), mã nội bộ, cờ trạng thái. Không có trên UI thì không assert được, mà đó thường là chỗ ghi sai |
+| **Ghi trùng** | Save 2 lần / retry mạng / double-submit → 2 bản ghi. Lưới có phân trang + sort + filter nên rất dễ không nhìn thấy; `SELECT count(*)` thấy ngay |
+| **Trường dẫn xuất lệch bản ghi gốc** | Tổng/số dư/đếm được lưu sẵn (không tính lại lúc đọc) có thể lệch khỏi các dòng sinh ra nó — vd ledger có 1 giao dịch nhưng `total_due` bị trừ 2 lần. So trường tổng vs `SUM()` các dòng gốc |
+
+**Ranh giới — giữ nguyên, không nới:**
+- Chỉ qua guarded client `tests/support/setup/db/uatPgClient.ts` (UAT, `BEGIN TRANSACTION READ ONLY`, chỉ SELECT). **KHÔNG** dựng/sửa state bằng DB — precondition vẫn `api`/`factory`/`test_hook`/`pre_existing`.
+- **KHÔNG phải evidence.** Evidence vẫn là ảnh/video màn hình. Kết quả SELECT chỉ dùng để kết luận và khoanh tầng lỗi.
+- **KHÔNG thay oracle từ spec.** Expected vẫn là giá trị theo tài liệu; DB chỉ trả lời "bản ghi có đúng như thế không".
+- PII đọc ra phải mask, cấm ghi ra file.
+- Nếu DB UAT cũng không expose được → `Automation Readiness = Needs hook`/`Manual-only`, KHÔNG bịa expected.
+
+**Cảnh báo ngược — đừng để DB ru ngủ:** *DB đúng KHÔNG có nghĩa sản phẩm đúng.* Bản ghi chuẩn mà UI hiển thị sai thì người dùng vẫn chịu thiệt, và một assert DB xanh rất dễ khiến bỏ qua bug FE. Vì vậy dòng `db_readonly` là **bổ sung** cho assert trên UI, không bao giờ thay thế.
 
 ## 14. BE Response Data Conformance Coverage (BẮT BUỘC cho mọi màn/endpoint có dữ liệu từ BE)
 

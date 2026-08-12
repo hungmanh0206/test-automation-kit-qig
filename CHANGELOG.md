@@ -7,6 +7,21 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-12 (g) — chiều "bền vững dữ liệu sau mutation": kiểm tầng bản ghi, không đẻ TC mới
+
+**Bối cảnh (đo, không phỏng đoán).** Câu hỏi "gen testcase đã có case kiểm DB chưa?" → **chưa, 0/1901 TC**. Chuỗi `db_readonly` xuất hiện **0 lần** trong toàn bộ `outputs/`, kể cả ở cột `Setup Verification` mà prompt vốn đã mời dùng. Trên bộ lớn nhất (563 TC): **415 case mutation**, **177 (43%)** có đọc lại — nhưng đọc lại qua **chính đường đọc của app** (list/detail/`GET`/HubSpot), tức *cùng một stack vừa ghi tự nói là đã ghi*.
+
+Năng lực thì có sẵn và chặt: `uatPgClient.ts` mở `BEGIN TRANSACTION READ ONLY` (Postgres tự chặn INSERT/UPDATE/DDL kể cả khi DB user full quyền), lint chặn `pg_read_file`/`lo_export`/`EXPLAIN ANALYZE`/stacked query, `statement_timeout`, allowlist host. `RULE_GLOBAL` cũng đã cho phép ("DB là oracle **PHỤ**"). Khoảng trống nằm đúng ở chỗ: **lúc gen không có chiều nào bắt nghĩ tới**.
+
+**Added — prompt gen §13b "Bền vững dữ liệu sau mutation"**
+- **KHÔNG tạo TC riêng cho việc kiểm DB** — chỉ thêm một dòng verification (`db_readonly: SELECT … FROM … WHERE …` + kết quả cụ thể) vào chính case create/edit/delete đã có. Rải khắp nơi làm test dính schema, đổi tên cột là gãy hàng loạt.
+- Chỉ **5 tình huống** kích hoạt, đều là chỗ UI/API *không thể* phân biệt: **soft vs hard delete** (xoá xong UI hết thấy và `GET` 404 y hệt nhau ở cả hai kiểu) · **cascade/bản ghi mồ côi** (màn cha không hiển thị bản ghi con) · **field không render** (`sync_status`, cột audit) · **ghi trùng** (lưới có phân trang/sort/filter nên dễ không thấy; `count(*)` thấy ngay) · **trường dẫn xuất lệch bản ghi gốc** (đúng lớp bug ledger 1 giao dịch mà `total_due` trừ 2 lần).
+- Ranh giới giữ nguyên: read-only qua guarded client, **không** dựng state, **không** phải evidence, **không** thay oracle từ spec, mask PII. Kèm cảnh báo ngược: **DB đúng ≠ sản phẩm đúng** — assert DB xanh rất dễ ru ngủ và che bug FE, nên nó **bổ sung** chứ không thay assert trên UI.
+- §9 `Setup Verification` thêm con trỏ phân biệt "verify tiền điều kiện đã dựng xong" vs "verify kết quả sau mutation".
+
+**Added — `design_gate` cảnh báo (không chặn)**
+Bộ có case **XOÁ** mà không case nào dùng `db_readonly` → nhắc §13b. Mức cảnh báo vì công cụ không biết case đó có thật sự cần xuống tầng bản ghi hay không (nhiều "xoá" chỉ là gỡ item khỏi form). Đo trước khi chọn: **11/17 bộ** có case xoá thật, cả 11 đều chưa dùng `db_readonly` — một dòng nhắc mỗi bộ, không phải tiếng ồn theo từng dòng. **Cố ý loại "huỷ/cancel"**: đo ra 111/131 case ở bộ time-off khớp chữ "huỷ" nhưng đó là chuyển TRẠNG THÁI, không phải xoá bản ghi — nếu không loại thì cảnh báo thành rác. Nghiệm thu: bộ 530 TC → cảnh báo đúng `45 case XOÁ`; bộ không có case xoá → im.
+
 ## 2026-08-12 (f) — vá advisory `brace-expansion` + khoá tên skill bằng gate
 
 **Fixed**

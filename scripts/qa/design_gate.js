@@ -69,6 +69,26 @@ function main() {
     rowCount += r.rowCount; problems.push(...r.problems); warnings.push(...r.warnings);
   }
 
+  // XOÁ BẢN GHI — nhắc chiều "bền vững dữ liệu" (§13b), mức CẢNH BÁO.
+  // Case xoá là chỗ UI/API mù nhất: sau khi xoá thì màn hết thấy và `GET` trả 404 — GIỐNG HỆT NHAU dù là
+  // soft-delete (bản ghi còn, chỉ set cờ) hay hard-delete, và bản ghi con mồ côi thì màn cha không hiển thị.
+  // Chỉ CẢNH BÁO chứ không chặn: công cụ không biết được case này có thật sự cần xuống tầng bản ghi hay không
+  // (nhiều "xoá" chỉ là gỡ item khỏi form, chưa chạm DB). Đo 12/08/2026: 11/17 bộ có case xoá thật, cả 11 đều
+  // chưa dùng `db_readonly` lần nào — nên đây là nhắc-một-lần-mỗi-bộ, không phải tiếng ồn theo từng dòng.
+  // CỐ Ý loại "huỷ/cancel": trong các bộ này phần lớn là chuyển TRẠNG THÁI (huỷ đơn, huỷ phép), không phải xoá.
+  {
+    let delRows = 0; let hasDbCheck = false;
+    for (const f of files) {
+      if (!fs.existsSync(f)) continue;
+      const txt = fs.readFileSync(f, 'utf8');
+      if (/db_readonly/i.test(txt)) hasDbCheck = true;
+      delRows += (txt.split(/\r?\n/).filter((l) => /^\|\s*[A-Z][A-Z0-9_]*_TC_/.test(l) && /xoá|xóa|\bdelete\b|\bremove\b/i.test(l))).length;
+    }
+    if (delRows && !hasDbCheck) {
+      warnings.push(`Bộ có ${delRows} case XOÁ bản ghi nhưng KHÔNG case nào kiểm ở tầng bản ghi (\`db_readonly: SELECT …\`). Sau khi xoá, UI hết thấy và GET trả 404 y hệt nhau dù là soft-delete hay hard-delete, và bản ghi con mồ côi thì màn cha không hiển thị. Xem prompt gen §13b (5 tình huống cần, kèm ranh giới: read-only, không dựng state, không phải evidence). Nếu đã cân nhắc và không cần thì bỏ qua dòng này.`);
+    }
+  }
+
   // UI CATALOG — bộ có case hiển thị thì phải có artifact kiểm kê field/cột, không chỉ có case bằng chữ.
   // Vì sao chặn: đây là thứ DUY NHẤT bắt được "màn thiếu một trường" / "mọc thêm cột lạ" / "hai màn lệch nhãn"
   // — case theo bước không thấy vì thiếu field thì mọi step vẫn xanh. Một bộ 530 case thật đã có đủ mục
