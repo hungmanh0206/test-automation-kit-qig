@@ -150,21 +150,20 @@ function tcIdFromLabels(labels, known) {
     const idxFile = path.join(KNOW, 'index.json');
     const idx = learn.readJson(idxFile) || { version: 1, updated_at: null, entries: [] };
     idx.entries = idx.entries || [];
-    for (const c of [...created, ...updated]) {
-      const rel = path.relative(KNOW, c.file).replace(/\\/g, '/');
-      const rec = { type: 'bug', file: rel, module: c.rec.module, tags: c.rec.tags, task_key: c.rec.task_key || TASK, status: c.rec.jira_status };
-      const i = idx.entries.findIndex((x) => x && x.file === rel);
-      if (i >= 0) idx.entries[i] = rec; else idx.entries.push(rec);
-    }
-    // DỌN entry mồ côi: xoá một record bug (vd bản trùng) mà index vẫn trỏ vào file không còn tồn tại thì
-    // mọi chỗ tra cứu qua index sẽ ăn đường dẫn chết. Các indexer domain/system/decisions đã dọn, riêng bug
-    // thì chưa — bổ sung cho đồng nhất. Chỉ xét entry `type: 'bug'` để không đụng type khác.
+    // KHÔNG ghi entry `bug` vào index.json nữa, và DỌN sạch entry bug cũ.
+    //
+    // Lý do 1 (bảo mật): `index.json` được COMMIT (preflight_gate yêu cầu file này ở mọi mode), còn record bug
+    //   thì KHÔNG được publish. Tên file bug lại sinh từ slug tiêu đề (`...__be-add-on-order-tien-usd-...`)
+    //   nên chỉ riêng trường `file` trong index đã đủ lộ mô tả defect ra repo public — bỏ track thư mục
+    //   `knowledge/bugs/` mà vẫn giữ entry trong index thì mới bịt được một nửa.
+    // Lý do 2 (vô dụng): đã kiểm toàn bộ reader của index — KHÔNG nơi nào lọc `type === 'bug'`. Entry bug là
+    //   ghi-mà-không-ai-đọc; `risk_score` và `decisions` đều đọc thẳng thư mục `knowledge/bugs/`.
     const before = idx.entries.length;
-    idx.entries = idx.entries.filter((e) => !(e && e.type === 'bug' && e.file && !fs.existsSync(path.join(KNOW, e.file))));
+    idx.entries = idx.entries.filter((e) => !(e && e.type === 'bug'));
     const pruned = before - idx.entries.length;
-    if (pruned) console.log(`[learn-bugs] index.json: dọn ${pruned} entry bug mồ côi (file không còn tồn tại).`);
+    if (pruned) console.log(`[learn-bugs] index.json: dọn ${pruned} entry bug (record bug là dữ liệu LOCAL, không publish — xem knowledge/SCHEMA.md).`);
     idx.updated_at = new Date().toISOString().slice(0, 10);
-    fs.writeFileSync(idxFile, JSON.stringify(idx, null, 2), 'utf8');
+    if (pruned) fs.writeFileSync(idxFile, JSON.stringify(idx, null, 2), 'utf8');
   }
 
   console.log(`\n[learn-bugs] ${APPLY ? 'GHI' : 'DRY-RUN'}: mới ${created.length} · đồng bộ trạng thái ${synced.length} · tiêu đề đổi ${renamedSummary.length} · không đổi ${skipped.length}`);

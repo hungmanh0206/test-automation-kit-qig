@@ -25,26 +25,33 @@ const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 
 // Manifest input bắt buộc theo mode. Chỉ liệt file TRACKED (CI thấy) để không false-block.
+//
+// `knowledge/index.json` là RECOMMEND, không phải REQUIRE: nó là artifact SINH RA (`domain:index`,
+// `system:index`, `decisions --index`, `learn -- --scan`) và từ 12/08/2026 không còn được commit — cả
+// `knowledge/**` là dữ liệu công ty, đối xử như `.env`. Gate mà đòi một file generated + không-commit thì
+// clone mới hay CI sẽ đỏ vì thiếu DỮ LIỆU, chứ không phải vì thiếu KHUNG — đúng kiểu false-block mà dòng
+// trên đã cảnh báo. Thiếu index chỉ là "chưa nạp learning data", nên cảnh báo là đủ.
 const MANIFEST = {
   generic: {
-    require: ['knowledge/index.json', '.agent/config/project_context.md'],
+    require: ['.agent/config/project_context.md'],
     parse: ['knowledge/index.json', '.agent/config/risk_model.example.json', '.agent/config/dashboard.branding.example.json', '.agent/config/verdict_taxonomy.json'],
-    recommend: ['.agent/config/risk_model.json'],
+    recommend: ['.agent/config/risk_model.json', 'knowledge/index.json'],
   },
   phase1: {
-    require: ['.agent/config/project_context.md', 'knowledge/index.json'],
+    require: ['.agent/config/project_context.md'],
     parse: ['knowledge/index.json', '.agent/config/risk_model.example.json'],
-    recommend: ['.agent/config/risk_model.json'],
+    recommend: ['.agent/config/risk_model.json', 'knowledge/index.json'],
   },
   phase2: {
-    require: ['.agent/config/project_context.md', 'knowledge/index.json'],
+    require: ['.agent/config/project_context.md'],
     parse: ['knowledge/index.json'],
-    recommend: ['.agent/config/risk_model.json'],
+    recommend: ['.agent/config/risk_model.json', 'knowledge/index.json'],
     taskTestcase: true,
   },
   publish: {
-    require: ['knowledge/index.json'],
+    require: [],
     parse: ['knowledge/index.json'],
+    recommend: ['knowledge/index.json'],
   },
 };
 

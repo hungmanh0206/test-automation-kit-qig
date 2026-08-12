@@ -3,6 +3,30 @@
 > Bộ nhớ học (learning loop) của kit. Lưu **fact đã xác nhận**, dùng lại xuyên task.
 > Truy vấn ở giai đoạn này theo **module/tag** qua `index.json` (JSON thuần, KHÔNG vector store).
 
+> ## ⛔ Nội dung `knowledge/` KHÔNG được commit — đối xử như `.env`
+>
+> `.gitignore` loại toàn bộ dữ liệu trong đây; repo chỉ giữ **file này** (`SCHEMA.md`) và các `.gitkeep`.
+> Lý do: mọi store ở đây là thông tin nội bộ của dự án đang test, **không phải phần "kit"** —
+> `bugs/` là tiêu đề defect sản phẩm (và tên FILE sinh từ slug tiêu đề nên chính *đường dẫn* đã mô tả defect),
+> `domain/` + `system/` là business rule và bản đồ hệ thống, `locators/` là selector của app,
+> `historical_execution/` + `metrics/` là lịch sử pass/fail kèm tên testcase, `examples/` là bug thật backfill
+> từ một task cũ. `index.json` trỏ tới tất cả những thứ trên nên cũng bị loại — giữ lại là chỉ bịt được một nửa.
+> Mirror GitHub là **public**, nên đây là ranh giới bắt buộc.
+>
+> **Mất file không phải mất dữ liệu** — mỗi store nạp lại được từ nguồn thật:
+>
+> | Store | Nạp lại bằng | Nguồn thật |
+> |---|---|---|
+> | `bugs/` | `npm run learn:bugs:apply` | Jira |
+> | `historical_execution/` | `npm run learn -- --scan` | `test-results/` của task |
+> | `metrics/` | sinh tự động khi chạy test | test run |
+> | `domain/`, `system/`, `decisions/`, `root_causes/` | ghi tay rồi `npm run domain:index` · `system:index` · `decisions --index` | FSD / BA / dev xác nhận |
+>
+> Đã nghiệm thu bản clone mới (dời sạch 72 file dữ liệu ra ngoài): `preflight` · `lint` · `typecheck` ·
+> `secret:scan` · `gate:policy` · `risk` · `dashboard` **đều exit 0**, và `risk` báo trung thực
+> `(0 bug, … snapshot làm dữ liệu)` chứ không âm thầm coi như không có rủi ro. `preflight_gate` đã chuyển
+> `knowledge/index.json` từ **require → recommend** vì đó là artifact sinh ra, đòi nó là false-block.
+
 ## Nguyên tắc
 
 - **Chỉ ghi fact đã qua gate.** Bug chỉ ghi sau khi qua Jira gate ở

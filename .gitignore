@@ -83,16 +83,38 @@ reports/
 Reports/
 ExportData/
 
-# Metrics/reliability telemetry (F10/F11) — Persistence Option A: file TỔNG HỢP được COMMIT
-# (versioned learning store, cùng triết lý knowledge/). Chỉ CI merge-report (scheduled, single job)
-# commit-back nên không nhiễu local. File tạm/khác trong dir vẫn ignore.
+# ─── knowledge/ = DỮ LIỆU CÔNG TY, đối xử như `.env` (KHÔNG commit) ────────────────────────────────────────
+# Mọi store trong knowledge/ đều là thông tin nội bộ của dự án đang test, không phải phần "kit":
+#   bugs/ tiêu đề defect sản phẩm (và tên FILE sinh từ slug tiêu đề nên chính đường dẫn đã mô tả defect)
+#   domain/ + system/ business rule & bản đồ hệ thống · decisions/ + root_causes/ kết luận nội bộ
+#   locators/ selector của app · historical_execution/ + metrics/ lịch sử pass/fail + tên testcase
+#   index.json trỏ tới tất cả những thứ trên (giữ lại là bịt được một nửa)
+# Mirror GitHub là PUBLIC nên đây là ranh giới bắt buộc, không phải sở thích.
+#
+# MẤT FILE KHÔNG PHẢI MẤT DỮ LIỆU — mỗi store đều nạp lại được từ nguồn thật:
+#   bugs        → `npm run learn:bugs:apply` (nguồn: Jira)
+#   historical  → `npm run learn -- --scan`   metrics → sinh khi chạy test
+#   domain/system/decisions → ghi tay (nguồn: FSD/BA), rồi `npm run domain:index` · `system:index` · `decisions --index`
+# Giữ lại trong repo: `knowledge/SCHEMA.md` (hình dạng entry, đã có mẫu generic PROJ-123) + các `.gitkeep`.
+knowledge/index.json
+knowledge/bugs/*.json
+knowledge/domain/*.json
+knowledge/system/*.json
+knowledge/decisions/*.json
+knowledge/root_causes/*.json
+knowledge/locators/*.json
+knowledge/historical_execution/*.json
 knowledge/metrics/*
+knowledge/examples/*
+!knowledge/bugs/.gitkeep
+!knowledge/domain/.gitkeep
+!knowledge/system/.gitkeep
+!knowledge/decisions/.gitkeep
+!knowledge/root_causes/.gitkeep
+!knowledge/locators/.gitkeep
+!knowledge/historical_execution/.gitkeep
 !knowledge/metrics/.gitkeep
-!knowledge/metrics/runs.jsonl
-!knowledge/metrics/tc-history.jsonl
-!knowledge/metrics/reliability-index.json
-!knowledge/metrics/reliability-index.md
-!knowledge/metrics/quarantine.json
+!knowledge/examples/.gitkeep
 
 # Agent / AI local files
 .gemini/
@@ -170,3 +192,10 @@ scripts/integrations/jira/unassign_tests_backup.json
 
 # GitLab Runner system id
 .runner_system_id
+
+# Record bug (knowledge/bugs/*.json) là dữ liệu NỘI BỘ, KHÔNG publish: tên file sinh từ slug tiêu đề nên
+# chính đường dẫn đã mô tả defect của sản phẩm, mà mirror GitHub là public. Kit vẫn dùng chúng bình thường ở
+# local/CI nội bộ (risk_score + decisions đọc thẳng thư mục này; thiếu thư mục thì cả hai xử lý rỗng an toàn).
+# Nạp lại từ Jira bất cứ lúc nào: `npm run learn:bugs:apply` (nguồn thật là Jira, không phải repo).
+knowledge/bugs/*.json
+!knowledge/bugs/.gitkeep
