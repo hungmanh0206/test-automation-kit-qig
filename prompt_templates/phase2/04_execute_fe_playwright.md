@@ -238,10 +238,12 @@ Trace policy:
   - local-only diagnostic nếu cần: `trace.zip`, `error-context.md`, `console-network-summary.md`
 
 # Quy tắc kỹ thuật Playwright
-- Không đoán locator; inspect DOM thực tế.
-- Locator priority: `getByRole` > `getByLabel` > `getByText` > `getByTestId` > CSS.
+
+> **Playbook bắt buộc đọc**: **`.agent/rules/playwright_fe.md`** (wait strategy, cấu trúc test/POM, anti-pattern — gồm cả những thứ KHÔNG nhắc lại dưới đây) và **`.agent/rules/locator_strategy.md`** (bảng ưu tiên locator + cách neo scope). Mục này chỉ nêu phần hay sai nhất khi execute; chi tiết ở 2 file đó, mâu thuẫn thì theo chúng.
+
+- Không đoán locator; inspect DOM thực tế. Thứ tự ưu tiên locator: theo bảng §Priority của `.agent/rules/locator_strategy.md` (đừng nhớ theo trí nhớ — bảng đó là nguồn).
 - Site URLs và credentials lấy từ env variables (`App 1_*`, `APP2_*`).
-- Không dùng `waitForTimeout()` làm wait chính; chỉ dùng ngắn để ổn định evidence visual page nếu cần.
+- Không dùng `waitForTimeout()` làm wait chính; chỉ dùng ngắn để ổn định evidence visual page nếu cần (§Wait Strategy của `playwright_fe.md`).
 - Sau mỗi TC, cập nhật testcase output với `Status` và `Actual Result`.
 - `Actual Result` của FAIL phải rõ: failed step, expected result, actual UI/API observed, main error, evidence path.
 - Khi ghi `testcase-status.json`, **case FAILED phải kèm step nào fail + evidence của bước đó**: điền `steps[]` (bước lỗi `FAILED` + `evidence`; bước chưa chạy `TODO`) hoặc shortcut `failedStep` + `failedStepEvidence` (schema ở `run_phase2_template.md`) — để Test Execution hiện đúng bước lỗi thay vì chỉ FAIL tổng.

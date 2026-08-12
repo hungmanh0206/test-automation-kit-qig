@@ -84,6 +84,44 @@ if (!fs.existsSync(CLAUDE)) {
   }
 }
 
+// ─── Mọi file trong .agent/rules/ phải CÓ ĐƯỜNG ĐI TỚI lúc agent cần ──────────────────────────────────────
+// Rule không ai trỏ tới = rule không tồn tại: agent không biết mà đọc, còn nội dung thì âm thầm drift khỏi
+// chỗ đang thật sự được dùng. Đã xảy ra: `playwright_fe.md` + `playwright_api.md` chỉ được `AUDIT_REFERENCES.md`
+// (bản KIỂM KÊ, không phải nơi tiêu thụ) nhắc tới, trong khi chính prompt execute FE/API lại tự chép lại một
+// phần rule của chúng ⇒ tồn tại bản thứ hai không ai canh. Cùng lớp vấn đề mà `.agent/skills/INDEX.md` đã chống
+// cho skill; nay chống cho rule.
+const RULES_DIR = path.join(rc.REPO_ROOT, '.agent', 'rules');
+// Chỉ những nơi THỰC SỰ dẫn agent đọc mới tính là consumer. Cố ý loại `AUDIT_REFERENCES.md` (kiểm kê) và
+// `CHANGELOG.md` (lịch sử) — hai file đó nhắc tên file mà không hề đưa ai tới đọc nó.
+const CONSUMER_DIRS = ['prompt_templates', '.agent/skills', '.agent/workflows', 'scripts', 'exploratory'];
+const CONSUMER_FILES = ['CLAUDE.md', 'README.md'];
+if (fs.existsSync(RULES_DIR)) {
+  const walk = (dir, acc = []) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walk(p, acc);
+      else if (/\.(md|js|json|ya?ml)$/i.test(e.name)) acc.push(p);
+    }
+    return acc;
+  };
+  const haystack = [];
+  for (const d of CONSUMER_DIRS) {
+    const abs = path.join(rc.REPO_ROOT, d);
+    if (fs.existsSync(abs)) haystack.push(...walk(abs));
+  }
+  for (const f of CONSUMER_FILES) {
+    const abs = path.join(rc.REPO_ROOT, f);
+    if (fs.existsSync(abs)) haystack.push(abs);
+  }
+  const corpus = haystack.map((p) => ({ p, txt: fs.readFileSync(p, 'utf8') }));
+  for (const name of fs.readdirSync(RULES_DIR).filter((x) => x.endsWith('.md') && x.toLowerCase() !== 'readme.md')) {
+    const refs = corpus.filter((c) => !c.p.endsWith(path.join('.agent', 'rules', name)) && c.txt.includes(name));
+    if (!refs.length) {
+      problems.push(`.agent/rules/${name}: KHÔNG nơi nào dẫn agent đọc (prompt_templates/skills/workflows/scripts/exploratory/CLAUDE.md đều không trỏ) → rule mồ côi, sẽ drift âm thầm. Trỏ nó từ prompt/skill/gate đang cần, hoặc gộp nội dung rồi xoá file.`);
+    }
+  }
+}
+
 for (const w of warns) console.log(`[policy] ⚠ ${w}`);
 if (problems.length) {
   console.error('[policy] ✗ Vi phạm 1-nguồn-policy (F3):');

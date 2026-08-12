@@ -103,6 +103,9 @@ Status `200` + schema đúng KHÔNG đủ để PASS. Bug logic/dữ liệu BE l
 - `comment` (Test Run) gọn 1–2 câu kết quả; KHÔNG dán debug (key=value, dump response, regex); KHÔNG prefix trạng thái (`[PASS]/[Positive]/[Negative]`); caveat xuống dòng `Lưu ý:`; KHÔNG placeholder `Xem xxx.json`. Chi tiết: RULE_GLOBAL §Evidence + §Comment.
 
 # Quy tắc kỹ thuật API
+
+> **Playbook bắt buộc đọc**: **`.agent/rules/playwright_api.md`**. Nó chứa những phần mục này KHÔNG nhắc lại và cũng là chỗ hay bị bỏ: **§Assertions** (luôn assert status; assert field/schema/business rule; negative phải assert đúng error code theo spec; mutation phải verify side-effect), **§Anti-Patterns** (chỉ assert `res.ok()` cho API business-critical, đổi expected status để pass, bỏ assertion body quan trọng, mock API chính khi cần kiểm contract thật) và **guardrail DB read-only**. Mâu thuẫn thì theo file đó.
+
 - Dùng request context, không dùng page/browser.
 - Token lấy động qua API login hoặc env; không hardcode.
 - Site URLs, credential và integration links lấy từ env variables hoặc `.agent/config/project_context.md`.

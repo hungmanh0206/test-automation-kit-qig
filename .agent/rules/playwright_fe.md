@@ -12,7 +12,7 @@
 ## Wait Strategy
 
 - Dùng auto-waiting và web-first assertions.
-- Không dùng `waitForTimeout()` làm wait chính.
+- Không dùng `waitForTimeout()` làm wait chính. Ngoại lệ DUY NHẤT: chờ ngắn để **ổn định ảnh evidence** (animation/settle) — không dùng nó thay cho một condition.
 - Dùng condition cụ thể: visible, enabled, URL, response, toast, modal state.
 
 ## Evidence
