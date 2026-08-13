@@ -17,6 +17,8 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 | [`phase1/05_manual_quick.md`](phase1/05_manual_quick.md) | nhánh thay thế | Requirement đã RÕ và chỉ cần bộ TC **chạy tay** nhanh — KHÔNG nhắm automation. Requirement còn mơ hồ hoặc cần TC cho automation thì **đừng** dùng nhánh này |
 | [`phase1/06_cross_module.md`](phase1/06_cross_module.md) | khi cần | Scope chạm nhiều module/hệ thống, cần ma trận tổ hợp (skill `combinatorial_matrix` cũng gọi file này) |
 
+**Chi tiết từng bước** (khuôn mẫu output, Coverage Map, Precondition Execution Matrix, capability-request): [`.agent/workflows/phase1_generate_tc.md`](../.agent/workflows/phase1_generate_tc.md) — file tổng quan, bên trong liệt kê đủ step `phase1_01…04`; riêng [`phase1_00_scope_planning.md`](../.agent/workflows/phase1_00_scope_planning.md) dùng khi cần khoanh scope + chấm risk trước. Thứ tự bước và lệnh gate thì lấy ở ngay file này.
+
 ## Gate bắt buộc chạy trong Phase 1
 
 Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`** mà file điểm-vào này không trỏ tới ⇒ ai theo đúng `run_phase1` thì không bao giờ chạy chúng. Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.

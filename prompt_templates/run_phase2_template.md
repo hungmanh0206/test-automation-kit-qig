@@ -18,6 +18,8 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 
 > Trước đây file này **không trỏ tới hai prompt execute** ở trên, nên ai chỉ đọc `run_phase2` là execute mà thiếu toàn bộ kỷ luật FE/API (47KB). Đó là lý do có bảng này — xem `CHANGELOG` 2026-08-13.
 
+**Chi tiết từng bước** (định dạng execution summary, Shared Change Log, Automation Promotion Status, checklist Jira gate): [`.agent/workflows/phase2_execute.md`](../.agent/workflows/phase2_execute.md) — file tổng quan, bên trong liệt kê đủ 4 step `phase2_01…04`. Mở khi cần đúng khuôn mẫu output của một bước; thứ tự bước và lệnh gate thì lấy ở ngay file này.
+
 ## Gate bắt buộc chạy trong Phase 2
 
 Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase2_*`** mà file điểm-vào này không trỏ tới ⇒ ai theo đúng `run_phase2` thì **không bao giờ chạy self-review, và không bao giờ thu learning data** — đó chính là lý do `knowledge/` bị cũ. Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
