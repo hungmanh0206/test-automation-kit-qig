@@ -18,6 +18,19 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 
 > Trước đây file này **không trỏ tới hai prompt execute** ở trên, nên ai chỉ đọc `run_phase2` là execute mà thiếu toàn bộ kỷ luật FE/API (47KB). Đó là lý do có bảng này — xem `CHANGELOG` 2026-08-13.
 
+## Gate bắt buộc chạy trong Phase 2
+
+Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase2_*`** mà file điểm-vào này không trỏ tới ⇒ ai theo đúng `run_phase2` thì **không bao giờ chạy self-review, và không bao giờ thu learning data** — đó chính là lý do `knowledge/` bị cũ. Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
+
+| Khi nào | Lệnh | Nó chặn/sinh ra gì |
+|---|---|---|
+| **Bước 0 — trước MỌI thứ** | `node scripts/qa/preflight_gate.js --mode phase2 --task <TASK_KEY>` | **G1** CHẶN khi thiếu input/config hỏng/testcase canonical chưa có. Chạy trước để không execute trên nền sai |
+| Sau khi có kết quả execute | `npm run gate:output` | **G2** CHẶN output sai chuẩn: FAIL thiếu tầng lỗi, oracle rỗng/tautology, evidence không phải ảnh/video, kết luận mapping ở mức "có dữ liệu" |
+| Trước khi log bug | `npm run decisions:check` | Tra `knowledge/decisions/` — triệu chứng này đã từng bị kết luận *không phải bug* chưa? Chống log lại đúng thứ đã Rejected |
+| Khi log bug | `node scripts/qa/output_gate.js --mode bug --preview <bugs.json>` | Repro phải trích từ lần chạy thật; cấm suy đoán trong description; cảnh báo gán tầng FE/BE mà thiếu dấu vết API |
+| **Trước finalize/publish** | `npm run self-review -- --task <TASK_KEY>` | **G9** checklist gộp (preflight + design + row-quality + execution + attestation). **Còn đỏ thì đừng viết report, đừng log bug** |
+| **Sau MỌI lần execute** (không chỉ khi có bug) | `npm run learn -- --scan` và `npm run learn:bugs:apply` | Thu learning data về `knowledge/` (snapshot execution + đồng bộ trạng thái bug từ Jira). **Bỏ bước này là vòng học đứt** — risk model chạy trên dữ liệu cũ |
+
 ```text
 Chạy Phase 2 cho module/task sau: generate/update automation scripts nếu cần, execute testcases thật, auto-heal lỗi automation/setup, tổng hợp report và chỉ log bug Jira khi đã đủ điều kiện xác nhận.
 

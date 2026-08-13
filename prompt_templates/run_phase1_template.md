@@ -17,6 +17,21 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 | [`phase1/05_manual_quick.md`](phase1/05_manual_quick.md) | nhánh thay thế | Requirement đã RÕ và chỉ cần bộ TC **chạy tay** nhanh — KHÔNG nhắm automation. Requirement còn mơ hồ hoặc cần TC cho automation thì **đừng** dùng nhánh này |
 | [`phase1/06_cross_module.md`](phase1/06_cross_module.md) | khi cần | Scope chạm nhiều module/hệ thống, cần ma trận tổ hợp (skill `combinatorial_matrix` cũng gọi file này) |
 
+## Gate bắt buộc chạy trong Phase 1
+
+Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`** mà file điểm-vào này không trỏ tới ⇒ ai theo đúng `run_phase1` thì không bao giờ chạy chúng. Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
+
+| Khi nào | Lệnh | Nó chặn/sinh ra gì |
+|---|---|---|
+| Đầu phase, trước khi phân tích | `npm run risk` | Risk register theo module — quyết định độ sâu test (RBT). Không có thì gen dàn đều, chỗ rủi ro cao bị test nông |
+| Khi chuẩn bị context | `npm run domain:check` · `npm run system:check` | Đối chiếu business rule + bản đồ hệ thống đã xác nhận trong `knowledge/` — đây là nguồn oracle độc lập, tra trước để không suy oracle từ app (tautology) |
+| Sau khi QA duyệt Excel | `npm run jira:testcase-publish:dry-run` → xem preview → `npm run jira:testcase-publish` | Đẩy TC lên Xray. **Luôn dry-run trước**; chi tiết ở `phase1/04_auto_publish_jira.md` |
+| Ngay sau khi export Excel (bước 7) | tự chạy trong `md_to_xlsx` | **`design_gate` (G5)** CHẶN nếu thiếu cột canonical / rỗng ô lõi / bộ có case hiển thị mà thiếu `ui_catalog.json` |
+| Sau export | `npm run design:gate` | Chạy tay khi muốn soi trước lúc convert |
+| Sau export | `npm run risk:gate` | Đối chiếu độ sâu testcase với `depthPolicy` theo band rủi ro |
+| Sau export | `npm run trace:matrix` | Sinh `reports/traceability-matrix.md` — REQ ↔ TC, lộ requirement chưa có case nào |
+| Trước khi kết thúc phase | `npm run gate:policy` | Rule/skill/prompt mồ côi, lệch tên, lệch danh sách đuôi evidence |
+
 ```text
 Chạy Phase 1 cho module/task sau: collect context và sinh/update testcases.
 

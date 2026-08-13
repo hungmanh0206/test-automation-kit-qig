@@ -7,6 +7,27 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-13 (b) — 11 lệnh gate chưa từng được chạy, vì chỉ nằm ở tầng workflows
+
+**Bối cảnh.** Định hướng ban đầu cho hai tầng (`prompt_templates/phaseN/` vs `.agent/workflows/`) là "co workflow lại thành bảng neo step ↔ skill". **May là đo trước khi cắt** — kế hoạch đó sẽ xoá mất một thứ không ai ngờ.
+
+Quét lệnh (`npm run …` / `node scripts/…`) trong workflows rồi đối chiếu với `prompt_templates`: **11 lệnh gate chỉ tồn tại ở tầng workflows**, mà `run_phase2` **không trỏ tới workflow nào** và `run_phase1` chỉ nhắc 1 lần. Nghĩa là ai theo đúng điểm vào thì **không bao giờ chạy chúng**:
+
+| Điểm vào thiếu | Lệnh vắng mặt | Hậu quả thật |
+|---|---|---|
+| `run_phase2` | `npm run self-review` (**G9**) | Không có lượt tự soi trước finalize — gate gộp preflight+design+row-quality+execution không chạy |
+| `run_phase2` | `npm run learn -- --scan`, `npm run learn:bugs:apply` | **Vòng học ĐỨT** — đây chính là lý do `knowledge/` bị cũ và risk model chạy trên dữ liệu lỗi thời |
+| `run_phase2` | `preflight_gate --mode phase2` (**G1**), `gate:output` (**G2**), `decisions:check` | Execute trên nền sai; output sai chuẩn không bị chặn; log lại đúng bug đã Rejected |
+| `run_phase1` | `design:gate`, `risk:gate`, `trace:matrix`, `risk`, `domain:check`, `system:check` | Không đối chiếu độ sâu theo band rủi ro, không có ma trận REQ↔TC, không tra business rule đã xác nhận |
+
+**Fixed**
+- Thêm bảng **"Gate bắt buộc chạy"** vào cả `run_phase1` và `run_phase2`: *khi nào · lệnh · nó chặn/sinh ra gì*. Giờ đọc mỗi điểm vào là biết phải chạy gì, không cần biết tầng workflows tồn tại.
+
+**Added — `gate:policy` chặn lệnh gate chỉ-nằm-ở-workflow**
+Mọi `npm run …`/`node scripts/…` xuất hiện trong `.agent/workflows/phaseN_*` phải có mặt ở `run_phase{N}` tương ứng. **Phân giải bí danh qua `package.json`** — `npm run trace:matrix` và `node scripts/qa/traceability_matrix.js` được coi là MỘT, nếu không thì cùng một gate viết hai kiểu sẽ báo thiếu oan (đo thật: 2/4 "thiếu" ban đầu chỉ là bí danh). Nghiệm thu: thêm `npm run reliability` vào một workflow → exit 1 đúng thông báo → hoàn nguyên → xanh.
+
+**Chưa làm — và lý do đổi ý:** *không* co tầng workflows nữa. Chúng không phải bản trùng của `prompt_templates` mà là **nơi chứa chi tiết từng bước + lệnh gate**; co lại là mất nội dung thật. Quan hệ đúng của hai tầng giờ là canonical/digest có máy kiểm — y như `RULE_GLOBAL.md` ↔ `core_rules.md`.
+
 ## 2026-08-13 — `run_phase*` thành ĐIỂM VÀO thật: chỉ đọc 1 file là đủ điều hướng
 
 **Bối cảnh.** Câu hỏi: "thay vì bắt đọc từng bước, chỉ bắt đọc `run_phase` thì có hợp lý không?". Đo trước khi trả lời — và hoá ra hợp lý về nguyên tắc nhưng **làm ngay lúc đó thì mất 47KB kỷ luật execute**: `run_phase2_template.md` **không hề trỏ** tới `04_execute_fe_playwright.md` (264 dòng) lẫn `05_execute_api_playwright.md` (135 dòng). Ai chỉ đọc `run_phase2` là execute mà thiếu toàn bộ phản xạ điều tra `qa_instincts`, luật khoanh tầng lỗi FE/BE, oracle mapping phải nêu cả hai giá trị, yêu cầu chạy `ui_conformance_check` và chuẩn evidence. Nghịch lý cho thấy tầng điều hướng hỏng: thứ **duy nhất** trỏ tới prompt execute FE lại là `.agent/rules/qa_instincts.md` — một file *rule* dẫn tới *prompt*, còn bản điều phối thì không.

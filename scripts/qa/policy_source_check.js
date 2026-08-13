@@ -154,6 +154,58 @@ if (fs.existsSync(PT_DIR)) {
   }
 }
 
+// ─── Lệnh GATE trong workflow phải xuất hiện ở `run_phase*` ────────────────────────────────────────────────
+// `run_phase*` là thứ người/agent được bảo "đọc file này rồi chạy". Lệnh gate nào chỉ nằm trong
+// `.agent/workflows/` mà điểm vào không nhắc thì THỰC TẾ KHÔNG BAO GIỜ ĐƯỢC CHẠY. Đã xảy ra đúng vậy:
+// `run_phase2` thiếu hẳn `self-review` (G9) và `learn`/`learn:bugs:apply` — nên không ai chạy self-review
+// trước finalize, và vòng học đứt (đó là lý do knowledge/ bị cũ). Đo 13/08/2026: 11 lệnh gate chỉ có ở
+// workflows. Coi `npm run X` và câu lệnh `node …` mà nó trỏ tới là MỘT (phân giải qua package.json), nếu
+// không thì cùng một gate viết hai kiểu sẽ báo nhầm là thiếu.
+{
+  const WF_DIR = path.join(rc.REPO_ROOT, '.agent', 'workflows');
+  const PT = path.join(rc.REPO_ROOT, 'prompt_templates');
+  if (fs.existsSync(WF_DIR) && fs.existsSync(PT)) {
+    let scripts = {};
+    try { scripts = (JSON.parse(fs.readFileSync(path.join(rc.REPO_ROOT, 'package.json'), 'utf8')).scripts) || {}; } catch (e) { /* bỏ qua */ }
+    // mỗi lệnh → tập biến thể tương đương (tên npm + phần `node scripts/...js` mà nó gọi)
+    const variants = (cmd) => {
+      const out = new Set([cmd]);
+      const m = cmd.match(/^npm run ([a-z0-9:_-]+)$/i);
+      if (m && scripts[m[1]]) {
+        const body = scripts[m[1]];
+        out.add(body);
+        const js = body.match(/node\s+(scripts\/[\w./-]+\.js)/);
+        if (js) out.add(js[1]);
+      }
+      const js2 = cmd.match(/^node\s+(scripts\/[\w./-]+\.js)$/);
+      if (js2) {
+        out.add(js2[1]);
+        for (const [n, body] of Object.entries(scripts)) if (body.includes(js2[1])) out.add(`npm run ${n}`);
+      }
+      return [...out];
+    };
+    const entryFor = (wfName) => {
+      if (/^phase1/.test(wfName)) return 'run_phase1_template.md';
+      if (/^phase2/.test(wfName)) return 'run_phase2_template.md';
+      if (/^rerun/.test(wfName)) return 'run_phase_re-run_template.md';
+      return null;
+    };
+    for (const wf of fs.readdirSync(WF_DIR).filter((f) => f.endsWith('.md'))) {
+      const entryName = entryFor(wf);
+      if (!entryName) continue;
+      const entryPath = path.join(PT, entryName);
+      if (!fs.existsSync(entryPath)) continue;
+      const entryTxt = fs.readFileSync(entryPath, 'utf8');
+      const wfTxt = fs.readFileSync(path.join(WF_DIR, wf), 'utf8');
+      const cmds = [...new Set(wfTxt.match(/npm run [a-z0-9:_-]+|node scripts\/[\w./-]+\.js/gi) || [])];
+      const missing = cmds.filter((c) => !variants(c).some((v) => entryTxt.includes(v)));
+      if (missing.length) {
+        problems.push(`.agent/workflows/${wf}: lệnh ${missing.map((x) => `\`${x}\``).join(', ')} KHÔNG có trong \`prompt_templates/${entryName}\` — điểm vào không nhắc thì thực tế không ai chạy. Thêm vào bảng "Gate bắt buộc" của điểm vào.`);
+      }
+    }
+  }
+}
+
 // ─── Skill: frontmatter `name` phải KHỚP tên thư mục ──────────────────────────────────────────────────────
 // Tra cứu skill dùng TÊN THƯ MỤC (đó là tên prompt/workflow/INDEX.md nhắc tới). Frontmatter ghi khác đi thì
 // người đọc file tưởng skill tên A trong khi mọi nơi gọi nó là B — và `skills_index.js` chỉ CẢNH BÁO, không
