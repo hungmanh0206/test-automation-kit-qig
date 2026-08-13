@@ -203,6 +203,7 @@ flowchart TD
 | Run task-scoped API safely | `npm run test:task:api -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY>` |
 | Show report helper | `npm run report` |
 | QA Dashboard (SAPP DS) | `npm run dashboard` |
+| **UI conformance — kiểm kê cột/field vs tài liệu** (bắt buộc khi bộ có case hiển thị) | `TASK_ENV=profiles/<TASK>/task.env node scripts/qa/ui_conformance_check.js --catalog <ui_catalog.json>` — exit `0` khớp · `1` có deviation · **`2` KHÔNG ĐO ĐƯỢC** (thiếu creds/login hỏng ⇒ đừng đọc report lần đó) |
 | Accessibility (axe-core) | `npm run accessibility -- --catalog <ui_catalog.json>` |
 | Performance Loại A (đo, so ngưỡng) | `npm run perf -- --catalog <perf_catalog.json>` |
 | Security basic (GET, non-prod) | `npm run security -- --catalog <security_catalog.json> --confirm-nonprod` |
@@ -230,7 +231,7 @@ flowchart TD
 | Seed knowledge từ lịch sử Jira/Xray | `npm run seed:knowledge` · `npm run seed:knowledge:apply -- --since <YYYY-MM-DD>` |
 | KPI/reliability (thường do `npm run learn` gọi) | `npm run metrics:collect -- --results <results.json>` · `npm run reliability` |
 | Output gate — tự sửa lỗi format | `npm run gate:output:fix -- --status <status.json>` |
-| Gate policy-source (rule 1 nguồn) | `npm run gate:policy` |
+| Gate policy-source — 1 nguồn rule · file mồ côi · tên skill · đuôi evidence · lệnh gate ở workflow | `npm run gate:policy` |
 | Inventory gate — chống false-green (F1) | `npm run inventory:gate` |
 | Secret scan / audit dependency CI | `npm run secret:scan` · `npm run audit:ci` |
 | Traceability matrix REQ→TC→exec | `npm run trace:matrix -- --task <TASK_KEY>` |

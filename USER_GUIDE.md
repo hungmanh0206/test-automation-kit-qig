@@ -1080,6 +1080,9 @@ Chi tiết ở Mục 8.
 | Jira bug thiếu thông tin | Chưa có expected/actual/evidence đủ rõ. | Bổ sung 4 phần description và ảnh/video. |
 | Re-run vẫn fail | Product bug chưa fix hoặc setup vẫn lỗi. | Giữ bug mở, ghi actual mới và evidence. |
 | Tài liệu nguồn đổi | Dùng nhầm Re-run. | Chạy Partial Rerun Prepare Review. |
+| `design_gate` CHẶN: "thiếu `requirements/ui_catalog.json`" | Bộ testcase có case **hiển thị** (bảng/danh sách/field) nhưng chưa có bản kiểm kê field/cột. Không có nó thì "thiếu một trường"/"mọc thêm cột lạ" **không bao giờ lộ ra** — mọi step vẫn xanh. | Dựng catalog theo schema ở `scripts/qa/README.md` (`table.expectedColumns` + `fields[]` mỗi section, lấy nhãn từ FSD/Figma **không lấy từ build**), rồi Phase 2 chạy `ui_conformance_check`. Task cũ/không áp dụng: chạy kèm `--no-catalog` và **nêu lý do trong report**. |
+| `gate:policy` CHẶN dù mình không sửa rule | Nó kiểm 5 thứ, không chỉ "1 nguồn policy": ① `core_rules` phải khai `RULE_GLOBAL` là canonical ② danh sách đuôi evidence trong tài liệu phải khớp hằng số trong code ③ rule/prompt-bước **mồ côi** (không nơi nào dẫn tới đọc) ④ skill có `name` lệch tên thư mục ⑤ lệnh gate nằm trong `.agent/workflows/` mà `run_phase*` không nhắc. | Đọc thông báo — nó nói thẳng phải nối file vào đâu. Thường là thêm 1 dòng vào bảng "Bản đồ prompt"/"Gate bắt buộc" của `run_phase` tương ứng. |
+| `ui_conformance_check` báo "thiếu HẾT cột" | Gần như luôn là **chưa truyền `TASK_ENV`** ⇒ không có creds ⇒ đứng ở màn login ⇒ mọi màn đọc ra 0 cột. | Chạy lại với `TASK_ENV=profiles/<TASK_KEY>/task.env`. Tool nay tự chặn sớm và trả **exit 2 = KHÔNG ĐO ĐƯỢC** (khác exit 0 = khớp) — gặp exit 2 thì **đừng đọc report của lần đó**. |
 
 ## 11. Phụ lục
 
@@ -1103,6 +1106,10 @@ Chi tiết ở Mục 8.
 | Gate | Điểm dừng để Team QA review trước khi đi tiếp. |
 | Coverage | Mức độ requirement/business rule/API behavior được testcase cover. |
 | Risk-based Gate | Đánh giá theo risk, không chỉ theo số lượng testcase. |
+| **Severity** (cột 8, tên cũ "Mức độ rủi ro") | **Hậu quả nếu lỗi xảy ra** — thang `Blocker · Critical · Major · Minor · Trivial`. Là **trục riêng**, không phải bản sao của `Ưu tiên`. Ma trận quyết định + cây hỏi ở prompt gen §7b/§8; `md_to_xlsx` chặn nếu điền giá trị Severity vào cột `Ưu tiên`. Bộ cũ dùng thang 3 mức (Cao/TB/Thấp) vẫn hợp lệ, **không cần chuyển ngược**. |
+| **Ưu tiên** (cột 7) | **Thứ tự làm trước/sau** — `Highest…Lowest`. Khác Severity: một lỗi hậu quả lớn nhưng cực hiếm có thể để Priority thấp, và ngược lại. |
+| `ui_catalog.json` | Bản kiểm kê **field/cột theo tài liệu** của từng màn (`requirements/ui_catalog.json`). Là thứ **duy nhất** bắt được "màn thiếu một trường"/"mọc thêm cột lạ"/"hai màn lệch nhãn" — case theo bước không thấy vì thiếu field thì mọi step vẫn xanh. Bắt buộc khi bộ có case hiển thị (`design_gate` chặn). |
+| `db_readonly` (§13b prompt gen) | Dòng verification **thêm vào case mutation đã có** (không đẻ TC riêng), dạng `db_readonly: SELECT …`. Chỉ dùng ở 5 chỗ UI/API *không thể* phân biệt: soft-vs-hard delete · cascade/bản ghi mồ côi · field không render · ghi trùng · trường dẫn xuất lệch bản ghi gốc. Read-only qua `uatPgClient.ts`, **không** dựng state, **không** phải evidence. |
 | Critical/High Gap | Gap quan trọng có thể block kết luận PASS. |
 | Evidence | Ảnh/video chứng minh kết quả test/bug (log/trace chỉ là diagnostic local, không phải evidence). |
 | Product bug | Lỗi thật của sản phẩm, không phải setup/test data/automation. |
