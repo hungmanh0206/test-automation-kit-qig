@@ -140,8 +140,14 @@ artifacts/
 **/.env.bak*
 .agent/config/*.local.md
 
-# Per-project run profiles (chứa credential riêng từng dự án) — không commit
-profiles/**/task.env
+# Per-project run profiles — KHÔNG commit BẤT CỨ THỨ GÌ trừ file mẫu.
+# Trước đây chỉ ignore `task.env`, nên mọi artifact khác trong thư mục task vẫn commit được. Đo 13/08/2026:
+# 6 file đang ở trạng thái commit-được, gồm `profiles/SAPP-14127/detail-review.csv` có cột `full_name`,
+# `student_code`, `deal_id` — PII khách hàng. Chưa lọt (mới untracked) nhưng một lệnh `git add -A` là lên
+# repo. Thư mục task profile là nơi chứa creds + output chạy thật ⇒ chặn cả thư mục, giống `knowledge/`.
+profiles/*
+!profiles/task.env.example
+!profiles/.gitkeep
 
 # Node modules
 node_modules/
