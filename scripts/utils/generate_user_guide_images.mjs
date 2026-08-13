@@ -82,7 +82,7 @@ const boards = [
       { icon: 'PRE', c: C.info, title: '2.2 Resolve preconditions', body: 'UI/API/factory/fixture/hook' },
       { icon: 'DB', gate: true, title: 'DB: UAT READ-ONLY', body: 'Verify read-only qua guarded client; không dựng state' },
       { icon: 'RUN', c: C.ink, title: '2.3 Run FE/API', body: 'Playwright execute thật' },
-      { icon: 'EV', c: C.amber, title: '2.4 Capture evidence', body: 'Screenshot, video, trace, response' },
+      { icon: 'EV', c: C.amber, title: '2.4 Capture evidence', body: 'Ảnh/video (trace/log chỉ để debug local)' },
       { icon: 'CL', c: C.info, title: '2.5 Classify + push Xray', body: 'PASSED/FAILED/TO DO → Test Execution' },
     ],
     outputs: ['Test Execution trên Xray', 'Test Plan sprint (roll-up)', 'setup_failure nếu setup lỗi', 'Execution summary', 'Evidence path', 'Bug candidate'],
@@ -94,7 +94,10 @@ const boards = [
       { icon: 'EX', c: C.info, title: 'B.1 Execute thật', body: 'Không phải skip hoặc thiếu bước' },
       { icon: 'RR', c: C.ink, title: 'B.2 Rerun xác nhận', body: 'Loại flaky/setup/data issue' },
       { icon: 'ER', c: C.success, title: 'B.3 Expected rõ', body: 'Theo Excel/requirement/API/design' },
-      { icon: 'EV', c: C.amber, title: 'B.4 Evidence rõ', body: 'Ảnh/video/log/trace' },
+      // Evidence CHỈ là ảnh/video. Bản cũ ghi "Ảnh/video/log/trace" — dạy NGƯỢC lại non-negotiable
+      // (CLAUDE.md rule 4 + RULE_GLOBAL §Evidence cấm .log/trace.zip làm evidence, `output_gate` chặn thật),
+      // mà lại nằm đúng trong ảnh checklist người ta mở ra TRƯỚC khi log bug.
+      { icon: 'EV', c: C.amber, title: 'B.4 Evidence rõ', body: 'CHỈ ảnh/video (log/trace là diagnostic)' },
       { icon: 'OK', gate: true, title: 'GATE: BUG READY', body: 'Chỉ log nếu là product bug thật' },
       { icon: 'BG', c: C.danger, title: 'B.5 Log Jira bug', body: 'Description đủ 4 phần' },
     ],
@@ -134,6 +137,9 @@ const boards = [
     steps: [
       { icon: 'AMB', gate: true, title: 'Ambiguity Gate', body: 'Mơ hồ Critical/High → hỏi + chặn sinh TC' },
       { icon: 'RBT', c: C.info, title: 'Risk Scorer', body: 'npm run risk → register; gate depth theo band' },
+      // UI Conformance là bước BẮT BUỘC của Phase 2 khi bộ có case hiển thị (design_gate chặn nếu thiếu
+      // catalog), nhưng sơ đồ cũ không có nó — người xem tưởng đây chỉ là nhóm năng lực opt-in.
+      { icon: 'CONF', c: C.danger, title: 'UI Conformance', body: 'ui_conformance_check — kiểm kê cột/field vs tài liệu' },
       { icon: 'A11Y', c: C.info, title: 'Accessibility', body: 'npm run accessibility — axe-core' },
       { icon: 'PERF', c: C.amber, title: 'Perf Loại A', body: 'npm run perf — vitals/SLA, advisory' },
       { icon: 'SEC', c: C.danger, title: 'Security basic', body: 'npm run security — GET, non-prod, mask PII' },
