@@ -101,10 +101,13 @@ test-automation-kit/
 │   ├── support/setup/   # setup layer dùng chung (factory/hook/fixture/mock/cleanup/contract)
 │   ├── mobile-web/       # spec mobile-web (Playwright device emulation)
 │   └── load/             # k6 load script (Loại B, opt-in)
-├── knowledge/            # bộ nhớ học: bugs/root_causes/locators/historical_execution (+ examples/) — learning loop
+├── knowledge/            # bộ nhớ học: bugs/domain/system/decisions/locators/historical_execution — learning loop
+│                         #   ⚠ KHÔNG commit (dữ liệu công ty, như .env). Repo chỉ giữ SCHEMA.md + .gitkeep;
+│                         #   nạp lại: npm run learn:bugs:apply (Jira) · npm run learn -- --scan · ghi tay domain/system
 ├── exploratory/          # nhánh phụ never-auto (charter-based), ngoài Main Flow
 ├── profiles/
 │   └── <TASK_KEY>/task.env   # env động theo task, nạp qua TASK_ENV (tạo bằng npm run profile:create)
+│                         #   ⚠ KHÔNG commit CẢ THƯ MỤC (creds + output chạy thật có PII); chỉ task.env.example
 ├── outputs/
 │   └── <YOUR_PROJECT>/tasks/<TASK_KEY>/
 ├── README.md

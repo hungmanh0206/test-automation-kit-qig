@@ -471,6 +471,12 @@ Chỉ chạy Phase 1 để sinh testcase.
 Task key là <TASK_KEY>.
 ```
 
+> **Chỉ cần trỏ vào `run_phase*_template.md` — không phải liệt kê từng prompt bước.** Từ 13/08/2026 mỗi
+> `run_phase` mở đầu bằng **Bản đồ prompt** (prompt nào bắt buộc, mở khi nào) + **bảng Gate bắt buộc chạy**
+> (lệnh nào, chặn cái gì) + con trỏ tới workflow tổng quan của phase. Trước đó `run_phase2` **không** trỏ tới
+> `phase2/04_execute_fe_playwright.md` và 11 lệnh gate chỉ nằm ở `.agent/workflows/` — ai theo đúng điểm vào
+> là bỏ sót chúng. Nay có gate máy canh cả hai chiều nên chuỗi không hở lại được.
+
 ### 5.2 Phase 1 - Sinh testcase
 
 Mục tiêu: tạo bộ testcase đủ chi tiết để Team QA review và dùng cho Phase 2.

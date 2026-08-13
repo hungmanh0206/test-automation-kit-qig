@@ -16,7 +16,7 @@ Quét lệnh (`npm run …` / `node scripts/…`) trong workflows rồi đối c
 | Điểm vào thiếu | Lệnh vắng mặt | Hậu quả thật |
 |---|---|---|
 | `run_phase2` | `npm run self-review` (**G9**) | Không có lượt tự soi trước finalize — gate gộp preflight+design+row-quality+execution không chạy |
-| `run_phase2` | `npm run learn -- --scan`, `npm run learn:bugs:apply` | **Vòng học ĐỨT** — đây chính là lý do `knowledge/` bị cũ và risk model chạy trên dữ liệu lỗi thời |
+| `run_phase2` | `npm run learn -- --scan`, `npm run learn:bugs:apply` | **Đồng bộ trạng thái bug từ Jira không bao giờ chạy** ⇒ risk model tính vòng-đời-bug trên trạng thái cũ. Quan sát khớp: 9 bug local còn ghi `In Staging` trong khi Jira đã `Done`. *(Đính chính bản đầu viết "vòng học ĐỨT" — NÓI QUÁ: `learn_reporter` đã gắn sẵn trong `playwright.config.js` nên snapshot/metrics vẫn thu **tự động** sau mỗi lần chạy test. Chỉ phần **bug sync** và **backfill `--scan`** là thủ công, và chính hai cái đó vắng ở điểm vào.)* |
 | `run_phase2` | `preflight_gate --mode phase2` (**G1**), `gate:output` (**G2**), `decisions:check` | Execute trên nền sai; output sai chuẩn không bị chặn; log lại đúng bug đã Rejected |
 | `run_phase1` | `design:gate`, `risk:gate`, `trace:matrix`, `risk`, `domain:check`, `system:check` | Không đối chiếu độ sâu theo band rủi ro, không có ma trận REQ↔TC, không tra business rule đã xác nhận |
 
