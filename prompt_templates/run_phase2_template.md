@@ -4,6 +4,20 @@
 
 Dùng prompt này sau khi output testcase của Phase 1 đã được review. Đây là template dùng chung, phải thay các placeholder trước khi chạy.
 
+## Bản đồ prompt Phase 2 — file này là ĐIỂM VÀO DUY NHẤT
+
+Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Không nạp sẵn cả 5 file** — mở đúng executor đang dùng (chạy UI thì không cần nạp prompt API và ngược lại).
+
+| Prompt | Bắt buộc? | Mở khi nào |
+|---|---|---|
+| [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md) | **BẮT BUỘC** khi có case UI | **Bước 3–5** — kỷ luật execute FE: phản xạ điều tra `qa_instincts`, khoanh tầng lỗi FE/BE, oracle mapping phải nêu CẢ HAI giá trị, bắt buộc chạy `ui_conformance_check`, chuẩn evidence, quy tắc kỹ thuật Playwright |
+| [`phase2/05_execute_api_playwright.md`](phase2/05_execute_api_playwright.md) | **BẮT BUỘC** khi có case API | **Bước 3–5** — kỷ luật execute API: verify GIÁ TRỊ chứ không chỉ status/schema, assertion discipline, anti-pattern |
+| [`phase2/06_triage_review.md`](phase2/06_triage_review.md) | khi cần | Sau generate/heal, muốn **review nhanh automation code** để soi rủi ro. Suite đã pass ổn và không đụng shared layer thì bỏ qua |
+| [`phase2/07_triage_flaky.md`](phase2/07_triage_flaky.md) | khi cần | Case FAIL **không ổn định** giữa các lần chạy — phân biệt flaky vs bug thật trước khi log |
+| [`phase2/08_log_bug_jira.md`](phase2/08_log_bug_jira.md) | **BẮT BUỘC** khi log bug | **Bước cuối** — chỉ mở sau khi FAIL đã qua rerun và xác nhận là product/API bug |
+
+> Trước đây file này **không trỏ tới hai prompt execute** ở trên, nên ai chỉ đọc `run_phase2` là execute mà thiếu toàn bộ kỷ luật FE/API (47KB). Đó là lý do có bảng này — xem `CHANGELOG` 2026-08-13.
+
 ```text
 Chạy Phase 2 cho module/task sau: generate/update automation scripts nếu cần, execute testcases thật, auto-heal lỗi automation/setup, tổng hợp report và chỉ log bug Jira khi đã đủ điều kiện xác nhận.
 
@@ -154,6 +168,7 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
 2. Đọc reviewed testcase từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-xray/*.xlsx`, hoặc `test-cases/*.xlsx`) theo selected TC IDs/module; nếu chạy toàn bộ thì lập danh sách TC trước rồi mở Markdown liên quan khi cần Setup Strategy chi tiết.
 3. Generate/update Playwright automation scripts nếu missing hoặc stale; mặc định sinh task-scoped automation dưới `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/automation/`, chỉ sửa/generate spec/helper bị ảnh hưởng.
    Nếu cần sửa shared file, áp dụng `Shared Change Gate` trước.
+   **MỞ NGAY BÂY GIỜ** (không viết script trước rồi mới đọc): [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md) nếu scope có case UI, và/hoặc [`phase2/05_execute_api_playwright.md`](phase2/05_execute_api_playwright.md) nếu có case API. Hai file đó là nơi chứa kỷ luật execute (khoanh tầng lỗi FE/BE, oracle mapping nêu cả hai giá trị, `ui_conformance_check`, chuẩn evidence) — thiếu chúng thì script vẫn chạy nhưng bug hiển thị/mapping sẽ lọt.
 4. Chuẩn bị dữ liệu test an toàn:
    - Ưu tiên tạo data bằng API/factory và rollback/cleanup sau test.
    - Không mutate dữ liệu business thật nếu không có rollback.

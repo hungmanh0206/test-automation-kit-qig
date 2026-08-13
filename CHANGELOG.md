@@ -7,6 +7,22 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-13 — `run_phase*` thành ĐIỂM VÀO thật: chỉ đọc 1 file là đủ điều hướng
+
+**Bối cảnh.** Câu hỏi: "thay vì bắt đọc từng bước, chỉ bắt đọc `run_phase` thì có hợp lý không?". Đo trước khi trả lời — và hoá ra hợp lý về nguyên tắc nhưng **làm ngay lúc đó thì mất 47KB kỷ luật execute**: `run_phase2_template.md` **không hề trỏ** tới `04_execute_fe_playwright.md` (264 dòng) lẫn `05_execute_api_playwright.md` (135 dòng). Ai chỉ đọc `run_phase2` là execute mà thiếu toàn bộ phản xạ điều tra `qa_instincts`, luật khoanh tầng lỗi FE/BE, oracle mapping phải nêu cả hai giá trị, yêu cầu chạy `ui_conformance_check` và chuẩn evidence. Nghịch lý cho thấy tầng điều hướng hỏng: thứ **duy nhất** trỏ tới prompt execute FE lại là `.agent/rules/qa_instincts.md` — một file *rule* dẫn tới *prompt*, còn bản điều phối thì không.
+
+Đo tổng: **8/11 prompt bước mồ côi** khỏi `run_phase`, trong đó **4 cái không nơi nào trỏ tới** (`01_setup_engine_fetch_docs`, `03_gen_test_data`, `05_manual_quick`, `06_triage_review`).
+
+**Added — bảng "Bản đồ prompt" ở đầu mỗi `run_phase`**
+- Mỗi prompt bước có 1 dòng: **bắt buộc hay không** + **mở khi nào**. Phân biệt rõ 3 loại thay vì gộp làm một: *bước chính bắt buộc* (`02_gen_testcases`, `04_auto_publish_jira`, hai executor, `08_log_bug_jira`), *nhánh thay thế* (`05_manual_quick` — chỉ khi cần TC chạy tay, requirement đã rõ), *công cụ khi cần* (`03_gen_test_data`, `06_cross_module`, `06_triage_review`, `07_triage_flaky` — bản thân 2 file triage đã tự khai "không bắt buộc").
+- **Chọn ROUTER chứ không GỘP**, vì gộp thì riêng `02_gen_testcases.md` đã **89KB/844 dòng** — mọi session Phase 1 phải gánh nó kể cả khi chỉ chạy bước publish. Router thì đọc `run_phase2` (350 dòng) + đúng executor đang dùng (264 FE *hoặc* 135 API) thay vì cả 1087 dòng của phase 2 — rẻ hơn ~40% và nạp đúng lúc cần.
+- Con trỏ đặt **ở cả bảng đầu file lẫn ngay tại bước** (`run_phase2` bước 3 ghi "MỞ NGAY BÂY GIỜ", không để đọc sau khi đã viết script xong). `run_phase_re-run_template.md` cũng nối vào 2 executor + `07_triage_flaky` trước khi tới `08_log_bug_jira`.
+
+**Added — `gate:policy` chặn prompt bước mồ côi**
+Mọi `prompt_templates/phase*/*.md` phải có đường vào từ một `run_phase*`. Trỏ được qua `.agent/workflows/` hoặc SKILL thì tính là hợp lệ nhưng **hạ xuống cảnh báo** (đến được nhưng người đọc `run_phase` không thấy). Cùng khuôn với gate rule-mồ-côi. Nghiệm thu: tạo `99_zz_dummy.md` → exit 1 đúng thông báo → xoá → xanh. Sau khi vá: **11/11 prompt đều có đường vào**.
+
+**Chưa làm (chờ định hướng):** `prompt_templates/phaseN/` và `.agent/workflows/phaseN_NN_*` (15 file) đang là **hai tầng cùng mô tả "các bước của phase"** — mùi kiến trúc thật, nhưng gộp/tách là quyết định động vào cách chạy task nên tách riêng.
+
 ## 2026-08-12 (g) — chiều "bền vững dữ liệu sau mutation": kiểm tầng bản ghi, không đẻ TC mới
 
 **Bối cảnh (đo, không phỏng đoán).** Câu hỏi "gen testcase đã có case kiểm DB chưa?" → **chưa, 0/1901 TC**. Chuỗi `db_readonly` xuất hiện **0 lần** trong toàn bộ `outputs/`, kể cả ở cột `Setup Verification` mà prompt vốn đã mời dùng. Trên bộ lớn nhất (563 TC): **415 case mutation**, **177 (43%)** có đọc lại — nhưng đọc lại qua **chính đường đọc của app** (list/detail/`GET`/HubSpot), tức *cùng một stack vừa ghi tự nói là đã ghi*.

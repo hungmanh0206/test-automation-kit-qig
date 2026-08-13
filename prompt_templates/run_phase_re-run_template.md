@@ -81,6 +81,8 @@ Dùng prompt này khi cần chạy lại testcase fail trước đó hoặc veri
 | 5 | Artifact trực tiếp: `results.json`, `phase2-status.json`, `error-context.md`, screenshot/video path |
 | 6 | Raw requirement/design/API chỉ đọc khi cần xác nhận expected result của bug/case đang rerun; không kiểm tra source change trong rerun |
 
+**Prompt execute**: rerun vẫn chạy test thật nên kỷ luật execute áp y như Phase 2 — mở [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md) (case UI) và/hoặc [`phase2/05_execute_api_playwright.md`](phase2/05_execute_api_playwright.md) (case API) khi bắt đầu chạy lại. Nếu FAIL **không ổn định giữa các lần**, mở [`phase2/07_triage_flaky.md`](phase2/07_triage_flaky.md) để phân biệt flaky vs bug thật **trước khi** động tới `08_log_bug_jira.md`. Bản đồ đầy đủ ở `run_phase2_template.md` §Bản đồ prompt Phase 2.
+
 ## Quy tắc tiết kiệm token
 
 - Không paste lại toàn bộ testcase, requirement, Swagger, Playwright report, trace, DOM hoặc execution summary vào câu trả lời.

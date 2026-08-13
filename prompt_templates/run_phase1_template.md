@@ -4,6 +4,19 @@
 
 Dùng prompt này để collect context và sinh/cập nhật testcase. Đây là template dùng chung, phải thay các placeholder trước khi chạy. Không execute automation trong Phase 1.
 
+## Bản đồ prompt Phase 1 — file này là ĐIỂM VÀO DUY NHẤT
+
+Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Không nạp sẵn cả 6 file** — mở đúng cái đang cần, đúng lúc cần (riêng `02_gen_testcases.md` đã 89KB).
+
+| Prompt | Bắt buộc? | Mở khi nào |
+|---|---|---|
+| [`phase1/01_setup_engine_fetch_docs.md`](phase1/01_setup_engine_fetch_docs.md) | khuyến nghị | **Bước 1** — checklist đọc tài liệu đầy đủ + spec `snapshot_context.json`. Bước 1 dưới đây chỉ tóm ý |
+| [`phase1/02_gen_testcases.md`](phase1/02_gen_testcases.md) | **BẮT BUỘC** | **Bước 3** — toàn bộ chuẩn sinh TC: 9 cột canonical, Severity §7b/§8, 18 nhóm coverage, Setup Strategy |
+| [`phase1/03_gen_test_data.md`](phase1/03_gen_test_data.md) | khi cần | Cần **bảng test data riêng** + `DataGenerator` cho Phase 2 (4 nhóm data, đặt tên traceable, `Data State` khớp Setup Strategy). Nếu chỉ cần cột "Dữ liệu Test" trong TC thì §4 của `02` là đủ |
+| [`phase1/04_auto_publish_jira.md`](phase1/04_auto_publish_jira.md) | **BẮT BUỘC** khi publish | **Bước sau QA duyệt** — đẩy TC lên Xray |
+| [`phase1/05_manual_quick.md`](phase1/05_manual_quick.md) | nhánh thay thế | Requirement đã RÕ và chỉ cần bộ TC **chạy tay** nhanh — KHÔNG nhắm automation. Requirement còn mơ hồ hoặc cần TC cho automation thì **đừng** dùng nhánh này |
+| [`phase1/06_cross_module.md`](phase1/06_cross_module.md) | khi cần | Scope chạm nhiều module/hệ thống, cần ma trận tổ hợp (skill `combinatorial_matrix` cũng gọi file này) |
+
 ```text
 Chạy Phase 1 cho module/task sau: collect context và sinh/update testcases.
 

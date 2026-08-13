@@ -122,6 +122,38 @@ if (fs.existsSync(RULES_DIR)) {
   }
 }
 
+// ─── Prompt bước phải có ĐƯỜNG VÀO từ một `run_phase*` ─────────────────────────────────────────────────────
+// `run_phase*_template.md` là điểm vào của mỗi phase: người/agent được bảo "đọc file này". Prompt bước nào
+// không được nó trỏ tới thì coi như không tồn tại — đúng lớp hỏng đã xảy ra thật: `run_phase2` KHÔNG trỏ tới
+// `04_execute_fe_playwright.md` và `05_execute_api_playwright.md` (47KB kỷ luật execute), nên ai chỉ đọc
+// run_phase2 là chạy test mà thiếu toàn bộ phần khoanh tầng lỗi FE/BE, oracle mapping và conformance.
+// Đo 13/08/2026 trước khi vá: 8/11 prompt bước mồ côi, 4 trong số đó không nơi nào trỏ tới.
+// `.agent/workflows/` và SKILL cũng tính là đường vào hợp lệ (chúng dẫn agent tới đọc thật).
+const PT_DIR = path.join(rc.REPO_ROOT, 'prompt_templates');
+if (fs.existsSync(PT_DIR)) {
+  const entryTexts = fs.readdirSync(PT_DIR).filter((f) => /^run_phase.*\.md$/.test(f))
+    .map((f) => fs.readFileSync(path.join(PT_DIR, f), 'utf8'));
+  const routerText = entryTexts.join('\n');
+  const alsoDirs = [path.join(rc.REPO_ROOT, '.agent', 'workflows'), path.join(rc.REPO_ROOT, '.agent', 'skills')];
+  const alsoText = alsoDirs.filter((d) => fs.existsSync(d)).map((d) => {
+    const acc = [];
+    const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).forEach((e) => {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walk(p); else if (e.name.endsWith('.md')) acc.push(fs.readFileSync(p, 'utf8'));
+    });
+    walk(d);
+    return acc.join('\n');
+  }).join('\n');
+  for (const phase of fs.readdirSync(PT_DIR, { withFileTypes: true }).filter((e) => e.isDirectory())) {
+    for (const f of fs.readdirSync(path.join(PT_DIR, phase.name)).filter((x) => x.endsWith('.md'))) {
+      const ref = `${phase.name}/${f}`;
+      if (routerText.includes(ref)) continue;
+      if (alsoText.includes(ref)) { warns.push(`prompt_templates/${ref}: không được \`run_phase*\` nào trỏ tới (chỉ tới được qua workflow/skill) — nên thêm vào bảng "Bản đồ prompt" để ai đọc run_phase là thấy.`); continue; }
+      problems.push(`prompt_templates/${ref}: KHÔNG có đường vào — không \`run_phase*\`, workflow hay skill nào trỏ tới ⇒ prompt mồ côi, sẽ drift âm thầm. Thêm vào bảng "Bản đồ prompt" của run_phase tương ứng, hoặc gộp nội dung rồi xoá file.`);
+    }
+  }
+}
+
 // ─── Skill: frontmatter `name` phải KHỚP tên thư mục ──────────────────────────────────────────────────────
 // Tra cứu skill dùng TÊN THƯ MỤC (đó là tên prompt/workflow/INDEX.md nhắc tới). Frontmatter ghi khác đi thì
 // người đọc file tưởng skill tên A trong khi mọi nơi gọi nó là B — và `skills_index.js` chỉ CẢNH BÁO, không
