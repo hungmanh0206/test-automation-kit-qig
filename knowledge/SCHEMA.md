@@ -80,6 +80,10 @@ knowledge/
 | `module` | ✓ | Module nghiệp vụ (khớp cột `Module` của testcase). |
 | `tags` | ✓ | Tag tra cứu (kebab/lowercase). |
 | `root_cause_ref` |  | Đường dẫn tương đối tới file trong `root_causes/` (nếu đã xác định). |
+
+> **Hai thứ `output_gate --mode bug` CẢNH BÁO khi log bug** (đo 14/08/2026 nên mới thêm):
+> - **Thiếu TC ID** (field `tcId` hoặc label `*_TC_<số>`) — đó là SỢI DÂY DUY NHẤT nối bug về module. Không có thì bug rơi vào `(unmapped)` và `risk_score` **LOẠI khỏi bảng** ⇒ log rồi cũng không làm tăng Likelihood, không ảnh hưởng độ sâu test lượt sau. Thực trạng lúc thêm: **24/46 bug** đang như vậy.
+> - **Đã nêu nguyên nhân trong description mà chưa có `root_cause_ref`** — `root_causes/` lúc đó có **0 file**, nên không trả lời được "lỗi này cùng nguyên nhân với bug nào", và cùng một gốc bị log lại nhiều lần.
 | `task_key` | ✓ | TASK_KEY phát hiện bug. |
 | `detected_phase` | ✓ | `phase1` \| `phase2` \| `rerun`. |
 | `confirmed_via_gate` | ✓ | Luôn `true` — chỉ ghi khi đã qua Jira gate. |

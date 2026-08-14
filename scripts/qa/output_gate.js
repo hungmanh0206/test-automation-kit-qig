@@ -188,11 +188,34 @@ function gateBug(bug = {}) {
 function gateBugWarnings(bug = {}) {
   const id = bug.id || bug.tcId || '(no-id)';
   const tax = loadTaxonomy();
-  return rules.lintBeVsFeLayer({
+  const out = [];
+
+  // TC ID phải đi cùng bug, dạng label `*_TC_<số>` — đó là SỢI DÂY DUY NHẤT nối bug về module.
+  // `learn_bugs.tcIdFromLabels()` map bug→module qua label này; không có thì bug rơi vào "(unmapped)" và
+  // `risk_score` LOẠI nó khỏi bảng ⇒ bug có log cũng không làm tăng Likelihood, tức không ảnh hưởng gì tới
+  // độ sâu test lượt sau. Đo 14/08/2026: 24/46 bug đang ở tình trạng đó — hơn nửa số bug vô ích với vòng học.
+  // `[A-Z0-9_]*` chứ KHÔNG phải `[A-Z0-9]*`: TC ID thật có nhiều đoạn (`OPS_PAY_TC_012`), thiếu dấu gạch
+  // dưới trong lớp ký tự là báo thiếu TC ID oan cho đúng những bug đã gắn label chuẩn.
+  const TC_RE = /\b[A-Z][A-Z0-9_]*_TC_\d+\b/;
+  const labels = Array.isArray(bug.labels) ? bug.labels : (bug.labels ? [bug.labels] : []);
+  const hasTc = TC_RE.test(String(bug.tcId || '')) || labels.some((l) => TC_RE.test(String(l)));
+  if (!hasTc) {
+    out.push(`${id}: KHÔNG có TC ID (field \`tcId\` hoặc label dạng \`*_TC_<số>\`) — bug sẽ map vào "(unmapped)" và bị risk_score LOẠI khỏi bảng, tức log rồi cũng không ảnh hưởng độ sâu test lượt sau. Gắn label TC ID khi log.`);
+  }
+
+  // Root cause: 46/46 bug hiện KHÔNG có `root_cause_ref` (đo 14/08/2026) nên không trả lời được câu
+  // "lỗi này cùng nguyên nhân với lỗi cũ không?" — đúng câu hỏi khiến cùng một nguyên nhân bị log lại nhiều lần.
+  // Chỉ nhắc khi ĐÃ xác định được nguyên nhân (bug mô tả nguyên nhân ở tầng BE/API/data), không nhắc bừa.
+  const desc = [bug.actualResult, bug.description, bug.rootCause].filter(Boolean).join('\n');
+  if (!String(bug.rootCause || bug.root_cause_ref || '').trim() && /\bdo\b|nguyên nhân|root cause|vì|bởi/i.test(desc)) {
+    out.push(`${id}: description đã nêu nguyên nhân nhưng chưa có \`root_cause_ref\` → \`knowledge/root_causes/\` (hiện 0 file). Ghi lại thì lần sau tra được "cùng nguyên nhân với bug nào", chống log lặp cùng một gốc.`);
+  }
+
+  return out.concat(rules.lintBeVsFeLayer({
     summary: bug.summary || bug.title,
     description: [bug.steps, bug.actualResult, bug.expectedResult, bug.description].filter(Boolean).join('\n'),
     beVsFe: tax.beVsFe,
-  }).map((v) => `${id}: ${v.message}`);
+  }).map((v) => `${id}: ${v.message}`));
 }
 
 function mainBug() {
