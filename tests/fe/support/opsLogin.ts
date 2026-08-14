@@ -1,6 +1,8 @@
 import { expect, type Page } from '@playwright/test';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const T = require('../../../scripts/utils/ui/safe_target');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const sessionCache = require('../../../scripts/utils/auth/session_cache');
 
 /*
  * Helper login OPS dùng chung cho suite FE thật (F6). Đọc creds từ env (OPS_* — thường ở
@@ -21,8 +23,8 @@ export function toNumber(raw: string | null | undefined): number | null {
   return digits ? Number(digits) : null;
 }
 
-/** Login form OPS (1 lần/worker — né throttle: gọi trong beforeAll/1 test, không lặp). Fail rõ nếu còn ở /auth/login. */
-export async function loginOps(page: Page): Promise<void> {
+/** Login form OPS thuần — KHÔNG cache. Dùng khi cố ý muốn đi qua form (vd test chính luồng login). */
+export async function loginOpsForm(page: Page): Promise<void> {
   await page.goto(`${OPS_BASE}/auth/login`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.fill('input[name=username]', OPS_USER);
   await page.fill('input[name=password]', OPS_PASS);
@@ -30,4 +32,60 @@ export async function loginOps(page: Page): Promise<void> {
     .catch(() => page.keyboard.press('Enter'));
   await page.waitForTimeout(4500);
   expect(/\/auth\/login/.test(page.url()), 'OPS login thất bại (còn ở /auth/login)').toBeFalsy();
+}
+
+/**
+ * loginOps — điểm vào DUY NHẤT của 32 spec. Nay TÁI DÙNG session thay vì login lại mỗi lần.
+ *
+ * VÌ SAO đặt cache Ở ĐÂY thay vì bắt 32 spec đổi sang `ensureOpsAuth`: đo 14/08/2026 thì **1 spec** dùng
+ * `ensureOpsAuth` còn **32 file gọi thẳng `loginOps`** ⇒ cơ chế reuse có mà gần như không ai đi qua. Sửa ở
+ * điểm vào thì không ai bypass được bằng cách quên — cùng nguyên tắc "forcing function" của kit. Chữ ký giữ
+ * nguyên nên KHÔNG spec nào phải sửa.
+ *
+ * Hành vi:
+ *   1. Cache còn tươi (< TTL, mặc định 25' < token TTL 30') → SEED cookies + localStorage rồi mở base. Nếu vẫn
+ *      bị đẩy về /auth/login (session hỏng/đã bị thu hồi) → xoá cache, rơi xuống bước 2.
+ *   2. Lấy LOCK rồi login form 1 lần và lưu cache. Worker khác chờ lock xong sẽ thấy cache tươi và dùng lại
+ *      ⇒ khởi động lạnh N worker chỉ còn 1 lần login (trước đây N lần → throttle/lockout).
+ *
+ * Kill-switch: `AUTH_REUSE=0` ⇒ hành vi y như trước khi có thay đổi này (login form thẳng).
+ * ⚠️ Nhánh SEED cần UAT smoke để nghiệm thu (cần browser + creds thật). Phần thuần logic (quyết định + lock)
+ *    đã test offline ở `tests/fe/infra/auth-session-lock.spec.ts`.
+ */
+export async function loginOps(page: Page): Promise<void> {
+  if (process.env.AUTH_REUSE === '0') { await loginOpsForm(page); return; }
+
+  const key = OPS_USER || 'ops';
+  const ttl = Number(process.env.AUTH_TTL_MINUTES || 25);
+  const context = page.context();
+
+  const seed = async (): Promise<boolean> => {
+    const rec = sessionCache.load(key);
+    const ss = (rec && rec.storageState) || null;
+    if (!ss) return false;
+    if (Array.isArray(ss.cookies) && ss.cookies.length) await context.addCookies(ss.cookies);
+    // localStorage phải vào TRƯỚC mọi navigation: addInitScript chạy trước script trang nên app thấy token
+    // ngay lúc check auth ⇒ không bị redirect /auth/login (bẫy đã gặp khi làm ensureOpsAuth).
+    for (const o of ss.origins || []) {
+      if (Array.isArray(o.localStorage) && o.localStorage.length) {
+        await context.addInitScript((items: Array<{ name: string; value: string }>) => {
+          try { for (const it of items) window.localStorage.setItem(it.name, it.value); } catch (e) { /* origin khác scope */ }
+        }, o.localStorage);
+      }
+    }
+    const base = (ss.origins && ss.origins[0] && ss.origins[0].origin) || OPS_BASE;
+    if (!base) return false;
+    await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => { /* kiểm bằng URL bên dưới */ });
+    return !/\/auth\/login/.test(page.url());
+  };
+
+  if (sessionCache.isFresh(key, ttl) && await seed()) return;
+  sessionCache.clear(key);
+
+  await sessionCache.withLock(key, async () => {
+    // Worker khác có thể vừa login xong trong lúc mình chờ lock ⇒ kiểm lại trước khi tốn một lần login nữa.
+    if (sessionCache.isFresh(key, ttl) && await seed()) return;
+    await loginOpsForm(page);
+    try { sessionCache.save(key, await context.storageState()); } catch (e) { /* cache best-effort, không làm fail test */ }
+  });
 }

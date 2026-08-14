@@ -7,6 +7,22 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (h) — auth reuse: cơ chế đã có nhưng 32/33 spec không đi qua
+
+**Bối cảnh.** Tôi từng nói "UAT login throttle chặn cứng việc song song hoá Phase 2". **Sai** — cơ chế né throttle đã có từ trước (`session_cache` + `ensureOpsAuth` + `tokenBroker`). Nhưng đo ra thì nó **chưa được lắp**: **1 spec** dùng `ensureOpsAuth`, **32 file gọi thẳng `loginOps`** ⇒ mỗi lần chạy vẫn login lại. Thêm nữa `playwright.config.js` không có `globalSetup` và `session_cache` không có lock ⇒ **khởi động lạnh với N worker = N lần login đồng thời**, đúng cái lockout mà cache sinh ra để tránh.
+
+**Changed — đưa cache vào THẲNG `loginOps`, không sửa 32 spec.** Sửa ở điểm vào thì không ai bypass được bằng cách quên — cùng nguyên tắc forcing-function của kit; chữ ký giữ nguyên nên **0 spec phải sửa**. Bản thuần tách thành `loginOpsForm` (dùng khi cố ý test luồng login; `ensureOpsAuth` nay gọi bản này để không lồng hai lớp cache). Cache tươi → seed cookies + localStorage **trước mọi navigation** rồi mở base; nếu vẫn bị đẩy về `/auth/login` thì xoá cache và login form. Kill-switch `AUTH_REUSE=0` cho hành vi y như trước; TTL đổi qua `AUTH_TTL_MINUTES` (mặc định 25′ < token TTL 30′).
+
+**Added — `sessionCache.withLock`.** Lock bằng `mkdir` (atomic trên cả Windows lẫn POSIX, không cần thư viện). Lock cũ hơn `staleMs` bị **thu hồi** — nếu không thì một lần crash treo mọi lần chạy sau. Hết `timeoutMs` thì **vẫn chạy** `fn`: thà login trùng một lần còn hơn làm cả suite fail vì không lấy được lock.
+
+**KHÔNG thêm `globalSetup`** dù nó cũng chữa được thundering-herd: globalSetup sẽ **login UAT vô điều kiện ở mọi lần chạy**, kể cả suite infra không cần auth — trái rule "xác nhận trước mỗi lượt chạm UAT". Lock giải đúng vấn đề đó mà không thêm một lượt chạm nào.
+
+**Nghiệm thu**
+- Offline (`tests/fe/infra/auth-session-lock.spec.ts`, 4 pass, **không chạm UAT, không cần creds**): quyết định tươi/hết-hạn; 5 lượt đồng thời → max 1 trong vùng găng và **đúng 1 lần "login"**; lock rác bị thu hồi; hết timeout vẫn chạy và báo rõ `gotLock=false`.
+- **Liên tiến trình** (thứ mà test trong-một-tiến-trình KHÔNG chứng minh được): 5 process node song song → log ra **1 LOGIN + 4 REUSE**, max 1 process trong vùng găng.
+- Regression: `tests/fe/infra` **30/30 pass**, `typecheck`/`lint` exit 0, 30 file gọi `loginOps` không phải sửa dòng nào.
+- ⚠️ **Chưa nghiệm thu:** nhánh SEED cần một UAT smoke thật (browser + creds + xác nhận chạm UAT). Ai chạy đầu tiên mà thấy lạ thì `AUTH_REUSE=0` để trở về hành vi cũ ngay.
+
 ## 2026-08-14 (g) — vá rủi ro do chính nhát cắt (f) sinh ra: khai `n/a` sai
 
 Tách 15 chương thành file rời sinh ra một rủi ro mới: agent đọc **một dòng trigger** rồi khai `n/a`, trong khi trước đây đọc tuần tự sẽ **vô tình gặp** chương đó và nhận ra là cần. Chốt chặn cũ chỉ là "n/a phải có lý do" — tức trông chờ người review đọc.
