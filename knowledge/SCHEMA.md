@@ -21,12 +21,36 @@
 > | `historical_execution/` | `npm run learn -- --scan` | `test-results/` của task |
 > | `metrics/` | sinh tự động khi chạy test | test run |
 > | `domain/`, `system/`, `decisions/`, `root_causes/` | ghi tay rồi `npm run domain:index` · `system:index` · `decisions --index` | FSD / BA / dev xác nhận |
+> | `domain/` · `system/` · `decisions/` · `setup_recipes/` · `environment/` · `locators/` | ⛔ **KHÔNG nạp lại được** — dòng "ghi tay rồi `*:index`" ở trên nói về cách DỰNG LẠI INDEX, không phải cách lấy lại NỘI DUNG. "Nguồn thật: FSD/BA/dev xác nhận" **không phải nguồn máy truy vấn lại được** — mất là **làm lại công sức người**. Đo 14/08/2026: **15 file** thuộc diện này, và vì `knowledge/**` bị gitignore nên chúng tồn tại trên **ĐÚNG MỘT máy**. Sao lưu: `npm run knowledge:backup` (bắt buộc đích NGOÀI repo). | không có nguồn máy |
 > | `bug_tc_map.json` | ⛔ **KHÔNG nạp lại được** — là phán đoán của người (đọc TC rồi chốt). Record trong `bugs/` đã backfill thì vẫn giữ `module`, nên mất file *một mình* chưa hỏng gì ngay; hỏng khi **mất file RỒI nạp lại `bugs/` từ Jira** — lúc đó 26 mapping biến mất và bug quay về `(unmapped)`. `learn_bugs` cảnh báo nếu thiếu file mà đang có bug `(unmapped)`. Giữ bản sao ngoài repo. | không có nguồn máy |
 >
 > Đã nghiệm thu bản clone mới (dời sạch 72 file dữ liệu ra ngoài): `preflight` · `lint` · `typecheck` ·
 > `secret:scan` · `gate:policy` · `risk` · `dashboard` **đều exit 0**, và `risk` báo trung thực
 > `(0 bug, … snapshot làm dữ liệu)` chứ không âm thầm coi như không có rủi ro. `preflight_gate` đã chuyển
 > `knowledge/index.json` từ **require → recommend** vì đó là artifact sinh ra, đòi nó là false-block.
+
+## ⛔ Chính sách sao lưu — BẮT BUỘC, và phải làm TRƯỚC khi tích luỹ
+
+Bảng trên chia knowledge làm hai loại **rất khác nhau về rủi ro**, và trước đây trình bày như nhau nên dễ hiểu sai:
+
+| | Store | Mất thì sao |
+|---|---|---|
+| **Nạp lại được** | `bugs/` · `historical_execution/` · `metrics/` · `index.json` | Chạy 1 lệnh là có lại (Jira / test-results / test run) |
+| **KHÔNG nạp lại được** | `domain/` · `system/` · `decisions/` · `setup_recipes/` · `environment/` · `locators/` · `bug_tc_map.json` | **Làm lại công sức người.** Không nguồn máy nào trả lại |
+
+Đo 14/08/2026: **15 file** thuộc loại thứ hai. Và vì toàn bộ `knowledge/**` bị gitignore (mirror GitHub là public), chúng tồn tại trên **ĐÚNG MỘT máy — không remote nào có bản nào**. Hôm nay 15 file; sau 6 tháng là hàng trăm business rule đã được BA xác nhận. **Chi phí của việc này chỉ tăng theo thời gian, và không sửa được sau khi mất.**
+
+```bash
+KNOWLEDGE_BACKUP_DIR=<thư mục NGOÀI repo> npm run knowledge:backup
+npm run knowledge:backup -- --verify <bundle.json>     # so bundle với hiện trạng
+npm run knowledge:backup -- --restore <bundle.json>    # CHỈ ghi file còn THIẾU, không đè
+```
+
+- Đích **phải ở ngoài repo** — script **từ chối** ghi vào trong repo (backup cùng chỗ bản gốc thì không phải backup, và tạo nguy cơ commit đúng dữ liệu đã quyết định không commit). Trỏ tới: thư mục Drive/OneDrive đồng bộ · working copy của **private** repo · ổ ngoài.
+- Bundle **cố ý KHÔNG chứa** `bugs/`, `historical_execution/`, `metrics/` — sao lưu thứ nạp lại được chỉ làm phình bundle và làm mờ thông điệp.
+- `--restore` **không bao giờ đè**: file trên đĩa có thể mới hơn bundle; khác nội dung thì chỉ BÁO để người quyết định.
+- Bundle là **dữ liệu nội bộ** (business rule + kết luận nội bộ) — giữ ở nơi riêng tư, đừng đưa lên repo public.
+- Nghiệm thu 14/08/2026: backup 15 file → verify KHỚP → xoá 2 file (rule + `bug_tc_map`) → verify **exit 1 và nêu đúng tên** → restore → verify KHỚP, nội dung **giống từng byte**; sửa file trên đĩa rồi restore → **không bị đè**.
 
 ## Nguyên tắc
 
@@ -47,8 +71,12 @@ knowledge/
 ├── decisions/            # LÝ DO của quyết định đã chốt (false positive / by design / override / cách test)
 ├── bugs/                 # 1 file JSON / bug đã confirm là product issue (qua gate)
 ├── root_causes/          # root cause đã xác định, gắn module/file
-├── locators/             # lịch sử locator từng bị heal (Locator Healing — Giai đoạn 2 mới ghi)
+├── setup_recipes/        # LÀM SAO dựng được state (SR-*) — công thức fixture đã chạy được, kèm pitfalls
+├── environment/          # quirk hạ tầng/env/toolchain (ENV-*) — thứ chỉ biết sau khi vấp
+├── locators/             # KỸ THUẬT thao tác UI (UI-*) + lịch sử locator từng bị heal
 ├── historical_execution/ # snapshot pass/fail theo module theo thời gian (input cho Dashboard)
+├── metrics/              # số đo sinh khi chạy test (thời lượng, flaky rate…) — máy ghi, không ghi tay
+├── bug_tc_map.json       # bug → TC/module chốt bằng tay (KHÔNG nạp lại được — xem §bug_tc_map.json)
 ├── index.json            # index phẳng: tra cứu theo module/tag
 ├── examples/             # dữ liệu MẪU minh hoạ (không phải learning data thật — xem examples/README.md)
 └── SCHEMA.md             # file này

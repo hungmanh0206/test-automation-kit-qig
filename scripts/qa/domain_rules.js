@@ -190,6 +190,27 @@ if (flag('trace') || flag('stale') || (!flag('index') && !flag('validate'))) {
       if (stale.length) warnings.push(`${d.id}: rule cập nhật ${d.confirmed_at} NHƯNG các TC sau execute trước đó → phải chạy lại: ${stale.join(', ')}`);
     }
   }
+
+  // STALE THEO LỊCH — khác hẳn stale ở trên.
+  //   Trên: rule ĐỔI sau lần execute cuối ⇒ TC phải chạy lại. Chỉ nổ khi có người sửa rule.
+  //   Dưới: rule KHÔNG ai chạm suốt N tháng. Business rule cũ không tự sai, nhưng sản phẩm thì đổi — một rule
+  //   xác nhận 12 tháng trước mà chưa ai soi lại là **oracle có thể đã lạc hậu**, và nó im lặng vì không có
+  //   sự kiện nào kích hoạt. Rule lạc hậu tệ hơn không có rule: nó làm mọi TC dựa vào nó sai theo, mà vẫn xanh.
+  // Ngưỡng đổi bằng `--stale-months` (mặc định 9 — dưới 1 năm để còn kịp hỏi lại BA trước khi qua chu kỳ mới).
+  // `Number(x) || 9` là bẫy: `--stale-months 0` cho Number = 0, mà 0 là falsy nên rơi về 9 ⇒ cờ bị bỏ qua
+  // âm thầm. Phải kiểm chuỗi rỗng và tính hữu hạn riêng.
+  const rawMonths = arg('stale-months', '');
+  const months = rawMonths !== '' && Number.isFinite(Number(rawMonths)) ? Number(rawMonths) : 9;
+  const cutoff = new Date(Date.now() - months * 30 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const old = rules
+    .map((r) => r.data || {})
+    .filter((d) => d.id && String(d.status || 'active') === 'active' && String(d.confirmed_at || '') && String(d.confirmed_at) < cutoff)
+    .sort((a, b) => String(a.confirmed_at).localeCompare(String(b.confirmed_at)));
+  for (const d of old) {
+    const ageM = Math.round((Date.now() - Date.parse(d.confirmed_at)) / (30 * 24 * 3600 * 1000));
+    warnings.push(`${d.id}: xác nhận ${d.confirmed_at} (~${ageM} tháng trước) và chưa ai soi lại — oracle có thể đã lạc hậu. Hỏi lại BA/dev rồi bump \`confirmed_at\`, hoặc chuyển \`status: superseded\` nếu đã thay.`);
+  }
+  if (!old.length) console.log(`[domain] ✓ không rule active nào cũ hơn ${months} tháng (ngưỡng --stale-months).`);
 }
 
 if (flag('index')) {

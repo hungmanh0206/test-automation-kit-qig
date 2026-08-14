@@ -70,7 +70,8 @@
     "howto:check": "node scripts/qa/howto_store.js",
     "howto:index": "node scripts/qa/howto_store.js --index",
     "learn:report": "node scripts/qa/learn_report.js",
-    "docs:budget": "node scripts/qa/doc_budget.js"
+    "docs:budget": "node scripts/qa/doc_budget.js",
+    "knowledge:backup": "node scripts/qa/knowledge_backup.js"
   },
   "dependencies": {
     "axe-core": "^4.12.1",
