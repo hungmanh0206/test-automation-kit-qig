@@ -357,6 +357,22 @@ trước đây kit KHÔNG có chỗ chứa. `Setup Strategy` chỉ sống trong 
 | `pitfalls` | ⚠ | **Thứ chỉ biết sau khi đã vấp.** Rỗng = cảnh báo, vì recipe không có cạm bẫy thường chỉ là chép lại tài liệu. |
 | `verification` | ✓ | Cách XÁC NHẬN state đã dựng đúng — thiếu thì chạy xong không ai biết có thật không. |
 | `cleanup` |  | Dọn thế nào, hoặc vì sao không cần dọn. |
+| `applies_when` | ⚠ | **Điều kiện nhận biết recipe này áp được** cho precondition đang gặp — để lượt sau tra ra được thay vì phải đọc hết `steps`. |
+| `used_by` | ⚠ | TC ID **đã dựng state bằng recipe này và chạy được** = bằng chứng recipe còn dùng được. Cùng khuôn `covered_by` của domain rule: thiếu "ai đang dựa vào cái này" thì record không biết mình còn đúng hay không. Rỗng = cảnh báo (recipe mới ghi thì bình thường). |
+
+**Tái dùng recipe cho task mới** — `npm run howto:find -- "<precondition>"`:
+
+```
+PRE-03: Deal phải là loại Chuyển nhượng
+  → npm run howto:find -- "Deal loại Chuyển nhượng"
+  → SR-ORDER-001 · khớp: deal, loai, chuyen, nhuong
+    áp khi : Precondition cần MỘT Deal pipeline=Chuyển nhượng…
+    used_by: OPS_PAY_TC_384, OPS_PAY_TC_396      ← bằng chứng đã chạy được
+  → ĐỌC `applies_when` + `pitfalls` rồi TỰ quyết tái dùng
+```
+
+> Tra cứu khớp **CHUỖI**, xếp theo **số từ khớp** — cố ý **KHÔNG có điểm tin cậy**. Một con số `0.72` trông đáng tin hơn thực tế và mời người ta bỏ qua bước đọc; mà đo trong ngày 14/08/2026 thì chấm-điểm/suy-diễn trên văn bản tiếng Việt đã sai 3 lần liên tiếp (suy module bug 4/9 sai · `label→module` 5/17 đa nghĩa · suy chiều coverage đánh đổi recall↔precision). Script in ra thứ để ĐỌC, không phán hộ.
+> Không có kết quả **không** nghĩa là không dựng được — chỉ nghĩa là chưa ai ghi lại.
 
 ## `environment/<slug>.json` — Quirk hạ tầng/env (id `ENV-<SLUG>-<NNN>`)
 

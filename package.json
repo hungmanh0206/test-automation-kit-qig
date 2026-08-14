@@ -71,7 +71,9 @@
     "howto:index": "node scripts/qa/howto_store.js --index",
     "learn:report": "node scripts/qa/learn_report.js",
     "docs:budget": "node scripts/qa/doc_budget.js",
-    "knowledge:backup": "node scripts/qa/knowledge_backup.js"
+    "knowledge:backup": "node scripts/qa/knowledge_backup.js",
+    "domain:trace-back": "node scripts/qa/domain_rules.js --trace-back",
+    "howto:find": "node scripts/qa/howto_store.js --find"
   },
   "dependencies": {
     "axe-core": "^4.12.1",

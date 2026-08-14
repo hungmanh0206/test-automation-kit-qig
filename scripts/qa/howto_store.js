@@ -100,6 +100,20 @@ function validate(r) {
     if (!METHODS.includes(String(d.method || ''))) problems.push(at(`\`method\` phải ∈ ${METHODS.join('|')} — KHÔNG có \`db\` (RULE_GLOBAL cấm dựng state bằng DB)`));
     const stepsBlob = JSON.stringify(steps);
     if (DB_SETUP_RE.test(stepsBlob)) problems.push(at('steps có câu lệnh GHI vào DB (INSERT/UPDATE/DELETE/psql…) — cấm dựng state bằng DB; chỉ SELECT read-only để verify'));
+
+    // `applies_when` + `used_by` — hai field làm recipe TÁI DÙNG ĐƯỢC, không chỉ ĐỌC ĐƯỢC.
+    //
+    // Vấn đề: lượt sau gặp `PRE-03: Deal phải là loại Chuyển nhượng` thì cần biết (a) recipe nào áp được, và
+    // (b) recipe đó ĐÃ từng dựng thành công thật chưa. `goal` trả lời (a) một nửa; (b) thì không có gì.
+    // `used_by` là bằng chứng: TC nào đã dùng recipe này và chạy được. Cùng khuôn `covered_by` của domain rule
+    // — chỗ nào cũng cần "ai đang dựa vào cái này", vì thiếu nó thì record không biết mình còn đúng hay không.
+    // Để CẢNH BÁO chứ không chặn: recipe mới ghi thì chưa có TC nào dùng là bình thường.
+    if (!String(d.applies_when || '').trim()) {
+      warnings.push(at('thiếu `applies_when` — nêu điều kiện nhận biết recipe này áp được (vd "precondition cần Deal pipeline=Chuyển nhượng, chưa có order"), để lượt sau tra ra được thay vì đọc hết `steps`'));
+    }
+    if (!Array.isArray(d.used_by) || !d.used_by.length) {
+      warnings.push(at('`used_by` rỗng — chưa có TC nào ghi nhận đã dựng state bằng recipe này. Recipe chưa từng dùng lại thì chưa biết còn chạy được không; điền TC ID sau lần dùng đầu'));
+    }
   }
 
   if (r.store === 'locators') {
@@ -127,6 +141,36 @@ for (const r of all) {
   problems.push(...v.problems); warnings.push(...v.warnings);
   const id = (r.data || {}).id;
   if (id) { if (seen.has(id)) problems.push(`${r.rel}: trùng \`id\` ${id} với ${seen.get(id)}`); else seen.set(id, r.rel); }
+}
+
+// ── TRA CỨU: precondition của task mới → recipe đã có ──────────────────────────────────────────────────
+// Khớp CHUỖI, KHÔNG chấm điểm. Vì sao không có "match confidence": hôm nay đã 3 lần chứng minh chấm-điểm/suy-diễn
+// trên văn bản tiếng Việt hoặc sai (suy module 4/9 sai) hoặc đa nghĩa (label→module 5/17) hoặc đánh đổi
+// recall↔precision (suy chiều coverage). Một điểm số 0.72 trông đáng tin hơn thực tế và mời người ta bỏ qua
+// bước đọc — trong khi việc cần làm là NGƯỜI đọc `applies_when` rồi tự quyết. In ra thứ để đọc, không phán hộ.
+const findQ = arg('find', '');
+if (findQ) {
+  const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const terms = norm(findQ).split(/\s+/).filter((w) => w.length > 2);
+  const hits = [];
+  for (const r of [...load('setup_recipes'), ...load('environment'), ...load('locators')]) {
+    const d = r.data || {};
+    const hay = norm([d.goal, d.applies_when, d.fact, d.impact, d.symptom, d.target, d.technique, (d.modules || []).join(' '), (d.tags || []).join(' ')].join(' '));
+    const matched = terms.filter((t) => hay.includes(t));
+    if (matched.length) hits.push({ r, d, matched });
+  }
+  hits.sort((a, b) => b.matched.length - a.matched.length);
+  console.log(`[howto] tra "${findQ}" → ${hits.length} record khớp (xếp theo SỐ TỪ khớp, không phải điểm tin cậy)\n`);
+  for (const h of hits.slice(0, 10)) {
+    console.log(`── ${h.d.id} · khớp: ${h.matched.join(', ')}`);
+    console.log(`   goal/fact : ${String(h.d.goal || h.d.fact || h.d.symptom || '').slice(0, 110)}`);
+    if (h.d.applies_when) console.log(`   áp khi    : ${String(h.d.applies_when).slice(0, 110)}`);
+    console.log(`   method    : ${h.d.method || '—'} · used_by: ${(h.d.used_by || []).join(', ') || 'CHƯA TC NÀO DÙNG'}`);
+    console.log(`   file      : ${h.r.rel}`);
+  }
+  if (!hits.length) console.log('[howto] Không có record nào khớp — KHÔNG nghĩa là không dựng được, chỉ nghĩa là chưa ai ghi lại. Dựng xong thì ghi recipe mới.');
+  console.log('\n[howto] Đọc `applies_when` + `pitfalls` của record rồi TỰ quyết có tái dùng được không — script cố ý không phán hộ.');
+  process.exit(0);
 }
 
 console.log(`[howto] ${load('setup_recipes').length} recipe · ${load('environment').length} env-fact · ${load('locators').length} ui-technique`);

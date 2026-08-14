@@ -105,6 +105,27 @@ function dimensionsOf(title) {
   return [...out];
 }
 
+/**
+ * ID knowledge dùng làm ORACLE của case, đọc từ tag tiêu đề: `[Positive][Calc][BR-RECIPBANK-001] …`
+ *
+ * VÌ SAO đi bằng TAG chứ không thêm cột: đo 14/08/2026 trên bộ 530 case thật — **0/530 case** nhắc bất kỳ id
+ * rule nào, dù `§12` của prompt gen ĐÃ yêu cầu "ghi id rule vào Kết quả mong đợi hoặc Assumptions". Quy định
+ * có, tuân thủ 0%, và không máy nào kiểm. Thêm cột thứ 10 thì phá format 9 cột mà mọi consumer đang khoá
+ * theo (`md_to_xlsx`, publish/pull Xray, validate) — trong khi tag nằm trong CHÍNH cột `Trường hợp kiểm thử`,
+ * dùng lại đúng cơ chế đang đọc `[Positive]`/`[Display]`. Một tín hiệu gác được HAI chiều: chặn case có oracle
+ * nghiệp vụ mà không trỏ rule, VÀ tự append `covered_by` cho rule (hết phụ thuộc người nhớ điền).
+ *
+ * Nhận mọi tiền tố knowledge đang có: BR (domain) · SM/PM/SS/DM (system). Đọc trên tiêu đề GỐC (không
+ * normalize) để giữ đúng chữ hoa và dấu gạch — id là khoá tra cứu, sai một ký tự là tra không ra.
+ */
+// KHÔNG export: regex có cờ /g nên .test() lặp sẽ sai vì lastIndex. Dùng oracleRefsOf() thay vì tự khớp.
+const KNOWLEDGE_ID_RE = /\b(?:BR|SM|PM|SS|DM)-[A-Z0-9]+-\d{3}\b/g;
+function oracleRefsOf(title) {
+  const out = new Set();
+  for (const m of String(title || '').match(KNOWLEDGE_ID_RE) || []) out.add(m);
+  return [...out];
+}
+
 /** Dựng 1 TestCase từ headers + cells (1 dòng bảng). */
 function buildTestCase(headers, cells, story = '') {
   const get = (matcher) => { const i = colIndex(headers, matcher); return i >= 0 ? cleanCell(cells[i] || '') : ''; };
@@ -119,7 +140,7 @@ function buildTestCase(headers, cells, story = '') {
     steps: splitNumbered(stepsRaw), stepsRaw,
     expected: splitNumbered(expectedRaw), expectedRaw,
     priority: get(COL.priority), risk: get(COL.risk),
-    dimensions: dimensionsOf(title), group: get(COL.group),
+    dimensions: dimensionsOf(title), oracleRefs: oracleRefsOf(title), group: get(COL.group),
     traceability: { reqId: '', story: story || '' },
     _cells,
   };
@@ -138,5 +159,5 @@ function buildSetup(headers, cells) {
 module.exports = {
   stripEmoji, cleanCell, splitMarkdownRow, normalizeHeader,
   COL, SETUP_COL, isTestCaseHeader, isSetupContractHeader, colIndex,
-  splitNumbered, dimensionsOf, buildTestCase, buildSetup, DIMENSION_TAGS,
+  splitNumbered, dimensionsOf, oracleRefsOf, buildTestCase, buildSetup, DIMENSION_TAGS,
 };

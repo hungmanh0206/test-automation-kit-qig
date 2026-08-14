@@ -83,6 +83,23 @@ Mỗi case ghi thêm **1 tag chiều** vào `Trường hợp kiểm thử`, ngay
 
 Case phủ nhiều chiều thì ghi nhiều tag (`[Negative][Validation][Security]`). Chiều không áp dụng cho task thì khai `"n/a"` **kèm lý do** trong `dimension_manifest.json` — bỏ chiều mà không nói vì sao sẽ bị cảnh báo.
 
+### 0c. TAG NGUỒN ORACLE — case có oracle nghiệp vụ phải trỏ về rule
+
+Case mang tag `[Calc]` `[BEData]` `[Display]` `[Security]` `[Guard]` là case có **oracle NGOÀI app** (giá trị đúng không suy được từ chính app). Những case đó phải **trỏ id knowledge** ngay trong tiêu đề:
+
+```
+[Positive][Calc][BR-RECIPBANK-001] TK nhận theo chương trình + mốc 01/01/2026
+[Negative][Guard][SM-ORDER-001]    Đã thanh toán → Chờ thanh toán phải bị CHẶN
+```
+
+Nhận `BR-` (`knowledge/domain/`) và `SM-`/`PM-`/`SS-`/`DM-` (`knowledge/system/`). **Không thêm cột** — tag nằm trong chính cột `Trường hợp kiểm thử`.
+
+**Máy kiểm:** `npm run domain:trace-back` — (a) case mang tag cần-oracle mà **không trỏ id** nào → cảnh báo *"expected lấy từ đâu?"*; (b) trỏ id **không tồn tại** trong knowledge → *"oracle ma"*; (c) `-- --apply` **tự append `covered_by`** cho rule, hết phụ thuộc người nhớ điền.
+
+**Vì sao bắt buộc:** đo 14/08/2026 trên bộ 530 case thật — **0/530** case nhắc bất kỳ id rule nào, dù §12 đã yêu cầu "ghi id rule vào Kết quả mong đợi/Assumptions" từ trước. Trong đó **47 case có expected mang giá trị số/tiền/%** (chắc chắn có oracle nghiệp vụ) và **0 case** trỏ rule. Chiều `rule → TC` đã có máy kiểm (`--trace`); chiều `TC → rule` thì trước đây **không gì kiểm**, nên một case có expected do agent tự suy sẽ đi qua im lặng — đúng lớp lỗi "quên/đọc lướt" mà cả kit đang chống ở chỗ khác.
+
+> Chưa gắn tag thì `domain:trace-back` **nói rõ là chưa gác được** chứ không báo "OK" — im lặng ở đó chính là lỗi nó sinh ra để chống.
+
 Ví dụ đúng cho cột `Module`:
 - `Xem danh sách / US-01 Exam List`
 - `Xem chi tiết / US-02 Exam Detail`

@@ -7,6 +7,49 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (k) — sao lưu store KHÔNG nạp lại được + stale theo lịch cho rule
+
+Review chỉ ra bảng "nạp lại" của `SCHEMA.md` đặt hai thứ **khác loại** cạnh nhau, và đúng:
+
+| | Store | Mất thì sao |
+|---|---|---|
+| Nạp lại được | `bugs/` · `historical_execution/` · `metrics/` | 1 lệnh là có lại (Jira / test-results) |
+| **KHÔNG** nạp lại được | `domain/` `system/` `decisions/` `setup_recipes/` `environment/` `locators/` + `bug_tc_map.json` | **Làm lại công sức người** |
+
+Đo: **15 file** thuộc loại thứ hai, và vì `knowledge/**` bị gitignore nên chúng tồn tại trên **ĐÚNG MỘT máy — không remote nào có bản nào**. Tôi đã ghi rủi ro này rất cẩn thận cho `bug_tc_map.json` nhưng **bỏ sót đúng ba store đắt nhất**. Chi phí chỉ tăng theo thời gian và **không sửa được sau khi mất**.
+
+**Added — `npm run knowledge:backup`.** Bundle JSON + sha từng record · `--verify` so bundle với hiện trạng · `--restore` **chỉ ghi file còn THIẾU, không đè** (bản trên đĩa có thể mới hơn bundle; khác nội dung thì chỉ BÁO). **TỪ CHỐI** khi thiếu đích và khi đích **nằm trong repo** — backup cùng chỗ bản gốc thì không phải backup, còn tạo nguy cơ commit đúng dữ liệu đã quyết định không commit. Cố ý **không** sao lưu `bugs/`/`historical_execution/`/`metrics/`: nạp lại được, thêm vào chỉ làm phình bundle và làm mờ thông điệp.
+Nghiệm thu **trọn vòng**: backup 15 file → verify KHỚP → xoá 2 file (rule đắt nhất + `bug_tc_map`) → verify **exit 1, nêu đúng tên** → restore → verify KHỚP, nội dung **giống từng byte**; sửa file trên đĩa rồi restore → **không bị đè**; sau khi sửa 1 record thì `--verify` báo đúng *"đã sửa sau lần sao lưu"*.
+
+**Added — `domain:check` stale THEO LỊCH (`--stale-months`, mặc định 9).** Khác stale cũ: cái cũ nổ khi **có người sửa rule** (rule đổi sau lần execute → TC phải chạy lại); cái mới nổ khi **KHÔNG ai làm gì** — rule active không ai chạm N tháng thì oracle có thể đã lạc hậu, và nó im lặng vì không sự kiện nào kích hoạt. Rule lạc hậu tệ hơn không có rule: mọi TC dựa vào nó sai theo mà vẫn xanh.
+Tự bắt lỗi: `Number(x) || 9` làm `--stale-months 0` **rơi về 9 âm thầm** (0 là falsy) — phát hiện đúng lúc nghiệm thu ngưỡng.
+
+**Fixed — doc drift** review nêu: khối "Thư mục" của SCHEMA thiếu `setup_recipes/`, `environment/`, `metrics/`, `bug_tc_map.json`.
+
+## 2026-08-14 (j) — mắt xích còn hở: chiều TC → rule, và recipe tái dùng được
+
+Hai review về knowledge. Tôi kiểm từng khẳng định trước khi làm — **đúng gần hết**, và một con số làm luận điểm chính mạnh hơn cả cách nó được trình bày.
+
+**Lỗ hổng #1 — chiều TC → rule không có gì kiểm.** `--trace` đã kiểm chiều rule→TC (rule nào chưa có test). Chiều ngược thì `output_gate`/`design_gate` **0 lần** nhắc tới `domain/`/`BR-`, và canonical **không có cột nguồn oracle**. Đo trên bộ 530: **0/530 case** nhắc bất kỳ id rule nào — dù `§12` prompt gen **đã yêu cầu** "ghi id rule vào Kết quả mong đợi/Assumptions" từ trước. Trong đó **47 case có expected mang giá trị số/tiền/%** (chắc chắn có oracle nghiệp vụ) và **0** trỏ rule. ⇒ Quy định có, **tuân thủ 0%**, không máy nào gác.
+
+**Đã KHÔNG chọn 2/3 phương án review đề xuất, kèm lý do:**
+- *Thêm cột "Nguồn oracle"* → phá format 9 cột mà `md_to_xlsx`/publish/pull/validate đều khoá theo, và bộ 530 đã chốt không tái cấu trúc.
+- *Auto `covered_by` qua `learning_recorder`* → nó là Suggest-only, tức lại phụ thuộc "agent nhớ chạy" — đúng cái đã đo là thất bại.
+
+**Làm cách thứ tư: mang id rule vào TAG tiêu đề**, dùng lại hạ tầng tag chiều dựng cùng ngày:
+```
+[Positive][Calc][BR-RECIPBANK-001] TK nhận theo chương trình + mốc 01/01/2026
+[Negative][Guard][SM-ORDER-001]    Đã thanh toán → Chờ thanh toán phải bị CHẶN
+```
+`model.oracleRefsOf()` đọc `BR-`/`SM-`/`PM-`/`SS-`/`DM-` từ tiêu đề — **không đổi format**. `npm run domain:trace-back`: (a) case mang tag cần-oracle (`calc/bedata/display/security/guard`) mà không trỏ id → cảnh báo *"expected lấy từ đâu?"*; (b) trỏ id không tồn tại → *"oracle ma"*; (c) `--apply` **tự append `covered_by`** ⇒ hết phụ thuộc người nhớ điền. Một tín hiệu gác **hai chiều**.
+Nghiệm thu bằng fixture 3 case: append đúng 1, cảnh báo đúng case thiếu ref, bắt đúng ghost ref; `--apply` ghi thật rồi hoàn nguyên. Trên bộ 530 (chưa có tag) nó **nói rõ "CHƯA GÁC ĐƯỢC"** thay vì báo OK — im lặng ở đó chính là lỗi nó sinh ra để chống.
+
+**Recipe tái dùng được (review #2).** Xác minh: `SR-ORDER-001` **không có** `applies_when`/`used_by`, và `howto_store` chỉ có `--check`/`--index` — không có tra cứu. Thêm: `applies_when` (điều kiện áp được), `used_by` (TC đã dựng state thành công = bằng chứng recipe còn dùng được, cùng khuôn `covered_by`), và `npm run howto:find -- "<precondition>"`. Chạy đúng luồng review mô tả: `PRE-03: Deal phải là loại Chuyển nhượng` → tra → `SR-ORDER-001` khớp 4 từ, hiện `applies_when` + `used_by` → **người** tự quyết.
+**Cố ý KHÔNG có "match confidence"** dù review đề nghị: một điểm `0.72` trông đáng tin hơn thực tế và mời người ta bỏ qua bước đọc — mà trong ngày 14/08/2026 chấm-điểm/suy-diễn trên văn bản tiếng Việt đã sai **3 lần liên tiếp** (suy module bug 4/9 sai · `label→module` 5/17 đa nghĩa · suy chiều coverage đánh đổi recall↔precision). Xếp theo **số từ khớp**, in ra thứ để ĐỌC.
+`entity/state` + `input_requirements` thì **hoãn** — cấu trúc chỉ trả lãi khi có nhiều recipe và có người truy vấn thật; hiện N=1.
+
+**Hai lỗi nhỏ review nêu — đều đúng, đã sửa** (xem mục (k) cùng ngày).
+
 ## 2026-08-14 (i) — `docs:budget`: đo tài liệu TRƯỚC khi đọc (và bắt 2 bẫy đo được thật)
 
 Việc #3 trong danh sách ("giao subagent đọc tài liệu lớn"). Nhưng "tài liệu lớn" là thứ **chỉ hiện ra sau khi đã đọc xong**, tức đã muộn — nên thứ cần làm trước là **đo**.

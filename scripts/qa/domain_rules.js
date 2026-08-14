@@ -83,8 +83,11 @@ function validate(r) {
 }
 
 /** TC ID thật từ testcase canonical (theo task hoặc --tc-dir). */
-function realTcIds() {
-  const ids = new Set();
+// Trả về TESTCASE ĐẦY ĐỦ (không chỉ ID) để dùng được cả `oracleRefs` + `dimensions` cho chiều TC→rule.
+// Trước đây hàm này chỉ gom ID; tách ra thay vì viết bộ đi-file thứ hai — logic đi-file có bẫy riêng
+// (file LOCK Excel, parseXlsx async) mà nhân bản là chắc chắn lệch.
+function realTests() {
+  const tests = [];
   const dirs = [];
   const explicit = arg('tc-dir');
   if (explicit) dirs.push(path.resolve(explicit));
@@ -124,12 +127,19 @@ function realTcIds() {
           console.warn(`[domain] BỎ QUA ${f}: parseXlsx là async nhưng realTcIds chạy sync ⇒ TC ID trong file này KHÔNG được tính. Dùng bản .md.`);
           doc = null;
         }
-        for (const t of (doc && doc.tests) || []) if (t.tcId) ids.add(String(t.tcId));
+        for (const t of (doc && doc.tests) || []) if (t.tcId) tests.push(t);
       } catch (e) { /* file không phải bảng testcase → bỏ qua */ }
     }
   }
-  return ids;
+  // DEDUP theo tcId: `from-xray/` là bản mirror kéo từ Xray của CÙNG bộ, nên gộp cả hai thư mục làm mỗi TC
+  // xuất hiện 2 lần (đo: 550 cho 530 TC) ⇒ mọi con số đếm ở trace-back bị phồng. Bản ở `test-cases/` thắng.
+  const byId = new Map();
+  for (const t of tests) if (!byId.has(String(t.tcId))) byId.set(String(t.tcId), t);
+  return [...byId.values()];
 }
+
+/** Chỉ tập TC ID — dựng từ `realTests()` để không tồn tại hai bộ đi-file song song. */
+function realTcIds() { return new Set(realTests().map((t) => String(t.tcId))); }
 
 /** Lần execute cuối của mỗi TC (từ knowledge/metrics/tc-history.jsonl + historical_execution date). */
 function lastRunByTc() {
@@ -211,6 +221,70 @@ if (flag('trace') || flag('stale') || (!flag('index') && !flag('validate'))) {
     warnings.push(`${d.id}: xác nhận ${d.confirmed_at} (~${ageM} tháng trước) và chưa ai soi lại — oracle có thể đã lạc hậu. Hỏi lại BA/dev rồi bump \`confirmed_at\`, hoặc chuyển \`status: superseded\` nếu đã thay.`);
   }
   if (!old.length) console.log(`[domain] ✓ không rule active nào cũ hơn ${months} tháng (ngưỡng --stale-months).`);
+}
+
+// ── CHIỀU NGƯỢC: TC → rule (mắt xích còn hở) ────────────────────────────────────────────────────────────
+// Chiều rule→TC đã có (`--trace`: rule nào chưa có TC). Chiều TC→rule thì KHÔNG có gì: một case có oracle
+// nghiệp vụ mà expected do agent tự suy, không trỏ về rule nào, thì hệ thống IM LẶNG.
+//
+// Đo 14/08/2026 vì sao đây là lỗ thật: **0/530 case** nhắc bất kỳ id rule nào, dù `§12` prompt gen ĐÃ yêu cầu
+// "ghi id rule vào Kết quả mong đợi hoặc Assumptions" ⇒ quy định có, tuân thủ 0%, không máy nào kiểm. Trong
+// 530 case đó có 47 case expected mang giá trị số/tiền/% (tức chắc chắn có oracle nghiệp vụ) và 0 case trỏ rule.
+//
+// Tín hiệu dùng để gác là TAG trong tiêu đề: `[Positive][Calc][BR-RECIPBANK-001] …` (model.oracleRefsOf).
+// KHÔNG suy từ văn bản expected — hôm nay đã 3 lần chứng minh suy diễn tiếng Việt vừa thiếu recall vừa kém
+// precision. Vì vậy: chỉ chạy được ở "chế độ NHÃN"; bộ chưa gắn tag chiều thì script nói rõ là chưa gác được
+// thay vì im lặng cho qua (im lặng = cùng loại lỗi mà nó sinh ra để chống).
+if (flag('trace-back')) {
+  const tests = realTests();
+  const byId = new Map(rules.map((r) => [(r.data || {}).id, r]).filter(([k]) => k));
+  const ORACLE_DIMS = new Set(['calc', 'bedata', 'display', 'security', 'guard']);   // chiều chắc chắn cần oracle ngoài app
+  const tagged = tests.filter((t) => (t.dimensions || []).some((d) => ORACLE_DIMS.has(d)));
+  const withRef = tests.filter((t) => (t.oracleRefs || []).length);
+
+  console.log(`[domain] trace-back: ${tests.length} TC · ${tagged.length} case mang tag chiều cần oracle · ${withRef.length} case có trỏ id rule`);
+
+  if (!tagged.length && !withRef.length) {
+    console.log('[domain] ⚠ CHƯA GÁC ĐƯỢC chiều TC→rule: không case nào mang tag chiều lẫn id rule.');
+    console.log('[domain]   Bộ testcase phải gắn tag (xem §0b prompt gen: "[Positive][Calc][BR-XXX-001] …") thì mới kiểm được.');
+    console.log('[domain]   Nói rõ chỗ này thay vì báo "✓ OK" — im lặng ở đây đúng là lỗi mà check này sinh ra để chống.');
+  } else {
+    const missing = tagged.filter((t) => !(t.oracleRefs || []).length);
+    for (const t of missing.slice(0, 20)) {
+      warnings.push(`${t.tcId}: mang tag chiều [${(t.dimensions || []).filter((d) => ORACLE_DIMS.has(d)).join(',')}] (cần oracle NGOÀI app) nhưng KHÔNG trỏ id rule/bản đồ nào — expected lấy từ đâu? Thêm tag \`[BR-...]\`/\`[SM-...]\` hoặc ghi rule vào knowledge/ trước.`);
+    }
+    if (missing.length > 20) warnings.push(`… và ${missing.length - 20} case nữa cùng loại.`);
+
+    // Ghost ref: case trỏ tới id KHÔNG tồn tại trong knowledge → tưởng có oracle mà thực ra không.
+    for (const t of withRef) {
+      for (const ref of t.oracleRefs) {
+        if (ref.startsWith('BR-') && !byId.has(ref)) warnings.push(`${t.tcId}: trỏ \`${ref}\` nhưng knowledge/domain KHÔNG có rule id này (oracle ma).`);
+      }
+    }
+
+    // TỰ APPEND covered_by — hết phụ thuộc người nhớ điền. Chỉ ghi khi --apply.
+    const APPLY = flag('apply');
+    const added = [];
+    for (const t of withRef) {
+      for (const ref of t.oracleRefs) {
+        const r = byId.get(ref);
+        if (!r || !r.data) continue;
+        const cb = Array.isArray(r.data.covered_by) ? r.data.covered_by : [];
+        if (cb.includes(String(t.tcId))) continue;
+        cb.push(String(t.tcId));
+        r.data.covered_by = cb;
+        r._dirty = true;
+        added.push(`${ref} += ${t.tcId}`);
+      }
+    }
+    if (added.length) {
+      console.log(`[domain] ${APPLY ? 'GHI' : 'DRY-RUN'} tự append covered_by (${added.length}): ${added.slice(0, 12).join(' · ')}${added.length > 12 ? ' …' : ''}`);
+      if (APPLY) for (const r of rules) if (r._dirty) fs.writeFileSync(r.file, `${JSON.stringify(r.data, null, 2)}\n`, 'utf8');
+      else console.log('[domain]   Thêm --apply để ghi thật.');
+    } else if (withRef.length) {
+      console.log('[domain] ✓ mọi id rule được case trỏ tới đều đã có TC đó trong covered_by.');
+    }
+  }
 }
 
 if (flag('index')) {
