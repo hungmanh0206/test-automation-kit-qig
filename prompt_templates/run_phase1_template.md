@@ -30,6 +30,7 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`*
 | Sau khi QA duyệt Excel | `npm run jira:testcase-publish:dry-run` → xem preview → `npm run jira:testcase-publish` | Đẩy TC lên Xray. **Luôn dry-run trước**; chi tiết ở `phase1/04_auto_publish_jira.md` |
 | Ngay sau khi export Excel (bước 7) | tự chạy trong `md_to_xlsx` | **`design_gate` (G5)** CHẶN nếu thiếu cột canonical / rỗng ô lõi / bộ có case hiển thị mà thiếu `ui_catalog.json` |
 | Sau export | `npm run design:gate` | Chạy tay khi muốn soi trước lúc convert |
+| **Ngay khi có bộ testcase, TRƯỚC khi QA duyệt** | `npm run dim:coverage` → khai `requirements/dimension_manifest.json` → `npm run dim:coverage -- --enforce` | **CHẶN nếu thiếu chiều coverage** (§3–§17) mà manifest khai `required`. Đây là gate duy nhất kiểm 15 chiều — `design_gate` KHÔNG kiểm chiều nào. Điều kiện: case phải mang **tag chiều** (§0b); chưa có tag thì gate tự từ chối chặn thay vì báo oan |
 | Sau export | `npm run risk:gate` | Đối chiếu độ sâu testcase với `depthPolicy` theo band rủi ro |
 | Sau export | `npm run trace:matrix` | Sinh `reports/traceability-matrix.md` — REQ ↔ TC, lộ requirement chưa có case nào |
 | Trước khi kết thúc phase | `npm run gate:policy` | Rule/skill/prompt mồ côi, lệch tên, lệch danh sách đuôi evidence |

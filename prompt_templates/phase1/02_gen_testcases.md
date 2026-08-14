@@ -64,6 +64,25 @@ Nguyên tắc đặt nhóm:
 - KHÔNG thêm cột label vào bảng testcase. Khi publish Xray/Jira, label để TỐI THIỂU (marker `automation-testcase` + khoá dedup `task-*`/`tc-*`); nhóm chức năng thể hiện qua Xray Test Set và subfolder Test Repository (theo sheet chức năng), KHÔNG dùng label group/layer/risk/priority/xray.
 - `Khác` chỉ dùng khi requirement không thuộc nhóm nào rõ ràng và phải giải thích trong Coverage Gaps.
 
+### 0b. TAG CHIỀU trong tiêu đề — BẮT BUỘC, có máy kiểm
+
+Mỗi case ghi thêm **1 tag chiều** vào `Trường hợp kiểm thử`, ngay sau tag loại: `[Positive][Display] Lưới … đúng + đủ cột`. Không thêm cột, không đổi template 9 cột — tag nằm trong chính tiêu đề (cùng cơ chế đang đọc `[Positive]`/`[Negative]`).
+
+| Chiều (mục) | Tag | Chiều (mục) | Tag |
+|---|---|---|---|
+| §3 Field validation | `[Validation]` | §12 Display/Field conformance | `[Display]` |
+| §4 UI (lưới/filter/sort/empty) | `[UI]` | §13 Business logic / tính toán | `[Calc]` |
+| §5 API | `[API]` | §14 BE response conformance | `[BEData]` |
+| §6 E2E | `[E2E]` | §15 Security | `[Security]` |
+| §7 Export/Import | `[Export]` | §16 Performance/Load | `[Perf]` |
+| §8 Resilience/Concurrency | `[Resilience]` | §17 Change impact/Regression | `[Impact]` |
+| §9 Side-effect/Notification | `[SideEffect]` | §10 Cross-layer guard | `[Guard]` |
+| §11 Design compliance (Figma) | `[Design]` | | |
+
+**Vì sao bắt buộc:** `npm run dim:coverage -- --enforce` đếm case **theo tag** rồi chặn nếu thiếu chiều mà `requirements/dimension_manifest.json` khai là `required`. Không có tag thì gate rơi về chế độ GỢI Ý (suy từ văn bản) và **tự từ chối chặn** — vì đo trên bộ 530 case thật, suy diễn vừa thiếu recall (§5 đếm 0 dù có 17 case nhắc "api") vừa kém precision (§12 nhận cả case điều hướng, do "hiển thị" là động từ chuẩn của MỌI expected tiếng Việt). Tag là đường duy nhất để chiều coverage được **máy** gác, thay vì phụ thuộc việc bạn có đọc §3–§17 hay không.
+
+Case phủ nhiều chiều thì ghi nhiều tag (`[Negative][Validation][Security]`). Chiều không áp dụng cho task thì khai `"n/a"` **kèm lý do** trong `dimension_manifest.json` — bỏ chiều mà không nói vì sao sẽ bị cảnh báo.
+
 Ví dụ đúng cho cột `Module`:
 - `Xem danh sách / US-01 Exam List`
 - `Xem chi tiết / US-02 Exam Detail`

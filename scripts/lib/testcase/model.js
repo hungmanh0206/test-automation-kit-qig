@@ -84,7 +84,19 @@ function splitNumbered(cell) {
   });
 }
 
-const DIMENSION_TAGS = ['positive', 'negative', 'boundary', 'security', 'edge', 'e2e', 'regression'];
+// Tag chiều đọc từ `[...]` trong tiêu đề. Hai nhóm:
+//   - LOẠI case: positive/negative/boundary/edge — bộ testcase nào cũng dùng.
+//   - CHIỀU COVERAGE (§3–§17 của prompt gen): thêm 14/08/2026 để `dimension_coverage.js` chặn được theo NHÃN
+//     thay vì suy từ văn bản. Vì sao cần: đo trên bộ 530 case thật, suy chiều bằng từ khoá cho recall/precision
+//     đều tệ và đánh đổi nhau — `hiển thị` là động từ chuẩn của MỌI kết quả mong đợi tiếng Việt nên §12 phồng
+//     từ 17 lên 106 case; còn bỏ dấu thì `nhan` (nhãn) trùng luôn `nhận` trong "ghi nhận". Nhãn tường minh là
+//     đường duy nhất vừa đủ recall vừa đủ precision.
+// GIỮ NGUYÊN 4 tag đầu và `security/e2e/regression` — đã tồn tại từ trước, đổi là phá bộ đang publish.
+const DIMENSION_TAGS = [
+  'positive', 'negative', 'boundary', 'edge',
+  'security', 'e2e', 'regression',
+  'validation', 'ui', 'export', 'resilience', 'sideeffect', 'guard', 'design', 'display', 'calc', 'bedata', 'perf', 'api', 'impact',
+];
 /** Dimension từ tag [..] trong title (vd "[Negative] ..." → ['negative']). */
 function dimensionsOf(title) {
   const tags = (String(title || '').match(/\[([^\]]+)\]/g) || []).map((t) => normalizeHeader(t));

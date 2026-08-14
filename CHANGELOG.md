@@ -7,6 +7,31 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (d) — 15 chiều coverage của Phase 1 chưa có MÁY nào gác
+
+**Bối cảnh.** Câu hỏi đặt ra là cắt `02_gen_testcases.md` (24,1k token) theo mục để tiết kiệm token, với điều kiện **chất lượng không được giảm**. Đo trước khi cắt, và hai con số đổi hẳn kết luận:
+
+1. **Tiết kiệm ít hơn tưởng.** Chia mục: **12,5k (52%) là luật xuyên suốt mọi case** (cột 1–9, phân nhóm, coverage map, self-check §18, Summary Report, Export Excel) — không cắt được; chỉ **9,9k (41%)** là 15 chương theo chiều (§3–§17). Task thật dùng 5–6 chiều ⇒ bỏ được **2,6–6,6k = 11–27%**, không phải "về vài k" như tôi nói trước đó. Y hệt kết luận đã đo với `RULE_GLOBAL` (74% xuyên suốt → chỉ tiết kiệm 7–19%).
+2. **Cắt bây giờ thì chất lượng CHẮC CHẮN giảm**, vì `design_gate` **không kiểm chiều nào** (chỉ `requirements`), `tc_validator` cũng không, và nhãn chiều duy nhất tồn tại là `positive/negative/edge/boundary`. Nghĩa là thứ **duy nhất** làm 15 chiều xảy ra là agent đọc được §3–§17. Cơ chế đó vốn đã yếu: §12 là BẮT BUỘC và luôn được nạp mà cả cụm bug "thiếu trường/thừa cột/lệch nhãn" vẫn lọt.
+
+⇒ Đảo thứ tự: **dựng gate chiều trước, cắt prompt sau.**
+
+**Added — `scripts/qa/dimension_coverage.js` (`npm run dim:coverage`)**
+Đếm case theo 15 chiều trên bộ **đã sinh** rồi chặn nếu thiếu chiều mà `requirements/dimension_manifest.json` khai `required`. Đảo phụ thuộc: kiểm ở **output**, không tin agent nhớ nạp mục nào ⇒ sau này cắt prompt thì "mất text" không còn đồng nghĩa "mất chiều".
+
+**Hai chế độ, và đây là phần quan trọng nhất:** ban đầu tôi định suy chiều từ văn bản, nhưng đo trên bộ 530 case thật thì **suy diễn không đủ tin để chặn** — recall thiếu (§5 API đếm **0** trong khi có 17 case nhắc "api") và precision kém (§12 nhận cả `[Positive] Chọn Next → hiển thị màn Confirm`, vì **"hiển thị" là động từ chuẩn của MỌI expected tiếng Việt**; nới pattern thì §12 phồng 17 → 106). Nên: chế độ **NHÃN** (case mang tag chiều) mới được `--enforce`; chế độ **GỢI Ý** thì script **tự từ chối chặn** (exit 2) kèm đường ra — chặn bằng số liệu không đáng tin là cách nhanh nhất để gate mất uy tín. `--enforce` cũng bị từ chối khi chưa có manifest, vì lúc đó không ai khai chiều nào bắt buộc.
+
+**Bẫy tiếng Việt ghi lại để không ai đạp lại:** bỏ dấu thì `nhan` (nhãn/label) **trùng luôn `nhận`** trong "ghi nhận", "TK nhận", "HV nhận" — thêm nó vào pattern làm §12 phồng gấp 6 lần.
+
+**Changed — `DIMENSION_TAGS` (`scripts/lib/testcase/model.js`, lib DÙNG CHUNG)**
+Thêm 13 tag chiều (`validation/ui/api/export/resilience/sideeffect/guard/design/display/calc/bedata/perf/impact`) cạnh 7 tag cũ. **Additive, đã nghiệm thu trên bộ 530**: `dimensions` parse ra y nguyên `positive=393 · negative=101 · edge=19 · boundary=12`, không tag mới nào khớp nhầm (đã liệt kê toàn bộ token `[...]` đang có để kiểm — `[Constraint]`, `[Product/Combo]`, `[CX]`… đều không trùng).
+
+**Added — §0b prompt gen (+0,5k token):** bảng chiều → tag, kèm lý do bắt buộc. Case phủ nhiều chiều thì nhiều tag; chiều n/a phải kèm **lý do** trong manifest (thiếu lý do là bị cảnh báo — bỏ chiều im lặng đúng là thứ gate này sinh ra để chặn).
+
+**Nghiệm thu bằng fixture** (không tin suông): bộ 2 case gắn `[Display]`/`[Validation]`, manifest yêu cầu thêm `security` → gate vào chế độ NHÃN, đếm đúng, `perf: n/a` được tôn trọng, thiếu `security` → **exit 1**; cảnh báo "n/a không có lý do" cũng nổ đúng.
+
+**Chưa làm:** bộ 530 hiện tại chưa có tag nên gate chạy ở chế độ gợi ý (báo cáo, không chặn) — nó sẽ chặn từ bộ testcase **gen mới** trở đi. Và việc cắt `02_gen_testcases.md` vẫn để ngỏ: cắt được an toàn ngay là `Phase 1 Summary Report` + `Export Excel` = **3,7k**, vì đó là hướng dẫn định dạng output cuối lượt, không phải luật nội dung case.
+
 ## 2026-08-14 (c) — spec dạng Google Sheet: đọc được mà KHÔNG cần credential
 
 **Bối cảnh.** BA gửi spec dạng Google Sheet liên tục (bảng mapping field↔property, biểu phí, mã môn, luồng đồng bộ). Nhưng `sheet_reader.js` đi qua Sheets API nên đòi credential, và đo 14/08/2026 thì **cả ba đường đều chết**: `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` rỗng · `GOOGLE_API_KEY` rỗng · token OAuth của `google_doc` chỉ có scope `documents.readonly`+`drive.readonly` mà **Drive API đang bị TẮT** ở GCP project. Kết quả: spec dạng sheet nằm ngoài tầm đọc của mọi phase.
