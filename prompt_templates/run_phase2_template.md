@@ -1,6 +1,6 @@
 # Prompt chạy Phase 2 - Thực thi automation
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Tuân thủ `RULE_GLOBAL.md` và `.agent/rules/`.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
 
 Dùng prompt này sau khi output testcase của Phase 1 đã được review. Đây là template dùng chung, phải thay các placeholder trước khi chạy.
 

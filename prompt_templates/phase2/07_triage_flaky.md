@@ -1,6 +1,6 @@
 # Prompt Phase 2 - Phân tích test flaky
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Tuân thủ `RULE_GLOBAL.md` và `.agent/rules/`.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
 
 Dùng prompt này chỉ khi testcase có dấu hiệu flaky: lúc PASS lúc FAIL, timeout không ổn định, race condition, data conflict hoặc phụ thuộc môi trường.
 

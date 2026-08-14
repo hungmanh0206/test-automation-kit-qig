@@ -1,6 +1,6 @@
 # Prompt Phase 1 - Cross-Module / Combinatorial Testing
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Tuân thủ `RULE_GLOBAL.md` và `.agent/rules/`.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
 > Bổ sung cho `02_gen_testcases.md` khi chức năng phụ thuộc **nhiều biến kết hợp** hoặc **dữ liệu chảy qua nhiều màn/hệ thống**. Dùng skill `combinatorial_matrix`.
 
 # Khi nào dùng

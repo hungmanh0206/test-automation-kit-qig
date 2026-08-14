@@ -1,6 +1,6 @@
 # Prompt Phase 2 - Thực thi Playwright UI
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Tuân thủ `RULE_GLOBAL.md` và `.agent/rules/`.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
 
 > ⚡ **Kỷ luật execute (RULE_GLOBAL §"Execution Discipline"):** batch NHIỀU case/1 lượt (ÍT script toàn diện, chạy song song — không "mỗi case 1 vòng"); KHÔNG mặc định TODO/SKIP khi chưa thử (dùng hết fixture/deal/account đã cấp, case negative tự tạo input); KHÔNG hỏi lắt nhắt (gom câu hỏi 1 lần); báo cáo gộp, ít vòng.
 

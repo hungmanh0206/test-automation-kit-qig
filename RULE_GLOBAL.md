@@ -2,6 +2,31 @@
 
 > Quy tắc bắt buộc để giữ Test Automation Kit an toàn, nhất quán và dễ audit.
 
+> ## 📍 ĐỌC THEO MỤC — đừng nạp cả file
+>
+> File này ~27.000 ký tự (**≈ 12–17k token**). Nạp trọn mỗi lượt là lãng phí: **74% nội dung áp cho MỌI phase**,
+> phần riêng Phase 1 chỉ 7% và Phase 2 chỉ 19% — nên chia file theo phase gần như không tiết kiệm được gì
+> (đọc Phase 1 vẫn = 81% bản đầy đủ), lại thêm N chỗ để drift. Cách đúng là **đọc đúng mục cần**.
+>
+> Thứ tự nên dùng: `CLAUDE.md` (6 non-negotiables, auto-load) → `.agent/rules/core_rules.md` (digest ~4–5k
+> token, mỗi gạch đầu dòng ghi sẵn `(Đầy đủ: RULE_GLOBAL §…)`) → **chỉ mở mục dưới đây khi cần chi tiết**.
+>
+> | Cần gì | Mở mục |
+> |---|---|
+> | Secret, PII, mask evidence | [§Security](#security) |
+> | `TASK_KEY`/`PROJECT_OUTPUT_DIR`, nơi ghi output | [§Project And Output](#project-and-output) |
+> | Nhiều story chạy song song, đụng file dùng chung | [§Parallel Story Safety](#parallel-story-safety) · [§Shared Change Gate](#shared-change-gate) |
+> | Sửa/đặt automation ở đâu | [§Task-Scoped Automation Code](#task-scoped-automation-code) · [§Automation Promote Review](#automation-promote-review) |
+> | **Phase 1** — requirement mơ hồ, hỏi trước khi gen | [§Analysis & Ambiguity Gate](#analysis--ambiguity-gate-phase-1--đọc-kỹ-hỏi-trước-khi-gen) |
+> | **Phase 2** — chạy sao cho thông suốt, không TODO/SKIP bừa | [§Execution Discipline](#execution-discipline-kỷ-luật-thực-thi--chạy-thông-suốt) |
+> | Ghi kết quả, verdict, rerun | [§Execute Results](#execute-results) |
+> | Lỗi thuộc FE hay BE | [§Phân tầng lỗi FE hay BE](#phân-tầng-lỗi-fe-hay-be--bắt-buộc-kiểm-api-trước-khi-kết-luận) |
+> | Ảnh/video, định dạng, highlight | [§Evidence](#evidence--quy-chuẩn-bắt-buộc) |
+> | Viết comment trên Test Run | [§Comment kết quả](#comment-kết-quả-test-execution--quy-chuẩn-trình-bày) |
+> | Được phép log bug chưa | [§Jira Bug Gate](#jira-bug-gate) |
+> | DB, capability tự chạy | [§Executable QA capabilities](#executable-qa-capabilities-autonomy--safety) |
+> | Dọn file tạm | [§Cleanup Rules](#cleanup-rules) |
+
 ## Purpose
 
 Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, prompt, skill, script và report trong kit.
