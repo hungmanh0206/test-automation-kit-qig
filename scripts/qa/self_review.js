@@ -145,7 +145,7 @@ if (statusFile && fs.existsSync(statusFile)) {
   const countJson = (d) => { try { return fs.readdirSync(path.join(know, d)).filter((f) => f.endsWith('.json')).length; } catch (e) { return 0; } };
 
   // 6a) Validate từng store (chỉ chạy khi có record → store rỗng không bao giờ chặn).
-  for (const [dir, script, label] of [['domain', 'domain_rules.js', 'domain'], ['system', 'system_map.js', 'system'], ['decisions', 'decisions.js', 'decisions']]) {
+  for (const [dir, script, label] of [['domain', 'domain_rules.js', 'domain'], ['system', 'system_map.js', 'system'], ['decisions', 'decisions.js', 'decisions'], ['setup_recipes', 'howto_store.js', 'howto'], ['environment', 'howto_store.js', 'howto']]) {
     if (!countJson(dir)) continue;
     const r = spawnSync(process.execPath, [path.join(__dirname, script), '--validate', '--enforce'], { encoding: 'utf8' });
     if (r.status === 1) {
@@ -207,6 +207,24 @@ if (statusFile && fs.existsSync(statusFile)) {
       }
     } catch (e) { /* không có test-cases/ → bỏ qua */ }
     if (hits) warnings.push(`${hits} case liên quan phân quyền/trạng thái/guard nhưng \`knowledge/system/\` RỖNG — expected của mấy case đó đang không có nguồn trích dẫn (dễ thành "app cho làm ⇒ coi là đúng"). Ghi state machine / ma trận quyền: skill \`system_mapper\`.`);
+  }
+
+  // 6c-bis) setup_recipes/ — case vướng SETUP là chỗ tốn giờ nhất và tái diễn nguyên vẹn ở task sau.
+  //
+  // Vì sao nhắc ở đây: đo trên 80 memory tích luỹ của dự án đang chạy, **59% là "cách dựng state/fixture"** —
+  // tức phần lớn thời gian thật tiêu ở "làm sao tới được đó", trong khi `Setup Strategy` chỉ sống trong TỪNG
+  // task. Và bằng chứng rằng thêm store KHÔNG kèm máy nhắc thì store nằm chết: `locators/` có từ lâu, 0 file.
+  // Dò theo status thật trong testcase-status.json (BLOCKED_SETUP/SKIP_SETUP/setup_failure), không đoán.
+  if (taskDir && !countJson('setup_recipes')) {
+    let stuck = 0;
+    try {
+      const st = JSON.parse(fs.readFileSync(path.join(taskDir, 'test-results', 'testcase-status.json'), 'utf8'));
+      const tests = Array.isArray(st.tests) ? st.tests : Object.values(st.tests || {});
+      stuck = tests.filter((t) => /BLOCKED_SETUP|SKIP_SETUP|setup_failure/i.test(`${t.status || ''} ${t.failureLayer || ''}`)).length;
+    } catch (e) { /* chưa execute → bỏ qua */ }
+    if (stuck) {
+      warnings.push(`${stuck} case vướng setup (BLOCKED_SETUP/SKIP_SETUP/setup_failure) nhưng \`knowledge/setup_recipes/\` RỖNG — cách dựng state là thứ tốn giờ nhất và task sau sẽ mò lại y hệt. Ghi recipe kèm \`pitfalls\` (thứ chỉ biết sau khi đã vấp) rồi \`npm run howto:index\`.`);
+    }
   }
 
   // 6d) decisions/ — bug đã Rejected mà không lưu lý do chính là bug sẽ bị log lại lần sau.

@@ -105,6 +105,8 @@ knowledge/root_causes/*.json
 knowledge/locators/*.json
 knowledge/historical_execution/*.json
 knowledge/metrics/*
+knowledge/setup_recipes/*.json
+knowledge/environment/*.json
 knowledge/examples/*
 !knowledge/bugs/.gitkeep
 !knowledge/domain/.gitkeep
@@ -114,6 +116,8 @@ knowledge/examples/*
 !knowledge/locators/.gitkeep
 !knowledge/historical_execution/.gitkeep
 !knowledge/metrics/.gitkeep
+!knowledge/setup_recipes/.gitkeep
+!knowledge/environment/.gitkeep
 !knowledge/examples/.gitkeep
 
 # Agent / AI local files

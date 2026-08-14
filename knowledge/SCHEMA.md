@@ -258,6 +258,55 @@ npm run decisions:check          # validate + bug Rejected chưa có lý do + qu
 `decisions:check` đối chiếu `knowledge/bugs/`: bug `Rejected`/`Won't Do` mà **không** có quyết định giải thích
 sẽ bị nêu tên (`‼`) — vì đó chính là bug sẽ được log lại lần sau.
 
+## `setup_recipes/<slug>.json` — LÀM SAO dựng được state (id `SR-<SLUG>-<NNN>`)
+
+**Vì sao cần:** các store khác đều nhớ phía **kết luận** (`domain` giá trị đúng · `system` được phép làm gì ·
+`bugs` cái gì hỏng · `decisions` vì sao đã chốt). Nhưng đo trên 80 memory tích luỹ của một dự án đang chạy:
+**59% là "cách dựng state/fixture"** — tức phần lớn thời gian thật tiêu ở phía *"làm sao tới được đó"*, mà
+trước đây kit KHÔNG có chỗ chứa. `Setup Strategy` chỉ sống trong TỪNG task nên task sau mò lại từ đầu.
+
+```json
+{
+  "id": "SR-ORDER-001",
+  "goal": "Có 1 Deal loại Chuyển nhượng để màn Create render ĐÚNG luồng Chuyển nhượng",
+  "modules": ["Order Chuyển nhượng"],
+  "method": "fixture-tool",
+  "preconditions": ["Contact test đã tồn tại"],
+  "steps": ["Tạo contact test", "Tạo deal", "PATCH `loai_phi_dich_vu` NGAY TRƯỚC khi sync", "Bấm Đồng bộ thông tin"],
+  "pitfalls": ["PATCH SAU khi sync là vô tác dụng — form ra NHẦM luồng Chuyển đổi", "Deal fixture dùng MỘT LẦN"],
+  "verification": "Khối Customer Info hiện đúng contact VÀ loại phí là Chuyển nhượng",
+  "cleanup": "Xoá theo tiền tố `IT test`",
+  "source": "…", "confirmed_by": "QA", "confirmed_at": "2026-08-14", "version": 1, "status": "active",
+  "tags": ["fixture", "hubspot"]
+}
+```
+
+| Field | Bắt buộc | Ý nghĩa |
+|---|---|---|
+| `goal` | ✓ | Dựng ra **state gì** — không mô tả thao tác chung chung. |
+| `method` | ✓ | `api` \| `ui` \| `factory` \| `test_hook` \| `pre_existing` \| `fixture-tool`. **KHÔNG có `db`** — RULE_GLOBAL cấm dựng state bằng DB; validator chặn cả câu lệnh `INSERT/UPDATE/DELETE/psql` trong `steps`. |
+| `steps` | ✓ | Các bước cụ thể, ĐÚNG THỨ TỰ (thứ tự thường chính là chỗ sai). |
+| `pitfalls` | ⚠ | **Thứ chỉ biết sau khi đã vấp.** Rỗng = cảnh báo, vì recipe không có cạm bẫy thường chỉ là chép lại tài liệu. |
+| `verification` | ✓ | Cách XÁC NHẬN state đã dựng đúng — thiếu thì chạy xong không ai biết có thật không. |
+| `cleanup` |  | Dọn thế nào, hoặc vì sao không cần dọn. |
+
+## `environment/<slug>.json` — Quirk hạ tầng/env (id `ENV-<SLUG>-<NNN>`)
+
+Loại thứ hai bị thiếu (**21%** số memory): không phải lỗi sản phẩm, nhưng không biết thì test fail một cách
+khó hiểu và dễ bị kết luận nhầm thành bug.
+
+| Field | Bắt buộc | Ý nghĩa |
+|---|---|---|
+| `scope` | ✓ | Env/app nào (UAT OPS, staging LMS…) — quirk sai môi trường là gây hiểu nhầm. |
+| `fact` | ✓ | Quirk cụ thể, kiểm được (vd "token TTL ~30 phút; khoá theo SỐ LẦN login"). |
+| `impact` | ✓ | Hậu quả nếu không biết — không nêu thì người đọc không rõ vì sao phải quan tâm. |
+| `workaround` | ⚠ | Cách né. Rỗng = cảnh báo (biết quirk mà không biết né thì giá trị còn một nửa). |
+| `detection` |  | Triệu chứng để nhận ra đang dính quirk này. |
+
+Kiểm cả 2 store: `npm run howto:check` (`-- --enforce` để chặn) · ghi index: `npm run howto:index`.
+`self_review` nhắc khi có case `BLOCKED_SETUP`/`SKIP_SETUP`/`setup_failure` mà `setup_recipes/` còn rỗng —
+vì bài học từ `locators/`: thêm store mà không có máy nhắc thì store nằm chết.
+
 ## `root_causes/<slug>.json`
 
 `<slug>` = `<module-lowercase>-<mô-tả-kebab>`, vd `report-timezone-utc`.

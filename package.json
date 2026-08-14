@@ -64,7 +64,9 @@
     "system:index": "node scripts/qa/system_map.js --index",
     "decisions:check": "node scripts/qa/decisions.js",
     "decisions:index": "node scripts/qa/decisions.js --index",
-    "skills:index": "node scripts/qa/skills_index.js --write"
+    "skills:index": "node scripts/qa/skills_index.js --write",
+    "howto:check": "node scripts/qa/howto_store.js",
+    "howto:index": "node scripts/qa/howto_store.js --index"
   },
   "dependencies": {
     "axe-core": "^4.12.1",
