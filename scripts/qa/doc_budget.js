@@ -60,8 +60,25 @@ if (!docs.length) { console.error(`[docs] không thấy tài liệu nào (${DOC_
 
 // Đọc thật để đếm KÝ TỰ, không dùng byte: file UTF-8 tiếng Việt có ~1,5 byte/ký tự nên đếm byte sẽ phóng đại
 // khoảng 50% và đẩy tài liệu qua ngưỡng oan.
+// File LỚN thì KHÔNG nạp cả vào bộ nhớ — đọc MẪU đầu file rồi suy tỉ lệ byte/ký tự.
+// Lỗi thật của bản đầu: `readFileSync` một dump Figma **114,5 MB** ở mỗi lần chạy chỉ để đếm ký tự. Nó không
+// crash (giới hạn chuỗi Node ~512MB) nhưng vô nghĩa và sẽ vỡ với file lớn hơn — đúng loại "công cụ đo lại tự
+// trở thành thứ đắt nhất trong lượt".
+const SAMPLE_BYTES = 262144;
 for (const d of docs) {
-  try { d.chars = fs.readFileSync(d.file, 'utf8').length; } catch (e) { d.chars = d.bytes; }
+  try {
+    if (d.bytes <= 4 * 1024 * 1024) {
+      d.chars = fs.readFileSync(d.file, 'utf8').length;
+    } else {
+      const fd = fs.openSync(d.file, 'r');
+      const buf = Buffer.alloc(Math.min(SAMPLE_BYTES, d.bytes));
+      fs.readSync(fd, buf, 0, buf.length, 0);
+      fs.closeSync(fd);
+      const ratio = buf.toString('utf8').length / buf.length;      // ký tự / byte trên mẫu
+      d.chars = Math.round(d.bytes * ratio);
+      d.estimated = true;
+    }
+  } catch (e) { d.chars = d.bytes; d.estimated = true; }
   d.tok = d.chars / CHARS_PER_TOK;
   d.verdict = d.tok > DELEGATE ? 'GIAO SUBAGENT' : (d.tok > READ_DIRECT ? 'đọc CHỈ mục cần' : 'đọc trực tiếp');
 }
@@ -75,7 +92,7 @@ console.log(`[docs] ${docs.length} tài liệu · tổng ~${fmt(total)} token n�
 console.log('| ~token | Việc nên làm | File |');
 console.log('|---|---|---|');
 for (const d of docs.slice(0, 25)) {
-  console.log(`| ${fmt(d.tok)} | ${d.verdict} | ${path.relative(rc.REPO_ROOT, d.file)} |`);
+  console.log(`| ${fmt(d.tok)}${d.estimated ? ' (≈)' : ''} | ${d.verdict} | ${path.relative(rc.REPO_ROOT, d.file)} |`);
 }
 if (docs.length > 25) console.log(`| … | | và ${docs.length - 25} file nhỏ hơn |`);
 
