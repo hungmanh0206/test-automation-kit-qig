@@ -1,5 +1,6 @@
 import { type Page, type BrowserContext } from '@playwright/test';
 import { loginOpsForm, OPS_USER } from '../opsLogin';
+import { seedSession } from './seedSession';
 
 // JS libs (CommonJS) — pure logic đã offline-test.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -34,19 +35,8 @@ export async function ensureOpsAuth(page: Page, context: BrowserContext, opts: E
 
   if (method === 'storage') {
     const rec = sessionCache.load(key);
-    const ss = (rec && rec.storageState) || { cookies: [], origins: [] };
-    if (Array.isArray(ss.cookies) && ss.cookies.length) await context.addCookies(ss.cookies);
-    // Seed localStorage (actToken/refreshToken) TRƯỚC mọi navigation: addInitScript chạy trước script trang
-    // → token có sẵn khi app check auth → KHÔNG bị redirect /auth/login (bug phát hiện qua UAT smoke).
-    for (const o of ss.origins || []) {
-      if (Array.isArray(o.localStorage) && o.localStorage.length) {
-        await context.addInitScript((items: Array<{ name: string; value: string }>) => {
-          try { for (const it of items) window.localStorage.setItem(it.name, it.value); } catch (e) { /* origin khác scope */ }
-        }, o.localStorage);
-      }
-    }
-    const base = (ss.origins && ss.origins[0] && ss.origins[0].origin) || process.env.OPS_BASE_URL || '';
-    if (base) await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => { /* verify ở caller */ });
+    // Dùng CHUNG seedSession với loginOps — xem tests/fe/support/auth/seedSession.ts
+    await seedSession(page, context, rec && rec.storageState, process.env.OPS_BASE_URL || '');
     return 'storage(reuse)';
   }
 

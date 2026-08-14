@@ -21,7 +21,11 @@
 - Offline (`tests/fe/infra/auth-session-lock.spec.ts`, 4 pass, **không chạm UAT, không cần creds**): quyết định tươi/hết-hạn; 5 lượt đồng thời → max 1 trong vùng găng và **đúng 1 lần "login"**; lock rác bị thu hồi; hết timeout vẫn chạy và báo rõ `gotLock=false`.
 - **Liên tiến trình** (thứ mà test trong-một-tiến-trình KHÔNG chứng minh được): 5 process node song song → log ra **1 LOGIN + 4 REUSE**, max 1 process trong vùng găng.
 - Regression: `tests/fe/infra` **30/30 pass**, `typecheck`/`lint` exit 0, 30 file gọi `loginOps` không phải sửa dòng nào.
-- ⚠️ **Chưa nghiệm thu:** nhánh SEED cần một UAT smoke thật (browser + creds + xác nhận chạm UAT). Ai chạy đầu tiên mà thấy lạ thì `AUTH_REUSE=0` để trở về hành vi cũ ngay.
+- ✅ **UAT thật (đã chạy, user xác nhận chạm UAT): 2/2 pass** — `tests/fe/auth/auth-evidence.smoke.spec.ts`. Cache key thật ghi 35 cookie + `actToken`/`refreshToken`. Kill-switch `AUTH_REUSE=0` vẫn giữ để trở về hành vi cũ nếu cần.
+
+**Hai lỗi của chính thay đổi này, phát hiện KHI chạy smoke** (không phải do đọc lại code):
+1. **Tôi đã copy logic seed thành bản thứ hai.** Smoke cũ chỉ nghiệm thu bản trong `ensureOpsAuth`; bản trong `loginOps` là code chưa ai chứng minh chạy. Hai bản sao của cùng một logic khó (thứ tự `addInitScript`, chọn origin, cách xác minh) chắc chắn phân kỳ. → Tách `tests/fe/support/auth/seedSession.ts` làm **một bản duy nhất**, cả hai đường gọi vào đó; đặt ở module thứ ba để không sinh import vòng (`opsAuth` đã import `opsLogin`).
+2. **Smoke cũ KHÔNG phủ `loginOps`** — nó gọi `ensureOpsAuth` với key riêng, trong khi `loginOps` mới là hàm 30 spec thật sự dùng. → Thêm test riêng cho `loginOps`. Bằng chứng "không login lại" là **`savedAt` không đổi sau lượt 2** (chọn cách đo này vì `loginOps` trả `void` — giữ chữ ký để 30 spec không phải sửa nên không đọc được "method" như `ensureOpsAuth`). Tốn đúng **1 lần login** cho cả 2 lượt.
 
 ## 2026-08-14 (g) — vá rủi ro do chính nhát cắt (f) sinh ra: khai `n/a` sai
 

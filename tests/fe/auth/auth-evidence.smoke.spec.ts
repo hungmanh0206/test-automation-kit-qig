@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { haveOpsCreds, OPS_BASE } from '../support/opsLogin';
+import { haveOpsCreds, OPS_BASE, OPS_USER, loginOps } from '../support/opsLogin';
 import { ensureOpsAuth } from '../support/auth/opsAuth';
 import { readOpsToken, brokerRequest } from '../support/auth/tokenBroker';
 
@@ -57,5 +57,35 @@ test.describe('@smoke Auth reuse + Evidence highlight (infra)', () => {
     await ctx2.close();
 
     sessionCache.clear(key);
+  });
+
+  /*
+   * Nghiệm thu chính `loginOps` — ĐIỂM VÀO của 30 spec (14/08/2026).
+   * Test trên KHÔNG phủ nó: nó gọi `ensureOpsAuth` với key riêng. Mà `loginOps` mới là hàm 30 spec thật sự
+   * dùng, nên nhánh reuse của nó phải có bằng chứng riêng trên UAT thật.
+   *
+   * BẰNG CHỨNG "không login lại" = `savedAt` của cache KHÔNG đổi sau lượt 2. Chọn cách đo này vì `loginOps`
+   * trả `void` (giữ nguyên chữ ký để 30 spec không phải sửa) nên không thể đọc "method" như `ensureOpsAuth`.
+   * Non-destructive: chỉ login + mở trang; tốn ĐÚNG 1 lần login cho cả 2 lượt.
+   */
+  test('loginOps: lượt 2 REUSE session, KHÔNG login lại (savedAt không đổi)', async ({ browser }) => {
+    const key = OPS_USER || 'ops';
+    sessionCache.clear(key);
+
+    const ctx1 = await browser.newContext();
+    const p1 = await ctx1.newPage();
+    await loginOps(p1);
+    expect(/\/auth\/login/.test(p1.url()), 'lượt 1 phải đăng nhập được').toBeFalsy();
+    const saved1 = sessionCache.load(key)?.savedAt;
+    expect(saved1, 'lượt 1 phải LƯU cache').toBeTruthy();
+    await ctx1.close();
+
+    const ctx2 = await browser.newContext();
+    const p2 = await ctx2.newPage();
+    await loginOps(p2);
+    expect(/\/auth\/login/.test(p2.url()), 'lượt 2 vẫn đăng nhập (seed hợp lệ)').toBeFalsy();
+    const saved2 = sessionCache.load(key)?.savedAt;
+    expect(saved2, 'savedAt KHÔNG đổi ⇒ lượt 2 đã REUSE, không login form lần nữa').toBe(saved1);
+    await ctx2.close();
   });
 });

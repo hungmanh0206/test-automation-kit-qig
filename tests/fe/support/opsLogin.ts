@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { seedSession } from './auth/seedSession';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const T = require('../../../scripts/utils/ui/safe_target');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -59,24 +60,11 @@ export async function loginOps(page: Page): Promise<void> {
   const ttl = Number(process.env.AUTH_TTL_MINUTES || 25);
   const context = page.context();
 
+  // Dùng CHUNG `seedSession` với `ensureOpsAuth` — một bản duy nhất, nên UAT smoke nghiệm thu được cả hai
+  // đường. (Bản đầu tôi copy logic seed vào đây: hai bản sao sẽ phân kỳ và smoke chỉ phủ một bản.)
   const seed = async (): Promise<boolean> => {
     const rec = sessionCache.load(key);
-    const ss = (rec && rec.storageState) || null;
-    if (!ss) return false;
-    if (Array.isArray(ss.cookies) && ss.cookies.length) await context.addCookies(ss.cookies);
-    // localStorage phải vào TRƯỚC mọi navigation: addInitScript chạy trước script trang nên app thấy token
-    // ngay lúc check auth ⇒ không bị redirect /auth/login (bẫy đã gặp khi làm ensureOpsAuth).
-    for (const o of ss.origins || []) {
-      if (Array.isArray(o.localStorage) && o.localStorage.length) {
-        await context.addInitScript((items: Array<{ name: string; value: string }>) => {
-          try { for (const it of items) window.localStorage.setItem(it.name, it.value); } catch (e) { /* origin khác scope */ }
-        }, o.localStorage);
-      }
-    }
-    const base = (ss.origins && ss.origins[0] && ss.origins[0].origin) || OPS_BASE;
-    if (!base) return false;
-    await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => { /* kiểm bằng URL bên dưới */ });
-    return !/\/auth\/login/.test(page.url());
+    return seedSession(page, context, rec && rec.storageState, OPS_BASE);
   };
 
   if (sessionCache.isFresh(key, ttl) && await seed()) return;
