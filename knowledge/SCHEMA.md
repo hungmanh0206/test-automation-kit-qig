@@ -303,7 +303,41 @@ khó hiểu và dễ bị kết luận nhầm thành bug.
 | `workaround` | ⚠ | Cách né. Rỗng = cảnh báo (biết quirk mà không biết né thì giá trị còn một nửa). |
 | `detection` |  | Triệu chứng để nhận ra đang dính quirk này. |
 
-Kiểm cả 2 store: `npm run howto:check` (`-- --enforce` để chặn) · ghi index: `npm run howto:index`.
+## `locators/<module>__<slug>.json` — KỸ THUẬT thao tác UI (id `UI-<SLUG>-<NNN>`)
+
+Store này có từ lâu nhưng **0 file**, vì schema cũ chỉ chứa selector do `locator_healing_agent` ghi tự động.
+Thứ đắt giá lại là **cách thao tác**: selector đúng mà thao tác sai thì vẫn fail — và fail kiểu ngắt quãng,
+rất dễ bị gán nhầm là "flaky không rõ nguyên nhân" rồi rerun cho qua.
+
+| Field | Bắt buộc | Ý nghĩa |
+|---|---|---|
+| `target` | ✓ | Thao tác lên **cái gì** (menu ⋮ trên row, popup xác nhận, nút submit cổng thanh toán…). |
+| `symptom` | ✓ | **Triệu chứng khi làm SAI** — không có thì người sau không nhận ra mình đang dính đúng ca này. |
+| `technique` | ✓ | Cách đúng, cụ thể tới mức làm theo được. |
+| `why` | ⚠ | Vì sao cách cũ hỏng. Rỗng = cảnh báo, vì không giải thích thì người sau dễ "tối ưu" ngược lại. |
+| `selector` |  | Nếu có selector ổn định thì ghi; khai mà để rỗng = lỗi. |
+
+## `system/` type `data_model` (id `DM-<SLUG>-<NNN>`)
+
+Loại thứ tư của `system/`. Không phải "giá trị đúng" (`domain/`), không phải "được phép làm gì" — mà là
+**cách sản phẩm tổ chức dữ liệu**, thứ quyết định test viết đúng hay sai ngay từ đầu.
+
+| Field | Bắt buộc | Ý nghĩa |
+|---|---|---|
+| `entity` | ✓ | Mô hình dữ liệu của cái gì. |
+| `model` | ✓ | Cách dữ liệu được tổ chức (vd *"version snapshot: mỗi lần sửa sinh bản ghi mới"*). |
+| `test_implication` | ✓ | **Mô hình này bắt test phải làm KHÁC đi thế nào** (vd *"sau mutation resolve theo TÊN, không dùng lại id"*). Thiếu trường này thì record chỉ là mô tả, không dùng được. |
+| `pitfalls` | ⚠ | Bẫy đã vấp. |
+
+Kiểm 3 store `setup_recipes`/`environment`/`locators`: `npm run howto:check` (`-- --enforce` để chặn) ·
+ghi index: `npm run howto:index`. `system/` (gồm `data_model`): `npm run system:check` · `system:index`.
+
+> **Quirk của TOOLCHAIN** (Jira/Xray/HubSpot API) dùng chung `environment/`, chỉ khác `scope` — vd
+> `"scope": "Toolchain — Xray Cloud import API"`. Không tạo store riêng: schema `fact/impact/workaround/detection`
+> vừa khít, và tách ra chỉ làm loãng.
+>
+> **Quy ước đội** (cách publish, đặt tên data test, khi nào ghi PASS-kèm-note) KHÔNG thuộc `knowledge/` —
+> chúng nằm ở `.agent/config/project_context.md` §"Quy ước đội".
 `self_review` nhắc khi có case `BLOCKED_SETUP`/`SKIP_SETUP`/`setup_failure` mà `setup_recipes/` còn rỗng —
 vì bài học từ `locators/`: thêm store mà không có máy nhắc thì store nằm chết.
 

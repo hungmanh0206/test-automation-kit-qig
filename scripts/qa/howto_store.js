@@ -39,6 +39,14 @@ const STORES = {
     dir: path.resolve(arg('env-dir', path.join(KNOW, 'environment'))),
     idRe: /^ENV-[A-Z0-9]+-\d{3}$/, idHint: 'ENV-<SLUG>-<NNN> (vd ENV-AUTH-001)', indexType: 'environment_fact',
   },
+  // `locators/` có từ lâu nhưng **0 file** — vì schema cũ chỉ chứa selector do `locator_healing_agent` ghi
+  // tự động, trong khi thứ đắt giá lại là KỸ THUẬT THAO TÁC: menu ⋮ React flaky vì pointerdown/animation →
+  // phải dùng keyboard WAI-ARIA + kill-animation + chờ `data-state`; popup swal2 phải loop-until-empty;
+  // nút NCB của VNPay phải `mouse.click` chứ `click()` không ăn. Selector đúng mà thao tác sai thì vẫn fail.
+  locators: {
+    dir: path.resolve(arg('locators-dir', path.join(KNOW, 'locators'))),
+    idRe: /^UI-[A-Z0-9]+-\d{3}$/, idHint: 'UI-<SLUG>-<NNN> (vd UI-MENU-001)', indexType: 'ui_technique',
+  },
 };
 
 const STATUSES = ['active', 'superseded', 'deprecated'];
@@ -94,6 +102,14 @@ function validate(r) {
     if (DB_SETUP_RE.test(stepsBlob)) problems.push(at('steps có câu lệnh GHI vào DB (INSERT/UPDATE/DELETE/psql…) — cấm dựng state bằng DB; chỉ SELECT read-only để verify'));
   }
 
+  if (r.store === 'locators') {
+    if (!String(d.target || '').trim()) problems.push(at('thiếu `target` — thao tác lên CÁI GÌ (menu ⋮ trên row, popup xác nhận, nút submit của cổng thanh toán…)'));
+    if (!String(d.symptom || '').trim()) problems.push(at('thiếu `symptom` — triệu chứng khi làm SAI cách (flaky, click không ăn, bắt nhầm phần tử). Không có thì người sau không nhận ra mình đang dính ca này'));
+    if (!String(d.technique || '').trim()) problems.push(at('thiếu `technique` — CÁCH thao tác đúng, cụ thể tới mức làm theo được'));
+    if (!String(d.why || '').trim()) warnings.push(at('`why` rỗng — không giải thích vì sao cách cũ hỏng thì người sau dễ "tối ưu" ngược lại'));
+    if (d.selector !== undefined && !String(d.selector).trim()) problems.push(at('`selector` khai mà rỗng — bỏ hẳn field hoặc điền'));
+  }
+
   if (r.store === 'environment') {
     if (!String(d.fact || '').trim()) problems.push(at('thiếu `fact` — nêu quirk cụ thể, kiểm được'));
     if (!String(d.impact || '').trim()) problems.push(at('thiếu `impact` — không nêu hậu quả thì người đọc không biết vì sao phải quan tâm'));
@@ -103,7 +119,7 @@ function validate(r) {
   return { problems, warnings };
 }
 
-const all = [...load('setup_recipes'), ...load('environment')];
+const all = [...load('setup_recipes'), ...load('environment'), ...load('locators')];
 const problems = []; const warnings = [];
 const seen = new Map();
 for (const r of all) {
@@ -113,7 +129,7 @@ for (const r of all) {
   if (id) { if (seen.has(id)) problems.push(`${r.rel}: trùng \`id\` ${id} với ${seen.get(id)}`); else seen.set(id, r.rel); }
 }
 
-console.log(`[howto] ${load('setup_recipes').length} recipe · ${load('environment').length} env-fact`);
+console.log(`[howto] ${load('setup_recipes').length} recipe · ${load('environment').length} env-fact · ${load('locators').length} ui-technique`);
 
 if (flag('index')) {
   const idxFile = path.join(KNOW, 'index.json');

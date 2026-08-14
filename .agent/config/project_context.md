@@ -33,3 +33,19 @@
 - Secret phải nằm trong `.env.local`, `.env`, CI env hoặc secret store.
 - Không dùng Jira key/domain/module name làm project name; chúng chỉ là `TASK_KEY` hoặc scope.
 - Nếu thiếu `PROJECT_OUTPUT_DIR` hoặc input bắt buộc không thể suy ra từ context/env, dừng và hỏi user.
+
+## Quy ước đội (đã chốt — KHÔNG hỏi lại mỗi lần)
+
+> Đây là loại tri thức không thuộc store nào trong `knowledge/` (không phải business rule, không phải bản đồ
+> hệ thống, không phải cách dựng state) — nó là **cách đội này thống nhất làm việc**. Trước đây chỉ nằm trong
+> trí nhớ của người/agent đã làm lâu, nên người tiếp nhận dự án không có. Ghi ở đây để ai vào cũng thấy.
+>
+> Điền/sửa theo dự án của bạn — các dòng dưới là ví dụ có thật từ một dự án đang chạy.
+
+| Quy ước | Nội dung |
+|---|---|
+| Cấu trúc publish Xray | Mỗi **nhóm chức năng = 1 subfolder** trong Test Repository. Đây là mặc định, không hỏi lại từng lần. |
+| Case regression/change-impact | Xếp vào **nhóm chức năng liên quan**, KHÔNG tách nhóm/subfolder "Regression" riêng. |
+| Đặt tên dữ liệu test | Contact/order tạo qua tool phải bắt đầu bằng **`IT test`** + tên ngắn gọn, để phân biệt với dữ liệu thật và dọn được theo tiền tố. |
+| Case vướng data/env (không phải defect) | Ghi **PASS kèm comment giải thích trung thực** trên testcase, KHÔNG để FAIL đỏ — FAIL dành cho defect. |
+| Trước khi gen testcase | Phân tích tài liệu xong phải **gom câu hỏi làm rõ hỏi trước**, có câu trả lời rồi phân tích lại mới gen. Không đoán chỗ mờ. |

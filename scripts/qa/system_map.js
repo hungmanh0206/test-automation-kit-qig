@@ -37,10 +37,10 @@ const KNOW = path.join(REPO, 'knowledge');
 const DIR = path.resolve(arg('dir', path.join(KNOW, 'system')));
 const MAX_ROWS = Math.max(1, Number(arg('max', 40)) || 40);
 
-const TYPES = ['state_machine', 'permission_matrix', 'shared_surface'];
-const PREFIX = { state_machine: 'SM', permission_matrix: 'PM', shared_surface: 'SS' };
+const TYPES = ['state_machine', 'permission_matrix', 'shared_surface', 'data_model'];
+const PREFIX = { state_machine: 'SM', permission_matrix: 'PM', shared_surface: 'SS', data_model: 'DM' };
 const KINDS = ['api', 'component', 'table', 'job', 'config', 'library'];
-const ID_RE = /^(SM|PM|SS)-[A-Z0-9]+-\d{3}$/;
+const ID_RE = /^(SM|PM|SS|DM)-[A-Z0-9]+-\d{3}$/;
 const STATUSES = ['active', 'superseded', 'deprecated'];
 const CONFIRMERS = ['BA', 'Dev', 'QA-Lead', 'PO'];
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
@@ -138,7 +138,17 @@ function validate(r) {
     const cons = Array.isArray(d.consumers) ? d.consumers : [];
     if (cons.length < 2) problems.push(at(`\`consumers\` phải có ≥ 2 module — chỉ 1 consumer thì không phải surface DÙNG CHUNG (hiện ${cons.length})`));
     if (d.paths !== undefined && !Array.isArray(d.paths)) problems.push(at('`paths` (tuỳ chọn) phải là mảng glob đường dẫn code, để đối chiếu git-impact'));
-    if (!String(d.risk_note || '').trim()) warnings.push(at('thiếu `risk_note` — nên ghi "sửa cái này thì hỏng chỗ nào" để người đọc biết vì sao phải regression'));
+    if (!String(d.risk_note || '').trim()) warnings.push(at('thiếu `risk_note` — nên ghi "sửa cái này thì hỏng chỗ nào"'));
+  } else if (d.type === 'data_model') {
+    // CÁCH SẢN PHẨM TỔ CHỨC DỮ LIỆU — không phải "giá trị đúng" (`domain/`) cũng không phải "được phép làm gì".
+    // Đây là thứ quyết định test viết ĐÚNG HAY SAI NGAY TỪ ĐẦU. Ca thật: OPS Learning Schedule dùng version
+    // snapshot — mỗi lần Save/Edit sinh version mới VÀ lesson-id mới, nên sau mutation phải resolve theo TÊN;
+    // không biết thì test dùng lại id cũ, fail, rồi bị tưởng là bug sản phẩm.
+    if (!String(d.entity || '').trim()) problems.push(at('thiếu `entity` (mô hình dữ liệu của cái gì)'));
+    if (!String(d.model || '').trim()) problems.push(at('thiếu `model` — phát biểu cách dữ liệu được tổ chức (vd "version snapshot: mỗi lần sửa sinh bản ghi mới")'));
+    // Trường quan trọng nhất: mô hình này BẮT test phải làm gì khác đi. Không có nó thì record chỉ là mô tả.
+    if (!String(d.test_implication || '').trim()) problems.push(at('thiếu `test_implication` — mô hình dữ liệu chỉ có giá trị khi nói RÕ nó bắt test phải làm khác đi thế nào (vd "sau mutation resolve theo TÊN, KHÔNG dùng lại id")'));
+    if (!Array.isArray(d.pitfalls) || !d.pitfalls.length) warnings.push(at('`pitfalls` rỗng — nên ghi cái bẫy đã vấp (thứ khiến người sau mất thời gian)'));
   }
   return { problems, warnings };
 }
