@@ -33,6 +33,10 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase2_*`*
 | **Trước finalize/publish** | `npm run self-review -- --task <TASK_KEY>` | **G9** checklist gộp (preflight + design + row-quality + execution + attestation). **Còn đỏ thì đừng viết report, đừng log bug** |
 | **Sau MỌI lần execute** (không chỉ khi có bug) | `npm run learn -- --scan` và `npm run learn:bugs:apply` | Thu learning data về `knowledge/` (snapshot execution + đồng bộ trạng thái bug từ Jira). **Bỏ bước này là vòng học đứt** — risk model chạy trên dữ liệu cũ |
 
+## Prompt mẫu để chạy
+
+> Copy khối dưới đây, thay placeholder rồi gửi cho agent.
+
 ```text
 Chạy Phase 2 cho module/task sau: generate/update automation scripts nếu cần, execute testcases thật, auto-heal lỗi automation/setup, tổng hợp report và chỉ log bug Jira khi đã đủ điều kiện xác nhận.
 

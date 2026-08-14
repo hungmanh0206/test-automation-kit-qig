@@ -34,6 +34,10 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`*
 | Sau export | `npm run trace:matrix` | Sinh `reports/traceability-matrix.md` — REQ ↔ TC, lộ requirement chưa có case nào |
 | Trước khi kết thúc phase | `npm run gate:policy` | Rule/skill/prompt mồ côi, lệch tên, lệch danh sách đuôi evidence |
 
+## Prompt mẫu để chạy
+
+> Copy khối dưới đây, thay placeholder rồi gửi cho agent.
+
 ```text
 Chạy Phase 1 cho module/task sau: collect context và sinh/update testcases.
 
