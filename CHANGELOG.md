@@ -7,6 +7,23 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (e) — cắt 3,8k khỏi prompt gen, có kiểm bảo toàn từng dòng
+
+Sau khi (d) dựng xong gate chiều đứng sau output, việc cắt prompt mới an toàn. Cắt phần **an toàn nhất trước**: `Phase 1 Summary Report` + `Export Excel` — hai mục này là hướng dẫn **định dạng output ở cuối lượt**, KHÔNG phải luật về nội dung case, nên không cần nằm trong context suốt lúc đang sinh case. Chúng nằm liền nhau ở cuối file nên là một nhát cắt đuôi sạch.
+
+| | Trước | Sau |
+|---|---|---|
+`02_gen_testcases.md` (nạp mọi lượt gen) | 24,6k tok | **20,8k** |
+`02b_output_format.md` (chỉ nạp ở cuối lượt) | — | 3,9k |
+
+**G1 — kiểm bảo toàn nội dung, không tin "nhìn có vẻ ổn".** So tập dòng không rỗng của bản gốc với hợp của hai file mới: **671 loại dòng · MẤT 0**. Cần thật, vì trong đợt này đã 2 lần backtick bị shell ăn và 1 lần dòng bị dangling sau khi Edit.
+
+**Ba con trỏ lệch phát hiện lúc rà** (một cái hỏng từ trước, không do nhát cắt): `run_phase1` ghi "không nạp sẵn cả **6** file" (thực tế 7) và "`02_gen_testcases.md` đã **89KB**" (nay 77KB) → sửa; và câu "áp dụng quality gate trong section Phase 1 report **bên dưới**" — `run_phase1` **không có mục report nào**, tức con trỏ đã trỏ vào hư không từ trước → nay trỏ đúng `02b_output_format.md`.
+
+`02b` được khai trong bảng "Bản đồ prompt" là **BẮT BUỘC ở CUỐI lượt**, kèm lý do bỏ qua sẽ bị chặn (`design_gate` chạy trong `md_to_xlsx`, `self_review` đọc Summary Report).
+
+**Còn lại của việc cắt:** 9,9k của 15 chương theo chiều (§3–§17) giờ đã có gate đứng sau nên cắt được — nhưng chưa làm, vì lợi ích thật chỉ **11–27%** tuỳ task và phải sửa cả cơ chế điều hướng để nạp đúng chiều theo scope. Cắt tiếp hay không là quyết định đánh đổi, không phải việc dọn dẹp.
+
 ## 2026-08-14 (d) — 15 chiều coverage của Phase 1 chưa có MÁY nào gác
 
 **Bối cảnh.** Câu hỏi đặt ra là cắt `02_gen_testcases.md` (24,1k token) theo mục để tiết kiệm token, với điều kiện **chất lượng không được giảm**. Đo trước khi cắt, và hai con số đổi hẳn kết luận:

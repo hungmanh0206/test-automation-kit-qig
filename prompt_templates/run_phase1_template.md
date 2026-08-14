@@ -6,12 +6,13 @@ Dùng prompt này để collect context và sinh/cập nhật testcase. Đây l�
 
 ## Bản đồ prompt Phase 1 — file này là ĐIỂM VÀO DUY NHẤT
 
-Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Không nạp sẵn cả 6 file** — mở đúng cái đang cần, đúng lúc cần (riêng `02_gen_testcases.md` đã 89KB).
+Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Không nạp sẵn cả 7 file** — mở đúng cái đang cần, đúng lúc cần (riêng `02_gen_testcases.md` đã 77KB, dù đã tách 3,7k phần định dạng output sang `02b`).
 
 | Prompt | Bắt buộc? | Mở khi nào |
 |---|---|---|
 | [`phase1/01_setup_engine_fetch_docs.md`](phase1/01_setup_engine_fetch_docs.md) | khuyến nghị | **Bước 1** — checklist đọc tài liệu đầy đủ + spec `snapshot_context.json`. Bước 1 dưới đây chỉ tóm ý |
 | [`phase1/02_gen_testcases.md`](phase1/02_gen_testcases.md) | **BẮT BUỘC** | **Bước 3** — toàn bộ chuẩn sinh TC: 9 cột canonical, Severity §7b/§8, 18 nhóm coverage, Setup Strategy |
+| [`phase1/02b_output_format.md`](phase1/02b_output_format.md) | **BẮT BUỘC ở CUỐI lượt** | **Bước cuối** — Phase 1 Summary Report + Export Excel. Tách khỏi `02` (14/08/2026) để bỏ **3,7k token** khỏi lúc đang sinh case: đây là định dạng OUTPUT, không phải luật nội dung case. Cả hai đều có gate đứng sau (`design_gate` trong `md_to_xlsx`, `self_review` đọc Summary Report) nên bỏ qua là bị chặn |
 | [`phase1/03_gen_test_data.md`](phase1/03_gen_test_data.md) | khi cần | Cần **bảng test data riêng** + `DataGenerator` cho Phase 2 (4 nhóm data, đặt tên traceable, `Data State` khớp Setup Strategy). Nếu chỉ cần cột "Dữ liệu Test" trong TC thì §4 của `02` là đủ |
 | [`phase1/04_auto_publish_jira.md`](phase1/04_auto_publish_jira.md) | **BẮT BUỘC** khi publish | **Bước sau QA duyệt** — đẩy TC lên Xray |
 | [`phase1/05_manual_quick.md`](phase1/05_manual_quick.md) | nhánh thay thế | Requirement đã RÕ và chỉ cần bộ TC **chạy tay** nhanh — KHÔNG nhắm automation. Requirement còn mơ hồ hoặc cần TC cho automation thì **đừng** dùng nhánh này |
@@ -156,7 +157,7 @@ Phase 1 tasks:
    - Report phải liệt kê toàn bộ nhóm thực tế xuất hiện trong testcase. Ví dụ CRUD có thể có `Xem danh sách`, `Tạo`, `Sửa`, `Xóa`; domain khác có thể có `Đăng nhập`, `Thanh toán`, `Báo cáo`, `Thông báo`,...
    - Số testcase theo layer/site: UI, API, E2E và các app/site thực tế trong scope nếu xác định được.
    - Coverage matrix tóm tắt requirement/business rule/API endpoint -> TC ID.
-   - Review bộ testcase theo 2 góc độ `Coverage` và `Quality/Risk`, áp dụng quality gate trong section Phase 1 report bên dưới và hướng dẫn chi tiết ở `prompt_templates/phase1/02_gen_testcases.md`.
+   - Review bộ testcase theo 2 góc độ `Coverage` và `Quality/Risk`, áp dụng quality gate ở [`phase1/02b_output_format.md`](phase1/02b_output_format.md) (trước đây câu này ghi "section Phase 1 report **bên dưới**" — con trỏ HỎNG từ trước khi tách, vì `run_phase1` không có mục report nào) và hướng dẫn chi tiết ở `prompt_templates/phase1/02_gen_testcases.md`.
    - Requirement Coverage phải tính theo công thức:
      `Requirement Coverage = Covered Requirements / Total In-scope Requirements * 100%`
    - Requirement chỉ được tính là covered nếu có testcase trace rõ ràng, assertion đúng behavior, và không bị skip nếu đã có execution result.
