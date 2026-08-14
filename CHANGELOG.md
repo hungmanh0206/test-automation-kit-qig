@@ -7,6 +7,29 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 — 42% lịch sử bug vô hình với risk, và bảng risk thì toàn dòng phantom
+
+**Bối cảnh.** `risk_score` LOẠI bug không có `module` khỏi bảng (đúng chủ ý — xem §"(unmapped)"), nhưng đo thật thì **26/57 bug** đang ở diện đó vì thiếu label TC trên Jira ⇒ **log bug rồi vẫn không làm sâu thêm test lượt sau**.
+
+**Hai cách tự động đã thử và LOẠI** (ghi lại để không ai làm lại):
+- *Suy module từ tiêu đề bug*: 9 ca "trông chắc", soi ra **≥4 sai rõ ràng** (vd "Add-on Order không đồng bộ HubSpot" bị gán "Check tiền & Ghi nhận doanh thu"). Module SAI tệ hơn `(unmapped)`: nó bơm Likelihood cho module vô can VÀ vẫn để module thật mỏng.
+- *Bảng tra `label → module`*: chấm trên 30 bug đã có module thật → **5/17 label đa nghĩa**, và toàn là loại phổ biến nhất (`be` trải 6 module; `re-verify`/`reopened` 3 module). Label thực tế là nhãn **quy trình**, không phải nhãn chức năng.
+
+**Added — `scripts/qa/bug_tc_matcher.js` (`npm run bug:tc-match`): đề xuất, KHÔNG tự ghi**
+Ghép bug với TC canonical bằng trùng lặp từ khoá có idf trên `module+title+steps+expected`. **Tự kiểm bằng `--all`** trên 30 bug đã map — và chính con số đó quyết định thiết kế: argmax module đúng **40%** (⇒ không cho tự chốt), module thật có trong top-12 **73%**, đúng TC trong top-12 **67%** (⇒ đủ làm danh sách ứng viên cho người đọc). Vì vậy script **không có chế độ `--apply`**.
+
+**Added — `knowledge/bug_tc_map.json`: nguồn thứ ba, người chốt, có `basis` kiểm lại được**
+Hai hạng không trộn: **A** = `tc_id` khi expected của TC nói thẳng hành vi bug phá (module lấy theo TC ⇒ không đoán); **B** = `module` + `coverage_gap` khi **không TC nào** phát biểu hành vi đó. Kết quả: **19 hạng A + 7 hạng B → 57/57 bug có module, `(unmapped)` = 0**. `learn_bugs` đọc file này SAU label/description.
+
+**Fixed — 3 lỗ hổng lộ ra khi làm**
+- **`tc_id` sai làm record đóng băng vĩnh viễn.** Nhánh backfill chỉ chạy khi `tc_id` **rỗng**, nên bug mang label mã không tồn tại (thật: `..._TC_560` khi bộ chỉ tới `TC_530`) đứng mãi ở `(unmapped)` mà nhìn record lại tưởng đã map. Giờ mã không tra ra module thì bản đồ tay **thắng**, và ghi rõ đã ghi đè mã nào.
+- **Bảng risk toàn dòng phantom.** `impact.modules` khai **18 tên tiếng Anh** (Payment/Order/…) trong khi bug + snapshot dùng tên module canonical (tiếng Việt) ⇒ **17/18 dòng đầu bảng có Impact cao với 0 bug**, còn **23 module có dữ liệu thật** rơi về `Impact=default` nên band chặn trần Medium — `executeOrder` chỉ sai chỗ. Quy định *đã có* trong `_note` của `risk_model.json` ("tên module phải khớp cột `Module` của testcase") nhưng **không có máy kiểm**. Thêm cảnh báo lệch tên (chỉ nổ khi có phantom **và** có module dữ liệu thiếu Impact) + khai đủ 33 tên canonical. Sau sửa: mọi module có dữ liệu đều `config.module`, cảnh báo tắt.
+- **Key `_...` trong config thành module giả.** `ensure()` chạy trên MỌI key của `impact.modules` nên thêm một dòng ghi chú là bảng mọc dòng `_canonical_note` với Impact là chuỗi. Giờ bỏ qua key `_`-prefix.
+
+**Added — cảnh báo MẤT `bug_tc_map.json`.** Đây là store duy nhất trong `knowledge/` **không nạp lại được từ nguồn máy**. Mất file một mình chưa hỏng (record đã giữ `module`); hỏng khi mất file **rồi** nạp lại `bugs/` từ Jira. `learn_bugs` cảnh báo khi thiếu file mà đang có bug `(unmapped)` — đã nghiệm thu bằng cách gỡ file + set 1 record về `(unmapped)`.
+
+**Added — 1 dòng vào `§12` prompt gen: field DẪN XUẤT phải bị KHOÁ theo nguồn.** 7 hạng B chia làm 3 lớp trống (chi tiết ở `coverage-gap-tu-bug-khong-co-TC.md`), trong đó lớp "conformance liệt kê CÓ field nhưng không phát biểu ràng buộc giá trị" là lỗ hổng **quy tắc** thật: case "form hiển thị đủ field X" **PASS ngay cả khi field đó cho chọn tự do** ⇒ `SAPP-28420` (modal Add Transaction cho chọn pháp nhân khác order) không TC nào bắt. Hai lớp còn lại (định dạng, chức năng không có TC) thì `§12` **đã có** quy tắc — lỗi là bộ 530 không áp dụng, nên không thêm rule trùng.
+
 ## 2026-08-13 (b) — 11 lệnh gate chưa từng được chạy, vì chỉ nằm ở tầng workflows
 
 **Bối cảnh.** Định hướng ban đầu cho hai tầng (`prompt_templates/phaseN/` vs `.agent/workflows/`) là "co workflow lại thành bảng neo step ↔ skill". **May là đo trước khi cắt** — kế hoạch đó sẽ xoá mất một thứ không ai ngờ.

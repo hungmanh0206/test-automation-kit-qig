@@ -21,6 +21,7 @@
 > | `historical_execution/` | `npm run learn -- --scan` | `test-results/` của task |
 > | `metrics/` | sinh tự động khi chạy test | test run |
 > | `domain/`, `system/`, `decisions/`, `root_causes/` | ghi tay rồi `npm run domain:index` · `system:index` · `decisions --index` | FSD / BA / dev xác nhận |
+> | `bug_tc_map.json` | ⛔ **KHÔNG nạp lại được** — là phán đoán của người (đọc TC rồi chốt). Record trong `bugs/` đã backfill thì vẫn giữ `module`, nên mất file *một mình* chưa hỏng gì ngay; hỏng khi **mất file RỒI nạp lại `bugs/` từ Jira** — lúc đó 26 mapping biến mất và bug quay về `(unmapped)`. `learn_bugs` cảnh báo nếu thiếu file mà đang có bug `(unmapped)`. Giữ bản sao ngoài repo. | không có nguồn máy |
 >
 > Đã nghiệm thu bản clone mới (dời sạch 72 file dữ liệu ra ngoài): `preflight` · `lint` · `typecheck` ·
 > `secret:scan` · `gate:policy` · `risk` · `dashboard` **đều exit 0**, và `risk` báo trung thực
@@ -80,21 +81,56 @@ knowledge/
 | `module` | ✓ | Module nghiệp vụ (khớp cột `Module` của testcase). |
 | `tags` | ✓ | Tag tra cứu (kebab/lowercase). |
 | `root_cause_ref` |  | Đường dẫn tương đối tới file trong `root_causes/` (nếu đã xác định). |
-
-> **Hai thứ `output_gate --mode bug` CẢNH BÁO khi log bug** (đo 14/08/2026 nên mới thêm):
-> - **Thiếu TC ID** (field `tcId` hoặc label `*_TC_<số>`) — đó là SỢI DÂY DUY NHẤT nối bug về module. Không có thì bug rơi vào `(unmapped)` và `risk_score` **LOẠI khỏi bảng** ⇒ log rồi cũng không làm tăng Likelihood, không ảnh hưởng độ sâu test lượt sau. Thực trạng lúc thêm: **24/46 bug** đang như vậy.
-> - **Đã nêu nguyên nhân trong description mà chưa có `root_cause_ref`** — `root_causes/` lúc đó có **0 file**, nên không trả lời được "lỗi này cùng nguyên nhân với bug nào", và cùng một gốc bị log lại nhiều lần.
 | `task_key` | ✓ | TASK_KEY phát hiện bug. |
 | `detected_phase` | ✓ | `phase1` \| `phase2` \| `rerun`. |
 | `confirmed_via_gate` | ✓ | Luôn `true` — chỉ ghi khi đã qua Jira gate. |
 | `jira_status` | ✓ | `Open` \| `In Progress` \| `Done` (đồng bộ khi rerun chuyển Done). |
 | `created_at` | ✓ | ISO date (YYYY-MM-DD). |
+| `tc_id` |  | Mã TC canonical mà bug này PHÁ. Nguồn: label Jira → mã nêu trong description → `bug_tc_map.json` (xem dưới). |
+| `_coverage_gap` |  | Chỉ có ở bug **không TC nào phát biểu hành vi bị phá**: ghi đã tra những TC nào và tại sao không khớp. Có field này = ứng viên TC ưu tiên cao (đã có bằng chứng defect thật). |
+
+> **Hai thứ `output_gate --mode bug` CẢNH BÁO khi log bug** (đo 14/08/2026 nên mới thêm):
+> - **Thiếu TC ID** (field `tcId` hoặc label `*_TC_<số>`) — đó là SỢI DÂY DUY NHẤT nối bug về module. Không có thì bug rơi vào `(unmapped)` và `risk_score` **LOẠI khỏi bảng** ⇒ log rồi cũng không làm tăng Likelihood, không ảnh hưởng độ sâu test lượt sau. Thực trạng lúc thêm: **24/46 bug** đang như vậy.
+> - **Đã nêu nguyên nhân trong description mà chưa có `root_cause_ref`** — `root_causes/` lúc đó có **0 file**, nên không trả lời được "lỗi này cùng nguyên nhân với bug nào", và cùng một gốc bị log lại nhiều lần.
 
 > **Nguồn ghi (provenance).** Bug ghi bởi `learning_recorder` (chạy task qua kit) không có field `source`
 > và `detected_phase ∈ {phase1,phase2,rerun}`. Bug **seed từ lịch sử Jira** (`scripts/qa/seed_knowledge_from_jira.js`)
 > thêm `source: "jira-seed"`, `detected_phase: "historical"`, kèm optional `jira_resolution` + `resolved_at`
 > (chỉ seed bug có resolution = fix thật). `confirmed_via_gate` vẫn `true` (bug đã resolved là product bug đã xác nhận).
 > `risk_score.js` đếm mọi bug theo `module` (không lọc theo `source`) nên seed cấp Likelihood ngay; `source` để QA/audit phân biệt.
+
+### `bug_tc_map.json` — nguồn thứ ba để nối bug về module (chốt bằng tay)
+
+Label Jira và mã nêu trong description đều phụ thuộc người log bug **nhớ ghi**. Đo 14/08/2026: **26/57 bug**
+không có cả hai ⇒ `(unmapped)` ⇒ ngoài bảng risk. Không sửa được bằng máy — đã thử và **loại cả hai cách**:
+suy module từ tiêu đề (≥4/9 sai), và bảng tra `label → module` (5/17 label đa nghĩa; `be` trải 6 module, vì
+label thực tế là nhãn **quy trình** chứ không phải nhãn chức năng). Nên nguồn cuối là người chốt, có `basis`
+để kiểm lại.
+
+```json
+{
+  "version": 1,
+  "map": {
+    "PROJ-201": { "tc_id": "MOD_TC_216", "basis": "Expected TC_216 liệt kê nguyên văn 3 nhãn ...; bug hiện raw enum ..." },
+    "PROJ-202": { "module": "Quản lý Transaction", "coverage_gap": "TC_175 chỉ liệt kê form CÓ field ..., không phát biểu ràng buộc ...", "basis": "Defect ở modal Add Transaction ⇒ module theo màn." }
+  }
+}
+```
+
+**Hai hạng, không trộn:**
+
+| Hạng | Khai gì | Điều kiện |
+|---|---|---|
+| A | `tc_id` | Đọc cột **Kết quả mong đợi** của TC đó thấy nó phát biểu ĐÚNG hành vi bug phá. `module` lấy theo TC ⇒ không phải đoán. |
+| B | `module` + `coverage_gap` | KHÔNG TC nào phát biểu hành vi đó. `basis` phải nói module suy theo màn/tầng nào, `coverage_gap` phải liệt kê **đã tra những TC nào**. |
+
+- Sinh ứng viên: `npm run bug:tc-match` (ghép theo idf trên `module+title+steps+expected`; tự kiểm bằng `--all`).
+  Đo trên 30 bug đã map: argmax module đúng **40%** — KHÔNG đủ để tự chốt; module thật có trong top-12 **73%**
+  ⇒ dùng làm danh sách ứng viên cho người đọc, và script **không có chế độ tự ghi**.
+- Áp: `npm run learn:bugs:apply`. Bản đồ đứng SAU label/description; nếu label Jira trỏ mã **không tồn tại**
+  trong bộ canonical thì bản đồ **thắng** (đã gặp: label `..._TC_560` khi bộ chỉ tới `TC_530` làm record đóng
+  băng ở `(unmapped)` vĩnh viễn, vì nhánh backfill chỉ chạy khi `tc_id` rỗng).
+- File này **KHÔNG commit** (`.gitignore`) — nó ghép Jira key với module nghiệp vụ, là dữ liệu nội bộ như `bugs/`.
 
 ## `domain/<module-lowercase>__<slug>.json` — Business rule đã XÁC NHẬN (nền của mọi oracle)
 

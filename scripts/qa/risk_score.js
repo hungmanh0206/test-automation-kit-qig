@@ -83,7 +83,10 @@ function main() {
   // Gom tín hiệu per module.
   const modules = new Map();
   const ensure = (name) => { if (!modules.has(name)) modules.set(name, { module: name, bugCount: 0, bugWeighted: 0, fail: 0, total: 0, tags: new Set() }); return modules.get(name); };
-  for (const m of Object.keys(model.impact.modules || {})) ensure(m);        // module đã khai (cold-start có giá trị)
+  // Key `_...` là ghi chú trong config, KHÔNG phải module. Không lọc thì `ensure()` dựng ra một dòng module
+  // tên "_canonical_note" với Impact là chuỗi ⇒ bảng có dòng rác và executeOrder trỏ vào nó.
+  const declaredModules = Object.keys(model.impact.modules || {}).filter((m) => !m.startsWith('_'));
+  for (const m of declaredModules) ensure(m);                               // module đã khai (cold-start có giá trị)
   // VÒNG ĐỜI BUG: bug KHÔNG nặng như nhau mãi mãi. Trước đây đếm mọi bug bằng nhau ⇒ bug đã Done từ
   // nửa năm trước vẫn kéo Likelihood y như bug mới mở → risk model lệch về QUÁ KHỨ, chỉ vùng từng-hỏng
   // luôn High dù đã fix xong, còn vùng vừa hỏng lại không nổi lên.
@@ -179,6 +182,26 @@ function main() {
       'Hệ quả: Likelihood của các module THẬT đang thiếu đúng số bug đó (risk bị chấm thấp hơn thực tế).',
       'Sửa tận gốc ở lúc log bug: bug tạo qua `bug_reporter.js` phải có label `<tcId>`; bug lịch sử thì bổ sung label rồi chạy lại `npm run learn:bugs:apply`.');
   }
+  // LỆCH TÊN MODULE giữa config Impact và dữ liệu thật.
+  //
+  // VÌ SAO PHẢI BÁO TO: `impact.modules` khai theo tên gì thì chỉ tên ĐÚNG Y NGUYÊN mới nhận Impact đó; lệch
+  // một chữ là rơi về `default`. Đo 14/08/2026: config khai 18 tên tiếng Anh (Payment/Order/...) trong khi
+  // bug + snapshot dùng tên module canonical của bộ testcase (tiếng Việt) ⇒ 18 dòng cold-start ngồi ở High
+  // với 0 bug, còn ~30 module CÓ bug thật thì Impact=default nên trần chỉ tới Medium. Bảng vẫn "xanh đỏ" đủ
+  // nên không ai thấy sai; nhưng `executeOrder` lại chỉ đi test mấy dòng phantom. Đây là lỗi CẤU HÌNH, không
+  // phải lỗi dữ liệu, nên không tự sửa — chỉ nêu đúng tên để người sửa được trong một lượt.
+  const declared = declaredModules;
+  const withData = new Set(rows.filter((r) => r.drivers.bugCount > 0 || (r.drivers.failRate && r.drivers.failRate !== '0')).map((r) => r.module));
+  const phantom = declared.filter((m) => !withData.has(m));
+  const orphanData = rows.filter((r) => withData.has(r.module) && r.drivers.impactSource === 'default').map((r) => r.module);
+  if (phantom.length && orphanData.length) {
+    L.push('', '## ⚠ Lệch tên module giữa `risk_model.json` và dữ liệu thật', '',
+      `**${phantom.length}/${declared.length} tên khai trong \`impact.modules\` không có bug/snapshot nào dùng**, trong khi **${orphanData.length} module CÓ dữ liệu thật đang lấy Impact = default (${model.impact.default})**.`,
+      'Hệ quả: dòng đầu bảng là phantom (Impact cao, 0 bug) còn module thật bị chặn trần band — `executeOrder` chỉ sai chỗ.', '',
+      `Tên khai nhưng không có dữ liệu: ${phantom.map((m) => `\`${m}\``).join(', ')}`, '',
+      `Module có dữ liệu mà thiếu Impact: ${orphanData.map((m) => `\`${m}\``).join(', ')}`, '',
+      'Sửa: khai `impact.modules` theo ĐÚNG tên cột `Module` của bộ testcase canonical (hoặc dùng `impact.tagWeights` nếu muốn chấm theo tag).');
+  }
   if (overrides.length) {
     L.push('', '## QA override đã lưu dài hạn (`knowledge/decisions/`)', '',
       '> Suggest-only — script KHÔNG tự đổi band. Áp lại nếu vẫn còn đúng; hết hiệu lực thì chuyển `status: superseded`.', '',
@@ -195,6 +218,7 @@ function main() {
   const unk = rows.filter((r) => r.band === 'UNKNOWN').length;
   console.log(`[risk] Đã tạo: ${path.join(OUT, 'risk-register.md')}`);
   if (unmapped && unmapped.bugCount) console.log(`[risk] ⚠ ${unmapped.bugCount} bug chưa map được module (thiếu label tcId) → KHÔNG vào bảng; Likelihood các module thật đang thiếu đúng số đó. Xem cuối register.`);
+  if (phantom.length && orphanData.length) console.log(`[risk] ⚠ LỆCH TÊN MODULE: ${phantom.length}/${declared.length} tên trong impact.modules không có dữ liệu, còn ${orphanData.length} module CÓ dữ liệu đang lấy Impact=default → band bị chặn trần. Xem cuối register.`);
   if (overrides.length) console.log(`[risk] ${overrides.length} QA override đã lưu (knowledge/decisions/) — nhắc lại ở cuối register, KHÔNG tự áp.`);
   console.log(`[risk] ${rows.length} module · ${high} High · ${unk} UNKNOWN (${bugs.length} bug, ${hist.length} snapshot làm dữ liệu)`);
   if (!bugs.length && !hist.length) console.log('[risk] Cold-start: chưa có learning data → band từ Impact/config. QA xác nhận band trước khi bật gate --enforce.');

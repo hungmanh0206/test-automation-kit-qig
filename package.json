@@ -47,6 +47,7 @@
     "learn:backfill": "node scripts/qa/learn_task.js --scan",
     "learn:bugs": "node scripts/qa/learn_bugs.js",
     "learn:bugs:apply": "node scripts/qa/learn_bugs.js --apply",
+    "bug:tc-match": "node scripts/qa/bug_tc_matcher.js",
     "reliability": "node scripts/qa/reliability_index.js",
     "integration:check": "node scripts/integrations/jira/check_connection.js",
     "integration:check:live": "node scripts/integrations/jira/check_connection.js --live",

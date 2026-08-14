@@ -97,6 +97,7 @@ ExportData/
 #   domain/system/decisions → ghi tay (nguồn: FSD/BA), rồi `npm run domain:index` · `system:index` · `decisions --index`
 # Giữ lại trong repo: `knowledge/SCHEMA.md` (hình dạng entry, đã có mẫu generic PROJ-123) + các `.gitkeep`.
 knowledge/index.json
+knowledge/bug_tc_map.json
 knowledge/bugs/*.json
 knowledge/domain/*.json
 knowledge/system/*.json

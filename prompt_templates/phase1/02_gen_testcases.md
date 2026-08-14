@@ -509,6 +509,7 @@ Nguyên tắc:
 - **Field bắt buộc hiển thị**: mọi field tài liệu mô tả phải có mặt (kể cả field chỉ áp dụng 1 nhóm đối tượng → xác nhận rule ẩn/hiện theo spec).
 - **Empty-state text / placeholder / label nút / label tab / tiêu đề màn-modal**: đúng chuỗi tài liệu.
 - **Giá trị "để trống" đúng nghĩa** (vd buổi chưa diễn ra → cột công **trống**, KHÔNG phải `0`).
+- **Field DẪN XUẤT phải bị KHOÁ theo nguồn, không chỉ "có mặt"**: field mà spec nói lấy giá trị từ bản ghi khác (transaction lấy tài khoản thụ hưởng của order, dòng con lấy đơn vị tiền của version…) cần **2 case**: (a) field không cho chọn/nhập lệch nguồn — hoặc nếu cho đổi thì đúng như spec cho phép; (b) giá trị ghi xuống/đồng bộ đi **trùng nguồn**. Vì sao tách ra: case dạng "form hiển thị đủ field X" **PASS ngay cả khi field đó cho chọn tự do**, nên cả một lớp bug "mỗi nơi một giá trị" lọt sạch. Đo 14/08/2026 trên bộ 530: `TC_175` liệt kê form Add Transaction CÓ field Recipient Bank Account nhưng không phát biểu ràng buộc ⇒ bug `SAPP-28420` (modal cho chọn pháp nhân khác order, HubSpot ghi sai pháp nhân) **không TC nào bắt được**.
 
 **BẮT BUỘC sinh ARTIFACT kiểm được, không chỉ sinh case bằng chữ** — đây là chỗ đã từng hỏng: mục 12 này viết đủ nhưng một bộ 530 case thật chỉ có 12% là case hiển thị, không ai dựng catalog, và cả cụm bug "thiếu trường / thừa cột / hai màn lệch nhãn" lọt hết.
 1. Với **mỗi màn trong scope**, thêm 1 dòng vào `<TASK_OUTPUT_DIR>/requirements/ui_catalog.json` (schema: `scripts/qa/ui_conformance_check.js`) gồm:

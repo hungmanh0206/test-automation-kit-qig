@@ -87,6 +87,35 @@ function tcIdFromText(fields, known) {
   return found.length === 1 ? found[0] : (found[0] || null);   // nhiều mã → lấy mã đầu (module thường trùng)
 }
 
+/**
+ * Bản đồ CHỐT BẰNG TAY: bug key → { tc_id } hoặc { module, coverage_gap }.
+ *
+ * VÌ SAO CẦN nguồn thứ ba: label là nguồn chính, description là nguồn vét. Cả hai đều do người log bug nhớ
+ * ghi — đo 14/08/2026 thì 22/53 bug không có cả hai ⇒ `(unmapped)` ⇒ `risk_score` loại khỏi bảng ⇒ log bug
+ * mà không làm sâu thêm test lượt sau. Không sửa được bằng máy: đã thử suy từ tiêu đề (≥4/9 sai) và bảng
+ * `label → module` (5/17 label đa nghĩa; `be` trải 6 module). Nên nguồn cuối là người chốt, có `basis` để
+ * kiểm lại được, và tách 2 hạng: `tc_id` = có TC phát biểu đúng hành vi bị phá; `module` + `coverage_gap`
+ * = không TC nào phát biểu ⇒ chính việc thiếu TC là phát hiện. Sinh ứng viên: `npm run bug:tc-match`.
+ */
+function loadManualMap() {
+  const p = path.join(KNOW, 'bug_tc_map.json');
+  // Cảnh báo MẤT FILE. Đây là store DUY NHẤT trong knowledge/ không nạp lại được từ nguồn máy (nó là phán đoán
+  // của người: đọc TC rồi chốt). File bị gitignore nên `git clean -xfd` hoặc đổi nhánh xoá nó KHÔNG kêu gì.
+  // Mất file MỘT MÌNH chưa hỏng ngay (record trong bugs/ đã giữ `module`); hỏng khi mất file RỒI nạp lại
+  // bugs/ từ Jira — mapping biến mất và bug âm thầm quay về "(unmapped)". Vì vậy điều kiện cảnh báo là
+  // "thiếu file MÀ đang có bug (unmapped)": đúng đó là kịch bản mất thật, không kêu oan lúc bình thường.
+  if (!fs.existsSync(p)) {
+    const n = fs.existsSync(BUGS_DIR)
+      ? fs.readdirSync(BUGS_DIR).filter((x) => x.endsWith('.json'))
+        .filter((x) => { const d = learn.readJson(path.join(BUGS_DIR, x)); return d && (!d.module || d.module === '(unmapped)'); }).length
+      : 0;
+    if (n) console.warn(`[learn-bugs] ⚠ KHÔNG thấy knowledge/bug_tc_map.json mà đang có ${n} bug "(unmapped)". File này chốt bằng tay và KHÔNG tái sinh được — nếu trước đó đã có thì nó vừa bị mất (gitignored nên xoá không kêu). Xem knowledge/SCHEMA.md.`);
+    return {};
+  }
+  const d = learn.readJson(p);
+  return (d && d.map) || {};
+}
+
 (async () => {
   const H = buildJiraHeaders();
   // Chỉ lấy bug do KIT tạo (label auto-bug). Ưu tiên khoanh theo story (parent), fallback theo tcId.
@@ -113,6 +142,8 @@ function tcIdFromText(fields, known) {
   if (!issues.length) { console.log('[learn-bugs] Không có bug nào → knowledge/bugs giữ nguyên (đúng: không có bug thì không học bug).'); return; }
 
   const modMap = taskDir ? learn.buildModuleMap(taskDir) : new Map();
+  const manual = loadManualMap();
+  const manualUsed = []; const manualStale = [];
   const created = []; const synced = []; const skipped = []; const renamedSummary = []; const updated = []; const backfilled = [];
 
   // NHẬN DẠNG THEO JIRA KEY, KHÔNG theo tên file.
@@ -139,8 +170,23 @@ function tcIdFromText(fields, known) {
     const f = it.fields || {};
     // Dò trong text thì đối chiếu với TOÀN BỘ mã canonical (`modMap`), không chỉ mã đã execute
     // (`knownTc` lấy từ testcase-status.json nên hẹp) — bug có thể trỏ tới TC chưa từng chạy.
-    const tcId = tcIdFromLabels(f.labels, knownTc) || tcIdFromText(f, new Set([...knownTc, ...modMap.keys()]));
-    const module = (tcId && modMap.get(tcId)) || '(unmapped)';
+    // Thứ tự nguồn: label (bug_reporter tự gắn) → text do QA viết → bản đồ chốt tay. Bản đồ đứng CUỐI vì nó
+    // là nguồn đắt nhất (người đọc TC) nên chỉ dùng khi hai nguồn tự động không ra.
+    const auto = tcIdFromLabels(f.labels, knownTc) || tcIdFromText(f, new Set([...knownTc, ...modMap.keys()]));
+    const man = manual[it.key] || null;
+    // Ưu tiên mã TRA RA ĐƯỢC module, không phải mã tìm thấy TRƯỚC. Label Jira gõ tay nên có thể trỏ mã không
+    // tồn tại (đo: SAPP-28313 mang TC_560 trong khi bộ chỉ tới TC_530); nếu vẫn để mã đó thắng thì bản đồ tay
+    // không bao giờ được dùng và record đứng mãi ở "(unmapped)" — đúng lỗi vừa gặp.
+    const autoOk = auto && modMap.get(auto) ? auto : null;
+    const tcId = autoOk || (man && man.tc_id) || auto || null;
+    let module = (tcId && modMap.get(tcId)) || '(unmapped)';
+    let gap = null;
+    if (module === '(unmapped)' && man && man.module) { module = man.module; gap = man.coverage_gap || null; }
+    if (man) {
+      if (autoOk) manualStale.push(`${it.key}: bản đồ tay không cần nữa (Jira đã có ${autoOk}) — xoá khỏi bug_tc_map.json cho gọn`);
+      else if (module === '(unmapped)') manualStale.push(`${it.key}: bản đồ tay trỏ ${man.tc_id || '(không có tc_id)'} nhưng KHÔNG tra ra module → record vẫn (unmapped)`);
+      else manualUsed.push(`${it.key}: ${modMap.get(tcId) ? `tc_id ${tcId} → "${module}"` : `module "${module}" (khoảng trống coverage)`}${auto && auto !== tcId ? ` [ghi đè label Jira sai: ${auto}]` : ''}`);
+    }
     const summary = String(f.summary || '').slice(0, 160);
     const jiraStatus = (f.status && f.status.name) || 'Open';
     const hit = byId.get(it.key);
@@ -164,6 +210,23 @@ function tcIdFromText(fields, known) {
         if (m && cur.module !== m) cur.module = m;
         backfilled.push(`${it.key}: + tc_id ${tcId}${m ? ` → module "${m}"` : ' (chưa map được module)'}`);
       }
+      // SỬA tc_id KHÔNG TỒN TẠI trong bộ canonical. Label TC trên Jira gõ tay nên có thể sai mã (đo 14/08/2026:
+      // SAPP-28313 mang label `OPS_PAY_TC_560` trong khi bộ chỉ có tới TC_530). Nhánh backfill ở trên chỉ chạy
+      // khi tc_id RỖNG ⇒ mã sai làm record ĐÓNG BĂNG ở "(unmapped)" mãi mãi, và nhìn vào record thì tưởng đã
+      // map rồi. Chỉ ghi đè khi mã hiện tại tra KHÔNG ra module VÀ bản đồ tay có mã tra ra được.
+      if (cur.tc_id && !modMap.get(cur.tc_id) && man && man.tc_id && modMap.get(man.tc_id)) {
+        const bad = cur.tc_id;
+        cur.tc_id = man.tc_id; cur.module = modMap.get(man.tc_id); touched = true;
+        backfilled.push(`${it.key}: tc_id ${bad} KHÔNG có trong bộ canonical → sửa thành ${man.tc_id} → module "${cur.module}"`);
+      }
+      // Hạng B: không có TC nào phát biểu hành vi bị phá, nhưng module vẫn xác định được theo màn/tầng lỗi.
+      // Vẫn phải ghi, vì `risk_score` chỉ cần `module` — bỏ qua nhánh này thì 6 bug hạng B mãi nằm ngoài bảng
+      // dù đã có người chốt. `_coverage_gap` giữ lại lý do KHÔNG có tc_id để lượt gen sau bù TC.
+      if ((!cur.module || cur.module === '(unmapped)') && module !== '(unmapped)' && !cur.tc_id) {
+        cur.module = module; touched = true;
+        if (gap) cur._coverage_gap = gap;
+        backfilled.push(`${it.key}: + module "${module}" (hạng B — thiếu TC: ${String(gap || '').slice(0, 60)}…)`);
+      }
       if (touched && APPLY) fs.writeFileSync(hit.file, JSON.stringify(cur, null, 2), 'utf8');
       if (touched) updated.push({ file: hit.file, rec: cur });   // để index.json cập nhật `status` theo
       if (!touched) skipped.push(it.key);
@@ -181,6 +244,7 @@ function tcIdFromText(fields, known) {
       jira_status: jiraStatus,
       created_at: String(f.created || '').slice(0, 10) || new Date().toISOString().slice(0, 10),
       ...(tcId ? { tc_id: tcId } : {}),
+      ...(gap ? { _coverage_gap: gap } : {}),
     };
     if (APPLY) { fs.mkdirSync(BUGS_DIR, { recursive: true }); fs.writeFileSync(file, JSON.stringify(rec, null, 2), 'utf8'); }
     created.push({ file, rec });
@@ -213,7 +277,10 @@ function tcIdFromText(fields, known) {
   created.slice(0, 10).forEach((c) => console.log(`  + ${c.rec.id} [${c.rec.module}] ${c.rec.bug.slice(0, 60)}`));
   synced.slice(0, 12).forEach((s) => console.log(`  ~ ${s}`));
   renamedSummary.slice(0, 8).forEach((s) => console.log(`  ✎ ${s}`));
-  backfilled.slice(0, 12).forEach((s) => console.log(`  ⊕ ${s}`));
+  backfilled.slice(0, 30).forEach((s) => console.log(`  ⊕ ${s}`));
+  if (manualUsed.length) console.log(`  ⌘ bug_tc_map.json dùng cho ${manualUsed.length} bug:`);
+  manualUsed.slice(0, 30).forEach((s) => console.log(`      ${s}`));
+  manualStale.forEach((s) => console.warn(`  ⚠ ${s}`));
   const unmapped = created.filter((c) => c.rec.module === '(unmapped)').length;
   if (unmapped) console.log(`  ⚠ ${unmapped} bug không map được module (thiếu testcase canonical hoặc label tcId) → risk_score gom vào "(unmapped)".`);
   if (!APPLY && created.length) console.log('[learn-bugs] Thêm --apply để ghi thật.');
