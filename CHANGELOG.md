@@ -7,6 +7,18 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (l) — backup knowledge: cấu hình thật + chốt chặn "quên chạy"
+
+Đích đã chốt: **local ngoài repo** (`D:/kit-knowledge-backup`) — user chọn, cố ý **KHÔNG** đưa business rule nội bộ lên cloud dù OneDrive có sẵn trên máy. `KNOWLEDGE_BACKUP_DIR` đặt trong `.env` (machine-local, gitignored) và ghi vào `.env.example` cho máy mới. Bundle đầu tiên: **15 file**.
+
+**Mối nguy thật, nói cho đúng:** không phải hỏng ổ cứng mà là **tai nạn git** — và nó **đã xảy ra trong chính phiên này**: đổi nhánh lúc sync GitLab xoá sạch `knowledge/**` vừa được gitignore, phải `git restore --source=2d383e1^` lấy lại **87 file**. Lần đó cứu được vì file còn trong history; nay đã bỏ track hoàn toàn nên **cùng tai nạn = mất vĩnh viễn**. Vì vậy đích local (ngoài repo) đã chống đúng lớp nguy hiểm nhất — không cần cloud.
+
+**Added — chốt chặn ở `self_review`** (gate trước finalize, đúng lúc vừa sinh record mới): có record ghi tay mà **chưa cấu hình đích** → nhắc · đã cấu hình mà **chưa có bundle nào** → nhắc · bundle mới nhất **quá 7 ngày** → nhắc. Nghiệm thu 2 nhánh: vừa backup xong thì **im**; xoá biến môi trường thì nhắc đúng *"15 record knowledge GHI TAY … CHƯA cấu hình"*.
+
+Kiểm chỗ dễ hỏng: script **tự đọc `.env`** qua `runtime_config` — nếu không thì cấu hình vừa đặt là vô ích (đã chạy không truyền biến để xác nhận).
+
+**Lỗi vận hành của tôi ở commit này:** lệnh sửa CHANGELOG viết trong `node -e` bên trong heredoc → **shell ăn backtick**, script chết, nên `d2f7dd7` commit thiếu mục này (phải bổ sung ở commit sau). Đây là **lần thứ ba** trong ngày backtick bị shell ăn. Bài học đã rõ: nội dung có backtick thì **dùng Edit tool**, đừng đi qua shell.
+
 ## 2026-08-14 (k) — sao lưu store KHÔNG nạp lại được + stale theo lịch cho rule
 
 Review chỉ ra bảng "nạp lại" của `SCHEMA.md` đặt hai thứ **khác loại** cạnh nhau, và đúng:
