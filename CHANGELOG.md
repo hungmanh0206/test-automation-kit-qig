@@ -7,6 +7,30 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (g) — vá rủi ro do chính nhát cắt (f) sinh ra: khai `n/a` sai
+
+Tách 15 chương thành file rời sinh ra một rủi ro mới: agent đọc **một dòng trigger** rồi khai `n/a`, trong khi trước đây đọc tuần tự sẽ **vô tình gặp** chương đó và nhận ra là cần. Chốt chặn cũ chỉ là "n/a phải có lý do" — tức trông chờ người review đọc.
+
+**Added — đối chiếu manifest ↔ ARTIFACT THẬT** trong `dimension_coverage.js`. Không suy diễn văn bản (cách đó đã bị loại ở (d)), mà dựa vào **sự tồn tại của artifact** — một sự thật kiểm được:
+
+| Khai `n/a` cho | Bị CHẶN nếu tồn tại |
+|---|---|
+| §11 Design | `requirements/figma/**` |
+| §12 Display | `requirements/ui_catalog.{json,md}` |
+| §14 BEData | `field_mapping*` trong `requirements/` |
+| §5 API | `requirements/swagger/**` |
+| §17 Impact | `requirements/git-impact.md` \| `knowledge/system/` có `shared_surface` |
+| §10 Guard | `knowledge/system/` có `state_machine` |
+| §15 Security | `knowledge/system/` có `permission_matrix` |
+
+**Chiều ngược lại KHÔNG suy được** và script cố ý im lặng ở đó: artifact vắng **không** chứng minh chiều đó không áp dụng (có thể chỉ là chưa ai kéo Figma/swagger về). Chỉ chặn khi artifact **có** mà manifest nói `n/a`.
+
+Chặn **độc lập** với việc thiếu case, và chạy được **cả ở chế độ GỢI Ý** — vì bằng chứng không phụ thuộc phân loại case. Artifact có mà chưa khai `required` thì cảnh báo (không chặn).
+
+**Nghiệm thu trên task thật** (SAPP-24395 có `figma/` + `ui_catalog.json` + `field_mapping*`): manifest cố ý khai `design_figma: "n/a"` và `display_conformance: "n/a"` → không `--enforce` thì báo 2 XUNG ĐỘT + exit 0; có `--enforce` thì **exit 1**. Cảnh báo "chưa khai required" cũng nổ đúng cho §10 Guard nhờ `knowledge/system/` có `state_machine`.
+
+Ghi vào §0b của prompt gen thành bảng, kèm câu nói rõ chiều nào suy được / chiều nào không — để agent biết `n/a` sẽ bị đối chiếu, không phải chỉ để review đọc.
+
 ## 2026-08-14 (f) — tách 15 chiều coverage thành file rời: 24,6k → 14,9–20,4k tuỳ task
 
 Nhát cắt thứ hai, làm được vì (d) đã có gate đếm case theo tag đứng sau OUTPUT. §3–§17 nằm **liền nhau** trong file nên cắt sạch; §18 Self-check **ở lại** (nó là gate đóng lượt, không phải một chiều).

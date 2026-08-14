@@ -139,6 +139,52 @@ if (fs.existsSync(manifestPath)) {
   catch (e) { console.error(`[dim] ${manifestPath} không parse được: ${e.message}`); process.exit(2); }
 }
 
+// ── ĐỐI CHIẾU MANIFEST vs ARTIFACT THẬT ────────────────────────────────────────────────────────────────
+// Rủi ro sinh ra khi tách 15 chương thành file rời: agent đọc MỘT DÒNG trigger rồi khai "n/a", trong khi
+// trước đây đọc tuần tự sẽ VÔ TÌNH gặp chương đó và nhận ra là cần. Chốt chặn ở đây KHÔNG suy diễn từ văn
+// bản (đã loại cách đó ở trên) mà dựa vào **sự tồn tại của artifact** — một sự thật kiểm được:
+// có `requirements/figma/**` thì task CÓ thiết kế để đối chiếu, khai `design: n/a` là sai, hết bàn.
+//
+// ⚠ Chiều ngược lại KHÔNG đúng: artifact VẮNG **không** chứng minh chiều đó không áp dụng (có thể chỉ là chưa
+// ai kéo Figma/swagger về). Nên chỉ chặn khi artifact CÓ mà manifest nói n/a; artifact vắng thì im lặng.
+const exists = (p) => fs.existsSync(path.join(taskDir, p));
+const globExists = (dir, re) => { const d = path.join(taskDir, dir); if (!fs.existsSync(d)) return false; try { return fs.readdirSync(d, { recursive: true }).some((f) => re.test(String(f))); } catch (e) { return false; } };
+const knowSystem = (type) => {
+  const d = path.join(rc.REPO_ROOT, 'knowledge', 'system');
+  if (!fs.existsSync(d)) return false;
+  return fs.readdirSync(d).filter((f) => f.endsWith('.json')).some((f) => {
+    try { return JSON.parse(fs.readFileSync(path.join(d, f), 'utf8')).type === type; } catch (e) { return false; }
+  });
+};
+const SCOPE_SIGNALS = [
+  { dim: 'design_figma', why: 'có `requirements/figma/**` — task CÓ thiết kế để đối chiếu', has: () => exists('requirements/figma') },
+  { dim: 'display_conformance', why: 'có `requirements/ui_catalog.{json,md}` — đã trích tài liệu hiển thị ra làm oracle', has: () => exists('requirements/ui_catalog.json') || exists('requirements/ui_catalog.md') },
+  { dim: 'be_conformance', why: 'có bảng `field_mapping*` trong requirements — mỗi dòng mapping là 1 case đối chiếu giá trị', has: () => globExists('requirements', /field_mapping/i) },
+  { dim: 'api', why: 'có `requirements/swagger/**`', has: () => exists('requirements/swagger') },
+  { dim: 'change_impact', why: 'có `requirements/git-impact.md` hoặc `knowledge/system/` khai `shared_surface`', has: () => exists('requirements/git-impact.md') || knowSystem('shared_surface') },
+  { dim: 'guard', why: '`knowledge/system/` khai `state_machine` — mọi cặp chuyển trạng thái KHÔNG khai là bất hợp pháp và phải có case chứng minh bị CHẶN', has: () => knowSystem('state_machine') },
+  { dim: 'security', why: '`knowledge/system/` khai `permission_matrix` — mọi ô role×action ngoài allow phải có case guard', has: () => knowSystem('permission_matrix') },
+];
+
+const scopeConflict = [];
+const scopeUndeclared = [];
+for (const s of SCOPE_SIGNALS) {
+  if (!s.has()) continue;
+  const decl = manifest && manifest.dimensions ? manifest.dimensions[s.dim] : undefined;
+  const dim = DIMS.find((d) => d.id === s.dim);
+  if (decl === 'n/a') scopeConflict.push({ dim, why: s.why });
+  else if (manifest && decl !== 'required') scopeUndeclared.push({ dim, why: s.why });
+}
+for (const c of scopeConflict) console.error(`[dim] ✗ XUNG ĐỘT: chiều "${c.dim.label}" (${c.dim.sec}) khai n/a nhưng ${c.why}. Artifact chứng minh chiều này ÁP DỤNG.`);
+for (const c of scopeUndeclared) console.warn(`[dim] ⚠ chiều "${c.dim.label}" (${c.dim.sec}) chưa khai \`required\` nhưng ${c.why} ⇒ nên khai required.`);
+
+// Chặn ĐỘC LẬP với việc thiếu case, và chạy được cả ở chế độ GỢI Ý — vì bằng chứng là ARTIFACT, không phải
+// suy diễn. Khai n/a sai là bỏ chiều CÓ CHỦ Ý, nặng hơn việc quên sinh case.
+if (scopeConflict.length && ENFORCE) {
+  console.error(`[dim] ✗ ${scopeConflict.length} chiều khai n/a trái với artifact có thật — sửa manifest thành "required" rồi mở đúng file trong dimensions/.`);
+  process.exit(1);
+}
+
 // FAIL-FAST hai điều kiện của việc chặn. Đặt TRƯỚC bảng để không ai tưởng gate đã gác trong khi nó chưa gác.
 // Chặn bằng số liệu suy diễn, hoặc chặn khi chưa ai khai chiều nào bắt buộc, đều dẫn tới báo oan — và gate báo
 // oan một lần là mất uy tín vĩnh viễn.

@@ -409,7 +409,19 @@ Không giảm số lượng testcase bằng cách gộp nhiều rule khác nhau 
 
 **THỨ TỰ BẮT BUỘC:** (1) khai `requirements/dimension_manifest.json` — chiều nào `required`, chiều nào `n/a` **kèm lý do**; (2) mở đúng file của các chiều `required`; (3) sinh case có **tag chiều** (§0b); (4) `npm run dim:coverage -- --enforce` chặn nếu thiếu.
 
-Khai `n/a` cho một chiều mà thực tế nó áp dụng = **bỏ chiều có chủ ý**, và lý do bạn ghi sẽ bị đọc lại khi review. Không có gate nào đọc hộ bạn tài liệu — nhưng có gate đếm case theo tag.
+Khai `n/a` cho một chiều mà thực tế nó áp dụng = **bỏ chiều có chủ ý**. Và `n/a` **bị máy đối chiếu với artifact có thật** — không phải chỉ để review đọc:
+
+| Khai `n/a` cho | Sẽ bị CHẶN nếu tồn tại |
+|---|---|
+| §11 Design | `requirements/figma/**` |
+| §12 Display | `requirements/ui_catalog.{json,md}` |
+| §14 BEData | bảng `field_mapping*` trong `requirements/` |
+| §5 API | `requirements/swagger/**` |
+| §17 Impact | `requirements/git-impact.md` hoặc `knowledge/system/` có `shared_surface` |
+| §10 Guard | `knowledge/system/` có `state_machine` |
+| §15 Security | `knowledge/system/` có `permission_matrix` |
+
+Đây là **sự thật kiểm được**, không phải suy diễn: có Figma trong scope thì chiều design áp dụng, hết bàn. Chiều ngược lại KHÔNG đúng — artifact vắng **không** chứng minh chiều đó không áp dụng (có thể chỉ là chưa ai kéo tài liệu về), nên gate im lặng ở ca đó và trách nhiệm vẫn là của bạn.
 
 | § | Chiều | Tag | Mở khi | File |
 |---|---|---|---|---|
