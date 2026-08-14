@@ -56,6 +56,37 @@ function tcIdFromLabels(labels, known) {
   return (labels || []).find((l) => /_TC_\d+/i.test(l)) || null;
 }
 
+/** Gộp text ADF (description/comment) thành chuỗi phẳng để dò TC ID. */
+function flattenAdf(node) {
+  let s = '';
+  const walk = (n) => {
+    if (!n || typeof n !== 'object') return;
+    if (n.text) s += ` ${n.text}`;
+    (n.content || []).forEach(walk);
+  };
+  walk(node);
+  return s;
+}
+
+/**
+ * TC ID nêu TƯỜNG MINH trong description/comment (vd QA viết "Liên quan test case OPS_PAY_TC_255").
+ *
+ * VÌ SAO thêm nguồn này: label là nguồn chính nhưng hay bị quên khi log bug — đo 14/08/2026: 23/46 bug
+ * KHÔNG có label TC ⇒ rơi vào "(unmapped)" và `risk_score` LOẠI khỏi bảng, tức log rồi cũng không ảnh hưởng
+ * độ sâu test lượt sau. Trong 23 cái đó, **4 cái có nêu TC ID ngay trong description** — nguồn do QA tự viết
+ * nên đáng tin.
+ *
+ * CHỈ nhận mã CÓ THẬT trong bộ canonical (`known`). Đã thử cách suy module từ TIÊU ĐỀ bug và **loại bỏ**:
+ * 9/23 ca trông "chắc" nhưng soi ra ≥4 sai rõ ràng (vd "Add-on Order không đồng bộ HubSpot" bị gán
+ * "Check tiền & Ghi nhận doanh thu"). Gán SAI module còn tệ hơn để "(unmapped)": nó bơm Likelihood cho
+ * module vô can và làm lệch việc chọn độ sâu test. Thà thiếu còn hơn sai.
+ */
+function tcIdFromText(fields, known) {
+  const txt = `${flattenAdf(fields.description)} ${((fields.comment && fields.comment.comments) || []).map((c) => flattenAdf(c.body)).join(' ')}`;
+  const found = [...new Set(txt.match(/\b[A-Z][A-Z0-9_]*_TC_\d+\b/g) || [])].filter((t) => known.has(t));
+  return found.length === 1 ? found[0] : (found[0] || null);   // nhiều mã → lấy mã đầu (module thường trùng)
+}
+
 (async () => {
   const H = buildJiraHeaders();
   // Chỉ lấy bug do KIT tạo (label auto-bug). Ưu tiên khoanh theo story (parent), fallback theo tcId.
@@ -71,7 +102,7 @@ function tcIdFromLabels(labels, known) {
 
   let issues = [];
   try {
-    const r = await axios.post(`${BASE}/rest/api/3/search/jql`, { jql, fields: ['summary', 'status', 'labels', 'created', 'resolution'], maxResults: MAX }, { headers: H });
+    const r = await axios.post(`${BASE}/rest/api/3/search/jql`, { jql, fields: ['summary', 'status', 'labels', 'created', 'resolution', 'description', 'comment'], maxResults: MAX }, { headers: H });
     issues = r.data.issues || [];
   } catch (e) {
     console.error('[learn-bugs] Jira query lỗi:', e.response ? `${e.response.status} ${JSON.stringify(e.response.data).slice(0, 200)}` : e.message);
@@ -82,7 +113,7 @@ function tcIdFromLabels(labels, known) {
   if (!issues.length) { console.log('[learn-bugs] Không có bug nào → knowledge/bugs giữ nguyên (đúng: không có bug thì không học bug).'); return; }
 
   const modMap = taskDir ? learn.buildModuleMap(taskDir) : new Map();
-  const created = []; const synced = []; const skipped = []; const renamedSummary = []; const updated = [];
+  const created = []; const synced = []; const skipped = []; const renamedSummary = []; const updated = []; const backfilled = [];
 
   // NHẬN DẠNG THEO JIRA KEY, KHÔNG theo tên file.
   // Trước đây record được tìm bằng `TASK__slugify(summary).json`: sửa tiêu đề bug trên Jira là slug đổi ⇒
@@ -106,7 +137,9 @@ function tcIdFromLabels(labels, known) {
 
   for (const it of issues) {
     const f = it.fields || {};
-    const tcId = tcIdFromLabels(f.labels, knownTc);
+    // Dò trong text thì đối chiếu với TOÀN BỘ mã canonical (`modMap`), không chỉ mã đã execute
+    // (`knownTc` lấy từ testcase-status.json nên hẹp) — bug có thể trỏ tới TC chưa từng chạy.
+    const tcId = tcIdFromLabels(f.labels, knownTc) || tcIdFromText(f, new Set([...knownTc, ...modMap.keys()]));
     const module = (tcId && modMap.get(tcId)) || '(unmapped)';
     const summary = String(f.summary || '').slice(0, 160);
     const jiraStatus = (f.status && f.status.name) || 'Open';
@@ -121,6 +154,16 @@ function tcIdFromLabels(labels, known) {
       let touched = false;
       if (prevStatus !== jiraStatus) { cur.jira_status = jiraStatus; touched = true; synced.push(`${it.key}: ${prevStatus} → ${jiraStatus}`); }
       if (prevBug !== summary) { cur.bug = summary; touched = true; renamedSummary.push(`${it.key}: tiêu đề đổi trên Jira → cập nhật tại chỗ (${path.basename(hit.file)})`); }
+      // BACKFILL `tc_id`/`module` cho record CŨ. Trước đây nhánh này chỉ đồng bộ trạng thái + tiêu đề, nên
+      // record đã ghi mà thiếu tc_id thì vĩnh viễn kẹt ở "(unmapped)" — dù về sau QA có bổ sung label trên
+      // Jira hoặc nêu TC ID trong description. Đó là lý do 23/46 bug nằm ngoài bảng risk suốt thời gian dài.
+      // Chỉ ghi khi trước đó THIẾU: không đè tc_id đã có (record cũ có thể đã được sửa tay cho đúng hơn).
+      if (!cur.tc_id && tcId) {
+        cur.tc_id = tcId; touched = true;
+        const m = modMap.get(tcId);
+        if (m && cur.module !== m) cur.module = m;
+        backfilled.push(`${it.key}: + tc_id ${tcId}${m ? ` → module "${m}"` : ' (chưa map được module)'}`);
+      }
       if (touched && APPLY) fs.writeFileSync(hit.file, JSON.stringify(cur, null, 2), 'utf8');
       if (touched) updated.push({ file: hit.file, rec: cur });   // để index.json cập nhật `status` theo
       if (!touched) skipped.push(it.key);
@@ -166,10 +209,11 @@ function tcIdFromLabels(labels, known) {
     if (pruned) fs.writeFileSync(idxFile, JSON.stringify(idx, null, 2), 'utf8');
   }
 
-  console.log(`\n[learn-bugs] ${APPLY ? 'GHI' : 'DRY-RUN'}: mới ${created.length} · đồng bộ trạng thái ${synced.length} · tiêu đề đổi ${renamedSummary.length} · không đổi ${skipped.length}`);
+  console.log(`\n[learn-bugs] ${APPLY ? 'GHI' : 'DRY-RUN'}: mới ${created.length} · đồng bộ trạng thái ${synced.length} · tiêu đề đổi ${renamedSummary.length} · backfill tc_id ${backfilled.length} · không đổi ${skipped.length}`);
   created.slice(0, 10).forEach((c) => console.log(`  + ${c.rec.id} [${c.rec.module}] ${c.rec.bug.slice(0, 60)}`));
   synced.slice(0, 12).forEach((s) => console.log(`  ~ ${s}`));
   renamedSummary.slice(0, 8).forEach((s) => console.log(`  ✎ ${s}`));
+  backfilled.slice(0, 12).forEach((s) => console.log(`  ⊕ ${s}`));
   const unmapped = created.filter((c) => c.rec.module === '(unmapped)').length;
   if (unmapped) console.log(`  ⚠ ${unmapped} bug không map được module (thiếu testcase canonical hoặc label tcId) → risk_score gom vào "(unmapped)".`);
   if (!APPLY && created.length) console.log('[learn-bugs] Thêm --apply để ghi thật.');
