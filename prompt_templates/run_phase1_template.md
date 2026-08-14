@@ -27,6 +27,7 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`*
 
 | Khi nào | Lệnh | Nó chặn/sinh ra gì |
 |---|---|---|
+| **Ngay sau khi kéo tài liệu về, TRƯỚC khi đọc** | `npm run docs:budget` (thêm `--contract` nếu có file >25k) | Đo từng tài liệu → đọc trực tiếp / chỉ mục cần / **giao subagent trích**. Bắt luôn 2 bẫy đo được thật: tài liệu có **nhiều bản** (đọc bản dư = tốn ~670k token vô ích) và **bản cũ nhỏ hơn hẳn bản mới = bản THIẾU nội dung** (đọc nó là đọc thiếu spec) |
 | Đầu phase, trước khi phân tích | `npm run risk` | Risk register theo module — quyết định độ sâu test (RBT). Không có thì gen dàn đều, chỗ rủi ro cao bị test nông |
 | Khi chuẩn bị context | `npm run domain:check` · `npm run system:check` | Đối chiếu business rule + bản đồ hệ thống đã xác nhận trong `knowledge/` — đây là nguồn oracle độc lập, tra trước để không suy oracle từ app (tautology) |
 | Sau khi QA duyệt Excel | `npm run jira:testcase-publish:dry-run` → xem preview → `npm run jira:testcase-publish` | Đẩy TC lên Xray. **Luôn dry-run trước**; chi tiết ở `phase1/04_auto_publish_jira.md` |

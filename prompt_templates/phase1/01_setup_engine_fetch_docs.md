@@ -28,7 +28,19 @@ Kết nối nguồn tài liệu, tiếp nhận requirement và chuẩn bị cont
 7. Liên kết logic BA docs, Jira story, Figma flow và API docs.
 8. Lưu context vào `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/snapshot_context.json`.
 
+# TRƯỚC KHI ĐỌC: đo tài liệu — `npm run docs:budget`
+
+**Chạy trước, đọc sau.** Tài liệu ở dự án này lớn hơn cảm giác rất nhiều, và "to" chỉ hiện ra khi đã đọc xong thì đã muộn. Đo thật trên một task: **54 tài liệu · ~38.600k token nếu đọc hết** — trong đó một file Figma JSON **37.500k** (nặng gấp ~3.180× toàn bộ prompt gen) và FSD tồn tại cả bản `.json` 504k lẫn `.md` 108k.
+
+Lệnh in ra 3 thứ:
+1. **Ngưỡng việc-nên-làm** cho từng file: `<8k` đọc trực tiếp · `8–25k` chỉ đọc mục cần · `>25k` **giao subagent** trích rồi chỉ nhận phần đã trích (thêm `--contract` để lấy hợp đồng trích xuất dán cho subagent: trả JSON theo `knowledge/SCHEMA.md`, mọi rule phải có `source` tới đúng tab/mục, chỗ tài liệu không trả lời được thì cho vào `open_questions` — **cấm suy diễn lấp chỗ trống**).
+2. **Tài liệu có NHIỀU BẢN** — cùng nội dung khác định dạng (`.json` vs `.md`) hoặc nhiều lần export. Chỉ đọc bản nên đọc; đo thật tiết kiệm ~670k token mà không mất chữ nào.
+3. **⚠⚠ Bản cũ NHỎ HƠN HẲN bản mới** = bản **thiếu nội dung**, không phải "bản khác ngày". Đọc nó là đọc thiếu spec. *(Đã xảy ra thật: export Google Doc trước khi vá `includeTabsContent` chỉ lấy 1/15 tab — 6,6k thay vì 108k.)*
+
+> ⚠️ Giao subagent **KHÔNG** làm giảm tổng token (subagent phải nạp lại luật + ngữ cảnh). Nó đổi lấy việc **luồng chính không chứa nguyên văn tài liệu**, nên phần sau của lượt không bị bóp. Đừng kỳ vọng sai.
+
 # Checklist kiểm tra
+- [ ] **Đã chạy `npm run docs:budget`** và xử lý đúng 3 mục trên (không đọc bản thiếu, không đọc bản dư, tài liệu >25k thì giao trích xuất).
 - [ ] Đã đọc **toàn bộ** tài liệu (không lướt); bóc đủ AC/rule/validation/enum/state/edge/phân quyền/biên; mâu thuẫn giữa các nguồn đã ghi ra.
 - [ ] Tài liệu đủ để sinh testcase.
 - [ ] Domain tag đúng: App 1 / App 2 / Cross-app.

@@ -7,6 +7,22 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (i) — `docs:budget`: đo tài liệu TRƯỚC khi đọc (và bắt 2 bẫy đo được thật)
+
+Việc #3 trong danh sách ("giao subagent đọc tài liệu lớn"). Nhưng "tài liệu lớn" là thứ **chỉ hiện ra sau khi đã đọc xong**, tức đã muộn — nên thứ cần làm trước là **đo**.
+
+**Added — `scripts/qa/doc_budget.js` (`npm run docs:budget`).** Đo `requirements/` của task theo KÝ TỰ (không theo byte: UTF-8 tiếng Việt ~1,5 byte/ký tự nên đếm byte phóng đại ~50% và đẩy tài liệu qua ngưỡng oan) rồi phán từng file: `<8k` đọc trực tiếp · `8–25k` chỉ đọc mục cần · `>25k` **giao subagent** (`--contract` in hợp đồng trích xuất: trả JSON theo `knowledge/SCHEMA.md`, mọi rule phải có `source` tới đúng tab/mục, chỗ tài liệu không trả lời được thì vào `open_questions` — cấm suy diễn lấp chỗ trống; kết quả vẫn phải qua `domain:check`/`system:check`).
+
+**Đo trên task thật — con số nói thay lời:** 54 tài liệu, **~38.600k token nếu đọc hết**, trong đó `figma_node_6-5.json` **37.500k** (nặng gấp **~3.180×** toàn bộ prompt gen 11,8k). Không ai đọc nổi file đó, mà nó đang nằm trong `requirements/`.
+
+**Hai bẫy mà tool bắt được, cả hai đều tồn tại thật:**
+1. **Tài liệu có nhiều bản** — FSD có cả `.json` 504k lẫn `.md` 108k; sheet mapping `.json` 56k + `.md` 33k; `tabs/` và `tabs_20260807/` là hai lần export. Bỏ bản dư = **~670k token** không mất một chữ nào.
+2. **⚠⚠ Bản cũ NHỎ HƠN HẲN bản mới = bản THIẾU nội dung**, không phải "bản khác ngày".
+
+**Tự bắt lỗi nguy hiểm trong chính tool** — bản đầu tôi cho tiêu chí "đọc bản NHẸ NHẤT", và nó khuyên đọc bản FSD **6,6k** thay vì **108k**. 6,6k chính là các bản export **bị cắt còn 1/15 tab** từ trước khi vá `includeTabsContent` **sáng cùng ngày** (mục (b)). Tức tool suýt khuyên đọc thiếu spec — đúng cái bug vừa sửa. Tiêu chí đúng: cùng basename khác **định dạng** → ưu tiên `.md`; cùng định dạng khác lần export → ưu tiên **mới nhất theo mtime**; và nếu bản mới lớn hơn hẳn thì **nói to** rằng bản cũ là bản thiếu.
+
+Nối vào `phase1/01_setup_engine_fetch_docs.md` (+0,5k) và bảng gate của `run_phase1`. Ghi rõ trong prompt: giao subagent **KHÔNG** giảm tổng token (subagent nạp lại luật + ngữ cảnh), nó đổi lấy việc luồng chính không chứa nguyên văn tài liệu — nói thẳng để không ai kỳ vọng sai.
+
 ## 2026-08-14 (h) — auth reuse: cơ chế đã có nhưng 32/33 spec không đi qua
 
 **Bối cảnh.** Tôi từng nói "UAT login throttle chặn cứng việc song song hoá Phase 2". **Sai** — cơ chế né throttle đã có từ trước (`session_cache` + `ensureOpsAuth` + `tokenBroker`). Nhưng đo ra thì nó **chưa được lắp**: **1 spec** dùng `ensureOpsAuth`, **32 file gọi thẳng `loginOps`** ⇒ mỗi lần chạy vẫn login lại. Thêm nữa `playwright.config.js` không có `globalSetup` và `session_cache` không có lock ⇒ **khởi động lạnh với N worker = N lần login đồng thời**, đúng cái lockout mà cache sinh ra để tránh.
