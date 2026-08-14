@@ -7,6 +7,24 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (f) — tách 15 chiều coverage thành file rời: 24,6k → 14,9–20,4k tuỳ task
+
+Nhát cắt thứ hai, làm được vì (d) đã có gate đếm case theo tag đứng sau OUTPUT. §3–§17 nằm **liền nhau** trong file nên cắt sạch; §18 Self-check **ở lại** (nó là gate đóng lượt, không phải một chiều).
+
+`prompt_templates/phase1/dimensions/` — 15 file, mỗi file 0,2–2,3k, mỗi file mở đầu bằng **tag bắt buộc** + **"mở khi nào"** (trigger copy từ chính tiêu đề chương, không tự bịa). Trong `02` còn lại **bảng điều hướng** §·chiều·tag·mở-khi·file.
+
+| Lượt gen | Token | So với 24,6k |
+|---|---|---|
+`02_gen_testcases.md` (nạp mọi lượt) | **11,8k** | — |
+Task **nặng** (payment: §3,4,12,13,14,15,17) | 11,8 + 8,6 = **20,4k** | −4,2k (**17%**) |
+Task **nhẹ** (mobile UI: §4,11,12) | 11,8 + 3,1 = **14,9k** | −9,7k (**39%**) |
+
+Nói thẳng: task dùng gần hết chiều thì tiết kiệm ít (17%) — đúng như đã cảnh báo trước khi cắt, không phải "về vài k". Lợi ích lớn thứ hai lại **không phải token**: giờ **bắt buộc khai `dimension_manifest.json` TRƯỚC khi gen** (để biết mở file nào), nên phạm vi chiều thành một tuyên bố tường minh có lý do cho từng `n/a`, và `dim:coverage --enforce` đếm lại ở cuối. Trước đây phạm vi chiều là thứ ngầm định trong đầu người gen.
+
+**G1 bảo toàn nội dung:** 555 loại dòng · **MẤT 0**.
+
+**8 con trỏ lệch đã sửa** (script in rõ 8/8 áp dụng, không replace im lặng): `run_phase1` ×3, `02b_output_format` ×2, `06_cross_module`, `.agent/rules/qa_instincts.md`, `.agent/skills/phase1/git_impact_analyzer/SKILL.md`. Các "mục N" **nội bộ** trong `02` giải một lần bằng quy ước ghi ngay trong bảng điều hướng (`N = 3…17` ⇒ `dimensions/`; mục 0–2 và 18 vẫn ở `02`) thay vì sửa hàng chục câu.
+
 ## 2026-08-14 (e) — cắt 3,8k khỏi prompt gen, có kiểm bảo toàn từng dòng
 
 Sau khi (d) dựng xong gate chiều đứng sau output, việc cắt prompt mới an toàn. Cắt phần **an toàn nhất trước**: `Phase 1 Summary Report` + `Export Excel` — hai mục này là hướng dẫn **định dạng output ở cuối lượt**, KHÔNG phải luật về nội dung case, nên không cần nằm trong context suốt lúc đang sinh case. Chúng nằm liền nhau ở cuối file nên là một nhát cắt đuôi sạch.

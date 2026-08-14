@@ -7,7 +7,7 @@
 
 - Kết quả phụ thuộc tổ hợp nhiều biến độc lập (loại × phương thức × role × trạng thái...) mà test rời từng biến bỏ lọt bug tương tác.
 - Luồng cross-module/cross-app: dữ liệu tạo ở A → hiển thị/xử lý ở B → tổng hợp ở C.
-- KHÔNG dùng khi chỉ 1 biến (dùng EP/BVA thường ở mục 3 của `02_gen_testcases.md`).
+- KHÔNG dùng khi chỉ 1 biến (dùng EP/BVA thường ở [`dimensions/03_field_validation.md`](dimensions/03_field_validation.md)).
 
 # Nguyên tắc
 

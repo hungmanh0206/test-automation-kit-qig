@@ -401,272 +401,33 @@ Không giảm số lượng testcase bằng cách gộp nhiều rule khác nhau 
 | Approved | Edit | Bị chặn (Approved không cho sửa) — negative TC |
 | Cancelled | Approve | Bị chặn — negative TC |
 
-## 3. Field-Level Validation (QUAN TRỌNG)
-Mỗi input field phải có TC validation riêng:
+## 3–17. CHIỀU COVERAGE — mở đúng chiều trong `dimensions/`
 
-| Field Type | TCs bắt buộc |
-|---|---|
-| **Text (string)** | Empty, whitespace-only (phải bị từ chối), trim đầu/cuối, quá ngắn (min-1), đúng min, quá dài (max+1), đúng max, unicode tiếng Việt (phải nhận), **emoji/ký tự 4-byte** (nhận hay chặn theo spec, không vỡ/`????`), special chars `<>&"'` (phân biệt: hiển thị đúng vs chặn injection/XSS) |
-| **Email** | Format sai (thiếu @, thiếu domain), trùng tài khoản đã có, quá dài |
-| **Password** | Quá ngắn (min-1), đúng min, thiếu uppercase, thiếu number, thiếu special char (theo rule); **chặn paste/autofill vào field confirm nếu spec yêu cầu nhập tay** |
-| **Number** | Kiểu string, số âm, số 0, vượt max, số thập phân (nếu integer) |
-| **Dropdown/Enum/Filter** | Không chọn (required); **kiểm kê option** (đủ số lượng + đúng label/thứ tự/default so spec — mục 12); **1 case đại diện** — Dữ liệu Test ghi 1 giá trị mẫu, KHÔNG tạo 1 TC/giá trị (nổ case), nhưng steps/expected ghi rõ "lặp qua **tất cả** option, mỗi option lọc đúng tập con của nó" để Phase 2 execute vét hết; option **khác lớp hành vi** (đổi kết quả/nhánh/field/quyền) tách TC riêng; option đặc biệt "Tất cả"/"Khác"/empty; default; reset |
-| **Date** | Format sai, ngày không tồn tại (31/2), ngày quá khứ/tương lai (theo rule) |
-| **Date/Month filter** | Mặc định đúng (vd tháng hiện tại); tháng 28 / 29 (năm nhuận) / 30 / 31 ngày; số cột/ô động phải khớp số ngày của tháng; tháng không có dữ liệu; đổi tháng -> bảng cập nhật lại |
-| **Time (HH:mm)** | Biên 00:00 và 23:59; start == end; start > end (phải chặn); sai format; thiếu leading zero |
-| **Computed/derived field** | Mỗi field auto-derive (deadline = ngày tạo + N, approver mặc định, file naming, mapping) phải có TC kiểm derivation + 1 biên (vd deadline rơi qua cuối tháng/cuối năm, timezone) |
-| **File upload** | Sai format, đúng dung lượng max (boundary) vs vượt max (max+1), file rỗng/0 byte, đúng số lượng max vs file thứ (max+1), upload từ Resource có sẵn |
+15 chương chi tiết đã tách sang [`dimensions/`](dimensions/) để không phải gánh 9,9k token cho chiều mà task không dùng.
 
-## 4. UI Coverage Checklist
-Mỗi màn hình trong scope phải có testcase cho các nhóm sau nếu applicable:
-- Navigation và default state.
-- Loading state.
-- Has data state.
-- Empty state.
-- Error state/API fail.
-- Permission/role state.
-- Search/filter/sort/pagination.
-- Create/Edit/Delete/Cancel/Confirm.
-- Modal/toast/validation message.
-- Responsive hoặc layout critical nếu requirement/design có đề cập.
-- **Mobile-web behavior (nếu scope có mobile web/responsive)** — KHÁC "responsive viewport" thuần: khi app có hành vi riêng trên mobile thật (touch/UA/isMobile), sinh case cho:
-  - **Touch target ≥ 44px** (Apple HIG; Google Material 48dp) cho nút/link bấm được — bắc cầu accessibility (`scripts/qa/accessibility_check.js`).
-  - **Cử chỉ cảm ứng**: tap (không phải click), swipe, scroll động, pull-to-refresh nếu có.
-  - **Thành phần mobile-only**: hamburger menu, bottom sheet, drawer — hiện/ẩn đúng so desktop.
-  - **Orientation**: portrait ↔ landscape reflow đúng, không mất nội dung/nút.
-  - **Mạng yếu/offline**: slow-3G / offline giữa chừng → báo lỗi, không crash, không tạo bản ghi mồ côi (bắc cầu mục 8 Resilience).
-  - Ghi rõ thiết bị mục tiêu (vd iPhone 13 / Pixel 7). Không áp dụng → `N/A + lý do`.
-- Design/Visual compliance: đối chiếu token thiết kế (màu, font, border-radius, spacing, kích thước, thứ tự/alignment button) với Figma nếu task có design — chi tiết ở mục 11.
+> 📌 **Quy ước tham chiếu:** mọi chỗ trong file này (và trong `02b`, `run_phase1`) ghi "**mục N**" với `N = 3…17` đều trỏ tới file tương ứng trong [`dimensions/`](dimensions/) theo bảng dưới. Riêng **mục 18 (Self-check)** và mục 0–2 **vẫn ở file này**.
 
-## 5. API Coverage Checklist
-Mỗi endpoint liên quan trong Swagger phải có testcase cho các nhóm sau nếu applicable:
-- Success request với query/path/body cụ thể.
-- Required field missing.
-- Invalid format/type.
-- Duplicate/conflict/business rule violation.
-- Not found với id không tồn tại.
-- Unauthorized thiếu token.
-- Forbidden role không đủ quyền.
-- Response schema/business values quan trọng.
-- **HTTP-level contract**: gọi endpoint bằng **method không cho phép** (kỳ vọng `405`, KHÔNG phải `404`/`500`); `Content-Type` sai hoặc thiếu (kỳ vọng `415`); body vượt giới hạn (`413`/chặn có kiểm soát, KHÔNG `500`). Lỗi kiểu này hay bị bỏ vì test chỉ đi "đường đẹp".
-- **Boundary của payload/query** (biên ở tầng API, khác §3 vốn viết cho field UI): chuỗi đúng max vs max+1; số âm / `0`; mảng rỗng `[]` vs thiếu key; `page=0`, `page=-1`, `page` vượt tổng số trang; `page_size` vượt max cho phép; ngày sai định dạng/không tồn tại. Mỗi biên **1 TC riêng**, không gộp.
-- **Idempotency / double-submit**: gửi **lặp cùng payload** (POST tạo, approve, cancel, upload) → KHÔNG tạo bản ghi/giao dịch trùng; retry sau timeout → không nhân đôi side-effect. Bắc cầu §8 (Resilience) nhưng phải có **ở cấp endpoint**.
-- **Contract / backward-compat** (khi endpoint đã có consumer): field mới phải **optional**; KHÔNG đổi kiểu/bỏ field cũ mà không kiểm; enum thêm giá trị mới không làm vỡ consumer. Bắc cầu §17 (Change Impact) — ở đây là case cấp endpoint.
-- **Rate-limit / concurrency** (nếu applicable): endpoint nhạy cảm (login/OTP/thanh toán) gọi dồn dập → khoá/chậm/`429` chứ không brute-force vô hạn; N request đồng thời lên cùng resource → không oversell/double-count. Chi tiết ở §15 và §16; liệt kê ở đây để không bị bỏ sót khi chỉ bám checklist API.
+**THỨ TỰ BẮT BUỘC:** (1) khai `requirements/dimension_manifest.json` — chiều nào `required`, chiều nào `n/a` **kèm lý do**; (2) mở đúng file của các chiều `required`; (3) sinh case có **tag chiều** (§0b); (4) `npm run dim:coverage -- --enforce` chặn nếu thiếu.
 
-## 6. E2E Coverage Checklist
-Mỗi luồng liên hệ nhiều hệ thống phải có testcase cho:
-- Positive full flow.
-- Negative/rollback khi bước giữa fail.
-- Sync dữ liệu sau thao tác.
-- Count/status ở màn list/detail liên quan.
-- Evidence/upload nếu business flow yêu cầu.
+Khai `n/a` cho một chiều mà thực tế nó áp dụng = **bỏ chiều có chủ ý**, và lý do bạn ghi sẽ bị đọc lại khi review. Không có gate nào đọc hộ bạn tài liệu — nhưng có gate đếm case theo tag.
 
-## 7. Export/Import & File Output Coverage
-Mỗi chức năng export/import phải có testcase verify (nếu applicable):
-- Tên file đúng format (kèm tham số tháng/năm/filter trong tên).
-- Tên sheet, header, thứ tự cột; mapping 1:1 field UI -> cột file.
-- Số dòng = số bản ghi sau filter; export theo từng filter và filter kết hợp (kết quả là giao điều kiện).
-- Ô rỗng đúng nghĩa (vd ngày không có dữ liệu -> cột trống, không phải 0).
-- Dynamic columns theo data (vd số cột ngày = số ngày trong tháng đang chọn).
-- Dataset lớn (>=100 bản ghi) không mất dòng/không timeout.
-- Ký tự đặc biệt/Unicode trong cell hiển thị đúng; mở file không lỗi.
-- Empty state: filter không khớp -> file rỗng/chỉ header, không crash.
-
-## 8. Resilience / Concurrency / Interaction Coverage
-Cho mỗi action async (submit/export/approve/upload), nếu applicable:
-- Mất mạng/timeout giữa chừng -> báo lỗi, không crash, không tạo bản ghi mồ côi.
-- Double-click / double-submit -> không tạo 2 bản ghi / 2 file trùng.
-- Lặp lại thao tác đã hoàn tất (idempotency), vd Cancel nhiều lần liên tiếp.
-- Loading/disabled state đúng trong lúc chờ.
-
-## 9. Side-effect / Notification Coverage
-Với mỗi side-effect (email, in-app noti, webhook, sync sang hệ thống khác), nếu applicable:
-- Đúng người nhận (gửi đúng đối tượng, KHÔNG gửi cho người không liên quan).
-- Thời điểm phát sinh (gửi ngay sau commit, không delay quá ngưỡng).
-- KHÔNG phát sinh khi thao tác fail/validate lỗi (negative).
-- Nội dung/format đúng spec.
-
-## 10. Cross-layer Guard Coverage
-Với mỗi ràng buộc thể hiện ở UI (disable/ẩn action theo status/role, field readonly):
-- Phải có testcase negative bypass qua API/URL trực tiếp và kỳ vọng backend chặn (403/422), không chỉ kiểm UI ẩn/disable.
-
-## 11. Design/Visual Compliance Coverage (đối chiếu Figma) — nếu task có thiết kế
-Ngoài kiểm chức năng, nếu task có Figma/design thì phải có testcase đối chiếu **độ trung thực thiết kế ở mức token** cho các component chính (button, modal, input, header, menu item, table, card):
-- **Màu (color token)**: background / text / border của component so mã màu Figma (hex/rgb).
-- **Typography**: font-family, font-size, font-weight, line-height theo Figma.
-- **Bo góc & viền**: border-radius, border width.
-- **Kích thước**: width/height component so Figma.
-- **Spacing**: padding trong component + khoảng cách (gap) giữa các component.
-- **Bố cục/alignment**: thứ tự & căn chỉnh (VD `Cancel` bên trái / `Confirm` bên phải), các phần tử cùng hàng.
-- **Trạng thái**: token cho state (hover/active/disabled/selected) nếu design có.
-
-Nguyên tắc:
-- Lấy token expected từ đúng **Figma node/frame** của màn (fills, `style.fontSize/fontWeight`, `cornerRadius`, `itemSpacing`/`padding`, `absoluteBoundingBox`). KHÔNG tự bịa màu/size.
-- Phase 2 verify bằng `getComputedStyle` + `boundingBox` so token, dùng **dung sai** (VD màu lệch ≤8/kênh, radius ±2px, size ±8px, font-size ±1px).
-- **Kiểm vị trí TƯƠNG ĐỐI** (thứ tự, alignment, gap giữa components), KHÔNG so toạ độ x/y tuyệt đối của canvas Figma → tránh false-fail do responsive/scroll/dynamic data.
-- Nếu task KHÔNG có Figma/design → ghi `N/A + lý do` trong Coverage Gaps; không bỏ qua im lặng.
-
-## 12. Display/Field Conformance Coverage (đối chiếu tài liệu) — BẮT BUỘC cho mọi màn có bảng/danh sách/field
-
-Đây là dimension **TÁCH RIÊNG** khỏi chức năng (mục 4) và design-token (mục 11): kiểm **hình thức hiển thị đúng như đặc tả**, để KHÔNG lọt lỗi nhỏ về tên cột, format, thứ tự, thiếu field. Đây là nơi thường bị miss nhất khi test bằng automation.
-
-**Nguyên tắc nguồn-sự-thật (QUAN TRỌNG NHẤT — chống oracle tautological):**
-- Giá trị `Kết quả mong đợi` của MỌI case hiển thị phải **TRÍCH NGUYÊN VĂN từ FS/Figma/tài liệu**, TUYỆT ĐỐI KHÔNG lấy từ giao diện build đang chạy. Recon build chỉ để biết *cách locate element*, KHÔNG để lấy *giá trị đúng*. Nếu expected suy từ build → testcase thành "build == build" → vĩnh viễn không bắt được sai lệch so với spec.
-- Mỗi bảng "Name / Data type / Description" (hoặc bảng field/cột) trong FS là **checklist bắt buộc**: sinh case cho từng dòng, không bỏ sót field nào.
-- **Tra `knowledge/domain/` TRƯỚC khi đi tìm lại tài liệu**: business rule đã được BA/Dev xác nhận ở task trước được lưu ở đó (kèm `source` + `examples {input, expected}` cụ thể). Dùng làm oracle và **ghi `id` rule** (vd `BR-PAYMENT-004`) vào `Kết quả mong đợi` hoặc `Assumptions` để truy nguyên. TC nào lấy rule làm oracle thì thêm TC ID vào `covered_by` của rule (skill `domain_recorder`) — nhờ đó BA đổi rule là biết ngay TC nào phải cập nhật. Rule **mới được xác nhận trong task này** cũng phải ghi vào `knowledge/domain/`. Kiểm: `npm run domain:check`.
-- **Tra `knowledge/system/` cho case guard/permission/negative**: bản đồ hệ thống đã xác nhận (`npm run system:check`). Dùng làm oracle theo 3 hướng, và ghi `id` bản đồ vào `Kết quả mong đợi`/`Assumptions` để truy nguyên:
-  - `state_machine` — mọi cặp `(from,to)` **không** khai trong `transitions` là **bất hợp pháp** ⇒ sinh case chứng minh hệ thống CHẶN (expected lấy từ `illegal_verified.expected`, vd "API trả 409, order giữ PAID"). Ưu tiên cặp xuất phát từ state `terminal` (đã thanh toán / đã huỷ / đã khoá) — đây là chỗ sinh bug toàn vẹn dữ liệu và bị bỏ sót nhiều nhất.
-  - `permission_matrix` — `allow` là whitelist: mọi ô role×action ngoài `allow` ⇒ sinh case guard với expected = `deny_expected` (vd "403 + dữ liệu không đổi"). Case cross-role phải gọi bằng **token của role đó**, không phải role admin.
-  - `shared_surface` — nếu scope đụng surface dùng chung thì **mọi `consumers`** phải có case regression (`--impact "<surface>"` liệt kê).
-  Bản đồ mới xác nhận trong task này (bảng trạng thái/ma trận quyền trong FSD, hoặc dev confirm khi triage) ghi vào `knowledge/system/` — skill `system_mapper`. **TUYỆT ĐỐI không dựng bản đồ bằng cách thử API rồi ghi lại kết quả**: app đang sai thì bản đồ hợp thức hoá cái sai, TC sau đó vĩnh viễn không bắt được bug đó.
-
-**Với mỗi màn có bảng/danh sách/field, sinh case ATOMIC — mỗi (phần tử × thuộc tính) là 1 case:**
-- **Tên cột / label**: đúng CHÍNH XÁC từng ký tự theo tài liệu (vd cột phải là `Check-in`, KHÔNG phải `Checkin Time`).
-- **Định dạng dữ liệu (format)**: đúng format tài liệu quy định — ngày, giờ (`hh:mm`), datetime (`DD/MM/YYYY hh:mm hh:mm`), số/tiền/công (số chữ số thập phân). 1 case cho mỗi field có format.
-- **Số lượng cột + đủ tên + đúng thứ tự**: bảng phải có ĐÚNG các cột tài liệu liệt kê, đúng thứ tự → bắt cột thiếu/thừa/sai tên (1 case/bảng, liệt kê danh sách cột expected verbatim).
-- **Field bắt buộc hiển thị**: mọi field tài liệu mô tả phải có mặt (kể cả field chỉ áp dụng 1 nhóm đối tượng → xác nhận rule ẩn/hiện theo spec).
-- **Empty-state text / placeholder / label nút / label tab / tiêu đề màn-modal**: đúng chuỗi tài liệu.
-- **Giá trị "để trống" đúng nghĩa** (vd buổi chưa diễn ra → cột công **trống**, KHÔNG phải `0`).
-- **Field DẪN XUẤT phải bị KHOÁ theo nguồn, không chỉ "có mặt"**: field mà spec nói lấy giá trị từ bản ghi khác (transaction lấy tài khoản thụ hưởng của order, dòng con lấy đơn vị tiền của version…) cần **2 case**: (a) field không cho chọn/nhập lệch nguồn — hoặc nếu cho đổi thì đúng như spec cho phép; (b) giá trị ghi xuống/đồng bộ đi **trùng nguồn**. Vì sao tách ra: case dạng "form hiển thị đủ field X" **PASS ngay cả khi field đó cho chọn tự do**, nên cả một lớp bug "mỗi nơi một giá trị" lọt sạch. Đo 14/08/2026 trên bộ 530: `TC_175` liệt kê form Add Transaction CÓ field Recipient Bank Account nhưng không phát biểu ràng buộc ⇒ bug `SAPP-28420` (modal cho chọn pháp nhân khác order, HubSpot ghi sai pháp nhân) **không TC nào bắt được**.
-
-**BẮT BUỘC sinh ARTIFACT kiểm được, không chỉ sinh case bằng chữ** — đây là chỗ đã từng hỏng: mục 12 này viết đủ nhưng một bộ 530 case thật chỉ có 12% là case hiển thị, không ai dựng catalog, và cả cụm bug "thiếu trường / thừa cột / hai màn lệch nhãn" lọt hết.
-1. Với **mỗi màn trong scope**, thêm 1 dòng vào `<TASK_OUTPUT_DIR>/requirements/ui_catalog.json` (schema: `scripts/qa/ui_conformance_check.js`) gồm:
-   - `table.expectedColumns` — danh sách cột **verbatim + đúng thứ tự** (bắt thiếu/thừa/sai tên cột);
-   - `fields[]` — với **mỗi section/form**: `{containerSelector, expectedFields[]}` = **TẬP field** tài liệu quy định. Đây là thứ duy nhất bắt được "section thiếu 1 trường" và "màn mọc thêm trường lạ" — case theo bước không bao giờ thấy, vì thiếu field thì mọi step vẫn chạy xanh;
-   - `texts[]` cho empty-state/label/tiêu đề.
-2. Màn nào hiển thị **cùng một dữ liệu ở ≥2 chỗ** (vd Create/Edit và Order detail) → khai `fields` cho **cả hai** với cùng `expectedFields`. Lệch nhãn giữa 2 màn chỉ lộ khi cả hai cùng bị đối chiếu với một danh sách.
-3. Phase 2 **phải chạy** `node scripts/qa/ui_conformance_check.js --catalog <ui_catalog.json>`; sai lệch báo ra là bug hiển thị, không được tự bỏ qua.
-
-**Khung hoài nghi bắt buộc**: giả định build CÓ THỂ lệch tài liệu; nhiệm vụ là ĐỐI CHIẾU ngược build vs tài liệu và liệt kê MỌI khác biệt (kể cả nhỏ: hoa/thường, `-` vs `/`, thiếu 1 cột). KHÔNG mặc định build đúng, KHÔNG tự lọc bỏ "lỗi nhỏ".
-
-Nếu màn không có đặc tả hiển thị bằng text (chỉ có Figma) → lấy expected từ Figma; nếu không có cả hai → ghi `N/A + lý do` trong Coverage Gaps, không bỏ qua im lặng.
-
-## 13. Business Logic / Calculation / Data Consistency Coverage (BẮT BUỘC khi scope có tính toán, rule tổ hợp, hoặc dữ liệu hiển thị nhiều nơi)
-
-Đây là nơi bug **logic hệ thống** hay lọt nhất: UI/field trông đúng nhưng **giá trị/kết quả sai**. Mọi expected trong nhóm này phải là **giá trị cụ thể tính độc lập từ input đã biết** (oracle độc lập), TUYỆT ĐỐI KHÔNG lấy từ chính build đang chạy.
-
-- **Calculation/Formula**: mỗi giá trị được TÍNH (tổng, subtotal, thuế, phí, giảm giá, số dư, điểm, %, trung bình, đếm, quy đổi đơn vị/tỉ giá) có TC verify bằng **con số cụ thể tự tính tay** từ input — KHÔNG chấp nhận "hiển thị đúng". Kèm ≥1 biên (giá trị rơi đúng mốc làm tròn, chia dư, số 0, số âm).
-- **Rounding & precision**: quy tắc làm tròn (round half-up/banker), số chữ số thập phân, tiền VND không thập phân. 1 TC cho giá trị rơi đúng ranh giới làm tròn (vd `.5`).
-- **Decision table đầy đủ**: rule tổ hợp nhiều điều kiện → liệt kê ma trận `điều kiện × kết quả`; mỗi combination quan trọng (nhất là cặp điều kiện xung đột/ưu tiên) là 1 TC riêng, gồm cả nhánh else/default.
-- **Ordering/Sorting**: verify THỨ TỰ thực tế của toàn danh sách theo rule (mới nhất/alphabet/priority/custom), tie-break khi trùng khóa, asc/desc, sort kết hợp filter.
-- **Aggregation vs detail**: tổng/đếm ở màn list/summary phải KHỚP tổng cộng các dòng chi tiết (vd "Tổng 5 mục" = đúng 5 dòng; "Doanh thu tháng" = Σ order trong tháng). 1 TC đối chiếu trực tiếp 2 con số.
-- **Data consistency đa màn/đa nguồn**: cùng một dữ liệu hiển thị ở ≥2 nơi (list vs detail, card summary vs bảng, 2 app cross-sync) phải GIỐNG NHAU. 1 TC so sánh trực tiếp giá trị 2 nơi, không kiểm rời từng nơi.
-- **Before/after mutation (delta đúng)**: sau create/edit/delete/approve, giá trị dẫn xuất (count, tổng, số dư, trạng thái, danh sách) cập nhật ĐÚNG DELTA (xóa 1 mục → tổng giảm đúng 1 và đúng phần tiền của mục đó). 1 TC chụp giá trị trước và sau, so delta.
-- **Filter/Search logic**: kết quả = đúng tập con thỏa điều kiện (không thừa/thiếu); filter kết hợp = giao điều kiện; search khớp đúng field & mode (contains/exact/không dấu); reset trả full.
-- **Phủ option của dropdown/filter (1 case đại diện ở gen, execute vét hết giá trị)**: KHÔNG tạo 1 TC cho mỗi giá trị (nổ số case). Thay vào đó — (a) **kiểm kê option**: 1 TC verify đủ số option + đúng label/thứ tự/default so spec (mục 12/14); (b) **1 case hành vi đại diện**: Dữ liệu Test ghi 1 giá trị mẫu, nhưng steps/expected nêu rõ "lặp qua **tất cả** option, mỗi option lọc đúng tập con của nó" → Phase 2 execute chạy data-driven **vét hết** giá trị (không dừng ở giá trị mẫu); (c) option **khác lớp hành vi** (đổi kết quả/nhánh, ra empty, hiện thêm field, đổi quyền, đổi công thức) → tách TC riêng vì expected khác. Luôn thêm default, empty/no-match, reset, và giao điều kiện khi filter kết hợp.
-- **Conditional display/derivation logic**: field/section chỉ hiện theo điều kiện (role/status/loại) → TC cả nhánh hiện lẫn nhánh ẩn; giá trị auto-derive (default approver, deadline, mã tự sinh, mapping trạng thái) verify đúng công thức + 1 biên.
-- **Timezone/Date logic**: giá trị ngày/giờ tính đúng timezone, qua mốc nửa đêm/đổi ngày, DST nếu có; "hôm nay/tuần này/tháng này" tính đúng biên.
-- **Đối tượng CÓ PHIÊN BẢN / hiệu lực theo thời gian (version, snapshot, bảng giá, cấu hình có ngày áp dụng)** — BẮT BUỘC khi scope có khái niệm "phiên bản" hoặc "hiệu lực từ/đến". Lớp này từng lọt nguyên cụm bug vì chỉ test "tạo bản mới thành công" mà không test **ảnh hưởng lên bản cũ và lên thứ đang trỏ tới bản cũ**:
-  - **Bản cũ bị đóng đúng cách**: tạo bản mới → bản trước phải được set `end date`/hết hiệu lực đúng thời điểm (không để 2 bản cùng hiệu lực, không bỏ trống end date).
-  - **Bản cũ giữ nguyên nội dung lịch sử**: sửa/tạo bản mới KHÔNG được làm đổi hay **ẩn mất** phần tử đã thuộc bản cũ (bản cũ là bằng chứng lịch sử — mất là mất dấu vết đối soát).
-  - **Bản ghi đang trỏ tới bản cũ**: đơn/hợp đồng đã tạo theo bản cũ phải giữ giá trị theo bản cũ, KHÔNG bị kéo theo bản mới.
-  - **Bản "hiện hành" là duy nhất và đúng cái**: đúng 1 bản current tại một thời điểm; action không hợp lệ trên bản current (vd xoá) phải bị chặn.
-  - **Danh sách/filter/lịch sử cập nhật theo**: sau khi tạo bản mới, danh sách phiên bản, bộ lọc và cột dẫn xuất phải phản ánh đúng ngay (không cache cũ, không lệch thứ tự).
-
-### 13b. Bền vững dữ liệu sau mutation — oracle PHỤ ở TẦNG BẢN GHI (chỉ 5 tình huống dưới)
-
-**KHÔNG tạo TC riêng cho việc "kiểm DB".** Đây là **một dòng verification thêm vào chính case create/edit/delete đã có** — viết vào cột verification dạng `db_readonly: SELECT … FROM … WHERE …` kèm kết quả mong đợi cụ thể (số dòng / giá trị cột). Rải khắp nơi là làm test dính chặt schema, đổi tên cột là gãy hàng loạt.
-
-**Vì sao cần dù đã đọc lại bằng UI/API:** đọc lại bằng `GET`/màn list là **cùng một stack vừa ghi tự nói là đã ghi**. Với CRUD phẳng thì thế đã đủ. Nhưng 5 tình huống sau thì UI/API **không thể** phân biệt được, phải xuống tầng bản ghi:
-
-| Kích hoạt | UI/API mù ở chỗ nào |
-|---|---|
-| **Soft delete vs hard delete** | Sau khi xoá, UI hết thấy và `GET` trả 404 — **giống hệt nhau ở cả hai kiểu**. Spec yêu cầu xoá cứng mà thực tế set `deleted_at` (dữ liệu cá nhân vẫn nằm đó), hoặc ngược lại xoá cứng khi spec cần khôi phục được — cả hai đều nặng và đều vô hình |
-| **Cascade / bản ghi mồ côi** | Xoá/đổi bản ghi cha (course, lớp, học viên) → bản ghi con (enrollment, lịch, điểm danh, tiến độ, mapping) ra sao? Màn cha KHÔNG hiển thị chúng ⇒ orphan tồn tại mà mọi assert vẫn xanh |
-| **Field không render trên màn** | `sync_status`, cột audit (`updated_by`/`updated_at`), mã nội bộ, cờ trạng thái. Không có trên UI thì không assert được, mà đó thường là chỗ ghi sai |
-| **Ghi trùng** | Save 2 lần / retry mạng / double-submit → 2 bản ghi. Lưới có phân trang + sort + filter nên rất dễ không nhìn thấy; `SELECT count(*)` thấy ngay |
-| **Trường dẫn xuất lệch bản ghi gốc** | Tổng/số dư/đếm được lưu sẵn (không tính lại lúc đọc) có thể lệch khỏi các dòng sinh ra nó — vd ledger có 1 giao dịch nhưng `total_due` bị trừ 2 lần. So trường tổng vs `SUM()` các dòng gốc |
-
-**Ranh giới — giữ nguyên, không nới:**
-- Chỉ qua guarded client `tests/support/setup/db/uatPgClient.ts` (UAT, `BEGIN TRANSACTION READ ONLY`, chỉ SELECT). **KHÔNG** dựng/sửa state bằng DB — precondition vẫn `api`/`factory`/`test_hook`/`pre_existing`.
-- **KHÔNG phải evidence.** Evidence vẫn là ảnh/video màn hình. Kết quả SELECT chỉ dùng để kết luận và khoanh tầng lỗi.
-- **KHÔNG thay oracle từ spec.** Expected vẫn là giá trị theo tài liệu; DB chỉ trả lời "bản ghi có đúng như thế không".
-- PII đọc ra phải mask, cấm ghi ra file.
-- Nếu DB UAT cũng không expose được → `Automation Readiness = Needs hook`/`Manual-only`, KHÔNG bịa expected.
-
-**Cảnh báo ngược — đừng để DB ru ngủ:** *DB đúng KHÔNG có nghĩa sản phẩm đúng.* Bản ghi chuẩn mà UI hiển thị sai thì người dùng vẫn chịu thiệt, và một assert DB xanh rất dễ khiến bỏ qua bug FE. Vì vậy dòng `db_readonly` là **bổ sung** cho assert trên UI, không bao giờ thay thế.
-
-## 14. BE Response Data Conformance Coverage (BẮT BUỘC cho mọi màn/endpoint có dữ liệu từ BE)
-
-Tách riêng khỏi API contract (mục 5, thiên status/schema): nhóm này kiểm **GIÁ TRỊ dữ liệu BE trả về** và **mapping BE → UI** — nơi bug "field trống / sai giá trị / thiếu field" hay lọt.
-
-- **Value đúng, không chỉ schema**: response chứa đúng GIÁ TRỊ nghiệp vụ (id/tên/số/trạng thái/quan hệ), không chỉ đúng kiểu. TC assert giá trị cụ thể.
-- **Null vs empty vs missing vs 0**: phân biệt rõ `null` / chuỗi `""` / mảng `[]` / thiếu hẳn key / `0`. TC xác định BE PHẢI trả trạng thái nào theo spec (vd "chưa có công" → field vắng hay `null` hay `0`?), vì UI render mỗi trạng thái mỗi khác.
-- **BE → UI mapping (field trống nghi ngờ)**: mỗi field UI hiển thị trống/`-`/`N/A` phải có TC đối chiếu response — BE có trả giá trị không? BE trả có mà UI trống = **FE bug**; BE trả rỗng trái spec = **BE bug**; cả hai đều là product bug, KHÔNG bỏ qua.
-- **SAI NGUỒN dù CÓ giá trị (điểm mù đắt nhất — bắt buộc)**: field hiển thị đầy đủ, không trống, không lỗi, nhưng lấy từ **đối tượng/property SAI** (vd lấy từ Deal trong khi spec nói lấy từ Contact; đọc nhầm property "học phí nộp thực tế" cho một loại đơn không dùng field đó; tài khoản nhận hiển thị khác tài khoản đã cấu hình). Oracle kiểu "có dữ liệu / populate / hiển thị đúng" **KHÔNG BAO GIỜ** bắt được lớp này — field nhầm nguồn vẫn populate. Vì vậy:
-  - `Kết quả mong đợi` phải khai **HAI ĐẦU**: `<field UI>` = `<nguồn cụ thể>` (object + property), vd `Customer Email = Contact.email của deal đang chọn`, KHÔNG viết "hiển thị đúng email".
-  - Chọn **giá trị phân biệt được nguồn**: cố ý dùng data mà Contact và Deal khác nhau; nếu 2 nguồn trùng giá trị thì case đó **không chứng minh được gì** — phải đổi data hoặc ghi Coverage Gap.
-  - Nếu task có **bảng mapping field** (`requirements/**/field_mapping*.{json,md}` hoặc mapping sheet trong FSD): **mỗi dòng của bảng = ≥1 case đối chiếu giá trị**, không gộp thành 1 case "map đủ field". Ghi tên field nguồn vào `Dữ liệu Test` để truy nguyên.
-- **Định dạng & đơn vị khi đẩy đi**: giá trị gửi sang hệ khác phải đúng **định dạng và đơn vị tiền tệ** của bên nhận (USD ≠ đ; số thập phân; ×100 hay không). Trạng thái "đồng bộ thành công" **KHÔNG** chứng minh giá trị đúng — case phải đọc lại giá trị **ở phía nhận** và so bằng.
-- **Foreign key resolution**: id tham chiếu resolve đúng tên/label (vd `ownerId` → đúng tên owner), không lộ id thô, không `undefined`/`[object Object]`.
-- **Enum/status value**: BE trả đúng tập enum hợp lệ; UI map đúng nhãn từng enum; enum lạ/không map → xử lý an toàn.
-- **Pagination/metadata**: `total`/`page`/`pageSize`/`hasNext` đúng; `total` khớp số bản ghi thực; trang cuối/trang rỗng đúng; đổi pageSize không mất/nhân đôi bản ghi.
-- **Nested/list completeness**: object lồng & mảng trả đủ phần tử con (không cắt cụt), đúng thứ tự; mỗi phần tử đủ field cho UI.
-- **Default value từ BE**: field có default do BE set (trạng thái khởi tạo, cờ, ngày tạo) trả đúng default.
-- **Serialization**: date/number serialize đúng (ISO/epoch, number vs string, đơn vị tiền/giờ), không lệch timezone, không mất độ chính xác.
-- **Sensitive/internal field**: response KHÔNG lộ field nội bộ/nhạy cảm (password hash, token, internal flag, PII vượt quyền) — bắc cầu mục 15.
-- **Error payload**: response lỗi trả đúng `code`/`message`/`field` theo spec để UI hiển thị đúng; không nuốt lỗi thành `200` rỗng.
-
-## 15. Security Coverage (BẮT BUỘC — mở rộng ngoài XSS/auth cơ bản)
-
-Ngoài special-char ở field (mục 3) và unauthorized/forbidden cơ bản (mục 5, 10), mỗi scope có dữ liệu/quyền phải cân nhắc các nhóm sau (sinh TC nếu applicable):
-
-- **AuthN token**: không token / token sai-hỏng / hết hạn / token của user khác → BE chặn đúng (401/403), không rò dữ liệu.
-- **AuthZ dọc (privilege escalation)**: role thấp gọi thẳng API/URL chức năng role cao → 403; UI ẩn nút KHÔNG đủ, phải chặn ở BE.
-- **AuthZ ngang (IDOR)**: user A đổi id trong path/body/query sang resource của user B (hoặc org/tenant khác) → 403/404, KHÔNG trả data của B. BẮT BUỘC cho mọi endpoint có id resource.
-- **Injection**: SQL/NoSQL ở field & query param (`' OR '1'='1`), XSS stored (lưu `<script>` rồi mở lại ở màn khác), XSS reflected (echo qua search/error), command/template injection nếu input đi tới hệ thống ngoài → phải bị escape/chặn, không thực thi.
-- **Mass assignment / over-posting**: gửi thêm field không được phép (`role`, `isAdmin`, `status`, `price`, `ownerId`...) vào body create/update → BE bỏ qua, KHÔNG cho ghi đè.
-- **Sensitive data exposure**: response/UI/log/URL không lộ password/token/hash/secret/PII vượt quyền; PII phải mask; không đẩy secret qua query string.
-- **File upload security** (nếu có upload): file thực thi (`.php/.exe/.svg` có script), sai MIME giả extension, path traversal tên file (`../../`), file quá lớn, zip bomb → bị từ chối/khử trùng.
-- **Rate limiting / brute force** (nếu applicable): lặp login sai/OTP/endpoint nhạy cảm nhiều lần → khóa/chậm/captcha, không brute force vô hạn.
-- **Session/logout**: sau logout token cũ vô hiệu; đổi mật khẩu → session cũ vô hiệu (nếu spec); cookie nhạy cảm `HttpOnly`/`Secure` nếu kiểm được.
-- **CORS/headers** (nếu applicable & kiểm an toàn được): CORS không cho origin lạ đọc dữ liệu có auth.
-
-Ràng buộc thể hiện ở UI luôn phải có TC bypass thẳng BE (đồng bộ mục 10). Nhóm không áp dụng / không kiểm an toàn được ở môi trường test → `N/A + lý do` trong Coverage Gaps.
-
-> **Executable ở Phase 2 (BASIC, non-destructive):** security headers/cookie flags, truy cập chưa auth (401/403), ma trận authz + IDOR (2 tài khoản test), sensitive-data exposure, transport http→https chạy thật bằng `scripts/qa/security_check.js` (skill `security_check`, **GET/read-only, never-auto, cần `--confirm-nonprod`**). Control → PASS/FAIL; exposure → finding (mask PII). **Fuzzing/khai thác SQLi-XSS/brute-force/rate-limit → Manual-only + OWASP ZAP opt-in**, chỉ chạy khi có phê duyệt người + target non-prod. Thiếu 2 tài khoản test → authz/IDOR = `needs_account`.
-
-## 16. Performance / Load / Stress Coverage (sinh khi requirement có SLA hoặc scope có dữ liệu lớn/đồng thời)
-
-Kit thiên functional; nhóm này CHỈ sinh khi có ngưỡng/tải trong scope hoặc rủi ro cao, và **ghi rõ ngưỡng lấy từ đâu** (SLA/NFR/spec). Không có ngưỡng → `N/A + lý do`, KHÔNG bịa số.
-
-> **Executable ở Phase 2:** phần deterministic (web vitals, API response time so SLA, large-dataset render, resource weight) chạy thật bằng `scripts/qa/perf_check.js` (skill `perf_check`, threshold-gated, median N lần) — ngưỡng khai trong catalog `perf`. Verdict là **advisory** (UAT nhiễu), không tự thành product bug. **Điểm Lighthouse** (Performance/Accessibility/SEO/Best-practices) chạy qua CDP bằng `scripts/qa/lighthouse_check.js` (skill `lighthouse_check`, **opt-in nặng** — cần `npm i -D playwright-lighthouse lighthouse`, `--confirm-nonprod`, verdict advisory theo dải điểm chuẩn); evidence là ảnh bảng điểm.
-
-- **Response time / SLA**: endpoint/màn quan trọng phản hồi trong ngưỡng NFR (vd list < 2s). TC đo thời gian thực tế so ngưỡng đã nêu.
-- **Large dataset**: list/table/export với ≥100 (hoặc ngưỡng spec) bản ghi — render/pagination/scroll không mất dòng, không timeout, không treo (bắc cầu mục 7).
-- **Pagination/virtual scroll**: trang lớn không nhân đôi/nhảy dòng; thời gian chuyển trang ổn định.
-- **Concurrent action**: N user/N request đồng thời lên cùng resource (đặt chỗ, trừ kho, duyệt) → không oversell/double-count, tranh chấp xử lý đúng (bắc cầu mục 8).
-- **Payload/limit**: input/list ở kích thước tối đa cho phép không hỏng response; vượt max → chặn có kiểm soát, không `500`.
-- **Symptom N+1/slow**: thao tác trên list lớn không phình thời gian phi tuyến nếu quan sát được.
-
-**Load thật (nhiều VU — Loại B: load/stress/soak)** dùng tool tải chuyên: **opt-in qua `scripts/qa/load_check.js` (skill `load_check`, wrapper k6)** — k6 là binary NGOÀI (không phải npm dep; thiếu → skip sạch), **never-auto, chỉ non-prod, cap khiêm tốn**, KHÔNG nhét vào runner Playwright. k6 hợp kit hơn JMeter; **Katalon KHÔNG phải load tool**. (Loại A single-user: timing/vitals/render/resource → `perf_check.js`.) Ngưỡng lấy từ NFR khai trong k6 `thresholds`.
-
-## 17. Change Impact / Regression Ripple Coverage (BẮT BUỘC khi story thêm/sửa/xoá làm thay đổi thứ dùng chung)
-
-Bắt lỗi **"sửa 1 feature con → vỡ feature khác"** — thứ requirement của story KHÔNG mô tả nhưng hay gây incident. TÁCH RIÊNG khỏi Side-effect (mục 9 — output của chính action) và Data Consistency (mục 13 — trong scope).
-
-**Bước 1 — Bề mặt dùng chung mà thay đổi ĐỤNG tới.** Nếu có `requirements/git-impact.md` (skill `git_impact_analyzer`), dùng nó làm danh sách bề mặt thay đổi **thực tế từ git diff** làm điểm khởi đầu thay vì chỉ đọc code đoán — vẫn tự soi bổ sung và giữ flag `QA confirm` cho phần không chắc. Nếu thay đổi cô lập (không đụng gì chung) → ghi `N/A: no shared surface` ở Coverage Gaps, KHÔNG sinh bừa. Soi các bề mặt:
-- Data/entity/field chung (thêm field, đổi kiểu/default, migration).
-- Endpoint/API chung (đổi payload/response/status code).
-- Component/validation/business rule/util dùng lại.
-- Status/enum chung (thêm/đổi giá trị).
-- Calculation/aggregate/report chung nguồn.
-- Permission/role/guard chung.
-- Job/trigger/event/queue/cron chung.
-
-**Bước 2 — Map feature KHÁC phụ thuộc bề mặt đó** (suy từ code/testcase cũ/requirement/coverage map). Cái không suy được → flag QA (Bước 3).
-
-**Bước 3 — Sinh regression cho feature bị ảnh hưởng (SMOKE, không re-test full):**
-- **Smoke flow chính**: mỗi feature bị ảnh hưởng có ≥1 TC xác nhận flow chính vẫn đúng sau thay đổi (vd thêm field vào entity → list/detail/export/search của feature khác vẫn đúng, không lỗi, không lệch cột).
-- **Backward-compat**: bản ghi/dữ liệu CŨ (tạo trước thay đổi) vẫn hiển thị/xử lý đúng.
-- **Contract**: consumer khác của endpoint không vỡ (field mới optional; KHÔNG đổi kiểu/bỏ field cũ mà không kiểm).
-- **Shared rule/calc**: đổi validation/công thức chung → form/flow/report khác dùng lại vẫn đúng theo rule mới, không bị đổi ngoài ý muốn.
-
-**Nguyên tắc:**
-- **Theo tỉ lệ**: chỉ ripple khi thật sự đụng bề mặt chung; regression là SMOKE, KHÔNG nhân full-suite cho mọi feature.
-- **Flag, không bịa**: feature nghi ảnh hưởng mà thiếu code/spec/testcase cũ để xác minh → ghi `Nghi ảnh hưởng — QA confirm` vào Coverage Gaps; KHÔNG dựng impact ảo, KHÔNG im lặng bỏ qua.
-- Mỗi regression case trace rõ: `đụng <bề mặt chung> → ảnh hưởng <feature>`.
+| § | Chiều | Tag | Mở khi | File |
+|---|---|---|---|---|
+| §3 | Field-Level Validation | `[Validation]` | scope có form/field nhập liệu (gần như luôn có) | [`03_field_validation.md`](dimensions/03_field_validation.md) |
+| §4 | UI Coverage Checklist | `[UI]` | scope có màn UI: lưới/filter/sort/empty-state/loading | [`04_ui.md`](dimensions/04_ui.md) |
+| §5 | API Coverage Checklist | `[API]` | scope có endpoint API cần kiểm trực tiếp | [`05_api.md`](dimensions/05_api.md) |
+| §6 | E2E Coverage Checklist | `[E2E]` | có luồng xuyên nhiều app/hệ thống | [`06_e2e.md`](dimensions/06_e2e.md) |
+| §7 | Export/Import & File Output Coverage | `[Export]` | scope có export/import file | [`07_export_import.md`](dimensions/07_export_import.md) |
+| §8 | Resilience / Concurrency / Interaction Coverage | `[Resilience]` | có thao tác đồng thời, callback/retry, hoặc trạng thái đua nhau | [`08_resilience.md`](dimensions/08_resilience.md) |
+| §9 | Side-effect / Notification Coverage | `[SideEffect]` | hành động sinh mail/thông báo/task/webhook | [`09_side_effect.md`](dimensions/09_side_effect.md) |
+| §10 | Cross-layer Guard Coverage | `[Guard]` | có ràng buộc phải bị CHẶN ở tầng khác (403/409/trạng thái bất hợp pháp) | [`10_guard.md`](dimensions/10_guard.md) |
+| §11 | Design/Visual Compliance Coverage | `[Design]` | task CÓ thiết kế Figma để đối chiếu | [`11_design.md`](dimensions/11_design.md) |
+| §12 | Display/Field Conformance Coverage | `[Display]` | mọi màn có bảng/danh sách/field — BẮT BUỘC nếu scope có UI | [`12_display.md`](dimensions/12_display.md) |
+| §13 | Business Logic / Calculation / Data Consistency Coverage | `[Calc]` | scope có tính toán, rule tổ hợp, hoặc dữ liệu hiển thị ở nhiều nơi | [`13_business_logic.md`](dimensions/13_business_logic.md) |
+| §14 | BE Response Data Conformance Coverage | `[BEData]` | mọi màn/endpoint có dữ liệu từ BE — BẮT BUỘC nếu có mapping field | [`14_be_conformance.md`](dimensions/14_be_conformance.md) |
+| §15 | Security Coverage | `[Security]` | scope có auth/role/dữ liệu người khác (IDOR, mass-assignment, injection) | [`15_security.md`](dimensions/15_security.md) |
+| §16 | Performance / Load / Stress Coverage | `[Perf]` | requirement có SLA, hoặc scope có dữ liệu lớn/đồng thời | [`16_perf.md`](dimensions/16_perf.md) |
+| §17 | Change Impact / Regression Ripple Coverage | `[Impact]` | story thêm/sửa/xoá làm thay đổi thứ DÙNG CHUNG | [`17_change_impact.md`](dimensions/17_change_impact.md) |
 
 ## 18. Self-check vét cạn biên (BẮT BUỘC trước khi kết thúc)
 Tự rà và ghi vào `reports/phase1-summary.md` (Coverage Gaps) nếu thiếu:

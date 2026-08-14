@@ -8,7 +8,7 @@ description: Đọc git diff của branch/PR gắn TASK_KEY, liệt kê file/mod
 ## Purpose
 
 Biến thay đổi code thật (git diff) thành danh sách **bề mặt dùng chung bị đụng** — input trực tiếp
-cho **Bước 1 của mục 17 (Change Impact / Regression Ripple)** trong
+cho **Bước 1 của mục 17 (Change Impact / Regression Ripple)** — nay ở `prompt_templates/phase1/dimensions/17_change_impact.md` — trong
 `prompt_templates/phase1/02_gen_testcases.md`. Giúp agent không phải đọc toàn bộ code để đoán bề mặt
 chung; thay vào đó bắt đầu từ diff thực tế rồi mới suy feature bị ảnh hưởng.
 
