@@ -25,6 +25,7 @@ const {
   extractDocId,
   docToMarkdown,
   docToPlainText,
+  flattenTabs,
   saveJsonToFile,
   saveTextToFile,
   getTimestamp,
@@ -45,9 +46,24 @@ async function readDoc(documentId) {
   log('LOG', `Đang đọc Document: ${documentId} ...`);
   try {
     const docs = await buildDocsClient();
-    const res = await docs.documents.get({ documentId });
-    log('LOG', `Đọc thành công: "${res.data.title}"`);
-    return res.data;
+    // `includeTabsContent: true` BẮT BUỘC với Google Doc nhiều TAB.
+    //
+    // VÌ SAO: thiếu cờ này thì Docs API chỉ trả `body` của **tab ĐẦU TIÊN** và **không báo gì cả** — không
+    // lỗi, không field cảnh báo. Đo 14/08/2026 trên FSD "0426_FSD_ Dự án Tự động ghi nhận doanh thu": đọc
+    // được 441 paragraph / 18.5KB, trong khi tài liệu thật có **13 tab** (Product/Add-on/Order/Checkout/
+    // từng loại Service Fee...). Hậu quả đúng loại nguy hiểm nhất: agent tra tài liệu, KHÔNG thấy quy tắc,
+    // rồi kết luận "tài liệu không quy định" — trong khi nó nằm ở tab 8. Suýt kết luận sai về rule TK nhận
+    // phí dịch vụ vì đúng cái này.
+    const res = await docs.documents.get({ documentId, includeTabsContent: true });
+    const data = res.data;
+    const tabs = flattenTabs(data.tabs);
+    if (tabs.length > 1) {
+      log('LOG', `Tài liệu có ${tabs.length} TAB: ${tabs.map((t) => t.title).join(' · ')}`);
+      log('LOG', 'Đọc GỘP toàn bộ tab (thiếu --tab thì mọi tab đều được xuất).');
+    }
+    data._tabs = tabs;
+    log('LOG', `Đọc thành công: "${data.title}"${tabs.length > 1 ? ` (${tabs.length} tab)` : ''}`);
+    return data;
   } catch (error) {
     handleApiError(error, `Read Document "${documentId}"`);
     return null;

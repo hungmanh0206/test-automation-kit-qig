@@ -272,13 +272,49 @@ function tableToMarkdown(table) {
  * @param {object} doc - document object trả về từ Docs API
  * @returns {string} Markdown content
  */
+/**
+ * Làm phẳng cây TAB của Google Doc thành danh sách [{id, title, content}].
+ *
+ * Tab có thể LỒNG NHAU (`childTabs`) nên phải đệ quy — chỉ đọc `tabs[]` mức 1 là bỏ mất tab con.
+ * Trả `[]` nếu tài liệu không có tab (doc cũ / doc 1 tab): chỗ gọi tự lùi về `doc.body`.
+ */
+function flattenTabs(tabs, depth = 0) {
+  const out = [];
+  for (const t of tabs || []) {
+    const props = t.tabProperties || {};
+    const body = (t.documentTab && t.documentTab.body) || null;
+    if (body) out.push({ id: props.tabId || '', title: props.title || '(untitled tab)', depth, content: body.content || [] });
+    if (t.childTabs && t.childTabs.length) out.push(...flattenTabs(t.childTabs, depth + 1));
+  }
+  return out;
+}
+
+/** Các khối nội dung cần render: gộp mọi tab nếu có, không thì dùng body (doc 1 tab). */
+function contentSections(doc) {
+  const tabs = doc._tabs || flattenTabs(doc.tabs);
+  if (tabs.length) return tabs;
+  return [{ id: '', title: '', depth: 0, content: (doc.body && doc.body.content) || [] }];
+}
+
 function docToMarkdown(doc) {
   const title = doc.title || '(Untitled)';
   let md = `# ${title}\n\n`;
   md += `> Document ID: \`${doc.documentId}\` | Ngày đọc: ${new Date().toISOString()}\n\n`;
 
-  const content = (doc.body && doc.body.content) || [];
+  const sections = contentSections(doc);
+  if (sections.length > 1) {
+    md += `> **${sections.length} tab**: ${sections.map((s) => s.title).join(' · ')}\n\n`;
+  }
+  for (const section of sections) {
+    if (section.title) md += `\n${'#'.repeat(Math.min(6, 2 + section.depth))} Tab: ${section.title}\n\n`;
+    md += contentToMarkdown(doc, section.content, title);
+  }
+  // Gọn khoảng trống thừa
+  return md.replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+}
 
+function contentToMarkdown(doc, content, title) {
+  let md = '';
   for (const element of content) {
     if (element.table) {
       md += `\n${tableToMarkdown(element.table)}\n`;
@@ -319,9 +355,7 @@ function docToMarkdown(doc) {
       // Paragraph rỗng -> giữ 1 dòng trống (đã có sẵn), bỏ qua
     }
   }
-
-  // Gọn khoảng trống thừa
-  return md.replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+  return md;
 }
 
 /**
@@ -330,19 +364,21 @@ function docToMarkdown(doc) {
  * @returns {string}
  */
 function docToPlainText(doc) {
-  const content = (doc.body && doc.body.content) || [];
   let out = '';
-  for (const element of content) {
-    if (element.paragraph) {
-      const elements = element.paragraph.elements || [];
-      for (const el of elements) {
-        if (el.textRun) out += el.textRun.content || '';
-      }
-    } else if (element.table) {
-      const rows = element.table.tableRows || [];
-      for (const r of rows) {
-        const cells = (r.tableCells || []).map((c) => cellText(c));
-        out += cells.join('\t') + '\n';
+  for (const section of contentSections(doc)) {
+    if (section.title) out += `\n=== TAB: ${section.title} ===\n`;
+    for (const element of section.content) {
+      if (element.paragraph) {
+        const elements = element.paragraph.elements || [];
+        for (const el of elements) {
+          if (el.textRun) out += el.textRun.content || '';
+        }
+      } else if (element.table) {
+        const rows = element.table.tableRows || [];
+        for (const r of rows) {
+          const cells = (r.tableCells || []).map((c) => cellText(c));
+          out += cells.join('\t') + '\n';
+        }
       }
     }
   }
@@ -406,6 +442,8 @@ module.exports = {
   docToMarkdown,
   docToPlainText,
   tableToMarkdown,
+  flattenTabs,
+  contentSections,
   saveJsonToFile,
   saveTextToFile,
   getTimestamp,

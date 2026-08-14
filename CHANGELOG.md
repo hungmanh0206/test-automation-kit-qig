@@ -7,6 +7,27 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (b) — `doc_reader` đọc Google Doc nhiều tab chỉ được TAB ĐẦU, im lặng
+
+**Bối cảnh.** Một câu hỏi treo 4 ngày ("TK nhận phí dịch vụ xác định theo chương trình hay theo loại tài khoản thi?") tưởng là *thiếu tài liệu, phải hỏi BA*. Hoá ra tài liệu đã trả lời từ đầu — **kit không đọc được**.
+
+`documents.get` **thiếu `includeTabsContent: true`** thì Google Docs trả về `body` của **tab ĐẦU TIÊN** và **không báo gì**: không lỗi, không cờ, không field cảnh báo.
+
+| | Trước | Sau |
+|---|---|---|
+| Nội dung | 441 paragraph · **18.5 KB** | **345.6 KB** (18.6×) |
+| Số tab | 1 | **15** (7 mức 1 + 8 tab con lồng) |
+| Chứa quy tắc đang tìm? | **KHÔNG** (0 lần) | **CÓ** (25 lần) |
+
+Đây là dạng hỏng tệ nhất trong việc tra tài liệu: agent đọc, không thấy, rồi kết luận **"tài liệu không quy định"** — trong khi nó nằm ở tab 4.1. Đúng loại "cắt cụt im lặng" mà `RULE_GLOBAL` cấm, nhưng lần này chính tooling của kit vi phạm.
+
+**Fixed**
+- `includeTabsContent: true` + `flattenTabs()` **đệ quy** (tab lồng qua `childTabs` — chỉ đọc mức 1 là mất 8 tab con).
+- Renderer (`docToMarkdown`/`docToPlainText`) chạy trên **mọi** tab, mỗi tab một heading `## Tab: <tên>` theo độ sâu; tách `contentToMarkdown()` ra khỏi `docToMarkdown()` để dùng lại cho từng tab.
+- **Log số tab + tên tab** mỗi lần đọc ⇒ nhìn output là biết đã lấy đủ hay chưa, không phải tin vào im lặng.
+
+**Kết quả nghiệp vụ.** Rule `BR-ADDONBANK-001` ("tài khoản thi CBE ⇒ MB SAPP", nguồn: cột bình luận trong sheet bug) bị **bác bỏ bằng tài liệu gốc**: sheet mapping khai `Recipient Bank Account ← tai_khoan_nhan_phi_dich_vu` (trục **chương trình × mốc 01/01/2026**) còn loại tài khoản thi đi qua property KHÁC (`loai_phi_dich_vu`) và chỉ quyết định *loại đơn*. Ghi rule đúng `BR-RECIPBANK-001` với `covered_by` thật (`TC_133/134/135/136/360`) — hết `covered_by` rỗng. Không bug nào phải rút lại. **Bài học ghi vào rule:** lời văn trong cột bình luận của sheet bug **không ngang hàng** FSD/mapping sheet; để nó làm oracle thì lượt gen sau sinh case sai rồi log bug không tồn tại.
+
 ## 2026-08-14 — 42% lịch sử bug vô hình với risk, và bảng risk thì toàn dòng phantom
 
 **Bối cảnh.** `risk_score` LOẠI bug không có `module` khỏi bảng (đúng chủ ý — xem §"(unmapped)"), nhưng đo thật thì **26/57 bug** đang ở diện đó vì thiếu label TC trên Jira ⇒ **log bug rồi vẫn không làm sâu thêm test lượt sau**.
