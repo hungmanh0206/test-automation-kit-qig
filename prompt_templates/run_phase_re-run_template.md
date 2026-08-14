@@ -81,6 +81,8 @@ Dùng prompt này khi cần chạy lại testcase fail trước đó hoặc veri
 | 5 | Artifact trực tiếp: `results.json`, `phase2-status.json`, `error-context.md`, screenshot/video path |
 | 6 | Raw requirement/design/API chỉ đọc khi cần xác nhận expected result của bug/case đang rerun; không kiểm tra source change trong rerun |
 
+> 🗣️ **Cuối lượt rerun, kể lại NGAY TRONG HỘI THOẠI**: đã học gì (record `knowledge/**` + memory vừa lưu, kèm lý do) · đã sửa gì (có số đo) · còn thiếu gì (lỗ hổng đo được: bug thiếu `tc_id`, `covered_by` rỗng, chưa có root cause, câu chờ BA). Chạy `npm run learn:report -- --task <TASK_KEY> --write` để lấy số, nhưng **file chỉ là chỗ lưu — không phải cách thông báo**.
+
 **Chi tiết từng bước**: [`.agent/workflows/rerun.md`](../.agent/workflows/rerun.md) — file tổng quan, bên trong liệt kê đủ 3 step `rerun_01…03`.
 
 **Prompt execute**: rerun vẫn chạy test thật nên kỷ luật execute áp y như Phase 2 — mở [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md) (case UI) và/hoặc [`phase2/05_execute_api_playwright.md`](phase2/05_execute_api_playwright.md) (case API) khi bắt đầu chạy lại. Nếu FAIL **không ổn định giữa các lần**, mở [`phase2/07_triage_flaky.md`](phase2/07_triage_flaky.md) để phân biệt flaky vs bug thật **trước khi** động tới `08_log_bug_jira.md`. Bản đồ đầy đủ ở `run_phase2_template.md` §Bản đồ prompt Phase 2.

@@ -31,8 +31,19 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase2_*`*
 | Trước khi log bug | `npm run decisions:check` | Tra `knowledge/decisions/` — triệu chứng này đã từng bị kết luận *không phải bug* chưa? Chống log lại đúng thứ đã Rejected |
 | Khi log bug | `node scripts/qa/output_gate.js --mode bug --preview <bugs.json>` | Repro phải trích từ lần chạy thật; cấm suy đoán trong description; cảnh báo gán tầng FE/BE mà thiếu dấu vết API |
 | **Trước finalize/publish** | `npm run self-review -- --task <TASK_KEY>` | **G9** checklist gộp (preflight + design + row-quality + execution + attestation). **Còn đỏ thì đừng viết report, đừng log bug** |
-| **Sau MỌI lần execute** (không chỉ khi có bug) | `npm run learn -- --scan` và `npm run learn:bugs:apply` | Thu learning data về `knowledge/` (snapshot execution + đồng bộ trạng thái bug từ Jira). **Bỏ bước này là vòng học đứt** — risk model chạy trên dữ liệu cũ |
+| **Sau MỌI lần execute** (không chỉ khi có bug) | `npm run learn -- --scan` và `npm run learn:bugs:apply` | Thu learning data về `knowledge/` (snapshot execution + đồng bộ trạng thái bug từ Jira). **Bỏ bước này là vòng học đứt** — risk model chạy trên dữ liệu cũ |
 | **Cuối task — BÁO CÁO ĐÃ HỌC GÌ** | `npm run learn:report -- --task <TASK_KEY> --write` | Sinh `reports/learning-summary.md`: **đã học** (record thuộc task, gom theo store) + **CHƯA học** (bug không map được module nên bị risk_score loại · rule chưa TC nào dùng · bug chưa có root cause · store còn rỗng). Không có bước này thì không ai biết vòng học có chạy hay bỏ sót gì. |
+
+> 🗣️ **BẮT BUỘC — kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Sinh ra `learning-summary.md` rồi im lặng
+> là chưa xong: user phải đi mở file mới biết. Cuối lượt chạy, nói thẳng **ba phần**:
+> 1. **Đã học gì** — record mới/cập nhật trong `knowledge/**` (bug · domain rule · bản đồ hệ thống · decision ·
+>    setup recipe · quirk env · kỹ thuật UI), **kèm cả memory vừa lưu/sửa và lý do lưu**.
+> 2. **Đã sửa gì** — thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
+> 3. **Còn thiếu gì** — lỗ hổng **đo được**: bug thiếu `tc_id` (bị `risk_score` loại khỏi bảng) · rule có
+>    `covered_by` rỗng · bug chưa có `root_cause_ref` · store còn rỗng · câu hỏi đang chờ BA.
+>
+> Nêu cả phần "còn thiếu" dù nó làm báo cáo trông kém đẹp — **đó mới là phần user dùng để quyết việc tiếp theo**.
+> File chỉ là chỗ LƯU, không phải cách THÔNG BÁO.
 
 ## Prompt mẫu để chạy
 
