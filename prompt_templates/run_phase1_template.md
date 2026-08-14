@@ -33,6 +33,19 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`*
 | Sau export | `npm run risk:gate` | Đối chiếu độ sâu testcase với `depthPolicy` theo band rủi ro |
 | Sau export | `npm run trace:matrix` | Sinh `reports/traceability-matrix.md` — REQ ↔ TC, lộ requirement chưa có case nào |
 | Trước khi kết thúc phase | `npm run gate:policy` | Rule/skill/prompt mồ côi, lệch tên, lệch danh sách đuôi evidence |
+| **Cuối phase — BÁO CÁO ĐÃ HỌC GÌ** | `npm run learn:report -- --task <TASK_KEY> --write` | Sinh `reports/learning-summary.md` (đã học + CHƯA học). Phase 1 học ít record hơn Phase 2 nhưng **đúng loại quý nhất**: câu trả lời của BA sau Ambiguity Gate là business truth vừa được xác nhận |
+
+> 🗣️ **BẮT BUỘC — kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Cuối phase nói thẳng **ba phần**:
+> 1. **Đã học gì** — record mới/cập nhật trong `knowledge/**`, đặc biệt `domain/` + `system/` sinh từ câu trả
+>    lời BA (mỗi câu Blocking đã RESOLVED phải để lại record — `self_review` kiểm từng câu), **kèm cả memory
+>    vừa lưu/sửa và lý do lưu**.
+> 2. **Đã sửa gì** — thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
+> 3. **Còn thiếu gì** — lỗ hổng **đo được**: câu hỏi BA còn `PENDING` (và phần scope bị chặn theo) · rule có
+>    `covered_by` rỗng · requirement chưa có TC nào (xem `traceability-matrix.md`) · màn chưa khai trong
+>    `ui_catalog.json`.
+>
+> Nêu cả phần "còn thiếu" dù nó làm báo cáo trông kém đẹp — **đó mới là phần user dùng để quyết việc tiếp theo**.
+> File chỉ là chỗ LƯU, không phải cách THÔNG BÁO.
 
 ## Prompt mẫu để chạy
 

@@ -81,7 +81,16 @@ Dùng prompt này khi cần chạy lại testcase fail trước đó hoặc veri
 | 5 | Artifact trực tiếp: `results.json`, `phase2-status.json`, `error-context.md`, screenshot/video path |
 | 6 | Raw requirement/design/API chỉ đọc khi cần xác nhận expected result của bug/case đang rerun; không kiểm tra source change trong rerun |
 
-> 🗣️ **Cuối lượt rerun, kể lại NGAY TRONG HỘI THOẠI**: đã học gì (record `knowledge/**` + memory vừa lưu, kèm lý do) · đã sửa gì (có số đo) · còn thiếu gì (lỗ hổng đo được: bug thiếu `tc_id`, `covered_by` rỗng, chưa có root cause, câu chờ BA). Chạy `npm run learn:report -- --task <TASK_KEY> --write` để lấy số, nhưng **file chỉ là chỗ lưu — không phải cách thông báo**.
+> 🗣️ **BẮT BUỘC — kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Cuối lượt rerun nói thẳng **ba phần**:
+> 1. **Đã học gì** — record mới/cập nhật trong `knowledge/**` (đặc biệt `decisions/` khi rerun cho ra kết luận
+>    "không phải bug", và `root_causes/` khi đã xác định được gốc), **kèm cả memory vừa lưu/sửa và lý do lưu**.
+> 2. **Đã sửa gì** — thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
+> 3. **Còn thiếu gì** — lỗ hổng **đo được**: bug rerun vẫn FAIL và vì sao · bug thiếu `tc_id` (bị `risk_score`
+>    loại khỏi bảng) · bug chưa có `root_cause_ref` · case còn `BLOCKED_SETUP` và thiếu capability nào.
+>
+> Lấy số bằng `npm run learn:report -- --task <TASK_KEY> --write`, nhưng nêu cả phần "còn thiếu" dù nó làm báo
+> cáo trông kém đẹp — **đó mới là phần user dùng để quyết việc tiếp theo**. File chỉ là chỗ LƯU, không phải
+> cách THÔNG BÁO.
 
 **Chi tiết từng bước**: [`.agent/workflows/rerun.md`](../.agent/workflows/rerun.md) — file tổng quan, bên trong liệt kê đủ 3 step `rerun_01…03`.
 
