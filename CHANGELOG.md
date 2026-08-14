@@ -7,6 +7,20 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-14 (c) — spec dạng Google Sheet: đọc được mà KHÔNG cần credential
+
+**Bối cảnh.** BA gửi spec dạng Google Sheet liên tục (bảng mapping field↔property, biểu phí, mã môn, luồng đồng bộ). Nhưng `sheet_reader.js` đi qua Sheets API nên đòi credential, và đo 14/08/2026 thì **cả ba đường đều chết**: `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` rỗng · `GOOGLE_API_KEY` rỗng · token OAuth của `google_doc` chỉ có scope `documents.readonly`+`drive.readonly` mà **Drive API đang bị TẮT** ở GCP project. Kết quả: spec dạng sheet nằm ngoài tầm đọc của mọi phase.
+
+**Added — `scripts/integrations/google_sheet/sheet_fetch_public.js`**
+Tải sheet đang bật link chia sẻ về `.xlsx` qua `/export?format=xlsx` — chỉ cần quyền đọc-bằng-link, đúng dạng link BA vẫn gửi. **Chặn cái bẫy im lặng**: sheet KHÔNG chia sẻ thì Google trả **200 + HTML trang đăng nhập**, lưu ra thành "file .xlsx" hỏng và mọi bước sau báo lỗi ở chỗ khác hẳn nguyên nhân. Script kiểm magic bytes `PK` và báo đúng nguyên nhân + cách xử lý. Giới hạn ghi rõ trong header: đây là ảnh TĨNH, không có comment/suggested edit.
+
+**Added — `scripts/convert_excel/xlsx_to_md.js`** (chiều ngược của `md_to_xlsx.js`)
+`.xlsx` → Markdown đọc được: cắt vùng dữ liệu thật (sheet của BA hay 1000×30 mà chỉ ~20 dòng có dữ liệu ⇒ không cắt thì md phình toàn dấu `|` rỗng và ngốn context), giữ hyperlink dạng `[text](url)` (link trong sheet thường trỏ tới spec khác — mất link là mất đường lần tiếp, đã gặp: bảng mapping TK nhận phí nằm sau đúng một link như vậy).
+
+**Hai lỗi tự bắt được khi chạy thật** (kể lại vì đều là lớp lỗi hay lặp):
+- **Ô gộp**: bản đầu tôi *fill-down phỏng đoán* theo hàng trên → nhân bản luôn header thành `↑ ↑ ↑ STT` trên sheet 1001 dòng. Sửa: dùng metadata `cell.isMerged`/`cell.master` của ExcelJS — chính xác, không đoán.
+- **Hyperlink lồng richText**: `v.text` lại là object ⇒ `String()` cho ra `[object Object]` và **mất nhãn link**. Phải gỡ thêm một lớp.
+
 ## 2026-08-14 (b) — `doc_reader` đọc Google Doc nhiều tab chỉ được TAB ĐẦU, im lặng
 
 **Bối cảnh.** Một câu hỏi treo 4 ngày ("TK nhận phí dịch vụ xác định theo chương trình hay theo loại tài khoản thi?") tưởng là *thiếu tài liệu, phải hỏi BA*. Hoá ra tài liệu đã trả lời từ đầu — **kit không đọc được**.
