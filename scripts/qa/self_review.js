@@ -155,12 +155,43 @@ if (statusFile && fs.existsSync(statusFile)) {
     }
   }
 
-  // 6b) domain/ — câu trả lời của BA sau Ambiguity Gate CHÍNH LÀ business truth vừa được xác nhận.
+  // 6b) MỖI câu hỏi Blocking đã RESOLVED phải để lại 1 record trong knowledge.
+  //
+  // Vì sao đây là điểm chốt: câu trả lời của BA sau Ambiguity Gate CHÍNH LÀ sự thật nghiệp vụ vừa được xác
+  // nhận — và đó là **khoảnh khắc rẻ nhất** để ghi, vì thông tin đang ở ngay trước mặt. Bỏ lỡ thì task sau
+  // phải đi hỏi lại từ đầu, hoặc tệ hơn là suy từ app (tautology).
+  //
+  // Bản trước chỉ kiểm THÔ: có RESOLVED mà `domain/` rỗng. Kiểm vậy tắt ngay khi có 1 record bất kỳ, nên
+  // 10 câu trả lời mà ghi 1 cái là qua. Giờ soi TỪNG câu: record phải trích nguồn tới đúng mã câu hỏi
+  // (`Q3`), và chấp nhận cả 3 store vì không phải câu nào cũng thành business rule —
+  //   `domain/`    ← "giá trị đúng là gì"        `system/`  ← "được phép làm gì / luồng trạng thái"
+  //   `decisions/` ← "cái này by-design, không phải bug"
+  // Mức CẢNH BÁO (chưa chặn): có câu trả lời chỉ làm rõ scope, không sinh tri thức tái dùng — chặn cứng sẽ
+  // ép ghi record rác. Siết thành chặn khi đã có số liệu thực tế từ vài task.
   const clar = taskDir ? path.join(taskDir, 'reports', 'phase1-clarifications.md') : '';
   if (clar && fs.existsSync(clar)) {
     const txt = fs.readFileSync(clar, 'utf8');
-    if (/RESOLVED/i.test(txt) && !countJson('domain')) {
-      warnings.push('Có `phase1-clarifications.md` đã RESOLVED (BA/QA đã trả lời) nhưng `knowledge/domain/` RỖNG — câu trả lời đó là business truth, không ghi lại thì task sau phải đi hỏi lại. Skill `domain_recorder`.');
+    // Gom nguồn 1 lần: mọi `source`/`_source` trong 3 store (record có thể nằm ở bất kỳ store nào).
+    const sources = [];
+    for (const d of ['domain', 'system', 'decisions']) {
+      const dir = path.join(know, d);
+      if (!fs.existsSync(dir)) continue;
+      for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.json'))) {
+        try { sources.push(JSON.stringify(JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')))); } catch (e) { /* file hỏng đã có check 6a */ }
+      }
+    }
+    const blob = sources.join('\n');
+    // Câu hỏi: dòng bắt đầu bằng `Q<n>` (theo format prompt gen mục 2). RESOLVED xét trên CẢ DÒNG đó.
+    const rows = txt.split(/\r?\n/).filter((l) => /^\s*[|*-]?\s*\*{0,2}Q\d+\b/.test(l));
+    const resolvedBlocking = rows.filter((l) => /RESOLVED/i.test(l) && /Blocking|Critical|High/i.test(l));
+    const missing = resolvedBlocking
+      .map((l) => (l.match(/\bQ(\d+)\b/) || [])[1])
+      .filter(Boolean)
+      .filter((q) => !new RegExp(`\\bQ${q}\\b`).test(blob));
+    if (missing.length) {
+      warnings.push(`${missing.length}/${resolvedBlocking.length} câu Blocking đã RESOLVED nhưng KHÔNG record nào trong \`knowledge/{domain,system,decisions}\` trích nguồn tới (${missing.map((q) => `Q${q}`).join(', ')}) — câu trả lời của BA là sự thật vừa xác nhận, không ghi thì task sau hỏi lại. Ghi record kèm \`source\` có mã câu (vd "phase1-clarifications Q3"). Skill: \`domain_recorder\` · \`system_mapper\` · \`decision_recorder\`.`);
+    } else if (/RESOLVED/i.test(txt) && !resolvedBlocking.length && !countJson('domain')) {
+      warnings.push('Có `phase1-clarifications.md` đã RESOLVED nhưng không nhận diện được câu Blocking nào (sai format `Q<n> … Blocking … RESOLVED`?) và `knowledge/domain/` RỖNG — kiểm lại file Q&A.');
     }
   }
 
