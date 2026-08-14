@@ -195,6 +195,37 @@ if (statusFile && fs.existsSync(statusFile)) {
     }
   }
 
+  // 6b-bis) SAO LƯU store ghi tay — chống "quên chạy backup".
+  //
+  // Vì sao đứng ở đây: `knowledge/{domain,system,decisions,setup_recipes,environment,locators}` + `bug_tc_map`
+  // là thứ DUY NHẤT trong kit không nạp lại được từ nguồn máy, và `knowledge/**` bị gitignore nên chúng tồn
+  // tại trên ĐÚNG MỘT máy. Mối nguy KHÔNG phải hỏng ổ cứng mà là tai nạn git — đã xảy ra thật trong phiên
+  // 14/08/2026: đổi nhánh khi sync GitLab xoá sạch `knowledge/**`, phải `git restore` lấy lại 87 file. Lần đó
+  // cứu được vì file còn trong history; nay đã bỏ track hoàn toàn nên cùng tai nạn = MẤT VĨNH VIỄN.
+  // Nhắc ở `self_review` (gate trước finalize) vì đó là lúc vừa sinh thêm record mới nhất trong lượt.
+  {
+    const HAND = ['domain', 'system', 'decisions', 'setup_recipes', 'environment', 'locators'];
+    const handCount = HAND.reduce((s, d) => s + countJson(d), 0) + (fs.existsSync(path.join(know, 'bug_tc_map.json')) ? 1 : 0);
+    const dest = process.env.KNOWLEDGE_BACKUP_DIR || '';
+    if (handCount) {
+      if (!dest) {
+        warnings.push(`${handCount} record knowledge GHI TAY (không nạp lại được từ nguồn máy) mà CHƯA cấu hình \`KNOWLEDGE_BACKUP_DIR\` — chúng đang tồn tại trên đúng một máy và \`knowledge/**\` bị gitignore. Đặt đích NGOÀI repo trong \`.env\` rồi \`npm run knowledge:backup\`. Xem knowledge/SCHEMA.md §Chính sách sao lưu.`);
+      } else {
+        let newest = 0;
+        try {
+          for (const f of fs.readdirSync(dest).filter((x) => /^knowledge-backup-.*\.json$/.test(x))) {
+            newest = Math.max(newest, fs.statSync(path.join(dest, f)).mtimeMs);
+          }
+        } catch (e) { /* đích chưa tồn tại → coi như chưa có bundle */ }
+        if (!newest) warnings.push(`\`KNOWLEDGE_BACKUP_DIR\` đã đặt (${dest}) nhưng CHƯA có bundle nào — chạy \`npm run knowledge:backup\`.`);
+        else {
+          const days = Math.floor((Date.now() - newest) / 86400000);
+          if (days >= 7) warnings.push(`Bundle knowledge mới nhất đã ${days} ngày (${dest}) — lượt này vừa ghi thêm record, chạy \`npm run knowledge:backup\` rồi \`--verify\` để chắc không lệch.`);
+        }
+      }
+    }
+  }
+
   // 6c) system/ — bộ TC có case guard/phân quyền/trạng thái mà chưa có bản đồ nào ⇒ oracle của mấy case đó
   // đang phải suy từ app (tautology). Dò bằng dấu hiệu trong tiêu đề case, không đoán theo module.
   if (taskDir && !countJson('system')) {
