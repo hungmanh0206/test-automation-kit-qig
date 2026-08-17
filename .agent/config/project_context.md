@@ -44,6 +44,7 @@
 
 | Quy ước | Nội dung |
 |---|---|
+| **Chạy lại Phase 1 ⇒ KHÔNG push Jira/Xray** | Với task đã có testcase trên Xray (vd `SAPP-24395`: bộ 530 đã publish và đã execute), lượt chạy Phase 1 **lại** là để *đo/kiểm/bổ sung*, **không phải để publish**. Dừng ở Excel + summary; **KHÔNG** chạy `phase1/04_auto_publish_jira.md`, **KHÔNG** `jira:testcase-publish`. User chốt 17/08/2026 — không hỏi lại mỗi lần. Muốn publish thì phải có yêu cầu **tường minh** của user cho đúng lượt đó. |
 | Cấu trúc publish Xray | Mỗi **nhóm chức năng = 1 subfolder** trong Test Repository. Đây là mặc định, không hỏi lại từng lần. |
 | Case regression/change-impact | Xếp vào **nhóm chức năng liên quan**, KHÔNG tách nhóm/subfolder "Regression" riêng. |
 | Đặt tên dữ liệu test | Contact/order tạo qua tool phải bắt đầu bằng **`IT test`** + tên ngắn gọn, để phân biệt với dữ liệu thật và dọn được theo tiền tố. |

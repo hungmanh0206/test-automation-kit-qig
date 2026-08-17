@@ -154,6 +154,10 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 - Nếu là thay đổi chung, phải có xác nhận rõ của user hoặc ghi blocker chờ xác nhận.
 - Khi đã sửa shared file, execution summary phải ghi: file đã sửa, lý do, story có thể bị ảnh hưởng, scope regression đã chạy hoặc chưa chạy.
 
+- **Gate mới mà CHẶN theo một quy ước MỚI ⇒ quy ước đó phải được viết vào file này (canonical) trong CÙNG thay đổi.** Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule** — và ai chỉ đọc `CLAUDE.md → core_rules` sẽ không bao giờ biết luật đó. Đã xảy ra thật: `dim:coverage --enforce`, `output_gate` (bằng chứng theo tag) và `domain:trace-back` chặn/cảnh báo theo quy ước **tag chiều**, trong khi từ "chiều" xuất hiện **0 lần** ở `RULE_GLOBAL.md`, `core_rules.md`, README, USER_GUIDE, QUICKSTART suốt 3 ngày.
+  - Đây là luật cho NGƯỜI, cố ý **không** làm thành máy kiểm: bản máy ("mọi npm script gate phải được canonical nhắc TÊN") đo ra **19/24 script sẽ báo oan** — `secret:scan` chặn theo §Security, quy tắc *có* nhưng tên lệnh *không*, và như vậy mới đúng. Biến canonical thành danh mục lệnh còn tệ hơn.
+  - Kiểm bằng mắt khi review: gate mới chặn cái gì → cái đó có nằm ở §nào trong file này không?
+
 ### Automation Promote Review
 
 - Task-scoped automation không tự động trở thành regression suite chung.
