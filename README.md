@@ -219,6 +219,13 @@ flowchart TD
 | Bản đồ hệ thống + nghĩa vụ test còn trống | `npm run system:check` · `npm run system:check -- --enforce` · `npm run system:index` · `node scripts/qa/system_map.js --impact "<surface>"` |
 | Tra quyết định cũ trước khi log bug | `node scripts/qa/decisions.js --check "<triệu chứng>" --module <Module>` · `npm run decisions:check` · `npm run decisions:index` |
 | Bảng tra skill của kit (sinh lại khi thêm skill) | `npm run skills:index` — sinh `.agent/skills/INDEX.md`; SessionStart hook tự bơm danh sách tên vào context |
+| Báo cáo "lượt này đã học gì / còn thiếu gì" | `TASK_ENV=… npm run learn:report -- --task <TASK_KEY> --write` — sinh `reports/learning-summary.md`; agent phải kể ngay trong hội thoại, không bắt bạn mở file |
+| **Sao lưu knowledge ghi tay** (bắt buộc — 15 file KHÔNG nạp lại được từ nguồn máy) | `npm run knowledge:backup` (đích `KNOWLEDGE_BACKUP_DIR` **ngoài repo**) · `-- --verify <bundle>` · `-- --restore <bundle>`. `self_review` nhắc nếu chưa cấu hình / bundle quá 7 ngày |
+| Tra recipe dựng state cho precondition mới | `npm run howto:find -- "<mô tả precondition>"` — khớp chuỗi trên `goal`/`applies_when`/`tags`, in `used_by` (bằng chứng đã chạy được); **không có điểm tin cậy**, người đọc tự quyết |
+| Đề xuất TC canonical cho bug thiếu label TC | `TASK_ENV=… npm run bug:tc-match` — chỉ ĐỀ XUẤT (argmax module chỉ đúng 40%); người chốt vào `knowledge/bug_tc_map.json` rồi `learn:bugs:apply` backfill |
+| Chiều TC→rule + tự append `covered_by` | `TASK_ENV=… npm run domain:trace-back` · `-- --apply`. Case mang tag `[Calc]/[BEData]/[Display]/[Security]/[Guard]` phải trỏ `[BR-…]`/`[SM-…]` trong tiêu đề |
+| Đếm case theo 15 chiều coverage | `TASK_ENV=… npm run dim:coverage` · `-- --enforce` (chỉ chặn khi case có **tag chiều**; chưa có tag thì tự từ chối chặn) |
+| Đo tài liệu trước khi đọc | `TASK_ENV=… npm run docs:budget` · `-- --contract` — ngưỡng đọc-trực-tiếp / giao-subagent, bắt tài liệu **nhiều bản** và **bản cũ thiếu nội dung** |
 | Kỷ luật định vị element (chống bắt sai UI) | `npm run lint:locator` (báo cáo) · `npm run lint:locator:enforce` (chặn regression MỚI so với baseline `.agent/config/locator-lint-baseline.json`) |
 | Chọn test theo diff + risk/flaky | `npm run select:tests -- [--include-risky 3] [--risk-first]` |
 | Risk register (RBT) | `npm run risk` |
