@@ -144,14 +144,50 @@ if (fs.existsSync(PT_DIR)) {
     walk(d);
     return acc.join('\n');
   }).join('\n');
-  for (const phase of fs.readdirSync(PT_DIR, { withFileTypes: true }).filter((e) => e.isDirectory())) {
-    for (const f of fs.readdirSync(path.join(PT_DIR, phase.name)).filter((x) => x.endsWith('.md'))) {
-      const ref = `${phase.name}/${f}`;
-      if (routerText.includes(ref)) continue;
-      if (alsoText.includes(ref)) { warns.push(`prompt_templates/${ref}: không được \`run_phase*\` nào trỏ tới (chỉ tới được qua workflow/skill) — nên thêm vào bảng "Bản đồ prompt" để ai đọc run_phase là thấy.`); continue; }
-      problems.push(`prompt_templates/${ref}: KHÔNG có đường vào — không \`run_phase*\`, workflow hay skill nào trỏ tới ⇒ prompt mồ côi, sẽ drift âm thầm. Thêm vào bảng "Bản đồ prompt" của run_phase tương ứng, hoặc gộp nội dung rồi xoá file.`);
+  // QUÉT ĐỆ QUY + REACHABILITY 2 CHẶNG. Hai lỗ của bản trước, cả hai đều làm check này BỎ SÓT chứ không báo sai:
+  //
+  //   1. `readdirSync(phase)` chỉ đi MỘT tầng ⇒ 15 chương trong `prompt_templates/phase1/dimensions/`
+  //      (tách ra 14/08/2026) CHƯA TỪNG được kiểm. Check tồn tại mà không nhìn vào file cần nhìn thì tệ hơn
+  //      không có check: nó tạo cảm giác đã gác.
+  //   2. Chỉ nhận đường vào TRỰC TIẾP từ `run_phase*` ⇒ nếu bật đệ quy thôi thì ~9 chương chiều bị báo oan,
+  //      vì chúng tới được qua BẢNG ĐIỀU HƯỚNG trong `02_gen_testcases.md` — mà `02` lại được `run_phase1` trỏ.
+  //      Đó là đường đi HỢP LỆ (2 chặng), y như `run_phase2 → phase2/04 → qa_instincts`.
+  //
+  // Nên mô hình đúng là LAN TRUYỀN: seed = text của `run_phase*`; file nào được một file ĐÃ tới được nhắc thì
+  // cũng tới được; lặp tới khi không thêm gì. Ai không nằm trong tập đó mới là mồ côi thật.
+  const allPrompts = [];
+  (function walkPT(dir) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) { walkPT(p); continue; }
+      if (!e.name.endsWith('.md')) continue;
+      const rel = path.relative(PT_DIR, p).replace(/\\/g, '/');
+      if (/^run_phase.*\.md$/.test(rel)) continue;                 // chính điểm vào, không tự kiểm
+      // Link trong prompt là đường dẫn TƯƠNG ĐỐI so với file đang viết: `02_gen_testcases.md` trỏ chương chiều
+      // bằng `dimensions/05_api.md`, KHÔNG phải `phase1/dimensions/05_api.md`. So bằng rel đầy đủ thì báo oan
+      // hàng loạt (đo: 6 chương bị gọi là mồ côi trong khi bảng điều hướng của `02` có đủ 15 link).
+      // Nên nhận MỌI hậu tố theo ranh giới `/`. An toàn vì 30/30 tên file trong prompt_templates là DUY NHẤT.
+      const parts = rel.split('/');
+      const refs = parts.map((_, i) => parts.slice(i).join('/'));
+      allPrompts.push({ rel, refs, text: fs.readFileSync(p, 'utf8') });
     }
+  })(PT_DIR);
+
+  const reached = new Set();
+  let frontier = routerText;
+  for (let hop = 0; hop < 6; hop += 1) {                            // 6 chặng là quá đủ; chặn vòng lặp vô hạn
+    const added = allPrompts.filter((p) => !reached.has(p.rel) && p.refs.some((r) => frontier.includes(r)));
+    if (!added.length) break;
+    added.forEach((p) => reached.add(p.rel));
+    frontier = added.map((p) => p.text).join('\n');                 // chỉ lan từ file MỚI tới được
   }
+
+  for (const p of allPrompts) {
+    if (reached.has(p.rel)) continue;
+    if (p.refs.some((r) => alsoText.includes(r))) { warns.push(`prompt_templates/${p.rel}: không tới được từ \`run_phase*\` (kể cả qua prompt trung gian) — chỉ tới được qua workflow/skill. Nên thêm vào bảng "Bản đồ prompt".`); continue; }
+    problems.push(`prompt_templates/${p.rel}: KHÔNG có đường vào — không \`run_phase*\`, prompt trung gian, workflow hay skill nào trỏ tới ⇒ prompt mồ côi, sẽ drift âm thầm. Thêm vào bảng "Bản đồ prompt" của run_phase tương ứng, hoặc gộp nội dung rồi xoá file.`);
+  }
+  console.log(`[policy] ✓ ${reached.size}/${allPrompts.length} prompt tới được từ run_phase* (tính cả đường qua prompt trung gian).`);
 }
 
 // ─── Lệnh GATE trong workflow phải xuất hiện ở `run_phase*` ────────────────────────────────────────────────
