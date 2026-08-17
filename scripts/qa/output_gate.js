@@ -242,7 +242,7 @@ function mainBug() {
 // stepsRaw/expectedRaw = cleanCell (<br>→\n); gateTestcaseRow xử lý cả <br> lẫn \n nên tương thích.
 function parseTestcaseTable(md) {
   const doc = testcaseModel.parseMarkdown(md);
-  return { rows: doc.tests.map((t) => ({ tcId: t.tcId, steps: t.stepsRaw, expected: t.expectedRaw })), found: doc.tests.length > 0 };
+  return { rows: doc.tests.map((t) => ({ tcId: t.tcId, steps: t.stepsRaw, expected: t.expectedRaw, dimensions: t.dimensions })), found: doc.tests.length > 0 };
 }
 
 // Trả về { problems (CHẶN), warnings (cảnh báo) }. `;`-packing là warning trừ khi strictSemicolon.
@@ -262,6 +262,8 @@ function gateTestcaseRow(row, { strictSemicolon = false } = {}) {
   }
   const vague = rules.vagueExpectedLines(row.expected);
   if (vague.length) problems.push(`${id}: "Kết quả mong đợi" chung chung: "${vague.join('", "')}" — mô tả cụ thể (text/URL/element)`);
+  // LỚP 1: case đã tự khai chiều thì expected phải mang bằng chứng tối thiểu của chiều đó (xem output_rules).
+  for (const m of rules.lintTagDepth(row)) warnings.push(`${id}: ${m}`);
   const semi = String(row.expected).split(/<br\s*\/?>|\r?\n/).filter((l) => l.includes(';')).length;
   if (semi) (strictSemicolon ? problems : warnings).push(`${id}: "Kết quả mong đợi" nhồi ý bằng ";" (${semi} dòng) — nên tách mỗi ý 1 dòng "- "`);
   return { problems, warnings };

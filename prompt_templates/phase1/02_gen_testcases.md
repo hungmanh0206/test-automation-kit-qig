@@ -83,6 +83,26 @@ Mỗi case ghi thêm **1 tag chiều** vào `Trường hợp kiểm thử`, ngay
 
 Case phủ nhiều chiều thì ghi nhiều tag (`[Negative][Validation][Security]`). Chiều không áp dụng cho task thì khai `"n/a"` **kèm lý do** trong `dimension_manifest.json` — bỏ chiều mà không nói vì sao sẽ bị cảnh báo.
 
+### 0b-bis. Gắn tag rồi thì `Kết quả mong đợi` phải MANG BẰNG CHỨNG của chiều đó
+
+Tag chứng minh case **có mặt** ở chiều đó; nó **không** chứng minh case assert đủ sâu. `output_gate --mode gen-testcase` nay kiểm tiếp:
+
+| Tag | Expected phải có ít nhất | Thiếu thì sao |
+|---|---|---|
+`[Calc]` | **giá trị SỐ tự tính** (kết quả công thức) | *"tính đúng Net Price"* không phải oracle |
+`[Display]` | **chuỗi trích nguyên văn** trong ngoặc kép, **mẫu định dạng** (`dd/mm/yyyy`, `hh:mm`), hoặc **danh sách cột** | case PASS cả khi hiển thị sai |
+`[Guard]` | **mã trạng thái** (403/409…) **hoặc** "bị chặn" **kèm** "dữ liệu không đổi" | *"bị chặn"* không chứng minh dữ liệu còn nguyên |
+`[BEData]` | **tên property/field** cụ thể, hoặc phân biệt `null`/rỗng/thiếu key/`0` | *"map đúng"* không kiểm được |
+`[Resilience]` | nêu **lần gọi thứ hai/trùng/đồng thời** **kèm kết quả bằng số** | không phân biệt được idempotent thật |
+`[Perf]` | **ngưỡng có đơn vị** (`ms`/`s`/`p95`) | không phán được đạt/không đạt |
+`[Validation]` | **thông báo lỗi trích nguyên văn** hoặc **giá trị biên** | — |
+
+Chiều khác (`[UI]` `[API]` `[E2E]` `[Export]` `[SideEffect]` `[Design]` `[Impact]`) **cố ý không khai luật** — chưa phát biểu được "bằng chứng tối thiểu" một cách chính xác thì thà không gác, còn hơn gác bằng luật mơ hồ rồi báo oan.
+
+**Vì sao có mục này:** `OPS_PAY_TC_175` liệt kê form Add Transaction **có** field Recipient Bank Account nhưng không phát biểu ràng buộc nào ⇒ case **XANH** trong khi bug `SAPP-28420` (modal cho chọn pháp nhân khác order ⇒ HubSpot ghi sai pháp nhân) vẫn sống. Tag `[Display]` một mình không cứu được ca đó; **bằng chứng tối thiểu** thì cứu được.
+
+> Hiện là **CẢNH BÁO**, chưa chặn. Sẽ bật `--strict` sau khi đo trên bộ gen mới đầu tiên (<10% case thiếu). Đo trên bộ 530 hiện tại: **0 cảnh báo** — vì bộ đó chưa có tag chiều nào, nên luật này không báo oan lấy một ca.
+
 ### 0c. TAG NGUỒN ORACLE — case có oracle nghiệp vụ phải trỏ về rule
 
 Case mang tag `[Calc]` `[BEData]` `[Display]` `[Security]` `[Guard]` là case có **oracle NGOÀI app** (giá trị đúng không suy được từ chính app). Những case đó phải **trỏ id knowledge** ngay trong tiêu đề:

@@ -363,7 +363,68 @@ function lintBugProvenance({ steps = '', attachments = [], runRef = '' } = {}) {
   return out;
 }
 
+/* ── LỚP 1: BẰNG CHỨNG TỐI THIỂU THEO TAG CHIỀU ────────────────────────────────────────────────────────────
+ *
+ * VẤN ĐỀ: tag chiều (`[Calc]`, `[Display]`…) chứng minh case CÓ MẶT ở chiều đó, KHÔNG chứng minh nó assert
+ * đủ sâu. Ca đắt nhất đã xảy ra: `OPS_PAY_TC_175` liệt kê form Add Transaction CÓ field Recipient Bank Account
+ * nhưng không phát biểu ràng buộc nào ⇒ case XANH, bug `SAPP-28420` (modal cho chọn pháp nhân khác order) sống.
+ *
+ * VÌ SAO CÁCH NÀY KHÁC 3 LẦN SUY DIỄN ĐÃ THẤT BẠI: những lần đó tôi bắt máy PHÂN LOẠI ("case này thuộc chiều
+ * nào?") — trên tiếng Việt thì recall/precision đánh đổi nhau (`hiển thị` là động từ của MỌI expected). Ở đây
+ * chiều ĐÃ do người khai bằng tag, máy chỉ hỏi tiếp một câu HẸP: "expected có mang đúng loại bằng chứng của
+ * chiều đó không?". Tag lọc trước nên precision cao hẳn.
+ *
+ * CỐ Ý KHÔNG khai luật cho mọi chiều. Chiều nào tôi không phát biểu được "bằng chứng tối thiểu" một cách chính
+ * xác (`[UI]`, `[E2E]`, `[SideEffect]`, `[Design]`, `[API]`, `[Impact]`, `[Export]`) thì BỎ TRỐNG — thà không
+ * gác còn hơn gác bằng một luật mơ hồ rồi báo oan.
+ *
+ * Luôn là CẢNH BÁO ở bản đầu. Bật chặn (`--strict`) chỉ sau khi đo trên bộ gen mới đầu tiên (<10% thiếu).
+ */
+// Bỏ đánh số đầu dòng ("1. …") TRƯỚC khi tìm số — nếu không thì mọi expected đều "có số" và luật `[Calc]`
+// thành vô nghĩa. Đây là bẫy đã thấy ngay khi thử: expectedRaw luôn ở dạng "1. …\n2. …".
+const stripLineNumbers = (s) => String(s || '').split(/<br\s*\/?>|\r?\n/).map((l) => l.replace(/^\s*\d+\s*[.)]\s*/, '')).join('\n');
+const HAS_NUMBER = /\d/;
+const HAS_QUOTED = /["“”'`][^"“”'`]{2,}["“”'`]/;                       // chuỗi trích nguyên văn
+const HAS_FORMAT = /dd\/mm|mm\/yyyy|hh:mm|DD\/MM|YYYY|\d{2}\/\d{2}\/\d{4}/i;
+const HAS_STATUS = /\b(4\d{2}|5\d{2})\b|\bhttp\s*\d{3}/i;
+const HAS_BLOCK = /bị chặn|không cho|không được|chặn lưu|từ chối|deny|forbidden/i;
+const HAS_UNCHANGED = /không đổi|giữ nguyên|vẫn là|vẫn ở/i;
+const HAS_PROPERTY = /[a-z][a-z0-9]*_[a-z0-9_]{2,}/;                    // snake_case field/property
+const HAS_NULLISH = /\bnull\b|rỗng|trống|thiếu key|\[\]|""/i;
+const HAS_REPEAT = /lần (hai|2)|gọi lại|lặp lại|trùng|đồng thời|idempotent|retry|thử lại/i;
+const HAS_TIME_UNIT = /\b\d+(\.\d+)?\s*(ms|s|giây|phút)\b|p9[05]|\bSLA\b/i;
+
+const TAG_EVIDENCE = {
+  calc: { test: (e) => HAS_NUMBER.test(e), need: 'một GIÁ TRỊ SỐ tự tính (kết quả của công thức) — "tính đúng" không phải oracle' },
+  display: { test: (e) => HAS_QUOTED.test(e) || HAS_FORMAT.test(e) || /đủ cột|thứ tự cột|danh sách cột/i.test(e), need: 'chuỗi TRÍCH NGUYÊN VĂN (trong ngoặc kép), hoặc mẫu định dạng (dd/mm/yyyy, hh:mm), hoặc danh sách cột — nếu không thì case này PASS cả khi hiển thị sai' },
+  guard: { test: (e) => HAS_STATUS.test(e) || (HAS_BLOCK.test(e) && HAS_UNCHANGED.test(e)), need: 'MÃ TRẠNG THÁI (403/409…) hoặc "bị chặn" KÈM "dữ liệu không đổi" — chỉ nói "bị chặn" thì không chứng minh được dữ liệu còn nguyên' },
+  bedata: { test: (e) => HAS_PROPERTY.test(e) || HAS_NULLISH.test(e), need: 'TÊN property/field cụ thể, hoặc phân biệt null/rỗng/thiếu key/0 — "map đúng" không kiểm được' },
+  resilience: { test: (e) => HAS_REPEAT.test(e) && HAS_NUMBER.test(e), need: 'nêu lần gọi THỨ HAI/trùng/đồng thời KÈM kết quả bằng số (vd "đúng 1 transaction", "Paid Amount vẫn 120.000")' },
+  perf: { test: (e) => HAS_TIME_UNIT.test(e), need: 'NGƯỠNG có đơn vị (ms/s/p95) — không có ngưỡng thì không phán được đạt/không đạt' },
+  validation: { test: (e) => HAS_QUOTED.test(e) || HAS_NUMBER.test(e), need: 'THÔNG BÁO LỖI trích nguyên văn hoặc giá trị biên cụ thể' },
+};
+
+/**
+ * Case mang tag chiều nhưng expected thiếu bằng chứng tối thiểu của chiều đó → cảnh báo.
+ * @param {{tcId?:string, dimensions?:string[], expected?:string}} row
+ * @returns {string[]} thông điệp cảnh báo (rỗng nếu đạt hoặc không có tag nào được khai luật)
+ */
+function lintTagDepth(row) {
+  const out = [];
+  const dims = Array.isArray(row.dimensions) ? row.dimensions : [];
+  if (!dims.length) return out;
+  const expected = stripLineNumbers(row.expected);
+  for (const d of dims) {
+    const spec = TAG_EVIDENCE[d];
+    if (!spec) continue;                                                  // chiều chưa khai luật → không gác
+    if (spec.test(expected)) continue;
+    out.push(`mang tag \`[${d}]\` nhưng "Kết quả mong đợi" thiếu ${spec.need}`);
+  }
+  return out;
+}
+
 module.exports = {
+  lintTagDepth, TAG_EVIDENCE,
   isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly, lintBugRealism, lintBugProvenance,
   lintBeVsFeLayer,
   isVisualEvidence, isVideoEvidence, VISUAL_EXT, VIDEO_EXT, extListText, MIME_BY_EXT, mimeOf,
