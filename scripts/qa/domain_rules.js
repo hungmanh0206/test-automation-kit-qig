@@ -36,6 +36,18 @@ const ID_RE = /^BR-[A-Z0-9]+-\d{3}$/;
 const STATUSES = ['active', 'superseded', 'deprecated'];
 const CONFIRMERS = ['BA', 'Dev', 'QA-Lead', 'PO'];
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+
+// Dấu hiệu expected CÓ thứ để đối chiếu: số, chuỗi nguyên văn trong ngoặc, tên field/property, hoặc khẳng
+// định RỖNG (một oracle hợp lệ — "cột công phải TRỐNG, không phải 0").
+// Không dùng `\b` với cụm có dấu: "đ"/"ẩ" không phải word-char trong regex JS ⇒ biên không bao giờ khớp.
+const CONCRETE_RE = /\d|["'“”]|[a-z]+_[a-z_]+|(rỗng|để trống|không hiển thị|không có giá trị|không gửi|không tạo|không đổi|CHẶN|CHO PHÉP)/i;
+// Thứ cần bắt: expected chỉ nói "được/đúng/thành công" rồi hết — PASS cả khi hệ thống làm sai.
+const VAGUE_RE = /(thành công|đúng|hợp lệ|bình thường|như mong đợi|không lỗi|\bok\b|\bpass\b)/i;
+const isVagueExpected = (s) => VAGUE_RE.test(s) && !CONCRETE_RE.test(s);
+
+// TC ID có dạng <PREFIX>_<số>; prefix cho biết bộ testcase nào. Dùng để biết một scan có ĐỦ THẨM QUYỀN phán
+// "TC không tồn tại" hay không.
+const tcPrefix = (id) => String(id).replace(/[_-]?\d+$/, '');
 const PHONE_RE = /\b0\d{8,10}\b/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -66,11 +78,15 @@ function validate(r) {
   if (!Array.isArray(d.covered_by)) problems.push(at('`covered_by` phải là mảng TC ID (rỗng cũng được, nhưng phải có field — đây là mắt xích trace ngược)'));
 
   // examples: thứ biến rule thành oracle dùng được → phải có input + expected cụ thể.
+  // Bản đầu đòi `expected` phải chứa CHỮ SỐ. Đo trên rule thật (FSD Bảo lưu/Transaction) thì luật đó báo oan
+  // 12/26 lần: "Refund Amount = rỗng", "Edit: CHẶN", "VietQR sinh theo tài khoản SCMA" đều là oracle đối chiếu
+  // được mà không có số nào. Nên đảo chiều: KHÔNG đòi dấu hiệu cụ thể, mà bắt đúng thứ cần bắt — expected
+  // chỉ nói "thành công/đúng/hợp lệ" rồi hết. (Cùng gốc lỗi với TAG_EVIDENCE.display trong lib/output_rules.js.)
   const ex = Array.isArray(d.examples) ? d.examples : [];
   if (!ex.length) problems.push(at('thiếu `examples` — rule không có cặp {input, expected} cụ thể thì KHÔNG dùng được làm oracle'));
   ex.forEach((e, i) => {
     if (!e || !String(e.input || '').trim() || !String(e.expected || '').trim()) problems.push(at(`examples[${i}] thiếu \`input\` hoặc \`expected\``));
-    else if (!/\d/.test(String(e.expected))) warnings.push(at(`examples[${i}].expected không có số/giá trị cụ thể ("${String(e.expected).slice(0, 40)}") — oracle dễ thành chung chung`));
+    else if (isVagueExpected(String(e.expected))) warnings.push(at(`examples[${i}].expected chung chung ("${String(e.expected).slice(0, 40)}") — không có số/chuỗi nguyên văn/khẳng định rỗng nào để đối chiếu`));
   });
 
   if (d.version > 1 && !String(d.supersedes || '').trim()) warnings.push(at(`version ${d.version} nhưng thiếu \`supersedes\` (nên ghi <id>@v${d.version - 1} để lần theo lịch sử)`));
@@ -190,16 +206,25 @@ if (flag('trace') || flag('stale') || (!flag('index') && !flag('validate'))) {
   const real = realTcIds();
   const runs = lastRunByTc();
   console.log(`[domain] đối chiếu với ${real.size} TC ID thật trong testcase canonical`);
+  const scannedPrefixes = new Set([...real].map(tcPrefix));
+  let outOfScopeRules = 0;
   for (const r of rules) {
     const d = r.data || {};
     if (!Array.isArray(d.covered_by)) continue;
-    const ghosts = d.covered_by.filter((tc) => real.size && !real.has(String(tc)));
+    // Chỉ phán "TC không tồn tại" khi lượt quét này CÓ thẩm quyền: bộ testcase đang quét phải chứa cùng họ
+    // TC ID (cùng prefix). Đo thực địa: trỏ --tc-dir vào một bộ pilot `BL_TC_*` khiến 15/15 rule bị báo oan
+    // ghost-ref vì `covered_by` của chúng trỏ `OPS_PAY_TC_*` — nằm ở bộ canonical khác, không phải "không tồn tại".
+    const ghosts = d.covered_by.filter((tc) => real.size && !real.has(String(tc)) && scannedPrefixes.has(tcPrefix(tc)));
+    const outOfScope = d.covered_by.filter((tc) => real.size && !real.has(String(tc)) && !scannedPrefixes.has(tcPrefix(tc)));
+    if (outOfScope.length) outOfScopeRules += 1;
     if (ghosts.length) warnings.push(`${d.id}: \`covered_by\` trỏ tới TC KHÔNG TỒN TẠI: ${ghosts.join(', ')} (rule nghĩ là đã test nhưng thực tế không)`);
     if (flag('stale') || !flag('trace')) {
       const stale = d.covered_by.filter((tc) => runs.has(String(tc)) && runs.get(String(tc)) < String(d.confirmed_at || ''));
       if (stale.length) warnings.push(`${d.id}: rule cập nhật ${d.confirmed_at} NHƯNG các TC sau execute trước đó → phải chạy lại: ${stale.join(', ')}`);
     }
   }
+  // Nói thẳng phần KHÔNG kiểm được, để không ai đọc "0 ghost-ref" thành "đã đối chiếu hết".
+  if (outOfScopeRules) console.log(`[domain] ⓘ ${outOfScopeRules} rule có \`covered_by\` trỏ họ TC ID không nằm trong lượt quét này (prefix khác) — KHÔNG kiểm ghost-ref cho chúng. Muốn kiểm đủ: chạy trên bộ canonical đầy đủ (bỏ --tc-dir).`);
 
   // STALE THEO LỊCH — khác hẳn stale ở trên.
   //   Trên: rule ĐỔI sau lần execute cuối ⇒ TC phải chạy lại. Chỉ nổ khi có người sửa rule.

@@ -7,6 +7,27 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-17 — chạy 3 gate mới trên NỘI DUNG THẬT: 4 luật báo oan, đã vá
+
+**Vấn đề:** `dim:coverage`, Lớp 1 (bằng-chứng-tối-thiểu-theo-tag) và `domain:trace-back` tới giờ **chỉ được thử trên fixture do tôi tự dựng** — mà fixture thì luôn xanh, nó được viết để khớp luật. Nên tôi viết **28 testcase Order Bảo lưu** có tag chiều thật (oracle từ `BR-BAOLUU-001…007`, `BR-TXN-003…005`) rồi chạy 3 gate đó lên. Lượt đo lộ ra **4 luật báo oan** — cả 4 vô hình với fixture.
+
+**Fixed — bằng chứng tối thiểu (`scripts/qa/lib/output_rules.js`):**
+- `[display]` **không nhận khẳng định RỖNG**. "Refund Amount rỗng" bị đòi thêm bằng chứng, trong khi §12 prompt gen nêu thẳng *"giá trị để trống đúng nghĩa"* là thứ phải kiểm.
+- `[guard]` áp bằng chứng **nhánh CHẶN cho cả nhánh CHO PHÉP**: case `[Positive][Guard]` không có 4xx nào để nêu mà vẫn bị đòi "403/409 hoặc dữ liệu không đổi". Nay tách: nhánh CHẶN đòi mã lỗi/dữ-liệu-không-đổi, nhánh CHO PHÉP đòi thông báo nguyên văn hoặc giá trị cụ thể.
+- Kết quả trên bộ pilot: **4/20 cảnh báo → 0**, và **4/4 cảnh báo ban đầu là oan**.
+
+**Fixed — `scripts/qa/domain_rules.js`:**
+- Kiểm ghost-ref phán **ngoài thẩm quyền**: trỏ `--tc-dir` vào một bộ hẹp (`BL_TC_*`) làm **13 rule** bị tố *"covered_by trỏ TC KHÔNG TỒN TẠI"*, chỉ vì `covered_by` của chúng trỏ `OPS_PAY_TC_*` nằm ở bộ canonical khác. Nguy hiểm thật: người đọc có thể đi xoá `covered_by` đúng. Nay chỉ kiểm khi lượt quét **chứa cùng họ TC ID**, và **in ra phần không kiểm được** thay vì im lặng báo ✓.
+- Luật *"`examples[].expected` phải chứa chữ số"* quá thô: "Refund Amount = rỗng", "Edit: CHẶN", "VietQR theo tài khoản SCMA" đều đối chiếu được mà không có số nào (**9 báo oan**). Đảo chiều — không đòi dấu hiệu cụ thể, mà bắt đúng thứ cần bắt: expected chỉ nói "thành công/đúng/hợp lệ" rồi hết. Tổng: **26 cảnh báo → 2**, cả 2 đều đúng.
+
+**Bẫy kỹ thuật đáng ghi:** `\b` trong regex JS **không dùng được với chữ có dấu** — "đ"/"ẩ" không phải word-char nên `\b` đứng trước "để trống" là biên **không bao giờ khớp**; luật im lặng mà trông như vẫn chạy. Bản vá đầu của tôi mắc đúng lỗi này và **test mới bắt được ngay** — đó là lý do phải khoá luật bằng test chứ không tin mắt.
+
+**Added — test khoá 2 luật mới** (`tests/fe/infra/gates.spec.ts`, 54 → 56 test): `[display]` nhận rỗng nhưng vẫn bắt "hiển thị đúng thông tin"; `[guard]` phân biệt nhánh allow/deny. Kiểm soát ngược: 3 case expected mơ hồ vẫn bị bắt đủ 3 → nới luật **không** làm cùn luật. Bộ 530 thật: **0 CHẶN**, không sinh chặn mới.
+
+**`dim:coverage` bắt gap trong nội dung do CHÍNH TÔI viết:** 20 case đầu phủ 7/15 chiều; khi buộc khai manifest thật thì 4 chiều 0-case **không khai `n/a` được** (UI có lưới/filter/sort · API vì quy tắc "test cả UI lẫn API" · E2E vì Create→Checkout→Thanh toán là chuỗi thật · Change Impact vì đơn Bảo lưu dùng chung Transaction List + property "lần đóng"). `--enforce` **chặn (exit 1)** → bổ sung 8 case. 4 chiều `n/a` có lý do kiểm chứng được, trong đó `security` = **BA chưa cấp ma trận role/permission** (cùng nguyên nhân khiến 24 case bộ 530 đang treo).
+
+**Quyết định — CHƯA bật chặn toàn cục.** Tỷ lệ trượt Lớp 1 sau khi trừ báo oan là 0%, nhưng **không dùng để quyết được**: 28 case này do tôi viết với 10 rule mở sẵn trước mắt ⇒ đó là **trần**, không phải tỷ lệ điển hình. Căn cứ để bật chỉ có một nguồn: **một lượt Phase 1 chạy bình thường** rồi đo lại. Giữ **cảnh báo, không chặn** cho tới lúc đó.
+
 ## 2026-08-14 (l) — backup knowledge: cấu hình thật + chốt chặn "quên chạy"
 
 Đích đã chốt: **local ngoài repo** (`D:/kit-knowledge-backup`) — user chọn, cố ý **KHÔNG** đưa business rule nội bộ lên cloud dù OneDrive có sẵn trên máy. `KNOWLEDGE_BACKUP_DIR` đặt trong `.env` (machine-local, gitignored) và ghi vào `.env.example` cho máy mới. Bundle đầu tiên: **15 file**.

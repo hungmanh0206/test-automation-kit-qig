@@ -81,6 +81,29 @@ test.describe('@infra Lớp 1 — bằng chứng tối thiểu theo tag chiều'
     }
   });
 
+  // Hai luật dưới đây SINH RA TỪ ĐO THỰC ĐỊA (bộ pilot Bảo lưu 20 case): bản đầu báo oan 4/20, và cả 4 đều
+  // do hai chỗ này. Giữ test để lần sau không ai "sửa" ngược lại.
+  test('[display]: khẳng định RỖNG là oracle hợp lệ, không phải thiếu bằng chứng', () => {
+    for (const e of ['1. Refund Amount rỗng (không có giá trị)', '1. Cột công để trống, KHÔNG phải 0', '1. Không hiển thị nút Export']) {
+      expect(rules.lintTagDepth({ dimensions: ['display'], expected: e }), e).toHaveLength(0);
+    }
+    // nhưng vẫn phải bắt câu nói chung chung
+    expect(rules.lintTagDepth({ dimensions: ['display'], expected: '1. Hiển thị đúng thông tin' })).toHaveLength(1);
+  });
+
+  test('[guard]: nhánh CHO PHÉP và nhánh CHẶN đòi bằng chứng KHÁC nhau', () => {
+    const allow = ['positive', 'guard'];
+    const deny = ['negative', 'guard'];
+    // CHO PHÉP: kết quả cụ thể của đường hợp lệ là đủ — không có 4xx nào để nêu.
+    expect(rules.lintTagDepth({ dimensions: allow, expected: '1. Lưu thành công, Total = 800.000' })).toHaveLength(0);
+    expect(rules.lintTagDepth({ dimensions: allow, expected: '1. Báo "Delete successfully", status Đã hủy' })).toHaveLength(0);
+    // CHO PHÉP nhưng nói trơ → vẫn bắt.
+    expect(rules.lintTagDepth({ dimensions: allow, expected: '1. Sửa được bình thường' })).toHaveLength(1);
+    // CHẶN: "bị chặn" một mình KHÔNG đủ, phải có mã lỗi hoặc "dữ liệu không đổi".
+    expect(rules.lintTagDepth({ dimensions: deny, expected: '1. Bị chặn' })).toHaveLength(1);
+    expect(rules.lintTagDepth({ dimensions: deny, expected: '1. Trả 403, order giữ nguyên status' })).toHaveLength(0);
+  });
+
   test('case không có tag chiều nào → im lặng (không phạt bộ TC cũ)', () => {
     expect(rules.lintTagDepth({ dimensions: ['positive'], expected: '1. ok' })).toHaveLength(0);
     expect(rules.lintTagDepth({ dimensions: [], expected: '1. ok' })).toHaveLength(0);

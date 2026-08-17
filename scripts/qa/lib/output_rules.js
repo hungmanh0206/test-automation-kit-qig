@@ -394,10 +394,27 @@ const HAS_NULLISH = /\bnull\b|rỗng|trống|thiếu key|\[\]|""/i;
 const HAS_REPEAT = /lần (hai|2)|gọi lại|lặp lại|trùng|đồng thời|idempotent|retry|thử lại/i;
 const HAS_TIME_UNIT = /\b\d+(\.\d+)?\s*(ms|s|giây|phút)\b|p9[05]|\bSLA\b/i;
 
+// "Giá trị ĐỂ TRỐNG đúng nghĩa" là oracle hiển thị hợp lệ và §12 nêu thẳng ("buổi chưa diễn ra → cột công
+// TRỐNG, KHÔNG phải 0"). Bản đầu không nhận nên báo oan case assert đúng chuẩn đó.
+// KHÔNG dùng `\b` ở đây: trong regex JS, chữ có dấu ("đ", "ẩ") không phải word-char, nên `\b` đứng trước
+// "để trống" / "ẩn" là biên KHÔNG BAO GIỜ khớp — luật im lặng mà trông như vẫn chạy. Test bắt được ngay.
+const HAS_EMPTINESS = /(rỗng|để trống|bỏ trống|không hiển thị|không có giá trị|không hiện)/i;
+
 const TAG_EVIDENCE = {
   calc: { test: (e) => HAS_NUMBER.test(e), need: 'một GIÁ TRỊ SỐ tự tính (kết quả của công thức) — "tính đúng" không phải oracle' },
-  display: { test: (e) => HAS_QUOTED.test(e) || HAS_FORMAT.test(e) || /đủ cột|thứ tự cột|danh sách cột/i.test(e), need: 'chuỗi TRÍCH NGUYÊN VĂN (trong ngoặc kép), hoặc mẫu định dạng (dd/mm/yyyy, hh:mm), hoặc danh sách cột — nếu không thì case này PASS cả khi hiển thị sai' },
-  guard: { test: (e) => HAS_STATUS.test(e) || (HAS_BLOCK.test(e) && HAS_UNCHANGED.test(e)), need: 'MÃ TRẠNG THÁI (403/409…) hoặc "bị chặn" KÈM "dữ liệu không đổi" — chỉ nói "bị chặn" thì không chứng minh được dữ liệu còn nguyên' },
+  display: { test: (e) => HAS_QUOTED.test(e) || HAS_FORMAT.test(e) || HAS_EMPTINESS.test(e) || /đủ cột|thứ tự cột|danh sách cột/i.test(e), need: 'chuỗi TRÍCH NGUYÊN VĂN (trong ngoặc kép), mẫu định dạng (dd/mm/yyyy, hh:mm), danh sách cột, hoặc khẳng định RỖNG/để trống — nếu không thì case này PASS cả khi hiển thị sai' },
+  // Chiều `guard` có HAI mặt và đòi bằng chứng KHÁC nhau:
+  //   - nhánh CHẶN (negative/edge): phải có mã 4xx hoặc "bị chặn" KÈM "dữ liệu không đổi" — nếu không thì
+  //     không chứng minh được dữ liệu còn nguyên sau khi bị từ chối.
+  //   - nhánh CHO PHÉP (positive): không có 4xx nào để nêu; bằng chứng đúng là kết quả cụ thể của đường hợp lệ
+  //     (thông báo nguyên văn hoặc giá trị/trạng thái). Bản đầu áp luật nhánh CHẶN cho cả nhánh CHO PHÉP nên
+  //     báo oan — đo trên bộ pilot thật: 2/4 cảnh báo `guard` là oan vì đúng lý do này.
+  guard: {
+    test: (e, dims) => (dims.includes('positive') && !dims.includes('negative')
+      ? (HAS_QUOTED.test(e) || HAS_NUMBER.test(e) || HAS_STATUS.test(e))
+      : (HAS_STATUS.test(e) || (HAS_BLOCK.test(e) && HAS_UNCHANGED.test(e)))),
+    need: 'nhánh CHẶN: MÃ TRẠNG THÁI (403/409…) hoặc "bị chặn" KÈM "dữ liệu không đổi" · nhánh CHO PHÉP (case [Positive]): thông báo nguyên văn hoặc giá trị/trạng thái cụ thể',
+  },
   bedata: { test: (e) => HAS_PROPERTY.test(e) || HAS_NULLISH.test(e), need: 'TÊN property/field cụ thể, hoặc phân biệt null/rỗng/thiếu key/0 — "map đúng" không kiểm được' },
   resilience: { test: (e) => HAS_REPEAT.test(e) && HAS_NUMBER.test(e), need: 'nêu lần gọi THỨ HAI/trùng/đồng thời KÈM kết quả bằng số (vd "đúng 1 transaction", "Paid Amount vẫn 120.000")' },
   perf: { test: (e) => HAS_TIME_UNIT.test(e), need: 'NGƯỠNG có đơn vị (ms/s/p95) — không có ngưỡng thì không phán được đạt/không đạt' },
@@ -417,7 +434,7 @@ function lintTagDepth(row) {
   for (const d of dims) {
     const spec = TAG_EVIDENCE[d];
     if (!spec) continue;                                                  // chiều chưa khai luật → không gác
-    if (spec.test(expected)) continue;
+    if (spec.test(expected, dims)) continue;                                // dims: vài chiều đòi bằng chứng khác nhau theo nhánh allow/deny
     out.push(`mang tag \`[${d}]\` nhưng "Kết quả mong đợi" thiếu ${spec.need}`);
   }
   return out;
