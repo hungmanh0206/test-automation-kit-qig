@@ -54,6 +54,14 @@ function canonStatus(raw) {
   const tax = loadTaxonomy();
   if (tax.statuses && tax.statuses[s]) return s;
   if (tax.synonyms && tax.synonyms[s]) return tax.synonyms[s];
+  // CHUẨN HOÁ BIẾN THỂ TRÌNH BÀY trước khi bó tay. Nhãn tới từ Xray/Jira là chữ CHO NGƯỜI ĐỌC ("TO DO",
+  // "In Progress") nên khoảng trắng/gạch là chuyện của giao diện, không phải verdict khác. Đo 17/08/2026: 24
+  // case ghi `"TO DO"` (đúng nhãn Xray) bị gate loại chỉ vì thiếu dấu cách trong bảng — trong khi chính 24
+  // case đó ĐÃ có lý do đầy đủ ("BA chưa cung cấp ma trận role/permission nên không có oracle"). Bắt người sửa
+  // tay là mời lỗi quay lại ở lần pull Xray sau; chuẩn hoá ở đây thì hết hẳn.
+  const squashed = s.replace(/[\s_-]+/g, '');
+  for (const k of Object.keys(tax.statuses || {})) if (k.replace(/[\s_-]+/g, '') === squashed) return k;
+  for (const [k, v] of Object.entries(tax.synonyms || {})) if (k.replace(/[\s_-]+/g, '') === squashed) return v;
   return null;
 }
 
