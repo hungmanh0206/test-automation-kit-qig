@@ -226,6 +226,49 @@ if (fs.existsSync(SKILLS_DIR)) {
   }
 }
 
+// ─── npm script phải CÓ NƠI NHẮC TỚI (điểm mù cũ của gate này) ─────────────────────────────────────────
+//
+// Gate này vốn gác 5 chiều: canonical pointer · CLAUDE.md ↔ code · rule mồ côi · prompt bước có đường vào ·
+// lệnh workflow có mặt ở `run_phase*`. Nhưng KHÔNG chiều nào bắt được ca đơn giản nhất: **một `npm run` tồn
+// tại trong `package.json` mà KHÔNG nơi nào nhắc tới** ⇒ không ai chạy ⇒ cái nó gác lặng lẽ không xảy ra.
+//
+// Đây không phải rủi ro lý thuyết: kit ĐÃ bị đúng thế (11 lệnh gate chỉ nằm ở `.agent/workflows/`, mà
+// `run_phase2` không trỏ tới workflow nào ⇒ ai theo điểm vào thì không bao giờ chạy chúng). Và đo 17/08/2026:
+// 3 lệnh thêm ngày 14/08 (`knowledge:backup`, `howto:find`, `bug:tc-match`) nằm ngoài README/USER_GUIDE và
+// ngoài mọi điểm vào suốt 3 ngày — phát hiện bằng cách rà tay, không phải bằng gate.
+//
+// CHANGELOG cố ý KHÔNG tính là "nơi nhắc": nó kể lịch sử, không điều hướng ai tới lệnh.
+{
+  const pkgPath = path.join(rc.REPO_ROOT, 'package.json');
+  let scripts = {};
+  try { scripts = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).scripts || {}; } catch (e) { /* không có package.json */ }
+  const SEARCH_ROOTS = ['prompt_templates', '.agent', 'scripts', '.github', 'exploratory'];
+  const SEARCH_FILES = ['README.md', 'USER_GUIDE.md', 'QUICKSTART.md', 'RULE_GLOBAL.md', 'CLAUDE.md', '.gitlab-ci.yml', 'knowledge/SCHEMA.md', '.env.example'];
+  const corpus = [];
+  const collect = (p) => {
+    let st; try { st = fs.statSync(p); } catch (e) { return; }
+    if (st.isDirectory()) { for (const f of fs.readdirSync(p)) collect(path.join(p, f)); return; }
+    if (!/\.(md|js|mjs|ts|json|ya?ml)$/.test(p)) return;
+    if (path.basename(p) === 'package.json' || path.basename(p) === 'CHANGELOG.md') return;
+    try { corpus.push(fs.readFileSync(p, 'utf8')); } catch (e) { /* bỏ qua file đọc lỗi */ }
+  };
+  for (const r of SEARCH_ROOTS) collect(path.join(rc.REPO_ROOT, r));
+  for (const f of SEARCH_FILES) collect(path.join(rc.REPO_ROOT, f));
+  // Thân của script khác cũng tính (vd `pretest` được gọi bởi `test`) — nếu không thì báo oan hàng loạt.
+  const bodies = Object.values(scripts).join('\n');
+  const blob = `${corpus.join('\n')}\n${bodies}`;
+  // Script vòng đời npm do CHÍNH npm gọi, không tài liệu nào cần trỏ tới ⇒ miễn, nếu không thì báo oan ngay
+  // lần đầu ai đó thêm `prepare`/`postinstall`. Đây là ca báo oan DUY NHẤT đoán trước được; ca khác thì để gate
+  // kêu rồi xử lý theo từng ca, đừng nới allowlist cho êm.
+  const LIFECYCLE = new Set(['prepare', 'preinstall', 'install', 'postinstall', 'prepublishOnly', 'prepack', 'postpack', 'start']);
+  const orphanNpm = Object.keys(scripts).filter((k) => !LIFECYCLE.has(k) && !blob.includes(k));
+  if (orphanNpm.length) {
+    problems.push(`${orphanNpm.length} npm script KHÔNG nơi nào nhắc tới (không prompt/rule/skill/workflow/README/CI nào trỏ) ⇒ sẽ không ai chạy, và thứ nó gác sẽ lặng lẽ không xảy ra: ${orphanNpm.join(', ')}. Trỏ nó từ điểm vào đang cần, hoặc xoá nếu đã hết dùng.`);
+  } else {
+    console.log(`[policy] ✓ ${Object.keys(scripts).length} npm script đều có nơi nhắc tới (không lệnh nào mồ côi).`);
+  }
+}
+
 for (const w of warns) console.log(`[policy] ⚠ ${w}`);
 if (problems.length) {
   console.error('[policy] ✗ Vi phạm 1-nguồn-policy (F3):');
