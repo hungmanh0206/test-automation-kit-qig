@@ -382,7 +382,7 @@ test-automation-kit_v2/
 | Folder/File | Dùng để làm gì |
 |---|---|
 | `.agent/` | Workflow, skill, rule và config cho AI Agent. |
-| `prompt_templates/` | Prompt chạy Phase 1, Phase 2 và Re-run. |
+| `prompt_templates/` | Prompt chạy Phase 1, Phase 2 và Re-run. Bên trong `phase1/dimensions/` là **15 chương chiều coverage** — mở đúng chiều task khai `required`, không nạp cả 15 (xem mục 5, bước sinh testcase). |
 | `partial-rerun/` | Nhánh phụ khi tài liệu requirement/design/API thay đổi. |
 | `scripts/` | Script export Excel, Jira integration, Playwright helper. |
 | `tests/` | Regression spec/shared automation; `tests/support/setup/` là setup layer dùng chung (factory/hook/fixture/mock/cleanup/contract). |
@@ -516,6 +516,21 @@ Bắt buộc thêm (để Phase 2 không phải đoán tiền điều kiện):
 - Section `## Setup Strategy (Hợp đồng tiền điều kiện)` trong testcase: catalog `PRE-NN` gồm Type, Setup Method, Setup Source, Verification, Cleanup, Automation Readiness. Mỗi cột Tiền điều kiện gắn tag `[PRE-NN]`.
 - `### Precondition Execution Matrix` trong `phase1-summary.md`: 1 dòng/TC để biết case nào automatable (`Ready`), cần hook (`Needs hook`), hay blocked (`Manual-only`).
 - Chi tiết schema: skill `precondition_setup_planner` và `prompt_templates/phase1/02_gen_testcases.md`.
+
+**Bắt buộc thêm — CHIỀU coverage (từ 14/08/2026):** bộ testcase có **hai trục**. *Module* trả lời "test **ở đâu**"; *chiều* trả lời "hỏi **loại câu hỏi nào**" (validate field · định dạng hiển thị · công thức tiền · BE trả gì · guard/quyền · bảo mật · hiệu năng · ảnh hưởng lan). Phủ kín module mà **trống hẳn một chiều** thì bộ vẫn *trông* đầy đủ — đo trên một bộ 530 case thật: **E2E 0 case**, **change-impact 0–1**, case hiển thị **≈12%** dù mục đó là BẮT BUỘC.
+
+Ba việc phải làm, theo thứ tự:
+
+| # | Việc | Lệnh / nơi đọc |
+|---|---|---|
+| 1 | **Khai phạm vi chiều TRƯỚC khi gen** — `requirements/dimension_manifest.json`: mỗi chiều `"required"` hoặc `"n/a"` **kèm lý do**. Khai `n/a` cho chiều mà artifact chứng minh là có (vd có `requirements/figma/**` mà khai `design: n/a`) ⇒ **CHẶN** | `npm run dim:coverage` (chạy không `--enforce` để lấy khung manifest) |
+| 2 | **Mở đúng chương của các chiều `required`** — 15 chương, mỗi chương nói "chiều này phải sinh case gì". Không nạp cả 15 | [`prompt_templates/phase1/dimensions/`](prompt_templates/phase1/dimensions/) |
+| 3 | **Gắn tag chiều trong tiêu đề case** + expected phải mang **bằng chứng** của chiều đó (`[Calc]` → giá trị số tự tính · `[Display]` → chuỗi trích nguyên văn/định dạng/danh sách cột · `[Guard]` → mã 4xx **kèm** "dữ liệu không đổi"…) | prompt gen §0b và §0b-bis |
+
+Ví dụ tiêu đề đúng: `[Positive][Calc][BR-RECIPBANK-001] TK nhận theo chương trình + mốc 01/01/2026`
+— tag loại · tag chiều · id rule làm oracle.
+
+Kiểm trước khi đưa QA duyệt: `npm run dim:coverage -- --enforce` (thiếu chiều `required` = chặn) và `npm run domain:trace-back` (case có oracle nghiệp vụ mà không trỏ rule nào). **Bộ chưa gắn tag thì gate tự từ chối chặn** — đó là trạng thái *chưa được gác*, không phải *đã đạt*.
 
 Phase 1 không được execute automation.
 

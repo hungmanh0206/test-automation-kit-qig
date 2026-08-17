@@ -86,7 +86,8 @@ test-automation-kit/
 │   ├── run_phase1_template.md
 │   ├── run_phase2_template.md
 │   ├── run_phase_re-run_template.md
-│   ├── phase1/   # 01 setup → 02 gen testcase → 03 gen test data → 04 publish Jira
+│   ├── phase1/   # 01 setup → 02 gen testcase → 02b output format → 03 gen test data → 04 publish Jira
+│   │   └── dimensions/   # 15 chương CHIỀU coverage (§3–§17) — mở đúng chiều task cần, không nạp cả 15
 │   └── phase2/   # 04 execute FE → 05 execute API → 06 triage → 07 flaky → 08 log bug Jira
 ├── partial-rerun/
 │   ├── run_requirement_prepare_review.md
@@ -127,7 +128,7 @@ test-automation-kit/
 | `.agent/workflows/` | Workflow chính dạng flat: mỗi flow gồm 1 file entry (`phase1_generate_tc.md`, `phase2_execute.md`, `rerun.md`) và các step file `*_NN_*.md` cùng thư mục. Step đánh số reset theo từng flow (phase1_01..04, phase2_01..04, rerun_01..03). |
 | `.agent/skills/` | Skill instructions cho agent theo vai trò chuyên biệt. |
 | `.agent/rules/` | Rule bắt buộc cho core behavior, locator, Playwright FE/API. |
-| `prompt_templates/` | Prompt dùng để chạy Phase 1, Phase 2 và rerun. Lưu ý đánh số: prompt con là sub-prompt theo hoạt động, số chạy liên tục theo trình tự pipeline (`phase1/01..04` chuẩn bị→sinh testcase→test data→publish Jira; `phase2/04..08` execute FE→execute API→triage review→flaky→log bug Jira) — KHÁC với workflow `.agent/workflows/` đánh số reset theo từng phase (phase2_01..04). Số prompt không ánh xạ 1:1 với số workflow; chạy từng prompt khi cần đúng hoạt động đó. |
+| `prompt_templates/` | Prompt dùng để chạy Phase 1, Phase 2 và rerun. Lưu ý đánh số: prompt con là sub-prompt theo hoạt động, số chạy liên tục theo trình tự pipeline (`phase1/01..04` chuẩn bị→sinh testcase→test data→publish Jira; `phase2/04..08` execute FE→execute API→triage review→flaky→log bug Jira) — KHÁC với workflow `.agent/workflows/` đánh số reset theo từng phase (phase2_01..04). Số prompt không ánh xạ 1:1 với số workflow; chạy từng prompt khi cần đúng hoạt động đó. **`phase1/dimensions/`** giữ 15 chương **chiều coverage** (§3–§17 tách khỏi `02_gen_testcases.md` ngày 14/08/2026) — mở đúng chiều task khai `required`, không nạp cả 15; **`phase1/02b_output_format.md`** giữ Summary Report + Export Excel, chỉ nạp ở cuối lượt. |
 | `partial-rerun/` | Nhánh phụ độc lập; không là dependency của Main Flow và có thể xóa mà Main Flow vẫn chạy. |
 | `partial-rerun/run_requirement_prepare_review.md` | Phase 1 của nhánh phụ: tạo diff/impact/testcase draft và dừng chờ Human Review. |
 | `partial-rerun/run_requirement_apply_approved.md` | Phase 2 của nhánh phụ: merge testcase đã approve và partial execute. |
@@ -232,6 +233,7 @@ flowchart TD
 | Risk gate (cảnh báo / chặn CI) | `npm run risk:gate` · `npm run risk:gate:enforce` |
 | Preflight — input/config đủ (G1) | `npm run preflight` · `node scripts/qa/preflight_gate.js --mode phase2 --task <TASK_KEY>` |
 | Design gate — thiết kế TC (G5) | `npm run design:gate -- --dir <test-cases/> --with-rows` |
+| **Chiều coverage — bộ TC có trống hẳn một LOẠI câu hỏi không?** | `TASK_ENV=… npm run dim:coverage` · `-- --enforce`. Bộ TC có **hai trục**: *module* = test **ở đâu**, *chiều* = hỏi **loại câu hỏi nào** (validate · hiển thị · công thức · BE conformance · guard · bảo mật · perf · change-impact). Phủ kín module mà trống một chiều thì bộ **vẫn trông đầy đủ** — đo trên một bộ 530 case thật: §6 E2E **0 case**, §17 change-impact **0–1**, case hiển thị **≈12%** dù mục đó BẮT BUỘC. Cách gác: khai `requirements/dimension_manifest.json` (chiều nào `required`/`n/a` **kèm lý do**; khai `n/a` trái artifact có thật = CHẶN) → mỗi case gắn **tag chiều** trong tiêu đề (`[Positive][Display] …`) → gate đếm theo tag. Nội dung 15 chiều: [`prompt_templates/phase1/dimensions/`](prompt_templates/phase1/dimensions/) · quy ước tag: prompt gen §0b · luật canonical: [RULE_GLOBAL §Chiều coverage](RULE_GLOBAL.md) |
 | Output gate — execute / gen-testcase (G2/G4/G6) | `npm run gate:output -- --status <status.json>` · `npm run gate:gen-testcase -- --dir <test-cases/>` |
 | Self-review — checklist gộp trước finalize (G9) | `npm run self-review -- --task <TASK_KEY>` |
 | Dependency graph — REQ→TC→exec + impact-map (P2) | `npm run dep:graph -- --task <TASK_KEY> [--changed a,b]` |
