@@ -134,6 +134,47 @@ Kiểm khi execute:
 - **Mạng yếu/offline**: `context.setOffline(true)` (offline) hoặc CDP `Network.emulateNetworkConditions` (slow-3G, chỉ chromium) → báo lỗi, không crash, không tạo bản ghi mồ côi (bắc cầu Resilience).
 - Ghi rõ thiết bị đã test trong Actual; evidence là screenshot ở device emulation.
 
+# 5 TRỤC MỞ RỘNG QUANH CASE (bắt buộc — không phải "nếu còn thời gian")
+
+Đo trên một task thật: **69 bug**, gần như tất cả do NGƯỜI báo, trong khi kit chạy xanh. Nguyên nhân không phải
+làm sai case, mà là **execute chỉ bám đúng chữ trong case**. Bug sống theo **bề mặt** (màn × luồng × trạng thái),
+không sống theo dòng testcase. Mỗi lần execute một case, mở rộng theo 5 trục dưới đây — mỗi trục có MÁY đứng sau,
+đừng làm bằng mắt.
+
+| # | Trục | Câu hỏi phải hỏi | Máy |
+|---|---|---|---|
+| 1 | **Field cùng khối** | Khối này còn field nào khác? Có field nào **thiếu/thừa** so với tài liệu? | `npm run spec:extract` sinh catalog → `ui_conformance_check` |
+| 2 | **Cùng giá trị, khác nơi hiển thị** | Giá trị này còn xuất hiện ở đâu (list · detail · tab HubSpot · checkout · API)? Có khớp? | `npm run xsurf:diff` |
+| 3 | **Chuỗi lưu trữ** | Giá trị nhập vào có **sống sót** qua `form → payload → đọc lại → UI`? | `npm run probe:persist` |
+| 4 | **Nhánh/biến thể** | Cùng màn này với loại đơn/gói/tiền tệ KHÁC thì sao? | `npm run fixture:matrix` |
+| 5 | **Trạng thái kế cận** | Sau khi hủy / hoàn / deal lost / thanh toán một phần thì màn này còn đúng? | `npm run fixture:matrix` |
+
+**Chiều ngược, bắt buộc:** chạy `npm run spec:gap` — build CÓ mà tài liệu KHÔNG NHẮC. Section chưa được khai
+nghĩa là **chưa ai soi**, không phải "đã kiểm và không sao". Mỗi dòng là một câu hỏi cho BA (build sai, hay tài
+liệu thiếu?), phải ghi vào `reports/`, không để phát hiện tan theo lượt chạy.
+
+**Bằng chứng thay cho tranh luận (trục 3):** khi kết luận sai lệch, ghi **giá trị ở từng điểm** rồi chỉ ra mắt
+đứt: `form 1.000.000 → payload 1000000 → API 0` ⇒ lỗi tầng **BE**, không phải "hệ thống lưu sai". Payload là bằng
+chứng khách quan; thiếu nó thì FE/BE đẩy qua đẩy lại và bug bị bounce.
+
+**Đo thiếu điểm KHÔNG phải đạt.** Cả 5 máy đều phân biệt "khớp" với "chưa kiểm được" (dưới 2 bề mặt đọc được ·
+chuỗi khuyết điểm · ô ma trận trống · section chưa khai). Trạng thái *chưa kiểm được* phải được **nói ra** trong
+báo cáo; im lặng ở đó là cách lọt bug rẻ nhất.
+
+# ĐÓNG VÒNG: bug do người ngoài báo là LỖI CỦA MÁY (bắt buộc)
+
+Mỗi bug do người ngoài (BA/Dev/QA khác/khách) tìm ra mà kit chạy xanh, **phải trả lời được một câu**: *máy nào
+lẽ ra bắt được?*
+
+1. Có máy mà không chạy ⇒ ghi rõ vì sao không chạy (thiếu catalog · thiếu fixture · chưa bind màn) và sửa chỗ đó.
+2. Có máy, đã chạy, vẫn lọt ⇒ máy thiếu luật; bổ sung luật + **test khoá luật đó**.
+3. **Không có máy nào** ⇒ đây là trục chưa được phủ: ghi vào `reports/` và đề xuất máy mới. KHÔNG được kết thúc
+   bằng "sẽ chú ý hơn" — chú ý không phải forcing function.
+
+Máy đo chính việc này: `TASK_ENV=… npm run leak:report` (bug theo **nguồn phát hiện** + theo 5 trục) và
+`npm run leak:report -- --require-machine` (bug người-tìm mà **chưa gán được máy** ⇒ danh sách việc phải xây).
+Log bug mới thì truyền `--found-by kit|human` — nhãn `auto-bug` chỉ chứng minh ai LOG, không phải ai TÌM.
+
 ## Kỷ luật
 - **Case mapping/đồng bộ: kết luận PHẢI ghi GIÁ TRỊ HAI ĐẦU và so bằng.** ⚙️ `output_gate` **CHẶN** kết luận chỉ ở mức "có dữ liệu" (`populate`, `map đủ field`, `hiển thị đúng`) và **cảnh báo** khi chỉ liệt kê giá trị một phía rồi kết luận `sync_status = SUCCESS`. Lý do không phải hình thức: field lấy nhầm nguồn/nhầm property **vẫn populate**, và trạng thái "đồng bộ thành công" **không** chứng minh bên nhận nhận đúng số. Viết: `OPS Net 4.250.000 = Deal amount 4.250.000` — không viết "đồng bộ đúng".
 - **Case hiển thị/UI phải execute QUA UI.** Chạy API cho case màn hình thì lỗi mapping phía FE **không thể** lộ ra — không phải xui, mà là bất khả theo định nghĩa. Muốn nhanh thì dùng API để **dựng data**, còn phần verify của case đó phải đọc trên màn.

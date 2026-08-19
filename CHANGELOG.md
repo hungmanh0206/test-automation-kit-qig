@@ -7,6 +7,42 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (e) — B3→B7: đủ 5 trục có máy + luật đóng vòng
+
+Hoàn tất chương trình chống lọt bug (B0–B7). Mỗi trục có **máy đứng sau**, và mọi máy đều tách được "khớp" với
+"chưa kiểm được" — vì im lặng ở chỗ chưa kiểm là cách lọt bug rẻ nhất.
+
+**B3 `spec:gap`** — chiều ngược build→tài liệu. Conformance chỉ hỏi "tài liệu khai gì, build có đủ không"; chiều
+này hỏi ngược. Đo 4 màn: 14 section khớp · **2 vùng mù** (`Order Info`, `Payment Info` của Chuyển đổi) · 9 section
+có field mọc thêm. Backtest tự nhiên: máy nêu ra `Pay-back` — field trước đây người phải tự mò (TC_337). Xác minh
+FSD gốc: §4.3.1.6 thật sự chỉ khai **1 field** cho `Order Amount` trong khi build có **9** ⇒ tài liệu thiếu.
+
+**B4 `probe:persist`** — chuỗi `form→payload→API→UI` (13/69 bug). Engine sinh **giá trị mồi phân biệt**, so 4 điểm,
+chỉ ra **mắt đứt + tầng lỗi**. Backtest 4 bug thật: SAPP-28310 (`payload→api`, thành 0) · SAPP-28376
+(`form→payload`) · SAPP-28442 (mất hẳn khỏi payload) · SAPP-28403 (lệch bậc độ lớn) — đúng cả 4, và **không bịa**
+mắt đứt trên chuỗi lành. Test bắt được bẫy trong API của tôi: chuỗi đo THIẾU điểm ban đầu trả `ok:true`.
+
+**B5 `xsurf:diff`** — cùng giá trị, khác nơi hiển thị (**21/69 bug**, trục rò nhiều nhất). Lượt chạy thật đầu tiên
+lộ 2 lỗi của chính tool: so format UI vs API là vô nghĩa (`600.000đ` vs `600000`), và hai ô trống vẫn ra "✓ khớp".
+Sửa: chỉ so định dạng giữa các bề mặt UI; dưới 2 bề mặt đọc được ⇒ **CHƯA KIỂM ĐƯỢC**.
+
+**B6 `fixture:matrix`** — nhánh × trạng thái (**42/69 bug**). Lý do 2 trục này rò rất tầm thường: không có dữ liệu
+để thử nên case chìm vào SKIP. `--discover` đếm fixture đang có THẬT qua list API — và việc dò đã **sửa luôn thiết
+kế ma trận của tôi**: môi trường có 5 trạng thái (`PURCHASING`, `PARTIALLY_PAID`, `CANCEL`) chứ không phải 3.
+Kết quả: 6 nhánh × 5 trạng thái = 30 ô → **21 CÓ · 9 n/a kèm lý do đo được · 0 trống**.
+
+**B7 luật + máy đóng vòng.** Viết 5 trục vào `prompt_templates/phase2/04_execute_fe_playwright.md`, canonical vào
+`RULE_GLOBAL.md §5 trục mở rộng` (+ TOC, digest ở `core_rules.md`). Luật cốt lõi: **bug do người ngoài tìm ra là
+LỖI CỦA MÁY** — phải trả lời "máy nào lẽ ra bắt được?"; không có máy thì đề xuất máy mới, CẤM kết thúc bằng "sẽ
+chú ý hơn". Máy đứng sau: `leak:report --require-machine`. Đo thật: **29 bug do người tìm · 26 đã quy được về máy
+· 3 chưa** — và 1 trong 3 (`SAPP-28651` thiếu section VNPay) hoá ra có máy nhưng **chưa bind màn**, đúng nhánh (a)
+của luật.
+
+**Kỷ luật lặp lại 2 lần trong phiên:** thiếu `require.main === module` guard làm `require()` trong test khiến CLI
+tự `exit(2)`. Đã vá cả hai file.
+
+Suite hạ tầng: 69 → **85 test** (thêm 16: backtest persistence 7 · cross-surface 4 · fixture matrix 5).
+
 ## 2026-08-19 (d) — trả nợ B2: biên section theo CẤP tiêu đề + bản đồ tên đo bằng máy
 
 Hai món nợ của B2, cả hai đều vá theo **số đo trên UAT**, không theo suy đoán.

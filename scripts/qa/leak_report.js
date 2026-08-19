@@ -44,35 +44,35 @@ const AXES = [
     id: 1,
     key: 'field',
     ten: 'Field/cột trên một màn',
-    may: 'ui_conformance_check (spec → UI)',
+    may: 'spec_extract + ui_conformance_check (spec → UI)',
     rx: /thiếu (?:trường|field|cột)|thừa (?:trường|field|cột)|không hiển thị field|hiển thị thêm field|sai tên cột|bộ cột|thiếu cột|đủ \d+ field|section .*thiếu|không có trường/i,
   },
   {
     id: 2,
     key: 'surface',
     ten: 'Cùng giá trị, khác nơi hiển thị',
-    may: 'cross_surface_diff (chưa có)',
+    may: 'cross_surface_diff — npm run xsurf:diff',
     rx: /hai màn|2 màn|màn (?:khác|còn lại)|trong khi (?:màn|tab)|checkout .*(?:khác|sai)|tab hubspot|đồng bộ sang hubspot|list .*detail|mâu thuẫn nhau/i,
   },
   {
     id: 3,
     key: 'persist',
     ten: 'Chuỗi lưu trữ form → payload → đọc lại',
-    may: 'persistence_probe (chưa có)',
+    may: 'persistence_probe — npm run probe:persist',
     rx: /payload .*(?:nhưng|trong khi)|không lưu|lưu thành 0|đọc lại .*(?:0|null|rỗng)|trả về 0|backend .*không lưu|gửi lên .*nhưng/i,
   },
   {
     id: 4,
     key: 'branch',
     ten: 'Nhánh/biến thể khác của cùng màn',
-    may: 'fixture matrix (chưa có)',
+    may: 'fixture_matrix — npm run fixture:matrix',
     rx: /phương pháp|method|loại phí|nhánh|option .*(?:thiếu|không)|trường hợp .*(?:fixed|percentage)|dropdown .*thiếu/i,
   },
   {
     id: 5,
     key: 'state',
     ten: 'Trạng thái kế cận (sau hủy/hoàn/lost)',
-    may: 'fixture matrix (chưa có)',
+    may: 'fixture_matrix — npm run fixture:matrix',
     rx: /sau khi (?:hủy|huỷ|hoàn|thanh toán|xác nhận|edit)|đã hủy|cancel(?:led)? order|deal lost|trạng thái .*(?:không|vẫn)|guard|chặn .*trạng thái/i,
   },
 ];
@@ -118,10 +118,32 @@ function classify(text) {
     };
   });
 
+  // ĐÓNG VÒNG (luật ở prompt_templates/phase2/04_execute_fe_playwright.md): mỗi bug do NGƯỜI ngoài tìm ra mà kit
+  // chạy xanh đều phải trả lời "máy nào lẽ ra bắt được?". Không có máy ⇒ đó là trục chưa phủ, phải xây thêm.
+  // Bản đồ bug → máy nằm ở `knowledge/leak_machine_map.json` (tuỳ chọn); thiếu bản đồ thì suy từ trục.
+  const mapPath = path.join(rc.REPO_ROOT, 'knowledge', 'leak_machine_map.json');
+  const machineMap = fs.existsSync(mapPath) ? JSON.parse(fs.readFileSync(mapPath, 'utf8')) : {};
+  const humanFound = rows.filter((r) => /human/.test(r.source));
+  for (const r of rows) {
+    const m = machineMap[r.key];
+    r.machine = m && (typeof m === 'string' ? m : m.machine) ? (typeof m === 'string' ? m : m.machine) : null;
+    // Không có bản đồ tay thì máy suy ra từ trục đã phân loại — vẫn là GỢI Ý, không phải phán quyết.
+    r.machineGuess = r.machine || (r.axes.length ? AXES.filter((a) => r.axes.includes(a.key)).map((a) => a.may).join(' · ') : null);
+  }
+  const noMachine = humanFound.filter((r) => !r.machineGuess);
+
   const bySource = rows.reduce((m, r) => { m[r.source] = (m[r.source] || 0) + 1; return m; }, {});
   const byAxis = AXES.map((a) => ({ ...a, n: rows.filter((r) => r.axes.includes(a.key)).length }));
   const unclassified = rows.filter((r) => !r.axes.length);
   const needLabel = rows.filter((r) => r.source === 'chưa phân loại');
+  if (process.argv.includes('--require-machine')) {
+    console.log(`[leak] ĐÓNG VÒNG: ${humanFound.length} bug do NGƯỜI tìm · ${humanFound.length - noMachine.length} đã có máy tương ứng · ${noMachine.length} CHƯA gán được máy`);
+    for (const r of noMachine) console.log(`[leak] ✗ ${r.key}: chưa chỉ ra được máy lẽ ra bắt được — ${r.summary.slice(0, 80)}`);
+    if (noMachine.length) {
+      console.log('[leak]   Xử lý: gán máy vào `knowledge/leak_machine_map.json` ({"SAPP-xxxxx": {"machine": "...", "why": "..."}})');
+      console.log('[leak]   hoặc nếu THẬT SỰ chưa có máy nào phủ trục đó ⇒ ghi đề xuất máy mới vào reports/ (đừng để trống).');
+    }
+  }
 
   const L = [];
   L.push(`# Leak report — ${STORY}${TASK ? ` (task ${TASK})` : ''}`);

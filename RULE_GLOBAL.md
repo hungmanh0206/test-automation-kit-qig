@@ -18,6 +18,7 @@
 > | Nhiều story chạy song song, đụng file dùng chung | [§Parallel Story Safety](#parallel-story-safety) · [§Shared Change Gate](#shared-change-gate) |
 > | Sửa/đặt automation ở đâu | [§Task-Scoped Automation Code](#task-scoped-automation-code) · [§Automation Promote Review](#automation-promote-review) |
 > | **Phase 1** — requirement mơ hồ, hỏi trước khi gen | [§Analysis & Ambiguity Gate](#analysis--ambiguity-gate-phase-1--đọc-kỹ-hỏi-trước-khi-gen) |
+> | **Phase 2** — 5 trục mở rộng quanh case + luật đóng vòng | [§5 trục mở rộng](#5-trục-mở-rộng-quanh-case--luật-đóng-vòng-phase-2--có-máy-đứng-sau) |
 > | **Phase 1** — chiều coverage: khai phạm vi, gắn tag, máy đếm | [§Chiều coverage](#chiều-coverage-phase-1--khai-phạm-vi-gắn-tag-có-máy-đếm) |
 > | **Phase 2** — chạy sao cho thông suốt, không TODO/SKIP bừa | [§Execution Discipline](#execution-discipline-kỷ-luật-thực-thi--chạy-thông-suốt) |
 > | Ghi kết quả, verdict, rerun | [§Execute Results](#execute-results) |
@@ -192,6 +193,28 @@ Bộ testcase có **hai trục**: *module/màn* trả lời "test **ở đâu**"
 3. **KHÔNG hỏi lắt nhắt.** Việc read-only / verify / tạo fixture trong quyền hạn đã thiết lập → thực thi ngay, không xin xác nhận từng bước ("chạy luôn không?"). Nếu buộc phải hỏi (thiếu input hoặc cần quyết định nghiệp vụ) → **GOM toàn bộ câu hỏi + input cần thiết vào MỘT lần**, không hỏi rải rác.
 4. **Báo cáo gộp, ít vòng.** Chỉ dừng để báo khi đã xong MỘT CỤM lớn hoặc gặp chặn thật; không tường thuật từng thao tác nhỏ. Mỗi lần báo = nhiều kết quả.
 5. Ranh giới không đổi: vẫn tuân thủ **Jira Bug Gate**, **Evidence**, **PII/Security**, **Parallel Story Safety**, **Shared Change Gate** — siết coverage/tốc độ KHÔNG được nới các gate này.
+
+### 5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)
+
+Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn × luồng × trạng thái). Đo trên một task thật:
+69 bug, gần như tất cả do NGƯỜI báo trong khi kit chạy xanh — nguyên nhân là execute chỉ bám đúng chữ trong case.
+
+1. **Mỗi case đã execute phải được mở rộng theo 5 trục**, mỗi trục có máy: ① field cùng khối (`spec:extract` →
+   `ui_conformance_check`) · ② cùng giá trị khác nơi hiển thị (`xsurf:diff`) · ③ chuỗi lưu trữ
+   `form→payload→API→UI` (`probe:persist`) · ④ nhánh/biến thể và ⑤ trạng thái kế cận (`fixture:matrix`).
+2. **Chiều ngược là bắt buộc:** `spec:gap` — section/field build CÓ mà tài liệu KHÔNG NHẮC. Section chưa được khai
+   nghĩa là **chưa ai soi**, KHÔNG phải "đã kiểm và không sao"; mỗi dòng là câu hỏi cho BA, phải ghi vào `reports/`.
+3. **"Chưa kiểm được" phải được nói ra, không được im lặng thành đạt.** Dưới 2 bề mặt đọc được · chuỗi khuyết điểm
+   đo · ô ma trận trống · section chưa khai — tất cả là trạng thái *chưa kiểm*, phải xuất hiện trong báo cáo.
+4. **Kết luận sai lệch phải chỉ ra MẮT ĐỨT, không nói "hệ thống lưu sai".** Ghi giá trị từng điểm
+   (`form 1.000.000 → payload 1000000 → API 0`) ⇒ nêu được TẦNG lỗi; payload là bằng chứng khách quan nên bug
+   không bị bounce qua lại giữa FE và BE.
+5. **Đóng vòng: bug do người ngoài tìm ra là LỖI CỦA MÁY.** Với mỗi bug đó phải trả lời được *"máy nào lẽ ra bắt
+   được?"* — (a) có máy mà không chạy ⇒ ghi vì sao (thiếu catalog/fixture/chưa bind) và sửa; (b) có máy đã chạy mà
+   vẫn lọt ⇒ bổ sung luật **kèm test khoá luật**; (c) không có máy nào ⇒ ghi đề xuất máy mới vào `reports/`.
+   CẤM kết thúc bằng "sẽ chú ý hơn" — chú ý không phải forcing function. Máy đo: `leak:report --require-machine`.
+6. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
+   ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results
 
