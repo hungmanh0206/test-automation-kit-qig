@@ -33,6 +33,7 @@
 4. Chạy dry-run:
    ```powershell
    npm run jira:testcase-publish:dry-run -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY>
+   # 🔀 TEST_MANAGEMENT_TOOL=aio → npm run aio:publish -- --file <Excel> --story <JIRA_STORY_KEY>   (lệnh Xray tự chặn)
    ```
 5. Chỉ publish thật khi QA/user xác nhận mode `PUBLISH`:
    ```powershell

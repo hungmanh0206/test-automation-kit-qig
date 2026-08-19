@@ -121,6 +121,7 @@ Sau merge:
 Chỉ chạy khi testcase đã từng publish lên Xray (có `reports/jira-testcase-publish.json`) và `REPUBLISH_XRAY != 0`. Mục đích: đẩy phần thay đổi lên Xray để Xray khớp Excel và làm **nguồn execute**.
 
 - Chạy `publish_testcases.js` **chỉ cho TC UPDATED + NEW đã approve** — dedup đảm bảo **update TC cũ theo TC ID + tạo TC mới**, KHÔNG re-create toàn bộ:
+  > 🔀 `TEST_MANAGEMENT_TOOL=aio` → `npm run aio:publish -- --file <Excel> --story <JIRA_STORY_KEY> --only <UPDATED+NEW TC_IDs> --folder-root "<base folder như lần trước>"` rồi thêm `--apply --qa-approved`. Dedup bên AIO khớp theo `automationKey` (= TC ID) nên cũng UPDATE chứ không tạo trùng — quan trọng vì **AIO không có API xoá**. Lệnh Xray sẽ tự chặn.
 
 ```powershell
 node scripts/integrations/jira/publish_testcases.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --only <UPDATED+NEW TC_IDs> --test-repo-folder "<base folder như lần publish trước>" --dry-run

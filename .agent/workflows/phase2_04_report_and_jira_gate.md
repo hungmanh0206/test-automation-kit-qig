@@ -55,7 +55,8 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 4b. **Gate chất lượng output — THỰC THI, tự chạy (không phải kiểm bằng mắt).**
    - Test Execution: `push_test_execution.js` **tự chạy `scripts/qa/output_gate.js`** trước khi push → CHẶN khi comment run-on/dính debug `key=value`, step thiếu status/evidence, evidence không phải ảnh/video, hoặc case phức tạp thiếu video. Xem/tự sửa trước: `npm run gate:output -- --status <testcase-status.json>` (thêm `--fix` để tự dọn comment).
    - **Gate CHẶN → TỰ SỬA trong session rồi chạy lại tới khi PASS**; KHÔNG push kèm vi phạm, KHÔNG chờ user nhắc. Chỉ `--qa-approved` khi QA có lý do rõ (được log).
-   - **Bắt buộc tạo bug/Test Execution QUA script kit** (`bug_reporter.js`/`push_test_execution.js`) — KHÔNG tạo tay bằng Atlassian MCP/API (tạo tay = bỏ qua gate → sai 4 phần/evidence/comment).
+   - **Bắt buộc tạo bug/Test Execution QUA script kit** (`bug_reporter.js`/`push_test_execution.js`, hoặc `aio/push_execution_aio.js` khi đã sang AIO) — KHÔNG tạo tay bằng Atlassian MCP/API hay UI AIO (tạo tay = bỏ qua gate → sai 4 phần/evidence/comment).
+   - 🔀 **AIO Tests**: `npm run aio:push-exec -- --task <TASK_KEY>` chạy **cùng gate này** trước khi ghi. Bản AIO neo evidence xuống **từng bước** nên luật "mỗi step phải có evidence riêng" lần đầu có đường thoả — xem `scripts/integrations/aio/README.md`.
 5. Chạy Jira dry-run trước.
 6. Chỉ log Jira thật khi user yêu cầu hoặc prompt hiện tại cho phép.
 7. Jira description chỉ gồm:

@@ -8,6 +8,8 @@ Dùng prompt này khi Excel source of truth đã thay đổi sau publish Jira/Xr
 
 Prompt này chỉ đồng bộ lifecycle của mirror trên Xray theo Excel hiện tại. Nó không regenerate testcase, không execute, không log bug Jira và không hard delete Xray issue.
 
+> 🔀 **Trên AIO (mặc định từ GĐ5) dùng `npm run aio:deprecate-stale -- --story <KEY> --file <x.xlsx>`**, thêm `--apply` để ghi. AIO không xoá được case, nhưng *cleanup* ≠ *xoá*: nó có caseStatus **Deprecated** — TC rời khỏi Excel thì chuyển Deprecated (**giữ nguyên lịch sử run**, thứ mà xoá sẽ mất), TC quay lại Excel thì trả về Published (tắt bằng `--no-restore`). File này là bản Xray (legacy) nên `cleanup_xray_tests.js` tự chặn ở mặc định. Xem `scripts/integrations/aio/README.md`.
+
 **Quan trọng — cleanup ≠ publish:** cleanup CHỈ **gắn/gỡ label stale** cho TC bị bỏ khỏi/quay lại Excel. Việc **tạo TC mới + update TC cũ (cả steps)** lên Xray là do bước **re-publish `publish_testcases.js`** (Step 2b của `run_requirement_apply_approved.md`) — cleanup chạy **SAU** re-publish. Đừng dùng cleanup để đẩy TC mới.
 
 ## When To Use
