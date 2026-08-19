@@ -243,7 +243,18 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
    phải cắm tương tự. Kỷ luật: `pageerror` là **zero-tolerance** (có exception là finding, dù case PASS); 4xx do
    case negative CỐ Ý gây ra thì phải **khai trước** bằng `expect4xx(rx, why)` — không khai thì bị tính là tín hiệu
    lạ; console.error của tracking/cert môi trường chỉ là **ghi chú**, không phải deviation.
-10. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
+10. **CHỨNG MINH bộ kiểm bắt được bug, đừng giả định (`mutation:check`).** Mọi máy khác *cố bắt thêm bug*; máy này
+    **đo năng lực phát hiện**: cố ý tiêm lỗi ở tầng `page.route()` (**không chạm dữ liệu UAT**) rồi xem bộ kiểm có
+    đỏ không. Mutant **sống sót = vùng mù CÓ BẰNG CHỨNG**, không phải phỏng đoán. Đo lần đầu 19/08 trên
+    `ui_conformance_check`: **mutation score 0/4 = 0%** — bóp `convertible_amount` thành 0 / xoá hẳn / chia nửa /
+    đổi kiểu đều **không bị phát hiện**, vì máy đó kiểm **kiểm kê field**, không kiểm **giá trị**. Cùng lượt đo cho
+    thấy phép so 2 bề mặt (trục ②) sẽ bắt **4/4** ⇒ kết luận có số: kiểm-kê-field và kiểm-giá-trị là **hai việc
+    khác nhau**, phải chạy cả hai. Hai bẫy bắt buộc tránh khi dùng: (a) mutation phải tiêm được thật — API trả tiền
+    dạng **chuỗi** làm 4/5 mutant vô hiệu ở lượt đầu, "0%" khi đó là harness hỏng chứ không phải phát hiện;
+    (b) nếu mutation chặn cả request của app LẪN request xác minh của máy kiểm thì hai bên cùng bị bóp ⇒ không bao
+    giờ lệch (tautology ở tầng harness) — phải bỏ route SAU khi app load rồi mới đọc nguồn sạch. Chạy **định kỳ**
+    (nightly/mỗi release), không phải mỗi PR.
+11. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results

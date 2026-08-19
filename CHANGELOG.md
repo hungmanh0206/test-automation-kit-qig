@@ -7,6 +7,40 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (j) — (3) mutation check: bộ kiểm KHÔNG bắt được bug giá trị, đo được 0/4
+
+Đây là thứ đáng giá nhất trong ba việc, và nó ra **tin xấu** — đúng bản chất của một negative control.
+
+**Added — `scripts/qa/mutation_check.js`** (`npm run mutation:check`): tiêm lỗi ở tầng `page.route()` (**không chạm
+dữ liệu UAT, không ghi gì lên server**) rồi xem máy kiểm có đỏ. 5 mutant nhắm đúng các lớp bug **đã từng lọt thật**:
+`zero_out` (SAPP-28310/28376) · `drop_field` (SAPP-28404/28442) · `halve_number` · `stringify_num` (`540000` →
+`"540000.0"`) · `rename_label` (lớp "Phone" vs "Phone number").
+
+**Kết quả đo trên UAT — `mutation score = 0/4 = 0%`.** Bóp `convertible_amount` thành 0, **xoá hẳn**, chia nửa, đổi
+kiểu: `ui_conformance_check` **không thấy gì**. Nguyên nhân không phải máy hỏng mà là **phạm vi**: nó kiểm *kiểm kê
+field/nhãn*, KHÔNG kiểm *giá trị*. Đây đúng là giới hạn "gate kiểm HÌNH DẠNG chứ không kiểm SỰ THẬT" mà trước đó
+tôi chỉ **nghi** — giờ có số.
+
+Cùng lượt đo, harness kiểm luôn năng lực **trục ②**: UI hiển thị giá trị bị bóp trong khi API đọc lại (sạch) trả
+giá trị gốc ⇒ **4/4 mutant sẽ bị bắt**. Kết luận có bằng chứng: **kiểm-kê-field và kiểm-giá-trị là hai việc khác
+nhau**; xanh cái này không nói được gì về cái kia.
+
+**Ba bẫy của chính harness, đã sửa và ghi vào luật:**
+1. **Không tiêm được mà tưởng là phát hiện.** Lượt đầu 4/5 mutant "không tiêm được" vì API trả tiền dưới dạng
+   **chuỗi** (`"900000"`) mà hàm mutate đòi `typeof === 'number'`. "0%" lúc đó là **harness hỏng**, không phải vùng
+   mù. Nay nhận cả hai kiểu và giữ nguyên kiểu gốc.
+2. **Tautology ở tầng harness.** Nếu route bóp cả request của app LẪN request xác minh thì hai bên cùng bị bóp ⇒
+   không bao giờ lệch ⇒ trục ② "không bắt được" một cách GIẢ. Nay bỏ route **sau khi app load** rồi mới đọc nguồn sạch.
+3. Chỉ chặn endpoint **nghiệp vụ** (lượt đầu bóp cả `analytics.tiktok.com` và `/api/v1/me` — vô nghĩa), và phân biệt
+   **"sống sót"** với **"không liên quan"** (giá trị không hiển thị trên màn đang kiểm) — score chỉ tính trên mutant
+   có liên quan, nếu không thì con số vô nghĩa.
+
+**Added — `tests/fe/infra/cli-guard.spec.ts`**: quét toàn bộ `scripts/qa/*.js`; script nào có CLI + `module.exports`
+mà thiếu `require.main === module` guard thì **đỏ**. Lý do rất cụ thể: trong cùng phiên tôi mắc lỗi này ở **ba** file
+(`cross_surface_diff`, `fixture_matrix`, `mutation_check`) — lỗi lặp lại thì phải có máy gác, không dựa vào nhớ.
+
+Suite hạ tầng: 110 → **119 test**.
+
 ## 2026-08-19 (i) — (2) ASSERT tín hiệu môi trường: collector đầu tiên của kit
 
 **Đính chính trước:** trước hôm nay kit **không có collector nào** — `grep pageerror scripts/ tests/support/` = 0.

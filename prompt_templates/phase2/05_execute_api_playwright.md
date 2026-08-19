@@ -102,6 +102,11 @@ những lớp bug mà API là nơi CHỨNG MINH được:
 - **Guard theo trạng thái:** gọi thẳng API cho hành động mà UI đã chặn (sửa đơn đã thanh toán, xoá giao dịch đã
   xác nhận) — đây là chỗ API test làm được mà UI test không làm được, và phải kèm bằng chứng **dữ liệu không đổi**.
 
+**Đừng giả định bộ kiểm bắt được bug — CHỨNG MINH.** `npm run mutation:check` tiêm lỗi qua `page.route()`
+(không chạm dữ liệu UAT) rồi xem máy kiểm có đỏ. Đo lần đầu: máy kiểm-kê-field **0/4** vì nó kiểm *tập field*,
+KHÔNG kiểm *giá trị*. Với tầng API nghĩa là: `200 OK` + schema đúng **không** chứng minh giá trị đúng — phải so
+giá trị với oracle hoặc so 2 bề mặt. Mutant sống sót = vùng mù có bằng chứng, ghi vào `reports/`.
+
 **TÍN HIỆU MÔI TRƯỜNG — assert, đừng chỉ dùng khi đã fail.** Trang/API đã mở rồi nên nghe thêm **không tốn**
 lượt tải nào: `const sig = attachEnvSignals(page)` (`scripts/utils/runtime/env_signals.js`) → cuối case đọc
 `sig.report()`. `pageerror` là **zero-tolerance**: có JS exception là finding dù case PASS. 4xx **cố ý** của case

@@ -149,6 +149,11 @@ không sống theo dòng testcase. Mỗi lần execute một case, mở rộng t
 | 4 | **Nhánh/biến thể** | Cùng màn này với loại đơn/gói/tiền tệ KHÁC thì sao? | `npm run fixture:matrix` |
 | 5 | **Trạng thái kế cận** | Sau khi hủy / hoàn / deal lost / thanh toán một phần thì màn này còn đúng? | `npm run fixture:matrix` |
 
+**Đừng giả định bộ kiểm bắt được bug — CHỨNG MINH.** `npm run mutation:check` tiêm lỗi qua `page.route()`
+(không chạm dữ liệu UAT) rồi xem máy kiểm có đỏ. Đo lần đầu: `ui_conformance_check` **0/4** vì nó kiểm *kiểm kê
+field*, KHÔNG kiểm *giá trị* — nên kiểm kê field xanh **không** đủ để kết luận màn đúng; phải chạy thêm phép so
+giá trị (trục ②/③). Mutant sống sót = vùng mù có bằng chứng, ghi vào `reports/` để lượt sau bịt.
+
 **TÍN HIỆU MÔI TRƯỜNG — assert, đừng chỉ dùng khi đã fail.** Trang/API đã mở rồi nên nghe thêm **không tốn**
 lượt tải nào: `const sig = attachEnvSignals(page)` (`scripts/utils/runtime/env_signals.js`) → cuối case đọc
 `sig.report()`. `pageerror` là **zero-tolerance**: có JS exception là finding dù case PASS. 4xx **cố ý** của case

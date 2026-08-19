@@ -52,6 +52,7 @@
     "spec:extract": "node scripts/qa/spec_extract.js",
     "spec:gap": "node scripts/qa/spec_gap_report.js",
     "expansion:plan": "node scripts/qa/expansion_plan.js",
+    "mutation:check": "node scripts/qa/mutation_check.js",
     "probe:persist": "node scripts/qa/persistence_probe.js",
     "xsurf:diff": "node scripts/qa/cross_surface_diff.js",
     "fixture:matrix": "node scripts/qa/fixture_matrix.js",
