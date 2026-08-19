@@ -120,9 +120,10 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 - Mỗi story không bắt buộc chạy liền một mạch. Luồng chuẩn là:
   `Requirement -> Generate Testcase -> Excel (source of truth) -> QA confirmation -> Auto Publish Jira -> chờ Dev implement -> Phase 2 -> chờ Dev fix bug nếu có -> Re-run`.
 - Sau bước generate testcase, Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **gen/publish**. Nội dung testcase phải sửa ở Excel rồi re-publish — không sửa trực tiếp trên Xray làm nguồn authoring.
-- **Phase 2 execute mặc định lấy nguồn từ Xray** (`TESTCASE_SOURCE=xray`): kéo về canonical local `<TASK_OUTPUT_DIR>/test-cases/from-xray/*.xlsx` rồi execute từ đó (Xray publish TỪ Excel nên nhất quán). `TESTCASE_SOURCE=excel` (opt-out) đọc `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`. Dù nguồn nào, execute đọc file canonical LOCAL — không gọi Jira/Xray cho từng case.
+- **Phase 2 execute mặc định lấy nguồn từ Xray** (`TESTCASE_SOURCE=xray`): kéo về canonical local `<TASK_OUTPUT_DIR>/test-cases/from-xray/*.xlsx` rồi execute từ đó (Xray publish TỪ Excel nên nhất quán). `TESTCASE_SOURCE=aio` đọc `<TASK_OUTPUT_DIR>/test-cases/from-aio/*.xlsx` (kéo bằng `npm run aio:pull:write -- --story <KEY>`; cùng bộ cột/định dạng nên parser canonical không phân biệt nguồn). `TESTCASE_SOURCE=excel` (opt-out) đọc `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`. Dù nguồn nào, execute đọc file canonical LOCAL — không gọi Jira/Xray cho từng case.
 - Auto Publish Jira là step riêng trong phạm vi Phase 1, chạy bằng prompt riêng sau khi QA xác nhận Excel/testcase. Không publish Jira thật khi chưa có QA confirmation rõ ràng.
 - Test management tool là Xray: testcase publish mặc định tạo Xray `Test` issue (`JIRA_TESTCASE_ISSUE_TYPE=Test`), không dùng generic `Test Case` nếu project đã cấu hình Xray.
+- **Đang chuyển Xray → AIO Tests** (Xray đóng băng sau 21/08/2026). Công tắc DUY NHẤT là `TEST_MANAGEMENT_TOOL` (`xray` | `aio`). Đặt `aio` thì 4 script Xray (`publish_testcases` · `push_test_execution` · `update_xray_steps` · `cleanup_xray_tests`) **tự CHẶN kèm lệnh AIO thay thế** — đây là forcing function, không phải quy ước, vì hai bộ script ăn CHUNG đầu vào nên chạy nhầm KHÔNG báo lỗi mà ghi trót lọt vào sai hệ thống. Trên AIO: case **không phải Jira issue** (mất Test Set/link-requirement/assignee/precondition-issue), Test Execution → **Cycle**, Test Plan → **thư mục cycle**, và evidence neo được xuống **từng bước**. Không có API xoá ⇒ mọi script mặc định dry-run, sai phải dọn tay trên UI. Chi tiết: `scripts/integrations/aio/README.md`.
 - Publish testcase lên Jira phải đọc từ Excel canonical. Chạy dry-run trước nếu cần preview; publish thật chỉ khi QA/user approve. Ghi kết quả vào `<TASK_OUTPUT_DIR>/reports/jira-testcase-publish-summary.md`.
 - Phase 1 có thể tự động hóa gần như toàn bộ phần thiết kế testcase khi input đủ. Phase 2 chỉ execute phần có thể chạy an toàn qua UI/API public hoặc setup capability đã có; case không dựng được state qua API/factory/hook/fixture/sandbox an toàn thì ghi `Manual-only`, `SKIP_SETUP` hoặc `BLOCKED_SETUP` kèm capability còn thiếu — KHÔNG dùng DB để DỰNG state thay thế (DB chỉ được read-only verify trên UAT, xem ngoại lệ ở trên).
 - Mỗi case chưa tự động hoá được phải gắn 1 Blocker Root Cause (`needs_hook`/`needs_account`/`needs_sandbox`/`spec_mismatch`/`manual_inherent`/`external_dependency`), không gộp chung thành "backend state" (xem skill `precondition_setup_planner`). Capability gap (`needs_hook`/`needs_account`/`needs_sandbox`) phải đưa vào `reports/capability-request.md` và được review như Definition of Ready trước khi kickoff Phase 2. Pass rate phải kèm unassisted pass rate (loại các case cần người can thiệp giữa chừng) để không che giấu chi phí human-in-the-loop.
@@ -213,7 +214,27 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
    được?"* — (a) có máy mà không chạy ⇒ ghi vì sao (thiếu catalog/fixture/chưa bind) và sửa; (b) có máy đã chạy mà
    vẫn lọt ⇒ bổ sung luật **kèm test khoá luật**; (c) không có máy nào ⇒ ghi đề xuất máy mới vào `reports/`.
    CẤM kết thúc bằng "sẽ chú ý hơn" — chú ý không phải forcing function. Máy đo: `leak:report --require-machine`.
-6. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
+6. **ĐIỀU KIỆN SỐNG CÒN — mở rộng phải có ORACLE, nếu không thì KHÔNG được kết luận.** Khi mở sang field lân cận
+   / bề mặt khác, kit phải biết **cái đúng là gì**. Không có nguồn thì mặc định "app đang hiện thế là đúng" ⇒
+   tautology **nhân theo số trục**, tạo ra PASS giả nhìn rất thuyết phục. Ba loại kết luận, không có loại thứ tư:
+   - `EXPANSION_FINDING` — app **tự mâu thuẫn với chính nó** (lệch giữa 2 bề mặt · mắt đứt trong chuỗi lưu trữ ·
+     field thừa/thiếu so tài liệu). Không cần oracle ngoài, vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một
+     nơi sai. Log bug được, **KHÔNG phải verdict của case gốc** (cố ý không map Xray — trộn vào là pass-rate mất nghĩa).
+   - `PASS`/`FAIL` — **chỉ khi** có `oracle_ref` hợp lệ (`BR-`/`SM-`/`PM-`/`SS-`/`DM-`/`UI-`) và `expected` lấy từ đó.
+   - `OBSERVATION` — không có neo. **Nhất quán ≠ đúng**: 4 điểm khớp nhau vẫn có thể sai cả 4 (ca thật: USD không
+     quy đổi, `form/payload/api/ui` đều `10` trong khi đúng là `260.500`). Bắt buộc kèm câu hỏi mở; không vào pass-rate.
+   Máy ép: `scripts/lib/expansion/finding.js` tự hạ cấp PASS→OBSERVATION khi thiếu neo; `self_review` **CHẶN** nếu
+   file finding có PASS/FAIL không neo (kể cả bị sửa tay).
+7. **Độ sâu theo RISK BAND, không mở 5 trục cho mọi case.** Chi phí là thật: 1 task đang **1021 file / 136 MB**
+   evidence; mở đủ trục cho một bộ 530 case ước lượng **~3740 lượt tải trang · ~9,4 giờ · ~335 MB**. Band lấy **cái
+   nặng hơn** giữa `Mức độ rủi ro` và `Ưu tiên`: high → đủ trục runtime · medium → ③+⑤ · low → ③. Xem chi phí TRƯỚC
+   khi chạy: `npm run expansion:plan`.
+8. **Phân vai Phase 1 / Phase 2 — đừng làm trùng.** ①field ②surface ③persist ⑥lặp-đồng-thời ⑦chiều-ngược **cần
+   runtime** (DOM/response thật) ⇒ Phase 2. ④nhánh ⑤trạng-thái-kế-cận **đoán trước được từ tài liệu**
+   (permission matrix, state machine) ⇒ **case do Phase 1 sinh** (§10 Cross-layer Guard) để được đếm coverage và
+   publish lên TCM; Phase 2 chỉ đo **ô nào chạy được** (`fixture:matrix --discover`). Thứ chỉ sống ở execute thì
+   chỉ lượt chạy đó biết.
+9. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results

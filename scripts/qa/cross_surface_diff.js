@@ -166,6 +166,38 @@ async function main() {
     for (const o of r.obs) console.log(`[xsurf]     ${o.screen}: "${o.value}"   (${o.how})`);
   }
 
+  // FINDING có cấu trúc + luật oracle: lệch giá trị ⇒ EXPANSION_FINDING (app tự mâu thuẫn — chắc chắn một nơi
+  // sai, không cần oracle ngoài) · khớp mà KHÔNG có `oracle_ref` trong config ⇒ OBSERVATION, KHÔNG phải PASS.
+  const taskDir = arg('task-dir');
+  if (taskDir) {
+    const fnd = require(path.resolve(__dirname, '..', 'lib', 'expansion', 'finding'));
+    const items = [];
+    for (const r of results) {
+      const src = (cfg.checks || []).find((c) => c.name === r.name) || {};
+      const readable = r.obs.filter((o) => o.readable);
+      if (r.valueMismatch || r.formatMismatch) {
+        items.push(fnd.makeFinding({
+          axis: 'surface', base_tc: src.base_tc, self_inconsistent: true,
+          surface: readable.map((o) => o.screen).join(' vs '),
+          expected: readable[0] && readable[0].value, actual: readable.slice(1).map((o) => o.value).join(' / '),
+          oracle_ref: src.oracle_ref,
+        }));
+      } else if (!r.inconclusive) {
+        items.push(fnd.makeFinding({
+          axis: 'surface', base_tc: src.base_tc, surface: readable.map((o) => o.screen).join(' = '),
+          expected: src.expected !== undefined ? src.expected : (readable[0] && readable[0].value),
+          actual: readable[0] && readable[0].value, oracle_ref: src.oracle_ref,
+          open_question: src.oracle_ref ? undefined : `${readable.length} bề mặt hiển thị giống nhau, nhưng chưa có rule nào nói giá trị ĐÚNG là gì — giống nhau vẫn có thể sai cùng nhau.`,
+        }));
+      }
+    }
+    if (items.length) {
+      const w = fnd.writeFindings(taskDir, items, { append: true });
+      console.log(`[xsurf] finding: EXPANSION_FINDING ${w.summary.EXPANSION_FINDING} · PASS ${w.summary.PASS} · FAIL ${w.summary.FAIL} · OBSERVATION ${w.summary.OBSERVATION}`);
+      for (const v of w.violations) console.log(`[xsurf] ✗ ${v}`);
+    }
+  }
+
   const out = arg('out');
   if (out) {
     const L = [`<!-- gate: proven=${results.length - inc.length} inconclusive=${inc.length} broken=${bad.length} -->`,

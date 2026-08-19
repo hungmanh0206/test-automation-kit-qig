@@ -7,6 +7,45 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (h) — ĐIỀU KIỆN SỐNG CÒN của phần mở rộng: oracle, verdict riêng, risk band
+
+Phản hồi review chỉ đúng một lỗi **đang có thật** trong thứ vừa build: mở rộng quanh case mà không có nguồn thì
+kit mặc định *"app đang hiện thế là đúng"* ⇒ tautology **nhân theo số trục**, sản xuất PASS giả. Bằng chứng nằm
+trong test của chính tôi: `persistence_probe` trả `ok: true` cho ca SAPP-28403 (USD không quy đổi) — `form/payload/
+api/ui` khớp cả 4 ở giá trị `10` trong khi đúng phải `260.500`. **Tên field `ok` chính là mầm PASS giả.**
+
+**Added — `scripts/lib/expansion/finding.js`** (hạt nhân): ba loại kết luận, không có loại thứ tư —
+`EXPANSION_FINDING` (app **tự mâu thuẫn**: lệch giữa 2 bề mặt · mắt đứt chuỗi · field thừa/thiếu — không cần oracle
+ngoài vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một nơi sai) · `PASS`/`FAIL` (**chỉ khi** có `oracle_ref`
+hợp lệ `BR-|SM-|PM-|SS-|DM-|UI-`) · `OBSERVATION` (không neo ⇒ **nhất quán ≠ đúng**, bắt buộc kèm `open_question`).
+Máy **tự hạ cấp** PASS→OBSERVATION khi thiếu neo, và `oracle_ref` sai dạng bị bỏ (không nhận id tự bịa).
+
+**Added — verdict taxonomy** (`.agent/config/verdict_taxonomy.json`): `EXPANSION_FINDING` + `OBSERVATION`. Cả hai
+**cố ý `xray: null`** — trộn finding mở rộng vào execution status sẽ làm pass-rate mất nghĩa và triage lẫn lộn;
+báo riêng ở `reports/expansion-findings.md`.
+
+**Added — risk band, làm CÙNG LÚC chứ không để sau** (`scripts/lib/expansion/depth.js` + `npm run expansion:plan`):
+chi phí là thật — 1 task đang **1021 file / 136 MB** evidence, và mở đủ trục cho bộ **530 case** ước lượng
+**~3740 lượt tải trang · ~9,4 giờ · ~335 MB**. Band lấy **cái nặng hơn** giữa `Mức độ rủi ro` và `Ưu tiên`
+(Minor + Ưu tiên High vẫn là đường chính ⇒ high): high → đủ trục runtime · medium → ③+⑤ · low → ③. Đo trên bộ 530:
+**high 172 · medium 301 · low 57**.
+
+**Changed — phân vai Phase 1 / Phase 2** (chỉnh kiến trúc theo review, tránh làm trùng `§10 Cross-layer Guard`):
+①field ②surface ③persist ⑥lặp-đồng-thời ⑦chiều-ngược **cần runtime** ⇒ Phase 2 · ④nhánh ⑤trạng-thái **đoán trước
+được** từ permission matrix / state machine ⇒ **case sinh ở Phase 1** (để được đếm coverage + publish TCM). Nửa
+KHÔNG đẩy về Phase 1 được: *ô nào có dữ liệu để chạy* — đó là sự thật của **môi trường**, và chính là lý do case
+④⑤ chìm vào SKIP ⇒ Phase 2 giữ `fixture:matrix --discover`.
+
+**Enforcement:** `self_review` đọc thẳng `test-results/expansion_findings.json` và **CHẶN** khi có PASS/FAIL không
+neo (bắt được cả file do script tự chế sinh hoặc sửa tay) · cảnh báo số `OBSERVATION` còn treo. Nghiệm thu 2 chiều:
+file thật (2 OBSERVATION, 0 vi phạm) ⇒ chỉ cảnh báo; sửa tay 1 finding lên `PASS` ⇒ **CHẶN** đúng.
+
+**Fixed:** `persistence_probe.ok` → `consistent` (+ console đổi thành *"NHẤT QUÁN — chưa phải PASS"*). Lúc đổi tên,
+patch của tôi áp nửa vời làm marker `proven` đọc field không tồn tại ⇒ báo cáo ra `proven=0`; bắt được nhờ soi lại
+marker sau khi chạy, không phải nhờ đọc code.
+
+Suite hạ tầng: 86 → **105 test** (16 test mới cho luật oracle + risk band, và 3 test cũ đổi theo tên mới).
+
 ## 2026-08-19 (g) — trục ③ có chuỗi THẬT + đổi cách gate đọc báo cáo (dòng máy thay vì sniff văn xuôi)
 
 **Đo chuỗi 4 điểm thật trên UAT** (user xác nhận mutation): đơn Bảo lưu *IT test uiBL*, sửa `Service Fee` qua form

@@ -49,7 +49,7 @@ test.describe('@infra persistence_probe — backtest trên bug đã biết', () 
     });
     // Trong chuỗi này 4 điểm đều "10" nên chuỗi KHÔNG đứt — engine phải nói thật là không đứt,
     // vì lỗi ở đây là thiếu một PHÉP BIẾN ĐỔI, không phải mất giá trị.
-    expect(r.ok, 'chuỗi nhất quán ⇒ probe không được bịa ra mắt đứt').toBe(true);
+    expect(r.consistent, 'chuỗi nhất quán ⇒ probe không được bịa ra mắt đứt').toBe(true);
     // Nhưng khi so với giá trị PHẢI CÓ (oracle ngoài app) thì lệch bậc độ lớn phải được phân loại đúng:
     const c = probe.classify(probe.normVal('260.500'), probe.normVal('10'));
     expect(c).toContain('BẬC ĐỘ LỚN');
@@ -60,7 +60,7 @@ test.describe('@infra persistence_probe — backtest trên bug đã biết', () 
       name: 'Service Fee lành',
       points: { form: '1.234.567', payload: 1234567, api: 1234567, ui: '1.234.567đ' },
     });
-    expect(r.ok).toBe(true);
+    expect(r.consistent, 'nhất quán — KHÔNG đồng nghĩa PASS').toBe(true);
     expect(r.breaks).toHaveLength(0);
   });
 
@@ -68,7 +68,7 @@ test.describe('@infra persistence_probe — backtest trên bug đã biết', () 
     const r = probe.evaluate({ name: 'chỉ có form + ui', points: { form: '1.234.567', ui: '1.234.567đ' } });
     expect(r.breaks).toHaveLength(0);
     expect(r.missing).toEqual(['payload', 'api']);
-    expect(r.ok, 'khớp 2 điểm mà thiếu payload/api thì KHÔNG được coi là đạt').toBe(false);
+    expect(r.consistent, 'khớp 2 điểm mà thiếu payload/api thì KHÔNG được coi là nhất quán đủ').toBe(false);
     expect(r.partial, 'phải nói rõ đây là chuỗi ĐO KHUYẾT, không phải chuỗi lành').toBe(true);
   });
 

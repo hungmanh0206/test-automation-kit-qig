@@ -149,6 +149,13 @@ không sống theo dòng testcase. Mỗi lần execute một case, mở rộng t
 | 4 | **Nhánh/biến thể** | Cùng màn này với loại đơn/gói/tiền tệ KHÁC thì sao? | `npm run fixture:matrix` |
 | 5 | **Trạng thái kế cận** | Sau khi hủy / hoàn / deal lost / thanh toán một phần thì màn này còn đúng? | `npm run fixture:matrix` |
 
+**ĐIỀU KIỆN SỐNG CÒN — không có oracle thì KHÔNG kết luận.** Mở rộng mà không có nguồn thì agent sẽ mặc định
+"app đang hiện thế là đúng" ⇒ tautology nhân theo số trục. Ba loại kết luận: `EXPANSION_FINDING` (app tự mâu
+thuẫn — không cần oracle ngoài, log bug được, **không phải verdict của case gốc**) · `PASS`/`FAIL` (**chỉ khi**
+có `oracle_ref` trỏ `BR-`/`SM-`/`PM-`/`SS-`/`DM-`/`UI-`) · `OBSERVATION` (không neo ⇒ **nhất quán ≠ đúng**, kèm
+câu hỏi mở). Máy tự hạ cấp PASS→OBSERVATION khi thiếu neo và `self_review` **CHẶN** nếu file finding có PASS
+không neo. Độ sâu theo **risk band** — xem chi phí trước khi chạy: `npm run expansion:plan`.
+
 **Chiều ngược, bắt buộc:** chạy `npm run spec:gap` — build CÓ mà tài liệu KHÔNG NHẮC. Section chưa được khai
 nghĩa là **chưa ai soi**, không phải "đã kiểm và không sao". Mỗi dòng là một câu hỏi cho BA (build sai, hay tài
 liệu thiếu?), phải ghi vào `reports/`, không để phát hiện tan theo lượt chạy.

@@ -102,6 +102,13 @@ những lớp bug mà API là nơi CHỨNG MINH được:
 - **Guard theo trạng thái:** gọi thẳng API cho hành động mà UI đã chặn (sửa đơn đã thanh toán, xoá giao dịch đã
   xác nhận) — đây là chỗ API test làm được mà UI test không làm được, và phải kèm bằng chứng **dữ liệu không đổi**.
 
+**ĐIỀU KIỆN SỐNG CÒN — không có oracle thì KHÔNG kết luận.** Mở rộng mà không có nguồn thì agent sẽ mặc định
+"app đang hiện thế là đúng" ⇒ tautology nhân theo số trục. Ba loại kết luận: `EXPANSION_FINDING` (app tự mâu
+thuẫn — không cần oracle ngoài, log bug được, **không phải verdict của case gốc**) · `PASS`/`FAIL` (**chỉ khi**
+có `oracle_ref` trỏ `BR-`/`SM-`/`PM-`/`SS-`/`DM-`/`UI-`) · `OBSERVATION` (không neo ⇒ **nhất quán ≠ đúng**, kèm
+câu hỏi mở). Máy tự hạ cấp PASS→OBSERVATION khi thiếu neo và `self_review` **CHẶN** nếu file finding có PASS
+không neo. Độ sâu theo **risk band** — xem chi phí trước khi chạy: `npm run expansion:plan`.
+
 **Đóng vòng:** bug do người ngoài tìm ra là **lỗi của máy** — phải chỉ ra máy lẽ ra bắt được
 (`npm run leak:report -- --require-machine`), không có máy thì đề xuất máy mới. Log bug kèm `--found-by kit|human`.
 

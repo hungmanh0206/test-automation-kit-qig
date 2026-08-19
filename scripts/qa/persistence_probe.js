@@ -106,7 +106,10 @@ function evaluate(chain) {
     present,
     missing,
     breaks,
-    ok: breaks.length === 0 && missing.length === 0,
+    // KHÔNG đặt tên `ok`: 4 điểm khớp CHỈ chứng minh **nhất quán**, không chứng minh ĐÚNG. Ca thật SAPP-28403
+    // (USD không quy đổi) khớp cả 4 điểm ở giá trị 10 trong khi đúng phải 260.500 ⇒ tên `ok` là mầm PASS giả.
+    // Muốn PASS thì phải có `oracle_ref` — xem scripts/lib/expansion/finding.js.
+    consistent: breaks.length === 0 && missing.length === 0,
     partial: breaks.length === 0 && missing.length > 0,
   };
 }
@@ -128,7 +131,7 @@ if (require.main === module) {
 
   console.log(`[probe] ${results.length} chuỗi · ${broken.length} có mắt ĐỨT · ${partial.length} chuỗi đo thiếu điểm`);
   for (const r of results) {
-    if (!r.breaks.length && !r.missing.length) { console.log(`[probe] ✓ ${r.name} — 4/4 điểm khớp`); continue; }
+    if (!r.breaks.length && !r.missing.length) { console.log(`[probe] ~ ${r.name} — ${r.present.length}/4 điểm NHẤT QUÁN (chưa phải PASS: cần oracle_ref)`); continue; }
     if (r.breaks.length) {
       console.log(`[probe] ✗ ${r.name} — đứt ${r.breaks.length} mắt (đo ${r.present.join(' → ')})`);
       for (const b of r.breaks) {
@@ -140,9 +143,41 @@ if (require.main === module) {
     }
   }
 
+  // Xuất FINDING có cấu trúc để gate/triage đọc được, và để luật oracle được ÉP bằng máy:
+  // mắt đứt ⇒ EXPANSION_FINDING (app tự mâu thuẫn, không cần oracle ngoài) · nhất quán mà KHÔNG neo ⇒ OBSERVATION.
+  const taskDir = arg('task-dir');
+  if (taskDir) {
+    const fnd = require(path.resolve(__dirname, '..', 'lib', 'expansion', 'finding'));
+    const srcList = Array.isArray(chains) ? chains : chains.chains || [];
+    const items = [];
+    for (const r of results) {
+      const src = srcList.find((c) => c.name === r.name) || {};
+      if (r.breaks.length) {
+        for (const b of r.breaks) {
+          items.push(fnd.makeFinding({
+            axis: 'persist', base_tc: src.base_tc, surface: b.link, self_inconsistent: true,
+            expected: b.from, actual: b.to, oracle_ref: src.oracle_ref, evidence: src.evidence,
+          }));
+        }
+      } else {
+        const pts = src.points || {};
+        items.push(fnd.makeFinding({
+          axis: 'persist', base_tc: src.base_tc, surface: r.present.join('→'),
+          expected: src.expected !== undefined ? src.expected : pts[r.present[0]],
+          actual: pts[r.present[r.present.length - 1]],
+          oracle_ref: src.oracle_ref, evidence: src.evidence,
+          open_question: src.oracle_ref ? undefined : `Chuỗi nhất quán ${r.present.length} điểm, nhưng chưa có rule nào nói giá trị ĐÚNG phải là bao nhiêu — cần BR-/SM- rồi mới kết luận PASS.`,
+        }));
+      }
+    }
+    const w = fnd.writeFindings(taskDir, items, { append: process.argv.includes('append') });
+    console.log(`[probe] finding: EXPANSION_FINDING ${w.summary.EXPANSION_FINDING} · PASS ${w.summary.PASS} · FAIL ${w.summary.FAIL} · OBSERVATION ${w.summary.OBSERVATION} → ${path.relative(process.cwd(), w.mdPath)}`);
+    for (const v of w.violations) console.log(`[probe] ✗ ${v}`);
+  }
+
   const out = arg('out');
   if (out) {
-    const proven = results.filter((r) => r.ok).length;
+    const proven = results.filter((r) => r.consistent).length;
     const L = [`<!-- gate: proven=${proven} inconclusive=${partial.length} broken=${broken.length} -->`,
       '# Probe chuỗi lưu trữ (form → payload → API → UI)', '',
       '> Sinh bởi `scripts/qa/persistence_probe.js`. Giá trị mồi phải **phân biệt** (không tròn, không 0), nếu không',

@@ -472,6 +472,21 @@ if (taskDir) {
       problems.push(`Có \`requirements/${cfg}\` nhưng CHƯA có báo cáo ${name} — khai phạm vi rồi không chạy thì bằng không chạy.`);
     }
   }
+  // LUẬT ORACLE — chặn, không phải cảnh báo: finding PASS/FAIL mà không có `oracle_ref` là PASS giả, tức là
+  // đúng thứ làm cả ý tưởng mở rộng phản tác dụng. Đọc thẳng file finding nên bắt được cả trường hợp file do
+  // script tự chế sinh ra hoặc bị sửa tay.
+  const fPath = path.join(taskDir, 'test-results', 'expansion_findings.json');
+  if (fs.existsSync(fPath)) {
+    try {
+      const fnd = require(path.resolve(__dirname, '..', 'lib', 'expansion', 'finding'));
+      const data = JSON.parse(fs.readFileSync(fPath, 'utf8'));
+      const bad = fnd.auditFindings(data.findings || []);
+      const by = fnd.summarize(data.findings || []);
+      for (const b of bad) problems.push(`finding mở rộng vi phạm luật oracle — ${b}`);
+      if (by.OBSERVATION) warnings.push(`${by.OBSERVATION} finding ở mức OBSERVATION (chưa có oracle) — mỗi cái phải thành câu hỏi cho BA rồi ghi BR-/SM-/UI-, không thì lượt sau lại quan sát lại từ đầu.`);
+    } catch (e) { problems.push(`\`expansion_findings.json\` không đọc được: ${e.message}`); }
+  }
+
   results.push(engine.toResult('5 trục mở rộng quanh case (máy nào đã chạy)', {
     problems,
     warnings,

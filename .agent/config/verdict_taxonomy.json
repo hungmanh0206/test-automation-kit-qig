@@ -36,6 +36,18 @@
       "loggableAsBug": false,
       "xray": "TODO",
       "meaning": "Chưa thực thi (mặc định Xray) — KHÔNG dùng khi đã chạy được."
+    },
+    "EXPANSION_FINDING": {
+      "executed": true,
+      "loggableAsBug": true,
+      "xray": null,
+      "meaning": "Phát hiện từ MỞ RỘNG quanh case (5 trục), KHÔNG phải verdict của case gốc: app tự mâu thuẫn với chính nó (giá trị lệch giữa 2 bề mặt · mắt đứt trong chuỗi lưu trữ · field thừa/thiếu so tài liệu). Không cần oracle ngoài vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một nơi sai. CỐ Ý không map sang Xray status: trộn vào execution sẽ làm pass-rate mất nghĩa và triage lẫn lộn — báo riêng ở reports/expansion-findings.md."
+    },
+    "OBSERVATION": {
+      "executed": true,
+      "loggableAsBug": false,
+      "xray": null,
+      "meaning": "Quan sát được nhưng KHÔNG có oracle độc lập ⇒ không kết luận đúng/sai. Bắt buộc kèm open_question. Nhất quán KHÔNG phải bằng chứng của đúng: 4 điểm khớp nhau vẫn có thể sai cả 4 (ca thật: USD không quy đổi, form/payload/api/ui đều = 10 trong khi đúng phải 260.500)."
     }
   },
   "synonyms": {
@@ -79,7 +91,7 @@
     "max": 3,
     "purpose": "Rerun case FAIL để loại flaky/setup TRƯỚC khi kết luận product/API bug (và trước khi log Jira)."
   },
-  "principle": "\"Không phán được\" KHÔNG thành PASS. Mỗi verdict xuất trạng thái rõ; FAIL bắt buộc kèm failureLayer. SKIP/BLOCKED_SETUP/SKIP_SETUP/setup_failure KHÔNG log Jira. FAIL lặp lại ổn định KHÔNG đồng nghĩa product bug: rerun chỉ loại flaky, KHÔNG loại được sai-element. Trước khi kết luận product/api_bug phải chứng minh đã thao tác ĐÚNG đối tượng (evidence highlight đúng element + xác minh lại bằng 1 đường định vị độc lập hoặc thao tác tay); nếu không → script_error.",
+  "principle": "\"Không phán được\" KHÔNG thành PASS. Mỗi verdict xuất trạng thái rõ; FAIL bắt buộc kèm failureLayer. SKIP/BLOCKED_SETUP/SKIP_SETUP/setup_failure KHÔNG log Jira. FAIL lặp lại ổn định KHÔNG đồng nghĩa product bug: rerun chỉ loại flaky, KHÔNG loại được sai-element. Trước khi kết luận product/api_bug phải chứng minh đã thao tác ĐÚNG đối tượng (evidence highlight đúng element + xác minh lại bằng 1 đường định vị độc lập hoặc thao tác tay); nếu không → script_error. MỞ RỘNG quanh case chỉ được PASS/FAIL khi có `oracle_ref` trỏ knowledge (BR-/SM-/PM-/SS-/DM-/UI-); không có neo thì là OBSERVATION, KHÔNG phải PASS — nếu không, mở sang field lân cận rồi kết luận \"đúng vì app đang hiện thế\" là tautology nhân theo số trục.",
   "beVsFe": {
     "principle": "CẤM gán tầng FE/BE chỉ bằng quan sát giao diện. Phải đối chiếu dữ liệu API trước khi kết luận.",
     "howTo": [
