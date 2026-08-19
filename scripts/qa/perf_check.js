@@ -167,61 +167,79 @@ function summarizeCoverage(jsCov, cssCov) {
  * Coverage động + Performance.getMetrics + DOM counters + heap (+ heap snapshot nếu bật).
  */
 async function deepProbe(context, base, screen, outDir) {
-  const page = await context.newPage();
   const out = { note: 'run riêng — không ảnh hưởng median timing ở trên' };
-  let cdp;
-  try {
-    cdp = await applyThrottle(context, page);
-    if (!cdp) { try { cdp = await context.newCDPSession(page); } catch (e) { cdp = null; } }
-    // Performance.enable PHẢI trước navigation — counter chỉ tích luỹ từ lúc enable (enable sau load → toàn 0).
-    if (cdp) await cdp.send('Performance.enable').catch(() => {});
-    await page.coverage.startJSCoverage({ resetOnNavigation: false }).catch(() => {});
-    await page.coverage.startCSSCoverage({ resetOnNavigation: false }).catch(() => {});
+  const url = screen.url ? (/^https?:/.test(screen.url) ? screen.url : base + screen.url) : base;
 
-    const url = screen.url ? (/^https?:/.test(screen.url) ? screen.url : base + screen.url) : base;
+  const openPage = async () => {
+    const page = await context.newPage();
+    let cdp = await applyThrottle(context, page);
+    if (!cdp) { try { cdp = await context.newCDPSession(page); } catch (e) { cdp = null; } }
+    return { page, cdp };
+  };
+  const navigate = async (page) => {
     await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
     await runPreSteps(page, base, screen.preSteps);
     await page.waitForTimeout(1200);
+  };
 
-    const jsCov = await page.coverage.stopJSCoverage().catch(() => []);
-    const cssCov = await page.coverage.stopCSSCoverage().catch(() => []);
-    out.coverage = summarizeCoverage(jsCov, cssCov);
+  // PASS 1 — COVERAGE. Instrument rất nặng: bật coverage làm chính trang chậm đi và bơm phồng mọi
+  // counter thời gian. Đo trên máy thật (cùng màn, cùng session): coverage BẬT vs TẮT →
+  // TaskDuration 5924ms vs 1367ms (×4.3), RecalcStyleDuration 4214ms vs 148ms (×28), đồng hồ thực
+  // 17516ms vs 3847ms (×4.6). Vì vậy KHÔNG được đọc CDP metric trong cùng pass với coverage —
+  // sẽ báo cáo chi phí của CÔNG CỤ ĐO chứ không phải của app. Tách 2 pass là bắt buộc, không phải tối ưu.
+  try {
+    const { page } = await openPage();
+    try {
+      await page.coverage.startJSCoverage({ resetOnNavigation: false }).catch(() => {});
+      await page.coverage.startCSSCoverage({ resetOnNavigation: false }).catch(() => {});
+      await navigate(page);
+      const jsCov = await page.coverage.stopJSCoverage().catch(() => []);
+      const cssCov = await page.coverage.stopCSSCoverage().catch(() => []);
+      out.coverage = summarizeCoverage(jsCov, cssCov);
+    } finally { await page.close().catch(() => {}); }
+  } catch (e) { out.coverageError = e.message; }
 
-    if (cdp) {
-      try {
-        const { metrics } = await cdp.send('Performance.getMetrics'); // đã enable trước navigation
-        const m = Object.fromEntries((metrics || []).map((x) => [x.name, x.value]));
-        const ms = (v) => (v == null ? null : Math.round(v * 1000)); // CDP trả giây → ms
-        out.cdpMetrics = {
-          scriptDuration_ms: ms(m.ScriptDuration), layoutDuration_ms: ms(m.LayoutDuration),
-          recalcStyleDuration_ms: ms(m.RecalcStyleDuration), taskDuration_ms: ms(m.TaskDuration),
-          layoutCount: m.LayoutCount ?? null, recalcStyleCount: m.RecalcStyleCount ?? null,
-          jsHeapUsedMb: m.JSHeapUsedSize != null ? Math.round(m.JSHeapUsedSize / 1048576) : null,
-          jsHeapTotalMb: m.JSHeapTotalSize != null ? Math.round(m.JSHeapTotalSize / 1048576) : null,
-          nodes: m.Nodes ?? null, documents: m.Documents ?? null, jsEventListeners: m.JSEventListeners ?? null,
-        };
-      } catch (e) { out.cdpMetricsError = e.message; }
-      try { out.domCounters = await cdp.send('Memory.getDOMCounters'); } catch (e) { /* optional */ }
-      if (HEAP_SNAPSHOT) {
+  // PASS 2 — CDP metric / DOM counter / heap trên page SẠCH (không coverage) → số dùng được.
+  try {
+    const { page, cdp } = await openPage();
+    try {
+      // Performance.enable PHẢI trước navigation — counter chỉ tích luỹ từ lúc enable (enable sau load → toàn 0).
+      // Counter là per-page (page mới luôn bắt đầu từ 0), không cộng dồn theo tiến trình — đã kiểm.
+      if (cdp) await cdp.send('Performance.enable').catch(() => {});
+      await navigate(page);
+      if (cdp) {
         try {
-          const safe = (screen.name || screen.url || 'screen').replace(/[^\w-]+/g, '_').slice(0, 40);
-          const file = path.join(outDir, `heap-${safe}.heapsnapshot`);
-          const chunks = [];
-          const onChunk = (p) => chunks.push(p.chunk);
-          cdp.on('HeapProfiler.addHeapSnapshotChunk', onChunk);
-          await cdp.send('HeapProfiler.enable');
-          await cdp.send('HeapProfiler.takeHeapSnapshot', { reportProgress: false });
-          cdp.off('HeapProfiler.addHeapSnapshotChunk', onChunk);
-          fs.writeFileSync(file, chunks.join(''), 'utf8');
-          out.heapSnapshot = path.basename(file); // mở bằng Chrome DevTools → Memory → Load
-        } catch (e) { out.heapSnapshotError = e.message; }
+          const { metrics } = await cdp.send('Performance.getMetrics');
+          const m = Object.fromEntries((metrics || []).map((x) => [x.name, x.value]));
+          const ms = (v) => (v == null ? null : Math.round(v * 1000)); // CDP trả giây → ms
+          out.cdpMetrics = {
+            scriptDuration_ms: ms(m.ScriptDuration), layoutDuration_ms: ms(m.LayoutDuration),
+            recalcStyleDuration_ms: ms(m.RecalcStyleDuration), taskDuration_ms: ms(m.TaskDuration),
+            layoutCount: m.LayoutCount ?? null, recalcStyleCount: m.RecalcStyleCount ?? null,
+            jsHeapUsedMb: m.JSHeapUsedSize != null ? Math.round(m.JSHeapUsedSize / 1048576) : null,
+            jsHeapTotalMb: m.JSHeapTotalSize != null ? Math.round(m.JSHeapTotalSize / 1048576) : null,
+            nodes: m.Nodes ?? null, documents: m.Documents ?? null, jsEventListeners: m.JSEventListeners ?? null,
+          };
+        } catch (e) { out.cdpMetricsError = e.message; }
+        try { out.domCounters = await cdp.send('Memory.getDOMCounters'); } catch (e) { /* optional */ }
+        if (HEAP_SNAPSHOT) {
+          try {
+            const safe = (screen.name || screen.url || 'screen').replace(/[^\w-]+/g, '_').slice(0, 40);
+            const file = path.join(outDir, `heap-${safe}.heapsnapshot`);
+            const chunks = [];
+            const onChunk = (p) => chunks.push(p.chunk);
+            cdp.on('HeapProfiler.addHeapSnapshotChunk', onChunk);
+            await cdp.send('HeapProfiler.enable');
+            await cdp.send('HeapProfiler.takeHeapSnapshot', { reportProgress: false });
+            cdp.off('HeapProfiler.addHeapSnapshotChunk', onChunk);
+            fs.writeFileSync(file, chunks.join(''), 'utf8');
+            out.heapSnapshot = path.basename(file); // mở bằng Chrome DevTools → Memory → Load
+          } catch (e) { out.heapSnapshotError = e.message; }
+        }
       }
-    }
-  } catch (e) {
-    out.error = e.message;
-  } finally {
-    await page.close().catch(() => {});
-  }
+    } finally { await page.close().catch(() => {}); }
+  } catch (e) { out.error = e.message; }
+
   return out;
 }
 
@@ -289,8 +307,11 @@ async function measureApi(apiCtx, base, ep) {
 
 /** Render section --deep (coverage động + CDP metrics + heap). Advisory, không có ngưỡng cứng. */
 function deepSection(d) {
-  const L = ['### Tín hiệu sâu (CDP · run riêng, không tính vào median)'];
-  if (d.error) L.push(`- Lỗi deep probe: ${d.error}`);
+  const L = ['### Tín hiệu sâu (CDP · run riêng, không tính vào median)',
+    '> Coverage và CDP metric đo ở **2 lần tải riêng**: bật coverage làm trang chậm ×4–5 và bơm phồng',
+    '> RecalcStyleDuration tới ×28, nên đọc chung một pass là báo cáo chi phí của công cụ đo, không phải của app.'];
+  if (d.error) L.push(`- Lỗi pass CDP metric: ${d.error}`);
+  if (d.coverageError) L.push(`- Lỗi pass coverage: ${d.coverageError}`);
   const cv = d.coverage;
   if (cv) {
     L.push(`- **Coverage động**: tải ${cv.totalKb} KB · **chạy thật ${cv.usedKb} KB (${cv.usedPct}%)** · **thừa ${cv.unusedKb} KB (${cv.unusedPct}%)**`);

@@ -28,7 +28,11 @@ Catalog: block `perf` (screens + thresholds, api + threshold_ms). Schema ở `sc
 
 ## `--deep` — tín hiệu sâu qua CDP thô (built-in, không thêm dep)
 
-Chạy **run RIÊNG** sau các run đo thời gian (coverage/profiler gây overhead → KHÔNG trộn vào median):
+Chạy **run RIÊNG** sau các run đo thời gian (coverage/profiler gây overhead → KHÔNG trộn vào median).
+Bên trong `--deep` lại tách tiếp **2 lần tải**: pass 1 lấy coverage, pass 2 lấy CDP metric/heap trên page **sạch**.
+Lý do (đo thật, cùng màn cùng session): bật coverage → `TaskDuration` 5924ms vs 1367ms (**×4.3**),
+`RecalcStyleDuration` 4214ms vs 148ms (**×28**), đồng hồ thực 17516ms vs 3847ms (**×4.6**). Đọc CDP metric
+trong cùng pass với coverage là báo cáo chi phí của **công cụ đo**, không phải của app.
 
 - **Coverage động JS/CSS** (`page.coverage`): `usedPct` = % code FE luồng test **chạm tới** (đo độ phủ FE thật của test); `unusedPct` = dead weight tải về không chạy → ứng viên **code-split/lazy-load**; kèm top file thừa.
 - **`Performance.getMetrics`**: ScriptDuration/TaskDuration (main-thread nghẽn), LayoutDuration + LayoutCount & RecalcStyle* (layout thrash), JSHeapUsed/Total, Nodes, JSEventListeners (leak/DOM phình).
@@ -59,6 +63,9 @@ Chạy **run RIÊNG** sau các run đo thời gian (coverage/profiler gây overh
 - Verdict từ 1 lần đo (flaky) thay vì median N lần.
 - Bịa ngưỡng khi spec không có.
 - Coi perf FAIL trên UAT nhiễu là product bug cứng.
+- Đọc CDP metric đo trong lúc coverage đang bật (số phồng tới ×28) rồi báo cáo như chi phí thật của màn.
+- Hiểu `unusedPct` thành "code chết, xoá được": nó chỉ nghĩa là **luồng test này** không chạm tới — code của màn khác cũng bị tính là thừa. Đây là danh sách ứng viên **lazy-load/code-split**, không phải danh sách xoá.
+- Quên rằng số đo là của browser **đã ấm** sau login (TTFB = cache hit) → tưởng đó là lần vào đầu tiên.
 
 ## Related
 
