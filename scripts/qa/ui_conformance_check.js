@@ -470,4 +470,4 @@ if (IS_CLI) (async () => {
   process.exit(report.totalDeviations > 0 ? 1 : 0);
 })();
 
-module.exports = { checkScreen, stampSection, surfaceOf, compareFieldSet };
+module.exports = { checkScreen, stampSection, surfaceOf, compareFieldSet, login };
