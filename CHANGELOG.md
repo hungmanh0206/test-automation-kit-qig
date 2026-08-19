@@ -7,6 +7,28 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 — B2 chống lọt bug: FSD tự sinh ui_catalog (888 field), backtest lộ 5 lỗ
+
+**Vấn đề (B0 đã đo):** `ui_conformance_check.js` chỉ kiểm được màn nào **người** chịu khai tay vào `ui_catalog.json`. Task SAPP-24395 có **28 nhóm chức năng** nhưng catalog chỉ **5 màn** ⇒ 23 nhóm không có gì kiểm, và bề mặt cứ rộng ra khi máy kiểm đứng yên. Khai tay 49 bảng field là việc không ai làm.
+
+**Added — `scripts/qa/spec_extract.js`** (`npm run spec:extract`): đọc chính bảng *"Mô tả chi tiết các trường"* mà FSD đã có sẵn (khuôn 8 cột) → `screens.json` → `ui_catalog.json`. Đo trên FSD thật: **42 bảng · 47 tab · 257 section · 888 field**. Từ chối sinh catalog khi thiếu `--bindings` (URL/fixture là dữ liệu TASK, script không đoán) và **luôn in số màn chưa có binding** — 54 màn đang mù, nói ra thay vì để tưởng đã phủ.
+
+**Nghiệm thu đã tự ràng từ đầu:** catalog tự sinh phải bắt lại được **STT 42/43/53/54** mà không biết trước. Tôi viết parser xong mới mở 4 mục đó ra. Chính phép nghiệm thu này lộ **5 lỗ**, cả 5 đều vô hình nếu chỉ đọc code:
+
+1. **`mode:'superset'` giết phép bắt field THỪA.** Phải bật superset để né báo-thiếu-oan cho field điều kiện — nhưng nó tắt luôn `fields.extra`, tức đúng lớp bug của STT 42 (Order Detail thừa "Địa chỉ"). Sửa: thêm **`optionalFields`** vào `ui_conformance_check.js` — miễn trừ **đích danh** từng field điều kiện, `superset` chỉ còn dùng cho nhãn lặp động không liệt kê được ("Phí dịch vụ lần 1..N").
+2. **Loại nhầm 78 field.** Bản đầu coi `dropdown/combobox/checkbox/tag` là "control không nhãn" — đó là **nơi bug hay sống** (SAPP-28311 Service Fee không phải Combobox, SAPP-28318 dropdown thiếu option). Nay chỉ loại `button/icon/link`.
+3. **Key trùng giữa các file.** FSD copy-paste nên mục "4.3.1.6" tồn tại ở **cả** file Chuyển đổi lẫn Chuyển nhượng ⇒ binding trỏ một URL nhưng lấy tập field của **loại đơn khác** (đúng lớp "26 deviation giả"). Nay key mang tiền tố file.
+4. **Section lạ không ai bắt.** STT 54 là màn mọc thêm **cả một khối** của loại đơn khác ("Thông tin Deal trừ" trên tab Hub Info của Chuyển nhượng) — kiểm-kê-field không chạm tới vì field của màn vẫn đủ. Thêm `forbiddenSections` (sinh từ spec: section cùng tab nhưng thuộc **màn khác**) + check `sections.unexpected`. Bản heuristic đầu lọc theo *file* nên vừa **bỏ sót đúng STT 54** vừa **tố oan** một section của chính màn — sửa thành lọc theo **khoá màn**.
+5. **Nhãn lặp trong tài liệu.** FSD ghi `Phone` hai lần trong một khối ⇒ so-tập vô nghĩa. Nay gộp và nêu ra để hỏi BA (`_doc_duplicates`).
+
+**Kiểm chéo offline (mạnh hơn tự tin):** so catalog tự sinh với catalog **viết tay** — màn *Add-on Order Detail / Overview* khớp **chính xác 3/3 section (6/6, 7/7, 4/4)**, kể cả giữ đúng `Net Price` (field mà bug #19 tố thiếu) và loại đúng `Note` có điều kiện. Chỗ lệch ở màn Create là **auto đúng hơn bản tay**: bản tay đưa `Deal ID Đã Thanh Toán Phí` (FSD ghi rõ "chỉ hiển thị khi có giá trị") vào tập phải-có ⇒ sẽ báo thiếu oan với mọi deal thường.
+
+**Added — `tests/fe/infra/spec-extract.spec.ts`** (8 test, suite hạ tầng 56 → 64): mỗi test khoá đúng một lỗ ở trên, kèm fixture FSD thu nhỏ giữ nguyên các đặc điểm đã gây lỗi (heading in nghiêng, số mục trùng 2 file, nhãn lặp, field điều kiện).
+
+**Bẫy lặp lại lần thứ ba:** ký tự `` bị công cụ trung gian biến thành **backspace (0x08)** nằm trong regex ⇒ `Button` không bao giờ khớp mà script vẫn chạy êm. Lần này phát hiện nhờ soi số (0 control giữa 119 button). Đã quét cả repo, không còn 0x08 lạc.
+
+**Trạng thái nghiệm thu:** 3/4 mục (42/43/54) đã chứng minh được **catalog hỏi đúng câu** ở mức offline; STT 53 cần một fixture order Chuyển đổi để bind. Cả 4 mục **chưa** chạy thật trên UAT — đó là bước kế tiếp và cần xác nhận trước khi chạm UAT.
+
 ## 2026-08-17 — chạy 3 gate mới trên NỘI DUNG THẬT: 4 luật báo oan, đã vá
 
 **Vấn đề:** `dim:coverage`, Lớp 1 (bằng-chứng-tối-thiểu-theo-tag) và `domain:trace-back` tới giờ **chỉ được thử trên fixture do tôi tự dựng** — mà fixture thì luôn xanh, nó được viết để khớp luật. Nên tôi viết **28 testcase Order Bảo lưu** có tag chiều thật (oracle từ `BR-BAOLUU-001…007`, `BR-TXN-003…005`) rồi chạy 3 gate đó lên. Lượt đo lộ ra **4 luật báo oan** — cả 4 vô hình với fixture.

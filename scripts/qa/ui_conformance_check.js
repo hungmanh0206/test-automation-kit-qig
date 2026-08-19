@@ -163,6 +163,17 @@ async function checkScreen(page, base, screen) {
       }
     }
   }
+  // 2a-bis) SECTION LẠ: màn mọc thêm CẢ MỘT KHỐI thuộc loại đơn khác. Kiểm-kê-field không chạm tới lớp này —
+  // các field của màn vẫn đủ và đúng, chỉ có thêm một section không thuộc màn. Backtest STT 54 (tab Hub Info
+  // của đơn Chuyển nhượng hiện khối "Thông tin Deal trừ" của Chuyển đổi) lọt qua mọi phép cũ vì thế.
+  // `forbiddenSections` do spec_extract sinh: section cùng tab nhưng thuộc loại đơn KHÁC ⇒ chỉ gồm tên có
+  // trong tài liệu, không bịa tên.
+  for (const name of screen.forbiddenSections || []) {
+    const found = await page.evaluate((n) => [...document.querySelectorAll('*')]
+      .some((e) => e.offsetParent && e.children.length === 0 && (e.textContent || '').trim() === n), name);
+    if (found) dev.push({ type: 'sections.unexpected', name, detail: 'khối này thuộc loại đơn KHÁC theo tài liệu, không thuộc màn đang mở' });
+  }
+
   // 2b) FIELDS: kiểm kê TẬP field/nhãn của một section (thiếu / thừa / sai thứ tự).
   // Vì sao cần dù đã có `table` và `texts`: `table` chỉ phủ cột của bảng, `texts` chỉ kiểm TỪNG nhãn đã biết
   // trước — cả hai đều KHÔNG phát hiện được "section thiếu một trường" hay "màn mọc thêm một trường lạ",
@@ -211,8 +222,20 @@ async function checkScreen(page, base, screen) {
       .map((x) => ({ tàiLiệu: x, build: actKey.get(key(x)) }));
     if (reworded.length) dev.push({ type: 'fields.label-text', name: f.name, pairs: reworded, note: 'nhãn khớp về nội dung nhưng lệch hoa/thường hoặc khoảng trắng so với tài liệu' });
     if (missing.length) dev.push({ type: 'fields.missing', name: f.name, expected: missing, detail: `build có: [${actual.join(' | ')}]` });
-    // mode 'superset' = chấp nhận màn có thêm field ngoài danh sách (dùng khi catalog mới trích một phần).
-    if (extra.length && f.mode !== 'superset') dev.push({ type: 'fields.extra', name: f.name, actual: extra, detail: 'field xuất hiện trên build nhưng KHÔNG có trong tài liệu' });
+    // `optionalFields` = field tài liệu ghi rõ CHỈ hiện trong một số trường hợp: xuất hiện thì KHÔNG phải sai
+    // lệch, mà vắng cũng không phải thiếu. Có danh sách này rồi thì không phải tắt cả phép bắt field THỪA.
+    // Vì sao cần: backtest STT 42 (Order Detail Chuyển nhượng THỪA field "Địa chỉ") cho thấy `mode:'superset'`
+    // — thứ buộc phải bật để né báo-thiếu-oan cho field điều kiện — đã âm thầm tắt đúng phép bắt được bug đó.
+    // Một cờ thô che mất một lớp bug. `optionalFields` nêu ĐÍCH DANH nên chỉ miễn trừ đúng field đó.
+    const optKey = new Set((f.optionalFields || []).map((x) => key(x)));
+    const extraReal = extra.filter((x) => !optKey.has(key(x)));
+    if (optKey.size) {
+      const seen = extra.filter((x) => optKey.has(key(x)));
+      if (seen.length) dev.push({ type: 'info.optional-present', name: f.name, actual: seen, note: 'field có điều kiện đang hiện — không tính là sai lệch' });
+    }
+    // mode 'superset' = chấp nhận màn có thêm field ngoài danh sách. Chỉ dùng khi KHÔNG thể liệt kê (vd nhãn
+    // lặp động "Phí dịch vụ lần 1..N"), không dùng thay cho `optionalFields`.
+    if (extraReal.length && f.mode !== 'superset') dev.push({ type: 'fields.extra', name: f.name, actual: extraReal, detail: 'field xuất hiện trên build nhưng KHÔNG có trong tài liệu' });
     if (f.ordered) {
       const seq = actual.filter((x) => exp.includes(x));
       const wrong = exp.filter((x, i) => seq[i] !== undefined && seq[i] !== x);
