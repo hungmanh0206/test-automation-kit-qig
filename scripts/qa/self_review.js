@@ -375,6 +375,57 @@ if (statusFile && fs.existsSync(statusFile)) {
   }));
 }
 
+// 9) ĐỘ PHỦ BỀ MẶT — gate cũ chỉ hỏi "có catalog mà chưa chạy?", nên không khai catalog là né được
+// hợp lệ. Đã xảy ra thật: catalog của một task chỉ khai 5 màn (toàn một luồng) trong khi testcase chạm
+// ~29 nhóm chức năng — 4 bug hiển thị sau đó nằm đúng ở những màn không ai khai, conformance chạy xanh.
+// Check này đổi câu hỏi thành: "scope chạm bao nhiêu bề mặt, catalog phủ bao nhiêu, phần chưa phủ đã khai chưa?".
+{
+  const problems = []; const warnings = [];
+  let note = '';
+  const STOP = new Set(['order', 'orders', 'quản', 'lý', 'quan', 'ly', 'tạo', 'tao', 'màn', 'man', 'và', 'va', 'theo', 'của', 'cua', 'các', 'cac', 'add', 'on', 'product', 'info', 'detail', 'list', 'create', 'view', 'tab', 'thông', 'tin', 'thong']);
+  const norm = (s) => String(s || '').toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter((w) => w && !STOP.has(w));
+  if (taskDir && fs.existsSync(path.join(taskDir, 'test-cases'))) {
+    // (a) bề mặt mà testcase tự khai — bảng "Phân nhóm testcase" do Phase 1 sinh
+    const groups = [];
+    for (const f of fs.readdirSync(path.join(taskDir, 'test-cases')).filter((x) => x.endsWith('.md'))) {
+      const md = fs.readFileSync(path.join(taskDir, 'test-cases', f), 'utf8');
+      const sec = md.split(/^##\s+/m).find((s) => /^Phân nhóm testcase/i.test(s));
+      if (!sec) continue;
+      for (const line of sec.split(/\r?\n/)) {
+        const m = line.match(/^\|\s*([^|]+?)\s*\|/);
+        if (!m) continue;
+        const name = m[1].trim();
+        if (!name || /^-+$/.test(name) || /^Nhóm chức năng$/i.test(name)) continue;
+        groups.push(name);
+      }
+    }
+    // (b) bề mặt đã được khai để đối chiếu máy — ui_catalog.json
+    let screens = [];
+    const cat = path.join(taskDir, 'requirements', 'ui_catalog.json');
+    if (fs.existsSync(cat)) { try { screens = (JSON.parse(fs.readFileSync(cat, 'utf8')).screens || []).map((s) => s.name || ''); } catch (e) { problems.push(`\`ui_catalog.json\` không đọc được: ${e.message}`); } }
+
+    if (groups.length) {
+      const covered = []; const missing = [];
+      const screenTokens = screens.map((s) => new Set(norm(s)));
+      for (const g of groups) {
+        const gt = norm(g);
+        const hit = screenTokens.some((st) => gt.some((w) => st.has(w)));
+        (hit ? covered : missing).push(g);
+      }
+      note = `${groups.length} nhóm chức năng · catalog ${screens.length} màn · phủ ${covered.length}`;
+      if (!screens.length) {
+        problems.push(`Testcase khai ${groups.length} nhóm chức năng nhưng KHÔNG có \`requirements/ui_catalog.json\` — nghĩa là 0 bề mặt được đối chiếu máy. Thiếu/thừa field và lệch nhãn giữa các màn không có gì bắt được.`);
+      } else if (missing.length) {
+        warnings.push(`${missing.length}/${groups.length} nhóm chức năng KHÔNG có màn nào trong \`ui_catalog.json\`: ${missing.slice(0, 8).join(' · ')}${missing.length > 8 ? ` … (+${missing.length - 8})` : ''}`);
+        warnings.push('→ Mỗi nhóm chưa phủ hoặc phải bổ sung màn vào catalog, hoặc phải khai thành "Vùng chưa kiểm" trong reports/ kèm lý do. Catalog hẹp = conformance vẫn xanh mà cả vùng không ai soi.');
+      }
+    }
+  }
+  results.push(engine.toResult('độ phủ bề mặt (catalog vs nhóm chức năng)', {
+    problems, warnings, skipped: !note, note: note || 'không có bảng "Phân nhóm testcase"', severity: engine.SEVERITY.P1,
+  }));
+}
+
 // ---- Gộp + in qua GateEngine ----
 const agg = engine.aggregate(results);
 console.log(engine.format(agg, { title: `SELF-REVIEW (G9) — lượt 2 trước finalize${TASK ? ` · task ${TASK}` : ''}` }));

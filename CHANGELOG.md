@@ -7,6 +7,24 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (c) — đưa B0/B1 vào commit (trước đó chỉ nằm trong working copy)
+
+Rà lại chương trình chống lọt bug thì phát hiện **B0 và B1 chưa hề được commit**: `scripts/qa/leak_report.js`
+còn **untracked**, và check #9 "độ phủ bề mặt" chỉ tồn tại trong working copy của `self_review.js`. Đây đúng
+lớp tai nạn đã xảy ra một lần với `knowledge/**` (đổi nhánh là mất sạch), nên đưa vào commit ngay.
+
+- **`scripts/qa/leak_report.js`** (mới): đếm bug theo **nguồn phát hiện** (`found-by-kit` / `found-by-human`) và
+  theo **5 trục mở rộng quanh case** để biết nên xây máy nào trước. Đo SAPP-24395: 69 bug — 46 chưa phân loại
+  nguồn; theo trục: field 11 · surface 21 · persist 13 · branch 20 · state 22 · không khớp 17.
+- **`scripts/qa/self_review.js` check #9**: gate cũ chỉ hỏi *"có catalog mà chưa chạy?"* ⇒ **không khai catalog
+  là cách né hợp lệ**. Nay so bảng *Phân nhóm testcase* với `ui_catalog.json`. Đo thật: **28 nhóm chức năng ·
+  catalog 5 màn · 23 nhóm không có màn nào**. Để **P1 warning** có chủ đích (đo artifact thật trước rồi mới quyết
+  chặn), vì chặn ngay sẽ làm đỏ mọi task cũ.
+
+**Còn nằm ngoài commit có chủ đích:** cờ `--found-by kit|human` của `bug_reporter.js` — file đó là WIP của user
+và có luật **không commit**. Hệ quả phải nói rõ: `leak_report.js` đọc được nhãn nguồn, nhưng **gắn** nhãn khi log
+bug mới thì phụ thuộc một file chưa vào repo.
+
 ## 2026-08-19 (b) — chạy catalog tự sinh trên UAT: 3 lỗ định vị nữa, và máy tự tìm ra bug đầu tiên
 
 Chạy `ui_conformance_check` với catalog **tự sinh từ FSD** lên UAT (read-only, 4 màn Order Detail Chuyển
