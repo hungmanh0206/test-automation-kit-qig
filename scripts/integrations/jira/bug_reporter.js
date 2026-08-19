@@ -15,6 +15,10 @@
  *   node scripts/integrations/jira/bug_reporter.js --task <TASK_KEY> --story <JIRA_STORY_KEY>
  *   node scripts/integrations/jira/bug_reporter.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --tc-id <TC_ID>
  *   node scripts/integrations/jira/bug_reporter.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --run-id <RUN_ID>
+ *
+ * Nguồn phát hiện (để đo tỉ lệ rò của kit — xem scripts/qa/leak_report.js):
+ *   --found-by kit    → nhãn `found-by-kit`   (máy/automation của kit tự bắt được)
+ *   --found-by human  → nhãn `found-by-human` (người báo: sheet bug, BA, QA thủ công)
  */
 
 const fs = require('fs');
@@ -423,7 +427,10 @@ async function assertParentIssue() {
 }
 
 async function getParentCopyFieldIds() {
-  const sprintFieldId = await resolveSprintFieldId();
+  // Sub-bug tạo dạng subtask (parent: {key}) sẽ KẾ THỪA Sprint từ parent; set Sprint trực tiếp trên subtask
+  // bị Jira từ chối ("Specify a valid value for Sprint"). Cho phép bỏ qua copy Sprint qua --no-sprint / JIRA_SKIP_SPRINT.
+  const skipSprint = argFlag('no-sprint') || /^(1|true|yes)$/i.test(String(process.env.JIRA_SKIP_SPRINT || ''));
+  const sprintFieldId = skipSprint ? '' : await resolveSprintFieldId();
   return uniqueLabels([...REQUIRED_PARENT_FIELD_IDS, ...STANDARD_PARENT_COPY_FIELD_IDS, sprintFieldId].filter(Boolean));
 }
 
@@ -447,7 +454,7 @@ async function createIssue({ tcId, summary, description, assigneeId, layer, prio
     summary,
     description: buildAdfDescription(description),
     parent: { key: STORY_KEY },
-    labels: uniqueLabels(['auto-bug', tcId, String(layer || '').toLowerCase()]),
+    labels: uniqueLabels(['auto-bug', tcId, String(layer || '').toLowerCase(), foundByLabel()]),
   };
 
   if (assigneeId) {
@@ -559,6 +566,18 @@ async function uploadAttachment(issueKey, filePath) {
 
 function isJiraEvidenceAttachment(filePath) {
   return /\.(png|jpe?g|webp|gif|mp4|webm)$/i.test(String(filePath || ''));
+}
+
+// Ai PHÁT HIỆN ra bug — không phải ai LOG. Không có nhãn này thì không đo được kit đang rò bao nhiêu:
+// nhãn `auto-bug` chỉ chứng minh bug được TẠO qua tool của kit, không chứng minh tool TÌM ra nó.
+// `--found-by kit` = máy/automation của kit phát hiện; `--found-by human` = người báo (sheet bug, BA, QA thủ công).
+function foundByLabel() {
+  const raw = argString('found-by').toLowerCase();
+  if (!raw) return '';
+  if (['kit', 'auto', 'automation'].includes(raw)) return 'found-by-kit';
+  if (['human', 'manual', 'qa', 'ba', 'sheet'].includes(raw)) return 'found-by-human';
+  console.warn(`[bug-reporter] --found-by "${raw}" không hợp lệ (kit|human) — bỏ qua nhãn nguồn phát hiện.`);
+  return '';
 }
 
 function uniqueLabels(labels) {
