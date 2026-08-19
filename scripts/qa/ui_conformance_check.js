@@ -36,6 +36,7 @@ const path = require('path');
 require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const { chromium } = require('@playwright/test');
 const { snapshotScreen } = require(path.resolve(__dirname, '..', 'utils', 'ui', 'screen_snapshot'));
+const { attachEnvSignals } = require(path.resolve(__dirname, '..', 'utils', 'runtime', 'env_signals'));
 
 function arg(name, def) {
   const i = process.argv.indexOf(`--${name}`);
@@ -410,6 +411,9 @@ if (IS_CLI) (async () => {
   const report = { catalog: CATALOG, screens: [], totalDeviations: 0 };
   const surface = {};
   let fatal = null;
+  // Tín hiệu môi trường: trang đã mở rồi, nghe thêm không tốn lượt tải nào. Bắt được cả bug KHÔNG liên quan tới
+  // màn đang kiểm (UI xanh mà một API phụ đang 500) — thứ không case nào assert.
+  const sig = attachEnvSignals(page);
   try {
     await login(page, loginCfg);
     for (const screen of catalog.screens || []) {
@@ -435,8 +439,17 @@ if (IS_CLI) (async () => {
       // BỀ MẶT theo SECTION (khác snapshot: snapshot là danh sách nhãn phẳng). Đây là đầu vào để ghép bản đồ
       // tên tài liệu ↔ tên build bằng độ trùng tập nhãn, thay vì đoán.
       try { surface[screen.name] = await surfaceOf(page); } catch (e) { console.warn(`   ! surface lỗi: ${e.message.slice(0, 100)}`); }
+      // Chốt tín hiệu môi trường của MÀN này rồi reset ngưỡng cho màn sau
+      const envNow = sig.report();
+      if (envNow.pageErrors.length) dev.push({ type: 'env.pageerror', detail: `JS exception trong lúc mở màn: ${envNow.pageErrors.map((e) => e.message).slice(0, 3).join(' | ')}`, note: 'zero-tolerance: có exception là finding, dù kiểm kê field vẫn đúng' });
+      if (envNow.httpErrors.length) dev.push({ type: 'env.http-error', detail: envNow.httpErrors.slice(0, 4).map((e) => `HTTP ${e.status} ${e.method} ${e.url}`).join(' | '), note: 'request lỗi chạy nền — UI có thể vẫn xanh' });
+      // `info.*` phải vào `infos`, KHÔNG vào `dev` — chỗ tách hai mảng nằm PHÍA TRÊN, nên push vào `dev` là
+      // âm thầm biến ghi chú thành deviation (đã xảy ra: 17 → 21 ngay lượt cắm đầu). console.error hay là
+      // ERR_CERT của môi trường/tracking, chưa đủ để gọi là lỗi sản phẩm.
+      if (envNow.consoleErrors.length) infos.push({ type: 'info.console-error', detail: envNow.consoleErrors.slice(0, 4).map((e) => e.text).join(' | ') });
       report.screens.push({
         name: screen.name,
+        envSignals: { pageErrors: envNow.pageErrors.length, consoleErrors: envNow.consoleErrors.length, httpErrors: envNow.httpErrors.length },
         screenshot: path.relative(OUT, shot),
         snapshot: snap ? path.relative(OUT, path.join(SNAP_DIR, `${screen.name.replace(/[^A-Za-z0-9]+/g, '_')}.json`)) : null,
         observed: snap ? { labels: snap.labels.length, columns: ((snap.tables || [])[0] || {}).headers || [], currencies: snap.currencies } : null,

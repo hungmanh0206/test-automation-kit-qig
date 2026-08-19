@@ -149,6 +149,12 @@ không sống theo dòng testcase. Mỗi lần execute một case, mở rộng t
 | 4 | **Nhánh/biến thể** | Cùng màn này với loại đơn/gói/tiền tệ KHÁC thì sao? | `npm run fixture:matrix` |
 | 5 | **Trạng thái kế cận** | Sau khi hủy / hoàn / deal lost / thanh toán một phần thì màn này còn đúng? | `npm run fixture:matrix` |
 
+**TÍN HIỆU MÔI TRƯỜNG — assert, đừng chỉ dùng khi đã fail.** Trang/API đã mở rồi nên nghe thêm **không tốn**
+lượt tải nào: `const sig = attachEnvSignals(page)` (`scripts/utils/runtime/env_signals.js`) → cuối case đọc
+`sig.report()`. `pageerror` là **zero-tolerance**: có JS exception là finding dù case PASS. 4xx **cố ý** của case
+negative phải khai trước `sig.expect4xx(/\/api\/x/, 'lý do')`, không khai thì bị tính là tín hiệu lạ. Bắt được cả
+bug KHÔNG liên quan tới case đang chạy (UI xanh mà API phụ 500) — thứ không case nào assert.
+
 **ĐIỀU KIỆN SỐNG CÒN — không có oracle thì KHÔNG kết luận.** Mở rộng mà không có nguồn thì agent sẽ mặc định
 "app đang hiện thế là đúng" ⇒ tautology nhân theo số trục. Ba loại kết luận: `EXPANSION_FINDING` (app tự mâu
 thuẫn — không cần oracle ngoài, log bug được, **không phải verdict của case gốc**) · `PASS`/`FAIL` (**chỉ khi**

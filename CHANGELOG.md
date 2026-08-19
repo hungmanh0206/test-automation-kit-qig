@@ -7,6 +7,33 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (i) — (2) ASSERT tín hiệu môi trường: collector đầu tiên của kit
+
+**Đính chính trước:** trước hôm nay kit **không có collector nào** — `grep pageerror scripts/ tests/support/` = 0.
+`qa_instincts.md` chỉ *dặn* agent tự soi console/Network khi điều tra, mà dặn không phải forcing function. Nên ý
+này không "chỉ cần assert", mà phải viết collector.
+
+**Added — `scripts/utils/runtime/env_signals.js`**: `attachEnvSignals(page)` nghe 4 loại tín hiệu — `pageerror`
+(JS exception, **zero-tolerance**) · console.error · request **4xx/5xx chạy nền** · **lệch contract** (chỉ kiểm
+endpoint mà task KHAI contract, không tự đoán schema). Kèm `expect4xx(rx, why)` để case negative khai trước 4xx cố
+ý, và `toFindings()` đổi tín hiệu thành `EXPANSION_FINDING` (JS chết / API 500 trong khi UI báo bình thường **là**
+app tự mâu thuẫn ⇒ không cần oracle ngoài).
+
+Đã cắm vào `ui_conformance_check` + `cross_surface_diff` — **không thêm lượt tải trang nào** vì hai máy này vốn đã
+mở đúng các màn đó.
+
+**Đo thật trên UAT (4 màn Order Detail):** 0 JS exception · 0 request 4xx/5xx · 4 `console.error` và cả 4 là
+`ERR_CERT_AUTHORITY_INVALID` — **artifact môi trường/cert, không phải lỗi sản phẩm**. Nên chúng vào diện *ghi chú*,
+không phải deviation. Đây là kết quả đáng tin theo hướng ngược: máy chạy mà **không** bịa ra finding.
+
+**Fixed ngay trong lượt cắm:** tôi push `info.console-error` vào mảng `dev` trong khi chỗ tách `info.` nằm phía
+trên ⇒ ghi chú bị đếm thành deviation (17 → **21**). Đã đưa về `infos`, số trở lại **17**. Bài học lặp lại: thêm
+tín hiệu mới phải kiểm **con số tổng trước/sau**, không chỉ xem log có dòng mới.
+
+**Added — 5 test** dựng đủ 4 loại tín hiệu (`page.setContent` + `page.route`), trong đó 2 test khoá phần **chống
+báo oan**: tracking bên thứ ba (gtag 404) và 4xx đã khai trước đều KHÔNG tính là tín hiệu lạ — nhưng 4xx cố ý vẫn
+phải được ghi lại, không im lặng. Suite hạ tầng: 105 → **110**.
+
 ## 2026-08-19 (h) — ĐIỀU KIỆN SỐNG CÒN của phần mở rộng: oracle, verdict riêng, risk band
 
 Phản hồi review chỉ đúng một lỗi **đang có thật** trong thứ vừa build: mở rộng quanh case mà không có nguồn thì

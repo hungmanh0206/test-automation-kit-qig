@@ -33,6 +33,7 @@ const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const { chromium } = require('@playwright/test');
 const { login } = require(path.resolve(__dirname, 'ui_conformance_check.js'));
+const { attachEnvSignals } = require(path.resolve(__dirname, '..', 'utils', 'runtime', 'env_signals'));
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
 const ENFORCE = process.argv.includes('--enforce');
@@ -123,6 +124,7 @@ async function main() {
   const page = await ctx.newPage();
   const results = [];
   try {
+    const sig = attachEnvSignals(page);         // miễn phí: trang đã mở, chỉ nghe thêm
     await login(page, cfg.login || { site: 'ops' });
     const token = await page.evaluate(() => localStorage.getItem('actToken') || null);
     for (const chk of cfg.checks || []) {
@@ -150,6 +152,12 @@ async function main() {
         valueMismatch: vals.length >= 2 && cores.length > 1,
         formatMismatch: vals.length >= 2 && cores.length === 1 && uiRaws.length > 1,
       });
+    }
+    const env = sig.report();
+    if (!env.clean) {
+      console.log(`[xsurf] ⚠ tín hiệu môi trường trong lượt này: ${env.pageErrors.length} JS exception · ${env.httpErrors.length} HTTP 4xx/5xx · ${env.consoleErrors.length} console.error · ${env.contractViolations.length} lệch contract`);
+      for (const e of env.pageErrors.slice(0, 3)) console.log(`[xsurf]   ✗ JS exception: ${e.message}`);
+      for (const e of env.httpErrors.slice(0, 5)) console.log(`[xsurf]   ✗ HTTP ${e.status} ${e.method} ${e.url}`);
     }
   } catch (e) { console.error('[xsurf] FATAL', e.message.slice(0, 200)); process.exitCode = 2; }
   await ctx.close();

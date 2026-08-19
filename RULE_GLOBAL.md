@@ -234,7 +234,16 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
    (permission matrix, state machine) ⇒ **case do Phase 1 sinh** (§10 Cross-layer Guard) để được đếm coverage và
    publish lên TCM; Phase 2 chỉ đo **ô nào chạy được** (`fixture:matrix --discover`). Thứ chỉ sống ở execute thì
    chỉ lượt chạy đó biết.
-9. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
+9. **ASSERT tín hiệu môi trường, không chỉ dùng để triage.** Mỗi lượt execute đã mở trang thật và gọi API thật ⇒
+   đang có sẵn kho tín hiệu mà **không case nào assert**: JS exception (`pageerror`) · request **4xx/5xx chạy nền**
+   (UI xanh trong khi một API phụ đang 500) · response **lệch contract** (`tests/support/setup/contracts/`) ·
+   rác dữ liệu còn lại sau cleanup. Đây là bắt bug gần-như-miễn-phí: không thêm case, không thêm lượt tải trang, và
+   bắt được cả bug **không liên quan** tới case đang chạy. Máy: `scripts/utils/runtime/env_signals.js`
+   (`attachEnvSignals(page)`), đã cắm vào `ui_conformance_check` + `cross_surface_diff`; script execute của task
+   phải cắm tương tự. Kỷ luật: `pageerror` là **zero-tolerance** (có exception là finding, dù case PASS); 4xx do
+   case negative CỐ Ý gây ra thì phải **khai trước** bằng `expect4xx(rx, why)` — không khai thì bị tính là tín hiệu
+   lạ; console.error của tracking/cert môi trường chỉ là **ghi chú**, không phải deviation.
+10. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results
