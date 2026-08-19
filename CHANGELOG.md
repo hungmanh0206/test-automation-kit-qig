@@ -7,6 +7,32 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (n) — ② đủ assertion: đo được 68% case kiểm thiếu điều kiện
+
+Việc ② trong thứ tự đã chốt. Trước khi viết luật thì **đo** — vì đây là loại gate rất dễ báo oan.
+
+**Số đo trên bộ 530 case + bản ghi execution thật:**
+
+| Chỉ số | Giá trị |
+|---|---|
+| Trung bình dòng expected / case | **2.30** |
+| Case có **≥3 assertion** | **164 (31%)** |
+| Case **nhồi nhiều điều kiện trong MỘT dòng** | **50 (9%)** |
+| Case ghi **ít verification hơn số assertion** | **363 (68%)** |
+| Trong đó lệch **≥2** | **135** |
+
+⇒ Cơ chế "expected có 3 điều kiện, execute kiểm 1, PASS ngầm sai" là **có thật và phổ biến**, không phải giả thuyết.
+
+**Added — `self_review` cảnh báo độ đủ assertion** + luật vào `RULE_GLOBAL` mục 13 và digest `core_rules`. **Cố ý
+chưa chặn**: `steps[]` chỉ là *proxy* của số verification (nó là bằng chứng theo bước, không theo assertion), nên
+chặn ngay sẽ làm đỏ 2/3 bản ghi mà chưa chắc thiếu kiểm thật. Muốn chặn thì phải có trường verification **theo
+assertion** — việc của vòng sau.
+
+**Lỗi vận hành, lần thứ tư cùng loại:** escape `?
+` đi qua heredoc bị biến thành **ký tự CR/LF thật** nằm trong
+regex ⇒ script chết ngay khi load. Sửa bằng cách dựng backslash qua `chr(92)`. Luật tôi tự đặt vẫn đúng và tôi vẫn
+vi phạm: **nội dung có escape thì ghi bằng Write/Edit, đừng đi qua shell.**
+
 ## 2026-08-19 (m) — bịt vùng mù "giá trị biến mất": trục ② từ 2/4 lên 3/4
 
 Tiếp đúng thứ tự đã chốt, việc ① là bịt vùng mù mà mutation vừa chứng minh.

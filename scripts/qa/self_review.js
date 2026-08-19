@@ -487,6 +487,37 @@ if (taskDir) {
     } catch (e) { problems.push(`\`expansion_findings.json\` không đọc được: ${e.message}`); }
   }
 
+  // ĐỦ ASSERTION HAY CHƯA: một expected như "tổng 540.000đ, đúng format, số dư giảm tương ứng" chứa 3 assertion;
+  // execute kiểm 1 rồi ghi PASS thì 2 cái còn lại lọt êm. Đo trên bản ghi thật (530 case): **68% case ghi ít
+  // verification hơn số assertion**, 135 case lệch ≥2. Vì `steps[]` chỉ là PROXY (bằng chứng theo bước, không phải
+  // theo assertion) nên để mức CẢNH BÁO — chặn ở đây sẽ làm đỏ 2/3 bản ghi mà chưa chắc là thiếu kiểm thật.
+  try {
+    const canon = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
+    const stPath2 = path.join(taskDir, 'test-results', 'testcase-status.json');
+    const tcDir2 = path.join(taskDir, 'test-cases');
+    if (fs.existsSync(stPath2) && fs.existsSync(tcDir2)) {
+      const raw2 = JSON.parse(fs.readFileSync(stPath2, 'utf8'));
+      const list2 = Array.isArray(raw2) ? raw2 : Object.values(raw2).find((v) => Array.isArray(v)) || [];
+      const byId = {};
+      for (const f of fs.readdirSync(tcDir2).filter((x) => x.endsWith('.md'))) {
+        try { for (const t of canon.parseMarkdown(fs.readFileSync(path.join(tcDir2, f), 'utf8')).tests || []) byId[t.tcId] = t; } catch (e) { /* bỏ */ }
+      }
+      let thin = 0;
+      let gap2 = 0;
+      for (const c of list2) {
+        const tc = byId[c.tcId];
+        if (!tc) continue;
+        const nAssert = String(tc.expectedRaw || '').split(/<br\s*\/?>|\r?\n/).map((x) => x.trim()).filter(Boolean).length;
+        const nVerify = (c.steps || []).length;
+        if (!nAssert || !nVerify) continue;
+        if (nVerify < nAssert) { thin += 1; if (nAssert - nVerify >= 2) gap2 += 1; }
+      }
+      if (thin) {
+        warnings.push(`${thin} case ghi ÍT verification hơn số assertion trong "Kết quả mong đợi" (${gap2} case lệch ≥2) — expected nhiều điều kiện mà chỉ kiểm một thì phần còn lại lọt êm. Tách assertion nguyên tử: mỗi điều kiện 1 dòng + 1 bằng chứng tương ứng.`);
+      }
+    }
+  } catch (e) { warnings.push(`không đo được độ đủ assertion: ${e.message}`); }
+
   // NHÂN NHƯỢNG: case ghi PASS trơn mà Actual kể chuyện lệch kịch bản (chờ thêm/retry/refresh/đổi locator) trong
   // khi kịch bản KHÔNG có bước đó ⇒ nghi bug bị lấp. Chỉ CẢNH BÁO: đây là suy từ văn xuôi, và đo thật cho thấy
   // không đối chiếu kịch bản thì 2/2 cảnh báo đều oan. Cơ chế thật là sổ `deviation.newLedger()` trong script execute.

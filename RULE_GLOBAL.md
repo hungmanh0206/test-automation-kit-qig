@@ -268,7 +268,15 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     lần có 1 lần xanh là bị dán nhãn flaky rồi bỏ qua. Phải nêu cơ chế cụ thể (animation chưa xong · race giữa 2
     request · cache CDN · đổi ngày lúc 00:00) **và cách chứng minh**; không nêu được thì giữ `SUSPECT_REAL_BUG`
     (vẫn loggable). Metric phải theo dõi: **% flaky đã xác định được nguyên nhân** — tỷ lệ thấp nghĩa là đang chôn bug.
-13. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
+13. **ĐỦ ASSERTION — mỗi điều kiện trong "Kết quả mong đợi" phải có một verification + bằng chứng.** Một expected
+    như *"tổng 540.000đ, đúng format có dấu phân cách, số dư giảm tương ứng"* chứa **3** assertion; execute kiểm 1
+    rồi ghi PASS thì 2 cái còn lại lọt êm — đây là cơ chế lọt **cơ học** phổ biến nhất. Đo trên một bộ 530 case
+    thật: trung bình **2.30** dòng expected/case · **31%** case có ≥3 assertion · **9%** nhồi nhiều điều kiện trong
+    MỘT dòng · và **68%** case ghi **ít verification hơn số assertion** (135 case lệch ≥2). Luật: Phase 1 tách
+    assertion **nguyên tử** (mỗi điều kiện 1 dòng, cấm nhồi "A, và B, đồng thời C"); Phase 2 mỗi dòng expected phải
+    có bằng chứng tương ứng. `self_review` **cảnh báo** theo tỉ lệ này — cố ý chưa chặn vì `steps[]` chỉ là *proxy*
+    của số verification, chặn ngay sẽ làm đỏ 2/3 bản ghi mà chưa chắc thiếu kiểm thật.
+14. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results
