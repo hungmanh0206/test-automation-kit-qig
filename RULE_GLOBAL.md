@@ -254,7 +254,21 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     (b) nếu mutation chặn cả request của app LẪN request xác minh của máy kiểm thì hai bên cùng bị bóp ⇒ không bao
     giờ lệch (tautology ở tầng harness) — phải bỏ route SAU khi app load rồi mới đọc nguồn sạch. Chạy **định kỳ**
     (nightly/mỗi release), không phải mỗi PR.
-11. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
+11. **NHÂN NHƯỢNG phải để lại dấu — `PASS_WITH_DEVIATION`.** Rủi ro đặc thù của agent: gặp trở ngại thì có xu hướng
+    **làm cho nó chạy** (chờ thêm · retry · đổi locator · refresh · đi đường khác), và mỗi lần như vậy là **một bug
+    tiềm năng bị lấp** — nút bị overlay che (bug thật) biến thành "chờ thêm 3s rồi bấm được" (case xanh). Kit đã gác
+    chặt phần locator (`locator_healing_policy`) nhưng nhân nhượng **dạng rộng** thì chưa. Luật: mọi lệch khỏi kịch
+    bản phải ghi vào sổ (`scripts/lib/expansion/deviation.js` → `newLedger(tcId).note(kind, why)`); case chỉ pass
+    **sau khi** lệch ⇒ verdict `PASS_WITH_DEVIATION`, phải **liệt kê deviation trong Actual**, và xếp vào diện nghi
+    vấn cần review. `self_review` cảnh báo khi Actual kể chuyện lệch kịch bản mà case ghi PASS trơn — chỉ cảnh báo
+    vì đây là suy từ văn xuôi: đo thật cho thấy **không đối chiếu kịch bản thì 2/2 cảnh báo đều oan** (từ khoá
+    "Retry"/"tải lại trang" là nội dung của chính case), nên phải đối chiếu với bước của case trước khi nghi.
+12. **FLAKY chỉ được gọi là flaky khi nêu được CƠ CHẾ — nếu không thì `SUSPECT_REAL_BUG`.** Cơ chế flaky triage có
+    thể đang **chôn bug thật**: race condition · cache · timezone lúc chuyển ngày đều trông y như flaky, và retry 3
+    lần có 1 lần xanh là bị dán nhãn flaky rồi bỏ qua. Phải nêu cơ chế cụ thể (animation chưa xong · race giữa 2
+    request · cache CDN · đổi ngày lúc 00:00) **và cách chứng minh**; không nêu được thì giữ `SUSPECT_REAL_BUG`
+    (vẫn loggable). Metric phải theo dõi: **% flaky đã xác định được nguyên nhân** — tỷ lệ thấp nghĩa là đang chôn bug.
+13. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results

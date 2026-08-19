@@ -487,6 +487,29 @@ if (taskDir) {
     } catch (e) { problems.push(`\`expansion_findings.json\` không đọc được: ${e.message}`); }
   }
 
+  // NHÂN NHƯỢNG: case ghi PASS trơn mà Actual kể chuyện lệch kịch bản (chờ thêm/retry/refresh/đổi locator) trong
+  // khi kịch bản KHÔNG có bước đó ⇒ nghi bug bị lấp. Chỉ CẢNH BÁO: đây là suy từ văn xuôi, và đo thật cho thấy
+  // không đối chiếu kịch bản thì 2/2 cảnh báo đều oan. Cơ chế thật là sổ `deviation.newLedger()` trong script execute.
+  try {
+    const dev = require(path.resolve(__dirname, '..', 'lib', 'expansion', 'deviation'));
+    const stPath = path.join(taskDir, 'test-results', 'testcase-status.json');
+    if (fs.existsSync(stPath)) {
+      const raw = JSON.parse(fs.readFileSync(stPath, 'utf8'));
+      const list = Array.isArray(raw) ? raw : Object.values(raw).find((v) => Array.isArray(v)) || [];
+      const map = {};
+      const tcDirLocal = path.join(taskDir, 'test-cases');
+      if (fs.existsSync(tcDirLocal)) {
+        const canon = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
+        for (const f of fs.readdirSync(tcDirLocal).filter((x) => x.endsWith('.md'))) {
+          try { for (const t of canon.parseMarkdown(fs.readFileSync(path.join(tcDirLocal, f), 'utf8')).tests || []) map[t.tcId] = t; } catch (e) { /* bỏ file không canonical */ }
+        }
+      }
+      for (const w of dev.auditExecution(list, map)) warnings.push(`nghi NHÂN NHƯỢNG — ${w}`);
+      const pwd = list.filter((c) => dev.canonStatus(c.status) === 'PASS_WITH_DEVIATION').length;
+      if (pwd) warnings.push(`${pwd} case ở PASS_WITH_DEVIATION — diện nghi vấn cần review, không được coi như PASS thường.`);
+    }
+  } catch (e) { warnings.push(`không kiểm được nhân nhượng: ${e.message}`); }
+
   results.push(engine.toResult('5 trục mở rộng quanh case (máy nào đã chạy)', {
     problems,
     warnings,

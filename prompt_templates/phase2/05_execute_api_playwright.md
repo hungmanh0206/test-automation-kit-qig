@@ -102,6 +102,12 @@ những lớp bug mà API là nơi CHỨNG MINH được:
 - **Guard theo trạng thái:** gọi thẳng API cho hành động mà UI đã chặn (sửa đơn đã thanh toán, xoá giao dịch đã
   xác nhận) — đây là chỗ API test làm được mà UI test không làm được, và phải kèm bằng chứng **dữ liệu không đổi**.
 
+**MỌI LỆCH KHỎI KỊCH BẢN PHẢI GHI SỔ.** Khi bị chặn, xu hướng tự nhiên là *làm cho nó chạy* — chờ thêm, retry,
+đổi locator, refresh, đi đường khác. Mỗi lần như vậy có thể đang **lấp một bug**. Ghi bằng
+`newLedger(tcId).note('extra-wait', 'lý do')` (`scripts/lib/expansion/deviation.js`); pass **sau khi** lệch ⇒
+verdict **`PASS_WITH_DEVIATION`** + liệt kê deviation trong Actual. Và: FAIL bất định mà **chưa nêu được cơ chế**
+(race · cache · đổi ngày 00:00 …) thì là **`SUSPECT_REAL_BUG`**, KHÔNG được dán nhãn flaky rồi bỏ qua.
+
 **Đừng giả định bộ kiểm bắt được bug — CHỨNG MINH.** `npm run mutation:check` tiêm lỗi qua `page.route()`
 (không chạm dữ liệu UAT) rồi xem máy kiểm có đỏ. Đo lần đầu: máy kiểm-kê-field **0/4** vì nó kiểm *tập field*,
 KHÔNG kiểm *giá trị*. Với tầng API nghĩa là: `200 OK` + schema đúng **không** chứng minh giá trị đúng — phải so

@@ -48,6 +48,18 @@
       "loggableAsBug": false,
       "xray": null,
       "meaning": "Quan sát được nhưng KHÔNG có oracle độc lập ⇒ không kết luận đúng/sai. Bắt buộc kèm open_question. Nhất quán KHÔNG phải bằng chứng của đúng: 4 điểm khớp nhau vẫn có thể sai cả 4 (ca thật: USD không quy đổi, form/payload/api/ui đều = 10 trong khi đúng phải 260.500)."
+    },
+    "PASS_WITH_DEVIATION": {
+      "executed": true,
+      "loggableAsBug": false,
+      "xray": "PASSED",
+      "meaning": "Case PASS nhưng CHỈ pass sau khi lệch khỏi kịch bản (thêm wait · retry · đổi locator · refresh · đi đường khác). Rủi ro đặc thù của agent: gặp trở ngại thì có xu hướng LÀM CHO NÓ CHẠY, và mỗi lần như vậy là một bug tiềm năng bị lấp. Deviation là TÍN HIỆU, không phải tiện lợi ⇒ phải liệt kê deviation trong Actual và xếp vào diện nghi vấn cần review; KHÔNG được ghi PASS trơn."
+    },
+    "SUSPECT_REAL_BUG": {
+      "executed": true,
+      "loggableAsBug": true,
+      "xray": "FAILED",
+      "meaning": "FAIL không ổn định (vd 1/5 lần) mà CHƯA giải thích được CƠ CHẾ. Cơ chế flaky triage có thể đang CHÔN bug thật: race condition · cache · timezone lúc chuyển ngày đều trông y như flaky, retry 3 lần có 1 lần xanh là bị dán nhãn flaky rồi bỏ qua. Chỉ được đổi sang failureLayer=flaky khi nêu được cơ chế cụ thể (và cách chứng minh); không nêu được thì giữ trạng thái này."
     }
   },
   "synonyms": {
@@ -89,9 +101,10 @@
   "rerun": {
     "min": 2,
     "max": 3,
-    "purpose": "Rerun case FAIL để loại flaky/setup TRƯỚC khi kết luận product/API bug (và trước khi log Jira)."
+    "purpose": "Rerun case FAIL để loại flaky/setup TRƯỚC khi kết luận product/API bug (và trước khi log Jira).",
+    "flakyRequiresMechanism": "Một FAIL KHÔNG được gọi là `flaky` cho tới khi giải thích được CƠ CHẾ gây bất định (vd: animation chưa xong · race giữa 2 request · cache CDN · đổi ngày lúc 00:00). Không giải thích được ⇒ `SUSPECT_REAL_BUG`, không phải `FLAKY`. Metric phải theo dõi: % flaky đã xác định được nguyên nhân — tỷ lệ thấp nghĩa là đang chôn bug."
   },
-  "principle": "\"Không phán được\" KHÔNG thành PASS. Mỗi verdict xuất trạng thái rõ; FAIL bắt buộc kèm failureLayer. SKIP/BLOCKED_SETUP/SKIP_SETUP/setup_failure KHÔNG log Jira. FAIL lặp lại ổn định KHÔNG đồng nghĩa product bug: rerun chỉ loại flaky, KHÔNG loại được sai-element. Trước khi kết luận product/api_bug phải chứng minh đã thao tác ĐÚNG đối tượng (evidence highlight đúng element + xác minh lại bằng 1 đường định vị độc lập hoặc thao tác tay); nếu không → script_error. MỞ RỘNG quanh case chỉ được PASS/FAIL khi có `oracle_ref` trỏ knowledge (BR-/SM-/PM-/SS-/DM-/UI-); không có neo thì là OBSERVATION, KHÔNG phải PASS — nếu không, mở sang field lân cận rồi kết luận \"đúng vì app đang hiện thế\" là tautology nhân theo số trục.",
+  "principle": "\"Không phán được\" KHÔNG thành PASS. Mỗi verdict xuất trạng thái rõ; FAIL bắt buộc kèm failureLayer. SKIP/BLOCKED_SETUP/SKIP_SETUP/setup_failure KHÔNG log Jira. FAIL lặp lại ổn định KHÔNG đồng nghĩa product bug: rerun chỉ loại flaky, KHÔNG loại được sai-element. Trước khi kết luận product/api_bug phải chứng minh đã thao tác ĐÚNG đối tượng (evidence highlight đúng element + xác minh lại bằng 1 đường định vị độc lập hoặc thao tác tay); nếu không → script_error. MỞ RỘNG quanh case chỉ được PASS/FAIL khi có `oracle_ref` trỏ knowledge (BR-/SM-/PM-/SS-/DM-/UI-); không có neo thì là OBSERVATION, KHÔNG phải PASS — nếu không, mở sang field lân cận rồi kết luận \"đúng vì app đang hiện thế\" là tautology nhân theo số trục. Case chỉ pass SAU KHI lệch kịch bản ⇒ `PASS_WITH_DEVIATION` (deviation là tín hiệu, không phải tiện lợi). FAIL bất định mà chưa nêu được cơ chế ⇒ `SUSPECT_REAL_BUG`, KHÔNG được dán nhãn flaky rồi bỏ qua.",
   "beVsFe": {
     "principle": "CẤM gán tầng FE/BE chỉ bằng quan sát giao diện. Phải đối chiếu dữ liệu API trước khi kết luận.",
     "howTo": [

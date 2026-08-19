@@ -7,6 +7,33 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (l) — hai cơ chế lọt chưa ai gác: NHÂN NHƯỢNG và FLAKY chôn bug thật
+
+**Added — `PASS_WITH_DEVIATION`** (`scripts/lib/expansion/deviation.js` + verdict taxonomy). Rủi ro đặc thù của
+agent: gặp trở ngại thì *làm cho nó chạy* — chờ thêm · retry · đổi locator · refresh · đi đường khác. Nút bị overlay
+che (**bug thật**) biến thành "chờ thêm 3s rồi bấm được" (**case xanh**). Kit đã gác chặt phần locator
+(`locator_healing_policy`) nhưng nhân nhượng **dạng rộng** thì chưa có gì gác. Nay: `newLedger(tcId).note(kind, why)`
+ghi sổ; pass **sau khi** lệch ⇒ `PASS_WITH_DEVIATION` + **bắt buộc liệt kê deviation trong Actual**.
+
+**Added — `SUSPECT_REAL_BUG`**: cơ chế flaky triage có thể đang **chôn bug thật** (race · cache · timezone lúc
+chuyển ngày đều trông y như flaky; retry 3 lần có 1 lần xanh là bị dán nhãn flaky rồi bỏ qua). Luật:
+**chưa nêu được CƠ CHẾ thì chưa được gọi là flaky** — giữ `SUSPECT_REAL_BUG` (vẫn loggable). Metric cần theo dõi:
+**% flaky đã xác định được nguyên nhân**.
+
+**Đo trên bản ghi execution thật (563 case) — và hai lần tự bắt lỗi của chính check này:**
+1. Bản ghi ghi `PASSED` còn check so với `PASS` ⇒ **bỏ qua sạch 563 case** rồi trả về 0. Đúng loại "scanner quét
+   rỗng vẫn báo ✓". Sửa: chuẩn hoá qua **synonyms của taxonomy**.
+2. Sau khi sửa, ra 2 cảnh báo — soi thì **2/2 đều OAN**: "Retry" là chủ đề của `TC_034` (test retry sau sync fail),
+   "tải lại trang" là bước của `TC_462` (tua đồng hồ rồi reload để xem bộ đếm). Sửa: **đối chiếu với kịch bản của
+   chính case** trước khi nghi ⇒ còn **1** (`TC_462`, ranh giới: reload là kỹ thuật nhưng không có trong bước viết,
+   nên vẫn đáng ghi là deviation).
+
+Vì thế phần audit văn xuôi để **cảnh báo**, không chặn; cơ chế thật là **sổ ledger** trong script execute. Đây là
+lần thứ ba trong phiên việc "suy từ văn xuôi" báo oan (trước đó: `forbiddenSections`, `self_review` #10) — mô hình
+đã rõ: máy kiểm máy phải dựa vào **hợp đồng dữ liệu**, không dựa vào từ khoá trong câu người viết.
+
+Suite hạ tầng: 119 → **126 test**.
+
 ## 2026-08-19 (k) — chạy mutation qua HÀM THẬT của trục ②: 2/4, không phải 4/4 (đính chính)
 
 **Đính chính số tôi vừa báo:** lượt trước harness tự viết phép so chữ số của riêng nó rồi kết luận "trục ② sẽ bắt

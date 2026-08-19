@@ -149,6 +149,12 @@ không sống theo dòng testcase. Mỗi lần execute một case, mở rộng t
 | 4 | **Nhánh/biến thể** | Cùng màn này với loại đơn/gói/tiền tệ KHÁC thì sao? | `npm run fixture:matrix` |
 | 5 | **Trạng thái kế cận** | Sau khi hủy / hoàn / deal lost / thanh toán một phần thì màn này còn đúng? | `npm run fixture:matrix` |
 
+**MỌI LỆCH KHỎI KỊCH BẢN PHẢI GHI SỔ.** Khi bị chặn, xu hướng tự nhiên là *làm cho nó chạy* — chờ thêm, retry,
+đổi locator, refresh, đi đường khác. Mỗi lần như vậy có thể đang **lấp một bug**. Ghi bằng
+`newLedger(tcId).note('extra-wait', 'lý do')` (`scripts/lib/expansion/deviation.js`); pass **sau khi** lệch ⇒
+verdict **`PASS_WITH_DEVIATION`** + liệt kê deviation trong Actual. Và: FAIL bất định mà **chưa nêu được cơ chế**
+(race · cache · đổi ngày 00:00 …) thì là **`SUSPECT_REAL_BUG`**, KHÔNG được dán nhãn flaky rồi bỏ qua.
+
 **Đừng giả định bộ kiểm bắt được bug — CHỨNG MINH.** `npm run mutation:check` tiêm lỗi qua `page.route()`
 (không chạm dữ liệu UAT) rồi xem máy kiểm có đỏ. Đo lần đầu: `ui_conformance_check` **0/4** vì nó kiểm *kiểm kê
 field*, KHÔNG kiểm *giá trị* — nên kiểm kê field xanh **không** đủ để kết luận màn đúng; phải chạy thêm phép so
