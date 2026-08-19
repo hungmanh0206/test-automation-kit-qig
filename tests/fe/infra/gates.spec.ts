@@ -194,3 +194,120 @@ test.describe('@infra gate:policy — phải THẬT SỰ quét, không no-op', (
     expect(Number(scripts![1]), 'ít hơn 50 script là dấu hiệu đọc sai package.json').toBeGreaterThanOrEqual(50);
   });
 });
+
+/*
+ * CÔNG TẮC TEST-MANAGEMENT-TOOL (Xray → AIO).
+ *
+ * Vì sao phải có test: hai bộ script ăn CHUNG đầu vào (Excel canonical, `testcase-status.json`), nên gọi
+ * nhầm bộ KHÔNG sinh lỗi — nó chạy trót lọt rồi ghi vào sai hệ thống, và AIO thì không có API xoá để lùi.
+ * Test chạy trên SCRIPT THẬT, không phải fixture: cửa chặn nằm ngay sau `loadEnv()` nên script dừng trước
+ * khi cần creds hay TASK_KEY.
+ */
+const XRAY_ENTRYPOINTS = [
+  'scripts/integrations/jira/publish_testcases.js',
+  'scripts/integrations/jira/push_test_execution.js',
+  'scripts/integrations/jira/update_xray_steps.js',
+  'scripts/integrations/jira/cleanup_xray_tests.js',
+  'scripts/integrations/jira/pull_testcases.js',
+];
+
+test.describe('@infra TEST_MANAGEMENT_TOOL — chạy nhầm bộ phải bị CHẶN, không im lặng ghi sai chỗ', () => {
+  for (const script of XRAY_ENTRYPOINTS) {
+    test(`aio → ${path.basename(script)} bị chặn VÀ được chỉ lệnh thay thế`, () => {
+      const r = run([path.join(REPO, script), '--dry-run'], { TEST_MANAGEMENT_TOOL: 'aio' });
+      expect(r.code, 'phải thoát khác 0').not.toBe(0);
+      expect(r.out).toMatch(/CHẶN: TEST_MANAGEMENT_TOOL=aio/);
+      // Chặn mà không chỉ đường đi tiếp thì chỉ là bức tường — bắt buộc có dòng "→ Dùng:".
+      expect(r.out, 'thiếu lệnh thay thế').toMatch(/→ Dùng: \S+/);
+    });
+  }
+
+  test('xray (mặc định) KHÔNG bị chặn oan — phải đi tiếp tới lỗi thiếu config bình thường', () => {
+    const r = run([path.join(REPO, XRAY_ENTRYPOINTS[1]), '--dry-run'], { TEST_MANAGEMENT_TOOL: 'xray' });
+    expect(r.out).not.toMatch(/CHẶN: TEST_MANAGEMENT_TOOL/);
+  });
+
+  test('override --test-management-tool xray thắng biến môi trường aio', () => {
+    const r = run([path.join(REPO, XRAY_ENTRYPOINTS[1]), '--dry-run', '--test-management-tool', 'xray'], { TEST_MANAGEMENT_TOOL: 'aio' });
+    expect(r.out).not.toMatch(/CHẶN: TEST_MANAGEMENT_TOOL/);
+  });
+
+  test('giá trị lạ KHÔNG được âm thầm thành xray (đó là đường đẻ issue Jira sai loại)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const tms = require(path.join(REPO, 'scripts/integrations/tms.js'));
+    const saved = process.env.TEST_MANAGEMENT_TOOL;
+    process.env.TEST_MANAGEMENT_TOOL = 'khong-ton-tai';
+    try {
+      expect(tms.activeTool([])).toBe('jira');
+      process.env.TEST_MANAGEMENT_TOOL = 'AIO-Tests';
+      expect(tms.activeTool([])).toBe('aio');
+    } finally {
+      if (saved === undefined) delete process.env.TEST_MANAGEMENT_TOOL; else process.env.TEST_MANAGEMENT_TOOL = saved;
+    }
+  });
+});
+
+/*
+ * THƯ MỤC TESTCASE CANONICAL — phải đi qua MỘT nguồn.
+ *
+ * Bug đã xảy ra khi thêm nguồn `from-aio/`: 7 script tự ghép tay đường dẫn và chỉ biết `from-xray`.
+ * `preflight_gate` thì chặn oan ("không thấy testcase canonical") — còn thấy được. Nguy hơn là
+ * `dimension_coverage`/`bug_tc_matcher`/`domain_rules`/`system_map`/`learn_task`: KHÔNG lỗi, chỉ đếm
+ * thiếu, báo cáo vẫn ra số và trông vẫn đúng. Test này chặn kiểu hardcode đó quay lại.
+ */
+test.describe('@infra testcase dirs — thêm nguồn mới không được làm script đếm thiếu trong im lặng', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const rt = require(path.resolve(__dirname, '../../../scripts/utils/runtime_config.js'));
+
+  test('helper trả đủ test-cases/ + MỌI bản kéo về', () => {
+    const dirs = rt.getTestcaseDirs('/x/task').map((d: string) => d.split(path.sep).join('/'));
+    expect(dirs).toContain('/x/task/test-cases');
+    for (const m of rt.TESTCASE_MIRROR_DIRS) expect(dirs).toContain(`/x/task/test-cases/${m}`);
+    expect(rt.TESTCASE_MIRROR_DIRS).toEqual(expect.arrayContaining(['from-xray', 'from-aio']));
+  });
+
+  test('mirrorsFirst đặt bản kéo về TRƯỚC bản người viết', () => {
+    const d = rt.getTestcaseDirs('/x/task', { mirrorsFirst: true }).map((s: string) => s.split(path.sep).join('/'));
+    expect(d[d.length - 1]).toBe('/x/task/test-cases');
+  });
+
+  test('KHÔNG script nào trong scripts/qa/ còn tự ghép đường dẫn "from-xray"', () => {
+    const dir = path.join(REPO, 'scripts', 'qa');
+    // Chỉ bắt việc GHÉP ĐƯỜNG DẪN, không bắt chữ 'from-xray' trong comment.
+    const HARDCODED = new RegExp(String.raw`path\.(join|resolve)\([^)]*['"]from-xray['"]`);
+    const offenders: string[] = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+      const src = fs.readFileSync(path.join(dir, f), 'utf8');
+      // Chỉ bắt việc GHÉP ĐƯỜNG DẪN (path.join/resolve … 'from-xray'), không bắt chữ trong comment.
+      if (HARDCODED.test(src)) offenders.push(f);
+    }
+    expect(offenders, `còn hardcode: ${offenders.join(', ')} → dùng getTestcaseDirs()`).toEqual([]);
+  });
+});
+
+/*
+ * TAXONOMY ↔ AIO: mọi verdict phải có đường sang trạng thái của AIO.
+ *
+ * Bug đã xảy ra: `push_execution_aio` dùng bảng hardcode thiếu `PASS_WITH_DEVIATION` và
+ * `SUSPECT_REAL_BUG` ⇒ hai verdict này rơi về mặc định "Not Run" — case ĐÃ chạy bị báo là CHƯA chạy,
+ * và không có gì kêu lên. Nay ánh xạ đọc từ taxonomy, còn ID trạng thái đọc từ `GET /config` của AIO.
+ */
+test.describe('@infra verdict taxonomy — mọi verdict phải ánh xạ được sang AIO', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const tax = require(path.resolve(__dirname, '../../../.agent/config/verdict_taxonomy.json'));
+
+  test('mọi status khai cột "aio" (null là CỐ Ý, undefined là bỏ sót)', () => {
+    const missing = Object.entries(tax.statuses)
+      .filter(([, v]: [string, any]) => !Object.prototype.hasOwnProperty.call(v, 'aio'))
+      .map(([k]) => k);
+    expect(missing, `thiếu cột aio: ${missing.join(', ')}`).toEqual([]);
+    expect(Object.keys(tax.statuses).length).toBeGreaterThan(5);
+  });
+
+  test('push_execution_aio KHÔNG hardcode ID trạng thái — phải hỏi AIO', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), 'utf8');
+    const HARDCODE = new RegExp(String.raw`(PASSED|FAILED|BLOCKED|TODO)\s*:\s*[1-5]\b`);
+    expect(HARDCODE.test(src), 'lại xuất hiện bảng ID hardcode → dùng verdict_taxonomy + GET /config').toBe(false);
+    expect(src).toContain("'/config'");
+  });
+});
