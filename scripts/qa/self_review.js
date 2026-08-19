@@ -384,11 +384,11 @@ if (statusFile && fs.existsSync(statusFile)) {
   let note = '';
   const STOP = new Set(['order', 'orders', 'quản', 'lý', 'quan', 'ly', 'tạo', 'tao', 'màn', 'man', 'và', 'va', 'theo', 'của', 'cua', 'các', 'cac', 'add', 'on', 'product', 'info', 'detail', 'list', 'create', 'view', 'tab', 'thông', 'tin', 'thong']);
   const norm = (s) => String(s || '').toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter((w) => w && !STOP.has(w));
-  if (taskDir && fs.existsSync(path.join(taskDir, 'test-cases'))) {
+  if (taskDir && rc.getTestcaseDirs(taskDir).some((d) => fs.existsSync(d))) {
     // (a) bề mặt mà testcase tự khai — bảng "Phân nhóm testcase" do Phase 1 sinh
     const groups = [];
-    for (const f of fs.readdirSync(path.join(taskDir, 'test-cases')).filter((x) => x.endsWith('.md'))) {
-      const md = fs.readFileSync(path.join(taskDir, 'test-cases', f), 'utf8');
+    for (const fp of readAllTcFiles(taskDir)) {
+      const md = fs.readFileSync(fp, 'utf8');
       const sec = md.split(/^##\s+/m).find((s) => /^Phân nhóm testcase/i.test(s));
       if (!sec) continue;
       for (const line of sec.split(/\r?\n/)) {
@@ -473,7 +473,7 @@ if (taskDir) {
         .map((t) => String(t.tcId || '').toUpperCase()).filter(Boolean));
       if (executed.size) {
         const byId3 = {};
-        for (const d of [path.join(taskDir, 'test-cases'), path.join(taskDir, 'test-cases', 'from-xray'), path.join(taskDir, 'test-cases', 'from-aio')]) {
+        for (const d of rc.getTestcaseDirs(taskDir)) {
           if (!fs.existsSync(d)) continue;
           for (const f of fs.readdirSync(d).filter((x) => x.endsWith('.md'))) {
             try { for (const t of canon.parseMarkdown(fs.readFileSync(path.join(d, f), 'utf8')).tests || []) byId3[String(t.tcId).toUpperCase()] = t; } catch (e) { /* bỏ */ }
@@ -538,13 +538,12 @@ if (taskDir) {
   try {
     const canon = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
     const stPath2 = path.join(taskDir, 'test-results', 'testcase-status.json');
-    const tcDir2 = path.join(taskDir, 'test-cases');
-    if (fs.existsSync(stPath2) && fs.existsSync(tcDir2)) {
+    if (fs.existsSync(stPath2)) {
       const raw2 = JSON.parse(fs.readFileSync(stPath2, 'utf8'));
       const list2 = Array.isArray(raw2) ? raw2 : Object.values(raw2).find((v) => Array.isArray(v)) || [];
       const byId = {};
-      for (const f of fs.readdirSync(tcDir2).filter((x) => x.endsWith('.md'))) {
-        try { for (const t of canon.parseMarkdown(fs.readFileSync(path.join(tcDir2, f), 'utf8')).tests || []) byId[t.tcId] = t; } catch (e) { /* bỏ */ }
+      for (const fp of readAllTcFiles(taskDir)) {
+        try { for (const t of canon.parseMarkdown(fs.readFileSync(fp, 'utf8')).tests || []) byId[t.tcId] = t; } catch (e) { /* bỏ file không canonical */ }
       }
       let thin = 0;
       let gap2 = 0;
@@ -611,6 +610,20 @@ if (taskDir) {
     note: `${axes.length - missing.length}/${axes.length} trục có artefact`,
     severity: engine.SEVERITY.P1,
   }));
+}
+
+/**
+ * Đọc file testcase từ MỌI nguồn canonical (`test-cases` + mirror `from-xray`/`from-aio`) qua
+ * `rc.getTestcaseDirs()`. Vì sao không tự ghép đường dẫn: thêm một nguồn mới (AIO) mà script cũ chỉ quét `base`
+ * thì nó **đếm thiếu trong im lặng** — gate `testcase dirs` bắt đúng lỗi này trong 2 khối tôi thêm hôm nay.
+ */
+function readAllTcFiles(taskOutputDir) {
+  const out = [];
+  for (const d of rc.getTestcaseDirs(taskOutputDir)) {
+    if (!fs.existsSync(d)) continue;
+    for (const f of fs.readdirSync(d).filter((x) => x.endsWith('.md'))) out.push(path.join(d, f));
+  }
+  return out;
 }
 
 // ---- Gộp + in qua GateEngine ----
