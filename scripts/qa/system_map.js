@@ -25,6 +25,7 @@
  */
 
 const fs = require('fs');
+const { getTestcaseDirs } = require('../utils/runtime_config');
 const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const canonical = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
@@ -37,10 +38,14 @@ const KNOW = path.join(REPO, 'knowledge');
 const DIR = path.resolve(arg('dir', path.join(KNOW, 'system')));
 const MAX_ROWS = Math.max(1, Number(arg('max', 40)) || 40);
 
-const TYPES = ['state_machine', 'permission_matrix', 'shared_surface', 'data_model'];
-const PREFIX = { state_machine: 'SM', permission_matrix: 'PM', shared_surface: 'SS', data_model: 'DM' };
+// `ui_contract` (UI-) = **oracle FE máy đọc được**, trích từ design. Vì sao thêm vào đây: BE có Swagger nên
+// assertion là `total = 540000`, còn FE chỉ có Figma (hình ảnh) nên assertion thoái hoá thành `toBeVisible()`.
+// Biến design thành contract có id/nguồn/ngày chốt là cách duy nhất để FE có oracle NGOÀI app — nếu không thì
+// mọi phép kiểm FE đều so app với chính nó (tautology).
+const TYPES = ['state_machine', 'permission_matrix', 'shared_surface', 'data_model', 'ui_contract'];
+const PREFIX = { state_machine: 'SM', permission_matrix: 'PM', shared_surface: 'SS', data_model: 'DM', ui_contract: 'UI' };
 const KINDS = ['api', 'component', 'table', 'job', 'config', 'library'];
-const ID_RE = /^(SM|PM|SS|DM)-[A-Z0-9]+-\d{3}$/;
+const ID_RE = /^(SM|PM|SS|DM|UI)-[A-Z0-9]+-\d{3}$/;
 const STATUSES = ['active', 'superseded', 'deprecated'];
 const CONFIRMERS = ['BA', 'Dev', 'QA-Lead', 'PO'];
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
@@ -149,6 +154,19 @@ function validate(r) {
     // Trường quan trọng nhất: mô hình này BẮT test phải làm gì khác đi. Không có nó thì record chỉ là mô tả.
     if (!String(d.test_implication || '').trim()) problems.push(at('thiếu `test_implication` — mô hình dữ liệu chỉ có giá trị khi nói RÕ nó bắt test phải làm khác đi thế nào (vd "sau mutation resolve theo TÊN, KHÔNG dùng lại id")'));
     if (!Array.isArray(d.pitfalls) || !d.pitfalls.length) warnings.push(at('`pitfalls` rỗng — nên ghi cái bẫy đã vấp (thứ khiến người sau mất thời gian)'));
+  } else if (d.type === 'ui_contract') {
+    // ORACLE FE. Bắt buộc: màn nào, và tập nhãn theo từng khối — vì đó là thứ đối chiếu được bằng máy.
+    if (!String(d.screen || '').trim()) problems.push(at('thiếu `screen` (contract này nói về màn nào)'));
+    const secs = Array.isArray(d.sections) ? d.sections : [];
+    if (!secs.length) problems.push(at('thiếu `sections` — contract FE không có tập nhãn thì không đối chiếu được gì'));
+    secs.forEach((sec, i) => {
+      if (!String(sec.heading || '').trim()) problems.push(at(`sections[${i}] thiếu \`heading\``));
+      if (!Array.isArray(sec.labels) || !sec.labels.length) problems.push(at(`sections[${i}] (${sec.heading || '?'}) thiếu \`labels\``));
+    });
+    // Tên trong DESIGN ≠ tên trên BUILD là chuyện thường (đã trả giá ở `sectionAliases`: FSD tiếng Việt vs OPS
+    // tiếng Anh). Không có chỗ khai alias thì contract sẽ ra một rừng "không tìm thấy" rồi bị bỏ.
+    if (d.aliases === undefined || typeof d.aliases !== 'object') problems.push(at('thiếu `aliases` (object, rỗng cũng được) — tên trong design thường KHÁC tên render trên build'));
+    if (!String(d.extraction || '').trim()) warnings.push(at('thiếu `extraction` — nên ghi nhãn được trích BẰNG MÁY hay gõ tay, để người sau biết mức tin cậy'));
   }
   return { problems, warnings };
 }
@@ -162,8 +180,7 @@ function realTcIds() {
   const TASK = arg('task', process.env.TASK_KEY || '');
   const POD = process.env.PROJECT_OUTPUT_DIR || '';
   if (TASK && POD) {
-    dirs.push(path.resolve(REPO, POD, 'tasks', TASK, 'test-cases'));
-    dirs.push(path.resolve(REPO, POD, 'tasks', TASK, 'test-cases', 'from-xray'));
+    dirs.push(...getTestcaseDirs(path.resolve(REPO, POD, 'tasks', TASK)));
   }
   if (!explicit && !(TASK && POD)) {
     const outputs = path.join(REPO, 'outputs');
@@ -172,8 +189,7 @@ function realTcIds() {
         const tasksDir = path.join(outputs, proj, 'tasks');
         if (!fs.existsSync(tasksDir)) continue;
         for (const t of fs.readdirSync(tasksDir)) {
-          dirs.push(path.join(tasksDir, t, 'test-cases'));
-          dirs.push(path.join(tasksDir, t, 'test-cases', 'from-xray'));
+          dirs.push(...getTestcaseDirs(path.join(tasksDir, t)));
         }
       }
     }

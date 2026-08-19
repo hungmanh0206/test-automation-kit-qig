@@ -285,7 +285,16 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     được là sai) nên KHÔNG rơi vào tautology. Kèm: **text dài tiếng Việt** — tiếng Việt dài hơn tiếng Anh ~20–30%
     và có dấu (dòng cao hơn) nên layout thiết kế cho text ngắn sẽ vỡ; dùng `LONG_VI` (tên/địa chỉ/khoá học/ghi chú)
     cho ít nhất các màn có nhập tên–địa chỉ. Đây là ổ bug mà testcase gen từ tài liệu gần như **không bao giờ** nghĩ tới.
-15. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
+15. **ORACLE FE phải là contract có id, không phải "hình trong Figma".** Biến design thành
+    `knowledge/system/UI-*.json` (`type: ui_contract`) rồi dùng id đó làm `oracle_ref` — đó là cách duy nhất để FE
+    có nguồn NGOÀI app; không có nó thì mọi phép kiểm FE là so app với chính nó. Máy: `npm run ui:contract`.
+    **Kỷ luật bắt buộc (đo được, không phải cẩn thận quá):** canvas Figma là **bảng mockup nhiều màn cạnh nhau**,
+    chú thích/số callout cũng in đậm ⇒ trích thô ra tiêu đề kiểu *"Drag & Drop your file here"* và khối **trộn nhãn
+    của 2 màn**. Nên máy **chỉ thu hẹp** (173 node TEXT → 7 khối ứng viên) và xuất **bản nháp**; `--write` chỉ chấp
+    nhận `--sections` do NGƯỜI curate, kèm `--confirmed-by`/`--confirmed-at`. Ghi thẳng bản trích thô = tạo **oracle
+    GIẢ**, tệ hơn không có oracle vì mọi so sánh sau đó sai **một cách tự tin**. Contract phải có `aliases` (tên
+    design ≠ tên build) và `extraction` (ghi rõ máy trích hay người gõ) để người sau biết mức tin cậy.
+16. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results

@@ -51,6 +51,7 @@
     "dim:coverage": "node scripts/qa/dimension_coverage.js",
     "spec:extract": "node scripts/qa/spec_extract.js",
     "spec:gap": "node scripts/qa/spec_gap_report.js",
+    "ui:contract": "node --max-old-space-size=4096 scripts/qa/figma_to_ui_contract.js",
     "expansion:plan": "node scripts/qa/expansion_plan.js",
     "mutation:check": "node scripts/qa/mutation_check.js",
     "proof:nightly": "node scripts/qa/mutation_check.js --screens 2",

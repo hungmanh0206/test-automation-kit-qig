@@ -7,6 +7,33 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (p) — ④ oracle FE: Figma → `UI-*` contract, và lý do KHÔNG tự động hoá nốt
+
+**Added — `npm run ui:contract`** (`scripts/qa/figma_to_ui_contract.js`) + `knowledge/system` nhận `type:
+"ui_contract"` (prefix `UI-`, đã có sẵn trong `ORACLE_RE` của `finding.js`). Đây là fix **gốc** của bất đối xứng
+oracle: BE có Swagger nên assert `total = 540000`; FE chỉ có Figma nên assert thoái hoá thành `toBeVisible()`.
+
+**Đo thật trên canvas Figma của task (115 MB, 27.968 node, 2.221 TEXT) — và kết luận là KHÔNG tự động hoá nốt:**
+- Lượt trích đầu: 12 khối, hầu hết **rác** — tiêu đề kiểu `"Or"`, `"File supported: .jpg"`, nhãn lẫn số callout `1/2/3`.
+- Sau khi lọc (bỏ callout · bỏ chú thích >48 ký tự/tên file · tiêu đề phải ngắn, không kết thúc `.`/`:`): còn 7 khối
+  — **vẫn lẫn** tiêu đề `"Drag & Drop your file here"` và một khối **trộn nhãn của 2 màn**. Nguyên nhân bản chất:
+  canvas là **bảng mockup nhiều màn cạnh nhau**, nhóm theo trục Y sẽ tràn.
+- ⇒ Thiết kế lại thành **máy đề xuất, người chốt**: mặc định xuất **bản nháp** (`reports/ui-contract-draft.md`,
+  `proven=0`, nói rõ *chưa phải oracle*); `--write` **từ chối** nếu không có `--sections` do người curate.
+  Ghi thẳng bản thô = tạo **oracle GIẢ** — tệ hơn không có oracle, vì mọi so sánh sau đó sai *một cách tự tin*.
+- Nghiệm thu 2 chiều: `--write` không có `--sections` ⇒ **từ chối**; có bản curate ⇒ ghi được và **qua `system:check`**
+  (schema bắt luôn thiếu `version`). Contract thật đầu tiên: `UI-ORDERDETAIL-001` (2 khối · 12 nhãn), nằm trong
+  `knowledge/` nên **không commit** (dữ liệu công ty, đúng luật).
+
+**Added — máy gác VỆ SINH MÃ NGUỒN** (`cli-guard.spec.ts`): quét `scripts/` + `tests/` tìm ký tự điều khiển lạc
+(0x08/0x0B/0x0C/0x1B). Lý do rất cụ thể: escape đi qua shell/heredoc bị biến thành **ký tự thật** nằm trong regex —
+trong phiên này tôi mắc **3 lần với ``** (`output_rules`, `spec_extract`, `figma_to_ui_contract`) và 2 lần với
+`
+`; script vẫn chạy êm nhưng luật **không bao giờ khớp**. Lần này chính test `cli-guard` bắt được thiếu
+`require.main` guard (lỗi thứ 6 cùng loại) — máy gác viết ra hôm nay đã trả nợ ngay trong ngày.
+
+Suite hạ tầng: 137 → **143 test**.
+
 ## 2026-08-19 (o) — ③ nightly + ④ FE: assert hình học và text dài tiếng Việt
 
 **③ Nightly.** Job CI `detection-proof` (`.gitlab-ci.yml`, schedule/manual, `allow_failure: true`) chạy
