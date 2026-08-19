@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+/*
+ * ⚠ LEGACY (GĐ5, 19/08/2026): kit đã chuyển sang AIO Tests. Xray đóng băng sau 21/08/2026.
+ * File này CHỈ chạy khi khai báo rõ `--test-management-tool xray`; mặc định nó tự CHẶN và chỉ sang
+ * lệnh AIO tương ứng (xem `scripts/integrations/tms.js`). Giữ lại để đọc/đối chiếu dữ liệu Xray cũ
+ * và để `aio/migrate_*.js` còn dùng được `xray_cloud.js`; đừng phát triển thêm ở đây.
+ */
 
 const fs = require('fs');
 const https = require('https');
@@ -23,6 +29,10 @@ const {
 const { XrayCloudClient, isUsableCreds } = require('./xray_cloud');
 
 loadEnv();
+
+// CỬA TOOL: kit đang chạy AIO mà gọi publisher Xray thì `normalizeTool()` rơi về nhánh Jira thường và
+// lặng lẽ tạo issue "Test Case" trong Jira — không phải Xray Test, cũng không phải AIO case. Chặn ở đây.
+require('../tms').assertTool('xray', 'npm run aio:publish -- --file <x.xlsx> --story <JIRA-KEY>', { allow: ['jira'] });
 
 const SCRIPT_DIR = __dirname;
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..', '..');

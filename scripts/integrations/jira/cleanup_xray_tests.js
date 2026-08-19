@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+/*
+ * ⚠ LEGACY (GĐ5, 19/08/2026): kit đã chuyển sang AIO Tests. Xray đóng băng sau 21/08/2026.
+ * File này CHỈ chạy khi khai báo rõ `--test-management-tool xray`; mặc định nó tự CHẶN và chỉ sang
+ * lệnh AIO tương ứng (xem `scripts/integrations/tms.js`). Giữ lại để đọc/đối chiếu dữ liệu Xray cũ
+ * và để `aio/migrate_*.js` còn dùng được `xray_cloud.js`; đừng phát triển thêm ở đây.
+ */
 
 const fs = require('fs');
 const https = require('https');
@@ -14,6 +20,9 @@ const {
 } = require('./utils');
 
 loadEnv();
+
+// CỬA TOOL: AIO KHÔNG có API xoá case → không có bản cleanup tự động, phải dọn tay trên UI.
+require('../tms').assertTool('xray', 'AIO không có API xoá — dọn tay trên UI (⋮ → Remove/Delete). Xem scripts/integrations/aio/README.md');
 
 const SCRIPT_DIR = __dirname;
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..', '..');
