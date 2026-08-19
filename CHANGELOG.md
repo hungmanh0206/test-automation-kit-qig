@@ -31,6 +31,29 @@ lint nào thay được — nên mỗi luật mới phải có test khẳng đ�
 
 Suite hạ tầng: 138 → **145 test**.
 
+## 2026-08-19 (s) — visual regression: bộ chụp riêng, và ĐO tất định thay vì tin là tất định
+
+**Added — lane `tests/fe/visual/` + `scripts/utils/ui/visual.js`.** Ảnh evidence hiện có (~1000/ task) **không dùng
+làm baseline được**: full-page · dữ liệu động · mask PII bằng cách **sửa DOM** ⇒ mỗi lần chạy một ảnh khác, diff luôn
+≠ 0 và đội sẽ học cách bỏ qua. `freeze()` triệt 4 nguồn bất định (animation/transition · caret · lazy-load · scrollbar)
+và **in ra đã can thiệp những gì**; `captureOptions()` mặc định **không** full-page (càng dài càng nhiễu), ngưỡng
+`maxDiffPixelRatio 0.01`, `mask` khai ở **lớp task** (`requirements/visual_targets.json`).
+
+**Nghiệm thu tất định bằng 2 lượt chạy thật, không bằng lập luận**: lượt 1 tạo baseline 2 màn (UAT, read-only) →
+lượt 2 so lại **PASS** với **0 mask** ⇒ capture tất định trên 2 màn đó. (Pass ở lượt 2 chỉ chứng minh *tất định*,
+KHÔNG chứng minh màn *đúng* — oracle ở đây là chính build.)
+
+**Giới hạn ghi thẳng vào luật**: oracle = "bản build đã được chấp nhận lần trước" ⇒ bắt **regression**, **không** bắt
+cái sai từ đầu. Nên nó **bổ trợ**, không thay `UI-*` contract và không thay assert hình học. Không có
+`visual_targets.json` ⇒ lane **skip kèm lý do** ("CHƯA ĐO ĐƯỢC"), tuyệt đối không tính PASS.
+
+**KHÔNG commit baseline** (`.gitignore`): (1) ảnh chụp màn UAT có tên/email/CCCD — dù là dữ liệu `IT test` vẫn là dữ
+liệu khách, mà commit là publish sang 2 remote; (2) baseline Playwright gắn OS/browser (`-chromium-desktop-win32`)
+nên commit từ máy Windows thì CI Linux vẫn phải chụp lại — cam kết sai chỗ.
+
+3 test offline (DOM giả lập) khoá kỷ luật chụp: `freeze` đưa animation về `0s` + về đầu trang · `captureOptions`
+không full-page + có ngưỡng · `loadTargets` loại màn thiếu `url` và **đếm số bị loại**.
+
 ## 2026-08-19 (q) — nối `UI-*` vào checker (FE có neo) + ⑤ biến thiên data theo RUN_ID
 
 **Nối contract vào máy — mắt xích cuối của chuỗi FE.** Có contract mà **không gì tiêu thụ** thì nó là gánh nặng chứ

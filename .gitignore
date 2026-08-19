@@ -214,3 +214,11 @@ scripts/integrations/jira/unassign_tests_backup.json
 # Nạp lại từ Jira bất cứ lúc nào: `npm run learn:bugs:apply` (nguồn thật là Jira, không phải repo).
 knowledge/bugs/*.json
 !knowledge/bugs/.gitkeep
+
+# Baseline visual regression: KHÔNG commit.
+#  1) Ảnh chụp màn UAT có tên/email/CCCD (dù là dữ liệu "IT test" vẫn là dữ liệu khách) — luật PII của kit cấm
+#     đưa vào artifact chia sẻ; commit là publish sang 2 remote.
+#  2) Baseline của Playwright gắn OS/browser (`-chromium-desktop-win32`) nên commit từ máy Windows thì CI Linux
+#     vẫn phải chụp lại — cam kết sai chỗ.
+#  Cách dùng: chụp baseline TRƯỚC đợt chạy (đã soi ảnh), so trong cùng lượt/cùng máy. Xem tests/fe/visual/.
+tests/fe/visual/**-snapshots/

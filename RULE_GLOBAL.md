@@ -317,7 +317,8 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     thuần làm bug "biến mất khi chạy lại", phá nguyên tắc rerun 2–3 lần và biến **bug thật thành flaky**. Ghi
     `plan()` vào Actual để người sau tái hiện đúng lượt đó. Kèm điều kiện đi cùng: xoay data thì phải siết
     **teardown/janitor** — môi trường UAT dùng chung, xoay mà không dọn là đổi bug-lọt lấy **rác dữ liệu**.
-17. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
+17. **VISUAL REGRESSION — bộ chụp RIÊNG, tất định; và nói rõ nó KHÔNG bắt được gì.** Ảnh evidence (~1000/ task) **không dùng làm baseline được**: full-page · dữ liệu động · mask PII bằng cách **sửa DOM** ⇒ mỗi lần chạy một ảnh khác, diff luôn ≠ 0 nên đội sẽ học cách bỏ qua. Lane riêng: `tests/fe/visual/` + `scripts/utils/ui/visual.js` (`freeze()` triệt animation/transition/caret/lazy-load · `captureOptions()` mặc định **không** full-page, `maxDiffPixelRatio 0.01`, `mask` vùng động khai ở **lớp task** `requirements/visual_targets.json`). **Giới hạn phải nói trước**: oracle là "bản build đã được chấp nhận lần trước" ⇒ bắt **regression**, KHÔNG bắt cái sai từ đầu — nên nó **bổ trợ**, không thay contract FE `UI-*` và không thay assert hình học. Lượt chạy đầu chỉ **tạo baseline** = **CHƯA kiểm gì**, phải soi ảnh trước khi nhận. Không có `visual_targets.json` ⇒ lane **skip kèm lý do**, tuyệt đối không tính là PASS. **KHÔNG commit baseline**: ảnh chứa dữ liệu khách và baseline gắn OS/browser (`-win32`) nên commit từ máy Windows thì CI Linux vẫn phải chụp lại.
+18. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results
