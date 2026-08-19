@@ -33,7 +33,17 @@ hổng khác. `plan()` in ra `_runId` và **nói thẳng** khi thiếu `RUN_ID` 
 Kèm điều kiện đi cùng ghi vào luật: xoay data thì phải siết **teardown/janitor**, vì UAT dùng chung — xoay mà không
 dọn là đổi bug-lọt lấy **rác dữ liệu**.
 
-Suite hạ tầng: 143 → **153 test**.
+Suite hạ tầng của `main`: 128 → **138 test** (10 test mới).
+
+> **Đính chính số liệu:** con số "153" tôi báo lúc đầu là đo khi working tree đang ở nhánh `feat/xray-to-aio-migration` của user — nó gộp cả spec của nhánh đó. Số đúng trên `main` là **138**. Xem mục sự cố dưới đây.
+
+### Sự cố cùng lượt: commit rơi vào nhánh của user
+
+Giữa phiên, working tree bị chuyển sang nhánh **`feat/xray-to-aio-migration`** (nhánh AIO của user, chỉ có local). Tôi **không kiểm nhánh trước khi commit** ⇒ commit cuối rơi vào nhánh đó, trong khi `git push github main:main` lại đẩy bản **cũ** của `main`: GitLab có (cherry-pick theo sha), **GitHub thiếu**, và commit của tôi nằm lẫn trong nhánh tính năng của user.
+
+Sửa không mất gì: backup file WIP → `git reset --keep HEAD~1` trên nhánh user (**`--keep`** giữ được thay đổi chưa commit; `--hard` sẽ xoá mất WIP `bug_reporter.js`) → `git checkout main` → `git cherry-pick` → push GitHub. Nghiệm thu: nhánh user về đúng 5 commit AIO, `diff -q` xác nhận WIP nguyên vẹn, 3 cây đồng bộ.
+
+Luật rút ra: **trước mỗi commit phải `git branch --show-current`** — working tree là của user, họ có thể đổi nhánh bất cứ lúc nào; và sau push phải **so 3 sha** thay vì tin dòng "pushed".
 
 ## 2026-08-19 (p) — ④ oracle FE: Figma → `UI-*` contract, và lý do KHÔNG tự động hoá nốt
 
