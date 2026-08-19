@@ -453,6 +453,46 @@ if (taskDir) {
   ];
   const missing = axes.filter(([, ran]) => !ran);
   for (const [name, , how] of missing) warnings.push(`trục ${name}: chưa có artefact nào ⇒ trục này CHƯA ai soi. Chạy: ${how}`);
+
+  /*
+   * CHẶN: task có case band HIGH mà chưa hề lập kế hoạch mở rộng.
+   * KHÔNG chặn "đã mở đủ trục chưa" — đo trên 9 task cho thấy siết kiểu đó làm đỏ 7/9, và task xanh duy nhất
+   * cũng chỉ 2 trục thật sự chứng minh được gì; ép như vậy chỉ đẻ ra artefact rỗng. Thứ chặn được ở đây là
+   * việc QUYẾT ĐỊNH có bị bỏ qua trong im lặng hay không: `expansion:plan` chỉ đọc Excel (~vài giây, không mở
+   * browser) và in ra "task này ~N lượt tải · ~M phút · ~K MB" để người chốt mở trục nào. Bỏ qua bước đó thì
+   * band high không ai cân nhắc — đúng đường mà 7/9 task vừa rồi đã đi.
+   */
+  try {
+    const depth = require(path.resolve(__dirname, '..', 'lib', 'expansion', 'depth'));
+    const canon = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
+    const stPath3 = path.join(taskDir, 'test-results', 'testcase-status.json');
+    if (fs.existsSync(stPath3)) {
+      const raw3 = JSON.parse(fs.readFileSync(stPath3, 'utf8'));
+      const list3 = Array.isArray(raw3) ? raw3 : (raw3.tests || []);
+      const executed = new Set(list3.filter((t) => /^(PASS|FAIL)/i.test(String(t.status || '').trim()))
+        .map((t) => String(t.tcId || '').toUpperCase()).filter(Boolean));
+      if (executed.size) {
+        const byId3 = {};
+        for (const d of [path.join(taskDir, 'test-cases'), path.join(taskDir, 'test-cases', 'from-xray'), path.join(taskDir, 'test-cases', 'from-aio')]) {
+          if (!fs.existsSync(d)) continue;
+          for (const f of fs.readdirSync(d).filter((x) => x.endsWith('.md'))) {
+            try { for (const t of canon.parseMarkdown(fs.readFileSync(path.join(d, f), 'utf8')).tests || []) byId3[String(t.tcId).toUpperCase()] = t; } catch (e) { /* bỏ */ }
+          }
+        }
+        const known = [...executed].filter((id) => byId3[id]);
+        const high = known.filter((id) => depth.bandOf(byId3[id]) === 'high');
+        // Không tra được band thì check này im lặng không chặn — phải NÓI ra, không thì nó thành lỗ.
+        // (Band đọc từ `.md` canonical như phần còn lại của self_review; task chỉ có .xlsx sẽ rơi vào đây.)
+        if (!known.length) {
+          warnings.push(`${executed.size} case đã execute nhưng KHÔNG tra được band nào từ \`test-cases/*.md\` — check "đã cân nhắc mở rộng chưa" KHÔNG chạy được cho task này (im lặng ≠ đạt). Đảm bảo có bảng testcase canonical dạng .md.`);
+        }
+        const planned = glob1(repDir, /expansion-plan/i).length > 0;
+        if (high.length && !planned) {
+          problems.push(`${high.length} case band HIGH đã execute nhưng CHƯA có \`reports/expansion-plan.md\` — chưa ai cân nhắc mở rộng trục nào cho chúng. Chạy \`npm run expansion:plan\` (chỉ đọc Excel, vài giây) để thấy chi phí rồi chốt phạm vi; muốn không mở trục nào thì ghi lý do vào báo cáo, đừng bỏ qua im lặng.`);
+        }
+      }
+    }
+  } catch (e) { warnings.push(`không đo được band để kiểm kế hoạch mở rộng: ${e.message}`); }
   // CHỐNG "có file là xong": báo cáo tồn tại nhưng KHÔNG chứng minh được gì thì trục đó vẫn chưa soi.
   // Đọc DÒNG MÁY do chính mỗi máy phát ra (`<!-- gate: proven=N inconclusive=M broken=K -->`) chứ KHÔNG sniff
   // văn xuôi: bản đầu match chữ "đo thiếu điểm" trong dòng tổng kết (giá trị 0) nên báo oan đúng báo cáo SẠCH.
@@ -463,7 +503,11 @@ if (taskDir) {
       if (!m) continue;                                        // báo cáo cũ chưa có dòng máy ⇒ không phán
       const proven = Number(m[1]);
       const inconclusive = Number(m[2]);
-      if (proven === 0) warnings.push(`${name}: có \`reports/${f}\` nhưng **proven=0** (${inconclusive} mục chưa kiểm được) — artefact rỗng nghĩa không phải là đã soi.`);
+      // CHẶN (nâng từ cảnh báo 19/08/2026). Lý do là số đo: trên 9 task đã execute, chỉ 1 task có đủ 5 artefact,
+      // mà 3/7 báo cáo của chính task đó là proven=0. Nếu chỉ chấm "có file hay không" thì thứ được dạy là
+      // CHẠM VÀO FILE CHO CÓ — đúng cái bẫy mà check này sinh ra để chống. Siết proven=0 chỉ làm đỏ 1/9 task,
+      // rẻ và chính xác, và phải siết TRƯỚC khi bắt buộc chạy trục, không thì file rỗng thành chuẩn mực.
+      if (proven === 0) problems.push(`${name}: có \`reports/${f}\` nhưng **proven=0** (${inconclusive} mục chưa kiểm được) — artefact rỗng nghĩa KHÔNG phải là đã soi. Sửa đầu vào (catalog/config/chains) cho máy có gì để đối chiếu, hoặc xoá báo cáo rỗng thay vì để nó đứng tên một trục.`);
     }
   }
   // Có config mà chưa chạy thì nặng hơn: người đã khai phạm vi rồi bỏ dở.
@@ -517,6 +561,26 @@ if (taskDir) {
       }
     }
   } catch (e) { warnings.push(`không đo được độ đủ assertion: ${e.message}`); }
+
+  // VERIFICATION THEO ASSERTION — ngữ nghĩa: **có dữ liệu thì CHẶN**, chưa có thì chỉ báo tỉ lệ áp dụng.
+  // Lý do phân biệt: khi bản ghi đã có `assertions[]` thì "assertion nào chưa ai kiểm" là SỰ THẬT đọc được, không
+  // còn là suy luận từ `steps[]` (proxy) ⇒ mới đủ cơ sở để chặn. Bản ghi cũ không có field này thì không bị phạt.
+  try {
+    const A = require(path.resolve(__dirname, '..', 'lib', 'testcase', 'assertions'));
+    const stP = path.join(taskDir, 'test-results', 'testcase-status.json');
+    if (fs.existsSync(stP)) {
+      const raw3 = JSON.parse(fs.readFileSync(stP, 'utf8'));
+      const list3 = Array.isArray(raw3) ? raw3 : Object.values(raw3).find((v) => Array.isArray(v)) || [];
+      const r = A.auditExecution(list3);
+      if (r.withData) {
+        for (const b2 of r.blocking) problems.push(`assertion chưa được kiểm — ${b2}`);
+        for (const w2 of r.warnings.slice(0, 10)) warnings.push(`assertion — ${w2}`);
+        warnings.push(`verification theo assertion: ${r.withData}/${r.all} case đã khai (${r.adoption}%), phủ ${r.covered}/${r.total} assertion (${r.coverage}%).`);
+      } else if (r.all) {
+        warnings.push(`chưa case nào khai \`assertions[]\` — độ đủ assertion vẫn phải suy từ \`steps[]\` (proxy) nên gate chỉ cảnh báo được. Dùng \`deriveAssertions(tc)\` để sinh khung rồi điền \`verified\`/\`evidence\` thì gate mới chặn được.`);
+      }
+    }
+  } catch (e) { warnings.push(`không kiểm được verification theo assertion: ${e.message}`); }
 
   // NHÂN NHƯỢNG: case ghi PASS trơn mà Actual kể chuyện lệch kịch bản (chờ thêm/retry/refresh/đổi locator) trong
   // khi kịch bản KHÔNG có bước đó ⇒ nghi bug bị lấp. Chỉ CẢNH BÁO: đây là suy từ văn xuôi, và đo thật cho thấy
