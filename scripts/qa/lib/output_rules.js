@@ -206,7 +206,10 @@ function vagueExpectedLines(cell) {
 // FAIL đã được PHÂN TẦNG khi comment/root-cause nêu rõ tầng: product/API bug, setup, infra, flaky,
 // data/quyền/precondition, hoặc gắn Jira key (đã log bug). Thiếu hết = "không phán được" → CHẶN.
 const FAILURE_LAYER = new RegExp([
-  'lỗi sản phẩm', 'product bug', 'api bug', 'api contract', '\\bbug\\b', '\\bdefect\\b',
+  // Nhận CẢ khoá canonical của verdict_taxonomy (`product_bug`, `api_bug`) lẫn văn xuôi.
+  // Trước chỉ có biến thể dấu-cách → khai ĐÚNG chuẩn `failureLayer: "product_bug"` lại bị chặn oan,
+  // đúng vào 2 tầng duy nhất được phép log Jira. Các tầng khác đã có `[_ ]?` nên không dính lỗi này.
+  'lỗi sản phẩm', 'product[_ ]?bug', 'api[_ ]?bug', 'api contract', '\\bbug\\b', '\\bdefect\\b',
   'sai (nghiệp vụ|kết quả|logic|công thức|số liệu|dữ liệu)',
   'setup[_ ]?failure', 'blocked[_ ]?setup', 'skip[_ ]?setup', 'precondition',
   'thiếu (data|dữ liệu|quyền|capability|hook|mock|sandbox|account|fixture)',

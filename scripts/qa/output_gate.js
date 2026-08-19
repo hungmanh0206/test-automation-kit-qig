@@ -103,7 +103,12 @@ function gateTestExecution(doc, { fix = false } = {}) {
     if (sa) problems.push(`${id}: ${sa.message}`);
 
     // 2) Evidence: gộp case + step.
-    const caseEv = evList(t.evidence);
+    // Kể cả shortcut `failedStep` + `failedStepEvidence` mà template Phase 2 dạy: đó là đường HỢP LỆ để
+    // khai evidence của bước lỗi (push_test_execution/push_execution_aio đều đọc field này). Trước đây
+    // gate không gom nó ⇒ agent làm ĐÚNG template vẫn bị chặn "THIẾU evidence".
+    const caseEv = evList(t.evidence)
+      .concat(evList(t.failedStepEvidence))
+      .concat(evList(t.failed_step_evidence));
     const steps = Array.isArray(t.steps) ? t.steps : [];
     const stepEv = steps.flatMap((s) => evList(s.evidence).concat(evList(s.evidences)));
     const allEv = [...caseEv, ...stepEv];

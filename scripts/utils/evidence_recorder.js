@@ -128,10 +128,11 @@ class Case {
 
   /** Kết thúc case: status tổng (mặc định = FAILED nếu có step FAILED). Evidence cấp case = ảnh step lỗi (nếu có) hoặc step cuối. */
   async finish(overallStatus, opts = {}) {
+    // opts.evidence: file cấp CASE thêm vào (vd video mô tả cả chuỗi thao tác — ảnh tĩnh không tả nổi).
     const anyFail = this.steps.some((s) => s.status === 'FAILED');
     const status = overallStatus || (anyFail ? 'FAILED' : (this.steps.length ? 'PASSED' : 'TODO'));
     const failEv = this.steps.find((s) => s.status === 'FAILED');
-    const caseEv = (failEv || this.steps[this.steps.length - 1] || {}).evidence || [];
+    const caseEv = [...((failEv || this.steps[this.steps.length - 1] || {}).evidence || []), ...[].concat(opts.evidence || [])];
     this.rec._put({
       tcId: this.tcId,
       status,
@@ -159,9 +160,13 @@ class EvidenceRecorder {
     this.shardDir = path.join(this.testResults, STATUS_DIRNAME);
     fs.mkdirSync(this.shardDir, { recursive: true });
     this._tests = new Map();
+    this.startedAt = Date.now();
   }
   case(tcId) { return new Case(this, tcId); }
   _put(entry) {
+    // `recordedAt` = lúc case NÀY thật sự chạy xong. Provenance phải bám vào từng case: nếu chỉ dựa
+    // `generatedAt` của file thì mỗi lần write() lại đóng dấu mới cho cả case cũ → rửa sạch dấu vết.
+    entry.recordedAt = ts();
     this._tests.set(entry.tcId, entry);
     // G0: PERSIST NGAY per-TC shard (atomic) khi case finish → process chết vẫn giữ case đã xong;
     // mỗi TC 1 file riêng → 2 worker khác TC KHÔNG đè nhau (khác file cũ read→merge→write chung).
@@ -178,19 +183,50 @@ class EvidenceRecorder {
    */
   write() {
     const byId = new Map();
+    /*
+     * KẾ THỪA KẾT QUẢ CŨ — phải ĐÁNH DẤU, không được im lặng.
+     * Gộp mọi shard là CỐ Ý (nhiều worker, và giữ được case đã xong khi process chết). Nhưng nó cũng
+     * kéo theo kết quả của những LƯỢT CHẠY TRƯỚC: chạy lại 3 case mà status ra 51 case PASSED, đóng
+     * dấu `generatedAt` hôm nay — đẩy lên TCM là báo PASS cho 48 case lượt này chưa hề chạy.
+     * (Đã xảy ra thật: SAPP-26523 chạy 3 case, status gộp thành 51, 48 case từ 13/07.)
+     * Nên: entry cũ hơn lượt này được gắn `carriedOver` + `carriedFrom`, và cảnh báo ra stdout.
+     * Ngưỡng GRACE 6h chứ không so đúng mốc start: Playwright khởi động các worker LỆCH NHAU vài giây,
+     * so chính xác sẽ gắn nhầm cờ cho case của worker chạy trước.
+     */
+    const GRACE_MS = 6 * 60 * 60 * 1000;
+    const cutoff = this.startedAt - GRACE_MS;
+    const mark = (t, fileAt) => {
+      // Sticky: đã từng bị đánh dấu thì giữ nguyên — không có đường "tẩy trắng" bằng cách write() lại.
+      if (t.carriedOver) return t;
+      const at = Date.parse(t.recordedAt || '') || fileAt;
+      return at && at < cutoff ? { ...t, carriedOver: true, carriedFrom: new Date(at).toISOString() } : t;
+    };
+
     // 1) status cũ (giữ TC không thuộc lần này — tương thích ngược)
-    try { const ex = JSON.parse(fs.readFileSync(this.statusFile, 'utf8')); for (const t of ex.tests || []) if (t && t.tcId) byId.set(t.tcId, t); } catch { /* new */ }
+    try {
+      const ex = JSON.parse(fs.readFileSync(this.statusFile, 'utf8'));
+      const at = Date.parse(ex.generatedAt || '') || 0;
+      for (const t of ex.tests || []) if (t && t.tcId) byId.set(t.tcId, mark(t, at));
+    } catch { /* new */ }
     // 2) shard trên đĩa (mọi worker) — nguồn atomic, không đua chéo TC
     try {
       for (const f of fs.readdirSync(this.shardDir)) {
         if (!f.endsWith('.json')) continue;
-        try { const s = JSON.parse(fs.readFileSync(path.join(this.shardDir, f), 'utf8')); if (s && s.test && s.test.tcId) byId.set(s.test.tcId, s.test); } catch { /* skip shard hỏng */ }
+        try {
+          const s = JSON.parse(fs.readFileSync(path.join(this.shardDir, f), 'utf8'));
+          if (s && s.test && s.test.tcId) byId.set(s.test.tcId, mark(s.test, Date.parse(s.at || '') || 0));
+        } catch { /* skip shard hỏng */ }
       }
     } catch { /* chưa có shard dir */ }
-    // 3) case in-memory lần này (đảm bảo có kể cả khi shard write từng lỗi)
+    // 3) case in-memory lần này — LUÔN thắng, và không bao giờ mang cờ carriedOver.
     for (const [id, e] of this._tests) byId.set(id, e);
     const out = { taskKey: this.taskKey, generatedAt: ts(), ...(this.runId ? { runId: this.runId } : {}), tests: [...byId.values()] };
     writeJsonAtomic(this.statusFile, out);
+    const carried = out.tests.filter((t) => t.carriedOver);
+    if (carried.length && this.log) {
+      console.warn(`\n⚠ ${carried.length}/${out.tests.length} case KẾ THỪA từ lượt chạy trước (lượt này chỉ chạy ${this._tests.size}).`);
+      console.warn(`  Chúng mang cờ "carriedOver" — ĐỪNG đẩy lên TCM như kết quả hôm nay. Dọn: xoá ${path.relative(this.repoRoot, this.shardDir).split(path.sep).join('/')}`);
+    }
     // #3: sinh evidence-manifest.json (index + kiểm tồn tại) cạnh status.
     try { buildManifest(this.testResults, { repoRoot: this.repoRoot }); } catch (e) { if (this.log) console.warn(`[evidence] manifest skip: ${e.message}`); }
     if (this.log) console.log(`\nĐã ghi ${byId.size} case (aggregate shard+in-memory, atomic) → ${path.relative(this.repoRoot, this.statusFile).split(path.sep).join('/')}`);

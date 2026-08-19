@@ -158,6 +158,24 @@ function getTestResultsDir(options = {}) {
   return path.join(taskOutputDir, 'test-results', 'runs', runId);
 }
 
+/*
+ * MỘT nguồn cho "testcase canonical local nằm ở những thư mục nào".
+ *
+ * `test-cases/` là Excel người viết; `from-xray/` và `from-aio/` là bản KÉO VỀ từ test-management tool
+ * (theo `TESTCASE_SOURCE`). Trước đây 7 script tự ghép tay đường dẫn và chỉ biết `from-xray` — thêm
+ * nguồn `from-aio` thì `preflight_gate` CHẶN oan ("không thấy testcase canonical"), còn
+ * `dimension_coverage`/`bug_tc_matcher`/`domain_rules`/`system_map`/`learn_task` thì KHÔNG lỗi mà chỉ
+ * đếm thiếu trong im lặng — kiểu hỏng tệ hơn, vì báo cáo vẫn ra số và trông vẫn đúng.
+ * Thêm nguồn mới về sau: sửa DUY NHẤT mảng này.
+ */
+const TESTCASE_MIRROR_DIRS = ['from-xray', 'from-aio'];
+
+function getTestcaseDirs(taskOutputDir, { mirrorsFirst = false } = {}) {
+  const base = path.join(taskOutputDir, 'test-cases');
+  const mirrors = TESTCASE_MIRROR_DIRS.map((d) => path.join(base, d));
+  return mirrorsFirst ? [...mirrors, base] : [base, ...mirrors];
+}
+
 function resolveFromRepo(filePath) {
   return path.isAbsolute(filePath) ? filePath : path.resolve(REPO_ROOT, filePath);
 }
@@ -169,9 +187,11 @@ module.exports = {
   getTaskKey,
   getTaskOutputDir,
   getTestResultsDir,
+  getTestcaseDirs,
   isUsableValue,
   loadEnvFiles,
   parseEnvFile,
   requireValue,
   resolveFromRepo,
+  TESTCASE_MIRROR_DIRS,
 };
