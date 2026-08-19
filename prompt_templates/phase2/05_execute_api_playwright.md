@@ -84,6 +84,27 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 13. SKIP chỉ được phép khi không thể chạy sau khi đã thử sửa setup/data/dependency hợp lý; report phải ghi TC ID, lý do skip, có thể sửa để chạy được không.
 14. Jira bug chỉ xử lý sau khi execution report hoàn tất, fail đã được rerun/xác nhận và user/prompt cho phép.
 
+# 5 trục mở rộng quanh case — phần áp cho tầng API (BẮT BUỘC)
+
+Luật đầy đủ: **`RULE_GLOBAL.md` §5 trục mở rộng quanh case**. Execute API chỉ bám đúng chữ trong case thì lọt đúng
+những lớp bug mà API là nơi CHỨNG MINH được:
+
+- **Trục 3 — chuỗi lưu trữ.** Không dừng ở `200 OK`: ghi lại **payload đã gửi** và **response đọc lại**, rồi so với
+  giá trị đã nhập. `npm run probe:persist -- --seed money` sinh giá trị mồi **phân biệt** (không tròn, không 0) để
+  "trùng nhau" không thể là ngẫu nhiên; `--chains` chỉ ra **mắt đứt** ⇒ nói được TẦNG lỗi. API trả success mà bản
+  ghi không được tạo / field bị lưu 0 là lớp bug đã xảy ra thật nhiều lần.
+- **Trục 2 — cùng giá trị, khác nơi hiển thị.** Giá trị API trả về phải khớp UI/list/tab đồng bộ. `npm run
+  xsurf:diff` đọc được cả 3 loại bề mặt (nhãn trên màn · cột lưới · API+jsonPath). Case API PASS mà màn hiển thị
+  khác thì bug vẫn ra production.
+- **Trục 4/5 — nhánh & trạng thái.** Cùng endpoint với loại đơn/tiền tệ khác, và với bản ghi ở trạng thái kế cận
+  (đã hủy / hoàn / thanh toán một phần) thì còn đúng? `npm run fixture:matrix -- --discover` cho biết môi trường
+  đang CÓ dữ liệu ở ô nào — đừng bỏ case vì "không có data" khi chưa dò.
+- **Guard theo trạng thái:** gọi thẳng API cho hành động mà UI đã chặn (sửa đơn đã thanh toán, xoá giao dịch đã
+  xác nhận) — đây là chỗ API test làm được mà UI test không làm được, và phải kèm bằng chứng **dữ liệu không đổi**.
+
+**Đóng vòng:** bug do người ngoài tìm ra là **lỗi của máy** — phải chỉ ra máy lẽ ra bắt được
+(`npm run leak:report -- --require-machine`), không có máy thì đề xuất máy mới. Log bug kèm `--found-by kit|human`.
+
 # Quy tắc bắt buộc
 - Không được đổi expected status/body tùy tiện để làm test PASS.
 - Không được bỏ schema/body assertion quan trọng.

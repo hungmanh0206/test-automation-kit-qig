@@ -7,6 +7,29 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (f) — luật mở rộng phạm vi: bịt đường vào còn thiếu + gắn MÁY
+
+Rà lại câu "luật đã được ghi chưa" thì thấy **ghi rồi nhưng chưa tới được mọi đường vào**: có ở `RULE_GLOBAL`
+§5 trục, digest `core_rules.md`, và `phase2/04_execute_fe_playwright.md` — **thiếu** ở `CLAUDE.md` (file auto-load
+mọi session), `phase2/05_execute_api_playwright.md`, và mô tả routing trong `run_phase2_template.md`. Nghĩa là
+execute **nhánh API** hoặc người đọc bản đồ prompt sẽ không thấy luật.
+
+**Added:**
+- `CLAUDE.md` mục 3 (non-negotiable, luôn trong ngữ cảnh): "execute KHÔNG chỉ bám chữ trong case — mở rộng 5 trục
+  + chiều ngược `spec:gap`; bug người ngoài tìm ra = **lỗi của máy**".
+- `phase2/05_execute_api_playwright.md`: lát cắt 5 trục áp cho tầng API — trục ③ (ghi payload + response, không
+  dừng ở `200 OK`), trục ② (API ↔ UI ↔ list), trục ④⑤ (`--discover` trước khi bỏ case vì "không có data"), và
+  guard theo trạng thái (gọi thẳng API cho hành động UI đã chặn — việc chỉ API test làm được).
+- `run_phase2_template.md`: mô tả routing của cả 2 prompt execute nêu rõ "5 trục mở rộng" (bản đồ prompt phải
+  phản ánh nội dung mới, không thì agent skim bản đồ sẽ bỏ qua).
+- **`self_review` check #10 — "5 trục mở rộng (máy nào đã chạy)"**: luật không có máy thì trôi. Check này KHÔNG
+  chấm "đã mở rộng đủ chưa" (không đo được) mà chấm thứ đo được: **artefact của từng máy có tồn tại không**. Đo
+  trên SAPP-24395: **4/5 trục có artefact**, trục ③ chưa (đúng — mới backtest offline, chưa ghi chuỗi thật).
+  Có `requirements/cross_surface.json`/`fixture_matrix.json` mà chưa có báo cáo ⇒ **CHẶN** (khai phạm vi rồi bỏ dở).
+- **Chốt chống "có file là xong"**: báo cáo tồn tại nhưng nội dung toàn "chưa kiểm được" thì vẫn cảnh báo. Lý do
+  rất cụ thể: chính tôi vừa cân nhắc tạo một artefact khuyết để check #10 xanh, nên bịt luôn đường đó. Nghiệm thu
+  bằng kiểm soát ngược: dựng báo cáo yếu ⇒ chốt nổ đúng.
+
 ## 2026-08-19 (e) — B3→B7: đủ 5 trục có máy + luật đóng vòng
 
 Hoàn tất chương trình chống lọt bug (B0–B7). Mỗi trục có **máy đứng sau**, và mọi máy đều tách được "khớp" với

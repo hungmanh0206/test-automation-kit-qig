@@ -426,6 +426,60 @@ if (statusFile && fs.existsSync(statusFile)) {
   }));
 }
 
+// 10) 5 TRỤC MỞ RỘNG QUANH CASE — máy nào chưa chạy thì trục đó chưa ai soi.
+// Luật ở RULE_GLOBAL §5 trục mở rộng nói "phải mở rộng theo 5 trục", nhưng luật không có máy thì trôi: lượt trước
+// chỉ cần không khai catalog là né được cả check #9. Ở đây KHÔNG chấm "đã mở rộng đủ chưa" (không đo được), mà
+// chấm thứ đo được: **artefact của từng máy có tồn tại trong task này hay không**. Máy chưa chạy = trục chưa soi.
+// Để mức P1 (cảnh báo) có chủ đích: đo trên task thật trước, đủ dữ liệu rồi mới bàn chặn.
+if (taskDir) {
+  const problems = [];
+  const warnings = [];
+  const glob1 = (dir, rx) => {
+    if (!fs.existsSync(dir)) return [];
+    return fs.readdirSync(dir).filter((f) => rx.test(f));
+  };
+  const resDir = path.join(taskDir, 'test-results');
+  const repDir = path.join(taskDir, 'reports');
+  const reqDir = path.join(taskDir, 'requirements');
+  // Mỗi trục: [tên, có chạy chưa, lệnh để chạy]
+  const axes = [
+    ['① field cùng khối (spec→UI)',
+      glob1(resDir, /^conformance/).some((d) => fs.existsSync(path.join(resDir, d, 'conformance_report.json'))),
+      'npm run spec:extract … --catalog … rồi node scripts/qa/ui_conformance_check.js --catalog …'],
+    ['chiều ngược (build→tài liệu)', glob1(repDir, /spec-gap/i).length > 0, 'npm run spec:gap -- --screens … --surface … --bindings …'],
+    ['② cùng giá trị khác nơi hiển thị', glob1(repDir, /cross-surface/i).length > 0, 'npm run xsurf:diff -- --config requirements/cross_surface.json --out reports/cross-surface.md'],
+    ['③ chuỗi lưu trữ form→payload→API→UI', glob1(repDir, /persist|probe/i).length > 0, 'npm run probe:persist -- --chains … --out reports/persistence-probe.md'],
+    ['④⑤ nhánh × trạng thái', glob1(repDir, /fixture-matrix/i).length > 0, 'npm run fixture:matrix -- --config requirements/fixture_matrix.json --discover --out reports/fixture-matrix.md'],
+  ];
+  const missing = axes.filter(([, ran]) => !ran);
+  for (const [name, , how] of missing) warnings.push(`trục ${name}: chưa có artefact nào ⇒ trục này CHƯA ai soi. Chạy: ${how}`);
+  // CHỐNG "có file là xong": báo cáo tồn tại nhưng nội dung toàn "chưa kiểm được" thì trục đó vẫn chưa soi.
+  // Chính tôi vừa cân nhắc tạo một artefact khuyết chỉ để check này xanh — nên bịt luôn đường đó.
+  for (const [rx, name, weak] of [
+    [/cross-surface/i, 'trục ②', /CHƯA KIỂM ĐƯỢC|chưa kiểm được/],
+    [/persist|probe/i, 'trục ③', /đo thiếu điểm|chuỗi ĐO KHUYẾT|partial/i],
+    [/fixture-matrix/i, 'trục ④⑤', /TRỐNG \*\*[1-9]/],
+  ]) {
+    for (const f of glob1(repDir, rx)) {
+      const body = fs.readFileSync(path.join(repDir, f), 'utf8');
+      const hasResult = /✓ khớp|4\/4 điểm khớp|✓ /.test(body);
+      if (weak.test(body) && !hasResult) warnings.push(`${name}: có \`reports/${f}\` nhưng nội dung KHÔNG chứng minh được gì (toàn "chưa kiểm được") — artefact rỗng nghĩa không phải là đã soi.`);
+    }
+  }
+  // Có config mà chưa chạy thì nặng hơn: người đã khai phạm vi rồi bỏ dở.
+  for (const [cfg, rx, name] of [['cross_surface.json', /cross-surface/i, 'trục ②'], ['fixture_matrix.json', /fixture-matrix/i, 'trục ④⑤']]) {
+    if (fs.existsSync(path.join(reqDir, cfg)) && !glob1(repDir, rx).length) {
+      problems.push(`Có \`requirements/${cfg}\` nhưng CHƯA có báo cáo ${name} — khai phạm vi rồi không chạy thì bằng không chạy.`);
+    }
+  }
+  results.push(engine.toResult('5 trục mở rộng quanh case (máy nào đã chạy)', {
+    problems,
+    warnings,
+    note: `${axes.length - missing.length}/${axes.length} trục có artefact`,
+    severity: engine.SEVERITY.P1,
+  }));
+}
+
 // ---- Gộp + in qua GateEngine ----
 const agg = engine.aggregate(results);
 console.log(engine.format(agg, { title: `SELF-REVIEW (G9) — lượt 2 trước finalize${TASK ? ` · task ${TASK}` : ''}` }));
