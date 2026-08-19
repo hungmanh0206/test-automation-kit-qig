@@ -114,6 +114,46 @@ cross-browser:
     paths: [playwright-report/, inventory-xb.json]
     expire_in: 1 week
 
+# ---- CHỨNG MINH NĂNG LỰC PHÁT HIỆN (nightly/manual) ----
+# Vì sao là job RIÊNG và chạy định kỳ, không phải mỗi MR: nó tiêm lỗi rồi mở lại từng màn nên đắt (mỗi mutant =
+# 1 lượt tải trang + settle), và mục tiêu của nó không phải bắt bug của lần push này mà **đo xem bộ kiểm có còn
+# bắt được bug hay không**. Số đo lần đầu (19/08): máy kiểm-kê-field 0/4 · trục ② 3/4 — đó là mốc để so.
+detection-proof:
+  stage: regression
+  image: mcr.microsoft.com/playwright:v1.60.0-noble
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+      allow_failure: true            # đây là THƯỚC ĐO, không phải cổng chặn merge
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+      allow_failure: true
+  variables:
+    PROJECT_OUTPUT_DIR: "outputs/ci"
+    TASK_KEY: "CI-DETECTION-PROOF"
+    RUN_ID: "dp-$CI_PIPELINE_ID"
+  script:
+    - npm ci --prefer-offline --no-audit --no-fund
+    - npx playwright install chromium
+    # Cần catalog + bindings của task thật; không có thì báo rõ là CHƯA ĐO ĐƯỢC, không im lặng xanh.
+    - |
+      CAT="${DETECTION_CATALOG:-}"
+      if [ -z "$CAT" ] || [ ! -f "$CAT" ]; then
+        echo "CHUA DO DUOC: thieu DETECTION_CATALOG (duong dan ui_catalog.json cua task). Day KHONG phai PASSED."
+        exit 0
+      fi
+      npm run proof:nightly -- --catalog "$CAT" --out mutation-check.md
+    # Ngưỡng: score TỤT so với mốc đã ghi thì phải biết ngay (đọc bằng dòng máy trong báo cáo).
+    - |
+      if [ -f mutation-check.md ]; then
+        PROVEN=$(sed -n '1s/.*proven=\([0-9]*\).*//p' mutation-check.md)
+        echo "mutation: proven=$PROVEN (moc 19/08: may kiem-ke-field 0, truc (2) 3/4)"
+      fi
+  artifacts:
+    when: always
+    paths: [mutation-check.md]
+    expire_in: 1 month
+
 merge-report:
   stage: report
   image: mcr.microsoft.com/playwright:v1.60.0-noble
