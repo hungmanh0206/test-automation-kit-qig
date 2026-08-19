@@ -50,6 +50,7 @@
     "bug:tc-match": "node scripts/qa/bug_tc_matcher.js",
     "dim:coverage": "node scripts/qa/dimension_coverage.js",
     "spec:extract": "node scripts/qa/spec_extract.js",
+    "leak:report": "node scripts/qa/leak_report.js",
     "reliability": "node scripts/qa/reliability_index.js",
     "integration:check": "node scripts/integrations/jira/check_connection.js",
     "integration:check:live": "node scripts/integrations/jira/check_connection.js --live",
@@ -74,7 +75,13 @@
     "docs:budget": "node scripts/qa/doc_budget.js",
     "knowledge:backup": "node scripts/qa/knowledge_backup.js",
     "domain:trace-back": "node scripts/qa/domain_rules.js --trace-back",
-    "howto:find": "node scripts/qa/howto_store.js --find"
+    "howto:find": "node scripts/qa/howto_store.js --find",
+    "aio:publish": "node scripts/integrations/aio/publish_testcases_aio.js",
+    "aio:publish:apply": "node scripts/integrations/aio/publish_testcases_aio.js --apply",
+    "aio:migrate-exec": "node scripts/integrations/aio/migrate_execution.js",
+    "aio:migrate-exec:apply": "node scripts/integrations/aio/migrate_execution.js --apply",
+    "aio:migrate-tc": "node scripts/integrations/aio/migrate_testcases.js",
+    "aio:migrate-tc:apply": "node scripts/integrations/aio/migrate_testcases.js --apply"
   },
   "dependencies": {
     "axe-core": "^4.12.1",
