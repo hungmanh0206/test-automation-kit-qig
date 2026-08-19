@@ -149,6 +149,12 @@ không sống theo dòng testcase. Mỗi lần execute một case, mở rộng t
 | 4 | **Nhánh/biến thể** | Cùng màn này với loại đơn/gói/tiền tệ KHÁC thì sao? | `npm run fixture:matrix` |
 | 5 | **Trạng thái kế cận** | Sau khi hủy / hoàn / deal lost / thanh toán một phần thì màn này còn đúng? | `npm run fixture:matrix` |
 
+**ASSERT HÌNH HỌC, KHÔNG CHỈ `toBeVisible()`.** `toBeVisible()` vẫn PASS khi element bị **đè lên** · nằm ngoài
+viewport · cao 2px · **chữ trắng trên nền trắng** · bị **truncate**. Dùng `inspectGeometry(page, sel)`
+(`scripts/utils/ui/geometry.js`) cho các control/giá trị quan trọng của case. Và với màn có nhập tên/địa chỉ/tên
+khoá học: chạy thêm một lượt bằng **text dài tiếng Việt** (`LONG_VI`) — tiếng Việt dài hơn ~20–30% và có dấu nên
+layout thiết kế cho text ngắn hay vỡ; đây là ổ bug testcase gen từ tài liệu gần như không bao giờ nghĩ tới.
+
 **MỌI LỆCH KHỎI KỊCH BẢN PHẢI GHI SỔ.** Khi bị chặn, xu hướng tự nhiên là *làm cho nó chạy* — chờ thêm, retry,
 đổi locator, refresh, đi đường khác. Mỗi lần như vậy có thể đang **lấp một bug**. Ghi bằng
 `newLedger(tcId).note('extra-wait', 'lý do')` (`scripts/lib/expansion/deviation.js`); pass **sau khi** lệch ⇒

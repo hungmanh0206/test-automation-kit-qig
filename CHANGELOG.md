@@ -7,6 +7,30 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (o) — ③ nightly + ④ FE: assert hình học và text dài tiếng Việt
+
+**③ Nightly.** Job CI `detection-proof` (`.gitlab-ci.yml`, schedule/manual, `allow_failure: true`) chạy
+`npm run proof:nightly`. Lý do là job **riêng, định kỳ**: mutation tiêm lỗi rồi mở lại từng màn nên đắt, và mục
+tiêu của nó không phải bắt bug của lần push này mà **đo xem bộ kiểm còn bắt được bug hay không**. Thiếu
+`DETECTION_CATALOG` thì in **"CHƯA ĐO ĐƯỢC"** chứ không im lặng xanh. Mốc để so: kiểm-kê-field **0/4** · trục ② **3/4**.
+`gate:policy` bắt đúng lúc thêm (`proof:nightly` mồ côi) ⇒ đã trỏ từ README + CI, và CI gọi **npm script** chứ không
+gọi thẳng file (một nguồn).
+
+**④ FE — `scripts/utils/ui/geometry.js`.** Gốc rễ là **bất đối xứng oracle**: BE có Swagger (máy đọc được) nên
+assert `total = 540000`; FE chỉ có Figma nên assertion thoái hoá thành `toBeVisible()`. Ba test trong bộ mới dựng
+đúng cảnh **`toBeVisible()` xanh mà người dùng không dùng được**: element **bị đè** · **chữ trắng trên nền trắng** ·
+nội dung **bị truncate**. Thêm: ngoài viewport · kích thước 0 · touch target < 44px (chỉ kiểm khi được yêu cầu, để
+không báo oan desktop) · và một test **chống báo oan** (element lành ⇒ không nói gì).
+
+Các phép này là **bất biến tự thân** — không cần Figma vẫn khẳng định được là sai — nên KHÔNG rơi vào tautology
+"đúng vì app đang hiện thế". Đó cũng là lý do làm nhóm này trước khi làm Figma→`UI-*` contract.
+
+**Text dài tiếng Việt (`LONG_VI`)**: tiếng Việt dài hơn tiếng Anh ~20–30% **và có dấu** (dòng cao hơn) nên layout
+thiết kế cho text ngắn sẽ vỡ — tên người, địa chỉ, tên khoá học, ghi chú. Mẫu theo đúng quy ước đặt tên dữ liệu test
+(bắt đầu `IT test`). `inspectLongText` bắt tràn khung cha; test kèm ca **khung đủ rộng ⇒ không coi là lỗi**.
+
+Suite hạ tầng: 126 → **135 test**.
+
 ## 2026-08-19 (n) — ② đủ assertion: đo được 68% case kiểm thiếu điều kiện
 
 Việc ② trong thứ tự đã chốt. Trước khi viết luật thì **đo** — vì đây là loại gate rất dễ báo oan.
@@ -28,7 +52,8 @@ chưa chặn**: `steps[]` chỉ là *proxy* của số verification (nó là b�
 chặn ngay sẽ làm đỏ 2/3 bản ghi mà chưa chắc thiếu kiểm thật. Muốn chặn thì phải có trường verification **theo
 assertion** — việc của vòng sau.
 
-**Lỗi vận hành, lần thứ tư cùng loại:** escape `?
+**Lỗi vận hành, lần thứ tư cùng loại:** escape `
+?
 ` đi qua heredoc bị biến thành **ký tự CR/LF thật** nằm trong
 regex ⇒ script chết ngay khi load. Sửa bằng cách dựng backslash qua `chr(92)`. Luật tôi tự đặt vẫn đúng và tôi vẫn
 vi phạm: **nội dung có escape thì ghi bằng Write/Edit, đừng đi qua shell.**
