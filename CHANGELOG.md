@@ -7,6 +7,36 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (m) — bịt vùng mù "giá trị biến mất": trục ② từ 2/4 lên 3/4
+
+Tiếp đúng thứ tự đã chốt, việc ① là bịt vùng mù mà mutation vừa chứng minh.
+
+**Added — `mustHaveValue` (oracle từ cột `Required` của FSD).** `spec_extract` sinh danh sách field mà tài liệu ghi
+`M` (bắt buộc) hoặc `◎` (hệ thống hiển thị tự động) **và không kèm điều kiện** ⇒ trống là đáng nghi. Đây là oracle
+THẬT của tài liệu, không phải suy từ app. Trên 4 màn đã bind: **57 field**. Ghi chú: chỉ **1/69** field là `M`, phần
+lớn là `◎` — nên nếu chỉ lấy `M` thì luật gần như vô dụng; đó là lý do lấy cả `◎`-không-điều-kiện.
+
+**Đo rồi mới quyết mức độ:** check `empty-value` bắn **3 finding** (D.O.B · Số CCCD/Hộ chiếu × 2 màn · Deal ID Đã
+Thanh Toán Phí) và **cả 3 đều là fixture rỗng thật** (`data.dob` của API cũng không có). Nên để mức **ghi chú**
+(`info.empty-value`), không phải deviation — tự nó không kết luận được; việc chứng minh thuộc phép so UI↔API. Tổng
+deviation giữ nguyên **17**, không bị lạm phát bởi mục không hành động được.
+
+**Fixed — phép đo năng lực trục ② (lần thứ ba mới đúng).** Ba lần đo cùng một thứ, mỗi lần sửa cách đo:
+`4/4` (harness **tự chấm mình** bằng phép so chữ số) → `2/4` (dùng hàm thật, nhưng tra theo *giá trị bị bóp*) →
+**`3/4`** (tra theo **TÊN FIELD** rồi so giá trị UI với nguồn sạch). Chốt được nhờ một lượt **chẩn đoán** thay vì
+đoán tiếp: khi xoá `convertible_amount`, FE render **`0đ`** — không trống, không mất nhãn — nên mọi phép tra theo
+"giá trị bị bóp" đều trượt.
+
+| Mutant | Trục ② | Chi tiết máy in ra |
+|---|---|---|
+| `zero_out` | ✅ | UI `0đ` (core 0) ↔ nguồn sạch `6000000` |
+| `drop_field` | ✅ **mới bắt được** | UI `0đ` ↔ nguồn sạch `6000000` — vùng mù đã bịt |
+| `halve_number` | ✅ | UI `3.000.000đ` ↔ nguồn sạch `6000000` |
+| `stringify_num` | ❌ | UI `6.000.000đ` ↔ nguồn sạch `6000000` — **không bắt là ĐÚNG**: FE absorb đổi kiểu, không có gì lệch để thấy |
+
+Bài học phương pháp (lần thứ hai trong ngày): **con số dịch chuyển vì cách đo được sửa, không vì hệ thống đổi** —
+nên báo cáo phải in ra *đã so cái gì với cái gì*, để người đọc tự kiểm được kết luận.
+
 ## 2026-08-19 (l) — hai cơ chế lọt chưa ai gác: NHÂN NHƯỢNG và FLAKY chôn bug thật
 
 **Added — `PASS_WITH_DEVIATION`** (`scripts/lib/expansion/deviation.js` + verdict taxonomy). Rủi ro đặc thù của

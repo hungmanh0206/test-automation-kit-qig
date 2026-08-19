@@ -51,6 +51,7 @@ const SNAP_DIR = path.join(OUT, 'snapshots');
 if (IS_CLI) { fs.mkdirSync(OUT, { recursive: true }); fs.mkdirSync(SNAP_DIR, { recursive: true }); }
 
 const norm = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+const key = (s) => norm(s).toLowerCase().replace(/\s*\/\s*/g, '/');
 const hexToRgb = h => { const m = String(h).replace('#', '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i); return m ? [1, 2, 3].map(i => parseInt(m[i], 16)) : null; };
 const cssToRgb = c => { const m = String(c).match(/rgba?\(([^)]+)\)/); if (m) return m[1].split(',').slice(0, 3).map(x => parseInt(x.trim(), 10)); return hexToRgb(c); };
 const num = v => { const m = String(v).match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : NaN; };
@@ -372,6 +373,30 @@ async function checkScreen(page, base, screen) {
       if (actual.length) dev.push({ type: 'info.loose-labels', name: f.name, note: `section không có <label>; đọc ${actual.length} nhãn theo cặp leaf-node` });
     }
     compareFieldSet(dev, f, actual);
+    // GIÁ TRỊ TRỐNG ở field mà tài liệu nói phải hiển thị. Lớp bug này (SAPP-28317: Checkout bỏ trống CCCD dù API
+    // đã trả đủ) lọt qua mọi phép cũ: nhãn vẫn đủ nên kiểm-kê xanh, và không có giá trị nên so-2-bề-mặt cũng không
+    // thấy gì. Ở đây chỉ NÊU (info) vì trống có thể do fixture chưa có dữ liệu — muốn kết luận bug thì phải đối
+    // chiếu API (xsurf) để chứng minh "API có mà UI trống".
+    if ((f.mustHaveValue || []).length) {
+      const pairs = await root.evaluate((el) => {
+        const n = (x) => String(x || '').replace(/\s+/g, ' ').trim();
+        const out = {};
+        for (const row of [el, ...el.querySelectorAll('*')]) {
+          const kids = [...row.children].filter((c) => !c.children.length);
+          if (kids.length === 2) { const k = n(kids[0].textContent); if (k && !(k in out)) out[k] = n(kids[1].textContent); }
+        }
+        return out;
+      }).catch(() => ({}));
+      const emptyish = (v) => ['', '-', '—', '–', 'N/A', 'null', 'undefined'].includes(String(v || '').trim());
+      const blank = f.mustHaveValue.filter((lbl) => {
+        const hit = Object.keys(pairs).find((k) => key(k) === key(lbl));
+        return hit !== undefined && emptyish(pairs[hit]);
+      });
+      // Đo thật trên 4 màn: 3/3 finding đều là **fixture rỗng** (API cũng không có `dob`/`cccd`), không phải bug.
+      // Nên để mức GHI CHÚ: một mình nó không kết luận được. Việc chứng minh thuộc phép so UI↔API (trục ②) —
+      // `mustHaveValue` chính là danh sách field cần đưa vào `cross_surface.json`.
+      if (blank.length) dev.push({ type: 'info.empty-value', name: f.name, actual: blank, detail: 'tài liệu ghi field hiển thị tự động (M/◎, không kèm điều kiện) mà build đang TRỐNG — cần đối chiếu API để phân biệt "fixture chưa có dữ liệu" với "API có mà UI không render" (lớp SAPP-28317)' });
+    }
   }
 
   // 3) TEXTS: empty-state/label/placeholder exact

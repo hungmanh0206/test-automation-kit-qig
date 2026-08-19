@@ -148,17 +148,32 @@ async function runOnce(page, screens, mutant) {
       return r.ok ? await r.json() : null;
     }, [lastBizUrl, tok]).catch(() => null);
     // Tìm nhãn UI nào đang mang giá trị bị bóp, rồi so với giá trị GỐC trong nguồn sạch — bằng `core()` của xsurf.
+    if (process.argv.includes('--debug')) {
+      const near = Object.entries(pairs).filter(([k]) => /amount|fee|price|total|paid|discount|convertible/i.test(k));
+      console.log(`[mut][debug] nhãn TIỀN đọc được trên UI sau khi tiêm: ${near.map(([k, v]) => `${k}="${v}"`).join(' · ') || '(không có)'}`);
+      console.log(`[mut][debug] tổng số cặp nhãn→giá trị: ${Object.keys(pairs).length}`);
+    }
     const mutCore = xsurf.core(mutantValue).v;
     const origCore = xsurf.core(originalValue).v;
-    const hit = Object.entries(pairs).find(([, v]) => xsurf.core(v).v === mutCore && mutCore !== '');
+    // Phép đúng cho MỌI op: suy nhãn UI từ TÊN FIELD bị bóp, đọc giá trị UI của nhãn đó, rồi so với giá trị GỐC
+    // ở nguồn sạch. Không phụ thuộc "giá trị bị bóp là gì" — chẩn đoán thật cho thấy khi xoá `convertible_amount`
+    // thì FE render "0đ" (không trống, không mất nhãn), nên cách tìm-theo-giá-trị-bị-bóp của bản trước trượt.
+    const fieldKey = (String(injected || '').match(/(?:xoá field )?([a-z0-9_]+)\s*[:(]/i) || [])[1]
+      || (String(injected || '').match(/·\s*([a-z0-9_]+):/i) || [])[1];
+    const wantLabel = String(fieldKey || '').replace(/_/g, ' ').toLowerCase().trim();
+    const hit = wantLabel
+      ? Object.entries(pairs).find(([k]) => k.toLowerCase().replace(/\s+/g, ' ').trim() === wantLabel)
+      : null;
     if (hit && apiFresh) {
       const flat = JSON.stringify(apiFresh);
       const apiHasOriginal = flat.includes(String(originalValue)) || flat.includes(String(Number(originalValue)));
-      xsurfCaught = !!(apiHasOriginal && mutCore !== origCore);
-      xsurfDetail = `UI "${hit[0]}" = ${hit[1]} (core ${mutCore}) ↔ nguồn sạch giữ ${originalValue}`;
+      const uiCore = xsurf.core(hit[1]).v;
+      const origCore2 = xsurf.core(originalValue).v;
+      xsurfCaught = !!(apiHasOriginal && uiCore !== origCore2);
+      xsurfDetail = `UI "${hit[0]}" = ${hit[1]} (core ${uiCore}) ↔ nguồn sạch giữ ${originalValue} (core ${origCore2})`;
     } else {
       xsurfCaught = false;
-      xsurfDetail = hit ? 'không đọc được nguồn sạch để so' : 'không nhãn UI nào mang giá trị bị bóp';
+      xsurfDetail = hit ? 'không đọc được nguồn sạch để so' : `không tìm được nhãn UI ứng với field "${fieldKey || '?'}"`;
     }
   }
 

@@ -226,6 +226,12 @@ function toCatalog(screens, bindings) {
     if (ctrl) entry._dropped_controls = `${ctrl} control (button/icon/link) — không đọc bằng nhãn`;
     if (alias) entry._spec_name = `tên trong tài liệu: "${specName}" (build hiển thị "${alias}")`;
     if (b.sectionContainerSelector) entry.containerSelector = b.sectionContainerSelector;
+    // FIELD PHẢI CÓ GIÁ TRỊ: FSD ghi `M` (bắt buộc) hoặc `◎` (hệ thống hiển thị tự động) mà KHÔNG kèm điều kiện
+    // ⇒ trống là đáng nghi. Đây là oracle THẬT (cột Required của tài liệu), không phải suy từ app.
+    // Vì sao cần: mutation `drop_field` (xoá field khỏi response) lọt qua CẢ kiểm-kê-nhãn (nhãn vẫn còn) LẪN so-2-bề-mặt
+    // (không có giá trị nào để so) — vùng mù đã được chứng minh bằng số, không phải phỏng đoán.
+    const mustHave = keep.filter((f) => /^(M|◎)$/i.test(String(f.required || '').trim())).map((f) => f.label);
+    if (mustHave.length) entry.mustHaveValue = mustHave;
     if (dupes.length) entry._doc_duplicates = `tài liệu ghi lặp nhãn: ${[...new Set(dupes)].join(', ')} — đã gộp, nên hỏi BA`;
     if (b.labelSelector) entry.labelSelector = b.labelSelector;
     g.fields.push(entry);
