@@ -31,6 +31,21 @@ lint nào thay được — nên mỗi luật mới phải có test khẳng đ�
 
 Suite hạ tầng: 138 → **145 test**.
 
+## 2026-08-19 (t) — lane visual: 1 test/màn (4 màn tất định) + nối `uiContract` từ bindings
+
+**Fixed — gộp nhiều màn vào 1 test là sai thiết kế.** Bản đầu loop 4 màn trong MỘT test ⇒ (a) cả 4 dùng chung hạn
+30s nên màn thứ 4 **timeout**, (b) một màn lỗi là mất luôn kết quả các màn sau. Nay **mỗi màn một test** (hạn riêng
+90s, khai được `timeoutMs`), báo cáo chỉ đỏ đúng chỗ hỏng.
+
+**Nghiệm thu lại trên 4 màn** (2 Chuyển nhượng + 2 Chuyển đổi, UAT read-only): lượt 1 tạo **4 baseline**, lượt 2 so
+lại **4/4 PASS với 0 mask** ⇒ capture tất định trên cả 4. Vẫn giữ nguyên cảnh báo: pass ở lượt 2 chứng minh **tất
+định**, KHÔNG chứng minh màn **đúng**.
+
+**Fixed — `uiContract` sinh ra mà không có đường tới checker.** `spec_extract` không truyền `uiContract`/`visualMask`
+từ bindings sang catalog ⇒ contract `UI-*` vừa xây **không cách nào được tiêu thụ** khi catalog là bản tự sinh. Đã
+truyền tiếp. Cố ý **chưa bind contract nào**: contract đầu tiên mới curate 2 khối từ canvas mockup, bind vào màn
+không đúng sẽ sinh rừng FAIL giả — đúng tinh thần "máy đề xuất, người chốt". Đã ghi chú cách dùng vào bindings.
+
 ## 2026-08-19 (s) — visual regression: bộ chụp riêng, và ĐO tất định thay vì tin là tất định
 
 **Added — lane `tests/fe/visual/` + `scripts/utils/ui/visual.js`.** Ảnh evidence hiện có (~1000/ task) **không dùng

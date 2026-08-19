@@ -185,6 +185,10 @@ function toCatalog(screens, bindings) {
       const g0 = { name: gk, url: b.url, settle: b.settle || 6000, fields: [] };
       const csel = b.sectionContainerSelector || bindings.sectionContainerSelector;
       if (csel) g0.sectionContainerSelector = csel;
+      // Truyền tiếp gợi ý của lớp task: `uiContract` (oracle FE trích từ design) và `visualMask` (vùng động cho
+      // lane visual). Thiếu đoạn này thì contract `UI-*` sinh ra KHÔNG có đường nào tới checker — feature chết.
+      if (b.uiContract) g0.uiContract = b.uiContract;
+      if (Array.isArray(b.visualMask)) g0.visualMask = b.visualMask;
       grouped.set(gk, g0);
     }
     const g = grouped.get(gk);
