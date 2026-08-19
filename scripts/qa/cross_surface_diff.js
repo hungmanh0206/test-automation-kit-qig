@@ -168,7 +168,8 @@ async function main() {
 
   const out = arg('out');
   if (out) {
-    const L = ['# Cùng một giá trị, khác nơi hiển thị (trục 2)', '',
+    const L = [`<!-- gate: proven=${results.length - inc.length} inconclusive=${inc.length} broken=${bad.length} -->`,
+      '# Cùng một giá trị, khác nơi hiển thị (trục 2)', '',
       '> Sinh bởi `scripts/qa/cross_surface_diff.js`. Tách hai lớp: **khác GIÁ TRỊ** (nghi lấy sai nguồn/sai field)',
       '> và **khác ĐỊNH DẠNG** (cùng giá trị, hiển thị khác — vẫn là lỗi hiển thị nhưng nguyên nhân khác).',
       '> Bề mặt đọc không được ghi rõ là **chưa kiểm**, không phải "khớp".', '',

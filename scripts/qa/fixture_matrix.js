@@ -169,7 +169,8 @@ async function main() {
 
   const out = arg('out');
   if (out) {
-    const L = ['# Ma trận fixture: nhánh × trạng thái (trục 4 + 5)', '',
+    const L = [`<!-- gate: proven=${cnt('CÓ')} inconclusive=${cnt('TRỐNG')} broken=${a.problems.length} -->`,
+      '# Ma trận fixture: nhánh × trạng thái (trục 4 + 5)', '',
       '> Sinh bởi `scripts/qa/fixture_matrix.js`. Lý do hai trục này rò nhiều nhất rất tầm thường: **không có dữ liệu',
       '> để thử**, nên case chìm vào SKIP rồi biến mất. Ô `TRỐNG` = chưa có fixture VÀ chưa khai `na` kèm lý do —',
       '> đó là vùng chưa ai thử, không phải vùng đã đạt.', '',

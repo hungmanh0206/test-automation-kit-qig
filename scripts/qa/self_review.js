@@ -453,17 +453,17 @@ if (taskDir) {
   ];
   const missing = axes.filter(([, ran]) => !ran);
   for (const [name, , how] of missing) warnings.push(`trục ${name}: chưa có artefact nào ⇒ trục này CHƯA ai soi. Chạy: ${how}`);
-  // CHỐNG "có file là xong": báo cáo tồn tại nhưng nội dung toàn "chưa kiểm được" thì trục đó vẫn chưa soi.
-  // Chính tôi vừa cân nhắc tạo một artefact khuyết chỉ để check này xanh — nên bịt luôn đường đó.
-  for (const [rx, name, weak] of [
-    [/cross-surface/i, 'trục ②', /CHƯA KIỂM ĐƯỢC|chưa kiểm được/],
-    [/persist|probe/i, 'trục ③', /đo thiếu điểm|chuỗi ĐO KHUYẾT|partial/i],
-    [/fixture-matrix/i, 'trục ④⑤', /TRỐNG \*\*[1-9]/],
-  ]) {
+  // CHỐNG "có file là xong": báo cáo tồn tại nhưng KHÔNG chứng minh được gì thì trục đó vẫn chưa soi.
+  // Đọc DÒNG MÁY do chính mỗi máy phát ra (`<!-- gate: proven=N inconclusive=M broken=K -->`) chứ KHÔNG sniff
+  // văn xuôi: bản đầu match chữ "đo thiếu điểm" trong dòng tổng kết (giá trị 0) nên báo oan đúng báo cáo SẠCH.
+  for (const [rx, name] of [[/cross-surface/i, 'trục ②'], [/persist|probe/i, 'trục ③'], [/fixture-matrix/i, 'trục ④⑤'], [/spec-gap/i, 'chiều ngược']]) {
     for (const f of glob1(repDir, rx)) {
       const body = fs.readFileSync(path.join(repDir, f), 'utf8');
-      const hasResult = /✓ khớp|4\/4 điểm khớp|✓ /.test(body);
-      if (weak.test(body) && !hasResult) warnings.push(`${name}: có \`reports/${f}\` nhưng nội dung KHÔNG chứng minh được gì (toàn "chưa kiểm được") — artefact rỗng nghĩa không phải là đã soi.`);
+      const m = body.match(/<!--\s*gate:\s*proven=(\d+)\s+inconclusive=(\d+)/);
+      if (!m) continue;                                        // báo cáo cũ chưa có dòng máy ⇒ không phán
+      const proven = Number(m[1]);
+      const inconclusive = Number(m[2]);
+      if (proven === 0) warnings.push(`${name}: có \`reports/${f}\` nhưng **proven=0** (${inconclusive} mục chưa kiểm được) — artefact rỗng nghĩa không phải là đã soi.`);
     }
   }
   // Có config mà chưa chạy thì nặng hơn: người đã khai phạm vi rồi bỏ dở.

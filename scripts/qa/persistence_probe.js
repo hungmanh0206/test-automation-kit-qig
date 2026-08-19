@@ -142,7 +142,9 @@ if (require.main === module) {
 
   const out = arg('out');
   if (out) {
-    const L = ['# Probe chuỗi lưu trữ (form → payload → API → UI)', '',
+    const proven = results.filter((r) => r.ok).length;
+    const L = [`<!-- gate: proven=${proven} inconclusive=${partial.length} broken=${broken.length} -->`,
+      '# Probe chuỗi lưu trữ (form → payload → API → UI)', '',
       '> Sinh bởi `scripts/qa/persistence_probe.js`. Giá trị mồi phải **phân biệt** (không tròn, không 0), nếu không',
       '> thì "trùng nhau" có thể là ngẫu nhiên. Mắt đứt chỉ ra **tầng lỗi** — payload là bằng chứng khách quan.', '',
       `- Chuỗi đo: **${results.length}** · có mắt đứt: **${broken.length}** · đo thiếu điểm: **${partial.length}**`, '',

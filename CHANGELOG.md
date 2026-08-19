@@ -7,6 +7,31 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (g) — trục ③ có chuỗi THẬT + đổi cách gate đọc báo cáo (dòng máy thay vì sniff văn xuôi)
+
+**Đo chuỗi 4 điểm thật trên UAT** (user xác nhận mutation): đơn Bảo lưu *IT test uiBL*, sửa `Service Fee` qua form
+Edit rồi đối chiếu `form → payload → API → UI`.
+
+- Kết quả: **4/4 điểm khớp** (`1.431.539` ở cả 4 điểm) ⇒ chuỗi lành, probe KHÔNG bịa mắt đứt.
+- **Net-zero đã xác minh**: `900000` → đo → **hoàn nguyên về đúng `900000`** (script tự kiểm và in ra).
+- Lượt đầu **không bắt được request nào** — hoá ra form Edit là **wizard** (`Cancel/Next/Đồng bộ thông tin`, không
+  có "Save"), nên cú bấm rơi vào hư không. May là nhờ vậy **không sửa gì**. Đã sửa thành `Next…→Finish→Confirm`.
+
+**Fixed — cách gate đọc báo cáo.** Chốt chống "có file là xong" ở check #10 ban đầu **sniff văn xuôi** nên match
+chữ *"đo thiếu điểm"* trong dòng tổng kết (giá trị **0**) và báo oan đúng báo cáo SẠCH. Đổi thành **hợp đồng
+máy–gate**: mỗi máy tự phát một dòng máy-đọc-được ở đầu báo cáo
+
+```
+<!-- gate: proven=N inconclusive=M broken=K -->
+```
+
+(`persistence_probe` · `cross_surface_diff` · `fixture_matrix` · `spec_gap_report`), và check #10 chỉ cảnh báo khi
+**proven=0**. Nghiệm thu 2 chiều: báo cáo thật (`proven=1/14/21`) ⇒ **✓ OK 5/5 trục**; báo cáo dựng với `proven=0`
+⇒ chốt nổ đúng.
+
+**Fixed — mask PII khi chụp evidence:** regex chỉ bắt `@` và số ≥9 chữ số nên **để hở `D.O.B`**. Đã bổ sung dạng
+`dd/mm/yyyy`. (Ảnh của lượt này là contact tổng hợp *IT test*, không phải khách thật.)
+
 ## 2026-08-19 (f) — luật mở rộng phạm vi: bịt đường vào còn thiếu + gắn MÁY
 
 Rà lại câu "luật đã được ghi chưa" thì thấy **ghi rồi nhưng chưa tới được mọi đường vào**: có ở `RULE_GLOBAL`

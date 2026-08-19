@@ -80,6 +80,7 @@ for (const e of extraFields) console.log(`[gap] ⚠ ${e.screen} › "${e.heading
 const out = arg('out');
 if (out) {
   const L = [];
+  L.push(`<!-- gate: proven=${coveredSections} inconclusive=${rows.length} broken=${extraFields.length} -->`);
   L.push('# Chiều ngược: build CÓ mà tài liệu KHÔNG NHẮC');
   L.push('');
   L.push('> Sinh bởi `scripts/qa/spec_gap_report.js` từ **dữ liệu đã đo**: `screens.json` (FSD) × `surface.json`');
