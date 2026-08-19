@@ -44,6 +44,12 @@ npm run aio:push-exec -- --task <TASK_KEY> [--folder "<Tên sprint>"] [--cycle-t
 npm run aio:push-exec:apply -- --task <TASK_KEY> --folder "<Tên sprint>"
 ```
 
+`aio:push-exec` chạy **hai gate trước khi ghi**: (1) chất lượng output, (2) **mở rộng 5 trục** — task có
+case band *high* đã execute mà chưa có `reports/expansion-plan.md` thì CHẶN. Gate (2) đứng ở đây vì
+`self-review --enforce` là bước người/agent tự chạy: bỏ qua nó rồi đẩy thẳng kết quả thì trước đây
+không gì cản. Luật dùng chung `scripts/lib/expansion/plan_guard.js`. Gỡ bằng `npm run expansion:plan`
+(vài giây, chỉ đọc Excel) hoặc `--qa-approved` nếu cố ý.
+
 `aio:push-exec` chạy **gate chất lượng trước** (`output_gate.gateTestExecution`) y như bản Xray; muốn
 bỏ qua có chủ ý thì thêm `--qa-approved`. Chạy lại cùng `--cycle-title` sẽ **dùng lại cycle cũ** và
 **bỏ qua evidence đã có** (dedup theo từng bước), không đẻ cycle trùng.

@@ -405,3 +405,49 @@ test.describe('@infra self-review --enforce — chặn thật, không chỉ in b
     expect(tpl).toMatch(/expansion:plan/);
   });
 });
+
+/*
+ * LUẬT MỞ RỘNG PHẢI ĐỨNG Ở CẢ HAI CỬA.
+ *
+ * `self-review --enforce` là bước NGƯỜI/agent tự chạy — bỏ qua nó rồi đẩy thẳng kết quả lên TCM thì
+ * trước đây không gì cản (lượt SAPP-26523: 3 case, 0/5 trục, mọi gate xanh). Nên luật đứng thêm ở
+ * `push_execution_aio` — chỗ có exit code nằm trên đường GHI THẬT. Cả hai đọc chung
+ * `scripts/lib/expansion/plan_guard.js`; chép logic sang cửa thứ hai là mời drift.
+ */
+test.describe('@infra luật mở rộng — chặn ở cả finalize lẫn đường publish', () => {
+  function taskNoPlan() {
+    const { pod, env } = makeTask(tcRow('TC_001', 'M', 'Case tiền', '1. Net = 2.500.000'));
+    const t = path.join(pod, 'tasks', 'T-1');
+    fs.mkdirSync(path.join(t, 'test-results'), { recursive: true });
+    fs.mkdirSync(path.join(t, 'reports'), { recursive: true });
+    fs.writeFileSync(path.join(t, 'test-results', 'testcase-status.json'), JSON.stringify({
+      taskKey: 'T-1',
+      tests: [{ tcId: 'TC_001', status: 'PASSED', comment: 'Net đúng 2.500.000 theo bảng giá.', evidence: ['a.png'] }],
+    }), 'utf8');
+    return { env, taskDir: t };
+  }
+
+  test('push_execution_aio CHẶN khi có case band high mà chưa có kế hoạch (chạy offline, trước khi gọi API)', () => {
+    const { env, taskDir } = taskNoPlan();
+    const r = run([path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), '--task', 'T-1', '--task-output', taskDir], env);
+    expect(r.code, 'đường publish mà không chặn thì bỏ qua finalize là lọt').not.toBe(0);
+    expect(r.out).toMatch(/GATE MỞ RỘNG/);
+    expect(r.out, 'chặn thì phải chỉ lệnh gỡ').toMatch(/expansion:plan/);
+    expect(r.out, 'phải có đường thoát có chủ ý').toMatch(/--qa-approved/);
+  });
+
+  test('có kế hoạch rồi thì gate mở rộng cho qua', () => {
+    const { env, taskDir } = taskNoPlan();
+    fs.writeFileSync(path.join(taskDir, 'reports', 'expansion-plan.md'), '# Kế hoạch\n', 'utf8');
+    const r = run([path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), '--task', 'T-1', '--task-output', taskDir], env);
+    expect(r.out).not.toMatch(/GATE MỞ RỘNG/);
+  });
+
+  test('MỘT nguồn: cả hai cửa đều qua plan_guard, không tự tính band', () => {
+    for (const f of ['scripts/qa/self_review.js', 'scripts/integrations/aio/push_execution_aio.js']) {
+      const src = fs.readFileSync(path.join(REPO, f), 'utf8');
+      expect(src, `${f} phải dùng plan_guard`).toMatch(/plan_guard/);
+      expect(src, `${f} không được tự gọi bandOf — luật sẽ trôi khỏi nhau`).not.toMatch(/\.bandOf\(/);
+    }
+  });
+});

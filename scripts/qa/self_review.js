@@ -456,41 +456,17 @@ if (taskDir) {
 
   /*
    * CHẶN: task có case band HIGH mà chưa hề lập kế hoạch mở rộng.
-   * KHÔNG chặn "đã mở đủ trục chưa" — đo trên 9 task cho thấy siết kiểu đó làm đỏ 7/9, và task xanh duy nhất
-   * cũng chỉ 2 trục thật sự chứng minh được gì; ép như vậy chỉ đẻ ra artefact rỗng. Thứ chặn được ở đây là
-   * việc QUYẾT ĐỊNH có bị bỏ qua trong im lặng hay không: `expansion:plan` chỉ đọc Excel (~vài giây, không mở
-   * browser) và in ra "task này ~N lượt tải · ~M phút · ~K MB" để người chốt mở trục nào. Bỏ qua bước đó thì
-   * band high không ai cân nhắc — đúng đường mà 7/9 task vừa rồi đã đi.
+   * Luật + lý do nằm ở `scripts/lib/expansion/plan_guard.js` (MỘT nguồn) vì nó phải đứng ở HAI cửa:
+   * bước finalize này và đường publish `push_execution_aio`. Chép sang cửa kia là mời drift.
    */
   try {
-    const depth = require(path.resolve(__dirname, '..', 'lib', 'expansion', 'depth'));
-    const canon = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
-    const stPath3 = path.join(taskDir, 'test-results', 'testcase-status.json');
+    const planGuard = require(path.resolve(__dirname, "..", "lib", "expansion", "plan_guard"));
+    const stPath3 = path.join(taskDir, "test-results", "testcase-status.json");
     if (fs.existsSync(stPath3)) {
-      const raw3 = JSON.parse(fs.readFileSync(stPath3, 'utf8'));
-      const list3 = Array.isArray(raw3) ? raw3 : (raw3.tests || []);
-      const executed = new Set(list3.filter((t) => /^(PASS|FAIL)/i.test(String(t.status || '').trim()))
-        .map((t) => String(t.tcId || '').toUpperCase()).filter(Boolean));
-      if (executed.size) {
-        const byId3 = {};
-        for (const d of rc.getTestcaseDirs(taskDir)) {
-          if (!fs.existsSync(d)) continue;
-          for (const f of fs.readdirSync(d).filter((x) => x.endsWith('.md'))) {
-            try { for (const t of canon.parseMarkdown(fs.readFileSync(path.join(d, f), 'utf8')).tests || []) byId3[String(t.tcId).toUpperCase()] = t; } catch (e) { /* bỏ */ }
-          }
-        }
-        const known = [...executed].filter((id) => byId3[id]);
-        const high = known.filter((id) => depth.bandOf(byId3[id]) === 'high');
-        // Không tra được band thì check này im lặng không chặn — phải NÓI ra, không thì nó thành lỗ.
-        // (Band đọc từ `.md` canonical như phần còn lại của self_review; task chỉ có .xlsx sẽ rơi vào đây.)
-        if (!known.length) {
-          warnings.push(`${executed.size} case đã execute nhưng KHÔNG tra được band nào từ \`test-cases/*.md\` — check "đã cân nhắc mở rộng chưa" KHÔNG chạy được cho task này (im lặng ≠ đạt). Đảm bảo có bảng testcase canonical dạng .md.`);
-        }
-        const planned = glob1(repDir, /expansion-plan/i).length > 0;
-        if (high.length && !planned) {
-          problems.push(`${high.length} case band HIGH đã execute nhưng CHƯA có \`reports/expansion-plan.md\` — chưa ai cân nhắc mở rộng trục nào cho chúng. Chạy \`npm run expansion:plan\` (chỉ đọc Excel, vài giây) để thấy chi phí rồi chốt phạm vi; muốn không mở trục nào thì ghi lý do vào báo cáo, đừng bỏ qua im lặng.`);
-        }
-      }
+      const doc3 = JSON.parse(fs.readFileSync(stPath3, "utf8"));
+      const g = planGuard.checkPlan(taskDir, planGuard.executedFromStatus(doc3));
+      if (g.warning) warnings.push(g.warning);
+      if (g.problem) problems.push(g.problem);
     }
   } catch (e) { warnings.push(`không đo được band để kiểm kế hoạch mở rộng: ${e.message}`); }
   // CHỐNG "có file là xong": báo cáo tồn tại nhưng KHÔNG chứng minh được gì thì trục đó vẫn chưa soi.

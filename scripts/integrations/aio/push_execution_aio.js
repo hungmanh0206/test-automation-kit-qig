@@ -150,6 +150,23 @@ async function main() {
     console.error('  [--qa-approved] bỏ qua gate theo chủ ý QA.');
   } else console.log('Gate chất lượng: OK');
 
+  /*
+   * CỬA THỨ HAI cho luật mở rộng 5 trục.
+   * `self-review --enforce` đã chặn ở bước finalize, nhưng đó là bước NGƯỜI/agent tự chạy — bỏ qua nó rồi
+   * đẩy thẳng kết quả lên TCM thì trước đây không gì cản (chính lượt SAPP-26523 đã đi đường đó: 3 case,
+   * 0/5 trục, mọi gate xanh). Đây là chỗ có exit code nằm trên đường ghi thật, nên luật phải đứng cả ở đây.
+   * Luật + lý do: `scripts/lib/expansion/plan_guard.js` (một nguồn, dùng chung với self_review).
+   * KHÔNG chặn "đã mở đủ trục chưa" — chỉ chặn việc bỏ qua QUYẾT ĐỊNH trong im lặng.
+   */
+  const planGuard = require(path.resolve(__dirname, '..', '..', 'lib', 'expansion', 'plan_guard'));
+  const pg = planGuard.checkPlan(taskOut, tests.map((t) => t.tcId));
+  if (pg.warning) console.log(`⚠ ${pg.warning}`);
+  if (pg.problem) {
+    console.error(`GATE MỞ RỘNG — ${pg.problem}`);
+    if (!QA_APPROVED) { console.error('  Cố ý bỏ qua: --qa-approved (được ghi lại).'); process.exit(1); }
+    console.error('  [--qa-approved] bỏ qua theo chủ ý QA.');
+  } else if (pg.high.length) console.log(`Gate mở rộng: OK (${pg.high.length} case band high · đã có kế hoạch)`);
+
   const aio = new AioClient();
   // Nạp bảng trạng thái TỪ chính AIO trước mọi thứ khác — thiếu nó thì mọi ID đều là phỏng đoán.
   S = buildStatusMap((await aio.call('GET', '/config')).json);
