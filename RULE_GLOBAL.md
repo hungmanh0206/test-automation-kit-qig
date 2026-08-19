@@ -274,8 +274,14 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     thật: trung bình **2.30** dòng expected/case · **31%** case có ≥3 assertion · **9%** nhồi nhiều điều kiện trong
     MỘT dòng · và **68%** case ghi **ít verification hơn số assertion** (135 case lệch ≥2). Luật: Phase 1 tách
     assertion **nguyên tử** (mỗi điều kiện 1 dòng, cấm nhồi "A, và B, đồng thời C"); Phase 2 mỗi dòng expected phải
-    có bằng chứng tương ứng. `self_review` **cảnh báo** theo tỉ lệ này — cố ý chưa chặn vì `steps[]` chỉ là *proxy*
-    của số verification, chặn ngay sẽ làm đỏ 2/3 bản ghi mà chưa chắc thiếu kiểm thật.
+    có bằng chứng tương ứng. `self_review` **cảnh báo** theo tỉ lệ này khi bản ghi chỉ có `steps[]` (*proxy*).
+    **Muốn CHẶN thì phải có dữ liệu đúng chiều**: khai `assertions: [{text, verified, evidence, note?}]` trong bản
+    ghi execution (`scripts/lib/testcase/assertions.js` · `deriveAssertions(tc)` sinh khung từ chính expected).
+    Khi field đó CÓ, gate **chặn** thật: `verified=true` mà thiếu `evidence` ⇒ chặn · chưa `verified` mà không nêu
+    lý do ⇒ chặn. Bản ghi cũ không có field này thì **không bị phạt** (chỉ báo tỉ lệ áp dụng). Đo trên bộ 530:
+    **1217 assertion nguyên tử**, trong đó **191 dòng (16%) còn nhồi nhiều điều kiện** — `deriveAssertions` chỉ
+    **đánh dấu** `compound`, KHÔNG tự tách theo dấu phẩy (tự tách sẽ cắt sai đúng những câu có số như "1.234.567đ,
+    đúng định dạng").
 14. **FE: assert HÌNH HỌC, không chỉ `toBeVisible()`.** Gốc rễ là **bất đối xứng oracle**: backend có contract máy
     đọc được (Swagger) nên assertion là `total = 540000`; frontend chỉ có Figma (hình ảnh) nên assertion thoái hoá
     thành `toBeVisible()`/`toContainText()`. Mà `toBeVisible()` vẫn **PASS** khi element bị **đè lên** · nằm ngoài

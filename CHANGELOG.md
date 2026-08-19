@@ -7,6 +7,30 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (r) — mở đường CHẶN cho ②: verification theo ASSERTION, không theo bước
+
+Lượt (n) đo được 68% case ghi ít verification hơn số assertion, nhưng **cố ý chỉ cảnh báo** vì `steps[]` là *proxy*
+(bằng chứng theo **bước**, không theo **assertion**). Lượt này tạo ra dữ liệu đúng chiều để gate được phép chặn.
+
+**Added — `scripts/lib/testcase/assertions.js`**:
+- `deriveAssertions(tc)` sinh khung assertion **từ chính "Kết quả mong đợi"** (mỗi dòng = 1 assertion, bỏ số đánh
+  dòng của format canonical) ⇒ adoption gần như không tốn công.
+- Hợp đồng dữ liệu **tùy chọn** trong bản ghi execution: `assertions: [{text, verified, evidence, note?}]`.
+- `auditCase/auditExecution`: **có dữ liệu thì CHẶN** (`verified=true` mà thiếu `evidence` ⇒ chặn · chưa `verified`
+  mà không nêu lý do ⇒ chặn); bản ghi **cũ không có field này thì không bị phạt**, chỉ báo tỉ lệ áp dụng. Đây là
+  cách duy nhất siết dần mà không làm đỏ 2/3 bản ghi lịch sử.
+
+**Đo trên bộ 530 case: 1217 assertion nguyên tử**, trong đó **191 dòng (16%) còn nhồi nhiều điều kiện**.
+`deriveAssertions` chỉ **đánh dấu** `compound`, **không tự tách** theo dấu phẩy — tự tách sẽ cắt sai đúng những câu
+có số ("Tổng 1.234.567đ, đúng định dạng"), và một gate cắt sai thì mất uy tín ngay lần đầu.
+
+**Bẫy `` với chữ có dấu — lần thứ TƯ trong phiên.** `/,\s*(và|kèm)/` không bao giờ khớp ", và" vì "à" không
+phải word-char ⇒ `compound` luôn false. Đáng ghi: **máy gác vệ sinh source không bắt được loại này**, vì `` ở đây
+**hợp lệ về cú pháp**, chỉ sai ngữ nghĩa với tiếng Việt. Bài học: có lớp lỗi chỉ **test hành vi** mới bắt được, không
+lint nào thay được — nên mỗi luật mới phải có test khẳng định nó **thật sự khớp** trên dữ liệu tiếng Việt.
+
+Suite hạ tầng: 138 → **145 test**.
+
 ## 2026-08-19 (q) — nối `UI-*` vào checker (FE có neo) + ⑤ biến thiên data theo RUN_ID
 
 **Nối contract vào máy — mắt xích cuối của chuỗi FE.** Có contract mà **không gì tiêu thụ** thì nó là gánh nặng chứ
