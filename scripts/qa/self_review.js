@@ -629,6 +629,20 @@ function readAllTcFiles(taskOutputDir) {
 // ---- Gộp + in qua GateEngine ----
 const agg = engine.aggregate(results);
 console.log(engine.format(agg, { title: `SELF-REVIEW (G9) — lượt 2 trước finalize${TASK ? ` · task ${TASK}` : ''}` }));
-if (agg.totalFail) console.log(`\n⚠ Còn ${agg.totalFail} vấn đề CHẶN — SỬA trước khi finalize/publish (self-review advisory; gate thật chặn ở push).`);
-else console.log('\n✓ Không còn vấn đề CHẶN. Rà cảnh báo rồi finalize.');
+/*
+ * `--enforce` — CÓ RĂNG. Mặc định vẫn exit 0 (giữ nguyên hợp đồng advisory đã ghi trong tài liệu).
+ *
+ * VÌ SAO CẦN: chữ "CHẶN" ở đây vốn chỉ là dòng đỏ trong báo cáo — script luôn exit 0, còn gate thật ở
+ * push (`output_gate`) KHÔNG kiểm mở rộng một chữ nào. Nên đường lọt bug vẫn nguyên: execute bám đúng chữ
+ * trong case → không mở trục nào → đẩy kết quả "toàn PASS" → không gì cản. (Đã xảy ra với chính lượt
+ * execute SAPP-26523: 3 case, 0/5 trục, mọi gate xanh.)
+ * Đo 19/08/2026 trên 9 task: 7/9 có khối P0, 8/9 có khối "5 trục". Đỏ nhiều — nhưng đó là ảnh chụp NỢ CŨ;
+ * với task mới, khối "5 trục" xoá bằng `npm run expansion:plan` (vài giây), còn các khối P0 là phát hiện
+ * thật (vd "1/11 case hiển thị chỉ dẫn chứng API, không có dấu vết đọc trên màn").
+ */
+const ENFORCE = process.argv.includes('--enforce');
+if (agg.totalFail) {
+  console.log(`\n⚠ Còn ${agg.totalFail} vấn đề CHẶN — SỬA trước khi finalize/publish${ENFORCE ? '' : ' (self-review advisory; thêm --enforce để exit ≠ 0)'}.`);
+  if (ENFORCE) { console.log(`[self-review] --enforce: exit 1 vì còn CHẶN ở: ${agg.blockers.join(', ')}`); process.exit(1); }
+} else console.log('\n✓ Không còn vấn đề CHẶN. Rà cảnh báo rồi finalize.');
 process.exit(0);

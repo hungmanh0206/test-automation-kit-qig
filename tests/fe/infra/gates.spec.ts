@@ -365,3 +365,43 @@ test.describe('@infra check #10 — kế hoạch mở rộng là bắt buộc, m
     expect(src).not.toMatch(/expansion-findings\|mutation-check/);
   });
 });
+
+/*
+ * self-review phải CÓ RĂNG ở bước finalize.
+ *
+ * Bản mặc định luôn exit 0 (advisory, đúng hợp đồng đã ghi trong tài liệu) — nhưng `output_gate` ở publish
+ * KHÔNG kiểm mở rộng 5 trục, nên nếu finalize cũng chỉ đọc báo cáo thì đường lọt bug vẫn nguyên: execute
+ * bám đúng chữ trong case → 0 trục → đẩy "toàn PASS" → không gì cản. `--enforce` là chỗ duy nhất có exit code.
+ */
+test.describe('@infra self-review --enforce — chặn thật, không chỉ in báo cáo', () => {
+  function taskWithBlock() {
+    const { pod, env } = makeTask(tcRow('TC_001', 'M', 'Case tiền', '1. Net = 2.500.000'));
+    const t = path.join(pod, 'tasks', 'T-1');
+    fs.mkdirSync(path.join(t, 'test-results'), { recursive: true });
+    fs.mkdirSync(path.join(t, 'reports'), { recursive: true });
+    // case band HIGH đã execute + KHÔNG có expansion-plan ⇒ chắc chắn có ít nhất 1 khối CHẶN
+    fs.writeFileSync(path.join(t, 'test-results', 'testcase-status.json'), JSON.stringify({
+      taskKey: 'T-1',
+      tests: [{ tcId: 'TC_001', status: 'PASSED', comment: 'Net đúng 2.500.000 theo bảng giá.', evidence: ['a.png'] }],
+    }), 'utf8');
+    return env;
+  }
+
+  test('mặc định vẫn exit 0 — giữ hợp đồng advisory', () => {
+    const r = run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1'], taskWithBlock());
+    expect(r.code, 'bản thường không được chặn').toBe(0);
+    expect(r.out).toMatch(/CHẶN/);
+  });
+
+  test('--enforce exit ≠ 0 và nêu ĐÍCH DANH gate còn chặn', () => {
+    const r = run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1', '--enforce'], taskWithBlock());
+    expect(r.code, 'còn CHẶN mà vẫn exit 0 thì gate vô nghĩa').not.toBe(0);
+    expect(r.out, 'chặn thì phải nói chặn ở đâu').toMatch(/--enforce: exit 1 vì còn CHẶN ở: \S+/);
+  });
+
+  test('điểm vào Phase 2 phải trỏ bản :enforce, không phải bản advisory', () => {
+    const tpl = fs.readFileSync(path.join(REPO, 'prompt_templates/run_phase2_template.md'), 'utf8');
+    expect(tpl, 'finalize mà dùng bản advisory thì không chặn được gì').toMatch(/self-review:enforce/);
+    expect(tpl).toMatch(/expansion:plan/);
+  });
+});
