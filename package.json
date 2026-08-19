@@ -53,6 +53,7 @@
     "spec:gap": "node scripts/qa/spec_gap_report.js",
     "ui:contract": "node --max-old-space-size=4096 scripts/qa/figma_to_ui_contract.js",
     "expansion:plan": "node scripts/qa/expansion_plan.js",
+    "expansion:audit": "node scripts/qa/expansion_audit.js",
     "mutation:check": "node scripts/qa/mutation_check.js",
     "proof:nightly": "node scripts/qa/mutation_check.js --screens 2",
     "probe:persist": "node scripts/qa/persistence_probe.js",

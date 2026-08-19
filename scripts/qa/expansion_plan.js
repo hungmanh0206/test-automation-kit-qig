@@ -76,7 +76,13 @@ for (const b of ['high', 'medium', 'low']) {
   console.log(`[exp] ${b.toUpperCase()} (${byBand[b].length}): ${byBand[b].slice(0, 12).join(', ')}${byBand[b].length > 12 ? ` … (+${byBand[b].length - 12})` : ''}`);
 }
 
-const out = arg('out');
+/*
+ * GHI MẶC ĐỊNH, không cần --out.
+ * Đo 19/08/2026: 0/9 task từng có artefact kế hoạch — không phải vì ai cũng lười, mà vì lệnh này CHỈ ghi file
+ * khi được truyền `--out`. Kế hoạch không để lại dấu vết thì không gate được, và "đã cân nhắc chi phí chưa"
+ * trở thành thứ không ai kiểm được. Nay mặc định ghi vào reports/expansion-plan.md; --out vẫn override.
+ */
+const out = arg('out') || path.join(rc.getTaskOutputDir(), 'reports', 'expansion-plan.md');
 if (out) {
   const L = [`<!-- gate: proven=${tests.length} inconclusive=0 broken=0 -->`,
     '# Kế hoạch mở rộng quanh case (theo risk band)', '',

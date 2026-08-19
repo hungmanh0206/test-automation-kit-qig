@@ -203,11 +203,21 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
 1. **Mỗi case đã execute phải được mở rộng theo 5 trục**, mỗi trục có máy: ① field cùng khối (`spec:extract` →
    `ui_conformance_check`) · ② cùng giá trị khác nơi hiển thị (`xsurf:diff`) · ③ chuỗi lưu trữ
    `form→payload→API→UI` (`probe:persist`) · ④ nhánh/biến thể và ⑤ trạng thái kế cận (`fixture:matrix`).
-2. **Chiều ngược là bắt buộc:** `spec:gap` — section/field build CÓ mà tài liệu KHÔNG NHẮC. Section chưa được khai
+2. **BẮT BUỘC lập kế hoạch TRƯỚC — máy chặn.** Task có case band **high** đã execute mà chưa có
+   `reports/expansion-plan.md` thì `self-review` **CHẶN**. Chạy `npm run expansion:plan` (chỉ đọc Excel, vài
+   giây, không mở browser): nó in ra "task này ~N lượt tải · ~M phút · ~K MB" để QA **chốt phạm vi**. Không mở
+   trục nào cũng được — nhưng phải là một QUYẾT ĐỊNH có ghi lý do, không phải bỏ qua trong im lặng.
+   Cố ý KHÔNG chặn "đã mở đủ trục chưa": đo 19/08/2026 trên 9 task (1014 case, 382 band high) thấy 7/9 task có
+   **0/5 trục**, mà task duy nhất đủ 5/5 lại có **3 báo cáo `proven=0`** ⇒ chặn theo "có artefact" chỉ dạy nhau
+   chạm file cho có. `npm run expansion:audit` đo lại con số đó bất cứ lúc nào để quyết định siết tiếp bằng SỐ.
+3. **Báo cáo trục có mà `proven=0` là CHẶN** — artefact rỗng nghĩa không phải là đã soi. Chỉ áp cho 4 báo cáo
+   trục; `expansion-findings`/`mutation-check`/`ui-contract-draft` nằm ngoài vì với chúng `proven=0` nghĩa là
+   "đã soi mà không thấy gì" — một kết quả hợp lệ.
+4. **Chiều ngược là bắt buộc:** `spec:gap` — section/field build CÓ mà tài liệu KHÔNG NHẮC. Section chưa được khai
    nghĩa là **chưa ai soi**, KHÔNG phải "đã kiểm và không sao"; mỗi dòng là câu hỏi cho BA, phải ghi vào `reports/`.
-3. **"Chưa kiểm được" phải được nói ra, không được im lặng thành đạt.** Dưới 2 bề mặt đọc được · chuỗi khuyết điểm
+5. **"Chưa kiểm được" phải được nói ra, không được im lặng thành đạt.** Dưới 2 bề mặt đọc được · chuỗi khuyết điểm
    đo · ô ma trận trống · section chưa khai — tất cả là trạng thái *chưa kiểm*, phải xuất hiện trong báo cáo.
-4. **Kết luận sai lệch phải chỉ ra MẮT ĐỨT, không nói "hệ thống lưu sai".** Ghi giá trị từng điểm
+6. **Kết luận sai lệch phải chỉ ra MẮT ĐỨT, không nói "hệ thống lưu sai".** Ghi giá trị từng điểm
    (`form 1.000.000 → payload 1000000 → API 0`) ⇒ nêu được TẦNG lỗi; payload là bằng chứng khách quan nên bug
    không bị bounce qua lại giữa FE và BE.
 5. **Đóng vòng: bug do người ngoài tìm ra là LỖI CỦA MÁY.** Với mỗi bug đó phải trả lời được *"máy nào lẽ ra bắt

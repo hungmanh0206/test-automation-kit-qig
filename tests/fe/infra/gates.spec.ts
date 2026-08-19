@@ -311,3 +311,57 @@ test.describe('@infra verdict taxonomy — mọi verdict phải ánh xạ đư�
     expect(src).toContain("'/config'");
   });
 });
+
+/*
+ * CHECK #10 — CHẶN "chưa cân nhắc mở rộng", KHÔNG chặn "chưa mở đủ trục".
+ *
+ * Vì sao đúng chỗ này: đo 19/08/2026 trên 9 task (1014 case, 382 band high) — 7/9 task có 0/5 trục, và task
+ * DUY NHẤT đủ 5/5 lại có 3 báo cáo `proven=0`. Chặn theo "có artefact hay không" ⇒ dạy cả hệ thống chạm vào
+ * file cho có. Nên chỉ chặn thứ rẻ mà quyết định được: đã chạy `expansion:plan` (đọc Excel, vài giây) để
+ * nhìn chi phí rồi chốt phạm vi hay chưa. `npm run expansion:audit` đo lại con số này bất cứ lúc nào.
+ */
+test.describe('@infra check #10 — kế hoạch mở rộng là bắt buộc, mở đủ trục thì chưa', () => {
+  const runSelfReview = (env: Record<string, string>) =>
+    run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1'], env);
+
+  /** Fixture: task có case band HIGH đã execute (Ưu tiên High ⇒ band high). */
+  function execTask(withPlan: boolean) {
+    const { pod, env } = makeTask(tcRow('TC_001', 'M', 'Case tiền', '1. Net = 2.500.000'));
+    const t = path.join(pod, 'tasks', 'T-1');
+    fs.mkdirSync(path.join(t, 'test-results'), { recursive: true });
+    fs.mkdirSync(path.join(t, 'reports'), { recursive: true });
+    fs.writeFileSync(path.join(t, 'test-results', 'testcase-status.json'), JSON.stringify({
+      taskKey: 'T-1',
+      tests: [{ tcId: 'TC_001', status: 'PASSED', comment: 'Net đúng 2.500.000 theo bảng giá.', evidence: ['a.png'] }],
+    }), 'utf8');
+    if (withPlan) fs.writeFileSync(path.join(t, 'reports', 'expansion-plan.md'), '# Kế hoạch mở rộng\n', 'utf8');
+    return env;
+  }
+
+  test('case band HIGH đã execute mà CHƯA có expansion-plan → CHẶN', () => {
+    const r = runSelfReview(execTask(false));
+    expect(r.out).toMatch(/case band HIGH đã execute nhưng CHƯA có/);
+    expect(r.out, 'phải chỉ đúng lệnh chạy, không chỉ mắng').toMatch(/expansion:plan/);
+  });
+
+  test('có expansion-plan rồi thì HẾT chặn — dù 0/5 trục vẫn chỉ cảnh báo', () => {
+    const r = runSelfReview(execTask(true));
+    expect(r.out).not.toMatch(/case band HIGH đã execute nhưng CHƯA có/);
+    // Vẫn phải NHẮC là chưa trục nào chạy — bỏ chặn không có nghĩa là im.
+    expect(r.out).toMatch(/CHƯA ai soi/);
+  });
+
+  test('expansion_plan.js ghi artefact MẶC ĐỊNH, không cần --out', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/expansion_plan.js'), 'utf8');
+    // Kế hoạch không để lại dấu vết thì không gate được — đó là lý do 0/9 task từng có artefact.
+    expect(src).toMatch(/arg\('out'\)\s*\|\|/);
+    expect(src).toContain('expansion-plan.md');
+  });
+
+  test('proven=0 ở báo cáo TRỤC là CHẶN, nhưng chỉ trong phạm vi 4 trục', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/self_review.js'), 'utf8');
+    expect(src).toMatch(/proven === 0\) problems\.push/);
+    // Nới glob sang expansion-findings/mutation-check là chặn oan lượt soi SẠCH (proven=0 = không thấy gì).
+    expect(src).not.toMatch(/expansion-findings\|mutation-check/);
+  });
+});
