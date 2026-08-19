@@ -230,4 +230,6 @@ async function main() {
 // `process.exit(2)` vì không có --config — test chết mà nhìn như lỗi test.
 if (require.main === module) main();
 
-module.exports = { core, isReadable, norm };
+// Xuất cả readSurface/pairsOf để `mutation_check` chạy ĐÚNG logic của trục ② dưới mutation — trước đó
+// harness tự suy bằng phép so chữ số của riêng nó, tức là tự chấm mình.
+module.exports = { core, isReadable, norm, pairsOf, readSurface };

@@ -25,6 +25,7 @@ const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const { chromium } = require('@playwright/test');
 const { checkScreen, login } = require(path.resolve(__dirname, 'ui_conformance_check.js'));
+const xsurf = require(path.resolve(__dirname, 'cross_surface_diff.js'));
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
 const ENFORCE = process.argv.includes('--enforce');
@@ -134,18 +135,31 @@ async function runOnce(page, screens, mutant) {
   // xác minh của máy kiểm thì hai bên cùng bị bóp ⇒ không bao giờ lệch ⇒ trục ② "không bắt được" một cách GIẢ.
   // Đây đúng là tautology, chỉ ở tầng harness. Cách xử: bỏ route SAU KHI app đã load (UI giữ giá trị đã bóp),
   // rồi mới fetch API sạch để so — đó chính là phép so cùng-giá-trị-khác-bề-mặt.
-  let xsurfWouldCatch = null;
+  // Chạy ĐÚNG logic trục ② (hàm của `cross_surface_diff`), không phải phép so tự chế của harness — nếu tự chế
+  // thì harness đang tự chấm mình, đúng loại tautology mà cả vòng này sinh ra để chống.
+  let xsurfCaught = null;
+  let xsurfDetail = null;
   if (mutant && originalValue) {
     await page.unrouteAll({ behavior: 'ignoreErrors' }).catch(() => {});
-    const digits = (x) => String(x).replace(/\D/g, '');
-    const uiHasMutated = await page.evaluate((d) => document.body.innerText.replace(/\D/g, '').includes(d), digits(mutantValue || '')).catch(() => null);
+    const pairs = await xsurf.pairsOf(page).catch(() => ({}));       // UI: đang giữ giá trị ĐÃ BÓP
+    const tok = await page.evaluate(() => localStorage.getItem('actToken')).catch(() => null);
     const apiFresh = await page.evaluate(async ([u, t]) => {
       const r = await fetch(u, { headers: { Authorization: `Bearer ${t}` } });
-      return r.ok ? JSON.stringify(await r.json()) : null;
-    }, [lastBizUrl, await page.evaluate(() => localStorage.getItem('actToken'))]).catch(() => null);
-    const apiHasOriginal = apiFresh ? digits(apiFresh).includes(digits(originalValue)) : null;
-    // UI đang hiện giá trị BỊ BÓP trong khi API sạch trả giá trị GỐC ⇒ một phép so 2 bề mặt sẽ thấy lệch.
-    xsurfWouldCatch = !!(uiHasMutated && apiHasOriginal);
+      return r.ok ? await r.json() : null;
+    }, [lastBizUrl, tok]).catch(() => null);
+    // Tìm nhãn UI nào đang mang giá trị bị bóp, rồi so với giá trị GỐC trong nguồn sạch — bằng `core()` của xsurf.
+    const mutCore = xsurf.core(mutantValue).v;
+    const origCore = xsurf.core(originalValue).v;
+    const hit = Object.entries(pairs).find(([, v]) => xsurf.core(v).v === mutCore && mutCore !== '');
+    if (hit && apiFresh) {
+      const flat = JSON.stringify(apiFresh);
+      const apiHasOriginal = flat.includes(String(originalValue)) || flat.includes(String(Number(originalValue)));
+      xsurfCaught = !!(apiHasOriginal && mutCore !== origCore);
+      xsurfDetail = `UI "${hit[0]}" = ${hit[1]} (core ${mutCore}) ↔ nguồn sạch giữ ${originalValue}`;
+    } else {
+      xsurfCaught = false;
+      xsurfDetail = hit ? 'không đọc được nguồn sạch để so' : 'không nhãn UI nào mang giá trị bị bóp';
+    }
   }
 
   // Mutant chỉ CÓ NGHĨA nếu giá trị bị bóp thật sự hiển thị trên màn đang kiểm. Không kiểm điều này thì
@@ -158,7 +172,7 @@ async function runOnce(page, screens, mutant) {
       : await page.evaluate((t) => document.body.innerText.includes(t), String(originalValue)).catch(() => null);
   }
   if (mutant) await page.unrouteAll({ behavior: 'ignoreErrors' }).catch(() => {});
-  return { dev, injected, relevant, originalValue, xsurfWouldCatch };
+  return { dev, injected, relevant, originalValue, xsurfCaught, xsurfDetail };
 }
 
 async function main() {
@@ -180,13 +194,13 @@ async function main() {
       // eslint-disable-next-line no-await-in-loop
       const r = await runOnce(page, screens, m);
       const killed = r.dev > base.dev;
-      rows.push({ ...m, dev: r.dev, killed, injected: r.injected, relevant: r.relevant, xsurfWouldCatch: r.xsurfWouldCatch });
+      rows.push({ ...m, dev: r.dev, killed, injected: r.injected, relevant: r.relevant, xsurfCaught: r.xsurfCaught, xsurfDetail: r.xsurfDetail });
       const tag = !r.injected ? '⚠ KHÔNG TIÊM ĐƯỢC'
         : killed ? '✓ BỊ BẮT'
           : r.relevant === false ? 'ⓘ KHÔNG LIÊN QUAN (giá trị không hiển thị trên màn này)' : '✗ SỐNG SÓT';
       console.log(`[mut] ${tag} · ${m.id} — ${m.why}`);
       console.log(`[mut]     tiêm: ${r.injected || '(không tìm được field phù hợp)'} · deviation ${base.dev} → ${r.dev}`);
-      if (r.xsurfWouldCatch !== null && r.relevant !== false) console.log(`[mut]     một phép so 2 BỀ MẶT (trục ②) có bắt được không: ${r.xsurfWouldCatch ? 'CÓ' : 'không'}`);
+      if (r.xsurfCaught !== null && r.relevant !== false) console.log(`[mut]     TRỤC ② (chạy hàm thật của cross_surface_diff): ${r.xsurfCaught ? 'BẮT ĐƯỢC' : 'không bắt'} — ${r.xsurfDetail}`);
     }
   } catch (e) { console.error('[mut] FATAL', e.message.slice(0, 250)); process.exitCode = 2; } finally { await ctx.close(); }
 
@@ -195,7 +209,7 @@ async function main() {
   const irrelevant = rows.filter((r) => r.injected && r.relevant === false);
   const killed = applied.filter((r) => r.killed);
   const score = applied.length ? Math.round((killed.length / applied.length) * 100) : 0;
-  const xsurfCatch = applied.filter((r) => r.xsurfWouldCatch).length;
+  const xsurfCatch = applied.filter((r) => r.xsurfCaught).length;
   if (applied.length) console.log(`[mut] NĂNG LỰC TRỤC ② (so 2 bề mặt UI ↔ API sạch): ${xsurfCatch}/${applied.length} mutant sẽ bị bắt — đây là phần máy kiểm-kê-field KHÔNG chạm tới`);
   console.log(`[mut] MUTATION SCORE = ${killed.length}/${applied.length} = ${score}%  · không liên quan: ${irrelevant.length} · không tiêm được: ${rows.filter((r) => !r.injected).length}`);
   if (applied.length && killed.length < applied.length) {
@@ -211,7 +225,7 @@ async function main() {
       '> máy kiểm có đỏ lên không. Mutant **sống sót** = vùng mù **có bằng chứng**. Đây là thước đo năng lực phát',
       '> hiện, khác hẳn mọi máy còn lại (chúng cố bắt thêm bug, máy này đo xem có bắt được không).', '',
       `- Mutation score (máy kiểm-kê-field): **${killed.length}/${applied.length} = ${score}%**`,
-      `- Năng lực **trục ②** (so 2 bề mặt): **${applied.filter((r) => r.xsurfWouldCatch).length}/${applied.length}** mutant sẽ bị bắt`, '',
+      `- Năng lực **trục ②** (chạy hàm thật của cross_surface_diff): **${applied.filter((r) => r.xsurfCaught).length}/${applied.length}** mutant bị bắt`, '',
       '| Mutant | Lớp bug nhắm tới | Đã tiêm | Kết quả |', '|---|---|---|---|',
       ...rows.map((r) => `| \`${r.id}\` | ${r.why} | ${r.injected || '_(không tiêm được)_'} | ${!r.injected ? '⚠ chưa đo' : r.killed ? '✓ bị bắt' : '✗ **sống sót**'} |`)];
     fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });

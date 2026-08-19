@@ -7,6 +7,26 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (k) — chạy mutation qua HÀM THẬT của trục ②: 2/4, không phải 4/4 (đính chính)
+
+**Đính chính số tôi vừa báo:** lượt trước harness tự viết phép so chữ số của riêng nó rồi kết luận "trục ② sẽ bắt
+**4/4**" — tức là **harness tự chấm mình**, đúng loại tautology mà cả vòng này sinh ra để chống. Nay `mutation_check`
+gọi **hàm thật** của `cross_surface_diff` (`pairsOf` + `core`), và con số đúng là **2/4**.
+
+| Mutant | Trục ② (hàm thật) | Vì sao |
+|---|---|---|
+| `zero_out` | ✅ bắt | UI `0đ` ↔ nguồn sạch `6000000` |
+| `halve_number` | ✅ bắt | UI `3.000.000đ` ↔ nguồn sạch `6000000` |
+| `drop_field` | ❌ **không bắt** | field mất ⇒ **không nhãn UI nào mang giá trị** để đặt cạnh nhau |
+| `stringify_num` | ❌ không bắt | FE tự parse `"6000000.0"` rồi render y như cũ ⇒ ở field này mutation **vô hại thật**, không phải vùng mù |
+
+**Vùng mù mới, có bằng chứng: "giá trị biến mất / hiện rỗng".** `drop_field` lọt qua **cả ① lẫn ②**: ① kiểm *tập
+nhãn* nên nhãn vẫn còn ⇒ xanh; ② cần *một giá trị để so* nên không có gì để so ⇒ xanh. Trớ trêu là chính luật tôi
+nới ngày 17/08 (nhận khẳng định **RỖNG** là oracle hiển thị hợp lệ) làm lớp này vô hình. Bịt được bằng ③persist
+(payload có field, response không) hoặc bằng oracle "field này BẮT BUỘC có giá trị" — chưa làm, ghi vào phần còn lại.
+
+Bài học phương pháp: **thước đo cũng phải được kiểm bằng máy thật, không bằng phép suy của chính nó.**
+
 ## 2026-08-19 (j) — (3) mutation check: bộ kiểm KHÔNG bắt được bug giá trị, đo được 0/4
 
 Đây là thứ đáng giá nhất trong ba việc, và nó ra **tin xấu** — đúng bản chất của một negative control.
