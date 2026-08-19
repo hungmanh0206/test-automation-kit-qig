@@ -108,6 +108,7 @@ Các bước thực hiện:
    - Ghi vào `task.md`: `Jira testcase publish: Pending QA confirmation`.
 6. Chạy dry-run:
    `npm run jira:testcase-publish:dry-run -- --task [TASK_KEY] --story [JIRA_STORY_KEY] --project-output [PROJECT_OUTPUT_DIR]`
+   > 🔀 **`TEST_MANAGEMENT_TOOL=aio`** → dùng `npm run aio:publish -- --file <Excel> --story [JIRA_STORY_KEY]` (xem trước) rồi `npm run aio:publish:apply -- ... --qa-approved`. Lệnh Xray sẽ **tự CHẶN** kèm lệnh thay thế, không phải nhớ. Khác biệt mô hình (Test Set/link requirement/precondition-issue **không còn** vì AIO case không phải Jira issue): `scripts/integrations/aio/README.md`.
    - Nếu có Jira project key riêng, thêm `--project [JIRA_PROJECT_KEY]`.
    - Nếu cần chỉ định Excel cụ thể, thêm `--excel [PATH_TO_XLSX]`.
    - Với Xray mặc định dùng `--issue-type "Test"`.

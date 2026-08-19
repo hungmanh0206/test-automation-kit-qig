@@ -38,7 +38,12 @@
  *   node scripts/integrations/jira/push_test_execution.js --task <KEY> --story <KEY> --project-output <DIR> --write
  *   node scripts/integrations/jira/push_test_execution.js --task <KEY> --project-output <DIR> --write --with-evidence
  *   node scripts/integrations/jira/push_test_execution.js --task <KEY> --project-output <DIR> --write --execution-key <EXEC-KEY>
- */
+  *
+ * ⚠ LEGACY (GĐ5, 19/08/2026): kit đã chuyển sang AIO Tests. Xray đóng băng sau 21/08/2026.
+ * File này CHỈ chạy khi khai báo rõ `--test-management-tool xray`; mặc định nó tự CHẶN và chỉ sang
+ * lệnh AIO tương ứng (xem `scripts/integrations/tms.js`). Giữ lại để đọc/đối chiếu dữ liệu Xray cũ
+ * và để `aio/migrate_*.js` còn dùng được `xray_cloud.js`; đừng phát triển thêm ở đây.
+*/
 
 const fs = require('fs');
 const path = require('path');
@@ -61,6 +66,9 @@ const outputGate = require('../../qa/output_gate'); // gate chất lượng comm
 const outputRules = require('../../qa/lib/output_rules'); // 1 nguồn: đuôi evidence hợp lệ + mime tương ứng
 
 loadEnv();
+
+// CỬA TOOL: cùng một `testcase-status.json` chạy được cả 2 bộ → gọi nhầm không hề báo lỗi, chỉ ghi sai hệ thống.
+require('../tms').assertTool('xray', 'npm run aio:push-exec -- --task <TASK_KEY> [--folder "<Sprint>"]');
 
 const SCRIPT_DIR = __dirname;
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..', '..');

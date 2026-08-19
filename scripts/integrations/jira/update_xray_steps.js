@@ -9,13 +9,21 @@
  * Dùng:
  *   node update_xray_steps.js --task SAPP-26523 --md <file.md>            (dry-run: liệt kê, KHÔNG gọi API)
  *   node update_xray_steps.js --task SAPP-26523 --md <file.md> --apply    (đồng bộ step thật)
- */
+  *
+ * ⚠ LEGACY (GĐ5, 19/08/2026): kit đã chuyển sang AIO Tests. Xray đóng băng sau 21/08/2026.
+ * File này CHỈ chạy khi khai báo rõ `--test-management-tool xray`; mặc định nó tự CHẶN và chỉ sang
+ * lệnh AIO tương ứng (xem `scripts/integrations/tms.js`). Giữ lại để đọc/đối chiếu dữ liệu Xray cũ
+ * và để `aio/migrate_*.js` còn dùng được `xray_cloud.js`; đừng phát triển thêm ở đây.
+*/
 const fs = require('fs');
 const axios = require('axios');
 const { loadEnv, buildJiraHeaders } = require('./utils.js');
 const { XrayCloudClient, isUsableCreds } = require('./xray_cloud.js');
 const testcaseModel = require('../../lib/testcase'); // #1: parser MD canonical DUY NHẤT (chống pipe-shift)
 loadEnv();
+
+// CỬA TOOL: bên AIO steps đi kèm case ngay lúc publish, không có bước push-steps riêng.
+require('../tms').assertTool('xray', 'npm run aio:publish:apply -- --file <x.xlsx> --story <JIRA-KEY> --qa-approved (steps đẩy kèm case)');
 
 function argString(name) { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] : ''; }
 function argFlag(name) { return process.argv.includes(`--${name}`); }

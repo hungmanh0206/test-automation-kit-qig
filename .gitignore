@@ -172,6 +172,10 @@ service-account.json
 # Google OAuth (kit login) — client secret + token, KHÔNG commit
 **/oauth-credentials.json
 **/token.json
+# Cả bản sao lưu/tạm: `token.json.bak` từng nằm untracked với access_token+refresh_token THẬT,
+# chỉ cách một lệnh `git add -A` là commit nhầm secret. Chặn mọi hậu tố.
+**/token.json.*
+**/token-*.json
 
 # One-off operational backups (chứa accountId/tên nội bộ)
 scripts/integrations/jira/unassign_tests_backup.json

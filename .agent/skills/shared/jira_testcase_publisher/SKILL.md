@@ -54,6 +54,9 @@ Dry-run:
 
 ```bash
 npm run jira:testcase-publish:dry-run -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR>
+# 🔀 Đang chuyển sang AIO Tests: nếu TEST_MANAGEMENT_TOOL=aio thì lệnh trên TỰ CHẶN và chỉ sang
+#    npm run aio:publish -- --file <Excel> --story <JIRA_STORY_KEY>   →   ... aio:publish:apply ... --qa-approved
+#    AIO không có Test Set / link requirement / precondition-issue. Chi tiết: scripts/integrations/aio/README.md
 ```
 
 Publish thật:

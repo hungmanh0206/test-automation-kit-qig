@@ -31,6 +31,7 @@
  */
 
 const fs = require('fs');
+const { getTestcaseDirs } = require('../utils/runtime_config');
 const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const canonical = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
@@ -85,7 +86,7 @@ const DIMS = [
 }
 
 function loadTests() {
-  const dirs = [path.join(taskDir, 'test-cases'), path.join(taskDir, 'test-cases', 'from-xray')];
+  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + mọi bản kéo về (from-xray, from-aio)
   const byId = new Map();
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) continue;

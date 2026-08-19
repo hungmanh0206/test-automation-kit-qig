@@ -21,6 +21,7 @@
  */
 
 const fs = require('fs');
+const { getTestcaseDirs } = require('../utils/runtime_config');
 const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const canonical = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
@@ -110,8 +111,7 @@ function realTests() {
   const TASK = arg('task', process.env.TASK_KEY || '');
   const POD = process.env.PROJECT_OUTPUT_DIR || '';
   if (TASK && POD) {
-    dirs.push(path.resolve(REPO, POD, 'tasks', TASK, 'test-cases'));
-    dirs.push(path.resolve(REPO, POD, 'tasks', TASK, 'test-cases', 'from-xray'));
+    dirs.push(...getTestcaseDirs(path.resolve(REPO, POD, 'tasks', TASK)));
   }
   if (!explicit && !(TASK && POD)) {
     // fallback: quét mọi task trong outputs (để dùng được cả khi không có TASK context)
@@ -121,8 +121,7 @@ function realTests() {
         const tasksDir = path.join(outputs, proj, 'tasks');
         if (!fs.existsSync(tasksDir)) continue;
         for (const t of fs.readdirSync(tasksDir)) {
-          dirs.push(path.join(tasksDir, t, 'test-cases'));
-          dirs.push(path.join(tasksDir, t, 'test-cases', 'from-xray'));
+          dirs.push(...getTestcaseDirs(path.join(tasksDir, t)));
         }
       }
     }

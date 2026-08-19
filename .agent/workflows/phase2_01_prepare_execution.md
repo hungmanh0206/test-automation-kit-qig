@@ -16,7 +16,7 @@ Tránh chạy nhầm task, nhầm story hoặc thiếu env khiến testcase bị
    - `RUN_ID` nếu có
 2. Nếu yêu cầu hiện tại không nêu rõ `TASK_KEY`, không dùng `TASK_KEY` từ `.env` hoặc context cũ để chạy; phải hỏi lại.
 3. Đọc artifact local:
-   - Nguồn execute theo `TESTCASE_SOURCE`: **mặc định `xray`** → `<TASK_OUTPUT_DIR>/test-cases/from-xray/*.xlsx` (kéo từ Xray ở Bước 0); `excel` → `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`.
+   - Nguồn execute theo `TESTCASE_SOURCE`: **mặc định `aio`** → `<TASK_OUTPUT_DIR>/test-cases/from-aio/*.xlsx` (kéo bằng `npm run aio:pull:write -- --story <JIRA_STORY_KEY>` ở Bước 0); `xray` (legacy) → `test-cases/from-xray/*.xlsx`; `excel` → `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`.
    - `<TASK_OUTPUT_DIR>/test-cases/` Markdown chỉ dùng để đọc section chi tiết như `## Setup Strategy (Hợp đồng tiền điều kiện)` khi Excel chưa đủ thông tin setup.
    - `<TASK_OUTPUT_DIR>/reports/phase1-summary.md` (gồm `### Setup Readiness` và `### Precondition Execution Matrix` — dùng để chọn case automatable / cần hook / blocked trước khi execute)
    - `<TASK_OUTPUT_DIR>/reports/capability-request.md` (nếu có — danh sách capability gap; xem Capability gate ở Rules)

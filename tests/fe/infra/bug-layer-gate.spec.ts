@@ -59,3 +59,31 @@ test.describe('@infra beVsFe — gán tầng FE/BE phải có bằng chứng API
     expect(out[0].message).toContain('CÂU-TỪ-CONFIG-DÙNG-ĐỂ-KIỂM');
   });
 });
+
+/*
+ * Gate phải chấp nhận CHÍNH nguồn canonical của nó.
+ *
+ * Bug đã xảy ra: `verdict_taxonomy.json` định nghĩa khoá `product_bug`/`api_bug` (gạch dưới), nhưng regex
+ * của `hasFailureLayer` chỉ nhận biến thể có DẤU CÁCH ⇒ khai ĐÚNG chuẩn `failureLayer: "product_bug"`
+ * lại bị chặn oan — đúng vào 2 tầng duy nhất được phép log Jira. Lỗi này sống sót vì test cũ chỉ thử
+ * vài chuỗi văn xuôi tự nghĩ ra, không bơm toàn bộ khoá canonical qua gate.
+ *
+ * Luật rút ra (áp cho mọi gate nhận diện bằng regex): thứ gate ĐÒI phải là thứ gate NHẬN.
+ */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const taxonomy = require(path.resolve(__dirname, '../../../.agent/config/verdict_taxonomy.json'));
+
+test.describe('@infra failureLayer — canonical value phải lọt qua chính gate của nó', () => {
+  test('MỌI khoá trong verdict_taxonomy.failureLayers đều được chấp nhận', () => {
+    const keys = Object.keys(taxonomy.failureLayers);
+    expect(keys.length).toBeGreaterThan(3);   // taxonomy rỗng/đổi tên field thì test này phải đỏ, không im
+    const rejected = keys.filter((k) => !rules.hasFailureLayer(k));
+    expect(rejected, `khoá canonical bị gate chặn oan: ${rejected.join(', ')}`).toEqual([]);
+  });
+
+  test('vẫn KHÔNG nhận chuỗi rỗng nghĩa — nới cho canonical không được biến thành nhận bừa', () => {
+    for (const noise of ['', 'FAILED', 'không rõ', 'chưa xác định', 'lỗi']) {
+      expect(rules.hasFailureLayer(noise), `nhận bừa: ${JSON.stringify(noise)}`).toBe(false);
+    }
+  });
+});

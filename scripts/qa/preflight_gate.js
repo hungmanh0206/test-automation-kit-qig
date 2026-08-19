@@ -21,6 +21,7 @@
  */
 
 const fs = require('fs');
+const { getTestcaseDirs } = require('../utils/runtime_config');
 const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 
@@ -91,12 +92,13 @@ function runPreflight({ mode = 'generic', task = '', extraRequire = [], allowMis
     if (!projectOutputDir) {
       warnings.push('phase2: chưa set PROJECT_OUTPUT_DIR → không kiểm được testcase canonical local (bỏ qua check này)');
     } else {
-      const tcDir = abs(path.join(projectOutputDir, 'tasks', task, 'test-cases'));
+      const taskDir = abs(path.join(projectOutputDir, 'tasks', task));
+      const tcDir = path.join(taskDir, 'test-cases');
       let found = 0;
-      for (const d of [path.join(tcDir, 'from-xray'), tcDir]) {
+      for (const d of getTestcaseDirs(taskDir, { mirrorsFirst: true })) {
         try { found += fs.readdirSync(d).filter((f) => /\.xlsx$/i.test(f)).length; } catch (e) { /* dir chưa có */ }
       }
-      if (!found) problems.push(`phase2: KHÔNG thấy testcase canonical local ở ${rel(tcDir)}(/from-xray) — Phase 2 phải kéo Xray hoặc có Excel TRƯỚC execute`);
+      if (!found) problems.push(`phase2: KHÔNG thấy testcase canonical local ở ${rel(tcDir)}(/from-xray|/from-aio) — Phase 2 phải kéo từ Xray/AIO hoặc có Excel TRƯỚC execute`);
     }
   }
   return { problems, warnings, mode, task };

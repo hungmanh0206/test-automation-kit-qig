@@ -24,6 +24,7 @@
  */
 
 const fs = require('fs');
+const { getTestcaseDirs } = require('../utils/runtime_config');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
@@ -51,7 +52,7 @@ function bucket(status) {
 /** Map tcId → module nghiệp vụ từ testcase canonical. Cột `Module` dạng "Nhóm / US" → lấy phần NHÓM. */
 function buildModuleMap(taskDir) {
   const map = new Map();
-  const dirs = [path.join(taskDir, 'test-cases'), path.join(taskDir, 'test-cases', 'from-xray')];
+  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + mọi bản kéo về (from-xray, from-aio)
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) continue;
     for (const f of fs.readdirSync(dir)) {

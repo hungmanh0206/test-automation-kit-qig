@@ -62,7 +62,7 @@ Phạm vi:
 - Module/Feature: [MODULE_FEATURE]
 - Task key/scope folder: [TASK_KEY]
 - Site liên quan: [LMS / Operations / LMS + Operations]
-- Nguồn testcase: [TESTCASE_SOURCE = xray (mặc định) | excel]
+- Nguồn testcase: [TESTCASE_SOURCE = aio (mặc định) | xray (legacy) | excel]
 - Đẩy trạng thái lên Xray sau execute: [PUSH_XRAY_EXECUTION = confirm (mặc định, QA duyệt preview rồi mới tạo) | auto | 0]
 
 Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ điền trực tiếp ở đây khi muốn override profile)
@@ -82,14 +82,16 @@ Run profile (chạy song song an toàn):
 - Chi tiết: QUICKSTART.md (mục Parallel Story Safety).
 
 Input artifacts:
-- Nguồn testcase (`TESTCASE_SOURCE`, **mặc định `xray`**):
-  - `xray` (mặc định): testcase đã publish/sửa trên Xray → kéo về canonical local TRƯỚC khi execute (Bước 0), rồi đọc từ `test-cases/from-xray/*.xlsx`. YÊU CẦU: Phase 1 đã publish testcase lên Xray.
+- Nguồn testcase (`TESTCASE_SOURCE`, **mặc định `aio`**):
+  - `xray` (LEGACY — đóng băng sau 21/08/2026, cần `--test-management-tool xray`): testcase đã publish/sửa trên Xray → kéo về canonical local TRƯỚC khi execute (Bước 0), rồi đọc từ `test-cases/from-xray/*.xlsx`. YÊU CẦU: Phase 1 đã publish testcase lên Xray.
+  - `aio`: testcase trên **AIO Tests** → kéo về canonical local TRƯỚC khi execute bằng `npm run aio:pull:write -- --story [JIRA_STORY_KEY]`, rồi đọc từ `test-cases/from-aio/*.xlsx`. Đi cùng `TEST_MANAGEMENT_TOOL=aio`; cột/định dạng y hệt bản Xray nên parser canonical không phân biệt nguồn.
   - `excel`: đọc Excel người dùng trong `test-cases/*.xlsx` (opt-out — dùng khi chưa publish hoặc muốn chạy thuần local).
 - Testcase folder:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/`
 - Testcase Excel source of truth (theo `TESTCASE_SOURCE`):
   - `excel`: `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/*.xlsx`
   - `xray`: `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-xray/*.xlsx` (do `scripts/integrations/jira/pull_testcases.js` sinh)
+  - `aio`: `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-aio/*.xlsx` (do `npm run aio:pull:write` sinh)
 - Requirement/context folder:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/requirements/`
 - Phase 1 summary report:
@@ -234,6 +236,7 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
     `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/reports/runs/[RUN_ID]/`
 13b. **Đẩy trạng thái testcase lên Xray — tạo Test Execution từ `testcase-status.json`.** MẶC ĐỊNH `PUSH_XRAY_EXECUTION=confirm`: khi ĐÃ HOÀN TẤT cycle execute chính thức (đã triage, run conclusive), chạy **`--dry-run` trình PREVIEW** (tên execution, số PASS/FAIL/TO DO, Test Plan sẽ link) **cho QA duyệt; CHỈ chạy `--write` sau khi QA XÁC NHẬN**. **KHÔNG** đề xuất push cho run debug/chạy dở/`setup_failure` diện rộng. `=auto` để tạo ngay không cần hỏi (unattended/CI); `=0` để tắt hẳn.
     Lệnh: `node scripts/integrations/jira/push_test_execution.js --task [TASK_KEY] --story [JIRA_STORY_KEY] --project-output [PROJECT_OUTPUT_DIR]` (+ `--run-id [RUN_ID]` nếu có) → xem preview → **QA OK** → thêm `--write`.
+    - 🔀 **ĐANG CHUYỂN SANG AIO TESTS.** Từ **22/08/2026** (Xray đóng băng) dùng **`npm run aio:push-exec -- --task [TASK_KEY] [--folder "<Sprint>"]`** → xem preview → **QA OK** → `npm run aio:push-exec:apply -- ...`. **Đầu vào y hệt** (`testcase-status.json`), cùng gate `output_gate`, cùng `--run-id`, cùng guard 0-conclusive. Khác biệt: 1 Test Execution → 1 **Cycle**; Test Plan → **thư mục cycle** (`--folder`); và evidence **neo được xuống TỪNG BƯỚC** (`steps[].evidence`, hoặc `failedStep`+`failedStepEvidence`) — thứ Xray không làm được. Chi tiết: `scripts/integrations/aio/README.md`.
     - **Guard**: thiếu Xray creds/status → bỏ qua mềm (không vỡ pipeline); run **0 PASSED/FAILED** (toàn TO DO) → KHÔNG tạo execution rác (`--force` nếu vẫn muốn).
     - **Title**: mỗi lần push tạo **1 Test Execution mới** — `[TASK_KEY] Test Execution - Lần <N> - <scope> - <version>`.
     - **Status map**: PASS→PASSED · FAIL→FAILED · SKIP/BLOCKED→"TO DO".
