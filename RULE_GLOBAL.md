@@ -294,7 +294,14 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     nhận `--sections` do NGƯỜI curate, kèm `--confirmed-by`/`--confirmed-at`. Ghi thẳng bản trích thô = tạo **oracle
     GIẢ**, tệ hơn không có oracle vì mọi so sánh sau đó sai **một cách tự tin**. Contract phải có `aliases` (tên
     design ≠ tên build) và `extraction` (ghi rõ máy trích hay người gõ) để người sau biết mức tin cậy.
-16. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
+16. **BIẾN THIÊN DATA theo `RUN_ID` — xoay nhưng phải TÁI LẬP.** Dùng đúng một bộ data mỗi lượt thì độ phủ **đóng
+    băng**: 20 lượt vẫn chỉ chạm 1 hình dạng, trong khi bug nằm ở hình dạng khác (0 · số âm · biên · chuỗi dài có
+    dấu · ngày 29/31). Xoay vòng trong **cùng lớp tương đương** (`scripts/lib/expansion/variation.js`) thì 20 lượt
+    phủ 20 hình dạng mà **không thêm case nào**. Bắt buộc seed bằng `RUN_ID`: cùng `RUN_ID` ⇒ cùng data — random
+    thuần làm bug "biến mất khi chạy lại", phá nguyên tắc rerun 2–3 lần và biến **bug thật thành flaky**. Ghi
+    `plan()` vào Actual để người sau tái hiện đúng lượt đó. Kèm điều kiện đi cùng: xoay data thì phải siết
+    **teardown/janitor** — môi trường UAT dùng chung, xoay mà không dọn là đổi bug-lọt lấy **rác dữ liệu**.
+17. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results

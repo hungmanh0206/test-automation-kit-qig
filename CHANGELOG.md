@@ -7,6 +7,34 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (q) — nối `UI-*` vào checker (FE có neo) + ⑤ biến thiên data theo RUN_ID
+
+**Nối contract vào máy — mắt xích cuối của chuỗi FE.** Có contract mà **không gì tiêu thụ** thì nó là gánh nặng chứ
+không phải oracle. `ui_conformance_check` giờ nhận `screen.uiContract`: nạp `knowledge/system/UI-*.json`, đi qua
+`aliases` (tên design ≠ tên build) rồi đối chiếu tập nhãn từng khối. Deviation sinh ra mang **`oracle_ref`** ⇒ theo
+luật mục 6 mới được phép PASS/FAIL; trước đó mọi phát hiện FE chỉ có thể là OBSERVATION.
+
+Ba trạng thái tách bạch, mỗi cái một nghĩa khác nhau:
+- `contract.label-missing` — design có nhãn, build thiếu ⇒ **có neo**, kết luận được.
+- `contract.no-container` — design có khối mà **không định vị được** trên build ⇒ hoặc build thiếu khối, hoặc thiếu
+  alias; **chưa kết luận**, không được coi là đã đối chiếu.
+- `contract.missing` — khai `uiContract` mà file không tồn tại ⇒ báo, **không im lặng coi như đã đối chiếu design**.
+
+Cố ý **chưa bind contract thật vào màn thật**: `UI-ORDERDETAIL-001` mới curate 2 khối, bind sai màn sẽ sinh một rừng
+FAIL giả. Test dùng DOM + contract giả lập, gồm ca **có alias thì khớp / không alias thì nói chưa đối chiếu được**.
+
+**⑤ `scripts/lib/expansion/variation.js` — xoay data nhưng TÁI LẬP.** Dùng đúng một bộ data mỗi lượt thì độ phủ
+**đóng băng**: 20 lượt vẫn 1 hình dạng, trong khi bug nằm ở hình dạng khác (0 · số âm · chuỗi dài có dấu · ngày
+29/31 · count 0). Xoay trong **cùng lớp tương đương** ⇒ 20 lượt phủ 20 hình dạng mà **không thêm case nào**.
+
+Điều kiện sống còn là **tái lập**: seed bằng `RUN_ID` (cùng `RUN_ID` ⇒ cùng data). Random thuần làm bug *"biến mất
+khi chạy lại"* — phá nguyên tắc rerun 2–3 lần và biến **bug thật thành flaky**, tức là đổi một lỗ hổng lấy một lỗ
+hổng khác. `plan()` in ra `_runId` và **nói thẳng** khi thiếu `RUN_ID` ("mọi lượt sẽ giống nhau, độ phủ đóng băng").
+Kèm điều kiện đi cùng ghi vào luật: xoay data thì phải siết **teardown/janitor**, vì UAT dùng chung — xoay mà không
+dọn là đổi bug-lọt lấy **rác dữ liệu**.
+
+Suite hạ tầng: 143 → **153 test**.
+
 ## 2026-08-19 (p) — ④ oracle FE: Figma → `UI-*` contract, và lý do KHÔNG tự động hoá nốt
 
 **Added — `npm run ui:contract`** (`scripts/qa/figma_to_ui_contract.js`) + `knowledge/system` nhận `type:

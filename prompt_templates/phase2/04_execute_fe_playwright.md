@@ -149,6 +149,12 @@ không sống theo dòng testcase. Mỗi lần execute một case, mở rộng t
 | 4 | **Nhánh/biến thể** | Cùng màn này với loại đơn/gói/tiền tệ KHÁC thì sao? | `npm run fixture:matrix` |
 | 5 | **Trạng thái kế cận** | Sau khi hủy / hoàn / deal lost / thanh toán một phần thì màn này còn đúng? | `npm run fixture:matrix` |
 
+**XOAY DATA THEO `RUN_ID`.** Dùng đúng một bộ data mỗi lượt thì độ phủ đóng băng. Lấy giá trị qua
+`plan(CLASSES)` / `pick(class, values)` (`scripts/lib/expansion/variation.js`) — seed bằng `RUN_ID` nên **cùng
+`RUN_ID` cho cùng data**; ghi `plan()` vào Actual để người sau tái hiện. Đừng random thuần: bug sẽ "biến mất khi
+chạy lại" và bị dán nhãn flaky. Xoay data thì **siết teardown** — UAT dùng chung, xoay mà không dọn là đổi
+bug-lọt lấy rác dữ liệu.
+
 **ASSERT HÌNH HỌC, KHÔNG CHỈ `toBeVisible()`.** `toBeVisible()` vẫn PASS khi element bị **đè lên** · nằm ngoài
 viewport · cao 2px · **chữ trắng trên nền trắng** · bị **truncate**. Dùng `inspectGeometry(page, sel)`
 (`scripts/utils/ui/geometry.js`) cho các control/giá trị quan trọng của case. Và với màn có nhập tên/địa chỉ/tên

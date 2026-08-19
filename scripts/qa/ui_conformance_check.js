@@ -327,6 +327,57 @@ async function checkScreen(page, base, screen) {
   // trước — cả hai đều KHÔNG phát hiện được "section thiếu một trường" hay "màn mọc thêm một trường lạ",
   // vì không có gì liệt kê tập hợp. Đây đúng là lớp bug hay lọt: thiếu Net Price ở section thông tin sản phẩm,
   // thừa cột/field không thuộc màn, hai màn cùng dữ liệu nhưng danh sách field lệch nhau.
+  // ── ORACLE FE CÓ NEO: đối chiếu với `ui_contract` (knowledge/system/UI-*.json) ──────────────────────────────
+  // Khác `fields` (oracle từ bảng field FSD) ở CHỖ QUAN TRỌNG: contract này trích từ DESIGN, nên nó trả lời được
+  // câu "màn phải trông thế nào" — thứ mà FSD (bảng field) và build (chính nó) đều không trả lời được. Nhờ đó
+  // deviation FE mới được phép mang verdict PASS/FAIL; không có neo thì theo luật chỉ là OBSERVATION.
+  if (screen.uiContract) {
+    const cPath = path.resolve(__dirname, '..', '..', 'knowledge', 'system', `${screen.uiContract}.json`);
+    if (!fs.existsSync(cPath)) {
+      dev.push({ type: 'contract.missing', name: screen.uiContract, detail: `khai \`uiContract\` nhưng không có ${path.relative(process.cwd(), cPath)} — không được coi là đã đối chiếu design` });
+    } else {
+      const contract = JSON.parse(fs.readFileSync(cPath, 'utf8'));
+      const aliases = contract.aliases || {};
+      for (const sec of contract.sections || []) {
+        // Tên trong design ≠ tên trên build ⇒ đi qua alias trước khi tìm (bài học `sectionAliases`).
+        const heading = aliases[sec.heading] || sec.heading;
+        const mark = `ct-${String(heading).replace(/[^\w]+/g, '-').toLowerCase()}`;
+        // eslint-disable-next-line no-await-in-loop
+        const st = await stampSection(page, heading, mark, screen.sectionContainerSelector);
+        if (!st.ok) {
+          dev.push({ type: 'contract.no-container', name: sec.heading, detail: `design có khối "${sec.heading}"${heading !== sec.heading ? ` (alias "${heading}")` : ''} nhưng KHÔNG định vị được trên build — hoặc build thiếu khối, hoặc cần thêm alias` });
+          continue;
+        }
+        const sel = st.via === 'sibling-range' ? `[data-uicheck-row="${mark}"]` : `[data-uicheck="${mark}"]`;
+        // eslint-disable-next-line no-await-in-loop
+        const labels = await page.$$eval(sel, (els) => {
+          const n = (x) => String(x || '').replace(/\s+/g, ' ').trim();
+          const out = [];
+          for (const el of els) {
+            for (const row of [el, ...el.querySelectorAll('*')]) {
+              const kids = [...row.children].filter((c) => !c.children.length);
+              if (kids.length === 2 && n(kids[0].textContent)) out.push(n(kids[0].textContent));
+              else if (!row.children.length && n(row.textContent)) out.push(n(row.textContent));
+            }
+          }
+          return [...new Set(out)];
+        }).catch(() => []);
+        const want = (sec.labels || []).map((x) => key(x));
+        const have = new Set(labels.map((x) => key(x)));
+        const missing = (sec.labels || []).filter((x) => !have.has(key(x)));
+        if (missing.length) {
+          dev.push({
+            type: 'contract.label-missing',
+            name: sec.heading,
+            expected: missing,
+            oracle_ref: contract.id,
+            detail: `design (${contract.id}) khai ${want.length} nhãn ở khối này, build thiếu ${missing.length}: ${missing.join(' · ')}`,
+          });
+        }
+      }
+    }
+  }
+
   for (const f of screen.fields || []) {
     let sel = f.containerSelector;
     if (f.headingText) {
