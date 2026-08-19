@@ -181,7 +181,12 @@ function toCatalog(screens, bindings) {
     const b = byKey[s.key] || byKey[String(s.featureNo)];
     if (!b) { unbound.push(s); continue; }
     const gk = b.name || s.key;
-    if (!grouped.has(gk)) grouped.set(gk, { name: gk, url: b.url, settle: b.settle || 6000, fields: [] });
+    if (!grouped.has(gk)) {
+      const g0 = { name: gk, url: b.url, settle: b.settle || 6000, fields: [] };
+      const csel = b.sectionContainerSelector || bindings.sectionContainerSelector;
+      if (csel) g0.sectionContainerSelector = csel;
+      grouped.set(gk, g0);
+    }
     const g = grouped.get(gk);
     const keep = s.fields.filter((f) => !f.conditional && !f.dynamic && !f.control);
     const dropped = s.fields.length - keep.length;
@@ -194,9 +199,15 @@ function toCatalog(screens, bindings) {
       if (labels.some((l) => l.toLowerCase() === f.label.toLowerCase())) dupes.push(f.label);
       else labels.push(f.label);
     }
+    // TÊN KHỐI TRONG TÀI LIỆU ≠ TÊN TRÊN BUILD. Đo thật 19/08: FSD ghi "THÔNG TIN ĐỒNG BỘ TỪ HUBSPOT" /
+    // "Thông tin Deal trừ", còn OPS render "Data Synchronized from Hubspot" / "Deal Information" —
+    // khớp theo tên tài liệu thì KHÔNG BAO GIỜ định vị được, và mọi section đó ra `no-container`. Bản đồ tên là
+    // dữ liệu quan sát được của TASK ⇒ khai ở bindings (`sectionAliases`), không suy diễn trong script.
+    const specName = s.section || s.tab || gk;
+    const alias = (bindings.sectionAliases || {})[specName];
     const entry = {
-      name: s.section || s.tab || gk,
-      headingText: s.section || s.tab || gk,
+      name: specName,
+      headingText: alias || specName,
       expectedFields: labels,
       _source: `${s.specRef} > ${[s.tab, s.section].filter(Boolean).join(' > ')} (spec_extract)`,
     };
@@ -213,6 +224,8 @@ function toCatalog(screens, bindings) {
     }
     const ctrl = s.fields.filter((f) => f.control).length;
     if (ctrl) entry._dropped_controls = `${ctrl} control (button/icon/link) — không đọc bằng nhãn`;
+    if (alias) entry._spec_name = `tên trong tài liệu: "${specName}" (build hiển thị "${alias}")`;
+    if (b.sectionContainerSelector) entry.containerSelector = b.sectionContainerSelector;
     if (dupes.length) entry._doc_duplicates = `tài liệu ghi lặp nhãn: ${[...new Set(dupes)].join(', ')} — đã gộp, nên hỏi BA`;
     if (b.labelSelector) entry.labelSelector = b.labelSelector;
     g.fields.push(entry);
@@ -229,6 +242,13 @@ function toCatalog(screens, bindings) {
     // "Của màn này" = MỌI section trong các block spec được bind vào màn, kể cả section không vào `fields`
     // (vd chỉ toàn field lặp động nên dưới ngưỡng 2). Bản đầu chỉ lấy section đã vào catalog ⇒ khối
     // "DỮ LIỆU ĐỒNG BỘ THEO GIAO DỊCH" của chính màn bị tố là section lạ. Báo oan kiểu này giết uy tín gate.
+    // Khối DÙNG CHUNG (mọi loại đơn đều có) không phải dấu hiệu của một loại đơn ⇒ không được đưa vào
+    // forbidden. Đo phổ tên section trên FSD thật: dùng-chung xuất hiện ở 5–37 màn (CÁC NÚT CHỨC NĂNG 37,
+    // Customer Info 15, ĐỒNG BỘ TỪ HUBSPOT 5) còn tên đặc trưng chỉ 1–2 màn (Course Conversion Info 2,
+    // Transfer Source Package Info 2, "Thông tin Deal trừ" 1). Ngưỡng ≥3 nằm giữa hai cụm.
+    const spread = new Map();
+    for (const x of screens) { if (!x.section) continue; if (!spread.has(x.section)) spread.set(x.section, new Set()); spread.get(x.section).add(x.key); }
+    const isGeneric = (nm) => (spread.get(nm) ? spread.get(nm).size : 0) >= 3;
     const ownKeys = new Set(g._srcKeys || []);
     const own = new Set(screens.filter((s) => ownKeys.has(s.key)).map((s) => (s.section || '').toLowerCase()));
     const foreign = new Set();
@@ -240,9 +260,19 @@ function toCatalog(screens, bindings) {
       const nm = s.section || '';
       if (!nm || own.has(nm.toLowerCase())) continue;
       if (DOC_SCAFFOLD.test(nm)) continue;
+      if (isGeneric(nm)) continue;
       foreign.add(nm);
     }
-    if (foreign.size) g.forbiddenSections = [...foreign].sort();
+    if (foreign.size) {
+      const al = bindings.sectionAliases || {};
+      const checkable = [];
+      const unaliased = [];
+      for (const nm of [...foreign].sort()) (al[nm] ? checkable : unaliased).push(al[nm] || nm);
+      if (checkable.length) g.forbiddenSections = checkable;
+      // Nói rõ phần KHÔNG kiểm được: tên tài liệu không có trên build thì tìm cũng không ra, im lặng ở đây
+      // sẽ thành "đã kiểm section lạ" trong khi thực tế chưa kiểm gì.
+      if (unaliased.length) g._forbidden_unaliased = `${unaliased.length} tên khối chỉ có trong tài liệu, CHƯA có alias sang tên build ⇒ KHÔNG kiểm được: ${unaliased.join(' · ')}`;
+    }
     out.push(g);
   }
   return { screens: out, unbound };

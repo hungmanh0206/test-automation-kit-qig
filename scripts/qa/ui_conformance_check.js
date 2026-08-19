@@ -104,13 +104,20 @@ async function runPreSteps(page, base, steps) {
  * Lấy cả card thì dính luôn field của khối khác → báo thừa oan; lấy quá hẹp thì báo thiếu oan.
  * @returns {Promise<{ok: boolean, rows: number}>}
  */
-async function stampSection(page, headingText, mark) {
-  return page.evaluate(({ heading, m }) => {
+async function stampSection(page, headingText, mark, containerSelector) {
+  return page.evaluate(({ heading, m, csel }) => {
     const n = (s) => String(s || '').replace(/\s+/g, ' ').trim();
     const want = n(heading).replace(/[:*]\s*$/, '').toLowerCase();
     const leaves = [...document.querySelectorAll('*')].filter((el) => !el.children.length);
     const head = leaves.find((el) => n(el.textContent).replace(/[:*]\s*$/, '').toLowerCase() === want);
     if (!head) return { ok: false, rows: 0 };
+    // (1) Ưu tiên GỢI Ý CỦA TASK: app có class bọc section ổn định thì dùng thẳng, chính xác hơn mọi heuristic.
+    // Đo trên OPS: mỗi khối là `div.collapsible-section__container`. Quy ước DOM là của APP nên khai ở bindings
+    // (lớp task); thuật toán ở đây vẫn generic.
+    if (csel) {
+      const box = head.closest(csel);
+      if (box) { box.setAttribute('data-uicheck', m); return { ok: true, rows: -1, via: 'selector' }; }
+    }
     const rowCount = (el) => [...el.children].filter((c) => c.children.length === 2
       && [...c.children].every((g) => !g.children.length)).length;
     let node = head.parentElement;
@@ -127,10 +134,27 @@ async function stampSection(page, headingText, mark) {
       }
       node = node.parentElement;
     }
+    // (3) FALLBACK khi KHÔNG khối nào có "hàng 2 con lá": đo thật trên OPS thì khối `Transfer Source Package
+    // Info` có rows=0 ở MỌI cấp (nhãn/giá trị lồng sâu hơn) ⇒ heuristic cũ trả no-container = BÁO OAN, trong
+    // khi section có thật ngay trên màn. Fallback: leo tới tổ tiên CUỐI CÙNG trước khi số nhãn nhảy vọt (≥2×)
+    // — mốc nhảy vọt đúng là lúc đã ôm luôn section bên cạnh (đo được: 13 → 13 → 52).
+    if (!best) {
+      const leafCount = (el) => [...el.querySelectorAll('*')].filter((e) => !e.children.length && n(e.textContent)).length;
+      let cur = head.parentElement;
+      let chosen = null;
+      let prev = 0;
+      for (let k = 0; k < 7 && cur; k += 1) {
+        const c = leafCount(cur);
+        if (prev >= 3 && c >= prev * 2) break;
+        if (c >= 3) { chosen = cur; prev = c; }
+        cur = cur.parentElement;
+      }
+      if (chosen) { chosen.setAttribute('data-uicheck', m); return { ok: true, rows: -2, via: 'fallback-jump' }; }
+    }
     if (!best) return { ok: false, rows: 0 };
     best.setAttribute('data-uicheck', m);
-    return { ok: true, rows: bestRows };
-  }, { heading: headingText, m: mark });
+    return { ok: true, rows: bestRows, via: 'rows' };
+  }, { heading: headingText, m: mark, csel: containerSelector || null });
 }
 
 async function checkScreen(page, base, screen) {
@@ -171,7 +195,7 @@ async function checkScreen(page, base, screen) {
   for (const name of screen.forbiddenSections || []) {
     const found = await page.evaluate((n) => [...document.querySelectorAll('*')]
       .some((e) => e.offsetParent && e.children.length === 0 && (e.textContent || '').trim() === n), name);
-    if (found) dev.push({ type: 'sections.unexpected', name, detail: 'khối này thuộc loại đơn KHÁC theo tài liệu, không thuộc màn đang mở' });
+    if (found) dev.push({ type: 'sections.unexpected', name, detail: 'khối này KHÔNG có trong bảng field của màn đang mở (tài liệu xếp nó vào màn/loại đơn khác) — hoặc build mọc thêm khối, hoặc tài liệu thiếu' });
   }
 
   // 2b) FIELDS: kiểm kê TẬP field/nhãn của một section (thiếu / thừa / sai thứ tự).
@@ -183,7 +207,7 @@ async function checkScreen(page, base, screen) {
     let sel = f.containerSelector;
     if (f.headingText) {
       const mark = `sec-${(f.name || f.headingText).replace(/[^\w]+/g, '-').toLowerCase()}`;
-      const st = await stampSection(page, f.headingText, mark);
+      const st = await stampSection(page, f.headingText, mark, f.containerSelector || screen.sectionContainerSelector);
       if (!st.ok) { dev.push({ type: 'fields.no-container', name: f.name, selector: `headingText="${f.headingText}"` }); continue; }
       sel = `[data-uicheck="${mark}"]`;
     }
@@ -199,11 +223,15 @@ async function checkScreen(page, base, screen) {
       actual = await root.evaluate((el) => {
         const n = (s) => String(s || '').replace(/\s+/g, ' ').trim();
         const out = [];
-        [...el.children].forEach((row) => {
+        // Quét SÂU, không chỉ con trực tiếp: khi container là card bọc (vd `.collapsible-section__container`
+        // do task khai) thì hàng nhãn→giá trị nằm dưới vài lớp div. Bản đầu chỉ soi `el.children` nên trả 0
+        // nhãn và mọi field bị báo THIẾU oan — tệ hơn cả `no-container` mà nó vừa chữa. Đo trên OPS: quét sâu
+        // đọc đúng 6/6 nhãn khối Customer Info và 6/6 khối Transfer Source Package Info.
+        for (const row of [el, ...el.querySelectorAll('*')]) {
           const kids = [...row.children].filter((g) => !g.children.length);
           if (kids.length === 2) out.push(n(kids[0].textContent).replace(/[:*]\s*$/, ''));
-        });
-        return out.filter(Boolean);
+        }
+        return [...new Set(out.filter(Boolean))];
       }).catch(() => []);
       // tiền tố `info.` = ghi chú quan sát, KHÔNG tính là deviation (xem chỗ tách ở dưới)
       if (actual.length) dev.push({ type: 'info.loose-labels', name: f.name, note: `section không có <label>; đọc ${actual.length} nhãn theo cặp leaf-node` });

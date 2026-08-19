@@ -7,6 +7,42 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (b) — chạy catalog tự sinh trên UAT: 3 lỗ định vị nữa, và máy tự tìm ra bug đầu tiên
+
+Chạy `ui_conformance_check` với catalog **tự sinh từ FSD** lên UAT (read-only, 4 màn Order Detail Chuyển
+nhượng/Chuyển đổi). Lượt đầu ra 16 deviation — **soi từng cái** thì phần lớn là lỗi định vị của chính máy, không
+phải lỗi build. Ba lỗ, mỗi lỗ vá xong đều đo lại:
+
+1. **`no-container` báo oan.** `Transfer Source Package Info` có mặt rõ ràng trên màn mà máy báo không thấy:
+   heuristic "hàng = con có đúng 2 con lá" cho **rows = 0 ở mọi cấp** vì nhãn/giá trị lồng sâu hơn. Thêm (a)
+   `sectionContainerSelector` — gợi ý DOM của app, khai ở **bindings lớp task** (`.collapsible-section__container`),
+   và (b) fallback generic: leo tới tổ tiên cuối cùng **trước khi số nhãn nhảy vọt ≥2×** (đo được 13 → 13 → 52,
+   mốc nhảy chính là lúc ôm luôn khối bên cạnh).
+2. **Bản vá (1) làm mọi thứ TỆ HƠN** — container đúng nhưng bộ đọc nhãn chỉ soi `el.children`, nên card bọc trả
+   **0 nhãn** và toàn bộ field bị báo THIẾU oan (`build có: []` khắp báo cáo). Sửa: quét **sâu** tìm hàng
+   nhãn→giá trị ở mọi độ sâu. Sau vá: đọc đúng 6/6 nhãn `Customer Info`, 6/6 `Transfer Source Package Info`.
+3. **Tên khối trong tài liệu ≠ tên trên build.** FSD ghi "THÔNG TIN ĐỒNG BỘ TỪ HUBSPOT" / "Thông tin trên Deal",
+   OPS render "Data Synchronized from Hubspot" / "Deal Information" ⇒ khớp theo tên tài liệu thì **không bao giờ**
+   định vị được. Thêm `sectionAliases` (dữ liệu quan sát của task, đo bằng probe read-only). Tên **chưa có alias**
+   được tách sang `_forbidden_unaliased` và ghi rõ **"CHƯA kiểm được"** thay vì nằm im trong danh sách đã-gác.
+4. **`forbiddenSections` báo oan khối dùng chung.** Khối có ở mọi loại đơn (ĐỒNG BỘ TỪ/VỀ HUBSPOT) bị tố là
+   "của loại đơn khác". Lấy ngưỡng từ **phổ đo được**: dùng-chung xuất hiện ở 5–37 màn, tên đặc trưng chỉ 1–2 màn
+   ⇒ **≥3 màn = dùng chung, loại khỏi forbidden**. Ngưỡng nằm giữa hai cụm, không phải số chọn bừa.
+
+**Máy tự tìm được bug đầu tiên** (không ai chỉ trước): Order Detail đơn **Chuyển đổi** có field **"Địa chỉ"** ở
+khối Customer Info — đúng lớp bug STT 42 vốn do người báo trên đơn Chuyển nhượng (SAPP-28608, đã Done). Kèm 3
+phát hiện cùng lớp: nhãn build **"Phone number"** trong khi tài liệu ghi **"Phone"** (4 màn), khối Service Info
+thừa **"Service Fee Rate"**, và khối ĐỒNG BỘ VỀ HUBSPOT **thiếu "Trạng thái đồng bộ"**.
+
+**Nghiệm thu STT 42/43/53/54 — chưa đạt, và tiêu chí của tôi có chỗ sai:** STT 42 và 43 **đã được fix trên UAT**
+nên không thể "bắt lại" — dùng bug đã Done làm phép thử là sai từ đầu; bằng chứng máy chạy đúng lớp đó là nó tìm
+ra **ca mới** ở trên. STT 53 (`Course Conversion Info`) trên đơn đang thử **không render** (build có "Course
+Package") — chưa phân biệt được lệch-tên-tài-liệu hay thiếu section thật, cần BA/dev. STT 54 **không kiểm được
+bằng tên**: tên build của khối "Thông tin Deal trừ" chưa biết (phải lấy từ evidence của bug gốc).
+
+**Còn nợ:** container cho **khối con lồng trong khối** (`Deal Information` nằm trong `Data Synchronized from
+Hubspot` ⇒ `closest()` leo quá cao và sinh extra oan) · alias cho "Thông tin Deal trừ" / "Thông tin chuyển đổi".
+
 ## 2026-08-19 — B2 chống lọt bug: FSD tự sinh ui_catalog (888 field), backtest lộ 5 lỗ
 
 **Vấn đề (B0 đã đo):** `ui_conformance_check.js` chỉ kiểm được màn nào **người** chịu khai tay vào `ui_catalog.json`. Task SAPP-24395 có **28 nhóm chức năng** nhưng catalog chỉ **5 màn** ⇒ 23 nhóm không có gì kiểm, và bề mặt cứ rộng ra khi máy kiểm đứng yên. Khai tay 49 bảng field là việc không ai làm.

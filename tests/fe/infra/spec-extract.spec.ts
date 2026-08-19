@@ -146,7 +146,10 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
     if (sec.mode === 'superset') expect(sec._superset_why).toMatch(/lặp động/);
   });
 
-  test('section của MÀN KHÁC cùng tab bị nêu là forbiddenSections (bug "mọc thêm cả khối")', () => {
+  test('section của MÀN KHÁC: chưa có alias thì KHÔNG được coi là đã kiểm', () => {
+    // Đo thật 19/08: FSD viết tên khối bằng tiếng Việt, OPS render tiếng Anh ("Thông tin trên Deal" →
+    // "Deal Information"). Tìm theo tên tài liệu thì không bao giờ ra ⇒ không có alias thì phải NÓI RÕ là chưa
+    // kiểm được, chứ không được xếp vào danh sách đã-gác.
     const b = path.join(dir, 'b2.json');
     const cat = path.join(dir, 'cat2.json');
     fs.writeFileSync(b, JSON.stringify({
@@ -154,9 +157,22 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
     }));
     run(dir, ['--bindings', b, '--catalog', cat]);
     const c = JSON.parse(fs.readFileSync(cat, 'utf8'));
-    const forb = c.screens[0].forbiddenSections || [];
-    expect(forb, 'khối của loại đơn khác phải bị nêu').toContain('Thông tin Deal trừ');
-    expect(forb, 'section của CHÍNH màn không được nêu').not.toContain('Customer Info');
+    const s0 = c.screens[0];
+    expect(s0._forbidden_unaliased, 'tên chỉ có trong tài liệu phải bị nêu là CHƯA kiểm được').toContain('Thông tin Deal trừ');
+    expect(s0.forbiddenSections || [], 'chưa có alias thì không được coi là đã gác').not.toContain('Thông tin Deal trừ');
+  });
+
+  test('có alias thì section lạ trở thành kiểm được, và dùng tên trên BUILD', () => {
+    const b = path.join(dir, 'b3.json');
+    const cat = path.join(dir, 'cat3.json');
+    fs.writeFileSync(b, JSON.stringify({
+      sectionAliases: { 'Thông tin Deal trừ': 'Deduction Deal Info' },
+      screens: { 'f11:4.4.1.1.5#tab_2_hubspot_information': { name: 'CN Hub', url: '/x' } },
+    }));
+    run(dir, ['--bindings', b, '--catalog', cat]);
+    const s0 = JSON.parse(fs.readFileSync(cat, 'utf8')).screens[0];
+    expect(s0.forbiddenSections || []).toContain('Deduction Deal Info');
+    expect(s0.forbiddenSections || [], 'section của CHÍNH màn không được nêu').not.toContain('Customer Info');
   });
 
   test('không có bindings thì TỪ CHỐI sinh catalog (không đoán URL)', () => {
