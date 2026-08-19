@@ -53,6 +53,7 @@
     "spec:gap": "node scripts/qa/spec_gap_report.js",
     "probe:persist": "node scripts/qa/persistence_probe.js",
     "xsurf:diff": "node scripts/qa/cross_surface_diff.js",
+    "fixture:matrix": "node scripts/qa/fixture_matrix.js",
     "leak:report": "node scripts/qa/leak_report.js",
     "reliability": "node scripts/qa/reliability_index.js",
     "integration:check": "node scripts/integrations/jira/check_connection.js",
