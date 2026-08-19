@@ -7,6 +7,40 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-19 (d) — trả nợ B2: biên section theo CẤP tiêu đề + bản đồ tên đo bằng máy
+
+Hai món nợ của B2, cả hai đều vá theo **số đo trên UAT**, không theo suy đoán.
+
+**Nợ 1 — khối con lồng trong khối.** `closest('.collapsible-section__container')` leo lên khối CHA nên khối con
+`Deal Information` kiểm kê ăn luôn field của cả tab (12 nhãn, **6 field "thừa" oan**). Luật đúng là luật duy nhất
+phân biệt được cha/con: **một section kết thúc ở nơi tiêu đề CÙNG CẤP HOẶC CAO HƠN tiếp theo bắt đầu**, với "cấp"
+= (độ đậm, cỡ chữ) — đo thật: cha `w700/16px`, con `w600/16px`. Áp luật này vào **cả ba** đường định vị (selector
+của app · heuristic hàng · fallback). Vá xong lại lộ lớp cuối: layout **phẳng** (tiêu đề con và các hàng là anh
+em) thì **không tổ tiên nào** là container ⇒ thêm đường thứ tư: quét **DẢI ANH EM** từ tiêu đề tới tiêu đề cùng
+cấp kế tiếp. Kết quả: 12 nhãn → **9 nhãn đúng dải**, extra 6 → 3.
+
+> Ba lần sai liên tiếp ở đúng một chỗ (no-container oan → ôm cả tab → hút field khối bên cạnh) là lý do thêm
+> `tests/fe/infra/section-scope.spec.ts`: DOM giả lập bằng `page.setContent`, tái hiện từng layout đã gây lỗi.
+> Mắt đọc code không bắt được ba lỗi đó; test bắt trong 1 giây.
+
+**Nợ 2 — tên khối tài liệu ≠ tên build.** Thay vì đoán, thêm hai thứ:
+- `ui_conformance_check` giờ ghi **`surface.json`**: bề mặt THẬT của màn — danh sách section (kèm cấp tiêu đề) và
+  tập nhãn của từng section. Khối cha không có nhãn nào vẫn được giữ (nó có thật, và cần để biết cấp bậc).
+- `spec:extract --suggest-aliases <surface.json>`: ghép tài liệu↔build theo **độ trùng tập nhãn (Jaccard ≥ 0.5)**.
+  Nghiệm thu: máy tự tìm lại **đúng 3 alias** tôi đã suy tay trước đó (trùng 0.6 / 0.8 / 0.67) và **không** đề
+  xuất bừa cho 2 tên còn lại — vì trên build **không có khối nào khớp**. Cố ý **chỉ đề xuất**, người chốt rồi dán
+  vào bindings (giống `bug:tc-match` không có `--apply`).
+- Kèm sản phẩm phụ đúng hướng **B3**: 4 khối **có trên build mà tài liệu không nhắc** (`Order Info`, `Payment
+  Info`, `Transfer Information`, `Data Synchronized to Hubspot` của luồng Chuyển đổi) — hạt giống cho chiều ngược.
+
+**Trạng thái lượt chạy chốt (4 màn Order Detail):** 17 deviation — `fields.missing` 6 · `fields.extra` 6 ·
+`fields.label-text` 4 · `no-container` 1. Không còn deviation nào sinh do máy ôm sai vùng. Nội dung đáng chú ý:
+tài liệu ghi **`Phone`** còn build ghi **`Phone number`** (4 màn — MỘT câu hỏi BA, không phải 8 bug) · thừa
+**`Địa chỉ`** ở Customer Info đơn Chuyển đổi (đúng lớp STT 42, **máy tự tìm**) · thừa `Service Fee Rate` · thiếu
+**`Trạng thái đồng bộ`** ở khối đồng bộ về HubSpot (2 màn) · khối ĐỒNG BỘ VỀ HUBSPOT của Chuyển đổi thừa 7 field.
+
+Suite hạ tầng: 64 → **69 test** (5 test mới cho định vị section + đề xuất alias).
+
 ## 2026-08-19 (c) — đưa B0/B1 vào commit (trước đó chỉ nằm trong working copy)
 
 Rà lại chương trình chống lọt bug thì phát hiện **B0 và B1 chưa hề được commit**: `scripts/qa/leak_report.js`

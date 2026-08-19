@@ -94,6 +94,82 @@ async function runPreSteps(page, base, steps) {
 }
 
 /**
+ * Chụp BỀ MẶT THẬT của màn: danh sách section (theo cấp tiêu đề) kèm tập nhãn của từng section.
+ *
+ * Vì sao cần: tên khối trong tài liệu thường KHÁC tên trên build (FSD "Thông tin trên Deal" ↔ OPS
+ * "Deal Information"). Không có bề mặt thật thì bản đồ tên phải đoán bằng tay; có rồi thì ghép được bằng
+ * ĐỘ TRÙNG TẬP NHÃN — dữ liệu chứ không phải cảm nhận. Đây cũng là đầu vào cho chiều ngược (build có field/khối
+ * mà tài liệu không nhắc → hỏi BA).
+ */
+async function surfaceOf(page) {
+  return page.evaluate(() => {
+    const n = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+    const rankOf = (el) => {
+      const st = getComputedStyle(el);
+      const w = parseInt(st.fontWeight, 10) || 400;
+      const sz = parseFloat(st.fontSize) || 0;
+      return (w >= 600 && sz >= 15) ? w * 100 + Math.round(sz) : 0;
+    };
+    const out = [];
+    let cur = null;
+    for (const el of [...document.querySelectorAll('*')]) {
+      if (!el.offsetParent) continue;
+      if (el.children.length) {
+        // hàng "nhãn → giá trị": gán cho section gần nhất phía trên (thứ tự tài liệu)
+        const kids = [...el.children].filter((c) => !c.children.length);
+        if (kids.length === 2 && n(kids[0].textContent) && cur) cur.labels.push(n(kids[0].textContent));
+        continue;
+      }
+      const r = rankOf(el);
+      if (r && n(el.textContent)) { cur = { heading: n(el.textContent), rank: r, labels: [] }; out.push(cur); }
+    }
+    // GIỮ cả section không có nhãn nào: khối cha chỉ là tiêu đề gộp vẫn CÓ THẬT trên màn, và cần nó để biết
+    // cấp bậc (con/cha). Lọc bỏ ở đây từng làm mất khối cha khỏi bản đồ bề mặt.
+    return out.map((x) => ({ heading: x.heading, rank: x.rank, labels: [...new Set(x.labels)] }));
+  });
+}
+
+/**
+ * So TẬP field đọc được từ build với tập trong tài liệu. Tách thành hàm vì có HAI đường đọc nhãn:
+ * container thường, và DẢI ANH EM cho khối con layout phẳng — hai đường phải phán xét bằng CÙNG một luật.
+ */
+function compareFieldSet(dev, f, actual) {
+    const exp = (f.expectedFields || []).map(norm);
+  if (!exp.length) { dev.push({ type: 'fields.no-expected', name: f.name, note: 'catalog khai `fields` mà thiếu expectedFields' }); return; }
+  // So khớp theo KHOÁ chuẩn hoá (hoa/thường + khoảng trắng quanh '/'), vì "Full Name" vs "Full name" hay
+  // "Số CCCD/Hộ chiếu" vs "Số CCCD/ Hộ chiếu" mà tính là thiếu-VÀ-thừa thì mỗi lệch chữ sinh 2 dòng, nhấn
+  // chìm tín hiệu thật (thiếu field, sai NGÔN NGỮ nhãn). Lệch chữ vẫn là deviation nhưng gom 1 dòng riêng.
+  const key = (s) => norm(s).toLowerCase().replace(/\s*\/\s*/g, '/');
+  const actKey = new Map(actual.map((a) => [key(a), a]));
+  const expKey = new Map(exp.map((e) => [key(e), e]));
+  const missing = exp.filter((x) => !actKey.has(key(x)));
+  const extra = actual.filter((x) => !expKey.has(key(x)));
+  const reworded = exp.filter((x) => actKey.has(key(x)) && actKey.get(key(x)) !== x)
+    .map((x) => ({ tàiLiệu: x, build: actKey.get(key(x)) }));
+  if (reworded.length) dev.push({ type: 'fields.label-text', name: f.name, pairs: reworded, note: 'nhãn khớp về nội dung nhưng lệch hoa/thường hoặc khoảng trắng so với tài liệu' });
+  if (missing.length) dev.push({ type: 'fields.missing', name: f.name, expected: missing, detail: `build có: [${actual.join(' | ')}]` });
+  // `optionalFields` = field tài liệu ghi rõ CHỈ hiện trong một số trường hợp: xuất hiện thì KHÔNG phải sai
+  // lệch, mà vắng cũng không phải thiếu. Có danh sách này rồi thì không phải tắt cả phép bắt field THỪA.
+  // Vì sao cần: backtest STT 42 (Order Detail Chuyển nhượng THỪA field "Địa chỉ") cho thấy `mode:'superset'`
+  // — thứ buộc phải bật để né báo-thiếu-oan cho field điều kiện — đã âm thầm tắt đúng phép bắt được bug đó.
+  // Một cờ thô che mất một lớp bug. `optionalFields` nêu ĐÍCH DANH nên chỉ miễn trừ đúng field đó.
+  const optKey = new Set((f.optionalFields || []).map((x) => key(x)));
+  const extraReal = extra.filter((x) => !optKey.has(key(x)));
+  if (optKey.size) {
+    const seen = extra.filter((x) => optKey.has(key(x)));
+    if (seen.length) dev.push({ type: 'info.optional-present', name: f.name, actual: seen, note: 'field có điều kiện đang hiện — không tính là sai lệch' });
+  }
+  // mode 'superset' = chấp nhận màn có thêm field ngoài danh sách. Chỉ dùng khi KHÔNG thể liệt kê (vd nhãn
+  // lặp động "Phí dịch vụ lần 1..N"), không dùng thay cho `optionalFields`.
+  if (extraReal.length && f.mode !== 'superset') dev.push({ type: 'fields.extra', name: f.name, actual: extraReal, detail: 'field xuất hiện trên build nhưng KHÔNG có trong tài liệu' });
+  if (f.ordered) {
+    const seq = actual.filter((x) => exp.includes(x));
+    const wrong = exp.filter((x, i) => seq[i] !== undefined && seq[i] !== x);
+    if (wrong.length) dev.push({ type: 'fields.order', name: f.name, expected: exp, actual: seq });
+  }
+}
+
+/**
  * Định vị container của một section theo TIÊU ĐỀ ĐANG HIỂN THỊ, rồi dán `data-uicheck` để chọn bằng CSS thuần.
  *
  * Vì sao cần: section trên nhiều màn được render bằng div không có class ổn định, nên catalog buộc phải khai
@@ -109,6 +185,22 @@ async function stampSection(page, headingText, mark, containerSelector) {
     const n = (s) => String(s || '').replace(/\s+/g, ' ').trim();
     const want = n(heading).replace(/[:*]\s*$/, '').toLowerCase();
     const leaves = [...document.querySelectorAll('*')].filter((el) => !el.children.length);
+    // CẤP của một tiêu đề = (độ đậm, cỡ chữ). Một section KẾT THÚC ở nơi tiêu đề CÙNG CẤP HOẶC CAO HƠN tiếp
+    // theo bắt đầu — đó là luật duy nhất phân biệt được khối con lồng trong khối. Đo thật trên OPS tab Hub Info:
+    // "Data Synchronized from Hubspot" = w700/16px bọc hai khối con "Deal Information"/"Transfer Information" =
+    // w600/16px. Không có luật này thì khối con hút hết field của cả tab (lượt 19/08: 6 field "thừa" oan).
+    const rankOf = (el) => {
+      const st = getComputedStyle(el);
+      const w = parseInt(st.fontWeight, 10) || 400;
+      const sz = parseFloat(st.fontSize) || 0;
+      return (w >= 600 && sz >= 15) ? w * 100 + Math.round(sz) : 0;
+    };
+    const hasCompetingHeading = (box, h) => {
+      const hr = rankOf(h);
+      if (!hr) return false;
+      return [...box.querySelectorAll('*')]
+        .some((e) => e !== h && !e.children.length && n(e.textContent) && rankOf(e) >= hr);
+    };
     const head = leaves.find((el) => n(el.textContent).replace(/[:*]\s*$/, '').toLowerCase() === want);
     if (!head) return { ok: false, rows: 0 };
     // (1) Ưu tiên GỢI Ý CỦA TASK: app có class bọc section ổn định thì dùng thẳng, chính xác hơn mọi heuristic.
@@ -116,7 +208,11 @@ async function stampSection(page, headingText, mark, containerSelector) {
     // (lớp task); thuật toán ở đây vẫn generic.
     if (csel) {
       const box = head.closest(csel);
-      if (box) { box.setAttribute('data-uicheck', m); return { ok: true, rows: -1, via: 'selector' }; }
+      // Selector của app chỉ bọc khối CẤP NGOÀI. Khối con lồng bên trong (đo thật: "Deal Information" nằm
+      // trong "Data Synchronized from Hubspot") không có wrapper riêng ⇒ closest() leo lên khối cha và kiểm kê
+      // ăn luôn field của cả tab: lượt chạy 19/08 sinh 6 field "thừa" oan. Chốt chặn: chỉ nhận box khi tiêu đề
+      // đang tìm ĐÚNG LÀ tiêu đề đầu tiên của box; không thì rơi về heuristic hẹp hơn ở dưới.
+      if (box && !hasCompetingHeading(box, head)) { box.setAttribute('data-uicheck', m); return { ok: true, rows: -1, via: 'selector' }; }
     }
     const rowCount = (el) => [...el.children].filter((c) => c.children.length === 2
       && [...c.children].every((g) => !g.children.length)).length;
@@ -124,6 +220,10 @@ async function stampSection(page, headingText, mark, containerSelector) {
     let best = null;
     let bestRows = 0;
     for (let k = 0; k < 6 && node; k += 1) {
+      // Luật biên section áp cho CẢ heuristic hàng, không riêng fallback: khối đang xét mà đã chứa tiêu đề cùng
+      // cấp khác thì nó là khối CHA của nhiều section ⇒ dừng. Thiếu chốt này chính là lý do khối con
+      // "Deal Information" vẫn hút 12 nhãn của cả tab dù fallback đã có luật.
+      if (hasCompetingHeading(node, head)) break;
       // hàng có thể nằm ở con trực tiếp, hoặc trong đúng 1 lớp bọc (card > box > hàng)
       const direct = rowCount(node);
       const nested = [...node.children].reduce((mx, c) => Math.max(mx, rowCount(c)), 0);
@@ -144,12 +244,34 @@ async function stampSection(page, headingText, mark, containerSelector) {
       let chosen = null;
       let prev = 0;
       for (let k = 0; k < 7 && cur; k += 1) {
+        // Dừng NGAY khi khối đang xét đã chứa tiêu đề cùng cấp khác — nếu leo tiếp là ăn sang section bên cạnh.
+        if (hasCompetingHeading(cur, head)) break;
         const c = leafCount(cur);
-        if (prev >= 3 && c >= prev * 2) break;
+        if (prev >= 3 && c >= prev * 2) break;                  // mốc nhãn nhảy vọt: cũng là dấu ôm quá rộng
         if (c >= 3) { chosen = cur; prev = c; }
         cur = cur.parentElement;
       }
       if (chosen) { chosen.setAttribute('data-uicheck', m); return { ok: true, rows: -2, via: 'fallback-jump' }; }
+    }
+    // (4) LAYOUT PHẲNG: tiêu đề khối con và các hàng là ANH EM cùng cấp ⇒ KHÔNG tổ tiên nào là container của
+    // riêng nó (mọi tổ tiên đều chứa luôn khối con kế bên). Đo thật: tab Hub Info của OPS có
+    // "Deal Information"/"Transfer Information" nằm phẳng cạnh nhau ⇒ mọi bước trên đều trả no-container.
+    // Cách đúng theo ĐÚNG định nghĩa section: lấy DẢI theo thứ tự tài liệu, từ tiêu đề này tới tiêu đề cùng cấp
+    // kế tiếp, và đánh dấu từng hàng trong dải.
+    {
+      const hr = rankOf(head);
+      let started = false;
+      let tagged = 0;
+      if (hr) {
+        for (const el of [...document.querySelectorAll('*')]) {
+          if (el === head) { started = true; continue; }
+          if (!started || el.contains(head)) continue;
+          if (!el.children.length && n(el.textContent) && rankOf(el) >= hr) break;   // sang section kế tiếp
+          const kids = [...el.children].filter((c) => !c.children.length);
+          if (kids.length === 2 && n(kids[0].textContent)) { el.setAttribute('data-uicheck-row', m); tagged += 1; }
+        }
+      }
+      if (tagged) return { ok: true, rows: tagged, via: 'sibling-range' };
     }
     if (!best) return { ok: false, rows: 0 };
     best.setAttribute('data-uicheck', m);
@@ -209,7 +331,19 @@ async function checkScreen(page, base, screen) {
       const mark = `sec-${(f.name || f.headingText).replace(/[^\w]+/g, '-').toLowerCase()}`;
       const st = await stampSection(page, f.headingText, mark, f.containerSelector || screen.sectionContainerSelector);
       if (!st.ok) { dev.push({ type: 'fields.no-container', name: f.name, selector: `headingText="${f.headingText}"` }); continue; }
-      sel = `[data-uicheck="${mark}"]`;
+      sel = st.via === 'sibling-range' ? `[data-uicheck-row="${mark}"]` : `[data-uicheck="${mark}"]`;
+      if (st.via === 'sibling-range') {
+        // Dải anh em: mỗi hàng là một element riêng nên KHÔNG có một root duy nhất để đọc; đọc nhãn từ chính
+        // các hàng đã đánh dấu.
+        const labels = await page.$$eval(sel, (els) => els.map((el) => {
+          const kids = [...el.children].filter((c) => !c.children.length);
+          return kids.length === 2 ? String(kids[0].textContent || '').replace(/\s+/g, ' ').trim() : '';
+        }).filter(Boolean));
+        const uniq = [...new Set(labels.map((x) => norm(x).replace(/[:*]\s*$/, '')))].filter(Boolean);
+        dev.push({ type: 'info.loose-labels', name: f.name, note: `khối con layout phẳng; đọc ${uniq.length} nhãn theo DẢI anh em tới tiêu đề cùng cấp kế tiếp` });
+        compareFieldSet(dev, f, uniq);
+        continue;
+      }
     }
     const root = (screen.scopeSelector ? scope : page).locator(sel).first();
     if (!(await root.count())) { dev.push({ type: 'fields.no-container', name: f.name, selector: sel }); continue; }
@@ -236,39 +370,7 @@ async function checkScreen(page, base, screen) {
       // tiền tố `info.` = ghi chú quan sát, KHÔNG tính là deviation (xem chỗ tách ở dưới)
       if (actual.length) dev.push({ type: 'info.loose-labels', name: f.name, note: `section không có <label>; đọc ${actual.length} nhãn theo cặp leaf-node` });
     }
-    const exp = (f.expectedFields || []).map(norm);
-    if (!exp.length) { dev.push({ type: 'fields.no-expected', name: f.name, note: 'catalog khai `fields` mà thiếu expectedFields' }); continue; }
-    // So khớp theo KHOÁ chuẩn hoá (hoa/thường + khoảng trắng quanh '/'), vì "Full Name" vs "Full name" hay
-    // "Số CCCD/Hộ chiếu" vs "Số CCCD/ Hộ chiếu" mà tính là thiếu-VÀ-thừa thì mỗi lệch chữ sinh 2 dòng, nhấn
-    // chìm tín hiệu thật (thiếu field, sai NGÔN NGỮ nhãn). Lệch chữ vẫn là deviation nhưng gom 1 dòng riêng.
-    const key = (s) => norm(s).toLowerCase().replace(/\s*\/\s*/g, '/');
-    const actKey = new Map(actual.map((a) => [key(a), a]));
-    const expKey = new Map(exp.map((e) => [key(e), e]));
-    const missing = exp.filter((x) => !actKey.has(key(x)));
-    const extra = actual.filter((x) => !expKey.has(key(x)));
-    const reworded = exp.filter((x) => actKey.has(key(x)) && actKey.get(key(x)) !== x)
-      .map((x) => ({ tàiLiệu: x, build: actKey.get(key(x)) }));
-    if (reworded.length) dev.push({ type: 'fields.label-text', name: f.name, pairs: reworded, note: 'nhãn khớp về nội dung nhưng lệch hoa/thường hoặc khoảng trắng so với tài liệu' });
-    if (missing.length) dev.push({ type: 'fields.missing', name: f.name, expected: missing, detail: `build có: [${actual.join(' | ')}]` });
-    // `optionalFields` = field tài liệu ghi rõ CHỈ hiện trong một số trường hợp: xuất hiện thì KHÔNG phải sai
-    // lệch, mà vắng cũng không phải thiếu. Có danh sách này rồi thì không phải tắt cả phép bắt field THỪA.
-    // Vì sao cần: backtest STT 42 (Order Detail Chuyển nhượng THỪA field "Địa chỉ") cho thấy `mode:'superset'`
-    // — thứ buộc phải bật để né báo-thiếu-oan cho field điều kiện — đã âm thầm tắt đúng phép bắt được bug đó.
-    // Một cờ thô che mất một lớp bug. `optionalFields` nêu ĐÍCH DANH nên chỉ miễn trừ đúng field đó.
-    const optKey = new Set((f.optionalFields || []).map((x) => key(x)));
-    const extraReal = extra.filter((x) => !optKey.has(key(x)));
-    if (optKey.size) {
-      const seen = extra.filter((x) => optKey.has(key(x)));
-      if (seen.length) dev.push({ type: 'info.optional-present', name: f.name, actual: seen, note: 'field có điều kiện đang hiện — không tính là sai lệch' });
-    }
-    // mode 'superset' = chấp nhận màn có thêm field ngoài danh sách. Chỉ dùng khi KHÔNG thể liệt kê (vd nhãn
-    // lặp động "Phí dịch vụ lần 1..N"), không dùng thay cho `optionalFields`.
-    if (extraReal.length && f.mode !== 'superset') dev.push({ type: 'fields.extra', name: f.name, actual: extraReal, detail: 'field xuất hiện trên build nhưng KHÔNG có trong tài liệu' });
-    if (f.ordered) {
-      const seq = actual.filter((x) => exp.includes(x));
-      const wrong = exp.filter((x, i) => seq[i] !== undefined && seq[i] !== x);
-      if (wrong.length) dev.push({ type: 'fields.order', name: f.name, expected: exp, actual: seq });
-    }
+    compareFieldSet(dev, f, actual);
   }
 
   // 3) TEXTS: empty-state/label/placeholder exact
@@ -306,6 +408,7 @@ if (IS_CLI) (async () => {
   const page = await (await browser.newContext({ viewport: { width: 1600, height: 950 } })).newPage();
   page.setDefaultTimeout(10000);
   const report = { catalog: CATALOG, screens: [], totalDeviations: 0 };
+  const surface = {};
   let fatal = null;
   try {
     await login(page, loginCfg);
@@ -329,6 +432,9 @@ if (IS_CLI) (async () => {
         fs.writeFileSync(path.join(SNAP_DIR, `${screen.name.replace(/[^A-Za-z0-9]+/g, '_')}.json`), JSON.stringify(snap, null, 2), 'utf8');
         if (snap.mixedCurrency) dev.push({ type: 'currency.mixed', detail: `màn trộn ${Object.keys(snap.currencies).join(' + ')} — kiểm đơn vị tiền từng field` });
       } catch (e) { console.warn(`   ! snapshot lỗi: ${e.message.slice(0, 120)}`); }
+      // BỀ MẶT theo SECTION (khác snapshot: snapshot là danh sách nhãn phẳng). Đây là đầu vào để ghép bản đồ
+      // tên tài liệu ↔ tên build bằng độ trùng tập nhãn, thay vì đoán.
+      try { surface[screen.name] = await surfaceOf(page); } catch (e) { console.warn(`   ! surface lỗi: ${e.message.slice(0, 100)}`); }
       report.screens.push({
         name: screen.name,
         screenshot: path.relative(OUT, shot),
@@ -342,6 +448,8 @@ if (IS_CLI) (async () => {
       dev.forEach(d => console.log('   -', JSON.stringify(d)));
       infos.forEach(d => console.log('   ·', JSON.stringify(d)));
     }
+    fs.writeFileSync(path.join(OUT, 'surface.json'), `${JSON.stringify(surface, null, 2)}
+`, 'utf8');
   } catch (e) { fatal = e.message.slice(0, 300); console.error('FATAL', fatal); }
   finally { await browser.close(); }
 
@@ -362,4 +470,4 @@ if (IS_CLI) (async () => {
   process.exit(report.totalDeviations > 0 ? 1 : 0);
 })();
 
-module.exports = { checkScreen };
+module.exports = { checkScreen, stampSection, surfaceOf, compareFieldSet };

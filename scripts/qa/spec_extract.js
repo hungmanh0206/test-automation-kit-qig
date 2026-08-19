@@ -278,6 +278,53 @@ function toCatalog(screens, bindings) {
   return { screens: out, unbound };
 }
 
+
+// ── đề xuất bản đồ tên tài liệu ↔ tên build ────────────────────────────────────────────────────────────────
+// Tên khối trong FSD thường khác tên render trên build. Ghép bằng ĐỘ TRÙNG TẬP NHÃN (Jaccard) trên `surface.json`
+// do ui_conformance_check chụp: đây là dữ liệu, không phải cảm nhận. CHỈ ĐỀ XUẤT — người chốt rồi dán vào
+// bindings, giống bug_tc_matcher cố ý không có `--apply`. Máy đoán sai mà tự ghi thì hỏng bản đồ mà không ai biết.
+function suggestAliases(screens, bindings, surfacePath) {
+  const surface = JSON.parse(fs.readFileSync(surfacePath, 'utf8'));
+  const key = (x) => String(x).toLowerCase().replace(/\s*\/\s*/g, '/').replace(/\s+/g, ' ').trim();
+  const jac = (a, b) => {
+    const A = new Set(a.map(key));
+    const B = new Set(b.map(key));
+    if (!A.size || !B.size) return 0;
+    let inter = 0;
+    for (const x of A) if (B.has(x)) inter += 1;
+    return inter / (A.size + B.size - inter);
+  };
+  const byName = {};
+  for (const [k, v] of Object.entries(bindings.screens || {})) byName[v.name || k] = k;
+  const out = {};
+  const orphanBuild = [];
+  for (const [screenName, buildSecs] of Object.entries(surface)) {
+    const bKey = byName[screenName];
+    if (!bKey) continue;
+    const specSecs = screens.filter((x) => x.key === bKey && x.section);
+    const usedBuild = new Set();
+    for (const sp of specSecs) {
+      const labels = sp.fields.map((f) => f.label);
+      let best = null;
+      let bestScore = 0;
+      for (const bs of buildSecs) {
+        const sc = jac(labels, bs.labels.filter((l) => !/©/.test(l)));
+        if (sc > bestScore) { bestScore = sc; best = bs; }
+      }
+      if (!best || bestScore < 0.5) continue;
+      usedBuild.add(best.heading);
+      if (key(best.heading) !== key(sp.section)) out[sp.section] = { build: best.heading, overlap: Number(bestScore.toFixed(2)), screen: screenName };
+    }
+    for (const bs of buildSecs) {
+      if (usedBuild.has(bs.heading)) continue;
+      if (bs.labels.filter((l) => !/©/.test(l)).length < 2) continue;
+      if (specSecs.some((sp) => key(sp.section) === key(bs.heading))) continue;
+      orphanBuild.push({ screen: screenName, heading: bs.heading, labels: bs.labels.filter((l) => !/©/.test(l)).length });
+    }
+  }
+  return { out, orphanBuild };
+}
+
 // ── main ────────────────────────────────────────────────────────────────────────────────────────────────────
 const docs = arg('docs', '');
 if (!docs || !fs.existsSync(docs)) { console.error('[spec] ✗ thiếu --docs <dir chứa .md của FSD>'); process.exit(2); }
@@ -297,6 +344,22 @@ if (outPath) {
   fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
   fs.writeFileSync(outPath, `${JSON.stringify({ _generated_by: 'scripts/qa/spec_extract.js', _docs: docs, screens }, null, 2)}\n`);
   console.log(`[spec] đã ghi ${outPath} (${screens.length} khối màn×section)`);
+}
+
+const sugg = arg('suggest-aliases', '');
+if (sugg) {
+  const bPath = arg('bindings', '');
+  if (!bPath || !fs.existsSync(bPath) || !fs.existsSync(sugg)) {
+    console.error('[spec] ✗ --suggest-aliases cần cả --bindings và đường dẫn surface.json (do ui_conformance_check sinh).');
+    process.exit(2);
+  }
+  const { out, orphanBuild } = suggestAliases(screens, JSON.parse(fs.readFileSync(bPath, 'utf8')), sugg);
+  const n = Object.keys(out).length;
+  console.log(`[spec] ĐỀ XUẤT ${n} alias (ghép theo độ trùng tập nhãn ≥ 0.5) — người CHỐT rồi dán vào bindings.sectionAliases:`);
+  for (const [doc, v] of Object.entries(out)) console.log(`[spec]   "${doc}" → "${v.build}"   (trùng ${v.overlap} · ${v.screen})`);
+  if (n) console.log(JSON.stringify(Object.fromEntries(Object.entries(out).map(([k, v]) => [k, v.build])), null, 2));
+  console.log(`[spec] ${orphanBuild.length} khối CÓ TRÊN BUILD mà không khớp khối nào trong tài liệu của màn đó (chiều ngược — hỏi BA):`);
+  for (const o of orphanBuild) console.log(`[spec]   · ${o.screen} › "${o.heading}" (${o.labels} nhãn)`);
 }
 
 const catPath = arg('catalog', '');
