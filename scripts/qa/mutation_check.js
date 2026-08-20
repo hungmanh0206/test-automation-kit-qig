@@ -54,6 +54,12 @@ const DEFAULT_MUTANTS = [
   { id: 'halve_number', why: 'số bị sai một nửa (sai công thức/ưu đãi)', op: 'halve_money' },
   { id: 'stringify_num', why: 'số thành chuỗi có .0 — lệch kiểu/format', op: 'stringify_money' },
   { id: 'rename_label', why: 'nhãn text bị đổi (lớp "Phone" vs "Phone number")', op: 'rename_text' },
+  // Mutant tầng DOM, KHÔNG phải tầng API: nhãn cột do FE render tĩnh nên không mutant API nào đụng tới
+  // được. Nếu chỉ tiêm ở API thì máy kiểm-kê-field mãi ra 0/N và rất dễ bị đọc nhầm thành 'nó mù' —
+  // trong khi thật ra nó gác CẤU TRÚC, không gác giá trị. Muốn đo trung thực năng lực của nó thì phải
+  // bóp đúng thứ nó gác: xoá một cột khỏi lưới. Đây cũng là lớp bug 'field không hiển thị' chiếm phần
+  // lớn trong 45% bug hiển thị của file tổng hợp.
+  { id: 'drop_column', why: 'cột biến mất khỏi lưới (lớp "field không hiển thị")', dom: 'drop_declared_label' },
 ];
 
 const MONEY_KEYS = /(amount|fee|price|total|paid|discount|convertible)/i;
@@ -136,6 +142,32 @@ async function runOnce(page, screens, mutant) {
     // eslint-disable-next-line no-await-in-loop
     await page.waitForTimeout(screen.settle || 6000);
     // eslint-disable-next-line no-await-in-loop
+    // Mutant DOM phải ra tay SAU khi trang settle và TRƯỚC khi chấm — nó bóp thứ đã render, không bóp response.
+    if (mutant && mutant.dom === 'drop_declared_label') {
+      // eslint-disable-next-line no-await-in-loop
+      const gone = await page.evaluate((f) => {
+        const sel = (f && f.labelSelector) || 'label';
+        const want = (f && f.expectedFields) || [];
+        const els = [...document.querySelectorAll(sel)];
+        // Bỏ qua cột thứ-tự/thao-tác: xoá `#` làm lệch layout bảng khiến bộ đọc nhãn hỏng theo, deviation
+        // đi XUỐNG thay vì lên ⇒ luật `killed = dev tăng` xếp nhầm thành 'sống sót'. Nhắm cột CÓ NGHĨA.
+        const skip = new Set(['#', '']);
+        const hit = els.find((e) => {
+          const t = (e.textContent || '').replace(/\s+/g, ' ').trim();
+          return !skip.has(t) && want.includes(t);
+        });
+        if (!hit) return null;
+        const txt = (hit.textContent || '').replace(/\s+/g, ' ').trim();
+        hit.remove();
+        return txt;
+      }, {
+        // Nhắm tập cột ĐÃ KHAI (`table.expectedColumns`) — xoá cột KHÔNG khai thì chỉ bớt một deviation
+        // 'thừa cột', deviation đi XUỐNG và luật `killed = dev tăng` xếp nhầm thành 'sống sót'.
+        labelSelector: (screen.table && screen.table.headerSelector) || ((screen.fields || [])[0] || {}).labelSelector,
+        expectedFields: (screen.table && screen.table.expectedColumns) || ((screen.fields || [])[0] || {}).expectedFields,
+      }).catch(() => null);
+      if (gone && !injected) injected = `DOM · xoá cột "${gone}" khỏi ${screen.name || screen.url}`;
+    }
     const r = await checkScreen(page, base, screen);
     dev += (r || []).filter((d) => !String(d.type).startsWith('info.')).length;
   }
