@@ -80,6 +80,29 @@ function validate(doc) {
     if (legacy && !modern) warnings.push(`Bộ này dùng thang rủi ro CŨ 3 mức (${legacy} TC) — task mới dùng \`Severity\`: Blocker|Critical|Major|Minor|Trivial (§8). Bộ cũ không cần chuyển.`);
     else if (legacy && modern) warnings.push(`Bộ này TRỘN 2 thang: ${modern} TC dùng Severity 5 mức, ${legacy} TC còn thang cũ 3 mức — thống nhất 1 thang trong cùng một bộ để lọc/thống kê không lệch.`);
   }
+  /*
+   * 2e) PRE-CODE ↔ CATALOG — mã tiền điều kiện phải neo được vào catalog Setup Strategy.
+   * Tiền điều kiện chỉ là TEXT
+   * trong case ⇒ mã trỏ vào hư không vẫn publish trót lọt, và Phase 2 KHÔNG có gì để dựng precondition đó.
+   * Chỉ kiểm khi file CÓ catalog (`doc.setup`): file chỉ-testcase thì không phán, tránh báo oan.
+   */
+  if ((doc.setup || []).length) {
+    const declared = new Set(doc.setup.map((s) => String(s.preId || '').toUpperCase().match(/PRE-\d+/g) || []).flat());
+    const usedBy = new Map();
+    for (const tc of doc.tests) {
+      for (const code of String(tc.precondition || '').toUpperCase().match(/PRE-\d+/g) || []) {
+        if (!usedBy.has(code)) usedBy.set(code, []);
+        usedBy.get(code).push(tc.tcId || '(no-id)');
+      }
+    }
+    const orphan = [...usedBy.keys()].filter((c) => !declared.has(c));
+    if (orphan.length) {
+      problems.push(`${orphan.length} mã tiền điều kiện KHÔNG có trong catalog Setup Strategy: ${orphan.slice(0, 6).map((c) => `[${c}] (vd ${usedBy.get(c)[0]})`).join(', ')}${orphan.length > 6 ? ` …(+${orphan.length - 6})` : ''}. Trên AIO mã chỉ là text trong case — trỏ vào hư không thì Phase 2 không biết dựng gì. Khai vào sheet \`Preconditions\` hoặc sửa mã ở case.`);
+    }
+    const unused = [...declared].filter((c) => !usedBy.has(c));
+    if (unused.length) warnings.push(`${unused.length} mã khai trong catalog mà KHÔNG case nào dùng: ${unused.slice(0, 8).join(', ')}${unused.length > 8 ? ' …' : ''} — hoặc thiếu case, hoặc catalog còn rác của lượt trước.`);
+  }
+
   // 3) DIMENSION (set-level) — cảnh báo.
   const dims = new Set(doc.tests.flatMap((t) => t.dimensions));
   if (!dims.has('negative')) warnings.push('Bộ testcase chưa có case [Negative] nào — mọi chức năng nên có ≥1 negative');

@@ -186,7 +186,7 @@ Phase 1 tasks:
 Yêu cầu testcase output:
 - Mỗi testcase phải có precondition, test data, steps và expected result rõ ràng.
 - Cột `Tiền điều kiện` phải dùng định dạng `[PRE-NN] <mô tả ngắn>` (nhiều tag tách bằng `<br>`), không để tag trơ trụi; mô tả khớp catalog `## Setup Strategy`. Mục tiêu: đọc 1 dòng testcase là hiểu tiền điều kiện mà không cần kéo xuống catalog.
-  - Cùng một mã `[PRE-NN]` phải dùng mô tả GIỐNG HỆT ở mọi testcase (một nguồn duy nhất = catalog/sheet `Preconditions`). Khi publish, mỗi mã tạo 1 Precondition dùng chung theo mã; nếu mô tả lệch nhau giữa các TC, publisher chỉ giữ bản xuất hiện đầu và cảnh báo.
+  - Cùng một mã `[PRE-NN]` phải dùng mô tả GIỐNG HỆT ở mọi testcase (một nguồn duy nhất = catalog/sheet `Preconditions`). Mã là KHOÁ để Phase 2 tra catalog mà dựng precondition; sai mã = không dựng được.
 - Xác định site/layer của từng testcase: [SITES] / UI / API / E2E.
 - Xác định loại testcase: UI / API / E2E.
 - Phân nhóm rõ từng testcase theo nhóm chính là business flow trong cột `Module` với format:

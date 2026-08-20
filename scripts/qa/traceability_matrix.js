@@ -48,7 +48,7 @@ function parseTestcases(dir) {
 
 /*
  * Tập TC ĐÃ PUBLISH = có mặt trong mirror `test-cases/from-aio/*.xlsx` (bản kéo về từ AIO).
- * Refactor bỏ Xray đã viết ngữ nghĩa này vào header nhưng KHÔNG viết phần dựng biến, chỉ thêm chỗ dùng
+ * Lượt refactor bỏ công cụ cũ đã viết ngữ nghĩa này vào header nhưng KHÔNG viết phần dựng biến, chỉ thêm chỗ dùng
  * `publishedTc.has(...)` ⇒ ReferenceError ngay khi map rows. Lệnh này nằm trong bảng gate bắt buộc của
  * `run_phase1_template.md` nên nó vỡ là cả bước Phase 1 vỡ theo.
  *

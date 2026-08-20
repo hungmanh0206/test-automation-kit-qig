@@ -50,6 +50,48 @@ async function jiraIssueId(key) {
   return String((await r.json()).id);
 }
 
+/*
+ * SETUP CONTRACT KHÔNG NẰM TRÊN AIO. Case trên AIO có field `precondition` (text: mã [PRE-NN] + mô tả),
+ * nhưng "dựng bằng cách nào" (Setup Strategy · Source · Verification · Cleanup) chỉ có trong Excel canonical
+ * do Phase 1 sinh. Đo 20/08/2026: Excel gốc 26 dòng contract — bản kéo từ AIO 0 dòng. Nguồn execute MẶC ĐỊNH
+ * là bản kéo về, nên Phase 2 mất phần "dựng thế nào" mà KHÔNG gate nào kêu.
+ *
+ * Nên pull COPY NGUYÊN sheet đó sang: giữ header GỐC, không tự đặt tên cột — `SETUP_COL` khớp theo tên
+ * ("setup strategy", "verification"…), tự nghĩ header khác thì parser ra dòng nhưng field rỗng: có sheet mà
+ * vô dụng, còn tệ hơn không có vì trông như đã đủ.
+ */
+async function copySetupContract(wb, taskOutDir) {
+  const dir = path.join(taskOutDir, 'test-cases');
+  if (!fs.existsSync(dir)) return null;
+  const model = require(path.resolve(__dirname, '..', '..', 'lib', 'testcase', 'model'));
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.xlsx') && f.charAt(0) !== '~');
+  for (const f of files) {
+    let src;
+    try { src = await new ExcelJS.Workbook().xlsx.readFile(path.join(dir, f)); } catch (e) { continue; }
+    for (const ws of src.worksheets) {
+      let headerRow = 0; let headers = [];
+      ws.eachRow((row, rn) => {
+        if (headerRow) return;
+        const vals = row.values.slice(1).map((v) => String(v == null ? '' : (v.text || v.result || v)));
+        if (vals.length && model.isSetupContractHeader(vals)) { headerRow = rn; headers = vals; }
+      });
+      if (!headerRow) continue;
+      const out = wb.addWorksheet('Preconditions', { views: [{ state: 'frozen', ySplit: 1 }] });
+      out.addRow(headers);
+      let n = 0;
+      ws.eachRow((row, rn) => {
+        if (rn <= headerRow) return;
+        const vals = headers.map((_, i) => { const c = row.getCell(i + 1).value; return c == null ? '' : String(c.text || c.result || c); });
+        if (vals.some((v) => v.trim())) { out.addRow(vals); n++; }
+      });
+      out.columns.forEach((col, i) => { col.width = Math.min(52, Math.max(14, String(headers[i] || '').length + 12)); });
+      out.eachRow((row, rn) => row.eachCell((cell) => { cell.alignment = { vertical: 'top', wrapText: true }; if (rn === 1) cell.font = { bold: true }; }));
+      return { file: f, sheet: ws.name, rows: n };
+    }
+  }
+  return null;
+}
+
 async function main() {
   const STORY = arg('story', process.env.JIRA_STORY_KEY || '');
   const ROOT = arg('folder-root', '');
@@ -118,6 +160,10 @@ async function main() {
     row.height = n === 1 ? 24 : undefined;
     row.eachCell((cell) => { cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true }; if (n === 1) cell.font = { bold: true }; });
   });
+  const contract = await copySetupContract(wb, rc.getTaskOutputDir());
+  if (contract) console.log(`Setup contract: copy ${contract.rows} dòng từ ${contract.file} (sheet "${contract.sheet}")`);
+  else console.log('⚠ KHÔNG thấy setup contract trong test-cases/*.xlsx ⇒ bản kéo về thiếu sheet Preconditions, Phase 2 sẽ không biết dựng precondition thế nào.');
+
   fs.mkdirSync(outDir, { recursive: true });
   await wb.xlsx.writeFile(outFile);
   console.log(`\nĐÃ GHI ${rows.length} case → ${outFile}`);
@@ -129,9 +175,13 @@ async function main() {
   const { parseXlsx } = require(path.resolve(__dirname, '..', '..', 'lib', 'testcase'));
   const back = await parseXlsx(outFile);
   const ok = (back.tests || []).length;
-  console.log(`ĐỐI SOÁT: parser canonical đọc lại được ${ok}/${rows.length} case · ${ok === rows.length ? '✓ KHỚP' : '✗ LỆCH'}`);
+  const backSetup = (back.setup || []).length;
+  const wantSetup = contract ? contract.rows : 0;
+  const same = ok === rows.length && backSetup === wantSetup;
+  console.log(`ĐỐI SOÁT: đọc lại ${ok}/${rows.length} case · setup contract ${backSetup}/${wantSetup} dòng · ${same ? '✓ KHỚP' : '✗ LỆCH'}`);
+  if (contract && backSetup !== wantSetup) console.log('  ✗ sheet Preconditions ghi ra mà parser canonical đọc không đủ — kiểm tên/thứ tự cột.');
   (back.warnings || []).slice(0, 3).forEach((w) => console.log(`  ⚠ ${w}`));
-  if (ok !== rows.length) process.exitCode = 1;
+  if (!same) process.exitCode = 1;
 }
 
 // Guard: `require` file này KHÔNG được tự chạy — nó có đường ghi (`--apply`) vào hệ thống không xoá được.
