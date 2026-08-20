@@ -65,9 +65,30 @@ Thoát bằng cách ghi rõ trên CHÍNH dòng đó: `legacy`/`đóng băng`/`--
 dòng có nhãn legacy KHÔNG bị chặn · tên biến `PUSH_XRAY_EXECUTION` KHÔNG bị coi là "dạy Xray". Probe là **file
 thật** ghi vào root đang được quét rồi xoá trong `finally` (gate đọc đĩa). Nghiệm thu: **53/53** spec gates xanh.
 
-**Còn lại (chờ user quyết)**: `aio:migrate-tc`/`aio:migrate-exec` **chưa chạy apply lần nào** — không có
-artefact di trú nào trong `outputs/`. Xray đóng băng sau **21/08/2026**, nên nếu muốn giữ lịch sử Test/Run cũ
-của 9 task đã publish thì phải chạy TRƯỚC mốc đó; bỏ thì Xray thành nơi chỉ-đọc để tra cứu.
+**Đính chính trong cùng ngày — di trú dữ liệu ĐÃ XONG, không phải "chưa chạy"**: bản đầu của mục này ghi
+`aio:migrate-tc`/`aio:migrate-exec` "chưa apply lần nào", suy ra từ việc **không có artefact di trú nào trong
+`outputs/`**. Đo trực tiếp trên AIO thì ngược lại — vắng báo cáo không có nghĩa là vắng dữ liệu:
+
+| Đối tượng | Xray | AIO |
+|---|---|---|
+| Testcase | 1399 (10 task) | **1399** case · 100% có `automationKey` · tất cả `Published` |
+| Cây folder | 103 folder theo task | **117** folder, sâu 3 cấp (giữ cấu trúc Test Repository) |
+| Test Execution → Cycle | 15 | **15/15** có cycle |
+| Test Run | 2103 | **2103** · mỗi cycle có số case phân biệt = số run |
+| Trạng thái run | `Failed=47 Not Run=70 Passed=1986` | **giống hệt** |
+
+Tức bẫy "khớp theo tiêu đề làm mất 12 run" đã được xử lý xong trước đó (563/563 case phân biệt ở cả 2
+execution lớn nhất).
+
+**Added — `scripts/integrations/aio/reconcile_migration.js` + `npm run aio:reconcile`** (chỉ đọc): biến phép
+đo trên thành **lệnh thường trực**. Lý do: hai script migrate báo "XONG" theo số việc **gửi đi**, không đọc lại
+đích — bản đầu từng mất 12 run mà log vẫn xanh. Sau **21/08/2026** (Xray đóng băng) phát hiện thiếu thì không
+còn nguồn chạy lại, nên phép đếm hai đầu phải chạy được bất cứ lúc nào. Đo 3 lớp mất dữ liệu khác nhau: số
+run · số case phân biệt trong cycle (chống chồng attempt) · trạng thái run. Ghi rõ **giới hạn**: 0/15 lệch nên
+**nhánh báo đỏ chưa gặp ca thật** — muốn thử răng thì thêm 1 run trên Xray rồi chạy lại trước khi migrate.
+- Bẫy đọc gặp ngay khi làm: trạng thái run **không** ở `record.status` mà ở
+  `record.runs[<attempt cuối>].testRunStatus.name` — đọc sai chỗ ra `?=2103` mà API vẫn trả 200 (đúng đặc
+  tính #9 đã ghi trong README module).
 
 ## 2026-08-19 (r) — mở đường CHẶN cho ②: verification theo ASSERTION, không theo bước
 

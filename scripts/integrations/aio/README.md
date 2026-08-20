@@ -35,6 +35,10 @@ npm run aio:deprecate-stale:apply -- --story <JIRA-KEY> --file <x.xlsx>
 npm run aio:pull -- --story <JIRA-KEY>            # xem trước
 npm run aio:pull:write -- --story <JIRA-KEY>      # ghi test-cases/from-aio/*.xlsx
 
+# ĐỐI SOÁT di trú (chỉ đọc — đếm lại ở hai đầu, đừng tin log "XONG")
+npm run aio:reconcile                                  # tất cả Test Execution
+npm run aio:reconcile -- --exec SAPP-28132 --out <file.md>
+
 # chuyển CẢ KHO testcase theo đúng cây Test Repository của Xray (một lần)
 npm run aio:migrate-tc -- --story <JIRA-KEY>
 npm run aio:migrate-tc:apply -- --story <JIRA-KEY>
@@ -55,6 +59,32 @@ bỏ qua có chủ ý thì thêm `--qa-approved`. Chạy lại cùng `--cycle-ti
 **bỏ qua evidence đã có** (dedup theo từng bước), không đẻ cycle trùng.
 
 Env: `AIO_API_TOKEN` (bắt buộc) · `AIO_PROJECT_KEY` (mặc định `JIRA_PROJECT_KEY`) · `AIO_BASE_URL` · `AIO_THROTTLE_MS`.
+
+## Trạng thái di trú — ĐÃ ĐỐI SOÁT (20/08/2026)
+
+Di trú kho cũ **đã chạy xong**, và quan trọng hơn: đã **đếm lại ở hai đầu** thay vì tin log "XONG".
+Lệnh đối soát (chỉ đọc, chạy lại được bất cứ lúc nào): `npm run aio:reconcile` (thêm `--exec <KEY>` cho
+một execution, `--out <file.md>` để ghi báo cáo).
+
+| Đối tượng | Xray | AIO | Kết luận |
+|---|---|---|---|
+| Testcase | 1399 (10 task) | **1399 case** · 1399 có `automationKey` · tất cả `Published` | đủ |
+| Cây folder | 103 folder theo task | **117 folder**, sâu **3 cấp** (giữ cấu trúc Test Repository) | đủ |
+| Test Execution → Cycle | 15 | **15/15** có cycle tương ứng | đủ |
+| Test Run | **2103** | **2103** · mỗi cycle có số case phân biệt = số run | đủ, không case nào bị chồng attempt |
+| Trạng thái run | `Failed=47 Not Run=70 Passed=1986` | **giống hệt** | đủ |
+
+Hai cycle "dôi" trên AIO là `Ad hoc` (cycle hệ thống của app) và `[SAPP-26523] Test Execution - 2026-08-19`
+(lượt push thật để nghiệm thu tầng AIO) — không phải rác di trú.
+
+**Vì sao phải đối soát chứ không tin log**: bản đầu của `migrate_execution.js` khớp case theo **tiêu đề** và
+**mất 12 run** trong khi log vẫn báo "XONG" (563 run chỉ còn 552 tiêu đề phân biệt). Sau khi Xray đóng băng
+(**sau 21/08/2026**) thì phát hiện thiếu cũng không còn nguồn để chạy lại — nên phép đếm hai đầu là một
+**lệnh thường trực**, không phải script tạm.
+
+**Còn dùng `migrate_*` khi nào**: chỉ khi Xray phát sinh thêm execution/test TRƯỚC ngày đóng băng. Sau đó
+hai script này chỉ còn để đọc/đối chiếu.
+
 
 ## Ánh xạ mô hình
 

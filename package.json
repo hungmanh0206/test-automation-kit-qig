@@ -91,6 +91,7 @@
     "aio:migrate-exec:apply": "node scripts/integrations/aio/migrate_execution.js --apply",
     "aio:migrate-tc": "node scripts/integrations/aio/migrate_testcases.js",
     "aio:migrate-tc:apply": "node scripts/integrations/aio/migrate_testcases.js --apply",
+    "aio:reconcile": "node scripts/integrations/aio/reconcile_migration.js",
     "aio:push-exec": "node scripts/integrations/aio/push_execution_aio.js",
     "aio:push-exec:apply": "node scripts/integrations/aio/push_execution_aio.js --apply",
     "aio:pull": "node scripts/integrations/aio/pull_testcases_aio.js",
