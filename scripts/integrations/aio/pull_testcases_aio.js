@@ -169,6 +169,22 @@ async function main() {
   console.log(`\nĐÃ GHI ${rows.length} case → ${outFile}`);
 
   /*
+   * MANIFEST: dấu vết "mirror này là AIO lúc nào". AIO là source of truth, nên trước khi execute phải
+   * chứng minh được mirror còn khớp — `npm run aio:verify` so `updatedDate` từng case bằng MỘT lệnh list
+   * (rẻ: field này có sẵn cho mọi case trong payload list). Không có manifest thì không ai biết mirror
+   * già bao lâu, và execute có thể chấm verdict theo expected đã cũ mà vẫn xanh.
+   */
+  const manifest = {
+    pulledAt: new Date().toISOString(),
+    project: process.env.AIO_PROJECT_KEY || process.env.JIRA_PROJECT_KEY || '',
+    scope: { story: STORY || null, folderRoot: ROOT || null, only: [...ONLY], jiraRequirementIDs: [...new Set(picked.flatMap((c) => (c.jiraRequirementIDs || []).map(String)))] },
+    cases: Object.fromEntries(picked.map((c) => [String(c.automationKey || c.key).toUpperCase(), { key: c.key, updatedDate: c.updatedDate }])),
+  };
+  const manifestFile = outFile.replace(/\.xlsx$/, '.manifest.json');
+  fs.writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 1)}\n`);
+  console.log(`Manifest: ${path.basename(manifestFile)} (${Object.keys(manifest.cases).length} case, để \`npm run aio:verify\` đối soát độ tươi)`);
+
+  /*
    * TỰ ĐỐI SOÁT: đọc LẠI file vừa ghi bằng CHÍNH parser canonical mà Phase 2 sẽ dùng.
    * Ghi thành công không có nghĩa là đọc được — lệch cột/tên sheet chỉ lộ ra ở lượt execute sau đó.
    */

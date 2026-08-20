@@ -87,6 +87,8 @@
     "aio:push-exec:apply": "node scripts/integrations/aio/push_execution_aio.js --apply",
     "aio:pull": "node scripts/integrations/aio/pull_testcases_aio.js",
     "aio:pull:write": "node scripts/integrations/aio/pull_testcases_aio.js --write",
+    "aio:verify": "node scripts/integrations/aio/verify_mirror.js",
+    "aio:verify:enforce": "node scripts/integrations/aio/verify_mirror.js --enforce",
     "aio:deprecate-stale": "node scripts/integrations/aio/deprecate_stale_aio.js",
     "aio:deprecate-stale:apply": "node scripts/integrations/aio/deprecate_stale_aio.js --apply",
     "self-review:enforce": "node scripts/qa/self_review.js --enforce",

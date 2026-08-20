@@ -69,3 +69,53 @@ test.describe('@infra AIO — report publish là việc của MÁY', () => {
     expect(typeof publisher.writeReport).toBe('function');
   });
 });
+
+/*
+ * @infra — AIO LÀ SOURCE OF TRUTH ⇒ mirror local phải chứng minh được là còn TƯƠI.
+ *
+ * Vì sao thành máy: execute đọc mirror `from-aio/*.xlsx` (cố ý — để chạy offline và không đốt rate limit),
+ * nhưng nội dung đó là AIO *lúc pull*. QA sửa expected giữa buổi, hoặc người chạy quên pull, thì verdict
+ * được chấm theo expected CŨ mà mọi thứ vẫn xanh. `updatedDate` có sẵn cho mọi case trong payload list nên
+ * phép so này chỉ tốn MỘT lượt đọc.
+ */
+test.describe('@infra AIO — mirror phải tươi (diff manifest ↔ AIO)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { diff } = require(path.join(REPO, 'scripts/integrations/aio/verify_mirror.js'));
+  const man = (cases: object) => ({ pulledAt: new Date().toISOString(), scope: { jiraRequirementIDs: [] }, cases });
+
+  test('case bị SỬA trên AIO sau khi pull ⇒ báo changed (kèm mốc thời gian)', () => {
+    const d = diff(man({ TC_1: { key: 'P-TC-1', updatedDate: 100 } }), [{ automationKey: 'TC_1', key: 'P-TC-1', updatedDate: 999 }]);
+    expect(d.changed.length).toBe(1);
+    expect(d.changed[0]).toMatchObject({ tc: 'TC_1', was: 100, now: 999 });
+    expect(d.missing).toEqual([]);
+    expect(d.added).toEqual([]);
+  });
+
+  test('mirror có case mà AIO KHÔNG còn ⇒ báo missing (bị xoá/deprecate hoặc lọc khác)', () => {
+    const d = diff(man({ TC_1: { key: 'P-TC-1', updatedDate: 1 } }), []);
+    expect(d.missing).toEqual(['TC_1']);
+  });
+
+  test('AIO có case trong phạm vi mà mirror THIẾU ⇒ báo added (thiếu coverage)', () => {
+    const d = diff(man({ TC_1: { key: 'P-TC-1', updatedDate: 1 } }), [
+      { automationKey: 'TC_1', key: 'P-TC-1', updatedDate: 1 },
+      { automationKey: 'TC_2', key: 'P-TC-2', updatedDate: 5 },
+    ]);
+    expect(d.added).toEqual(['TC_2']);
+  });
+
+  test('KHÔNG báo oan: đúng bản vừa pull thì im lặng cả 3 loại', () => {
+    const live = [{ automationKey: 'TC_1', key: 'P-TC-1', updatedDate: 7 }, { automationKey: 'TC_2', key: 'P-TC-2', updatedDate: 8 }];
+    const d = diff(man({ TC_1: { key: 'P-TC-1', updatedDate: 7 }, TC_2: { key: 'P-TC-2', updatedDate: 8 } }), live);
+    expect([d.changed.length, d.missing.length, d.added.length]).toEqual([0, 0, 0]);
+  });
+
+  test('KHÔNG báo oan: case NGOÀI phạm vi story không bị tính là thiếu coverage', () => {
+    const m = { pulledAt: new Date().toISOString(), scope: { jiraRequirementIDs: ['58184'] }, cases: { TC_1: { key: 'P-TC-1', updatedDate: 1 } } };
+    const d = diff(m, [
+      { automationKey: 'TC_1', key: 'P-TC-1', updatedDate: 1, jiraRequirementIDs: ['58184'] },
+      { automationKey: 'TC_9', key: 'P-TC-9', updatedDate: 2, jiraRequirementIDs: ['99999'] },
+    ]);
+    expect(d.added, 'case của story khác không phải việc của mirror này').toEqual([]);
+  });
+});

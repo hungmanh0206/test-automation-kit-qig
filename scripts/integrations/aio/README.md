@@ -27,7 +27,11 @@ npm run aio:deprecate-stale:apply -- --story <JIRA-KEY> --file <x.xlsx>
 
 # KÉO testcase từ AIO về Excel canonical (nguồn cho Phase 2 khi TESTCASE_SOURCE=aio)
 npm run aio:pull -- --story <JIRA-KEY>            # xem trước
-npm run aio:pull:write -- --story <JIRA-KEY>      # ghi test-cases/from-aio/*.xlsx
+npm run aio:pull:write -- --story <JIRA-KEY>      # ghi test-cases/from-aio/*.xlsx + manifest độ tươi
+
+# ĐỐI SOÁT ĐỘ TƯƠI trước khi execute (AIO là source of truth — mirror cũ = chấm theo expected đã sửa)
+npm run aio:verify              # so updatedDate từng case bằng MỘT lệnh list
+npm run aio:verify:enforce      # lệch = exit 1 (dùng ở preflight/CI)
 
 # ĐỐI SOÁT di trú (chỉ đọc — đếm lại ở hai đầu, đừng tin log "XONG")
 npm run aio:reconcile                                  # tất cả Test Execution
