@@ -3,19 +3,31 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * @infra — mọi script CLI trong `scripts/qa/` phải có `require.main === module` guard.
+ * @infra — mọi script CLI trong `scripts/**` phải có `require.main === module` guard.
  *
  * Vì sao thành test: trong CÙNG một phiên tôi mắc lỗi này ở **ba** file khác nhau (`cross_surface_diff.js`,
  * `fixture_matrix.js`, `mutation_check.js`). Hậu quả không hiển nhiên: `require()` file đó trong test làm CLI chạy
  * và tự `process.exit(2)` vì thiếu tham số — test chết mà nhìn như lỗi test, mất thời gian truy sai chỗ.
+ * Đo 20/08/2026 — phạm vi cũ CHỈ soi `scripts/qa/`, nên cả tầng `scripts/integrations/` nằm ngoài tầm và
+ * 5/5 script AIO thiếu guard mà test vẫn xanh. Nguy hơn nhóm qa: mấy file đó có `--apply` ghi vào hệ thống
+ * KHÔNG có API xoá. Nay quét cả `scripts/` theo đệ quy.
+ *
  * Đây là loại lỗi lặp lại ⇒ phải có máy gác, không dựa vào nhớ.
  */
-const QA_DIR = path.resolve(__dirname, '../../../scripts/qa');
+const SCRIPTS_DIR = path.resolve(__dirname, '../../../scripts');
+
+/** Mọi file .js dưới scripts/ (đệ quy) — trước đây chỉ đọc MỘT tầng của scripts/qa. */
+const allScripts = (dir: string): string[] => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+  const p = path.join(dir, e.name);
+  if (e.isDirectory()) return e.name === 'node_modules' ? [] : allScripts(p);
+  return e.name.endsWith('.js') ? [p] : [];
+});
 
 test('@infra script CLI nào gọi process.exit ở top-level thì phải có require.main guard', () => {
   const offenders: string[] = [];
-  for (const f of fs.readdirSync(QA_DIR).filter((x) => x.endsWith('.js'))) {
-    const src = fs.readFileSync(path.join(QA_DIR, f), 'utf8');
+  for (const abs of allScripts(SCRIPTS_DIR)) {
+    const f = path.relative(SCRIPTS_DIR, abs).split(path.sep).join('/');
+    const src = fs.readFileSync(abs, 'utf8');
     // File có CLI (đọc process.argv và exit) nhưng KHÔNG có guard và cũng KHÔNG export gì ⇒ bỏ qua (không ai require).
     const hasCli = /process\.argv/.test(src) && /process\.exit\(/.test(src);
     const hasGuard = /require\.main\s*===\s*module/.test(src);

@@ -34,8 +34,12 @@ class AioClient {
     this.token = opts.token || process.env.AIO_API_TOKEN;
     this.project = opts.project || process.env.AIO_PROJECT_KEY || process.env.JIRA_PROJECT_KEY;
     this.base = (opts.baseUrl || process.env.AIO_BASE_URL || DEFAULT_BASE).replace(/\/$/, '');
-    // Nhịp mặc định giữ dưới ngưỡng rate limit đã đo; tăng --throttle nếu gặp body rỗng.
-    this.throttleMs = Number(opts.throttleMs || process.env.AIO_THROTTLE_MS || 130);
+    /*
+     * NHỊP MẶC ĐỊNH 200ms (trước là 130): đo 20/08/2026 — chuỗi lệnh đọc liên tiếp ở 130–140ms làm AIO trả
+     * BODY RỖNG tới mức cạn retry, script dừng giữa đường. Chậm hơn 70ms/call là giá rẻ so với một lượt
+     * push đứt nửa đường (AIO không có API xoá để dọn phần đã ghi).
+     */
+    this.throttleMs = Number(opts.throttleMs || process.env.AIO_THROTTLE_MS || 200);
     this.retries = Number(opts.retries || 4);
     if (!this.token) throw new Error('Thiếu AIO_API_TOKEN (đặt trong .env hoặc profiles/<TASK>/task.env).');
     if (!this.project) throw new Error('Thiếu AIO_PROJECT_KEY / JIRA_PROJECT_KEY.');

@@ -19,13 +19,13 @@ Publish bộ testcase đã được QA xác nhận từ Excel lên **AIO Tests**
 | QA gate | Chỉ publish thật khi có QA confirmation rõ ràng **và** `--qa-approved`. |
 | Publish | Tạo/cập nhật **case** trên AIO: `title`, `steps[]`, `precondition`, `priority`, `type`, `scriptType` (bắt buộc khi có steps). |
 | Khoá liên kết | `TC ID` → **`automationKey`** (KHÔNG dùng `tags`: AIO trả 200 nhưng không lưu — đã đo). Story → `jiraRequirementIDs`. |
-| Nhóm chức năng | → **folder** `<root>/<nhóm>` (cây **2 cấp**, dựng TỪ Excel, không hardcode danh sách tên). |
+| Nhóm chức năng | → **folder** `<root>/<nhóm>`, dựng TỪ Excel. `--folder-root "A/B"` cho cây nhiều cấp (khai đúng nhánh của bộ cũ là thêm case được). |
 | Tiền điều kiện | Nằm trong field `precondition` của chính case; mã `[PRE-NN]` giữ trong text để tra chéo (AIO không có Precondition issue dùng chung). |
 | Safety | **Mặc định dry-run**; chỉ `--apply` mới ghi. AIO **KHÔNG có API xoá** ⇒ sai là phải dọn tay trên UI. |
 | Deduplicate | Theo `automationKey`: đã có → UPDATE (`mergePut`, vì `PUT .../detail` ghi đè toàn phần), chưa có → tạo. Chạy lại không tạo trùng. |
 | Cleanup | Khi Excel bỏ TC đã publish: `npm run aio:deprecate-stale` → đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), sau Human Review approval. |
 | No hard delete | Không xoá case (và cũng không có API để xoá). |
-| Report | Tự ghi kết quả publish local dưới `<TASK_OUTPUT_DIR>/reports/` — script AIO không tự ghi report. |
+| Report | Script TỰ ghi `<TASK_OUTPUT_DIR>/reports/aio-testcase-publish-summary.md` (số tạo/cập nhật/lỗi + cây folder + nguồn Excel). |
 
 ## Inputs
 
@@ -44,7 +44,7 @@ Publish bộ testcase đã được QA xác nhận từ Excel lên **AIO Tests**
 | Output | Vị trí |
 |---|---|
 | Case trên AIO Tests | Project AIO theo env |
-| Publish summary | `<TASK_OUTPUT_DIR>/reports/aio-testcase-publish-summary.md` (agent tự ghi) |
+| Publish summary | `<TASK_OUTPUT_DIR>/reports/aio-testcase-publish-summary.md` (script tự ghi) |
 | Cleanup summary | `<TASK_OUTPUT_DIR>/reports/aio-deprecate-summary.md` (agent tự ghi) |
 
 ## Commands
@@ -79,7 +79,7 @@ npm run aio:deprecate-stale:apply          # đổi caseStatus sang Deprecated
 - Nếu Excel không còn TC ID đã publish, dùng `aio:deprecate-stale` (Deprecated), không xoá.
 - Nếu token/quyền chưa sẵn sàng, ghi blocker hoặc chỉ dry-run; không tạo case mơ hồ.
 - Nếu publish lỗi một phần, giữ Excel và report local làm source; không sửa testcase để khớp lỗi publish.
-- Bộ testcase cũ có cây folder sâu 3 cấp, còn `aio:publish` chỉ dựng 2 cấp ⇒ thêm case vào bộ đó thì vá tại chỗ (`--only`), đừng publish lại cả bộ.
+- Bộ testcase cũ nằm ở cây 3 cấp: truyền `--folder-root "<cấp 1>/<cấp 2>"` rồi `--only <TC_IDs>` để thêm case vào đúng nhánh, đừng publish lại cả bộ.
 - Phase 2 execute mặc định lấy nguồn từ AIO (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx` bằng `npm run aio:pull:write`); `excel` là opt-out.
 
 ## Anti-Patterns

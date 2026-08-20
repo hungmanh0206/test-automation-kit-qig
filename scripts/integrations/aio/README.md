@@ -18,7 +18,7 @@ chỉ đích đến là khác.
 
 ```bash
 # đẩy testcase (MẶC ĐỊNH dry-run)
-npm run aio:publish -- --file <x.xlsx> --story <JIRA-KEY> [--limit 5] [--folder-root <tên>]
+npm run aio:publish -- --file <x.xlsx> --story <JIRA-KEY> [--limit 5] [--only TC_1,TC_2] [--folder-root "<A/B>"]
 npm run aio:publish:apply -- --file <x.xlsx> --story <JIRA-KEY>
 
 # VÒNG ĐỜI: TC rời khỏi Excel → Deprecated; quay lại → Published

@@ -311,4 +311,6 @@ async function main() {
   if (absent.length || failed) process.exitCode = 1;
 }
 
-main().catch((e) => { console.error('LỖI:', e.message); process.exit(1); });
+// Guard: `require` file này KHÔNG được tự chạy — nó có đường ghi (`--apply`) vào hệ thống không xoá được.
+if (require.main === module) main().catch((e) => { console.error('LỖI:', e.message); process.exit(1); });
+module.exports = { main };

@@ -96,6 +96,7 @@ const DIMENSION_TAGS = [
   'positive', 'negative', 'boundary', 'edge',
   'security', 'e2e', 'regression',
   'validation', 'ui', 'export', 'resilience', 'sideeffect', 'guard', 'design', 'display', 'calc', 'bedata', 'perf', 'api', 'impact',
+  'ordering', 'bughistory', 'a11y',
 ];
 /** Dimension từ tag [..] trong title (vd "[Negative] ..." → ['negative']). */
 function dimensionsOf(title) {

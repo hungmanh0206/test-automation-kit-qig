@@ -23,8 +23,10 @@
  * KHÔNG dùng `tags`: AIO nhận 200 nhưng không lưu (đã đo) → TC ID nằm ở automationKey.
  */
 
+const fs = require('fs');
 const path = require('path');
 const { AioClient } = require('./aio_client');
+const rc = require(path.resolve(__dirname, '..', '..', 'utils', 'runtime_config'));
 const { parseXlsx } = require(path.resolve(__dirname, '..', '..', 'lib', 'testcase'));
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
@@ -46,6 +48,22 @@ const AUTOMATION_MANUAL = 1;
 const typeOf = (group) => (/^api\b/i.test(group) ? 4 : /security|permission|phân quyền/i.test(group) ? 6 : 3);
 const lineText = (x) => (typeof x === 'string' ? x : (x && (x.text || x.value || x.line)) || '');
 const tcIdOf = (t) => t.id || (t._cells && (t._cells['TC ID'] || t._cells['TC_ID'])) || '';
+
+/** Report publish — path theo runtime_config để nằm đúng `<TASK_OUTPUT_DIR>/reports/`. */
+function writeReport(r) {
+  let out;
+  try { out = path.join(rc.getTaskOutputDir(), 'reports'); } catch (e) { return; }   // không có TASK_KEY thì bỏ qua, đừng vỡ
+  const L = [`<!-- gate: proven=${r.created + r.updated} inconclusive=0 broken=${r.failed} -->`,
+    '# Publish testcase lên AIO Tests', '',
+    `- Nguồn: \`${path.basename(r.file)}\` · story: \`${r.story || '(không)'}\``,
+    `- Kết quả: **tạo ${r.created}** · **cập nhật ${r.updated}** · **lỗi ${r.failed}** (tổng ${r.tests.length} case xử lý)`,
+    `- Cây folder: \`${r.rootName}/{${r.groups.join(', ')}}\``,
+    '- Dedup theo `automationKey` (= TC ID): case đã có thì UPDATE, không tạo trùng.', ''];
+  if (r.errors.length) L.push('## Lỗi', '', ...r.errors.map((e) => `- ${e}`), '');
+  fs.mkdirSync(out, { recursive: true });
+  fs.writeFileSync(path.join(out, 'aio-testcase-publish-summary.md'), `${L.join('\n')}\n`);
+  console.log(`Report: ${path.join(path.relative(rc.REPO_ROOT, out), 'aio-testcase-publish-summary.md')}`);
+}
 
 async function main() {
   if (!FILE) { console.error('ERROR: cần --file <đường dẫn .xlsx>'); process.exit(2); }
@@ -78,7 +96,13 @@ async function main() {
   console.log(`Case  : ${doc.tests.length}${tests.length !== doc.tests.length ? ` (xử lý ${tests.length})` : ''} · nhóm: ${groups.length} · story: ${STORY || '(không)'}`);
   console.log(`Bước  : ${tests.reduce((s, t) => s + (t.steps || []).length, 0)}`);
 
+  /*
+   * --folder-root NHẬN ĐƯỜNG DẪN NHIỀU CẤP ("A/B"): API `folder/hierarchy` nhận mảng segment tuỳ ý, nên
+   * giới hạn "2 cấp" trước đây là do CHÍNH script chỉ truyền [root, nhóm]. Hệ quả đo được: bộ testcase cũ
+   * nằm ở cây 3 cấp thì không thêm case vào được — phải vá tay trên UI. Nay khai đúng cây là xong.
+   */
   const rootName = arg('folder-root', STORY || path.basename(FILE, '.xlsx'));
+  const rootSegs = rootName.split('/').map((x) => x.trim()).filter(Boolean);
   if (!APPLY) {
     console.log(`\nFolder sẽ tạo: ${rootName}/{${groups.join(', ')}}`);
     const t = tests[0];
@@ -91,7 +115,7 @@ async function main() {
   }
 
   // 1) Cây thư mục dựng TỪ nhóm trong Excel (hardcode danh sách là nguồn gốc lỗi lệch tên).
-  for (const g of groups) await aio.ensureFolder('testcase', [rootName, g]);
+  for (const g of groups) await aio.ensureFolder('testcase', [...rootSegs, g]);
   const folders = await aio.folderMap('testcase');
   console.log(`\nFolder: ${groups.filter((g) => folders[g]).length}/${groups.length} sẵn sàng`);
 
@@ -138,4 +162,6 @@ async function main() {
   if (failed) process.exitCode = 1;
 }
 
-main().catch((e) => { console.error('LỖI:', e.message); process.exit(1); });
+// Guard: `require` file này KHÔNG được tự chạy — nó có đường ghi (`--apply`) vào hệ thống không xoá được.
+if (require.main === module) main().catch((e) => { console.error('LỖI:', e.message); process.exit(1); });
+module.exports = { main, writeReport };

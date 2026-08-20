@@ -83,7 +83,7 @@ Các bước thực hiện:
 6. Chạy dry-run (mặc định, không ghi gì lên AIO):
    `npm run aio:publish -- --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx --story [JIRA_STORY_KEY]`
    - `--limit 5` để thử vài case đầu; `--only TC_001,TC_007` để đẩy lại vài case lẻ sau khi sửa Excel.
-   - `--folder-root "<tên gốc>"` nếu không muốn lấy `[JIRA_STORY_KEY]` làm gốc cây.
+   - `--folder-root "<A/B>"` nếu muốn gốc khác `[JIRA_STORY_KEY]`, hoặc cần cây NHIỀU CẤP (thêm case vào bộ cũ).
    - `--throttle 130` nếu AIO trả **body rỗng** (đó là rate limit, không phải 429).
 7. Review dry-run output:
    - Tổng case đọc từ Excel / số case sẽ xử lý.
@@ -95,7 +95,7 @@ Các bước thực hiện:
    - Dedup theo `automationKey`: case đã có thì **UPDATE** (`↻ KEY`), chưa có thì tạo (`✓ KEY`) — chạy lại KHÔNG tạo trùng.
    - `PUT .../detail` là ghi đè toàn phần (script dùng `mergePut`), nên đừng sửa case thẳng trên UI rồi re-publish: bản UI sẽ bị Excel ghi đè.
    - Đọc kỹ dòng tổng `TẠO n · CẬP NHẬT n · LỖI n`; có LỖI thì exit code khác 0.
-9. Ghi/cập nhật (script AIO **không** tự ghi report — agent phải tự ghi):
+9. Ghi/cập nhật (script TỰ ghi `reports/aio-testcase-publish-summary.md`; agent chỉ cập nhật `task.md`):
    - `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/aio-testcase-publish-summary.md` — mode, tổng case, created/updated/failed, cây folder, key AIO đại diện.
    - `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/task.md`
 10. Final cho user chỉ tóm tắt:

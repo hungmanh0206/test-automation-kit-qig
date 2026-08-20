@@ -43,7 +43,7 @@
    npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --qa-approved
    ```
    Dedup theo `automationKey`: case đã có → UPDATE, chưa có → tạo. Chạy lại không tạo trùng.
-6. Cập nhật `task.md` và **tự ghi** publish summary (script AIO không ghi report).
+6. Cập nhật `task.md`; publish summary do script tự ghi (`reports/aio-testcase-publish-summary.md`).
 7. Đối soát: `TẠO n · CẬP NHẬT n · LỖI n`; có LỖI thì ghi blocker, không bỏ qua.
 
 ## Rules
