@@ -63,7 +63,7 @@ const DEVIATION_HINT = /(chờ thêm|đợi thêm|thêm wait|extra wait|retry|th
 function canonStatus(raw) {
   const s = String(raw || '').trim().toUpperCase().replace(/[\s_-]+/g, '_');
   try {
-    // eslint-disable-next-line global-require, import/no-dynamic-require
+    // eslint-disable-next-line global-require
     const tax = require(require('path').resolve(__dirname, '..', '..', '..', '.agent', 'config', 'verdict_taxonomy.json'));
     if (tax.statuses && tax.statuses[s]) return s;
     if (tax.synonyms && tax.synonyms[s]) return tax.synonyms[s];
