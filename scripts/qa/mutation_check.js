@@ -97,7 +97,15 @@ async function runOnce(page, screens, mutant) {
   if (mutant) {
     // Chỉ bóp endpoint NGHIỆP VỤ. Bản đầu chặn `**/api/**` nên bóp cả `analytics.tiktok.com/api/v2/pixel` và
     // `/api/v1/me` — vô nghĩa, mà lại làm mutant "sống sót" một cách giả (tiêm vào thứ màn không hiển thị).
-    const BIZ = mutant.match ? new RegExp(mutant.match) : /\/api\/v\d+\/(service-fee-orders|orders|add-on-orders|transactions|products|combos)/i;
+    // Danh từ nghiệp vụ KHÔNG phải lúc nào cũng đứng ngay sau `/api/v1/`.
+    // Đo 20/08/2026: endpoint thật của OPS là `/api/v1/product-orders/transactions` và
+    // `/api/v1/product-orders/<id>` — bản cũ đòi khớp NGAY sau `/api/v\d+/` nên TRƯỢT SẠCH ⇒ route handler
+    // không bắn lần nào ⇒ cả 5 mutant báo "không tìm được field phù hợp". Đó là **phép đo hỏng**, rất dễ
+    // đọc nhầm thành "bộ kiểm mù 0%". Nay cho phép vài đoạn path ở giữa, nhưng VẪN chỉ nhận danh từ nghiệp
+    // vụ — không nới thành bắt-tất-cả dưới /api/ (bản đầu làm thế thì bóp cả pixel của analytics).
+    // (Dùng comment DÒNG: chuỗi có `*` + `/` liền nhau sẽ đóng sớm khối /* */ và biến phần sau thành code.)
+    const BIZ = mutant.match ? new RegExp(mutant.match)
+      : /\/api\/v\d+\/(?:[a-z0-9-]+\/)*(service-fee-orders|product-orders|add-on-orders|orders|transactions|products|combos)\b/i;
     await page.route((url) => BIZ.test(String(url)), async (route) => {
       const res = await route.fetch();
       const ct = res.headers()['content-type'] || '';
