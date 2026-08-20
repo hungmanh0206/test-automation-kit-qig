@@ -66,17 +66,45 @@ function core(v) {
 const isReadable = (v) => !/^\(/.test(String(v)) && !['', '-', '—', '–', 'n/a', 'undefined', 'null'].includes(norm(v).toLowerCase());
 
 /** Đọc mọi cặp nhãn→giá trị trên màn (quét sâu, cùng cách ui_conformance_check đọc layout div). */
+/*
+ * Đọc mọi cặp NHÃN → GIÁ TRỊ đang hiển thị trên màn.
+ *
+ * Hai khuôn, vì UI thật có hai kiểu bày dữ liệu:
+ *  (1) FORM — "Nhãn: Giá trị" nằm cạnh nhau trong một element (2 con đều là lá).
+ *  (2) LƯỚI — nhãn ở `<thead>`, giá trị ở `<td>` của DÒNG khác hẳn.
+ *
+ * Bản đầu chỉ có (1) ⇒ trên màn danh sách nó đọc được đúng **1 cặp**, nên mọi phép đối chiếu UI↔API trên
+ * lưới đều bất khả. Đo 20/08/2026 bằng mutation_check: bóp `amount` 1.000.000 → 0 trên Transaction List,
+ * cả 5 mutant SỐNG SÓT với lý do giống nhau "không tìm được nhãn UI ứng với field amount".
+ * Mà theo file tổng hợp bug: **45% bug là hiển thị, 43% là tiền/định dạng số** — phần lớn sống trên lưới.
+ * Nói cách khác, vùng mù này che đúng chỗ bug tập trung nhiều nhất.
+ */
 async function pairsOf(page) {
   return page.evaluate(() => {
     const n = (s) => String(s || '').replace(/\s+/g, ' ').trim();
     const out = {};
+    const put = (label, value) => { if (label && !(label in out)) out[label] = value; };
+
+    // (1) FORM
     for (const el of [...document.querySelectorAll('*')]) {
       if (!el.offsetParent || el.children.length !== 2) continue;
       const kids = [...el.children];
       if (!kids.every((k) => !k.children.length)) continue;
-      const label = n(kids[0].textContent);
-      const value = n(kids[1].textContent);
-      if (label && !(label in out)) out[label] = value;
+      put(n(kids[0].textContent), n(kids[1].textContent));
+    }
+
+    // (2) LƯỚI — lấy DÒNG ĐẦU làm đại diện. Đủ cho mục đích "giá trị này có lên màn đúng không";
+    // không gộp cả cột vì như thế mất quan hệ 1 nhãn ↔ 1 giá trị mà bên gọi đang dựa vào.
+    for (const table of [...document.querySelectorAll('table')]) {
+      if (!table.offsetParent) continue;
+      const heads = [...table.querySelectorAll('thead th')].map((th) => n(th.textContent));
+      // KHÔNG lấy `tbody tr` đầu tiên: Ant Design chèn `tr.ant-table-measure-row` ở đầu với **0 ô** (dòng đo
+      // bề rộng cột). Lấy nhầm nó thì cells rỗng ⇒ không sinh được cặp nào, và cả cơ chế đối chiếu lưới im
+      // lặng đúng như khi chưa có gì. Lấy dòng ĐẦU TIÊN CÓ Ô.
+      const row = [...table.querySelectorAll('tbody tr')].find((r) => r.querySelectorAll('td').length);
+      if (!heads.length || !row) continue;
+      const cells = [...row.querySelectorAll('td')].map((td) => n(td.textContent));
+      heads.forEach((h, i) => { if (h && cells[i] !== undefined) put(h, cells[i]); });
     }
     return out;
   });

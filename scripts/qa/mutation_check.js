@@ -213,9 +213,20 @@ async function main() {
     await login(page, catalog.login || { site: 'ops' });
     const base = await runOnce(page, screens, null);
     console.log(`[mut] BASELINE: ${base.dev} deviation trên ${screens.length} màn (đây là mốc so sánh)`);
+    /*
+     * MỖI MUTANT MỘT PAGE MỚI — nhưng CÙNG context.
+     * Đo 20/08/2026: dùng lại một page cho baseline + cả 5 mutant thì lượt đầu tiêm được, các lượt sau
+     * "không tìm được field phù hợp" và baseline tụt 26 → 17 ở MỌI mutant. Nguyên nhân: SPA giữ cache
+     * trong bộ nhớ JS nên lần điều hướng sau KHÔNG gọi lại API ⇒ `page.route` không có gì để bóp, và màn
+     * render từ cache nên ít field hơn. Page mới xoá sạch state JS.
+     * Không tạo CONTEXT mới: context mới là mất cookie ⇒ phải login lại mỗi lượt, mà OPS có khoá đăng nhập
+     * khi login dồn dập (đã gặp). Cùng context thì giữ nguyên session, chỉ reset bộ nhớ trang.
+     */
     for (const m of mutants) {
       // eslint-disable-next-line no-await-in-loop
-      const r = await runOnce(page, screens, m);
+      const p = await ctx.newPage();
+      // eslint-disable-next-line no-await-in-loop
+      const r = await runOnce(p, screens, m).finally(() => p.close().catch(() => {}));
       const killed = r.dev > base.dev;
       rows.push({ ...m, dev: r.dev, killed, injected: r.injected, relevant: r.relevant, xsurfCaught: r.xsurfCaught, xsurfDetail: r.xsurfDetail });
       const tag = !r.injected ? '⚠ KHÔNG TIÊM ĐƯỢC'
