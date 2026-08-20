@@ -498,3 +498,47 @@ test.describe('@infra gate:policy — TMS-drift', () => {
       (out) => expect(out).not.toContain('_tms_drift_probe3.md'));
   });
 });
+
+/*
+ * CHIỀU COVERAGE MỚI PHẢI VÀO CANONICAL — không chỉ đẻ file prompt.
+ *
+ * Kit đếm độ phủ theo `DIMS` trong dimension_coverage.js. Thêm một file `dimensions/NN_x.md` mà quên đăng ký
+ * vào DIMS thì chiều đó **không bao giờ được đếm**: prompt bảo làm, máy không biết nó tồn tại, và báo cáo
+ * coverage vẫn xanh. Đây là đúng lớp lỗi "luật có mà không có máy" đã gặp nhiều lần ở kit này.
+ */
+test.describe('@infra chiều coverage — file prompt và canonical phải khớp nhau', () => {
+  const DIM_DIR = path.join(REPO, 'prompt_templates/phase1/dimensions');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const covSrc = fs.readFileSync(path.join(REPO, 'scripts/qa/dimension_coverage.js'), 'utf8');
+  const navSrc = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/02_gen_testcases.md'), 'utf8');
+
+  const secOf = (f: string) => `§${String(f.match(/^(\d+)/)?.[1] ?? '').replace(/^0+/, '')}`;
+  const dimFiles = fs.readdirSync(DIM_DIR).filter((f) => /^\d+_.*\.md$/.test(f));
+
+  test('mỗi file dimensions/ đều được đăng ký trong DIMS của dimension_coverage.js', () => {
+    const missing = dimFiles.filter((f) => !covSrc.includes(`sec: '${secOf(f)}'`));
+    expect(missing, `chưa vào canonical: ${missing.join(', ')} → thêm vào DIMS + TAG_OF`).toEqual([]);
+    expect(dimFiles.length).toBeGreaterThanOrEqual(18);
+  });
+
+  test('mỗi file dimensions/ đều có mặt trong bảng điều hướng của 02_gen_testcases', () => {
+    const missing = dimFiles.filter((f) => !navSrc.includes(`dimensions/${f}`));
+    expect(missing, `bảng điều hướng thiếu: ${missing.join(', ')} → agent sẽ không bao giờ mở file đó`).toEqual([]);
+  });
+
+  test('mỗi chiều trong DIMS đều có TAG_OF — thiếu thì case gắn tag vẫn không được tính', () => {
+    const ids = [...covSrc.matchAll(/\{ id: '([a-z0-9_]+)', sec:/g)].map((m) => m[1]);   // e2e có CHỮ SỐ
+    const tagBlock = covSrc.slice(covSrc.indexOf('const TAG_OF'), covSrc.indexOf('const COVERAGE_TAGS'));
+    const missing = ids.filter((id) => !tagBlock.includes(`${id}:`));
+    expect(missing, `thiếu TAG_OF: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  test('lệnh mà chiều §20 dạy phải TỒN TẠI (dạy lệnh ma là tự tạo lỗ)', () => {
+    const md = fs.readFileSync(path.join(DIM_DIR, '20_bug_history.md'), 'utf8');
+    expect(md).toMatch(/npm run bugs:checklist/);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const pkg = require(path.join(REPO, 'package.json'));
+    expect(pkg.scripts['bugs:checklist'], 'prompt dạy lệnh chưa có trong package.json').toBeTruthy();
+    expect(fs.existsSync(path.join(REPO, 'scripts/qa/bugs_checklist.js'))).toBe(true);
+  });
+});

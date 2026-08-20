@@ -73,6 +73,11 @@ const DIMS = [
   { id: 'security', sec: '§15', label: 'Security Coverage', group: /idor|mass-assignment|injection|session|token|security/, re: /\bidor\b|mass[- ]assignment|injection|\bxss\b|session|token|leo quyen|privilege|khong dang nhap/ },
   { id: 'perf', sec: '§16', label: 'Performance / Load / Stress', group: /perf|load|stress/, re: /hieu nang|thoi gian phan hoi|\bsla\b|\bload test\b|stress|p95|dong thoi \d+ user/ },
   { id: 'change_impact', sec: '§17', label: 'Change Impact / Regression Ripple', group: /regression|impact/, re: /regression|ripple|anh huong (lan|toi)|khong lam vo|van hoat dong nhu truoc/ },
+  // Ba chiều thêm 20/08/2026 sau khi ĐO chỗ hở: ordering chỉ 1 file nhắc trong toàn kit; knowledge/bugs có 58
+  // entry mà không prompt sinh case nào dùng; accessibility_check.js chạy được nhưng chỉ 2/22 file phase1 nhắc.
+  { id: 'ordering', sec: '§19', label: 'Ordering / Sequence', group: /ordering|thu tu/, re: /sai thu tu|dao thu tu|thu tu thao tac|quay lui|quay lai buoc|bam back|xen ke|hai tab|2 tab|bo do giua chung|reset khi doi/ },
+  { id: 'bug_history', sec: '§20', label: 'Error Guessing từ bug lịch sử', group: /bughistory|bug lich su/, re: /bug lich su|tung xay ra|da tung loi|lap lai loi|regression tu bug|knowledge\/bugs/ },
+  { id: 'accessibility', sec: '§21', label: 'Accessibility (A11y)', group: /a11y|accessib/, re: /\ba11y\b|accessib|\baria\b|contrast|focus order|dieu huong ban phim|screen reader|label for|nhan gan dung/ },
 ];
 
 // Self-check bảng DIMS: id trùng hoặc pattern không phải RegExp thì báo ngay, đừng để lệch âm thầm.
@@ -114,7 +119,7 @@ const blob = (t) => norm(`${t.title} ${t.stepsRaw} ${t.expectedRaw} ${t.data}`);
 //   này KHÔNG đủ tin: recall thiếu (§5 API đếm 0 trong khi có 17 case nhắc "api") và precision kém
 //   (§12 nhận cả "Chọn Next → hiển thị màn Confirm" — vì `hiển thị` là động từ chuẩn của MỌI expected tiếng
 //   Việt). Nên chế độ này chỉ để BIẾT chỗ nào có thể hổng, và script TỪ CHỐI chặn.
-const TAG_OF = { field_validation: 'validation', ui_display: 'ui', api: 'api', e2e: 'e2e', export_import: 'export', resilience: 'resilience', side_effect: 'sideeffect', guard: 'guard', design_figma: 'design', display_conformance: 'display', business_logic: 'calc', be_conformance: 'bedata', security: 'security', perf: 'perf', change_impact: 'impact' };
+const TAG_OF = { field_validation: 'validation', ui_display: 'ui', api: 'api', e2e: 'e2e', export_import: 'export', resilience: 'resilience', side_effect: 'sideeffect', guard: 'guard', design_figma: 'design', display_conformance: 'display', business_logic: 'calc', be_conformance: 'bedata', security: 'security', perf: 'perf', change_impact: 'impact', ordering: 'ordering', bug_history: 'bughistory', accessibility: 'a11y' };
 const COVERAGE_TAGS = new Set(Object.values(TAG_OF));
 const labelled = tests.filter((t) => (t.dimensions || []).some((x) => COVERAGE_TAGS.has(x)));
 const MODE = labelled.length ? 'label' : 'hint';

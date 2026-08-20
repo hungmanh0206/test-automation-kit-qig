@@ -440,9 +440,9 @@ Không giảm số lượng testcase bằng cách gộp nhiều rule khác nhau 
 
 ## 3–17. CHIỀU COVERAGE — mở đúng chiều trong `dimensions/`
 
-15 chương chi tiết đã tách sang [`dimensions/`](dimensions/) để không phải gánh 9,9k token cho chiều mà task không dùng.
+18 chương chi tiết nằm ở [`dimensions/`](dimensions/) để không phải gánh 9,9k token cho chiều mà task không dùng.
 
-> 📌 **Quy ước tham chiếu:** mọi chỗ trong file này (và trong `02b`, `run_phase1`) ghi "**mục N**" với `N = 3…17` đều trỏ tới file tương ứng trong [`dimensions/`](dimensions/) theo bảng dưới. Riêng **mục 18 (Self-check)** và mục 0–2 **vẫn ở file này**.
+> 📌 **Quy ước tham chiếu:** mọi chỗ trong file này (và trong `02b`, `run_phase1`) ghi "**mục N**" với `N = 3…17, 19…21` đều trỏ tới file tương ứng trong [`dimensions/`](dimensions/) theo bảng dưới. Riêng **mục 18 (Self-check)** và mục 0–2 **vẫn ở file này**.
 
 **THỨ TỰ BẮT BUỘC:** (1) khai `requirements/dimension_manifest.json` — chiều nào `required`, chiều nào `n/a` **kèm lý do**; (2) mở đúng file của các chiều `required`; (3) sinh case có **tag chiều** (§0b); (4) `npm run dim:coverage -- --enforce` chặn nếu thiếu.
 
@@ -477,6 +477,9 @@ Khai `n/a` cho một chiều mà thực tế nó áp dụng = **bỏ chiều có
 | §15 | Security Coverage | `[Security]` | scope có auth/role/dữ liệu người khác (IDOR, mass-assignment, injection) | [`15_security.md`](dimensions/15_security.md) |
 | §16 | Performance / Load / Stress Coverage | `[Perf]` | requirement có SLA, hoặc scope có dữ liệu lớn/đồng thời | [`16_perf.md`](dimensions/16_perf.md) |
 | §17 | Change Impact / Regression Ripple Coverage | `[Impact]` | story thêm/sửa/xoá làm thay đổi thứ DÙNG CHUNG | [`17_change_impact.md`](dimensions/17_change_impact.md) |
+| §19 | Ordering / Sequence Coverage | `[Ordering]` | luồng có ≥2 bước mà người dùng có thể làm SAI THỨ TỰ / quay lui / xen kẽ | [`19_ordering.md`](dimensions/19_ordering.md) |
+| §20 | Error Guessing từ BUG LỊCH SỬ | `[BugHistory]` | `knowledge/bugs/` có entry cùng module với scope (`npm run bugs:checklist`) | [`20_bug_history.md`](dimensions/20_bug_history.md) |
+| §21 | Accessibility (A11y) Coverage | `[A11y]` | scope có màn UI thao tác được: form/bảng/modal/menu | [`21_accessibility.md`](dimensions/21_accessibility.md) |
 
 ## 18. Self-check vét cạn biên (BẮT BUỘC trước khi kết thúc)
 Tự rà và ghi vào `reports/phase1-summary.md` (Coverage Gaps) nếu thiếu:

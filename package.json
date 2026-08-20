@@ -98,7 +98,8 @@
     "aio:pull:write": "node scripts/integrations/aio/pull_testcases_aio.js --write",
     "aio:deprecate-stale": "node scripts/integrations/aio/deprecate_stale_aio.js",
     "aio:deprecate-stale:apply": "node scripts/integrations/aio/deprecate_stale_aio.js --apply",
-    "self-review:enforce": "node scripts/qa/self_review.js --enforce"
+    "self-review:enforce": "node scripts/qa/self_review.js --enforce",
+    "bugs:checklist": "node scripts/qa/bugs_checklist.js"
   },
   "dependencies": {
     "axe-core": "^4.12.1",
