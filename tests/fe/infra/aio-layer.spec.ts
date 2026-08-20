@@ -119,3 +119,39 @@ test.describe('@infra AIO — mirror phải tươi (diff manifest ↔ AIO)', () 
     expect(d.added, 'case của story khác không phải việc của mirror này').toEqual([]);
   });
 });
+
+/*
+ * @infra — STATUS KHÔNG PHẢI VERDICT không được lọt vào execution.
+ *
+ * `verdict_taxonomy` cố ý để `aio: null` cho EXPANSION_FINDING/OBSERVATION: chúng là phát hiện từ mở rộng
+ * quanh case, không phải verdict của case gốc. Bản trước của push fallback về "Not Run" ⇒ case ĐÃ chạy bị
+ * ghi thành CHƯA chạy và attempt mới đè lên kết quả đang hiển thị (đo bằng dry-run: 3/3 case "khớp", không
+ * một lời cảnh báo). Test này khoá cả hai đầu: taxonomy giữ null, và mọi script AIO ghi biên bản.
+ */
+test.describe('@infra AIO — status không phải verdict + biên bản của máy', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const taxonomy = require(path.join(REPO, '.agent/config/verdict_taxonomy.json'));
+
+  test('EXPANSION_FINDING/OBSERVATION giữ `aio: null` — KHÔNG được map sang trạng thái run nào', () => {
+    for (const k of ['EXPANSION_FINDING', 'OBSERVATION']) {
+      expect(taxonomy.statuses[k], `taxonomy phải còn ${k}`).toBeTruthy();
+      expect(taxonomy.statuses[k].aio, `${k} map sang run status là biến "đã chạy" thành "chưa chạy"`).toBeNull();
+    }
+  });
+
+  test('push LOẠI status aio=null khỏi payload (không đẩy thành Not Run)', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), 'utf8');
+    expect(src, 'phải có hàm nhận biết status không-verdict').toContain('isNonVerdict');
+    expect(src, 'phải LỌC khỏi tests trước khi khớp case').toMatch(/tests = tests\.filter\(\(t\) => !isNonVerdict/);
+    expect(src, 'phải nói rõ chúng thuộc report mở rộng').toContain('expansion-findings.md');
+  });
+
+  test('cả 3 script ghi tay-đổi-dữ-liệu đều tự ghi report (không giao việc của máy cho người)', () => {
+    const must = [['publish_testcases_aio.js', 'aio-testcase-publish-summary.md'], ['push_execution_aio.js', 'aio-execution-summary.md'], ['deprecate_stale_aio.js', 'aio-deprecate-summary.md']];
+    for (const [file, report] of must) {
+      const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio', file), 'utf8');
+      expect(src, `${file} phải tự ghi ${report}`).toContain(report);
+      expect(src, `${file} phải thực sự ghi file`).toContain('writeFileSync');
+    }
+  });
+});

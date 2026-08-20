@@ -48,6 +48,17 @@ const QA_APPROVED = flag('qa-approved');
 const taxonomy = require(path.resolve(__dirname, '..', '..', '..', '.agent', 'config', 'verdict_taxonomy.json'));
 const NOT_RUN = 'Not Run';
 
+/*
+ * Status CÓ trong taxonomy nhưng `aio: null` = CỐ Ý không map: EXPANSION_FINDING/OBSERVATION là phát hiện
+ * từ mở rộng quanh case, KHÔNG phải verdict của case gốc. Đẩy lên thì AIO ghi "Not Run" — biến case ĐÃ chạy
+ * thành CHƯA chạy, và attempt mới đè lên kết quả đang hiển thị; pass-rate của cycle cũng mất nghĩa.
+ * Chúng thuộc `reports/expansion-findings.md`, không thuộc execution.
+ */
+const isNonVerdict = (status) => {
+  const entry = taxonomy.statuses[outputGate.canonStatus(status)];
+  return Boolean(entry) && entry.aio === null;
+};
+
 function buildStatusMap(cfg) {
   const idOf = (list) => Object.fromEntries((list || []).map((s) => [String(s.name).toLowerCase(), s.ID]));
   const run = idOf(cfg && cfg.runStatuses);
@@ -114,6 +125,36 @@ function readStatusDoc(taskOut) {
   return { file: p, doc: JSON.parse(fs.readFileSync(p, 'utf8')) };
 }
 
+/*
+ * REPORT do MÁY ghi (tài liệu hứa `reports/aio-execution-summary.md` từ lâu mà không script nào tạo).
+ * Không có nó thì lượt sau không ai biết cycle nào đã đẩy, bao nhiêu case, ai bị loại và vì sao.
+ */
+function writeExecReport(r) {
+  let dir;
+  try { dir = path.join(rc.getTaskOutputDir(), 'reports'); } catch (e) { return; }
+  const tally = (arr) => arr.reduce((m, t) => { const k = String(t.status || "?"); m[k] = (m[k] || 0) + 1; return m; }, {});
+  const fmt = (o) => Object.entries(o).sort().map(([k, v]) => `${k}=${v}`).join(" · ") || "(rỗng)";
+  const L2 = [`<!-- gate: proven=${r.pushed || 0} inconclusive=${r.nonVerdict.length} broken=${r.failed || 0} -->`,
+    `# Đẩy kết quả execute lên AIO Tests`, "",
+    `- Task: **${r.task}** · cycle: **${r.title}**${r.cycleKey ? ` (\`${r.cycleKey}\`)` : ""}`,
+    `- Chế độ: ${r.applied ? "**ĐÃ GHI**" : "dry-run (chưa ghi)"}`,
+    `- Case trong status file: **${r.total}** · khớp trên AIO: **${r.matched}** · không khớp: **${r.missing.length}**`,
+    `- Verdict: ${fmt(r.byStatus)}`,
+    r.applied ? `- Run đã ghi: **${r.pushed}** · evidence cấp bước **${r.evStep}** · cấp run **${r.evRun}** · lỗi **${r.failed}**` : "",
+    ""];
+  if (r.nonVerdict.length) {
+    L2.push(`## Loại khỏi execution (${r.nonVerdict.length}) — status KHÔNG phải verdict`, "",
+      "> `EXPANSION_FINDING`/`OBSERVATION` là phát hiện từ mở rộng quanh case. Đẩy lên AIO sẽ thành \"Not Run\", tức case đã chạy bị ghi là chưa chạy. Chúng thuộc `reports/expansion-findings.md`.", "",
+      ...r.nonVerdict.map((t) => `- \`${t.tcId}\` — ${t.status}`), "");
+  }
+  if (r.missing.length) L2.push(`## Không tìm thấy trên AIO (${r.missing.length})`, "",
+    "> Khoá nối là `automationKey` = TC ID. Không khớp thường do chưa publish, hoặc TC ID lệch giữa Excel và AIO.", "",
+    ...r.missing.map((t) => `- \`${t.tcId}\``), "");
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'aio-execution-summary.md'), `${L2.filter((x) => x !== '').join('\n')}\n`);
+  console.log(`Report: ${path.join(path.relative(rc.REPO_ROOT, dir), 'aio-execution-summary.md')}`);
+}
+
 async function main() {
   const taskOut = arg('task-output') || rc.getTaskOutputDir();
   const { file, doc } = readStatusDoc(taskOut);
@@ -133,6 +174,12 @@ async function main() {
     const got = new Set(tests.map((t) => String(t.tcId).toUpperCase()));
     const miss = [...only].filter((k) => !got.has(k));
     if (miss.length) { console.error(`ERROR: --only không thấy trong status: ${miss.join(', ')}`); process.exit(2); }
+  }
+  const nonVerdict = tests.filter((t) => isNonVerdict(t.status));
+  if (nonVerdict.length) {
+    tests = tests.filter((t) => !isNonVerdict(t.status));
+    console.log(`Loại ${nonVerdict.length} case status KHÔNG phải verdict (${[...new Set(nonVerdict.map((t) => t.status))].join(', ')}): ${nonVerdict.slice(0, 6).map((t) => t.tcId).join(', ')}${nonVerdict.length > 6 ? '…' : ''}`);
+    console.log('  → đẩy lên sẽ thành "Not Run" (case ĐÃ chạy bị ghi là CHƯA chạy). Chúng thuộc reports/expansion-findings.md.');
   }
   const carried = tests.filter((t) => t.carriedOver);
   if (carried.length && !flag('include-carried-over')) {
@@ -199,7 +246,11 @@ async function main() {
     process.exit(1);
   }
 
-  if (!APPLY) { console.log('\n[DRY-RUN] chưa ghi gì. Thêm --apply để đẩy lên AIO.'); return; }
+  if (!APPLY) {
+    console.log('\n[DRY-RUN] chưa ghi gì. Thêm --apply để đẩy lên AIO.');
+    writeExecReport({ task, title, total: tests.length + nonVerdict.length, matched: matched.length, missing, nonVerdict, byStatus: tests.reduce((m, t) => { const k = String(t.status || "?"); m[k] = (m[k] || 0) + 1; return m; }, {}), applied: false });
+    return;
+  }
 
   const folderId = arg('folder') ? await aio.ensureFolder('testcycle', [arg('folder')]) : null;
   const existing = (await aio.list('/testcycle')).find((c) => c.title === title);
@@ -294,6 +345,7 @@ async function main() {
   }
 
   console.log(`\nXONG: ${done}/${matched.length} run · evidence cấp bước ${evStep} · cấp run ${evRun} · lỗi ${failed}`);
+  writeExecReport({ task, title, cycleKey: cycle, total: tests.length + nonVerdict.length, matched: matched.length, missing, nonVerdict, byStatus: tests.reduce((m, t) => { const k = String(t.status || "?"); m[k] = (m[k] || 0) + 1; return m; }, {}), applied: true, pushed: done, evStep, evRun, failed });
 
   /*
    * Tự đối soát: đếm TRÊN AIO, không tin số lệnh (đã dính bẫy này khi migrate).

@@ -22,8 +22,10 @@
  *   ... --apply
  */
 
+const fs = require('fs');
 const path = require('path');
 const { AioClient } = require('./aio_client');
+const rc = require(path.resolve(__dirname, '..', '..', 'utils', 'runtime_config'));
 const { parseXlsx } = require(path.resolve(__dirname, '..', '..', 'lib', 'testcase'));
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
@@ -38,6 +40,33 @@ async function jiraIssueId(key) {
   const r = await fetch(`${base}/rest/api/3/issue/${key}?fields=summary`, { headers: { Authorization: auth, Accept: 'application/json' } });
   if (!r.ok) throw new Error(`Jira trả ${r.status} khi đọc ${key}.`);
   return String((await r.json()).id);
+}
+
+/*
+ * REPORT do MÁY ghi: tài liệu hứa `reports/aio-deprecate-summary.md`. Cleanup là thao tác ĐỔI TRẠNG THÁI
+ * hàng loạt trên hệ thống không có API xoá — không để lại biên bản thì lần sau không ai biết đã Deprecate
+ * những gì và vì sao.
+ */
+function writeDeprecateReport(r) {
+  let dir;
+  try { dir = path.join(rc.getTaskOutputDir(), 'reports'); } catch (e) { return; }
+  const L2 = [`<!-- gate: proven=${r.applied ? r.ok : 0} inconclusive=${r.applied ? 0 : r.stale.length + r.back.length} broken=${r.failed || 0} -->`,
+    "# Cleanup vòng đời testcase trên AIO (Deprecate)", "",
+    `- Nguồn Excel: \`${r.file}\` (${r.inExcel} TC) · phạm vi: ${r.scope}`,
+    `- Chế độ: ${r.applied ? "**ĐÃ GHI**" : "dry-run (chưa ghi)"}`,
+    `- Case trong phạm vi trên AIO: **${r.scoped}**`,
+    `- Chuyển **Deprecated**: **${r.stale.length}** · trả về **Published**: **${r.back.length}**`,
+    r.applied ? `- Kết quả ghi: ${r.ok} đổi trạng thái · ${r.failed} lỗi · đối soát: ${r.reconciled}` : "",
+    r.orphan && r.orphan.length ? `- ⚠ ${r.orphan.length} TC có trong Excel mà CHƯA có trên AIO (thiếu publish): ${r.orphan.slice(0, 10).join(", ")}` : "",
+    ""];
+  if (r.stale.length) L2.push(`## Chuyển Deprecated (${r.stale.length})`, "",
+    "> Case rời khỏi Excel canonical. Deprecated giữ nguyên lịch sử run — KHÔNG xoá (AIO cũng không có API xoá).", "",
+    ...r.stale.map((c) => `- \`${c.automationKey || c.key}\` (${c.key})`), "");
+  if (r.back.length) L2.push(`## Trả về Published (${r.back.length})`, "",
+    ...r.back.map((c) => `- \`${c.automationKey || c.key}\` (${c.key})`), "");
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'aio-deprecate-summary.md'), `${L2.filter((x) => x !== '').join('\n')}\n`);
+  console.log(`Report: ${path.join(path.relative(rc.REPO_ROOT, dir), 'aio-deprecate-summary.md')}`);
 }
 
 async function main() {
@@ -98,8 +127,17 @@ async function main() {
   console.log(`→ chuyển Deprecated : ${stale.length}${stale.length ? ' · ' + stale.slice(0, 8).map((c) => c.automationKey).join(', ') : ''}`);
   console.log(`→ trả về Published  : ${back.length}${back.length ? ' · ' + back.slice(0, 8).map((c) => c.automationKey).join(', ') : ''}`);
   if (orphanExcel.length) console.log(`ⓘ ${orphanExcel.length} TC có trong Excel mà CHƯA có trên AIO → chạy \`npm run aio:publish:apply\`: ${orphanExcel.slice(0, 8).join(', ')}`);
-  if (!stale.length && !back.length) { console.log('\nKhông có gì phải đổi.'); return; }
-  if (!flag('apply')) { console.log('\n[DRY-RUN] chưa ghi gì. Thêm --apply.'); return; }
+  if (!stale.length && !back.length) {
+    // 'Không có gì phải đổi' CŨNG là kết quả cần biên bản: nó chứng minh cleanup ĐÃ chạy và Excel khớp AIO.
+    console.log(String.fromCharCode(10) + 'Không có gì phải đổi.');
+    writeDeprecateReport({ file: path.basename(FILE), inExcel: inExcel.size, scope: STORY || ROOT, scoped: scope.length, stale, back, orphan: orphanExcel, applied: false });
+    return;
+  }
+  if (!flag('apply')) {
+    console.log('\n[DRY-RUN] chưa ghi gì. Thêm --apply.');
+    writeDeprecateReport({ file: path.basename(FILE), inExcel: inExcel.size, scope: STORY || ROOT, scoped: scope.length, stale, back, orphan: orphanExcel, applied: false });
+    return;
+  }
 
   let ok = 0; let failed = 0;
   for (const [c, statusId, label] of [...stale.map((c) => [c, DEPRECATED, 'Deprecated']), ...back.map((c) => [c, PUBLISHED, 'Published'])]) {
@@ -116,6 +154,7 @@ async function main() {
     return now && (now.status || {}).ID !== DEPRECATED;
   });
   console.log(`ĐỐI SOÁT: ${stale.length - stillStale.length}/${stale.length} case đã sang Deprecated · ${stillStale.length === 0 ? '✓ ĐỦ' : `✗ SÓT ${stillStale.length}`}`);
+  writeDeprecateReport({ file: path.basename(FILE), inExcel: inExcel.size, scope: STORY || ROOT, scoped: scope.length, stale, back, orphan: orphanExcel, applied: true, ok, failed, reconciled: `${stale.length - stillStale.length}/${stale.length}` });
   if (failed || stillStale.length) process.exitCode = 1;
 }
 
