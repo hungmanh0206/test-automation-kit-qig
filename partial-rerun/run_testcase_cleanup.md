@@ -1,6 +1,6 @@
 # Run Testcase Cleanup (AIO Tests)
 
-> Đồng bộ **vòng đời** testcase trên TMS sau khi Partial Rerun đã merge testcase thay đổi được Human Review approve. Tên file giữ nguyên (`run_xray_test_cleanup.md`) cho tương thích ngược với các prompt đang trỏ tới, nhưng **đích đến là AIO Tests** từ GĐ5.
+> Đồng bộ **vòng đời** testcase trên TMS sau khi Partial Rerun đã merge testcase thay đổi được Human Review approve. Tên file giữ nguyên (`run_testcase_cleanup.md`) cho tương thích ngược với các prompt đang trỏ tới, nhưng **đích đến là AIO Tests** từ GĐ5.
 
 ## Purpose
 
@@ -137,20 +137,10 @@ Trả lời ngắn:
 ## Example
 
 ```text
-Đọc partial-rerun/run_xray_test_cleanup.md và chạy:
+Đọc partial-rerun/run_testcase_cleanup.md và chạy:
 PROJECT_OUTPUT_DIR=outputs/<YOUR_PROJECT>
 TASK_KEY=<TASK_KEY>
 JIRA_STORY_KEY=<JIRA_STORY_KEY>
 HUMAN_REVIEW_STATUS=APPROVED
 MODE=DRY_RUN
 ```
-
-## Đường Xray (LEGACY)
-
-Xray đóng băng sau **21/08/2026**. Bản cũ gắn/gỡ label stale (`deprecated,out-of-scope,stale-from-excel`) trên Xray Test:
-
-```powershell
-npm run jira:testcase-cleanup:dry-run -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY> --test-management-tool xray
-```
-
-Lệnh này tự chặn khi `TEST_MANAGEMENT_TOOL=aio`. Chi tiết (label set, `--unlink` stale khỏi Story/Task) nằm trong header `scripts/integrations/jira/cleanup_xray_tests.js`; **đừng phát triển thêm ở nhánh này**.

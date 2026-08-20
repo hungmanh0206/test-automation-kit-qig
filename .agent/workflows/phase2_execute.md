@@ -28,7 +28,7 @@ Thực thi testcase đã review bằng Playwright UI/API, giảm skip tối đa,
 
 | Input | Nguồn |
 |---|---|
-| Testcase đã review | Canonical local theo `TESTCASE_SOURCE`: **mặc định `test-cases/from-aio/*.xlsx`** (aio), hoặc `test-cases/*.xlsx` (excel), `from-xray/*.xlsx` (xray — legacy); Markdown cùng thư mục chỉ dùng khi cần Setup Strategy chi tiết |
+| Testcase đã review | Canonical local theo `TESTCASE_SOURCE`: **mặc định `test-cases/from-aio/*.xlsx`** (aio), hoặc `test-cases/*.xlsx` (excel); Markdown cùng thư mục chỉ dùng khi cần Setup Strategy chi tiết |
 | Phase 1 summary | `<TASK_OUTPUT_DIR>/reports/phase1-summary.md` |
 | Runtime env | `.env.local`, `.env`, CI env hoặc env truyền trực tiếp theo command |
 | App/API URL | Project context hoặc user prompt |
@@ -56,7 +56,7 @@ Thực thi testcase đã review bằng Playwright UI/API, giảm skip tối đa,
 ## Rules
 
 - Không pass ảo bằng skip, bỏ step, bỏ assertion hoặc mock sai mục đích.
-- Khi execute, đọc TC ID/steps/expected từ **nguồn canonical local theo `TESTCASE_SOURCE`**: mặc định `aio` (đã kéo về `test-cases/from-aio/*.xlsx`), hoặc `excel` (`test-cases/*.xlsx`), `xray` là legacy. Không gọi AIO/Jira từng case lúc execute.
+- Khi execute, đọc TC ID/steps/expected từ **nguồn canonical local theo `TESTCASE_SOURCE`**: mặc định `aio` (đã kéo về `test-cases/from-aio/*.xlsx`), hoặc `excel` (`test-cases/*.xlsx`). Không gọi AIO/Jira từng case lúc execute.
 - Không đổi expected result nếu chưa chứng minh expected cũ sai.
 - Skip chỉ hợp lệ khi có lý do rõ, không thể tránh và đã phân tích cách fix.
 - Với bug phức tạp, nếu ảnh không đủ mô tả behavior thì phải có video evidence.

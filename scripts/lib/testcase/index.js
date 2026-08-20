@@ -2,7 +2,7 @@
 
 /*
  * Canonical TestCase model — điểm vào DUY NHẤT (architecture hardening #1).
- * GĐ 1a: model + parseMarkdown + validate. GĐ sau: parseXlsx / fromXray / toXlsx.
+ * GĐ 1a: model + parseMarkdown + validate. GĐ sau: parseXlsx / toXlsx.
  * Consumer nên require('scripts/lib/testcase') thay vì tự parse bảng testcase.
  */
 

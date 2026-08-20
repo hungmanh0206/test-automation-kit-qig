@@ -48,11 +48,11 @@
 | `TASK_KEY=<TASK_KEY>` | Scope folder của task/feature. |
 | `RUN_ID=<safe-run-id>` | Optional; bắt buộc khi chạy song song nhiều session cùng `TASK_KEY`. |
 | `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN` | Jira integration. |
-| `TEST_MANAGEMENT_TOOL=aio` (mặc định), `AIO_API_TOKEN` | Publish testcase từ Excel lên **AIO Tests** sau QA confirmation trong Phase 1. Lệnh Xray cũ tự chặn. |
+| `AIO_API_TOKEN` | Publish testcase từ Excel lên **AIO Tests** sau QA confirmation trong Phase 1. |
 | `AIO_PROJECT_KEY`, `AIO_BASE_URL`, `AIO_THROTTLE_MS` | Optional; `AIO_PROJECT_KEY` mặc định lấy `JIRA_PROJECT_KEY`, `AIO_THROTTLE_MS` khi bị rate limit (AIO trả **body rỗng** thay vì 429). |
 | `JIRA_STORY_KEY` / `--story` | Ghi vào `jiraRequirementIDs` của case — đường nối case ↔ Story/Task. |
-| `TESTCASE_SOURCE=aio` (mặc định) | Nguồn execute Phase 2: `npm run aio:pull:write` kéo về `test-cases/from-aio/*.xlsx`; `excel` là opt-out, `xray` là legacy. |
-| `PUSH_XRAY_EXECUTION=confirm` | Đẩy kết quả execute thành **cycle** trên AIO sau khi QA duyệt preview (tên biến giữ nguyên cho tương thích ngược). |
+| `TESTCASE_SOURCE=aio` (mặc định) | Nguồn execute Phase 2: `npm run aio:pull:write` kéo về `test-cases/from-aio/*.xlsx`; `excel` là opt-out. |
+| `PUSH_EXECUTION=confirm` | Đẩy kết quả execute thành **cycle** trên AIO sau khi QA duyệt preview . |
 | `CONFLUENCE_URL` | Requirement source nếu dùng Confluence. |
 | `FIGMA_API_KEY` | Figma fetch nếu dùng design source. |
 | `<APP>_BASE_URL`, `<APP>_LOGIN_URL` | UI automation. |
@@ -137,7 +137,7 @@ AIO case không phải Jira issue nên **không có** Test Set, requirement issu
 
 ## Partial Rerun - Cleanup testcase (Deprecate)
 
-Khi Excel source of truth thay đổi sau khi đã publish, cleanup thuộc nhánh phụ Partial Rerun. Trên AIO, cleanup = đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), KHÔNG xoá. Dùng prompt riêng [partial-rerun/run_xray_test_cleanup.md](partial-rerun/run_xray_test_cleanup.md).
+Khi Excel source of truth thay đổi sau khi đã publish, cleanup thuộc nhánh phụ Partial Rerun. Trên AIO, cleanup = đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), KHÔNG xoá. Dùng prompt riêng [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md).
 
 Preview trước:
 
@@ -189,7 +189,7 @@ Execution mode: SELECTED_TESTCASES
 Selected TC IDs: <TC_ID_1>, <TC_ID_2>
 Generate/update Playwright script nếu cần, execute, auto-heal, tạo local report.
 Không tạo Jira bug thật nếu chưa được xác nhận.
-Nguồn testcase: TESTCASE_SOURCE=aio (mặc định — kéo từ AIO về test-cases/from-aio/ rồi execute) hoặc excel (test-cases/*.xlsx); xray là legacy.
+Nguồn testcase: TESTCASE_SOURCE=aio (mặc định — kéo từ AIO về test-cases/from-aio/ rồi execute) hoặc excel (test-cases/*.xlsx).
 ```
 
 ## Run Task-Scoped Playwright
@@ -273,4 +273,4 @@ Quick Start chuẩn giúp project mới có cùng layout output và cùng điề
 | [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md) | Prompt riêng cho Auto Publish Jira trong Phase 1 sau QA confirmation. |
 | [prompt_templates/run_phase2_template.md](prompt_templates/run_phase2_template.md) | Template Phase 2. |
 | [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) | Template Re-run bug/case fail và Jira bug đã fix. |
-| [partial-rerun/run_xray_test_cleanup.md](partial-rerun/run_xray_test_cleanup.md) | Prompt cleanup lifecycle testcase (Deprecate trên AIO) sau partial rerun approved. |
+| [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md) | Prompt cleanup lifecycle testcase (Deprecate trên AIO) sau partial rerun approved. |

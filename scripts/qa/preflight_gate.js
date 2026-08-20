@@ -98,7 +98,7 @@ function runPreflight({ mode = 'generic', task = '', extraRequire = [], allowMis
       for (const d of getTestcaseDirs(taskDir, { mirrorsFirst: true })) {
         try { found += fs.readdirSync(d).filter((f) => /\.xlsx$/i.test(f)).length; } catch (e) { /* dir chưa có */ }
       }
-      if (!found) problems.push(`phase2: KHÔNG thấy testcase canonical local ở ${rel(tcDir)}(/from-xray|/from-aio) — Phase 2 phải kéo từ Xray/AIO hoặc có Excel TRƯỚC execute`);
+      if (!found) problems.push(`phase2: KHÔNG thấy testcase canonical local ở ${rel(tcDir)}(/from-aio) — Phase 2 phải kéo từ AIO (\`npm run aio:pull:write\`) hoặc có Excel TRƯỚC execute`);
     }
   }
   return { problems, warnings, mode, task };

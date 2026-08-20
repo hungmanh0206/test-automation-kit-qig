@@ -91,7 +91,7 @@ const DIMS = [
 }
 
 function loadTests() {
-  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + mọi bản kéo về (from-xray, from-aio)
+  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + bản kéo về từ AIO (from-aio)
   const byId = new Map();
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) continue;

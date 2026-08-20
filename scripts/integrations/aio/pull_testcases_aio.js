@@ -3,14 +3,14 @@
 
 /*
  * pull_testcases_aio.js — kéo testcase TỪ AIO Tests về Excel canonical local.
- * Bản đối xứng của `jira/pull_testcases.js` (Xray), phục vụ `TESTCASE_SOURCE` của Phase 2.
+ * Phục vụ `TESTCASE_SOURCE=aio`: kéo case trên AIO về Excel canonical local để Phase 2 execute từ file.
  *
  * VÌ SAO CẦN: Phase 2 execute mặc định KHÔNG đọc Excel người viết, mà đọc bản kéo về từ test-management
  * tool (nơi testcase đã qua review/sửa). Thiếu bản này thì đặt `TEST_MANAGEMENT_TOOL=aio` xong Phase 2
- * vẫn phải bò về Xray — tức chưa chuyển xong, chỉ là chuyển một nửa.
+ * mới là nguồn thật của Phase 2.
  *
  * Ghi ra THƯ MỤC RIÊNG `test-cases/from-aio/` — KHÔNG đụng Excel người viết ở `test-cases/`, giống
- * nguyên tắc của bản Xray. Cột + tên sheet + định dạng "1. … 2. …" giữ y hệt để `parseXlsx` canonical
+ * Cột + tên sheet + định dạng "1. … 2. …" giữ NGUYÊN để parser canonical đọc được.
  * đọc được mà không cần biết nguồn nào.
  *
  * TÌM CASE (theo thứ tự ưu tiên):
@@ -35,7 +35,7 @@ try { ExcelJS = require('exceljs'); } catch { console.error('Thiếu exceljs —
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
 const flag = (n) => process.argv.includes(`--${n}`);
 
-// Giữ ĐÚNG bộ cột/độ rộng của bản Xray — lệch một cột là parseXlsx đọc ra doc khác.
+// Giữ ĐÚNG bộ cột/độ rộng của Excel canonical — lệch một cột là parseXlsx đọc sai field mà không báo lỗi.
 const HEADERS = ['TC ID', 'Nhóm chức năng', 'Module', 'Trường hợp kiểm thử', 'Tiền điều kiện', 'Dữ liệu test', 'Các bước thực hiện', 'Kết quả mong đợi', 'Ưu tiên', 'Mức độ rủi ro'];
 const COL_WIDTHS = [16, 22, 22, 50, 42, 40, 60, 60, 12, 14];
 const PRIORITY_NAME = { 1: 'Critical', 2: 'High', 3: 'Medium', 4: 'Low', 5: 'Lowest' };

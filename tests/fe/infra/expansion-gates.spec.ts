@@ -8,11 +8,11 @@ import { execFileSync } from 'child_process';
  * Test cho nhóm gate MỞ RỘNG 5 TRỤC — tách khỏi `gates.spec.ts` có chủ đích.
  *
  * VÌ SAO TÁCH FILE: bốn khối test này từng nằm trong `gates.spec.ts` và đã bị dọn mất khi file đó được
- * viết lại trong đợt gỡ Xray (20/08/2026). Code gate thì còn nguyên — nghĩa là gate vẫn chạy nhưng KHÔNG
+ * viết lại trong đợt gỡ công cụ test-management cũ (20/08/2026). Code gate thì còn nguyên — nghĩa là gate vẫn chạy nhưng KHÔNG
  * còn gì canh gate, đúng lớp lỗi mà cả kit này sinh ra để chống. Để riêng thì hai luồng sửa song song
  * không giẫm lên nhau.
  *
- * KHÔNG khôi phục khối `TEST_MANAGEMENT_TOOL`: `scripts/integrations/tms.js` và các entrypoint Xray đã bị
+ * KHÔNG khôi phục khối `TEST_MANAGEMENT_TOOL`: `scripts/integrations/tms.js` và các entrypoint của công cụ cũ đã bị
  * xoá, nên luật "chạy nhầm tool" hết đối tượng — bỏ là ĐÚNG, không phải mất mát.
  */
 

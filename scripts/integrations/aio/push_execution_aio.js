@@ -2,16 +2,15 @@
 'use strict';
 
 /*
- * push_execution_aio.js — đẩy kết quả execute của Phase 2 lên AIO Tests (bản thay cho
- * `jira/push_test_execution.js` vốn đẩy sang Xray).
+ * push_execution_aio.js — đẩy kết quả execute của Phase 2 lên AIO Tests: cycle + run + evidence.
  *
  * Đầu vào GIỮ NGUYÊN hợp đồng cũ: `<TASK_OUTPUT_DIR>/test-results/testcase-status.json`
  *   { taskKey, generatedAt, attestation, tests: [ { tcId, status, comment, failedStep?, evidence?[], steps?[] } ] }
  * → agent không phải đổi cách ghi kết quả; chỉ đích đến là khác.
  *
- * NÂNG CẤP SO VỚI XRAY — EVIDENCE NEO XUỐNG TỪNG BƯỚC:
- *   Xray chỉ nhận evidence ở cấp run (đo trên 15 execution cũ: 0/154 step có evidence). AIO có
- *   `.../testrun/{id}/testrunstep/{stepId}/attachment`, nên kit lần đầu thoả được đúng rule
+ * EVIDENCE NEO XUỐNG TỪNG BƯỚC:
+ *   AIO có endpoint attachment riêng cho từng bước:
+ *   `.../testrun/{id}/testrunstep/{stepId}/attachment`, nhờ đó kit thoả được đúng rule
  *   "mỗi step phải có ảnh/video". Chỉ neo xuống bước khi THẬT SỰ biết bước nào (steps[].evidence,
  *   hoặc failedStep của case FAIL); không biết thì để cấp run — không bịa vị trí.
  *
@@ -19,7 +18,7 @@
  * cùng tiêu đề ở các nhóm khác nhau, khớp kiểu đó làm nhiều run dồn vào một case (đã mất 12 run khi
  * migrate). Xem thêm README của module.
  *
- * MẶC ĐỊNH DRY-RUN. Có gate chất lượng `output_gate.gateTestExecution` chạy TRƯỚC như bản Xray.
+ * MẶC ĐỊNH DRY-RUN. Có gate chất lượng `output_gate.gateTestExecution` chạy TRƯỚC khi ghi.
  *
  * Dùng:
  *   node scripts/integrations/aio/push_execution_aio.js --task <KEY> [--folder "<Sprint>"] [--cycle-title "..."]
@@ -76,7 +75,7 @@ const stepStatusId = (s) => S.stepId(s);
 /**
  * Trạng thái từng bước + chỗ neo evidence.
  * Ưu tiên `steps[]` do agent ghi (chính xác nhất). Không có thì suy từ `failedStep` của case FAIL:
- * bước trước = Passed, bước hỏng = Failed, bước sau = Not Run — giống quy ước bản Xray.
+ * bước trước = Passed, bước hỏng = Failed, bước sau = Not Run.
  * `failedStep` ngoài khoảng (vd 99 ở case PASS) coi như không có.
  */
 function planSteps(test, stepCount) {
@@ -89,7 +88,7 @@ function planSteps(test, stepCount) {
     }));
   }
   // Shortcut của template Phase 2: `failedStep` (1-based) + `failedStepEvidence`. Nhận cả biến thể
-  // snake_case y như bản Xray — bỏ sót là agent làm ĐÚNG template mà evidence rơi mất trong im lặng.
+  // Nhận cả camelCase và snake_case — bỏ sót là agent làm ĐÚNG template mà evidence vẫn không được đính.
   const failedAt = Number(test.failedStep != null ? test.failedStep : test.failed_step);
   const hasFail = overall.startsWith('FAIL') && failedAt >= 1 && failedAt <= stepCount;
   const failEv = [].concat(test.failedStepEvidence || test.failed_step_evidence || test.evidence || []);
@@ -143,7 +142,7 @@ async function main() {
   }
   if (!tests.length) { console.error('ERROR: sau khi lọc không còn case nào để đẩy.'); process.exit(2); }
 
-  // Gate chất lượng chạy TRƯỚC — không để payload sai lọt lên TCM (giống bản Xray).
+  // Gate chất lượng chạy TRƯỚC — không để payload sai lọt lên AIO.
   const gate = outputGate.gateTestExecution({ ...doc, tests });
   if (gate.problems.length) {
     console.error(`GATE CHẤT LƯỢNG — ${gate.problems.length} vi phạm:\n  - ${gate.problems.join('\n  - ')}`);
@@ -191,7 +190,7 @@ async function main() {
   }
   /*
    * GUARD "run conclusive": 0 case PASSED/FAILED (toàn TODO/EXECUTING) = lượt chạy debug/dở/setup hỏng.
-   * Trên Xray điều này chỉ đẻ execution rác; trên AIO thì NẶNG HƠN — cycle không xoá được bằng API,
+   * Cycle rác thì KHÔNG xoá được bằng API — phải vào UI dọn tay, nên guard này đáng giá.
    * phải vào UI dọn tay. Nên chặn ở đây, `--force` khi thật sự muốn.
    */
   const conclusive = tests.filter((t) => /^(PASS|FAIL)/i.test(String(t.status || '').trim())).length;

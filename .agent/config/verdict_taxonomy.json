@@ -1,73 +1,63 @@
 {
-  "_note": "G4 (round-3) — NGUỒN DUY NHẤT cho verdict/trạng thái kết quả + ngưỡng rerun. Gate validate status ∈ statuses (unknown = cảnh báo); prompt/rule TRỎ VỀ đây thay vì hardcode rải rác. Đổi số/nghĩa ở ĐÂY, KHÔNG sửa từng file. TÊN status khớp cột Status của testcase (canonical). | Cột `aio` = tên trạng thái run của AIO Tests, lấy từ GET /config (runStatuses: Not Run/In Progress/Passed/Failed/Blocked). BLOCKED_SETUP nay giữ đúng bản chất \"Blocked\" thay vì bị ép thành TODO như Xray.",
+  "_note": "G4 (round-3) — NGUỒN DUY NHẤT cho verdict/trạng thái kết quả + ngưỡng rerun. Gate validate status ∈ statuses (unknown = cảnh báo); prompt/rule TRỎ VỀ đây thay vì hardcode rải rác. Đổi số/nghĩa ở ĐÂY, KHÔNG sửa từng file. TÊN status khớp cột Status của testcase (canonical). | Cột `aio` = tên trạng thái run của AIO Tests, lấy từ GET /config (runStatuses: Not Run/In Progress/Passed/Failed/Blocked).",
   "statuses": {
     "PASS": {
       "executed": true,
       "loggableAsBug": false,
-      "xray": "PASSED",
       "aio": "Passed",
       "meaning": "Chạy thật, đúng kỳ vọng (oracle độc lập theo spec)."
     },
     "FAIL": {
       "executed": true,
       "loggableAsBug": true,
-      "xray": "FAILED",
       "aio": "Failed",
       "meaning": "Chạy thật, sai kỳ vọng — PHẢI phân tầng lỗi (xem failureLayers)."
     },
     "SKIP": {
       "executed": false,
       "loggableAsBug": false,
-      "xray": "TODO",
       "aio": "Not Run",
       "meaning": "Không chạy — kèm lý do + khả năng fix."
     },
     "BLOCKED_SETUP": {
       "executed": false,
       "loggableAsBug": false,
-      "xray": "TODO",
       "aio": "Blocked",
       "meaning": "Readiness=Needs hook mà thiếu capability (hook/mock/sandbox) — nêu missing cụ thể."
     },
     "SKIP_SETUP": {
       "executed": false,
       "loggableAsBug": false,
-      "xray": "TODO",
       "aio": "Not Run",
       "meaning": "Readiness=Manual-only — không tự setup."
     },
     "TODO": {
       "executed": false,
       "loggableAsBug": false,
-      "xray": "TODO",
       "aio": "Not Run",
       "meaning": "Chưa thực thi (AIO `1 Not Run`) — KHÔNG dùng khi đã chạy được."
     },
     "EXPANSION_FINDING": {
       "executed": true,
       "loggableAsBug": true,
-      "xray": null,
       "aio": null,
       "meaning": "Phát hiện từ MỞ RỘNG quanh case (5 trục), KHÔNG phải verdict của case gốc: app tự mâu thuẫn với chính nó (giá trị lệch giữa 2 bề mặt · mắt đứt trong chuỗi lưu trữ · field thừa/thiếu so tài liệu). Không cần oracle ngoài vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một nơi sai. CỐ Ý không map sang status run của TMS: trộn vào execution sẽ làm pass-rate mất nghĩa và triage lẫn lộn — báo riêng ở reports/expansion-findings.md."
     },
     "OBSERVATION": {
       "executed": true,
       "loggableAsBug": false,
-      "xray": null,
       "aio": null,
       "meaning": "Quan sát được nhưng KHÔNG có oracle độc lập ⇒ không kết luận đúng/sai. Bắt buộc kèm open_question. Nhất quán KHÔNG phải bằng chứng của đúng: 4 điểm khớp nhau vẫn có thể sai cả 4 (ca thật: USD không quy đổi, form/payload/api/ui đều = 10 trong khi đúng phải 260.500)."
     },
     "PASS_WITH_DEVIATION": {
       "executed": true,
       "loggableAsBug": false,
-      "xray": "PASSED",
       "aio": "Passed",
       "meaning": "Case PASS nhưng CHỈ pass sau khi lệch khỏi kịch bản (thêm wait · retry · đổi locator · refresh · đi đường khác). Rủi ro đặc thù của agent: gặp trở ngại thì có xu hướng LÀM CHO NÓ CHẠY, và mỗi lần như vậy là một bug tiềm năng bị lấp. Deviation là TÍN HIỆU, không phải tiện lợi ⇒ phải liệt kê deviation trong Actual và xếp vào diện nghi vấn cần review; KHÔNG được ghi PASS trơn."
     },
     "SUSPECT_REAL_BUG": {
       "executed": true,
       "loggableAsBug": true,
-      "xray": "FAILED",
       "aio": "Failed",
       "meaning": "FAIL không ổn định (vd 1/5 lần) mà CHƯA giải thích được CƠ CHẾ. Cơ chế flaky triage có thể đang CHÔN bug thật: race condition · cache · timezone lúc chuyển ngày đều trông y như flaky, retry 3 lần có 1 lần xanh là bị dán nhãn flaky rồi bỏ qua. Chỉ được đổi sang failureLayer=flaky khi nêu được cơ chế cụ thể (và cách chứng minh); không nêu được thì giữ trạng thái này."
     }

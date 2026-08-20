@@ -92,8 +92,6 @@ echo "[Jira / Xray / Confluence — cho integration-check]"
 set_one JIRA_BASE_URL        0
 set_one JIRA_EMAIL           0
 set_one JIRA_API_TOKEN       1
-set_one XRAY_CLIENT_ID       1
-set_one XRAY_CLIENT_SECRET   1
 set_one CONFLUENCE_URL       0
 set_one CONFLUENCE_USERNAME  0
 set_one CONFLUENCE_API_TOKEN 1

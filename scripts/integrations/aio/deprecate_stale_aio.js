@@ -3,14 +3,14 @@
 
 /*
  * deprecate_stale_aio.js — vòng đời testcase trên AIO khi Excel canonical thay đổi.
- * Bản đối xứng của `jira/cleanup_xray_tests.js` (Xray gắn/gỡ nhãn stale).
+ * Vòng đời case: Excel canonical quyết định TC nào còn active.
  *
  * VÌ SAO CÓ FILE NÀY: trước đó tôi kết luận "AIO không có API xoá ⇒ không làm được cleanup, dọn tay".
  * Kết luận đó SAI ở chỗ nhầm "cleanup" với "xoá". `GET /config` cho thấy AIO có `caseStatuses`:
  * Draft · Under Review · Published · **Deprecated**. Case rời khỏi Excel thì chuyển sang **Deprecated**
  * — vẫn giữ lịch sử run (thứ mà xoá sẽ mất), mà người đọc vẫn thấy ngay case nào không còn hiệu lực.
  *
- * HAI CHIỀU, giống bản Xray:
+ * HAI CHIỀU:
  *   Excel KHÔNG còn TC → case trên AIO chuyển Deprecated
  *   TC quay lại Excel   → case đang Deprecated được trả về Published  (tắt bằng --no-restore)
  *

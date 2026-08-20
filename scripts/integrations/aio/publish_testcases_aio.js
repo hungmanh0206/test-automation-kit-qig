@@ -3,7 +3,7 @@
 
 /*
  * publish_testcases_aio.js — đẩy testcase từ Excel canonical lên AIO Tests.
- * Song song với publish_testcases.js (bản Xray); dùng CHUNG model canonical scripts/lib/testcase,
+ * Dùng CHUNG model canonical scripts/lib/testcase với mọi script đọc Excel,
  * nên mọi luật đọc/validate Excel giữ nguyên — chỉ khác tầng gọi API.
  *
  * MẶC ĐỊNH DRY-RUN. AIO không có API xoá case → sai là phải dọn tay trên UI, nên bắt buộc xem
@@ -61,8 +61,8 @@ async function main() {
   if (!tests.length) { console.error(`ERROR: không đọc được case nào từ ${FILE}`); process.exit(2); }
 
   /*
-   * Chốt QA giống bản Xray: ghi thật phải có người duyệt.
-   * Trên AIO còn nặng hơn Xray — KHÔNG có API xoá case, publish nhầm là phải vào UI dọn tay từng cái.
+   * Chốt QA: ghi thật phải có người duyệt.
+   * AIO KHÔNG có API xoá case ⇒ publish nhầm là phải vào UI dọn tay từng cái.
    */
   if (APPLY && !QA_APPROVED) {
     console.error('CHẶN: publish thật cần QA duyệt — thêm --qa-approved (hoặc JIRA_TESTCASE_QA_APPROVED=1).');

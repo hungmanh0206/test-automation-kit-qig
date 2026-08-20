@@ -14,7 +14,7 @@ const checks = [
   { label: 'Jira token hoặc PAT', keys: ['JIRA_API_TOKEN', 'JIRA_PAT'], level: 'required' },
   { label: 'Jira project key', keys: ['JIRA_PROJECT_KEY'], level: 'required' },
   { label: 'Jira story key', keys: ['JIRA_STORY_KEY', 'TASK_KEY'], level: 'warning' },
-  // AIO Tests là test-management tool mặc định từ GĐ5 (Xray đóng băng sau 21/08/2026).
+  // AIO Tests là công cụ test-management duy nhất của kit.
   { label: 'AIO token', keys: ['AIO_API_TOKEN'], level: 'required' },
   { label: 'AIO project key', keys: ['AIO_PROJECT_KEY', 'JIRA_PROJECT_KEY'], level: 'required' },
   { label: 'Confluence URL', keys: ['CONFLUENCE_URL'], level: 'warning' },

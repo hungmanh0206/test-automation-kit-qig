@@ -6,7 +6,7 @@
 
 Đẩy testcase đã được QA xác nhận từ Excel lên AIO Tests. Excel là source of truth khi gen/publish; **publish là bước cần TRƯỚC Phase 2** vì Phase 2 execute mặc định lấy nguồn từ AIO (`TESTCASE_SOURCE=aio`).
 
-> Công cụ mặc định là **AIO** (`TEST_MANAGEMENT_TOOL=aio`, GĐ5 — Xray đóng băng sau 21/08/2026). Lệnh Xray cũ tự CHẶN kèm lệnh thay thế. Đặc tính AIO (không có API xoá, `tags` không lưu, folder 2 cấp…): `scripts/integrations/aio/README.md`.
+> Công cụ test-management của kit là **AIO Tests**. Đặc tính AIO (không có API xoá, `tags` không lưu, folder 2 cấp…): `scripts/integrations/aio/README.md`.
 
 ## Preconditions
 
@@ -52,7 +52,7 @@
 - Không publish thật nếu thiếu QA confirmation (`--qa-approved` bắt buộc khi `--apply`).
 - Không sửa nội dung testcase trực tiếp trên AIO; authoring ở Excel rồi re-publish. `PUT .../detail` **ghi đè toàn phần** nên bản sửa tay trên UI sẽ mất.
 - AIO case KHÔNG phải Jira issue ⇒ không có Test Set, requirement issue-link, Precondition issue riêng, assignee, label. Tiền điều kiện nằm trong field `precondition` của case.
-- Nếu Excel bỏ bớt TC sau publish, không xử lý trong step này; chạy `partial-rerun/run_xray_test_cleanup.md` (nay dùng `npm run aio:deprecate-stale`) sau Human Review/QA approval — cleanup = `caseStatus` **Deprecated**, KHÔNG hard delete.
+- Nếu Excel bỏ bớt TC sau publish, không xử lý trong step này; chạy `partial-rerun/run_testcase_cleanup.md` (nay dùng `npm run aio:deprecate-stale`) sau Human Review/QA approval — cleanup = `caseStatus` **Deprecated**, KHÔNG hard delete.
 - Không log Jira bug trong step này; bug logging thuộc Phase 2.
 - Nếu publish lỗi một phần, giữ Excel canonical và ghi rõ lỗi trong report local.
 

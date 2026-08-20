@@ -14,7 +14,7 @@ Nhánh này không thuộc Main Flow, không tự chạy, không block Phase 1/P
 |---|---|
 | Jira/Confluence/Figma/Swagger đổi nội dung nhưng link/path giữ nguyên | Chạy `run_requirement_prepare_review.md`. |
 | Đã có Human Review approve testcase thay đổi | Chạy `run_requirement_apply_approved.md`. |
-| Đã merge Excel/testcase thay đổi và cần đồng bộ mirror trên AIO | Chạy `run_xray_test_cleanup.md` (nay dùng `aio:deprecate-stale`). |
+| Đã merge Excel/testcase thay đổi và cần đồng bộ mirror trên AIO | Chạy `run_testcase_cleanup.md` (nay dùng `aio:deprecate-stale`). |
 | Chưa có testcase baseline | Chạy Phase 1 chính, không dùng partial rerun. |
 | Dev fix bug đã log | Dùng Re-run chính, không dùng partial rerun. |
 | Cần log Jira bug | Chuyển về Phase 2/Main Flow bug triage, không log trực tiếp từ partial rerun. |
@@ -132,8 +132,8 @@ Output chính:
 ## Quy tắc execute
 
 - Sau merge + re-publish, chỉ partial execute subset bị ảnh hưởng.
-- Nguồn execute mặc định là **AIO Tests** (`TESTCASE_SOURCE=aio`): pull về canonical local rồi execute subset; `excel` để chạy thuần local; `xray` là legacy.
-- Execute xong, đẩy **cycle** (chỉ subset) vào thư mục cycle theo sprint (`PUSH_XRAY_EXECUTION=1` — tên biến giữ nguyên; AIO không có Test Plan).
+- Nguồn execute mặc định là **AIO Tests** (`TESTCASE_SOURCE=aio`): pull về canonical local rồi execute subset; `excel` để chạy thuần local.
+- Execute xong, đẩy **cycle** (chỉ subset) vào thư mục cycle theo sprint (`PUSH_EXECUTION=1`; AIO không có Test Plan).
 - Không chạy full regression mặc định.
 - Full regression chỉ khi business flow/API contract/UI shared thay đổi diện rộng hoặc QA Lead yêu cầu.
 - Với `RUN_ID`, output execute nằm dưới:
@@ -148,7 +148,7 @@ Output chính:
 Nếu testcase baseline đã từng publish lên AIO và Apply Approved làm Excel thay đổi:
 
 - **Re-publish (Step 2b, `publish_testcases.js`) chạy TRƯỚC cleanup** — re-publish tạo TC mới + update TC cũ; cleanup **chỉ label stale** TC bị bỏ khỏi Excel, KHÔNG tạo/update TC.
-- Chạy `partial-rerun/run_xray_test_cleanup.md` sau khi merge + re-publish approved testcase.
+- Chạy `partial-rerun/run_testcase_cleanup.md` sau khi merge + re-publish approved testcase.
 - Luôn dry-run trước, apply thật chỉ khi Human Review/QA approval rõ ràng.
 - Không xoá case (AIO cũng không có API xoá).
 - Case rời Excel chỉ được chuyển `caseStatus` sang **Deprecated** (giữ lịch sử run); quay lại Excel thì trả về Published.

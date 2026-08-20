@@ -34,7 +34,7 @@ Thực thi BE API testcases bằng Playwright request context, không mở brows
   Khi có `RUN_ID`, không sửa testcase Markdown/Excel chính trong lúc execute; ghi status/actual/evidence vào run-scoped report/status.
 - Swagger env: `App 1_SWAGGER_URL`, `APP2_SWAGGER_URL`
 - API base env: `App 1_API_BASE_URL`, `APP2_API_BASE_URL`
-- Testcases: nguồn canonical local theo `TESTCASE_SOURCE` — **mặc định `aio`** (`<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-aio/*.xlsx`, kéo bằng `npm run aio:pull:write -- --story [JIRA_STORY_KEY]` ở Bước 0), hoặc `excel` (`[PATH_TO_TESTCASE_XLSX]` / `test-cases/*.xlsx`); `xray` là legacy. Execute đọc file local — không gọi AIO/Jira từng case.
+- Testcases: nguồn canonical local theo `TESTCASE_SOURCE` — **mặc định `aio`** (`<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-aio/*.xlsx`, kéo bằng `npm run aio:pull:write -- --story [JIRA_STORY_KEY]` ở Bước 0), hoặc `excel` (`[PATH_TO_TESTCASE_XLSX]` / `test-cases/*.xlsx`). Execute đọc file local — không gọi AIO/Jira từng case.
 
 # Precondition Resolution Pass (bắt buộc, chạy TRƯỚC khi generate/execute)
 > 📚 **TRA KHO HỌC TRƯỚC KHI TỰ MÒ** (rẻ hơn mò lại nhiều lần, và đây là chỗ 80% thời gian bị tiêu):

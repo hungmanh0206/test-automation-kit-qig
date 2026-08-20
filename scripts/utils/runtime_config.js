@@ -161,14 +161,14 @@ function getTestResultsDir(options = {}) {
 /*
  * MỘT nguồn cho "testcase canonical local nằm ở những thư mục nào".
  *
- * `test-cases/` là Excel người viết; `from-xray/` và `from-aio/` là bản KÉO VỀ từ test-management tool
- * (theo `TESTCASE_SOURCE`). Trước đây 7 script tự ghép tay đường dẫn và chỉ biết `from-xray` — thêm
+ * `test-cases/` là Excel người viết; `from-aio/` là bản KÉO VỀ từ AIO Tests (`npm run aio:pull:write`).
+ * Trước đây 7 script tự ghép tay đường dẫn và chỉ biết một thư mục mirror — thêm
  * nguồn `from-aio` thì `preflight_gate` CHẶN oan ("không thấy testcase canonical"), còn
  * `dimension_coverage`/`bug_tc_matcher`/`domain_rules`/`system_map`/`learn_task` thì KHÔNG lỗi mà chỉ
  * đếm thiếu trong im lặng — kiểu hỏng tệ hơn, vì báo cáo vẫn ra số và trông vẫn đúng.
  * Thêm nguồn mới về sau: sửa DUY NHẤT mảng này.
  */
-const TESTCASE_MIRROR_DIRS = ['from-xray', 'from-aio'];
+const TESTCASE_MIRROR_DIRS = ['from-aio'];
 
 function getTestcaseDirs(taskOutputDir, { mirrorsFirst = false } = {}) {
   const base = path.join(taskOutputDir, 'test-cases');

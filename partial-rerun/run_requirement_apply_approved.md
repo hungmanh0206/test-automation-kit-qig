@@ -30,9 +30,9 @@ Phase này chỉ xử lý phần đã approve. Nó không đọc lại tài li�
 | `APPROVED_REVIEW_FILE` | Yes | Path tới `change/regen/review-checklist.md` đã được review. |
 | `APPROVED_TC_IDS` | Recommended | Nếu bỏ trống, lấy từ review checklist. |
 | `EXECUTION_SCOPE_NOTE` | Optional | Ghi chú nếu QA Lead muốn mở rộng subset. |
-| `REPUBLISH_XRAY` | Optional | `1` (mặc định nếu testcase từng publish) — re-publish TC UPDATED+NEW lên **AIO Tests** sau merge (Step 2b). Tên biến giữ nguyên cho tương thích ngược. |
-| `TESTCASE_SOURCE` | Optional | `aio` (mặc định) hoặc `excel` (`xray` = legacy). `aio`: sau re-publish, pull TC affected từ AIO làm nguồn execute; `excel`: execute từ Excel local đã merge. |
-| `PUSH_XRAY_EXECUTION` | Optional | `1` (mặc định như các phase) — tạo **cycle** trên AIO sau execute (Step 6b). Tên biến giữ nguyên cho tương thích ngược. |
+| `REPUBLISH_TESTCASES` | Optional | `1` (mặc định nếu testcase từng publish) — re-publish TC UPDATED+NEW lên **AIO Tests** sau merge (Step 2b). |
+| `TESTCASE_SOURCE` | Optional | `aio` (mặc định) hoặc `excel`. `aio`: sau re-publish, pull TC affected từ AIO làm nguồn execute; `excel`: execute từ Excel local đã merge. |
+| `PUSH_EXECUTION` | Optional | `1` (mặc định như các phase) — tạo **cycle** trên AIO sau execute (Step 6b). |
 | Thư mục cycle | Optional | `--folder "<Tên sprint>"` để nhóm cycle theo sprint (AIO KHÔNG có Test Plan). |
 
 ## Gate Before Running
@@ -114,11 +114,11 @@ Sau merge:
 - Export/update Excel nếu Markdown testcase chính thay đổi.
 - Update `snapshot_context.json`.
 - Ghi `change/regen/merge-summary.md`.
-- Nếu Excel thay đổi và testcase đã từng publish lên TMS, ghi rõ recommended next step: chạy `partial-rerun/run_xray_test_cleanup.md` (Deprecate case rời Excel) sau khi re-publish.
+- Nếu Excel thay đổi và testcase đã từng publish lên TMS, ghi rõ recommended next step: chạy `partial-rerun/run_testcase_cleanup.md` (Deprecate case rời Excel) sau khi re-publish.
 
 ### Step 2b: Re-publish testcase lên AIO (TC UPDATED + NEW)
 
-Chỉ chạy khi testcase đã từng publish lên TMS (có `reports/aio-testcase-publish-summary.md`, hoặc `reports/jira-testcase-publish.json` với bộ cũ) và `REPUBLISH_XRAY != 0`. Mục đích: đẩy phần thay đổi lên AIO để AIO khớp Excel và làm **nguồn execute**.
+Chỉ chạy khi testcase đã từng publish lên AIO (có `reports/aio-testcase-publish-summary.md`) và `REPUBLISH_TESTCASES != 0`. Mục đích: đẩy phần thay đổi lên AIO để AIO khớp Excel và làm **nguồn execute**.
 
 - Chạy `aio:publish` **chỉ cho TC UPDATED + NEW đã approve** — dedup theo `automationKey` (= TC ID) đảm bảo **update case cũ + tạo case mới**, KHÔNG re-create toàn bộ (quan trọng vì **AIO không có API xoá**):
 
@@ -127,7 +127,7 @@ npm run aio:publish -- --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx --story <
 npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --only <UPDATED+NEW TC_IDs> --folder-root "<base folder như lần publish trước>" --qa-approved
 ```
 
-- Dùng lại **đúng `--folder-root`** như lần publish gốc; nhóm chức năng thành subfolder cấp 2 (`<root>/<nhóm>`) nên TC NEW tự vào đúng chỗ. ⚠ Bộ migrate từ Xray có cây 3 cấp — `aio:publish` chỉ dựng 2 cấp, nên với bộ đó hãy vá tại chỗ bằng `--only`.
+- Dùng lại **đúng `--folder-root`** như lần publish gốc; nhóm chức năng thành subfolder cấp 2 (`<root>/<nhóm>`) nên TC NEW tự vào đúng chỗ. ⚠ Bộ cũ có cây 3 cấp — `aio:publish` chỉ dựng 2 cấp, nên với bộ đó hãy vá tại chỗ bằng `--only`.
 - Dry-run là **mặc định**: xác nhận số update/created + cây folder đúng, rồi mới `aio:publish:apply ... --qa-approved`.
 - Precondition đi theo case (field `precondition`), không cần flag riêng — AIO không có Precondition issue.
 - Nếu testcase CHƯA từng publish lên AIO → bỏ qua bước này (chạy `TESTCASE_SOURCE=excel`).
@@ -139,7 +139,7 @@ npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --only <
 Chỉ chạy khi tất cả điều kiện đúng:
 
 - Excel/testcase canonical đã merge theo Human Review approval.
-- Testcase đã từng publish lên AIO (hoặc Xray, với bộ cũ) trước đó.
+- Testcase đã từng publish lên AIO trước đó.
 - QA/Human Review xác nhận muốn cleanup mirror.
 
 Mặc định chỉ dry-run:
@@ -218,7 +218,7 @@ change/partial-execution/artifacts/
 | `SKIP_BLOCKED` | Skip có lý do hợp lệ và không thể tránh ngay. |
 | `NEED_REVIEW` | Expected/source vẫn chưa đủ rõ, không merge/execute tiếp. |
 
-### Step 6b: Đẩy kết quả lên AIO — tạo cycle (khi `PUSH_XRAY_EXECUTION=1`)
+### Step 6b: Đẩy kết quả lên AIO — tạo cycle (khi `PUSH_EXECUTION=1`)
 
 Sau khi phân loại, tạo **cycle** trên AIO cho **subset đã execute** — như các phase khác:
 

@@ -16,7 +16,7 @@ Tránh chạy nhầm task, nhầm story hoặc thiếu env khiến testcase bị
    - `RUN_ID` nếu có
 2. Nếu yêu cầu hiện tại không nêu rõ `TASK_KEY`, không dùng `TASK_KEY` từ `.env` hoặc context cũ để chạy; phải hỏi lại.
 3. Đọc artifact local:
-   - Nguồn execute theo `TESTCASE_SOURCE`: **mặc định `aio`** → `<TASK_OUTPUT_DIR>/test-cases/from-aio/*.xlsx` (kéo bằng `npm run aio:pull:write -- --story <JIRA_STORY_KEY>` ở Bước 0); `xray` (legacy) → `test-cases/from-xray/*.xlsx`; `excel` → `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`.
+   - Nguồn execute theo `TESTCASE_SOURCE`: **mặc định `aio`** → `<TASK_OUTPUT_DIR>/test-cases/from-aio/*.xlsx` (kéo bằng `npm run aio:pull:write -- --story <JIRA_STORY_KEY>` ở Bước 0); `excel` → `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`.
    - `<TASK_OUTPUT_DIR>/test-cases/` Markdown chỉ dùng để đọc section chi tiết như `## Setup Strategy (Hợp đồng tiền điều kiện)` khi Excel chưa đủ thông tin setup.
    - `<TASK_OUTPUT_DIR>/reports/phase1-summary.md` (gồm `### Setup Readiness` và `### Precondition Execution Matrix` — dùng để chọn case automatable / cần hook / blocked trước khi execute)
    - `<TASK_OUTPUT_DIR>/reports/capability-request.md` (nếu có — danh sách capability gap; xem Capability gate ở Rules)
@@ -36,7 +36,7 @@ Tránh chạy nhầm task, nhầm story hoặc thiếu env khiến testcase bị
 
 - Không sửa `.env` chung khi có session khác; truyền env theo command nếu cần.
 - Không đọc lại toàn bộ requirement thô nếu Phase 1 summary đã đủ.
-- **Phase 2 execute mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`): kéo về canonical local `test-cases/from-aio/*.xlsx` (`npm run aio:pull:write -- --story <JIRA_STORY_KEY>`) rồi execute từ file đó — KHÔNG gọi AIO/Jira cho từng case lúc execute. `TESTCASE_SOURCE=excel` để dùng Excel local; `xray` là legacy (Xray đóng băng sau 21/08/2026). (Excel là source of truth khi gen/publish.)
+- **Phase 2 execute mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`): kéo về canonical local `test-cases/from-aio/*.xlsx` (`npm run aio:pull:write -- --story <JIRA_STORY_KEY>`) rồi execute từ file đó — KHÔNG gọi AIO/Jira cho từng case lúc execute. `TESTCASE_SOURCE=excel` để dùng Excel local. (Excel là source of truth khi gen/publish.)
 - Không chạy Phase 2 nếu không có testcase đã review.
 - Resolve Setup Strategy contract (PRE-NN) cho scope đã chọn trước khi execute; nếu có `PRE-NN = Needs hook` mà hook chưa tồn tại, ghi blocker thay vì skip âm thầm. Chỉ TC có `Automation Readiness = Manual-only` mới được skip vì setup.
 - Definition of Ready (DoR) trước khi execute mỗi TC: precondition rõ + setup method rõ + test data/fixture rõ + verification + cleanup + capability (API/hook/mock/sandbox/fixture) đã tồn tại. Thiếu bất kỳ điều nào → KHÔNG chạy bừa và KHÔNG connect DB: ghi `BLOCKED_SETUP` (capability/contract chưa đủ) hoặc `SKIP_SETUP` (`Manual-only`) kèm missing capability cụ thể.

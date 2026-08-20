@@ -3,8 +3,8 @@
 /*
  * aio_client.js — client mỏng cho AIO Tests (test management app trong Jira).
  *
- * VÌ SAO TÁCH RIÊNG: kit vốn nói chuyện với Xray (test = Jira issue). AIO thì test là thực thể RIÊNG
- * của app, không phải issue — nên không tái dùng được xray_cloud.js. Model TestCase canonical của kit
+ * VÌ SAO CÓ TẦNG RIÊNG: trên AIO, test là thực thể riêng của app — KHÔNG phải Jira issue, nên mọi thứ
+ * gắn với issue (assignee, workflow, JQL) không áp dụng được. Model TestCase canonical vẫn dùng chung.
  * (scripts/lib/testcase) vẫn dùng chung, chỉ tầng gọi API là khác.
  *
  * BẢY ĐẶC TÍNH CỦA AIO ĐÃ ĐO ĐƯỢC (đừng phát hiện lại bằng cách mất dữ liệu):

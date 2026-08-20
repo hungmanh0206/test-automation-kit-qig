@@ -3,7 +3,7 @@
 export interface TestContextMetadata {
   tcId: string;
   requirementId: string;
-  xrayKey: string;
+  caseKey: string;
 }
 
 export interface EvidenceRecorderLike {
@@ -33,7 +33,7 @@ export interface CreateTestContextOptions {
   runId?: string;
   tcId?: string;
   requirementId?: string;
-  xrayKey?: string;
+  caseKey?: string;
 }
 
 export function createTestContext(opts?: CreateTestContextOptions): TestContext;

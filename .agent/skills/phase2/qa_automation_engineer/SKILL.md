@@ -26,7 +26,7 @@ Phase 2 chỉ execute phần có thể chạy an toàn qua UI/API public-busines
 
 | Input | Nguồn |
 |---|---|
-| Testcase đã review | Canonical local theo `TESTCASE_SOURCE`: **mặc định `test-cases/from-aio/*.xlsx`** (aio — kéo bằng `npm run aio:pull:write`), hoặc `test-cases/*.xlsx` (excel), `from-xray/*.xlsx` (xray — legacy); Markdown cùng thư mục chỉ dùng để đọc chi tiết setup khi cần |
+| Testcase đã review | Canonical local theo `TESTCASE_SOURCE`: **mặc định `test-cases/from-aio/*.xlsx`** (aio — kéo bằng `npm run aio:pull:write`), hoặc `test-cases/*.xlsx` (excel); Markdown cùng thư mục chỉ dùng để đọc chi tiết setup khi cần |
 | Setup Strategy contract | Section `## Setup Strategy (Hợp đồng tiền điều kiện)` (catalog PRE-NN) trong file testcase |
 | Phase 1 summary | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/phase1-summary.md` |
 | Runtime config | `.env.local`, `.env`, CI env; không in secret |

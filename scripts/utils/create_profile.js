@@ -56,4 +56,4 @@ fs.writeFileSync(target, content, 'utf8');
 
 console.log(`✅ Đã tạo profiles/${TASK_KEY}/task.env (prefill TASK_KEY=${TASK_KEY}, JIRA_STORY_KEY=${TASK_KEY}${PROJECT_OUTPUT ? `, PROJECT_OUTPUT_DIR=${PROJECT_OUTPUT}` : ''}).`);
 console.log('👉 QA điền tiếp: JIRA_STORY_URL, CONFLUENCE_*, FIGMA_FILE_URL, GOOGLE_DOCUMENT_ID, GOOGLE_SHEET_URL, LMS_*/OPS_* username/password/token.');
-console.log('   File này KHÔNG commit (đã gitignore). Giá trị tĩnh (base URL/API key Figma/Confluence/Jira/Xray/HubSpot) để ở .env chung.');
+console.log('   File này KHÔNG commit (đã gitignore). Giá trị tĩnh (base URL/API key Figma/Confluence/Jira/AIO/HubSpot) để ở .env chung.');

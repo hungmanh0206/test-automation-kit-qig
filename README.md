@@ -26,7 +26,7 @@ flowchart TD
 | Phase 1 | Đọc requirement/design/API và sinh testcase Markdown + Excel + coverage report + Setup Strategy contract (PRE-NN) + Precondition Execution Matrix; Excel là source of truth **khi gen/publish** và là input cho step publish sau QA confirmation (Phase 2 execute mặc định từ AIO Tests). |
 | Testcase Publish (AIO Tests) | Step riêng trong phạm vi Phase 1: sau khi QA xác nhận Excel, đọc Excel canonical, tạo/cập nhật **case** trên AIO (`npm run aio:publish`), nhóm chức năng thành **folder** `<root>/<nhóm>`, TC ID ở `automationKey`, tiền điều kiện trong field `precondition`. Mặc định dry-run — AIO không có API xoá. |
 | Testcase Lifecycle Cleanup | Step thuộc nhánh phụ `partial-rerun`: khi Excel thay đổi sau publish và đã qua Human Review, đối chiếu TC ID với case trên AIO rồi đổi `caseStatus` sang **Deprecated** (giữ lịch sử run); TC quay lại Excel thì trả về Published. Không xoá. |
-| Phase 2 | Đọc testcase từ nguồn canonical local (mặc định kéo từ AIO, `TESTCASE_SOURCE=aio`; `excel` là opt-out, `xray` là legacy), chạy Precondition Resolution Pass qua UI/API public-business, execute Playwright, thu evidence ảnh/video, đẩy kết quả thành cycle trên AIO. |
+| Phase 2 | Đọc testcase từ nguồn canonical local (mặc định kéo từ AIO, `TESTCASE_SOURCE=aio`; `excel` là opt-out), chạy Precondition Resolution Pass qua UI/API public-business, execute Playwright, thu evidence ảnh/video, đẩy kết quả thành cycle trên AIO. |
 | Setup Layer | `tests/support/setup/`: factory/hook/fixture/mock/cleanup/contract dùng chung để dựng tiền điều kiện theo contract; không dựng state bằng DB — chỉ read-only verify UAT qua guarded client `db/uatPgClient.ts` (read-only, chỉ SELECT). |
 | Rerun | Chạy lại case fail hoặc bug Jira đã fix; không dùng để đồng bộ tài liệu nguồn mới. |
 | Shared Services | Jira testcase publisher, Jira bug reporter, Google Sheet, Excel converter, runtime config và helper dùng chung. |
@@ -92,7 +92,7 @@ test-automation-kit/
 ├── partial-rerun/
 │   ├── run_requirement_prepare_review.md
 │   ├── run_requirement_apply_approved.md
-│   ├── run_xray_test_cleanup.md
+│   ├── run_testcase_cleanup.md
 │   └── reference.md
 ├── scripts/
 │   ├── convert_excel/
@@ -132,7 +132,7 @@ test-automation-kit/
 | `partial-rerun/` | Nhánh phụ độc lập; không là dependency của Main Flow và có thể xóa mà Main Flow vẫn chạy. |
 | `partial-rerun/run_requirement_prepare_review.md` | Phase 1 của nhánh phụ: tạo diff/impact/testcase draft và dừng chờ Human Review. |
 | `partial-rerun/run_requirement_apply_approved.md` | Phase 2 của nhánh phụ: merge testcase đã approve và partial execute. |
-| `partial-rerun/run_xray_test_cleanup.md` | Cleanup lifecycle testcase (Deprecate trên AIO) sau khi Excel thay đổi trong partial rerun và đã có Human Review approval. |
+| `partial-rerun/run_testcase_cleanup.md` | Cleanup lifecycle testcase (Deprecate trên AIO) sau khi Excel thay đổi trong partial rerun và đã có Human Review approval. |
 | `partial-rerun/reference.md` | Rule tham chiếu duy nhất cho nhánh phụ, thay cho nhiều file workflow/prompt/skill rời rạc. |
 | `scripts/convert_excel/` | Convert testcase Markdown sang Excel. |
 | `scripts/integrations/jira/` | Kiểm tra Jira connection và log bug. |
@@ -167,7 +167,7 @@ test-automation-kit/
 
 ## Mô hình Traceability (AIO Tests)
 
-Team chạy **toàn bộ testcase của 1 task cùng lúc**. AIO không có Test Set/Test Plan/Precondition issue — mô hình gọn hơn Xray (chi tiết + vòng đời status ở [USER_GUIDE §5.5.0](USER_GUIDE.md)):
+Team chạy **toàn bộ testcase của 1 task cùng lúc**. AIO không có Test Set/Test Plan/Precondition issue (chi tiết + vòng đời status ở [USER_GUIDE §5.5.0](USER_GUIDE.md)):
 
 ```mermaid
 flowchart TD
@@ -296,7 +296,7 @@ Mọi artifact của task phải nằm dưới:
 - ✅ Sau QA confirmation trong Phase 1, publish testcase lên AIO Tests từ Excel canonical; Phase 2 execute mặc định lấy nguồn từ AIO (`TESTCASE_SOURCE=aio`, kéo về canonical local), `excel` là opt-out.
 - ✅ Chạy Auto Publish Jira bằng prompt riêng `prompt_templates/phase1/04_auto_publish_jira.md` sau khi QA xác nhận Excel.
 - ✅ Nhóm chức năng lấy từ cột `Nhóm chức năng` (fallback `Module`) và thành folder trên AIO; không có Test Set để bật.
-- ✅ Khi testcase đã publish nhưng Excel bỏ bớt TC sau partial rerun, chạy cleanup dry-run rồi apply theo prompt `partial-rerun/run_xray_test_cleanup.md`; case chuyển **Deprecated**, không xoá.
+- ✅ Khi testcase đã publish nhưng Excel bỏ bớt TC sau partial rerun, chạy cleanup dry-run rồi apply theo prompt `partial-rerun/run_testcase_cleanup.md`; case chuyển **Deprecated**, không xoá.
 - ✅ Giữ testcase đủ precondition, test data, steps, expected result và assertion intent.
 - ✅ Review coverage bằng requirement/risk gate, không chỉ dựa vào số lượng testcase.
 - ✅ Capture screenshot hoặc video không trắng cho bug phức tạp.
@@ -325,5 +325,5 @@ Kit này được thiết kế để AI Agent và QA cùng đọc được cùng
 | [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) | Prompt canonical để chạy Re-run bug/case fail và cập nhật Jira bug đã fix. |
 | [partial-rerun/run_requirement_prepare_review.md](partial-rerun/run_requirement_prepare_review.md) | Prompt Phase 1 cho nhánh phụ khi nội dung tài liệu requirement/design/API thay đổi. |
 | [partial-rerun/run_requirement_apply_approved.md](partial-rerun/run_requirement_apply_approved.md) | Prompt Phase 2 sau khi Human Review approve. |
-| [partial-rerun/run_xray_test_cleanup.md](partial-rerun/run_xray_test_cleanup.md) | Prompt cleanup lifecycle testcase (Deprecate trên AIO) sau khi partial rerun làm Excel thay đổi. |
+| [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md) | Prompt cleanup lifecycle testcase (Deprecate trên AIO) sau khi partial rerun làm Excel thay đổi. |
 | [partial-rerun/reference.md](partial-rerun/reference.md) | Rule chi tiết của nhánh phụ partial rerun. |

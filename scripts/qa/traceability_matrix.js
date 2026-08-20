@@ -3,13 +3,13 @@
 
 /*
  * traceability_matrix.js (F8) — sinh ma trận REQ → TC → AUTO → EXEC → BUG dạng artifact.
- * Join các artifact có sẵn của task (không gọi Jira/Xray): dựng bức tranh coverage đầu-cuối,
+ * Join các artifact có sẵn của task (không gọi AIO/Jira): dựng bức tranh coverage đầu-cuối,
  * đánh dấu lỗ hổng (TC chưa publish / chưa execute / fail / có bug).
  *
  * Nguồn (trong <TASK_OUTPUT_DIR>):
  *   REQ  = task/story key (context)                     · nhóm theo cột Module của TC
  *   TC   = test-cases/*.md (cột "TC ID" + "Module")
- *   Xray = reports/jira-testcase-publish.json (tcId→issueKey)
+ *   PUBLISH = TC có mặt trong mirror `test-cases/from-aio/*.xlsx` (kéo từ AIO) ⇒ đã publish
  *   AUTO/EXEC = test-results[/runs/<RUN_ID>]/testcase-status.json (tcId→status)  (có status = đã tự động drive)
  *   BUG  = reports/bug-candidates.md (Jira key SAPP-xxxx + TC ref, best-effort)
  *
@@ -54,8 +54,6 @@ function main() {
 
   const tcs = parseTestcases(path.join(T, 'test-cases'));
   const pub = readJson(path.join(T, 'reports', 'jira-testcase-publish.json'));
-  const xrayByTc = new Map();
-  for (const r of (pub && pub.results) || []) if (r.tcId && r.issueKey) xrayByTc.set(normId(r.tcId), r.issueKey);
 
   const statusDoc = readJson(path.join(trDir, 'testcase-status.json')) || readJson(path.join(T, 'test-results', 'testcase-status.json'));
   const execByTc = new Map();
@@ -76,32 +74,32 @@ function main() {
   };
 
   const rows = tcs.map((tc) => {
-    const xray = xrayByTc.get(tc.tcId) || '';
+    const published = publishedTc.has(normId(tc.tcId));
     const exec = execByTc.get(tc.tcId) || '';
     const bug = tcHasBug(tc.tcId);
     const flags = [];
-    if (!xray) flags.push('chưa-publish');
+    if (!published) flags.push('chưa-publish');
     if (!exec) flags.push('chưa-execute');
     if (/FAIL/.test(exec)) flags.push('FAIL');
-    return { req: taskKey, module: tc.module, tcId: tc.tcId, xray, auto: exec ? 'yes' : 'no', exec: exec || '—', bug: bug || '—', flags: flags.join(', ') };
+    return { req: taskKey, module: tc.module, tcId: tc.tcId, published, auto: exec ? 'yes' : 'no', exec: exec || '—', bug: bug || '—', flags: flags.join(', ') };
   });
 
   // Ghi CSV + MD.
   fs.mkdirSync(path.join(T, 'reports'), { recursive: true });
-  const csv = ['REQ,Module,TC,Xray,AUTO,EXEC,BUG,Flags',
-    ...rows.map((r) => [r.req, r.module, r.tcId, r.xray, r.auto, r.exec, (r.bug || '').replace(/,/g, ' '), r.flags].map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+  const csv = ['REQ,Module,TC,PUBLISH,AUTO,EXEC,BUG,Flags',
+    ...rows.map((r) => [r.req, r.module, r.tcId, r.published ? 'yes' : 'no', r.auto, r.exec, (r.bug || '').replace(/,/g, ' '), r.flags].map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
   fs.writeFileSync(path.join(T, 'reports', 'traceability-matrix.csv'), csv, 'utf8');
 
-  const published = rows.filter((r) => r.xray).length;
+  const publishedCount = rows.filter((r) => r.published).length;
   const executed = rows.filter((r) => r.exec !== '—').length;
   const failed = rows.filter((r) => /FAIL/.test(r.exec)).length;
   const withBug = rows.filter((r) => r.bug !== '—').length;
   const L = ['# Traceability Matrix — ' + taskKey, '',
-    `> ${new Date().toISOString().slice(0, 19).replace('T', ' ')} · join REQ→TC→AUTO→EXEC→BUG từ artifact task (không gọi Jira/Xray).`,
-    `> TC: ${rows.length} · publish Xray: ${published} · execute: ${executed} · FAIL: ${failed} · có bug: ${withBug} · bug keys: ${bugKeysAll.join(', ') || '—'}`,
+    `> ${new Date().toISOString().slice(0, 19).replace('T', ' ')} · join REQ→TC→AUTO→EXEC→BUG từ artifact task (không gọi AIO/Jira).`,
+    `> TC: ${rows.length} · đã publish: ${publishedCount} · execute: ${executed} · FAIL: ${failed} · có bug: ${withBug} · bug keys: ${bugKeysAll.join(', ') || '—'}`,
     `> Lỗ hổng: ${rows.length - published} TC chưa publish · ${rows.length - executed} TC chưa execute.`, '',
-    '| REQ | Module | TC | Xray | AUTO | EXEC | BUG | Flags |', '|---|---|---|---|---|---|---|---|'];
-  for (const r of rows) L.push(`| ${r.req} | ${r.module} | ${r.tcId} | ${r.xray || '—'} | ${r.auto} | ${r.exec} | ${r.bug} | ${r.flags} |`);
+    '| REQ | Module | TC | PUBLISH | AUTO | EXEC | BUG | Flags |', '|---|---|---|---|---|---|---|---|'];
+  for (const r of rows) L.push(`| ${r.req} | ${r.module} | ${r.tcId} | ${r.published ? 'yes' : '—'} | ${r.auto} | ${r.exec} | ${r.bug} | ${r.flags} |`);
   fs.writeFileSync(path.join(T, 'reports', 'traceability-matrix.md'), L.join('\n'), 'utf8');
 
   console.log(`[trace] ${taskKey}: ${rows.length} TC · publish ${published} · execute ${executed} · FAIL ${failed} · bug ${withBug}`);

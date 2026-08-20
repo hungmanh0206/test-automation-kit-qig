@@ -280,7 +280,7 @@ if (fs.existsSync(SKILLS_DIR)) {
   try { scripts = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).scripts || {}; } catch (e) { /* không có package.json */ }
   // `partial-rerun` cũng là ĐIỂM VÀO (agent đọc prompt trong đó để chạy nhánh phụ) — thiếu nó thì lệnh chỉ
   // được nhắc ở nhánh phụ sẽ bị báo mồ côi oan. Lộ ra khi chuyển Xray → AIO: `jira:testcase-cleanup:dry-run`
-  // chỉ còn nằm ở mục LEGACY của `partial-rerun/run_xray_test_cleanup.md`.
+  // chỉ còn nằm ở mục LEGACY của `partial-rerun/run_testcase_cleanup.md`.
   const SEARCH_ROOTS = ['prompt_templates', '.agent', 'scripts', '.github', 'exploratory', 'partial-rerun'];
   const SEARCH_FILES = ['README.md', 'USER_GUIDE.md', 'QUICKSTART.md', 'RULE_GLOBAL.md', 'CLAUDE.md', '.gitlab-ci.yml', 'knowledge/SCHEMA.md', '.env.example'];
   const corpus = [];
@@ -309,62 +309,54 @@ if (fs.existsSync(SKILLS_DIR)) {
 }
 
 /*
- * ── TMS-DRIFT: tài liệu KHÔNG được dạy đường đã bị chặn ────────────────────────────────────────
+ * ── NO-XRAY: kit chỉ còn MỘT công cụ test-management (AIO Tests) ──────────────────────────────
  *
- * VÌ SAO CÓ KHỐI NÀY: GĐ1–GĐ5 chuyển Xray → AIO ở tầng CODE (tms.js mặc định `aio`, 5 entrypoint Xray
- * tự chặn), nhưng tầng TÀI LIỆU thì không có gì gác. Đo 20/08/2026: 23 file hướng dẫn vẫn dạy
- * `npm run jira:testcase-publish` và `TESTCASE_SOURCE=xray` là "mặc định" — agent chạy đúng theo
- * prompt sẽ đụng thẳng cửa chặn, còn người đọc thì học sai mô hình. Code có răng mà doc thì tự do
- * chính là kiểu lỗ hổng kit đã gặp nhiều lần: thiếu MÁY KIỂM, không phải thiếu quy định.
+ * VÌ SAO CẤM CẢ CHỮ: bản trước của luật này chỉ chặn "dạy Xray như đường chính" và cho qua dòng có
+ * nhãn `legacy`. Nhưng khi Xray đã bị bỏ hẳn (script xoá, biến env xoá, dữ liệu đã di trú và đối
+ * soát 2103/2103 run), thì mỗi câu còn nhắc nó là một đường mòn dẫn người/agent đi lạc: đi tìm lệnh
+ * không còn tồn tại, cấu hình biến không ai đọc, hoặc tưởng còn hai lối để chọn.
  *
- * HAI LUẬT (chỉ soi tài liệu HƯỚNG DẪN, không soi CHANGELOG/knowledge/outputs — đó là lịch sử):
- *   1. Dòng dạy lệnh legacy (`jira:testcase-publish`, `jira:testcase-cleanup`, 5 script Xray).
- *   2. Dòng mô tả `xray` là MẶC ĐỊNH (`TESTCASE_SOURCE=xray`, "mặc định … Xray").
- * Thoát bằng cách ghi rõ đây là đường cũ: dòng có `legacy`/`LEGACY`/`đóng băng`/`--test-management-tool xray`
- * thì được cho qua — mục "Đường Xray (LEGACY)" vẫn cần tồn tại để đọc/đối chiếu dữ liệu cũ.
+ * Phạm vi: mọi bề mặt kit dùng để LÀM VIỆC — prompt, workflow, skill, rule, script, test, doc gốc,
+ * `.env.example`. KHÔNG soi `CHANGELOG.md`, `outputs/`, `knowledge/`: đó là LỊCH SỬ, xoá đi là
+ * xoá dấu vết việc đã làm.
  */
 {
-  const DOC_ROOTS = ['prompt_templates', '.agent', 'partial-rerun', 'docs/library/src'];
-  // `.env.example` cũng là tài liệu HƯỚNG DẪN: chú thích trong đó dạy người ta đặt biến gì. Bỏ nó ra ngoài
-  // thì dòng "xray (MẶC ĐỊNH)" nằm đó 1 ngày mà gate vẫn xanh (đo 20/08/2026).
-  const DOC_FILES = ['README.md', 'QUICKSTART.md', 'USER_GUIDE.md', 'RULE_GLOBAL.md', 'CLAUDE.md', '.env.example'];
-  const LEGACY_CMD = /npm run jira:testcase-(publish|cleanup)|integrations\/jira\/(publish_testcases|pull_testcases|push_test_execution|update_xray_steps|cleanup_xray_tests)\.js/;
-  // Loại TÊN BIẾN trước khi soi: `PUSH_XRAY_EXECUTION`, `XRAY_EXEC_STEP_STATUS`… giữ nguyên tên cho tương
-  // thích ngược nhưng nay điều khiển đường AIO. Không loại thì mỗi dòng nhắc biến đó bị báo oan (đo: 3/15
-  // hit đầu tiên là loại này) — mà gate báo oan thì người ta tắt gate chứ không sửa nội dung.
-  const stripVarNames = (line) => line.replace(/\b[A-Z][A-Z0-9]*_XRAY[A-Z0-9_]*\b|\bXRAY_[A-Z0-9_]+\b/g, '');
-  const XRAY_DEFAULT = /TESTCASE_SOURCE=xray|TEST_MANAGEMENT_TOOL=xray|mặc định[^.\n]{0,40}(Xray|từ Xray)|`xray`[^.\n]{0,20}\*\*mặc định\*\*/i;
-  const EXEMPT = /legacy|LEGACY|đóng băng|--test-management-tool xray|tự chặn|tự CHẶN/;
+  const ROOTS = ['prompt_templates', '.agent', 'partial-rerun', 'docs/library/src', 'scripts', 'tests'];
+  const FILES = ['README.md', 'QUICKSTART.md', 'USER_GUIDE.md', 'RULE_GLOBAL.md', 'CLAUDE.md', '.env.example'];
+  const BANNED = /xray/i;
+  /*
+   * HAI FILE ĐƯỢC MIỄN, và chỉ hai: chính LUẬT này và TEST khoá luật. Ở đó cái tên xuất hiện với vai trò
+   * "thứ bị cấm", không phải "đường được dạy" — không miễn thì luật tự tố chính nó và không ai chạy nổi.
+   * Miễn theo ĐƯỜNG DẪN CỤ THỂ (không phải theo pattern) để nó không thành lỗ hổng mở rộng dần.
+   */
+  const SELF = new Set(['scripts/qa/policy_source_check.js', 'tests/fe/infra/gates.spec.ts']);
 
   const hits = [];
   const scanFile = (abs) => {
     const rel = path.relative(rc.REPO_ROOT, abs).replace(/\\/g, '/');
-    const lines = fs.readFileSync(abs, 'utf8').split(/\r?\n/);
-    lines.forEach((line, i) => {
-      if (EXEMPT.test(line)) return;
-      const clean = stripVarNames(line);
-      const why = LEGACY_CMD.test(clean) ? 'dạy lệnh Xray legacy (đã bị chặn khi TEST_MANAGEMENT_TOOL=aio)'
-        : XRAY_DEFAULT.test(clean) ? 'mô tả Xray/xray là MẶC ĐỊNH (mặc định thật là aio)' : null;
-      if (why) hits.push(`${rel}:${i + 1} — ${why}`);
+    if (SELF.has(rel)) return;
+    fs.readFileSync(abs, 'utf8').split(/\r?\n/).forEach((line, i) => {
+      if (BANNED.test(line)) hits.push(`${rel}:${i + 1}`);
     });
   };
   const walk = (dir) => {
     if (!fs.existsSync(dir)) return;
-    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-      const abs = path.join(dir, e.name);
-      if (e.isDirectory()) { walk(abs); continue; }
-      if (/\.(md|js)$/.test(e.name)) scanFile(abs);
+    for (const en of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, en.name);
+      if (en.isDirectory()) { if (!/node_modules|\.git/.test(en.name)) walk(abs); continue; }
+      if (/\.(md|js|mjs|ts|json|yml|example)$/.test(en.name)) scanFile(abs);
     }
   };
-  for (const r of DOC_ROOTS) walk(path.join(rc.REPO_ROOT, r));
-  for (const f of DOC_FILES) { const abs = path.join(rc.REPO_ROOT, f); if (fs.existsSync(abs)) scanFile(abs); }
+  for (const r of ROOTS) walk(path.join(rc.REPO_ROOT, r));
+  for (const f of FILES) { const abs = path.join(rc.REPO_ROOT, f); if (fs.existsSync(abs)) scanFile(abs); }
 
   if (hits.length) {
-    problems.push(`TMS-DRIFT: ${hits.length} dòng tài liệu còn dạy đường Xray như đường chính (tool mặc định là AIO Tests, lệnh Xray TỰ CHẶN):\n      ${hits.slice(0, 12).join('\n      ')}${hits.length > 12 ? `\n      … (+${hits.length - 12})` : ''}\n    Sửa sang lệnh \`aio:*\` tương ứng, hoặc nếu cố ý nói về đường cũ thì ghi rõ \`legacy\`/\`đóng băng\` trên CHÍNH dòng đó.`);
+    problems.push(`NO-XRAY: ${hits.length} chỗ còn nhắc công cụ đã bỏ (kit chỉ dùng AIO Tests): ${hits.slice(0, 15).join(' · ')}${hits.length > 15 ? ` … (+${hits.length - 15})` : ''}. Xoá hoặc viết lại theo AIO — đừng để lại đường mòn dẫn tới lệnh/biến không còn tồn tại.`);
   } else {
-    console.log('[policy] ✓ không tài liệu nào dạy đường Xray như đường chính (TMS-drift sạch).');
+    console.log('[policy] ✓ không bề mặt nào của kit còn nhắc công cụ test-management cũ (NO-XRAY sạch).');
   }
 }
+
 
 for (const w of warns) console.log(`[policy] ⚠ ${w}`);
 if (problems.length) {

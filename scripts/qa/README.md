@@ -209,7 +209,7 @@ Ghi 3 thứ (theo `knowledge/SCHEMA.md`):
 | Output | Nguồn | Ai tiêu thụ |
 |---|---|---|
 | `knowledge/metrics/{runs,tc-history}.jsonl` | `results.json` (Playwright JSON) | `reliability_index` (flaky/quarantine), dashboard KPI |
-| `knowledge/historical_execution/<TASK>__<date>.json` | `testcase-status.json` + map `tcId→Module` từ **testcase canonical** (`test-cases/*.md` \| `from-xray/*.xlsx`) | **`risk_score`** cộng `fail/total` theo module → Likelihood thật (hết cold-start); `dashboard` coverage |
+| `knowledge/historical_execution/<TASK>__<date>.json` | `testcase-status.json` + map `tcId→Module` từ **testcase canonical** (`test-cases/*.md` \| `from-aio/*.xlsx`) | **`risk_score`** cộng `fail/total` theo module → Likelihood thật (hết cold-start); `dashboard` coverage |
 | `knowledge/index.json` | (trên) | tra cứu theo module/tag |
 
 **Quan trọng:**
@@ -239,13 +239,13 @@ TASK_ENV=profiles/<TASK>/task.env npm run learn:bugs:apply    # ghi thật vào 
 
 ---
 
-# seed_knowledge_from_jira.js — nạp lịch sử Jira/Xray vào knowledge (Suggest-only)
+# seed_knowledge_from_jira.js — nạp lịch sử bug Jira vào knowledge (Suggest-only)
 
-Bootstrap Risk-Based Testing: kit chỉ điền `knowledge/` khi bug qua Jira gate ở Phase 2, nên dự án mới → knowledge rỗng → `risk_score` cold-start chỉ dựa **Impact** (đoán Likelihood). Script này nạp **bug đã resolved** (→ `knowledge/bugs/`, cấp `bugCount`) và **kết quả execution cũ trên Xray** (→ `knowledge/historical_execution/`, cấp `failRate`) → `risk_score` có Likelihood thật ngay từ ngày đầu. **Không sửa `risk_score`, chỉ cấp dữ liệu.**
+Bootstrap Risk-Based Testing: kit chỉ điền `knowledge/` khi bug qua Jira gate ở Phase 2, nên dự án mới → knowledge rỗng → `risk_score` cold-start chỉ dựa **Impact** (đoán Likelihood). Script này nạp **bug đã resolved** (→ `knowledge/bugs/`, cấp `bugCount`)  → `risk_score` có Likelihood thật ngay từ ngày đầu. **Không sửa `risk_score`, chỉ cấp dữ liệu.**
 
 ```bash
 node scripts/qa/seed_knowledge_from_jira.js                    # DRY-RUN: in bảng map module, chưa ghi
-node scripts/qa/seed_knowledge_from_jira.js --with-execution   # + preview snapshot execution từ Xray
+
 npm run seed:knowledge:apply -- --since 2025-01-01             # ghi thật vào knowledge/ + rebuild index.json
 ```
 
@@ -257,7 +257,7 @@ npm run seed:knowledge:apply -- --since 2025-01-01             # ghi thật vào
 | `--since <YYYY-MM-DD>` | Chỉ bug `resolutiondate >=` ngày này. |
 | `--module-from component\|label` | Suy `module` từ Jira **component** (mặc định) hay **label**. |
 | `--label-prefix <p>` | Khi dùng label: chỉ label bắt đầu bằng `p` là module (cắt prefix). |
-| `--with-execution` | Seed thêm `historical_execution` từ Xray Cloud (best-effort; thiếu creds/lỗi schema → skip sạch). |
+
 | `--max <N>` / `--exec-max <N>` | Cap số bug (500) / test execution (50). |
 | `--include-all-resolutions` | Bỏ lọc resolution=fix (mặc định loại Duplicate/Won't Do/Cannot Reproduce...). |
 | `--fallback-module <name>` | Gán module này khi bug không có component/label (mặc định: bỏ qua). |
@@ -282,7 +282,7 @@ npm run gate:gen-testcase -- --dir <test-cases/>             # gen-testcase
 node scripts/qa/output_gate.js --mode bug --preview <bugs.json>
 ```
 
-STRICT mặc định BẬT (tắt: `--lenient`/`QA_STRICT=0`/`XRAY_STRICT=0`); QA cố ý bỏ qua: `--qa-approved` (có log).
+STRICT mặc định BẬT (tắt: `--lenient`/`QA_STRICT=0`); QA cố ý bỏ qua: `--qa-approved` (có log).
 
 ---
 

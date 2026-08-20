@@ -8,7 +8,7 @@ Tạo automation có assertion thật, locator/API contract ổn định và kh�
 
 ## Precondition Resolution Pass (bắt buộc, TRƯỚC khi generate)
 
-Chạy pass này cho toàn bộ selected TC trước khi sinh/cập nhật spec. Selected TC lấy từ **nguồn canonical local theo `TESTCASE_SOURCE`**: mặc định `test-cases/from-aio/*.xlsx` (aio), hoặc `test-cases/*.xlsx` (excel), `from-xray/*.xlsx` (xray — legacy).
+Chạy pass này cho toàn bộ selected TC trước khi sinh/cập nhật spec. Selected TC lấy từ **nguồn canonical local theo `TESTCASE_SOURCE`**: mặc định `test-cases/from-aio/*.xlsx` (aio), hoặc `test-cases/*.xlsx` (excel).
 
 1. Đọc selected TC từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `from-aio/*.xlsx`), sau đó đọc `### Precondition Execution Matrix` (và catalog `## Setup Strategy` trong Markdown khi cần chi tiết).
 2. Map `Setup Method` của từng TC: `api`/`factory`/`test_hook`/`pre_existing`/`ui`/`manual`.

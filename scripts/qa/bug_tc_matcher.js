@@ -67,8 +67,8 @@ const terms = (s) => {
 
 // ── Nạp bộ testcase canonical ─────────────────────────────────────────────────────────────────────────
 function loadCanonical() {
-  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + mọi bản kéo về (from-xray, from-aio)
-  // DEDUP theo tcId: `from-xray/` là bản mirror kéo về từ Xray của CÙNG bộ testcase, nên gộp cả hai thư mục
+  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + bản kéo về từ AIO (from-aio)
+  // DEDUP theo tcId: `from-aio/` là bản mirror kéo về từ AIO của CÙNG bộ testcase, nên gộp cả hai thư mục
   // làm mỗi TC vào bảng 2 lần (đo: 550 bản ghi cho 530 TC). Hậu quả không nhìn thấy: một TC trùng chiếm
   // NHIỀU dòng trong top-N ⇒ đẩy ứng viên khác ra ngoài, và điểm bình chọn module bị nhân đôi lệch hẳn.
   // Thư mục đầu (`test-cases/`) là bản QA đang biên tập nên thắng.

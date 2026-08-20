@@ -21,7 +21,7 @@ const rc = require('./runtime_config');
 const { EvidenceRecorder } = require('./evidence_recorder');
 
 /**
- * @param {{ taskKey?, task?, projectOutputDir?, runId?, tcId?, requirementId?, xrayKey? }} [opts]
+ * @param {{ taskKey?, task?, projectOutputDir?, runId?, tcId?, requirementId?, caseKey? }} [opts]
  * @returns execution context (plain object)
  */
 function createTestContext(opts = {}) {
@@ -42,7 +42,7 @@ function createTestContext(opts = {}) {
     metadata: {
       tcId: opts.tcId || '',
       requirementId: opts.requirementId || '',
-      xrayKey: opts.xrayKey || '',
+      caseKey: opts.caseKey || '',
     },
 
     /** EvidenceRecorder lazy (đúng task/run) — mọi case/step evidence + status/manifest qua đây. */

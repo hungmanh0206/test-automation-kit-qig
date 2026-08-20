@@ -7,6 +7,60 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-20 (b) — BỎ HẲN Xray: xoá 14 file, 1 công tắc, 42 biến env, và cấm cả cái tên
+
+User chốt: *"bây giờ cũng không cần giữ Xray nữa, tôi cần sạch và kể cả comment"*. Trước đó kit đang ở
+trạng thái "AIO là đường chính, Xray là legacy có nhãn" — nghĩa là vẫn còn hai lối, vẫn còn 375 chỗ nhắc
+tên công cụ cũ trên các bề mặt làm việc. Mỗi chỗ như vậy là một **đường mòn**: dẫn người/agent đi tìm lệnh
+không còn tồn tại, cấu hình biến không ai đọc, hoặc tưởng còn hai lựa chọn để cân.
+
+**ĐÓNG BĂNG BẰNG CHỨNG TRƯỚC KHI XOÁ** (việc phải làm đầu tiên, vì sau khi bỏ Xray thì không còn nguồn để
+chạy lại phép đối soát): `aio:reconcile` chạy full trên **15/15** Test Execution — Run **2103/2103**,
+trạng thái **`Failed=47 Not Run=70 Passed=1986`** khớp hai đầu, mỗi cycle có số case phân biệt = số run
+(không case nào bị chồng attempt), Test Plan **2/2** → 2 thư mục cycle với 16/17 cycle nằm đúng chỗ (cái
+ngoài là `Ad hoc` của hệ thống). Số liệu ở đây là bản lưu cuối cùng — công cụ sinh ra nó cũng đã bị xoá.
+
+**Removed — 14 file**:
+- `scripts/integrations/jira/`: `xray_cloud.js` · `publish_testcases.js` · `pull_testcases.js` ·
+  `push_test_execution.js` · `update_xray_steps.js` · `cleanup_xray_tests.js` · `create_test_plan.js` ·
+  `unassign_all_tests.js` · `cleanup_precondition_requirement_links.js`
+- `scripts/integrations/aio/`: `migrate_testcases.js` · `migrate_execution.js` · `reconcile_migration.js`
+  (di trú đã xong và đã đối soát ⇒ ba script này không còn việc)
+- `scripts/integrations/tms.js` — **công tắc không còn gì để chuyển**: một tool thì không cần switch. Kéo
+  theo: bỏ `TEST_MANAGEMENT_TOOL` khỏi env/doc, bỏ `assertTool` khỏi mọi entrypoint, bỏ khối test tương ứng.
+- `docs/user-guide-images/xray-traceability.png`
+- 9 npm script (`jira:testcase-publish*`, `jira:testcase-cleanup*`, `aio:migrate-*`, `aio:reconcile`).
+
+**Changed — nơi Xray từng có VAI TRÒ THẬT, phải thay bằng thứ khác chứ không chỉ xoá chữ**:
+- `traceability_matrix.js`: cột `Xray` đọc `reports/jira-testcase-publish.json` (artefact Xray) → cột
+  **`PUBLISH`** suy từ mirror `test-cases/from-aio/*.xlsx`. Vẫn offline, vẫn giữ được flag `chưa-publish`.
+- `seed_knowledge_from_jira.js`: bỏ hẳn nhánh `--with-execution` (nó đọc Xray GraphQL). Seed bug từ Jira
+  giữ nguyên.
+- `verdict_taxonomy.json`: bỏ cột `xray` (10 status) — còn 1 cột `aio`, đúng tinh thần 1-nguồn.
+- `PUSH_XRAY_EXECUTION` → **`PUSH_EXECUTION`**, `REPUBLISH_XRAY` → **`REPUBLISH_TESTCASES`**;
+  `from-xray` khỏi `TESTCASE_MIRROR_DIRS`; `xrayKey` → `caseKey` trong `test_context`.
+- `.env` thật + `.env.example`: **42 biến `XRAY_*`** bị xoá (3 ở .env, 39 ở example) sau khi đo rằng
+  KHÔNG script nào còn đọc chúng. Đối soát .env: 65 biến còn lại, hash `KEY=VALUE` khớp hệt (chỉ mất đúng
+  phần Xray), `integration:check:live` vẫn 4/4 service OK.
+- `partial-rerun/run_xray_test_cleanup.md` → **`run_testcase_cleanup.md`** + sửa 11 nơi trỏ tới.
+- Sơ đồ `main-flow`/`phase1`/`phase2`/`partial-rerun`/`phase-selection` sinh lại theo AIO; `jira/README.md`
+  viết lại chỉ còn phần thật sự còn: fetch requirement · log bug · publish Confluence.
+
+**Changed — luật gate: từ "đừng dạy như đường chính" sang CẤM TUYỆT ĐỐI.** `gate:policy` cũ có cửa thoát
+`legacy`, và chính cửa đó để sót 12 chỗ dạy lệnh đã bị xoá. Luật mới (`NO-XRAY`) chặn **mọi** lần xuất hiện
+của cái tên trên bề mặt làm việc (prompt · workflow · skill · rule · scripts · tests · doc gốc ·
+`.env.example`), KHÔNG soi `CHANGELOG.md`/`outputs/`/`knowledge/` vì đó là **lịch sử** — xoá đi là xoá dấu
+vết việc đã làm. Miễn trừ đúng **hai** file: luật và test khoá luật (ở đó cái tên xuất hiện với vai trò "thứ
+bị cấm"); miễn theo đường dẫn cụ thể để không thành lỗ hổng mở rộng dần.
+
+**Đo được**: 375 chỗ → **0**. Ba test khoá luật: repo thật sạch · một dòng nhắc lại là CHẶN · lịch sử KHÔNG
+bị soi (test này còn assert CHANGELOG *phải* còn dấu vết, nếu không thì chính nó vô nghĩa).
+
+**Nghiệm thu**: `gate:policy` 4/4 xanh · **169/169** spec infra xanh · lint 0 error · typecheck sạch ·
+`preflight` phase2 ĐẠT trên task thật · `aio:pull` dry-run vẫn đọc đúng 50 case · `integration:check:live`
+4/4. Kit giờ chỉ còn **một** công cụ test-management, và không còn chỗ nào nhắc cái đã bỏ.
+
+
 ## 2026-08-20 — Xray → AIO Tests: đóng nốt LỚP TÀI LIỆU + dựng máy kiểm TMS-drift
 
 Bối cảnh: **GĐ1–GĐ5 đã chuyển xong ở tầng CODE** (`715f8e4`, `ac49e7a`, `d5ce910`, `92ab7df`, merge `6446dd6`):

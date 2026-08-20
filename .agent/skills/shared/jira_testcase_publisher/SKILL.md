@@ -1,15 +1,15 @@
 ---
 name: jira_testcase_publisher
-description: Publish testcase từ Excel canonical lên AIO Tests sau Phase 1 (npm run aio:publish); cleanup lifecycle (Deprecate) thuộc partial-rerun khi Excel thay đổi. Đường Xray là legacy.
+description: Publish testcase từ Excel canonical lên AIO Tests sau Phase 1 (npm run aio:publish); cleanup lifecycle (Deprecate) thuộc partial-rerun khi Excel thay đổi.
 ---
 
 # Testcase Publisher (AIO Tests)
 
-> Tên skill giữ nguyên `jira_testcase_publisher` cho tương thích ngược (AIO Tests là app trong Jira), nhưng **đích đến là AIO Tests** từ GĐ5 — Xray đóng băng sau 21/08/2026.
+> Tên skill giữ nguyên `jira_testcase_publisher` cho tương thích ngược (AIO Tests là app trong Jira), nhưng đích đến là **AIO Tests**.
 
 ## Purpose
 
-Publish bộ testcase đã được QA xác nhận từ Excel lên **AIO Tests** để QA/Dev review, track và làm nguồn cho Phase 2 execute. Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **authoring/publish** (sửa nội dung ở Excel rồi re-publish); Phase 2 execute mặc định đọc từ AIO (`TESTCASE_SOURCE=aio`). Publish là step riêng trong phạm vi Phase 1. Khi Excel thay đổi sau publish, cleanup lifecycle thuộc nhánh phụ `partial-rerun/run_xray_test_cleanup.md`.
+Publish bộ testcase đã được QA xác nhận từ Excel lên **AIO Tests** để QA/Dev review, track và làm nguồn cho Phase 2 execute. Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **authoring/publish** (sửa nội dung ở Excel rồi re-publish); Phase 2 execute mặc định đọc từ AIO (`TESTCASE_SOURCE=aio`). Publish là step riêng trong phạm vi Phase 1. Khi Excel thay đổi sau publish, cleanup lifecycle thuộc nhánh phụ `partial-rerun/run_testcase_cleanup.md`.
 
 ## Responsibilities
 
@@ -69,12 +69,6 @@ npm run aio:deprecate-stale                # xem trước
 npm run aio:deprecate-stale:apply          # đổi caseStatus sang Deprecated
 ```
 
-Đường Xray (LEGACY — chỉ đọc/đối chiếu bộ cũ; tự chặn khi `TEST_MANAGEMENT_TOOL=aio`):
-
-```bash
-npm run jira:testcase-publish:dry-run -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --test-management-tool xray
-```
-
 ## Decision Rules
 
 - Không publish từ Markdown nếu Excel đã tồn tại; Excel là canonical source.
@@ -85,8 +79,8 @@ npm run jira:testcase-publish:dry-run -- --task <TASK_KEY> --story <JIRA_STORY_K
 - Nếu Excel không còn TC ID đã publish, dùng `aio:deprecate-stale` (Deprecated), không xoá.
 - Nếu token/quyền chưa sẵn sàng, ghi blocker hoặc chỉ dry-run; không tạo case mơ hồ.
 - Nếu publish lỗi một phần, giữ Excel và report local làm source; không sửa testcase để khớp lỗi publish.
-- Bộ testcase migrate từ Xray có cây folder sâu 3 cấp, còn `aio:publish` chỉ dựng 2 cấp ⇒ thêm case vào bộ cũ thì vá tại chỗ (`--only`), đừng publish lại cả bộ.
-- Phase 2 execute mặc định lấy nguồn từ AIO (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx` bằng `npm run aio:pull:write`); `excel` là opt-out; `xray` là legacy.
+- Bộ testcase cũ có cây folder sâu 3 cấp, còn `aio:publish` chỉ dựng 2 cấp ⇒ thêm case vào bộ đó thì vá tại chỗ (`--only`), đừng publish lại cả bộ.
+- Phase 2 execute mặc định lấy nguồn từ AIO (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx` bằng `npm run aio:pull:write`); `excel` là opt-out.
 
 ## Anti-Patterns
 

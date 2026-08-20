@@ -2,17 +2,17 @@
 'use strict';
 
 /*
- * Seed Knowledge từ lịch sử Jira/Xray (Suggest-only, DRY-RUN mặc định).
+ * Seed Knowledge từ lịch sử Jira (Suggest-only, DRY-RUN mặc định).
  *
  * Vì sao: kit chỉ điền knowledge/ khi bug qua Jira gate ở Phase 2 (learning_recorder).
  * Dự án mới → knowledge rỗng → risk_score cold-start chỉ dựa Impact (đoán Likelihood).
- * Script này nạp bug đã resolved + kết quả execution cũ có sẵn trên Jira/Xray vào
+ * Script này nạp bug đã resolved trên Jira vào
  * knowledge/{bugs,historical_execution} → risk_score có ngay Likelihood thật
  * (bugCount + failRate) thay vì cold-start. Không đổi risk_score, chỉ cấp dữ liệu.
  *
  * AN TOÀN:
  *   - DRY-RUN mặc định (chỉ in preview + bảng map module). Phải --apply mới ghi file.
- *   - Chỉ đọc Jira/Xray (GET/JQL/GraphQL query). KHÔNG tạo/sửa issue.
+ *   - Chỉ đọc Jira (GET/JQL). KHÔNG tạo/sửa issue.
  *   - KHÔNG ghi PII: mask email/SĐT trong mô tả; chỉ trích field theo SCHEMA (không description/assignee).
  *   - Idempotent: dedup theo bug id (chạy lại không nhân đôi).
  *   - Chỉ seed bug có resolution = fix thật (loại Duplicate/Won't Do/Cannot Reproduce...).
@@ -22,7 +22,6 @@
  *   node scripts/qa/seed_knowledge_from_jira.js                         # dry-run, project = JIRA_PROJECT_KEY
  *   node scripts/qa/seed_knowledge_from_jira.js --project SAPP --since 2025-01-01
  *   node scripts/qa/seed_knowledge_from_jira.js --module-from label --label-prefix module-
- *   node scripts/qa/seed_knowledge_from_jira.js --with-execution        # + seed historical_execution (Xray)
  *   node scripts/qa/seed_knowledge_from_jira.js --apply                 # ghi thật vào knowledge/
  *   node scripts/qa/seed_knowledge_from_jira.js --jql 'project=SAPP AND issuetype=Bug AND fixVersion="2025.Q4"' --apply
  */
@@ -32,7 +31,6 @@ const path = require('path');
 const axios = require('axios');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const jiraUtils = require(path.resolve(__dirname, '..', 'integrations', 'jira', 'utils'));
-const { XrayCloudClient, isUsableCreds } = require(path.resolve(__dirname, '..', 'integrations', 'jira', 'xray_cloud'));
 
 jiraUtils.loadEnv();
 
@@ -50,8 +48,6 @@ const LABEL_PREFIX = arg('label-prefix', '');
 const SINCE = arg('since', '');
 const MAX = parseInt(arg('max', '500'), 10);
 const CUSTOM_JQL = arg('jql', '');
-const WITH_EXEC = has('with-execution');
-const EXEC_MAX = Math.min(100, parseInt(arg('exec-max', '50'), 10));
 const FALLBACK_MODULE = arg('fallback-module', '');
 const INCLUDE_ALL_RES = has('include-all-resolutions');
 
@@ -215,58 +211,7 @@ async function seedBugs() {
   return planned.length;
 }
 
-const bucket = (statusName) => (/pass/i.test(statusName) ? 'pass' : /fail/i.test(statusName) ? 'fail' : 'skip');
 
-async function seedExecution() {
-  if (!isUsableCreds(process.env.XRAY_CLIENT_ID, process.env.XRAY_CLIENT_SECRET)) {
-    console.log('[seed] --with-execution: thiếu XRAY_CLIENT_ID/SECRET → BỎ QUA phần execution (bug vẫn seed).');
-    return 0;
-  }
-  const xc = new XrayCloudClient({ clientId: process.env.XRAY_CLIENT_ID, clientSecret: process.env.XRAY_CLIENT_SECRET, baseUrl: process.env.XRAY_CLOUD_BASE_URL });
-  let execs;
-  try {
-    const d = await xc.graphql(
-      `query($jql:String!,$limit:Int!){ getTestExecutions(jql:$jql, limit:$limit){ total results { issueId jira(fields:["key","created"]) } } }`,
-      { jql: `project = "${PROJECT}" AND issuetype = "Test Execution" ORDER BY created DESC`, limit: EXEC_MAX });
-    execs = (d.getTestExecutions && d.getTestExecutions.results) || [];
-  } catch (e) {
-    console.log(`[seed] --with-execution: Xray GraphQL lỗi (${String(e.message).slice(0, 120)}) → BỎ QUA execution. Schema Xray có thể khác version; bug vẫn seed.`);
-    return 0;
-  }
-  console.log(`\n[seed] Xray: ${execs.length} Test Execution (cap ${EXEC_MAX}).`);
-  let written = 0;
-  for (const ex of execs) {
-    const key = (ex.jira && ex.jira.key) || ex.issueId;
-    const date = ((ex.jira && ex.jira.created) || '').slice(0, 10) || today();
-    let runs;
-    try {
-      const r = await xc.graphql(
-        `query($ids:[String],$limit:Int!){ getTestRuns(testExecIssueIds:$ids, limit:$limit){ total results { status{ name } test{ jira(fields:["key","labels","components"]) } } } }`,
-        { ids: [String(ex.issueId)], limit: 100 });
-      runs = (r.getTestRuns && r.getTestRuns.results) || [];
-    } catch { continue; }
-    const modules = {};
-    for (const run of runs) {
-      const jf = (run.test && run.test.jira) || {};
-      const module = resolveModule({ components: (jf.components || []).map((c) => (typeof c === 'string' ? { name: c } : c)), labels: jf.labels || [] });
-      if (!module) continue;
-      const m = modules[module] || (modules[module] = { total: 0, pass: 0, fail: 0, skip: 0 });
-      m.total++; m[bucket((run.status && run.status.name) || '')]++;
-    }
-    if (!Object.keys(modules).length) continue;
-    const tot = Object.values(modules).reduce((a, v) => a + v.pass + v.fail, 0);
-    const pass = Object.values(modules).reduce((a, v) => a + v.pass, 0);
-    const snap = { task_key: key, date, phase: 'phase2', unassisted_pass_rate: tot ? Math.round((pass / tot) * 100) / 100 : 0, modules, source: 'xray-seed' };
-    console.log(`  ${key} (${date}): ${Object.keys(modules).length} module, ${tot} run`);
-    if (APPLY) {
-      fs.mkdirSync(path.join(KNOW, 'historical_execution'), { recursive: true });
-      fs.writeFileSync(path.join(KNOW, 'historical_execution', `${key}__${date}.json`), JSON.stringify(snap, null, 2), 'utf8');
-      written++;
-    }
-  }
-  if (APPLY) console.log(`[seed] ✓ Đã ghi ${written} snapshot vào knowledge/historical_execution/.`);
-  return written;
-}
 
 async function main() {
   if (!BASE) { console.error('[seed] Thiếu JIRA_BASE_URL. Điền .env (xem scripts/integrations/jira/.env.example).'); process.exit(1); }
@@ -274,7 +219,6 @@ async function main() {
   console.log(`[seed] MODE: ${APPLY ? 'APPLY (ghi thật)' : 'DRY-RUN (chỉ preview — thêm --apply để ghi)'} · project=${PROJECT || '(từ --jql)'}`);
 
   await seedBugs();
-  if (WITH_EXEC) await seedExecution();
 
   if (APPLY) {
     const n = rebuildIndex();

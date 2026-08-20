@@ -25,15 +25,15 @@ const boards = [
     steps: [
       { icon: 'IN', c: C.info, title: '1.1 Requirement intake', body: 'Jira, Confluence, Figma, Swagger' },
       { icon: 'AI', c: C.info, title: '1.2 AI generate testcase', body: 'Sinh testcase và test data draft' },
-      { icon: 'XL', c: C.success, title: '1.3 Excel (SoT gen/publish)', body: 'QA review trên Excel; Phase 2 execute từ Xray' },
-      { icon: 'OK', gate: true, title: 'GATE: QA CONFIRMATION', body: 'Approve trước khi publish Jira/Xray' },
-      { icon: 'XR', c: C.amber, title: '1.4 Auto Publish Jira/Xray', body: 'Test issue + optional Test Set' },
-      { icon: 'EX', c: C.info, title: '1.5 Execute từ Xray', body: 'Phase 2 mặc định kéo testcase từ Xray' },
-      { icon: 'TE', c: C.success, title: '1.6 Đẩy Test Execution', body: 'PASSED/FAILED → Xray + link Test Plan' },
+      { icon: 'XL', c: C.success, title: '1.3 Excel (SoT gen/publish)', body: 'QA review trên Excel; Phase 2 execute từ AIO' },
+      { icon: 'OK', gate: true, title: 'GATE: QA CONFIRMATION', body: 'Approve trước khi publish lên AIO' },
+      { icon: 'PB', c: C.amber, title: '1.4 Auto Publish AIO', body: 'Case + folder theo nhóm chức năng' },
+      { icon: 'EX', c: C.info, title: '1.5 Execute từ AIO', body: 'Phase 2 mặc định pull về local' },
+      { icon: 'TE', c: C.success, title: '1.6 Đẩy cycle lên AIO', body: 'Passed/Failed + evidence từng bước' },
       { icon: 'BG', c: C.danger, title: '1.7 Triage & Jira bug', body: 'Rerun xác nhận + evidence' },
       { icon: 'RR', c: C.success, title: '1.8 Dev fix & Re-run', body: 'Attach evidence, update report' },
     ],
-    outputs: ['Excel (gen/publish)', 'Xray Test + Test Execution', 'Test Plan sprint (roll-up)', 'Execution evidence', 'Jira bug nếu đủ điều kiện', 'PASS report'],
+    outputs: ['Excel (gen/publish)', 'AIO Case + Cycle', 'Thư mục cycle theo sprint', 'Evidence ảnh/video'],
   },
   {
     file: 'qa-environment.png', number: '0', title: 'QA Setup', role: 'Team QA',
@@ -58,7 +58,7 @@ const boards = [
       { icon: 'CH', c: C.info, title: 'change/regen/', body: 'Partial rerun diff, impact, approved merge' },
       { icon: 'MD', c: C.danger, title: 'task.md', body: 'Status board và decision log' },
     ],
-    outputs: ['Không lẫn story', 'Không ghi đè TASK_KEY khác', 'Excel là baseline (gen/publish)', 'Xray = nguồn execute mặc định', 'Cleanup qua partial rerun'],
+    outputs: ['Không lẫn story', 'Không ghi đè TASK_KEY khác', 'Excel là baseline (gen/publish)', 'AIO = nguồn execute mặc định', 'Cleanup qua partial rerun'],
   },
   {
     file: 'phase1-quality-gate.png', number: '1', title: 'Phase 1', role: 'Testcase generation',
@@ -69,25 +69,25 @@ const boards = [
       { icon: 'DIM', c: C.info, title: '1.2 Khai CHIỀU coverage', body: 'dimension_manifest: required / n/a KÈM lý do' },
       { icon: 'TC', c: C.info, title: '1.3 Generate testcase', body: 'Group business flow; tag chiều trong tiêu đề; RBT density' },
       { icon: 'DEP', gate: true, title: 'GATE: DIM COVERAGE', body: 'Thiếu chiều required = CHẶN; n/a trái artifact = CHẶN' },
-      { icon: 'XL', c: C.success, title: '1.4 Export Excel', body: 'Excel SoT khi gen/publish (execute từ Xray)' },
+      { icon: 'XL', c: C.success, title: '1.4 Export Excel', body: 'Excel SoT khi gen/publish (execute từ AIO)' },
       { icon: 'QA', c: C.amber, title: '1.5 QA review + risk gate', body: 'Coverage, risk depth, expected, gap' },
       { icon: 'OK', gate: true, title: 'GATE: QA APPROVAL', body: 'Chỉ publish khi Excel đã approve' },
-      { icon: 'XR', c: C.ink, title: '1.6 Publish Xray', body: 'Test issue + optional Test Set' },
+      { icon: 'PB', c: C.ink, title: '1.6 Publish AIO', body: 'Case + folder theo nhóm chức năng' },
     ],
-    outputs: ['Testcase Markdown', 'Excel (SoT gen/publish)', 'Coverage summary', 'Jira publish summary', 'Xray Test/Test Set'],
+    outputs: ['Testcase Markdown', 'Excel (SoT gen/publish)', 'Coverage summary', 'AIO publish summary'],
   },
   {
     file: 'phase2-execution-loop.png', number: '2', title: 'Phase 2', role: 'Execution',
-    inputs: ['Testcase từ Xray (mặc định)', 'Test account', 'App/API URL', 'Playwright runtime', 'Setup hook nếu có'],
+    inputs: ['Testcase từ AIO (mặc định)', 'Test account', 'App/API URL', 'Playwright'],
     steps: [
-      { icon: 'XR', c: C.success, title: '2.1 Pull từ Xray', body: 'Kéo testcase về canonical local' },
+      { icon: 'PL', c: C.success, title: '2.1 Pull từ AIO', body: 'Kéo testcase về canonical local' },
       { icon: 'PRE', c: C.info, title: '2.2 Resolve preconditions', body: 'UI/API/factory/fixture/hook' },
       { icon: 'DB', gate: true, title: 'DB: UAT READ-ONLY', body: 'Verify read-only qua guarded client; không dựng state' },
       { icon: 'RUN', c: C.ink, title: '2.3 Run FE/API', body: 'Playwright execute thật' },
       { icon: 'EV', c: C.amber, title: '2.4 Capture evidence', body: 'Ảnh/video (trace/log chỉ để debug local)' },
-      { icon: 'CL', c: C.info, title: '2.5 Classify + push Xray', body: 'PASSED/FAILED/TO DO → Test Execution' },
+      { icon: 'CL', c: C.info, title: '2.5 Classify + push AIO', body: 'Passed/Failed/Blocked + evidence' },
     ],
-    outputs: ['Test Execution trên Xray', 'Test Plan sprint (roll-up)', 'setup_failure nếu setup lỗi', 'Execution summary', 'Evidence path', 'Bug candidate'],
+    outputs: ['Cycle trên AIO', 'Thư mục cycle theo sprint', 'setup_failure nếu chặn'],
   },
   {
     file: 'jira-bug-evidence.png', number: 'B', title: 'Jira Bug', role: 'Bug readiness',
@@ -114,9 +114,9 @@ const boards = [
       { icon: 'OK', gate: true, title: 'GATE: HUMAN APPROVAL', body: 'Không tự merge testcase' },
       { icon: 'AP', c: C.success, title: 'P.3 Apply approved', body: 'Merge NEW/UPDATED/DEPRECATED' },
       { icon: 'RUN', c: C.ink, title: 'P.4 Partial execute', body: 'Chỉ chạy subset affected' },
-      { icon: 'XR', c: C.danger, title: 'P.5 Optional Xray Cleanup', body: 'Label stale/restore, không hard delete' },
+      { icon: 'DP', c: C.danger, title: 'P.5 Optional Deprecate', body: 'Case rời Excel → Deprecated' },
     ],
-    outputs: ['Review checklist', 'Impact matrix', 'Updated Excel baseline', 'Partial execution report', 'Xray cleanup summary'],
+    outputs: ['Review checklist', 'Impact matrix', 'Updated Excel baseline', 'Partial execution report', 'Deprecate summary'],
   },
   {
     file: 'phase-selection.png', number: 'S', title: 'Prompt Map', role: 'Run đúng nhánh',
@@ -127,11 +127,11 @@ const boards = [
       { icon: 'P2', c: C.amber, title: 'S.3 Execute', body: 'run_phase2_template.md' },
       { icon: 'RR', c: C.ink, title: 'S.4 Bug/case đã fix', body: 'run_phase_re-run_template.md' },
       { icon: 'PR', c: C.info, title: 'S.5 Source changed', body: 'partial-rerun prepare review' },
-      { icon: 'CL', c: C.danger, title: 'S.6 Excel đổi sau publish', body: 'run_xray_test_cleanup.md' },
+      { icon: 'CL', c: C.danger, title: 'S.6 Excel đổi sau publish', body: 'run_testcase_cleanup.md' },
       { icon: 'EX', c: C.ink, title: 'S.7 Exploratory', body: 'exploratory/run_* — nhánh phụ, never-auto' },
       { icon: 'NF', c: C.amber, title: 'S.8 Non-functional', body: 'perf/security/load/accessibility/risk' },
     ],
-    outputs: ['Không dùng nhầm Re-run', 'Publish cần QA approve', 'Execute mặc định từ Xray', 'Partial rerun cho source change', 'Exploratory/Non-functional là nhánh phụ opt-in'],
+    outputs: ['Không dùng nhầm Re-run', 'Publish cần QA approve', 'Execute mặc định từ AIO', 'Partial rerun cho source change', 'Exploratory/Non-functional là nhánh phụ opt-in'],
   },
   {
     file: 'advanced-capabilities.png', number: 'A+', title: 'Năng lực nâng cao', role: 'Non-functional · Learning · Nhánh phụ',
@@ -249,7 +249,7 @@ body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-s
 </body></html>`;
 }
 
-// Sơ đồ traceability AIO Tests (thay mermaid trong USER_GUIDE 5.5.0). Ảnh Xray cũ giữ làm tham chiếu lịch sử.
+// Sơ đồ traceability AIO Tests (thay mermaid trong USER_GUIDE 5.5.0).
 function traceabilityHtml() {
   const org = (a, t, s) => `<div class="tnode org" style="--a:${a}"><div class="tn-t">${esc(t)}</div><div class="tn-s">${esc(s)}</div></div>`;
   const chev = (lbl) => `<div class="tchev"><svg width="22" height="12" viewBox="0 0 22 12" fill="none"><path d="M1 1l10 9 10-9" stroke="#E6A300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>${lbl ? `<span>${esc(lbl)}</span>` : ''}</div>`;

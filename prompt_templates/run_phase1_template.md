@@ -30,7 +30,7 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`*
 | **Ngay sau khi kéo tài liệu về, TRƯỚC khi đọc** | `npm run docs:budget` (thêm `--contract` nếu có file >25k) | Đo từng tài liệu → đọc trực tiếp / chỉ mục cần / **giao subagent trích**. Bắt luôn 2 bẫy đo được thật: tài liệu có **nhiều bản** (đọc bản dư = tốn ~670k token vô ích) và **bản cũ nhỏ hơn hẳn bản mới = bản THIẾU nội dung** (đọc nó là đọc thiếu spec) |
 | Đầu phase, trước khi phân tích | `npm run risk` | Risk register theo module — quyết định độ sâu test (RBT). Không có thì gen dàn đều, chỗ rủi ro cao bị test nông |
 | Khi chuẩn bị context | `npm run domain:check` · `npm run system:check` | Đối chiếu business rule + bản đồ hệ thống đã xác nhận trong `knowledge/` — đây là nguồn oracle độc lập, tra trước để không suy oracle từ app (tautology) |
-| Sau khi QA duyệt Excel | `npm run aio:publish -- --file <x.xlsx> --story <KEY>` → xem preview → `npm run aio:publish:apply -- ... --qa-approved` | Đẩy TC lên AIO Tests. **Luôn dry-run trước** (AIO không có API xoá); chi tiết ở `phase1/04_auto_publish_jira.md`. 🔀 `TEST_MANAGEMENT_TOOL=aio` → `npm run aio:publish[:apply]` (lệnh Xray tự chặn kèm lệnh thay thế) |
+| Sau khi QA duyệt Excel | `npm run aio:publish -- --file <x.xlsx> --story <KEY>` → xem preview → `npm run aio:publish:apply -- ... --qa-approved` | Đẩy TC lên AIO Tests. **Luôn dry-run trước** (AIO không có API xoá); chi tiết ở `phase1/04_auto_publish_jira.md` |
 | Ngay sau khi export Excel (bước 7) | tự chạy trong `md_to_xlsx` | **`design_gate` (G5)** CHẶN nếu thiếu cột canonical / rỗng ô lõi / bộ có case hiển thị mà thiếu `ui_catalog.json` |
 | Sau export | `npm run design:gate` | Chạy tay khi muốn soi trước lúc convert |
 | **Ngay khi có bộ testcase** | `npm run domain:trace-back` → sửa xong thì `npm run domain:trace-back -- --apply` | **Chiều TC→rule** (trước đây KHÔNG gì kiểm): case mang tag cần-oracle (`[Calc]/[BEData]/[Display]/[Security]/[Guard]`) mà không trỏ `[BR-…]`/`[SM-…]` → cảnh báo "expected lấy từ đâu?"; trỏ id không tồn tại → "oracle ma"; `--apply` **tự append `covered_by`**. Đo: bộ 530 hiện tại **0/530** case trỏ rule dù §12 đã yêu cầu từ lâu |
@@ -81,7 +81,7 @@ Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ �
 - Other docs/files: [OTHER_DOCS hoặc N/A]
 
 Run profile (chạy song song an toàn):
-- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, tài khoản OPS/LMS theo task); giá trị TĨNH (Figma/Confluence/Jira/AIO/Xray/HubSpot key + base URL) giữ ở .env chung.
+- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, tài khoản OPS/LMS theo task); giá trị TĨNH (Figma/Confluence/Jira/AIO/HubSpot key + base URL) giữ ở .env chung.
 - Truyền TASK_ENV=profiles/[TASK_KEY]/task.env cho MỌI command; không đọc TASK_KEY từ .env chung, không sửa .env/.env.local chung.
 - Chi tiết: QUICKSTART.md (mục Parallel Story Safety).
 
@@ -92,7 +92,7 @@ Context/config:
 - Jira testcase publish: KHÔNG publish trong prompt này. Auto Publish Jira là step riêng trong phạm vi Phase 1, chỉ chạy bằng `prompt_templates/phase1/04_auto_publish_jira.md` sau khi QA xác nhận Excel.
 - Công cụ test management nếu chạy step publish riêng: **AIO Tests** (`TEST_MANAGEMENT_TOOL=aio`, cần `AIO_API_TOKEN`). Case AIO không phải Jira issue nên không có issue type/assignee/label.
 - Step publish (04) đẩy lên **AIO Tests**: mỗi case có `title`/`steps[]`/`precondition` (tiền điều kiện nằm TRONG case, mã `[PRE-xx]` giữ trong text để tra chéo), `TC ID` → `automationKey`, `Nhóm chức năng` → **folder** `<root>/<nhóm>` (cây 2 cấp, dựng từ Excel). KHÔNG có Test Set/Precondition-issue/Test Type (case AIO không phải Jira issue).
-- Testcase cleanup: KHÔNG cleanup trong prompt này. Nếu Excel thay đổi sau publish, chạy nhánh phụ `partial-rerun/run_xray_test_cleanup.md` (nay dùng `npm run aio:deprecate-stale` — đổi `caseStatus` sang **Deprecated**, KHÔNG xoá) sau Human Review/QA approval.
+- Testcase cleanup: KHÔNG cleanup trong prompt này. Nếu Excel thay đổi sau publish, chạy nhánh phụ `partial-rerun/run_testcase_cleanup.md` (nay dùng `npm run aio:deprecate-stale` — đổi `caseStatus` sang **Deprecated**, KHÔNG xoá) sau Human Review/QA approval.
 - Tất cả Markdown/report/task log phải dùng tiếng Việt chuẩn có dấu, encoding UTF-8. Không dùng tiếng Việt không dấu và không để ký tự lỗi encoding/mojibake.
 
 Parallel story safety:
@@ -192,7 +192,7 @@ Yêu cầu testcase output:
 - Phân nhóm rõ từng testcase theo nhóm chính là business flow trong cột `Module` với format:
   `[Nhóm chức năng] / [User Story hoặc màn hình/API/flow cụ thể]`.
   Nhóm chức năng phải suy ra từ domain/scope và ưu tiên business flow, không phải layer kỹ thuật. Với CRUD có thể dùng `Xem danh sách`, `Tạo`, `Sửa`, `Xóa`; với API/E2E/permission gắn với flow cụ thể thì vẫn đặt vào nhóm flow đó, ví dụ `Tạo / API POST ...`, `Tạo / App 1 tạo bản ghi -> App 2 sync`, `Sửa / Permission role teacher cannot edit`. Chỉ dùng `API`, `E2E/Cross-app`, `Permission/Security` làm nhóm chính khi testcase không thuộc business flow cụ thể nào.
-- Không thêm cột label vào bảng testcase. AIO case không có label: nhóm chức năng thể hiện bằng **folder AIO**, TC ID ở `automationKey`; nhóm chức năng KHÔNG dùng label mà thể hiện qua Xray Test Set và subfolder Test Repository (theo sheet chức năng). Không gắn label group/layer/risk/priority/xray.
+- Không thêm cột label vào bảng testcase. AIO case không có label: nhóm chức năng thể hiện bằng **folder AIO**, TC ID ở `automationKey`.
 - Sau bảng testcase, thêm section `## Phân nhóm testcase` mapping nhóm chức năng -> phạm vi -> TC ID -> tổng.
 - API testcase phải reference method + endpoint + expected status/body.
 - Phải vét cạn UI edge/boundary theo các dimension ở [`phase1/dimensions/`](phase1/dimensions/) (mục 3 Field-Level mở rộng: Date/Month, Time HH:mm, Computed/derived, File upload boundary; mục 7 Export/Import file output; mục 8 Resilience/Concurrency; mục 9 Side-effect/Notification; mục 10 Cross-layer guard; mục 11 Design/Visual compliance — token Figma; **mục 12 Display/Field Conformance — tên cột exact, format từng field, số cột + thứ tự, field bắt buộc, empty-state; expected trích từ `ui_catalog.md`/tài liệu, KHÔNG từ build**). Dimension không áp dụng phải ghi `N/A + lý do` trong Coverage Gaps.

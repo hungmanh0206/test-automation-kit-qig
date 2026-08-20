@@ -28,7 +28,7 @@ export interface TestCase {
 }
 
 export interface TestCaseDoc {
-  source: 'md' | 'xlsx' | 'xray';
+  source: 'md' | 'xlsx';
   tests: TestCase[];
   setup: SetupContract[];
   headers: string[];

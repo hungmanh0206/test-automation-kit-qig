@@ -2,14 +2,14 @@
 'use strict';
 
 /*
- * output_gate.js — Gate chất lượng output THỰC THI, tự chạy trước khi push Jira/Xray.
+ * output_gate.js — Gate chất lượng output THỰC THI, tự chạy trước khi push AIO/Jira.
  *
  * Vì sao: rule chất lượng (RULE_GLOBAL + prompt) trước nay là prose → agent dễ lướt qua →
  * bug/test-execution ra sai (comment run-on, thiếu evidence/step status, thiếu video case phức tạp,
  * bug description thừa phần). Gate này biến rule máy-kiểm-được thành check THỰC THI:
  *   - TỰ SỬA phần deterministic an toàn (--fix): bỏ prefix [PASS], xoá debug key=value trong comment.
  *   - CHẶN (exit 1) phần không tự sửa an toàn được, in checklist để agent tự sửa trong session.
- * NON-INVASIVE: chỉ đọc/ghi file status local, KHÔNG gọi Jira/Xray → chạy/test được không cần mạng.
+ * NON-INVASIVE: chỉ đọc/ghi file status local, KHÔNG gọi AIO/Jira → chạy/test được không cần mạng.
  *
  * Dùng (wire vào workflow phase2_04 TRƯỚC push_test_execution):
  *   node scripts/qa/output_gate.js --mode test-execution --status <testcase-status.json>
@@ -54,11 +54,11 @@ function canonStatus(raw) {
   const tax = loadTaxonomy();
   if (tax.statuses && tax.statuses[s]) return s;
   if (tax.synonyms && tax.synonyms[s]) return tax.synonyms[s];
-  // CHUẨN HOÁ BIẾN THỂ TRÌNH BÀY trước khi bó tay. Nhãn tới từ Xray/Jira là chữ CHO NGƯỜI ĐỌC ("TO DO",
+  // CHUẨN HOÁ BIẾN THỂ TRÌNH BÀY trước khi bó tay. Nhãn trạng thái là chữ CHO NGƯỜI ĐỌC ("Not Run",
   // "In Progress") nên khoảng trắng/gạch là chuyện của giao diện, không phải verdict khác. Đo 17/08/2026: 24
-  // case ghi `"TO DO"` (đúng nhãn Xray) bị gate loại chỉ vì thiếu dấu cách trong bảng — trong khi chính 24
+  // case ghi `"TO DO"` (nhãn cũ, vẫn nhận làm alias) bị gate loại chỉ vì thiếu dấu cách trong bảng — trong khi chính 24
   // case đó ĐÃ có lý do đầy đủ ("BA chưa cung cấp ma trận role/permission nên không có oracle"). Bắt người sửa
-  // tay là mời lỗi quay lại ở lần pull Xray sau; chuẩn hoá ở đây thì hết hẳn.
+  // tay là mời lỗi quay lại ở lần pull sau; chuẩn hoá ở đây thì hết hẳn.
   const squashed = s.replace(/[\s_-]+/g, '');
   for (const k of Object.keys(tax.statuses || {})) if (k.replace(/[\s_-]+/g, '') === squashed) return k;
   for (const [k, v] of Object.entries(tax.synonyms || {})) if (k.replace(/[\s_-]+/g, '') === squashed) return v;
@@ -159,7 +159,7 @@ function gateTestExecution(doc, { fix = false } = {}) {
     if (att.executed != null && Number(att.executed) !== executed) warnings.push(`Attestation "executed=${att.executed}" LỆCH số case execute thật (${executed}) — khai lại đúng.`);
     if (att.allEvidenceAttached === true && evMiss) warnings.push(`Attestation "allEvidenceAttached=true" MÂU THUẪN: gate thấy ${evMiss} vấn đề evidence.`);
     if (att.failuresClassified === true && failLayerMiss) warnings.push(`Attestation "failuresClassified=true" MÂU THUẪN: gate thấy ${failLayerMiss} FAIL thiếu tầng-lỗi.`);
-    if (!att.oracleSource) warnings.push('Attestation thiếu "oracleSource" (nguồn oracle: xray/spec/figma/api-contract…) — nêu để chống oracle tự chế.');
+    if (!att.oracleSource) warnings.push('Attestation thiếu "oracleSource" (nguồn oracle: aio/spec/figma/api-contract…) — nêu để chống oracle tự chế.');
   }
 
   return { problems, warnings, fixes, executed, doc: Array.isArray(doc) ? { tests } : doc };

@@ -586,7 +586,7 @@ Mode = DRY_RUN trước, sau đó PUBLISH khi QA cho phép ghi Jira thật.
 
 Step này đọc Excel source of truth trong `test-cases/*.xlsx` rồi publish thành **case trên AIO Tests** (`npm run aio:publish` xem trước → `aio:publish:apply ... --qa-approved`).
 
-Nếu Excel thay đổi sau khi đã publish, không cleanup trong Phase 1 chính. Chạy cleanup (Deprecate) theo nhánh phụ `partial-rerun/run_xray_test_cleanup.md` sau Human Review.
+Nếu Excel thay đổi sau khi đã publish, không cleanup trong Phase 1 chính. Chạy cleanup (Deprecate) theo nhánh phụ `partial-rerun/run_testcase_cleanup.md` sau Human Review.
 
 ### 5.4 Chờ Dev implement
 
@@ -619,7 +619,7 @@ Prompt mẫu:
 Task key là <TASK_KEY>.
 Nguồn testcase mặc định là AIO Tests (TESTCASE_SOURCE=aio): kéo testcase từ AIO về local rồi execute. Đặt TESTCASE_SOURCE=excel nếu muốn chạy thuần Excel local.
 Nếu có bug thì tạm thời chưa log Jira, chỉ report local.
-Mặc định (PUSH_XRAY_EXECUTION=confirm): khi cycle execute conclusive, trình preview cho QA duyệt rồi mới tạo cycle trên AIO; =auto để tạo ngay, =0 để tắt.
+Mặc định (PUSH_EXECUTION=confirm): khi cycle execute conclusive, trình preview cho QA duyệt rồi mới tạo cycle trên AIO; =auto để tạo ngay, =0 để tắt.
 ```
 
 Output bắt buộc:
@@ -631,7 +631,7 @@ Output bắt buộc:
 | Execution result | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/execution-results.md` |
 | Execution summary | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/execution-summary.md` |
 | Trạng thái TC (máy đọc, để đẩy AIO) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/testcase-status.json` |
-| Cycle log (khi `PUSH_XRAY_EXECUTION` ≠ 0) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/aio-execution-summary.md` |
+| Cycle log (khi `PUSH_EXECUTION` ≠ 0) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/aio-execution-summary.md` |
 | Task log | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/task.md` |
 
 **Bước đầu Phase 2 (mặc định `TESTCASE_SOURCE=aio`)** — kéo testcase từ AIO về canonical local trước khi execute:
@@ -649,7 +649,7 @@ Nguyên tắc Phase 2:
 
 | Chủ đề | Rule |
 |---|---|
-| Nguồn testcase | Mặc định (`TESTCASE_SOURCE=aio`) kéo testcase từ AIO về `test-cases/from-aio/*.xlsx` rồi execute từ đó (canonical local); đặt `TESTCASE_SOURCE=excel` để dùng Excel local; `xray` là legacy. |
+| Nguồn testcase | Mặc định (`TESTCASE_SOURCE=aio`) kéo testcase từ AIO về `test-cases/from-aio/*.xlsx` rồi execute từ đó (canonical local); đặt `TESTCASE_SOURCE=excel` để dùng Excel local. |
 | Precondition | Setup theo Setup Strategy contract qua UI/API/fixture/hook an toàn; chỉ `Manual-only` mới skip vì setup. |
 | Execute thật | Không pass ảo bằng skip/mock sai/sửa expected tùy tiện. |
 | Skip | Hạn chế tối đa, mỗi skip phải có lý do và khả năng fix. |
@@ -660,7 +660,7 @@ Nguyên tắc Phase 2:
 
 ### 5.5.0 Mô hình AIO Tests (traceability) — team tham chiếu
 
-Một task chạy trọn bộ testcase cùng lúc, nên chỉ cần **Case → Cycle → Run**. AIO **không có** Test Set, Test Plan, Precondition issue — mô hình gọn hơn Xray.
+Một task chạy trọn bộ testcase cùng lúc, nên chỉ cần **Case → Cycle → Run**. AIO **không có** Test Set, Test Plan, Precondition issue.
 
 ![Mô hình AIO Tests — traceability](docs/user-guide-images/aio-traceability.png)
 
@@ -679,17 +679,17 @@ Một task chạy trọn bộ testcase cùng lúc, nên chỉ cần **Case → C
 - Cleanup ≠ xoá: case rời khỏi Excel thì chuyển **Deprecated** (`npm run aio:deprecate-stale`), giữ nguyên lịch sử run.
 - Chín đặc tính đã đo của AIO (rate limit trả **body rỗng** chứ không phải 429, `PUT .../detail` ghi đè toàn phần, `key` ≠ `ID`, `POST` case đã có trong cycle thì **đẻ run mới**…): [scripts/integrations/aio/README.md](scripts/integrations/aio/README.md) — đọc trước khi tự phát hiện lại bằng cách mất dữ liệu.
 
-> 🕘 Mô hình Xray cũ (Test → Test Plan → Test Execution, panel Test Coverage, Test Repository folder, Precondition issue) đã **đóng băng sau 21/08/2026**; ảnh mô hình cũ ([`xray-traceability.png`](docs/user-guide-images/xray-traceability.png)) giữ lại làm tham chiếu lịch sử.
+
 
 ### 5.5.1 Đầu sprint — không phải tạo gì
 
 AIO không có Test Plan, nên **bỏ hẳn bước "QA tạo Test Plan đầu sprint"**. Thay vào đó, lần push đầu tiên của sprint truyền `--folder "<Tên sprint>"`; thư mục cycle được tạo nếu chưa có, các cycle sau tự nằm cùng chỗ.
 
-Case cũng không có assignee (không phải Jira issue), nên `JIRA_XRAY_ASSIGNEE` trong `profiles/<KEY>/task.env` **không còn tác dụng** ở đường AIO — muốn ghi người chạy thì để trong `comment` của run.
+Case cũng không có assignee (không phải Jira issue) — muốn ghi người chạy thì để trong `comment` của run.
 
 ### 5.5.2 Đẩy trạng thái lên AIO (cycle)
 
-Sau execute, Phase 2 ghi `test-results/testcase-status.json` rồi đẩy thành **cycle**. Mặc định `PUSH_XRAY_EXECUTION=confirm` (tên biến giữ nguyên cho tương thích ngược): chạy dry-run cho QA duyệt preview, chỉ `:apply` sau khi QA xác nhận.
+Sau execute, Phase 2 ghi `test-results/testcase-status.json` rồi đẩy thành **cycle**. Mặc định `PUSH_EXECUTION=confirm` : chạy dry-run cho QA duyệt preview, chỉ `:apply` sau khi QA xác nhận.
 
 ```text
 npm run aio:push-exec -- --task <TASK_KEY> [--folder "<Tên sprint>"] [--cycle-title "..."] [--run-id <RUN_ID>]
@@ -801,7 +801,7 @@ Không dùng Partial Rerun nếu story chưa có testcase baseline. Khi đó ch�
 |---|---|---|
 | Prepare Review | `partial-rerun/run_requirement_prepare_review.md` | Tạo diff, impact, testcase draft và review checklist. |
 | Apply Approved | `partial-rerun/run_requirement_apply_approved.md` | Sau Human Review approve, merge testcase và partial execute subset affected. |
-| Testcase Cleanup (Deprecate) | `partial-rerun/run_xray_test_cleanup.md` | Optional sau Apply Approved nếu Excel thay đổi. |
+| Testcase Cleanup (Deprecate) | `partial-rerun/run_testcase_cleanup.md` | Optional sau Apply Approved nếu Excel thay đổi. |
 
 ### 6.3 Cleanup testcase — Deprecate case rời Excel
 
@@ -810,7 +810,7 @@ Cleanup chỉ dùng khi Excel source of truth đã thay đổi sau khi testcase 
 Prompt:
 
 ```text
-partial-rerun/run_xray_test_cleanup.md
+partial-rerun/run_testcase_cleanup.md
 ```
 
 Dry-run trước:
@@ -982,11 +982,11 @@ Phase 1
 | `prompt_templates/run_phase_re-run_template.md` | Re-run bug/case fail. |
 | `partial-rerun/run_requirement_prepare_review.md` | Tài liệu nguồn đổi, cần diff/impact/testcase draft. |
 | `partial-rerun/run_requirement_apply_approved.md` | Sau Human Review approve change. |
-| `partial-rerun/run_xray_test_cleanup.md` | Cleanup lifecycle testcase (Deprecate trên AIO) khi Excel thay đổi sau partial rerun approved. |
+| `partial-rerun/run_testcase_cleanup.md` | Cleanup lifecycle testcase (Deprecate trên AIO) khi Excel thay đổi sau partial rerun approved. |
 
 ### 9.2 Prompt mẫu
 
-> Mỗi prompt dưới đây áp dụng cho một `<TASK_KEY>`. Nếu dùng profile (khuyến nghị, xem Mục 8), thêm 1 dòng vào prompt: `Dùng TASK_ENV=profiles/<TASK_KEY>/task.env cho mọi command.` Nếu chỉ chạy 1 task bằng `.env` chung thì không cần dòng đó. Giá trị tĩnh (Figma/Confluence/Jira/Xray key + base URL) luôn ở `.env` chung.
+> Mỗi prompt dưới đây áp dụng cho một `<TASK_KEY>`. Nếu dùng profile (khuyến nghị, xem Mục 8), thêm 1 dòng vào prompt: `Dùng TASK_ENV=profiles/<TASK_KEY>/task.env cho mọi command.` Nếu chỉ chạy 1 task bằng `.env` chung thì không cần dòng đó. Giá trị tĩnh (Figma/Confluence/Jira/AIO key + base URL) luôn ở `.env` chung.
 
 Phase 1:
 
@@ -1011,7 +1011,7 @@ Phase 2:
 Đọc và chạy file prompt_templates/run_phase2_template.md.
 Execute Phase 2 cho <TASK_KEY>.
 Nguồn testcase mặc định là AIO Tests (TESTCASE_SOURCE=aio); đặt TESTCASE_SOURCE=excel nếu muốn chạy thuần local.
-PUSH_XRAY_EXECUTION mặc định=confirm (trình preview cho QA duyệt rồi mới tạo cycle trên AIO khi run conclusive).
+PUSH_EXECUTION mặc định=confirm (trình preview cho QA duyệt rồi mới tạo cycle trên AIO khi run conclusive).
 Nếu có bug thì chưa log Jira, chỉ report local.
 ```
 
@@ -1044,7 +1044,7 @@ APPROVED_REVIEW_FILE=<path-to-review-checklist.md>.
 Partial Rerun - Cleanup testcase (Deprecate):
 
 ```text
-Đọc partial-rerun/run_xray_test_cleanup.md và chạy.
+Đọc partial-rerun/run_testcase_cleanup.md và chạy.
 Task key là <TASK_KEY>.
 QA confirmation Status = APPROVED.
 Mode = DRY_RUN hoặc APPLY.
@@ -1098,7 +1098,7 @@ Chi tiết ở Mục 8.
 |---|---|
 | Phase 1 | Sinh testcase, Excel và coverage report. |
 | Excel source of truth | File `.xlsx` trong `test-cases/` là nguồn chính khi GEN/PUBLISH testcase (Phase 1). Phase 2 execute thì mặc định đọc từ AIO Tests. |
-| `TESTCASE_SOURCE` | Nguồn testcase cho Phase 2 execute/rerun: `aio` (mặc định — kéo từ AIO về `test-cases/from-aio/`), `excel` (Excel local), `xray` (legacy). |
+| `TESTCASE_SOURCE` | Nguồn testcase cho Phase 2 execute/rerun: `aio` (mặc định — kéo từ AIO về `test-cases/from-aio/`), `excel` (Excel local). |
 | Pull testcase (từ AIO) | `npm run aio:pull:write` kéo case trên AIO về canonical local để execute; lấy steps/expected từ đó. |
 | Testcase mirror trên AIO | Case publish từ Excel + `jiraRequirementIDs` về Story/Task. Đây là **nguồn execute** của Phase 2. |
 | Cycle | 1 lần chạy trên AIO — chứa run của từng case (và run-step). Tạo bằng `npm run aio:push-exec`. |
@@ -1162,12 +1162,12 @@ Chi tiết ở Mục 8.
 | `RULE_GLOBAL.md` | Rule global. |
 | `prompt_templates/run_phase1_template.md` | Prompt Phase 1. |
 | `prompt_templates/phase1/04_auto_publish_jira.md` | Prompt Auto Publish Jira trong Phase 1 sau QA confirmation. |
-| `partial-rerun/run_xray_test_cleanup.md` | Prompt cleanup testcase (Deprecate trên AIO) khi Excel thay đổi sau partial rerun approved. |
+| `partial-rerun/run_testcase_cleanup.md` | Prompt cleanup testcase (Deprecate trên AIO) khi Excel thay đổi sau partial rerun approved. |
 | `prompt_templates/run_phase2_template.md` | Prompt Phase 2. |
 | `prompt_templates/run_phase_re-run_template.md` | Prompt Re-run. |
 | `scripts/integrations/aio/pull_testcases_aio.js` | Kéo testcase từ AIO về canonical local (nguồn execute mặc định). |
 | `scripts/integrations/aio/push_execution_aio.js` | Đẩy trạng thái lên AIO thành cycle + evidence từng bước. |
-| `scripts/integrations/aio/README.md` | Tài liệu đầy đủ lệnh AIO (publish/pull/push/deprecate/migrate) + 9 đặc tính đã đo. Bản Xray legacy: `scripts/integrations/jira/README.md`. |
+| `scripts/integrations/aio/README.md` | Tài liệu đầy đủ lệnh AIO (publish/pull/push/deprecate) + 9 đặc tính đã đo. |
 | `partial-rerun/run_requirement_prepare_review.md` | Partial Rerun - Prepare Review. |
 | `partial-rerun/run_requirement_apply_approved.md` | Partial Rerun - Apply Approved. |
 | `tests/support/setup/README.md` | Setup layer dùng chung (factory/hook/fixture/mock/cleanup/contract). |

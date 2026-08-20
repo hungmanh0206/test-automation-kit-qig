@@ -146,7 +146,7 @@ function realTests() {
       } catch (e) { /* file không phải bảng testcase → bỏ qua */ }
     }
   }
-  // DEDUP theo tcId: `from-xray/` là bản mirror kéo từ Xray của CÙNG bộ, nên gộp cả hai thư mục làm mỗi TC
+  // DEDUP theo tcId: `from-aio/` là bản mirror kéo từ AIO của CÙNG bộ, nên gộp cả hai thư mục làm mỗi TC
   // xuất hiện 2 lần (đo: 550 cho 530 TC) ⇒ mọi con số đếm ở trace-back bị phồng. Bản ở `test-cases/` thắng.
   const byId = new Map();
   for (const t of tests) if (!byId.has(String(t.tcId))) byId.set(String(t.tcId), t);

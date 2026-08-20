@@ -63,8 +63,8 @@ Phạm vi:
 - Module/Feature: [MODULE_FEATURE]
 - Task key/scope folder: [TASK_KEY]
 - Site liên quan: [LMS / Operations / LMS + Operations]
-- Nguồn testcase: [TESTCASE_SOURCE = aio (mặc định) | xray (legacy) | excel]
-- Đẩy trạng thái lên TMS sau execute: [PUSH_XRAY_EXECUTION = confirm (mặc định, QA duyệt preview rồi mới tạo) | auto | 0] — tên biến giữ nguyên cho tương thích ngược, từ GĐ5 nó điều khiển đường **AIO**
+- Nguồn testcase: [TESTCASE_SOURCE = aio (mặc định) | excel]
+- Đẩy trạng thái lên AIO sau execute: [PUSH_EXECUTION = confirm (mặc định, QA duyệt preview rồi mới tạo) | auto | 0]
 
 Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ điền trực tiếp ở đây khi muốn override profile)
 - Jira Epic: [JIRA_EPIC_URL]
@@ -84,14 +84,12 @@ Run profile (chạy song song an toàn):
 
 Input artifacts:
 - Nguồn testcase (`TESTCASE_SOURCE`, **mặc định `aio`**):
-  - `xray` (LEGACY — đóng băng sau 21/08/2026, cần `--test-management-tool xray`): testcase đã publish/sửa trên Xray → kéo về canonical local TRƯỚC khi execute (Bước 0), rồi đọc từ `test-cases/from-xray/*.xlsx`. YÊU CẦU: Phase 1 đã publish testcase lên Xray.
-  - `aio`: testcase trên **AIO Tests** → kéo về canonical local TRƯỚC khi execute bằng `npm run aio:pull:write -- --story [JIRA_STORY_KEY]`, rồi đọc từ `test-cases/from-aio/*.xlsx`. Đi cùng `TEST_MANAGEMENT_TOOL=aio`; cột/định dạng y hệt bản Xray nên parser canonical không phân biệt nguồn.
+  - `aio`: testcase trên **AIO Tests** → kéo về canonical local TRƯỚC khi execute bằng `npm run aio:pull:write -- --story [JIRA_STORY_KEY]`, rồi đọc từ `test-cases/from-aio/*.xlsx`. Đi cùng `TEST_MANAGEMENT_TOOL=aio`; cột/định dạng giữ đúng Excel canonical nên parser không phân biệt nguồn.
   - `excel`: đọc Excel người dùng trong `test-cases/*.xlsx` (opt-out — dùng khi chưa publish hoặc muốn chạy thuần local).
 - Testcase folder:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/`
 - Testcase Excel source of truth (theo `TESTCASE_SOURCE`):
   - `excel`: `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/*.xlsx`
-  - `xray` (**legacy**): `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-xray/*.xlsx` (do `scripts/integrations/jira/pull_testcases.js --test-management-tool xray` sinh)
   - `aio`: `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-aio/*.xlsx` (do `npm run aio:pull:write` sinh)
 - Requirement/context folder:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/requirements/`
@@ -131,7 +129,6 @@ Nguyên tắc tiết kiệm token:
 - Nguồn execute theo `TESTCASE_SOURCE`:
   - `aio` (**mặc định**): coi AIO Tests là nguồn (Phase 1 đã publish testcase lên đó). Chạy `npm run aio:pull:write` MỘT lần để tái tạo canonical local `test-cases/from-aio/*.xlsx`, rồi execute từ file đó y như Excel thường — không gọi AIO/Jira cho từng case lúc execute (token thấp + offline được).
   - `excel`: dùng Excel local `test-cases/*.xlsx`; KHÔNG đọc mirror của TMS. Dùng khi chưa publish hoặc muốn chạy thuần local.
-  - `xray` (**legacy**, đóng băng sau 21/08/2026): `test-cases/from-xray/*.xlsx` do `pull_testcases.js --test-management-tool xray` sinh — chỉ dùng để đọc/đối chiếu bộ cũ.
 - Đọc testcase theo index/TC ID/module trước, chỉ mở full file khi selected scope yêu cầu.
 - Không paste full Playwright report, trace, DOM, network log hoặc `results.json` vào chat/report; trích lỗi chính và lưu artifact local.
 - Chạy targeted test trước theo selected TC IDs/spec/endpoint. Chỉ chạy full suite khi `Execution mode = ALL_TESTCASES`, sửa shared helper/auth/setup, hoặc cần kiểm regression rộng.
@@ -156,7 +153,7 @@ Output:
 
 - Testcase phải được execute thật theo logic nghiệp vụ và expected result đã review.
 - Không được pass ảo bằng cách skip case, mock sai mục đích, xóa assertion quan trọng, hoặc đổi expected result tùy tiện.
-- **Evidence bắt buộc cho MỌI case đã execute (PASS và FAIL) và MỌI step**: mỗi case PASS/FAIL phải có evidence cụ thể (ảnh); mỗi step phải đánh dấu PASS/FAIL riêng và có 1 ảnh **highlight vào đúng element/vùng đang kiểm**. Case `TODO`/chưa chạy KHÔNG cần. Dùng `scripts/utils/evidence_recorder.js` để capture per-step + ghi `test-results/testcase-status.json` (`steps[]` kèm `status`+`evidence`). Push kèm `--with-evidence`; bật `--require-step-evidence` (hoặc `XRAY_REQUIRE_STEP_EVIDENCE=1`) để chặn push khi có case execute thiếu step-evidence.
+- **Evidence bắt buộc cho MỌI case đã execute (PASS và FAIL) và MỌI step**: mỗi case PASS/FAIL phải có evidence cụ thể (ảnh); mỗi step phải đánh dấu PASS/FAIL riêng và có 1 ảnh **highlight vào đúng element/vùng đang kiểm**. Case `TODO`/chưa chạy KHÔNG cần evidence.
 - Không được skip testcase chỉ để tăng pass rate.
 - Không được sửa test theo hướng làm giảm chất lượng kiểm thử hoặc giảm coverage.
 - Không được đổi expected result nếu chưa chứng minh expected cũ sai bằng requirement, BA/PO confirmation, Swagger/OpenAPI, design, hoặc tài liệu nguồn đáng tin cậy.
@@ -199,7 +196,7 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
 ## Thứ tự Phase 2 bắt buộc
 
 0. **Nguồn testcase (mặc định `aio`)** — kéo testcase từ AIO Tests về canonical local trước khi execute:
-   `npm run aio:pull -- --story [JIRA_STORY_KEY]` (xem trước) → kiểm tra số TC/steps đúng kỳ vọng → `npm run aio:pull:write -- --story [JIRA_STORY_KEY]` để ghi `test-cases/from-aio/[TASK_KEY]_from_aio.xlsx`. Truyền `PROJECT_OUTPUT_DIR`/`TASK_KEY` (hoặc `TASK_ENV`) như mọi command. Yêu cầu `AIO_API_TOKEN` + Phase 1 ĐÃ publish testcase lên AIO; nếu pull không thấy case nào → chưa publish (publish trước, hoặc tạm chạy `TESTCASE_SOURCE=excel`). Nếu report cảnh báo TC thiếu steps thì DỪNG và báo user. Từ Bước 1 trở đi, "Excel canonical" = file `from-aio/*.xlsx`. **Nếu `TESTCASE_SOURCE=excel`**: bỏ qua bước này, dùng `test-cases/*.xlsx` local. *(Legacy `xray`: `node scripts/integrations/jira/pull_testcases.js --write --test-management-tool xray`.)*
+   `npm run aio:pull -- --story [JIRA_STORY_KEY]` (xem trước) → kiểm tra số TC/steps đúng kỳ vọng → `npm run aio:pull:write -- --story [JIRA_STORY_KEY]` để ghi `test-cases/from-aio/[TASK_KEY]_from_aio.xlsx`. Truyền `PROJECT_OUTPUT_DIR`/`TASK_KEY` (hoặc `TASK_ENV`) như mọi command. Yêu cầu `AIO_API_TOKEN` + Phase 1 ĐÃ publish testcase lên AIO; nếu pull không thấy case nào → chưa publish (publish trước, hoặc tạm chạy `TESTCASE_SOURCE=excel`). Nếu report cảnh báo TC thiếu steps thì DỪNG và báo user. Từ Bước 1 trở đi, "Excel canonical" = file `from-aio/*.xlsx`. **Nếu `TESTCASE_SOURCE=excel`**: bỏ qua bước này, dùng `test-cases/*.xlsx` local.
 1. Đọc `reports/phase1-summary.md` và `task.md` trước để xác định scope, coverage, testcase Excel files và rủi ro.
 2. Đọc reviewed testcase từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-aio/*.xlsx`, hoặc `test-cases/*.xlsx`) theo selected TC IDs/module; nếu chạy toàn bộ thì lập danh sách TC trước rồi mở Markdown liên quan khi cần Setup Strategy chi tiết.
 3. Generate/update Playwright automation scripts nếu missing hoặc stale; mặc định sinh task-scoped automation dưới `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/automation/`, chỉ sửa/generate spec/helper bị ảnh hưởng.
@@ -229,24 +226,23 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
     Đồng thời ghi file máy-đọc để đẩy trạng thái lên TMS: `test-results/testcase-status.json` (có `RUN_ID` thì `test-results/runs/[RUN_ID]/testcase-status.json`). **`status` dùng ĐÚNG tên canonical trong `.agent/config/verdict_taxonomy.json`** (`PASS` | `FAIL` | `BLOCKED_SETUP` | `TODO` | …; script vẫn nhận alias `PASSED/FAILED/TO DO/EXECUTING` và tự map sang trạng thái run của AIO — 1 nguồn duy nhất là taxonomy, KHÔNG hardcode bảng khác). Schema:
     `{ "taskKey": "[TASK_KEY]", "generatedAt": "<ISO>", "tests": [ { "tcId": "<TC ID chính xác như Excel>", "status": "PASSED|FAILED|TO DO|EXECUTING", "comment": "<actual/lý do; nêu rõ nếu vốn là SKIP/BLOCKED>", "evidence": ["<path ảnh/video, tùy chọn>"], "steps": [ { "status": "PASSED|FAILED|TODO", "comment": "<tùy chọn>", "evidence": ["<path>"] } ], "failedStep": <index 1-based — shortcut thay cho steps[]>, "failedStepEvidence": ["<path>"] } ] }` — `tcId` phải khớp TC ID canonical vì đó là khoá nối sang case trên AIO (`automationKey`) — **tuyệt đối không khớp theo tiêu đề**: nhiều case trùng tiêu đề ở các nhóm khác nhau, khớp kiểu đó dồn nhiều run vào một case (đã mất 12 run khi migrate).
     - **Case FAILED — BẮT BUỘC ghi rõ step nào fail + evidence ở step đó** (để Test Run hiện đúng bước lỗi, không chỉ FAIL tổng): dùng **`steps[]`** (status từng bước; bước lỗi `FAILED` kèm `evidence` là ảnh/video của chính bước đó; bước chưa chạy để `TODO`) HOẶC shortcut **`failedStep`** (index 1-based) + **`failedStepEvidence`** (kit tự suy: trước = PASSED, tại đó = FAILED + evidence, sau = TODO). `aio:push-exec` neo evidence xuống ĐÚNG bước khi biết bước nào (`steps[].evidence` / `failedStep`), không biết thì để cấp run — không bịa vị trí. Map positional theo số step thật của case (dư → cắt, thiếu → TODO).
-    - **Case PASSED KHÔNG cần `steps[]`** — mọi step tự set = PASSED (Xray legacy: `XRAY_EXEC_STEP_STATUS=pass`). Nhưng **case PASSED VẪN bắt buộc có evidence cấp case là ảnh/video** (highlight + mask PII), không được bỏ trống.
+    - **Case PASSED KHÔNG cần `steps[]`** — mọi step tự set = PASSED. Nhưng **case PASSED VẪN bắt buộc có evidence cấp case là ảnh/video** (highlight + mask PII), không được bỏ trống.
     - **`evidence` CHỈ nhận ảnh (`.png/.jpg/.jpeg/.webp`) hoặc video (`.mp4/.webm`)** — cấm `.json/.md/.txt/.log/.html/.csv/trace.zip` hay file dữ liệu thô (kể cả `order_state.json`, dump API/state). Cần chứng minh dữ liệu → chụp ảnh màn hiển thị dữ liệu. Ảnh phải đúng màn (không 404/blank/sai bước), highlight đúng element, mask PII khách. Chi tiết: mục **Evidence — Quy chuẩn bắt buộc** trong `RULE_GLOBAL.md`.
     - **`comment` phải gọn, dễ đọc — KHÔNG dán debug.** 1–2 câu kết quả quan sát được; cấm `key=value`/dump state (`tx 2→2`, `editable=false`, `match=true`, `val="…"`, regex/selector); KHÔNG mở đầu bằng `[PASS]`/`[Positive]`/`[Negative]` (status đã có badge; kit tự tag SKIP/BLOCKED); caveat xuống dòng `Lưu ý:`; số/tiền dạng người đọc (`6.000.000đ`); KHÔNG placeholder kiểu `Xem xxx_results.json`. Chi tiết: mục **Comment kết quả (Test Execution) — Quy chuẩn trình bày** trong `RULE_GLOBAL.md`.
 13. Sinh/cập nhật local execution summary dưới:
     `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/reports/`
     Nếu có `RUN_ID`, ghi summary của run vào:
     `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/reports/runs/[RUN_ID]/`
-13b. **Đẩy trạng thái testcase lên AIO Tests — tạo Cycle từ `testcase-status.json`.** MẶC ĐỊNH `PUSH_XRAY_EXECUTION=confirm` (tên biến giữ nguyên cho tương thích ngược): khi ĐÃ HOÀN TẤT cycle execute chính thức (đã triage, run conclusive), chạy **dry-run trình PREVIEW** (tên cycle, số PASS/FAIL/Not Run, thư mục sẽ dùng) **cho QA duyệt; CHỈ `:apply` sau khi QA XÁC NHẬN**. **KHÔNG** đề xuất push cho run debug/chạy dở/`setup_failure` diện rộng. `=auto` để tạo ngay không cần hỏi (unattended/CI); `=0` để tắt hẳn.
+13b. **Đẩy trạng thái testcase lên AIO Tests — tạo Cycle từ `testcase-status.json`.** MẶC ĐỊNH `PUSH_EXECUTION=confirm`: khi ĐÃ HOÀN TẤT cycle execute chính thức (đã triage, run conclusive), chạy **dry-run trình PREVIEW** (tên cycle, số Passed/Failed/Not Run, thư mục sẽ dùng) **cho QA duyệt; CHỈ `:apply` sau khi QA XÁC NHẬN**. **KHÔNG** đề xuất push cho run debug/chạy dở/`setup_failure` diện rộng. `=auto` để tạo ngay không cần hỏi (unattended/CI); `=0` để tắt hẳn.
     Lệnh: `npm run aio:push-exec -- --task [TASK_KEY] [--folder "<Tên sprint>"] [--cycle-title "..."]` (+ `--run-id [RUN_ID]` nếu có) → xem preview → **QA OK** → `npm run aio:push-exec:apply -- ...`.
     - **Hai gate TRƯỚC khi ghi**: (1) `output_gate.gateTestExecution` — chất lượng output; (2) **mở rộng 5 trục** — task có case band *high* đã execute mà chưa có `reports/expansion-plan.md` thì CHẶN (gỡ bằng `npm run expansion:plan`, vài giây). Cố ý bỏ qua: `--qa-approved`.
     - **Guard**: thiếu `AIO_API_TOKEN` → dừng rõ ràng, không ghi nửa vời; run **0 conclusive** (toàn Not Run) → KHÔNG tạo cycle rác (`--force` nếu vẫn muốn); case `carriedOver` (shard cũ của lượt trước) tự bị loại (`--include-carried-over` để giữ).
     - **Title**: mỗi lần push tạo **1 Cycle mới** — mặc định `[TASK_KEY] Test Execution - <ngày>`; `--cycle-title` để đặt tên (vd `... - Lần <N>`). Chạy lại **cùng `--cycle-title`** thì **dùng lại cycle cũ** và bỏ qua evidence đã có (dedup theo từng bước) — không đẻ cycle trùng.
-    - **Status map**: 1 nguồn duy nhất `.agent/config/verdict_taxonomy.json` (cột `aio`) → tên trạng thái; ID nội bộ lấy từ `GET /config` của chính AIO. `BLOCKED_SETUP` nay giữ đúng nghĩa **Blocked** (Xray ép thành "TO DO").
-    - **Evidence xuống TỪNG BƯỚC** (thứ Xray không làm được): khai `steps[].evidence`, hoặc `failedStep` + `failedStepEvidence` cho case FAIL. Không biết bước nào thì để cấp run — **không bịa vị trí**. Đính lại lần nữa không xoá attachment cũ (đã đo) nên chạy lại an toàn.
+    - **Status map**: 1 nguồn duy nhất `.agent/config/verdict_taxonomy.json` (cột `aio`) → tên trạng thái; ID nội bộ lấy từ `GET /config` của chính AIO. `BLOCKED_SETUP` nay giữ đúng nghĩa **Blocked** (không bị ép thành "chưa chạy").
+    - **Evidence xuống TỪNG BƯỚC**: khai `steps[].evidence`, hoặc `failedStep` + `failedStepEvidence` cho case FAIL. Không biết bước nào thì để cấp run — **không bịa vị trí**. Đính lại lần nữa không xoá attachment đã có (đã đo) nên chạy lại an toàn.
     - **Thư mục cycle thay Test Plan**: AIO KHÔNG có Test Plan; dùng `--folder "<Tên sprint>"` để nhóm cycle theo sprint.
     - **Không có**: assignee/sprint/workflow trên case (case không phải Jira issue), và **KHÔNG có API xoá** cycle/attachment/run cuối ⇒ sai thì phải vào UI dọn tay. Xem trước rồi mới `:apply`.
     - **Vòng giảm skip**: còn nhiều skip thì CHƯA push; skip tối thiểu → QA duyệt push.
-    - 🕘 **Đường Xray (LEGACY, đóng băng sau 21/08/2026)**: `node scripts/integrations/jira/push_test_execution.js ... --test-management-tool xray` — cùng đầu vào; chi tiết Test Execution/Test Plan/coverage strategy nằm trong header script đó. Không phát triển thêm.
 14. Đánh giá `Automation Promote Review`: giữ task-scoped, pending review, hoặc đã promote nếu có approval.
 15. Chỉ chạy bước log bug Jira khi thỏa mãn toàn bộ điều kiện log bug bên dưới và user/prompt hiện tại cho phép.
 16. Cập nhật:

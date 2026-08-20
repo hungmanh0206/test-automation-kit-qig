@@ -116,7 +116,7 @@ function looksRunOn(text) {
 }
 
 /**
- * AUTO-FIX an toàn cho comment Xray: bỏ prefix status + xoá cụm debug trong ngoặc.
+ * AUTO-FIX an toàn cho comment kết quả: bỏ prefix status + xoá cụm debug trong ngoặc.
  * KHÔNG tự tách run-on thành bullet (dễ sai ngữ nghĩa tiếng Việt) — để gate chặn, agent tự viết lại.
  * @returns {{ text, changed, notes }}
  */

@@ -42,7 +42,7 @@ Kit ưu tiên "theo tỉ lệ", KHÔNG nhân bừa (đồng bộ mục 13 dropdo
 | Ma trận tổ hợp + expected | `<TASK_OUTPUT_DIR>/test-cases/<basename>_matrix.md` (bảng: mỗi hàng 1 bộ → expected) |
 | Ghi chú strategy/cắt giảm | Đầu file matrix + Coverage Gaps của `phase1-summary.md` |
 
-Mỗi hàng ma trận là 1 testcase → export Excel + publish Xray dùng chung script hiện có (`scripts/convert_excel/md_to_xlsx.js`, `publish_testcases.js`), vào đúng nhóm chức năng.
+Mỗi hàng ma trận là 1 testcase → export Excel + publish AIO dùng chung script hiện có (`scripts/convert_excel/md_to_xlsx.js`, `scripts/integrations/aio/publish_testcases_aio.js`), vào đúng nhóm chức năng.
 
 ## Decision Rules
 

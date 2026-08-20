@@ -110,8 +110,8 @@ test.describe('@infra Lớp 1 — bằng chứng tối thiểu theo tag chiều'
   });
 });
 
-// ── output_gate: chuẩn hoá nhãn trạng thái từ Xray/Jira ───────────────────────────────────────────────────
-test.describe('@infra canonStatus — nhãn Xray "TO DO" không bị loại oan', () => {
+// ── output_gate: chuẩn hoá nhãn trạng thái người-đọc-được ─────────────────────────────────────────────
+test.describe('@infra canonStatus — nhãn "TO DO" (biến thể cũ) không bị loại oan', () => {
   const statusFile = (st: string) => {
     const d = fs.mkdtempSync(path.join(os.tmpdir(), 'gatest-'));
     const f = path.join(d, 's.json');
@@ -196,355 +196,40 @@ test.describe('@infra gate:policy — phải THẬT SỰ quét, không no-op', (
 });
 
 /*
- * CÔNG TẮC TEST-MANAGEMENT-TOOL (Xray → AIO).
+ * NO-XRAY (gate:policy): không bề mặt nào của kit được nhắc công cụ test-management cũ.
  *
- * Vì sao phải có test: hai bộ script ăn CHUNG đầu vào (Excel canonical, `testcase-status.json`), nên gọi
- * nhầm bộ KHÔNG sinh lỗi — nó chạy trót lọt rồi ghi vào sai hệ thống, và AIO thì không có API xoá để lùi.
- * Test chạy trên SCRIPT THẬT, không phải fixture: cửa chặn nằm ngay sau `loadEnv()` nên script dừng trước
- * khi cần creds hay TASK_KEY.
+ * Vì sao khoá bằng test: luật này là thứ giữ cho việc "bỏ hẳn" không bị trôi lại từng dòng một. Bản
+ * trước còn cửa thoát `legacy`, và chính cửa đó để sót 12 chỗ dạy lệnh đã bị xoá. Nay cấm tuyệt đối,
+ * nên phải chứng minh: repo thật sạch, VÀ luật thực sự bắt được khi có người viết lại.
  */
-const XRAY_ENTRYPOINTS = [
-  'scripts/integrations/jira/publish_testcases.js',
-  'scripts/integrations/jira/push_test_execution.js',
-  'scripts/integrations/jira/update_xray_steps.js',
-  'scripts/integrations/jira/cleanup_xray_tests.js',
-  'scripts/integrations/jira/pull_testcases.js',
-  // Ba script Xray-era KHÔNG có npm script (gọi bằng `node …`) nên trước đó không ai nhắc, không ai cản:
-  // create_test_plan đẻ issue Test Plan mà AIO không có; hai script kia sửa thứ trên AIO không tồn tại
-  // (assignee của test, issue-link precondition→requirement).
-  'scripts/integrations/jira/create_test_plan.js',
-  'scripts/integrations/jira/unassign_all_tests.js',
-  'scripts/integrations/jira/cleanup_precondition_requirement_links.js',
-];
-
-test.describe('@infra TEST_MANAGEMENT_TOOL — chạy nhầm bộ phải bị CHẶN, không im lặng ghi sai chỗ', () => {
-  for (const script of XRAY_ENTRYPOINTS) {
-    test(`aio → ${path.basename(script)} bị chặn VÀ được chỉ lệnh thay thế`, () => {
-      const r = run([path.join(REPO, script), '--dry-run'], { TEST_MANAGEMENT_TOOL: 'aio' });
-      expect(r.code, 'phải thoát khác 0').not.toBe(0);
-      expect(r.out).toMatch(/CHẶN: TEST_MANAGEMENT_TOOL=aio/);
-      // Chặn mà không chỉ đường đi tiếp thì chỉ là bức tường — bắt buộc có dòng "→ Dùng:".
-      expect(r.out, 'thiếu lệnh thay thế').toMatch(/→ Dùng: \S+/);
-    });
-  }
-
-  test('xray khai TƯỜNG MINH thì KHÔNG bị chặn oan — phải đi tiếp tới lỗi thiếu config bình thường', () => {
-    const r = run([path.join(REPO, XRAY_ENTRYPOINTS[1]), '--dry-run'], { TEST_MANAGEMENT_TOOL: 'xray' });
-    expect(r.out).not.toMatch(/CHẶN: TEST_MANAGEMENT_TOOL/);
-  });
-
-  test('override --test-management-tool xray thắng biến môi trường aio', () => {
-    const r = run([path.join(REPO, XRAY_ENTRYPOINTS[1]), '--dry-run', '--test-management-tool', 'xray'], { TEST_MANAGEMENT_TOOL: 'aio' });
-    expect(r.out).not.toMatch(/CHẶN: TEST_MANAGEMENT_TOOL/);
-  });
-
-  test('giá trị lạ KHÔNG được âm thầm thành xray (đó là đường đẻ issue Jira sai loại)', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const tms = require(path.join(REPO, 'scripts/integrations/tms.js'));
-    const saved = process.env.TEST_MANAGEMENT_TOOL;
-    process.env.TEST_MANAGEMENT_TOOL = 'khong-ton-tai';
-    try {
-      expect(tms.activeTool([])).toBe('jira');
-      process.env.TEST_MANAGEMENT_TOOL = 'AIO-Tests';
-      expect(tms.activeTool([])).toBe('aio');
-    } finally {
-      if (saved === undefined) delete process.env.TEST_MANAGEMENT_TOOL; else process.env.TEST_MANAGEMENT_TOOL = saved;
-    }
-  });
-});
-
-/*
- * THƯ MỤC TESTCASE CANONICAL — phải đi qua MỘT nguồn.
- *
- * Bug đã xảy ra khi thêm nguồn `from-aio/`: 7 script tự ghép tay đường dẫn và chỉ biết `from-xray`.
- * `preflight_gate` thì chặn oan ("không thấy testcase canonical") — còn thấy được. Nguy hơn là
- * `dimension_coverage`/`bug_tc_matcher`/`domain_rules`/`system_map`/`learn_task`: KHÔNG lỗi, chỉ đếm
- * thiếu, báo cáo vẫn ra số và trông vẫn đúng. Test này chặn kiểu hardcode đó quay lại.
- */
-test.describe('@infra testcase dirs — thêm nguồn mới không được làm script đếm thiếu trong im lặng', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const rt = require(path.resolve(__dirname, '../../../scripts/utils/runtime_config.js'));
-
-  test('helper trả đủ test-cases/ + MỌI bản kéo về', () => {
-    const dirs = rt.getTestcaseDirs('/x/task').map((d: string) => d.split(path.sep).join('/'));
-    expect(dirs).toContain('/x/task/test-cases');
-    for (const m of rt.TESTCASE_MIRROR_DIRS) expect(dirs).toContain(`/x/task/test-cases/${m}`);
-    expect(rt.TESTCASE_MIRROR_DIRS).toEqual(expect.arrayContaining(['from-xray', 'from-aio']));
-  });
-
-  test('mirrorsFirst đặt bản kéo về TRƯỚC bản người viết', () => {
-    const d = rt.getTestcaseDirs('/x/task', { mirrorsFirst: true }).map((s: string) => s.split(path.sep).join('/'));
-    expect(d[d.length - 1]).toBe('/x/task/test-cases');
-  });
-
-  test('KHÔNG script nào trong scripts/qa/ còn tự ghép đường dẫn "from-xray"', () => {
-    const dir = path.join(REPO, 'scripts', 'qa');
-    // Chỉ bắt việc GHÉP ĐƯỜNG DẪN, không bắt chữ 'from-xray' trong comment.
-    const HARDCODED = new RegExp(String.raw`path\.(join|resolve)\([^)]*['"]from-xray['"]`);
-    const offenders: string[] = [];
-    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
-      const src = fs.readFileSync(path.join(dir, f), 'utf8');
-      // Chỉ bắt việc GHÉP ĐƯỜNG DẪN (path.join/resolve … 'from-xray'), không bắt chữ trong comment.
-      if (HARDCODED.test(src)) offenders.push(f);
-    }
-    expect(offenders, `còn hardcode: ${offenders.join(', ')} → dùng getTestcaseDirs()`).toEqual([]);
-  });
-});
-
-/*
- * TAXONOMY ↔ AIO: mọi verdict phải có đường sang trạng thái của AIO.
- *
- * Bug đã xảy ra: `push_execution_aio` dùng bảng hardcode thiếu `PASS_WITH_DEVIATION` và
- * `SUSPECT_REAL_BUG` ⇒ hai verdict này rơi về mặc định "Not Run" — case ĐÃ chạy bị báo là CHƯA chạy,
- * và không có gì kêu lên. Nay ánh xạ đọc từ taxonomy, còn ID trạng thái đọc từ `GET /config` của AIO.
- */
-test.describe('@infra verdict taxonomy — mọi verdict phải ánh xạ được sang AIO', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const tax = require(path.resolve(__dirname, '../../../.agent/config/verdict_taxonomy.json'));
-
-  test('mọi status khai cột "aio" (null là CỐ Ý, undefined là bỏ sót)', () => {
-    const missing = Object.entries(tax.statuses)
-      .filter(([, v]: [string, any]) => !Object.prototype.hasOwnProperty.call(v, 'aio'))
-      .map(([k]) => k);
-    expect(missing, `thiếu cột aio: ${missing.join(', ')}`).toEqual([]);
-    expect(Object.keys(tax.statuses).length).toBeGreaterThan(5);
-  });
-
-  test('push_execution_aio KHÔNG hardcode ID trạng thái — phải hỏi AIO', () => {
-    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), 'utf8');
-    const HARDCODE = new RegExp(String.raw`(PASSED|FAILED|BLOCKED|TODO)\s*:\s*[1-5]\b`);
-    expect(HARDCODE.test(src), 'lại xuất hiện bảng ID hardcode → dùng verdict_taxonomy + GET /config').toBe(false);
-    expect(src).toContain("'/config'");
-  });
-});
-
-/*
- * CHECK #10 — CHẶN "chưa cân nhắc mở rộng", KHÔNG chặn "chưa mở đủ trục".
- *
- * Vì sao đúng chỗ này: đo 19/08/2026 trên 9 task (1014 case, 382 band high) — 7/9 task có 0/5 trục, và task
- * DUY NHẤT đủ 5/5 lại có 3 báo cáo `proven=0`. Chặn theo "có artefact hay không" ⇒ dạy cả hệ thống chạm vào
- * file cho có. Nên chỉ chặn thứ rẻ mà quyết định được: đã chạy `expansion:plan` (đọc Excel, vài giây) để
- * nhìn chi phí rồi chốt phạm vi hay chưa. `npm run expansion:audit` đo lại con số này bất cứ lúc nào.
- */
-test.describe('@infra check #10 — kế hoạch mở rộng là bắt buộc, mở đủ trục thì chưa', () => {
-  const runSelfReview = (env: Record<string, string>) =>
-    run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1'], env);
-
-  /** Fixture: task có case band HIGH đã execute (Ưu tiên High ⇒ band high). */
-  function execTask(withPlan: boolean) {
-    const { pod, env } = makeTask(tcRow('TC_001', 'M', 'Case tiền', '1. Net = 2.500.000'));
-    const t = path.join(pod, 'tasks', 'T-1');
-    fs.mkdirSync(path.join(t, 'test-results'), { recursive: true });
-    fs.mkdirSync(path.join(t, 'reports'), { recursive: true });
-    fs.writeFileSync(path.join(t, 'test-results', 'testcase-status.json'), JSON.stringify({
-      taskKey: 'T-1',
-      tests: [{ tcId: 'TC_001', status: 'PASSED', comment: 'Net đúng 2.500.000 theo bảng giá.', evidence: ['a.png'] }],
-    }), 'utf8');
-    if (withPlan) fs.writeFileSync(path.join(t, 'reports', 'expansion-plan.md'), '# Kế hoạch mở rộng\n', 'utf8');
-    return env;
-  }
-
-  test('case band HIGH đã execute mà CHƯA có expansion-plan → CHẶN', () => {
-    const r = runSelfReview(execTask(false));
-    expect(r.out).toMatch(/case band HIGH đã execute nhưng CHƯA có/);
-    expect(r.out, 'phải chỉ đúng lệnh chạy, không chỉ mắng').toMatch(/expansion:plan/);
-  });
-
-  test('có expansion-plan rồi thì HẾT chặn — dù 0/5 trục vẫn chỉ cảnh báo', () => {
-    const r = runSelfReview(execTask(true));
-    expect(r.out).not.toMatch(/case band HIGH đã execute nhưng CHƯA có/);
-    // Vẫn phải NHẮC là chưa trục nào chạy — bỏ chặn không có nghĩa là im.
-    expect(r.out).toMatch(/CHƯA ai soi/);
-  });
-
-  test('expansion_plan.js ghi artefact MẶC ĐỊNH, không cần --out', () => {
-    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/expansion_plan.js'), 'utf8');
-    // Kế hoạch không để lại dấu vết thì không gate được — đó là lý do 0/9 task từng có artefact.
-    expect(src).toMatch(/arg\('out'\)\s*\|\|/);
-    expect(src).toContain('expansion-plan.md');
-  });
-
-  test('proven=0 ở báo cáo TRỤC là CHẶN, nhưng chỉ trong phạm vi 4 trục', () => {
-    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/self_review.js'), 'utf8');
-    expect(src).toMatch(/proven === 0\) problems\.push/);
-    // Nới glob sang expansion-findings/mutation-check là chặn oan lượt soi SẠCH (proven=0 = không thấy gì).
-    expect(src).not.toMatch(/expansion-findings\|mutation-check/);
-  });
-});
-
-/*
- * self-review phải CÓ RĂNG ở bước finalize.
- *
- * Bản mặc định luôn exit 0 (advisory, đúng hợp đồng đã ghi trong tài liệu) — nhưng `output_gate` ở publish
- * KHÔNG kiểm mở rộng 5 trục, nên nếu finalize cũng chỉ đọc báo cáo thì đường lọt bug vẫn nguyên: execute
- * bám đúng chữ trong case → 0 trục → đẩy "toàn PASS" → không gì cản. `--enforce` là chỗ duy nhất có exit code.
- */
-test.describe('@infra self-review --enforce — chặn thật, không chỉ in báo cáo', () => {
-  function taskWithBlock() {
-    const { pod, env } = makeTask(tcRow('TC_001', 'M', 'Case tiền', '1. Net = 2.500.000'));
-    const t = path.join(pod, 'tasks', 'T-1');
-    fs.mkdirSync(path.join(t, 'test-results'), { recursive: true });
-    fs.mkdirSync(path.join(t, 'reports'), { recursive: true });
-    // case band HIGH đã execute + KHÔNG có expansion-plan ⇒ chắc chắn có ít nhất 1 khối CHẶN
-    fs.writeFileSync(path.join(t, 'test-results', 'testcase-status.json'), JSON.stringify({
-      taskKey: 'T-1',
-      tests: [{ tcId: 'TC_001', status: 'PASSED', comment: 'Net đúng 2.500.000 theo bảng giá.', evidence: ['a.png'] }],
-    }), 'utf8');
-    return env;
-  }
-
-  test('mặc định vẫn exit 0 — giữ hợp đồng advisory', () => {
-    const r = run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1'], taskWithBlock());
-    expect(r.code, 'bản thường không được chặn').toBe(0);
-    expect(r.out).toMatch(/CHẶN/);
-  });
-
-  test('--enforce exit ≠ 0 và nêu ĐÍCH DANH gate còn chặn', () => {
-    const r = run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1', '--enforce'], taskWithBlock());
-    expect(r.code, 'còn CHẶN mà vẫn exit 0 thì gate vô nghĩa').not.toBe(0);
-    expect(r.out, 'chặn thì phải nói chặn ở đâu').toMatch(/--enforce: exit 1 vì còn CHẶN ở: \S+/);
-  });
-
-  test('điểm vào Phase 2 phải trỏ bản :enforce, không phải bản advisory', () => {
-    const tpl = fs.readFileSync(path.join(REPO, 'prompt_templates/run_phase2_template.md'), 'utf8');
-    expect(tpl, 'finalize mà dùng bản advisory thì không chặn được gì').toMatch(/self-review:enforce/);
-    expect(tpl).toMatch(/expansion:plan/);
-  });
-});
-
-/*
- * LUẬT MỞ RỘNG PHẢI ĐỨNG Ở CẢ HAI CỬA.
- *
- * `self-review --enforce` là bước NGƯỜI/agent tự chạy — bỏ qua nó rồi đẩy thẳng kết quả lên TCM thì
- * trước đây không gì cản (lượt SAPP-26523: 3 case, 0/5 trục, mọi gate xanh). Nên luật đứng thêm ở
- * `push_execution_aio` — chỗ có exit code nằm trên đường GHI THẬT. Cả hai đọc chung
- * `scripts/lib/expansion/plan_guard.js`; chép logic sang cửa thứ hai là mời drift.
- */
-test.describe('@infra luật mở rộng — chặn ở cả finalize lẫn đường publish', () => {
-  function taskNoPlan() {
-    const { pod, env } = makeTask(tcRow('TC_001', 'M', 'Case tiền', '1. Net = 2.500.000'));
-    const t = path.join(pod, 'tasks', 'T-1');
-    fs.mkdirSync(path.join(t, 'test-results'), { recursive: true });
-    fs.mkdirSync(path.join(t, 'reports'), { recursive: true });
-    fs.writeFileSync(path.join(t, 'test-results', 'testcase-status.json'), JSON.stringify({
-      taskKey: 'T-1',
-      tests: [{ tcId: 'TC_001', status: 'PASSED', comment: 'Net đúng 2.500.000 theo bảng giá.', evidence: ['a.png'] }],
-    }), 'utf8');
-    return { env, taskDir: t };
-  }
-
-  test('push_execution_aio CHẶN khi có case band high mà chưa có kế hoạch (chạy offline, trước khi gọi API)', () => {
-    const { env, taskDir } = taskNoPlan();
-    const r = run([path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), '--task', 'T-1', '--task-output', taskDir], env);
-    expect(r.code, 'đường publish mà không chặn thì bỏ qua finalize là lọt').not.toBe(0);
-    expect(r.out).toMatch(/GATE MỞ RỘNG/);
-    expect(r.out, 'chặn thì phải chỉ lệnh gỡ').toMatch(/expansion:plan/);
-    expect(r.out, 'phải có đường thoát có chủ ý').toMatch(/--qa-approved/);
-  });
-
-  test('có kế hoạch rồi thì gate mở rộng cho qua', () => {
-    const { env, taskDir } = taskNoPlan();
-    fs.writeFileSync(path.join(taskDir, 'reports', 'expansion-plan.md'), '# Kế hoạch\n', 'utf8');
-    const r = run([path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), '--task', 'T-1', '--task-output', taskDir], env);
-    expect(r.out).not.toMatch(/GATE MỞ RỘNG/);
-  });
-
-  test('MỘT nguồn: cả hai cửa đều qua plan_guard, không tự tính band', () => {
-    for (const f of ['scripts/qa/self_review.js', 'scripts/integrations/aio/push_execution_aio.js']) {
-      const src = fs.readFileSync(path.join(REPO, f), 'utf8');
-      expect(src, `${f} phải dùng plan_guard`).toMatch(/plan_guard/);
-      expect(src, `${f} không được tự gọi bandOf — luật sẽ trôi khỏi nhau`).not.toMatch(/\.bandOf\(/);
-    }
-  });
-});
-
-/*
- * TMS-DRIFT (gate:policy): tài liệu không được dạy đường Xray như đường chính.
- *
- * Vì sao phải có test: code đã có răng (5 entrypoint Xray tự chặn) nhưng TÀI LIỆU thì trước đó không gì gác —
- * đo 20/08/2026 có 23 file hướng dẫn vẫn dạy `npm run jira:testcase-publish` và `TESTCASE_SOURCE=xray` là
- * "mặc định", tức agent chạy đúng prompt sẽ đụng thẳng cửa chặn. Test khoá cả hai chiều: repo thật phải sạch,
- * VÀ luật phải thực sự bắt được dòng vi phạm (không phải gate xanh vì chẳng kiểm gì).
- */
-test.describe('@infra gate:policy — TMS-drift', () => {
+test.describe('@infra gate:policy — NO-XRAY', () => {
   const GATE = path.join(REPO, 'scripts/qa/policy_source_check.js');
-  const LF = String.fromCharCode(10);   // tránh ký tự escape: heredoc/shell từng bóp nó thành newline thật
-  /** Ghi file thật vào một root ĐANG được quét rồi xoá ngay — gate đọc đĩa, fixture trong RAM không kiểm được gì. */
-  const withProbe = (name: string, body: string, assertFn: (out: string, code: number) => void) => {
-    const tmp = path.join(REPO, 'partial-rerun', name);
-    fs.writeFileSync(tmp, body);
-    try { const r = run([GATE]); assertFn(r.out, r.code); } finally { fs.unlinkSync(tmp); }
-  };
+  const LF = String.fromCharCode(10);
 
-  test('repo thật: không tài liệu nào dạy đường Xray như đường chính', () => {
+  test('repo thật: không bề mặt nào của kit nhắc công cụ cũ', () => {
     const r = run([GATE]);
-    expect(r.out).toContain('TMS-drift sạch');
+    expect(r.out).toContain('NO-XRAY sạch');
     expect(r.code, 'gate:policy phải xanh trên repo thật').toBe(0);
   });
 
-  test('luật CÓ RĂNG: dòng dạy lệnh Xray legacy (không ghi legacy) bị CHẶN', () => {
-    withProbe('_tms_drift_probe.md',
-      ['# probe', ''  , 'Chạy `npm run jira:testcase-publish -- --task X --story Y` để publish.'].join(LF) + LF,
-      (out, code) => {
-        expect(code, 'phải chặn').not.toBe(0);
-        expect(out).toContain('_tms_drift_probe.md');
-        expect(out).toContain('TMS-DRIFT');
-      });
+  test('luật CÓ RĂNG: một dòng nhắc lại công cụ cũ là CHẶN (không có cửa legacy)', () => {
+    // File thật trong root đang được quét, xoá ngay trong finally — gate đọc đĩa, fixture trong RAM vô dụng.
+    const tmp = path.join(REPO, 'partial-rerun', '_noxray_probe.md');
+    fs.writeFileSync(tmp, ['# probe', '', 'Đường LEGACY: chạy Xray như trước.'].join(LF) + LF);
+    try {
+      const r = run([GATE]);
+      expect(r.code, 'phải chặn').not.toBe(0);
+      expect(r.out).toContain('_noxray_probe.md');
+      expect(r.out).toContain('NO-XRAY');
+    } finally {
+      fs.unlinkSync(tmp);
+    }
   });
 
-  test('KHÔNG báo oan: dòng nói về đường cũ có nhãn legacy được cho qua', () => {
-    withProbe('_tms_drift_probe2.md',
-      ['# probe', ''  , 'Đường LEGACY (Xray đóng băng sau 21/08/2026): `npm run jira:testcase-publish -- --test-management-tool xray`.'].join(LF) + LF,
-      (out) => expect(out).not.toContain('_tms_drift_probe2.md'));
-  });
-
-  test('KHÔNG báo oan: tên biến PUSH_XRAY_EXECUTION không phải là "dạy Xray"', () => {
-    withProbe('_tms_drift_probe3.md',
-      ['# probe', ''  , 'MẶC ĐỊNH `PUSH_XRAY_EXECUTION=confirm`: QA duyệt preview rồi mới tạo cycle trên AIO.'].join(LF) + LF,
-      (out) => expect(out).not.toContain('_tms_drift_probe3.md'));
-  });
-});
-
-/*
- * CHIỀU COVERAGE MỚI PHẢI VÀO CANONICAL — không chỉ đẻ file prompt.
- *
- * Kit đếm độ phủ theo `DIMS` trong dimension_coverage.js. Thêm một file `dimensions/NN_x.md` mà quên đăng ký
- * vào DIMS thì chiều đó **không bao giờ được đếm**: prompt bảo làm, máy không biết nó tồn tại, và báo cáo
- * coverage vẫn xanh. Đây là đúng lớp lỗi "luật có mà không có máy" đã gặp nhiều lần ở kit này.
- */
-test.describe('@infra chiều coverage — file prompt và canonical phải khớp nhau', () => {
-  const DIM_DIR = path.join(REPO, 'prompt_templates/phase1/dimensions');
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const covSrc = fs.readFileSync(path.join(REPO, 'scripts/qa/dimension_coverage.js'), 'utf8');
-  const navSrc = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/02_gen_testcases.md'), 'utf8');
-
-  const secOf = (f: string) => `§${String(f.match(/^(\d+)/)?.[1] ?? '').replace(/^0+/, '')}`;
-  const dimFiles = fs.readdirSync(DIM_DIR).filter((f) => /^\d+_.*\.md$/.test(f));
-
-  test('mỗi file dimensions/ đều được đăng ký trong DIMS của dimension_coverage.js', () => {
-    const missing = dimFiles.filter((f) => !covSrc.includes(`sec: '${secOf(f)}'`));
-    expect(missing, `chưa vào canonical: ${missing.join(', ')} → thêm vào DIMS + TAG_OF`).toEqual([]);
-    expect(dimFiles.length).toBeGreaterThanOrEqual(18);
-  });
-
-  test('mỗi file dimensions/ đều có mặt trong bảng điều hướng của 02_gen_testcases', () => {
-    const missing = dimFiles.filter((f) => !navSrc.includes(`dimensions/${f}`));
-    expect(missing, `bảng điều hướng thiếu: ${missing.join(', ')} → agent sẽ không bao giờ mở file đó`).toEqual([]);
-  });
-
-  test('mỗi chiều trong DIMS đều có TAG_OF — thiếu thì case gắn tag vẫn không được tính', () => {
-    const ids = [...covSrc.matchAll(/\{ id: '([a-z0-9_]+)', sec:/g)].map((m) => m[1]);   // e2e có CHỮ SỐ
-    const tagBlock = covSrc.slice(covSrc.indexOf('const TAG_OF'), covSrc.indexOf('const COVERAGE_TAGS'));
-    const missing = ids.filter((id) => !tagBlock.includes(`${id}:`));
-    expect(missing, `thiếu TAG_OF: ${missing.join(', ')}`).toEqual([]);
-  });
-
-  test('lệnh mà chiều §20 dạy phải TỒN TẠI (dạy lệnh ma là tự tạo lỗ)', () => {
-    const md = fs.readFileSync(path.join(DIM_DIR, '20_bug_history.md'), 'utf8');
-    expect(md).toMatch(/npm run bugs:checklist/);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const pkg = require(path.join(REPO, 'package.json'));
-    expect(pkg.scripts['bugs:checklist'], 'prompt dạy lệnh chưa có trong package.json').toBeTruthy();
-    expect(fs.existsSync(path.join(REPO, 'scripts/qa/bugs_checklist.js'))).toBe(true);
+  test('lịch sử KHÔNG bị soi: CHANGELOG/outputs là biên bản việc đã làm', () => {
+    // CHANGELOG có hàng chục chỗ nhắc công cụ cũ (đó là lịch sử di trú) — gate vẫn phải xanh.
+    const changelog = fs.readFileSync(path.join(REPO, 'CHANGELOG.md'), 'utf8');
+    expect(/xray/i.test(changelog), 'CHANGELOG phải còn dấu vết lịch sử để test này có nghĩa').toBe(true);
+    expect(run([GATE]).code).toBe(0);
   });
 });

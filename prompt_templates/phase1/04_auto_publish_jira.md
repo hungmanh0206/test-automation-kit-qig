@@ -4,7 +4,7 @@
 
 Dùng prompt này như một step riêng trong phạm vi Phase 1, chỉ sau khi Phase 1 đã sinh testcase, export Excel và QA đã xác nhận Excel/testcase đủ điều kiện publish. Không dùng prompt này để log bug Jira.
 
-> **Công cụ test management: AIO Tests** (`TEST_MANAGEMENT_TOOL=aio`, mặc định từ GĐ5 — Xray đóng băng sau 21/08/2026). Lệnh Xray cũ (`npm run jira:testcase-publish`) **tự CHẶN** kèm lệnh thay thế, nên không phải nhớ. Khác biệt mô hình + 9 đặc tính đã đo của AIO: `scripts/integrations/aio/README.md`. Chạy đường Xray legacy (chỉ để đọc/đối chiếu dữ liệu cũ): xem mục cuối file.
+> **Công cụ test management: AIO Tests** — công cụ duy nhất của kit. Khác biệt mô hình + 9 đặc tính đã đo của AIO: `scripts/integrations/aio/README.md`.
 
 ```text
 Chạy step Phase 1 - Auto Publish testcase lên AIO Tests.
@@ -60,7 +60,7 @@ Env/config:
   - `Nhóm chức năng` → **folder** `<root>/<nhóm>` (cây dựng TỪ Excel, không hardcode danh sách tên)
   - `Các bước thực hiện` / `Kết quả mong đợi` → `steps[]` ghép theo số thứ tự · `Dữ liệu Test` → `steps[0].data`
   - `Ưu tiên` → `priority` · nhóm bắt đầu bằng `API` / chứa `security|phân quyền` → `type` tương ứng
-- Cây folder chỉ **2 cấp** (`<root>/<nhóm chức năng>`): `--folder-root` mặc định là `[JIRA_STORY_KEY]` (fallback tên file Excel). Bộ testcase migrate từ Xray có cây sâu 3 cấp — muốn thêm case vào bộ cũ thì vá tại chỗ (`--only`), đừng publish lại cả bộ.
+- Cây folder chỉ **2 cấp** (`<root>/<nhóm chức năng>`): `--folder-root` mặc định là `[JIRA_STORY_KEY]` (fallback tên file Excel). Bộ testcase cũ có cây sâu 3 cấp — muốn thêm case vào bộ đó thì vá tại chỗ (`--only`), đừng publish lại cả bộ.
 - KHÔNG còn (vì AIO case không phải Jira issue): Test Set, requirement issue-link/panel Test Coverage, Precondition issue riêng, Test Type field, assignee, label `group-*`/`tc-*`. Đừng đi tìm rồi kết luận "thiếu".
 
 Mode:
@@ -106,9 +106,9 @@ Các bước thực hiện:
 
 Quy tắc bắt buộc:
 - Excel là source of truth. Không publish từ Markdown nếu Excel đã tồn tại. Sửa nội dung testcase ở Excel rồi re-publish, KHÔNG sửa thẳng trên AIO.
-- Phase 2 execute mặc định lấy nguồn từ **AIO** (`TESTCASE_SOURCE=aio`, kéo về canonical local `test-cases/from-aio/*.xlsx` bằng `npm run aio:pull:write`); `excel` là opt-out; `xray` là legacy. Vì vậy publish là bước cần TRƯỚC Phase 2.
+- Phase 2 execute mặc định lấy nguồn từ **AIO** (`TESTCASE_SOURCE=aio`, kéo về canonical local `test-cases/from-aio/*.xlsx` bằng `npm run aio:pull:write`); `excel` là opt-out. Vì vậy publish là bước cần TRƯỚC Phase 2.
 - Không publish thật khi QA chưa xác nhận `APPROVED`, và không bao giờ `--apply` khi chưa xem dry-run.
-- Nếu Excel đã bỏ bớt TC sau khi đã publish, prompt này không dọn case cũ; chạy nhánh phụ `partial-rerun/run_xray_test_cleanup.md` (đã chuyển sang `npm run aio:deprecate-stale`) sau Human Review/QA approval. Trên AIO, "cleanup" = đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), KHÔNG phải xoá.
+- Nếu Excel đã bỏ bớt TC sau khi đã publish, prompt này không dọn case cũ; chạy nhánh phụ `partial-rerun/run_testcase_cleanup.md` (đã chuyển sang `npm run aio:deprecate-stale`) sau Human Review/QA approval. Trên AIO, "cleanup" = đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), KHÔNG phải xoá.
 - Không log Jira bug trong prompt này; log bug Jira thuộc `prompt_templates/phase2/08_log_bug_jira.md`.
 - Không đưa secret vào report hoặc console.
 - Nếu dry-run hoặc publish lỗi, ghi blocker rõ trong publish summary/task.md; không sửa testcase để né lỗi publish.
@@ -116,11 +116,3 @@ Quy tắc bắt buộc:
 Extra instruction:
 - [ANY_EXTRA_REQUEST hoặc N/A]
 ```
-
-## Đường Xray (LEGACY — chỉ đọc/đối chiếu dữ liệu cũ)
-
-Xray đóng băng sau **21/08/2026**. `scripts/integrations/jira/publish_testcases.js` vẫn còn để đọc dữ liệu cũ và để `aio/migrate_*.js` dùng lại `xray_cloud.js`, nhưng **tự chặn** khi `TEST_MANAGEMENT_TOOL=aio`. Nếu thật sự cần chạy đường cũ (một lần, có lý do rõ):
-
-- `npm run jira:testcase-publish:dry-run -- --task [TASK_KEY] --story [JIRA_STORY_KEY] --test-management-tool xray`
-- Toàn bộ chi tiết Xray (chiều requirement link, Coverable Issue Types, Test Set, `--push-xray-steps`, `--push-xray-preconditions`, Test Repository folder) nằm trong header của script đó + `scripts/integrations/jira/README.md`; **đừng phát triển thêm ở nhánh này**.
-- Di trú dữ liệu Xray cũ sang AIO: `npm run aio:migrate-tc` / `npm run aio:migrate-exec` (mặc định dry-run).

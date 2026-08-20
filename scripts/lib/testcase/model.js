@@ -3,7 +3,7 @@
 /*
  * Canonical TestCase model (architecture hardening #1) — NGUỒN DUY NHẤT hiểu bảng testcase.
  * Thay ≥6 parser rải rác (md_to_xlsx/output_gate/design_gate/risk_gate/risk_score/traceability/
- * update_xray_steps) bằng 1 model + adapter. GĐ 1a chỉ định nghĩa model + helper (chưa đụng consumer).
+ * publish/pull AIO) bằng 1 model + adapter. GĐ 1a chỉ định nghĩa model + helper (chưa đụng consumer).
  *
  * JS CommonJS + JSDoc typedef + testcase.d.ts (không dựng build-step TS; full TS để #7).
  * Dependency-free (chỉ để adapter khác require an toàn).
@@ -18,7 +18,7 @@
  *   traceability: { reqId: string, story: string },
  *   _cells: Record<string,string>   // original-header → cleaned cell (fidelity/migration bridge)
  * }} TestCase
- * @typedef {{ source: 'md'|'xlsx'|'xray', tests: TestCase[], setup: SetupContract[],
+ * @typedef {{ source: 'md'|'xlsx', tests: TestCase[], setup: SetupContract[],
  *             headers: string[], groups: string[], warnings: string[] }} TestCaseDoc
  */
 
@@ -111,7 +111,7 @@ function dimensionsOf(title) {
  * VÌ SAO đi bằng TAG chứ không thêm cột: đo 14/08/2026 trên bộ 530 case thật — **0/530 case** nhắc bất kỳ id
  * rule nào, dù `§12` của prompt gen ĐÃ yêu cầu "ghi id rule vào Kết quả mong đợi hoặc Assumptions". Quy định
  * có, tuân thủ 0%, và không máy nào kiểm. Thêm cột thứ 10 thì phá format 9 cột mà mọi consumer đang khoá
- * theo (`md_to_xlsx`, publish/pull Xray, validate) — trong khi tag nằm trong CHÍNH cột `Trường hợp kiểm thử`,
+ * theo (`md_to_xlsx`, publish/pull AIO, validate) — trong khi tag nằm trong CHÍNH cột `Trường hợp kiểm thử`,
  * dùng lại đúng cơ chế đang đọc `[Positive]`/`[Display]`. Một tín hiệu gác được HAI chiều: chặn case có oracle
  * nghiệp vụ mà không trỏ rule, VÀ tự append `covered_by` cho rule (hết phụ thuộc người nhớ điền).
  *
