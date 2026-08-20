@@ -7,6 +7,22 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-20 (d) — 9 Case Type có ĐỊNH NGHĨA: một nguồn, và publisher hết đường hạ ngầm
+
+**User mở rộng 6 → 9 loại** kèm định nghĩa đầy đủ từng loại (định nghĩa · tag đi kèm · "chọn khi" · **"KHÔNG chọn khi"**). Đối chiếu `GET /config`: AIO có đúng 9 — `UI(1) Integration(2) Functional(3) API(4) Performance(5) Security(6) Database(7) E2E(8) Accessibility(9)`; `Unit` là tên cũ của id 1, đã đổi thành `UI` nên **1.399 case đã publish giữ nguyên ID**, không phải migrate.
+
+**Vấn đề — danh sách nằm ở 5 chỗ.** `validate.js` (regex) · converter (comment + message) · prompt gen (bảng) · publisher · test. Mở rộng bằng cách sửa tay 5 chỗ là 5 cơ hội để một chỗ còn 6 — và chỗ đó sẽ **CHẶN theo bảng cũ trong khi tài liệu dạy bảng mới**. Chữa: [`.agent/config/case_types.json`](.agent/config/case_types.json) là **nguồn duy nhất**, mọi nơi đọc file đó; bảng trong prompt và mọi test đều sinh/kiểm từ nó. Đã dính ngay lần đầu: `precondition-catalog.spec.ts` là chỗ duy nhất còn chép tay 6 giá trị và nó **đỏ đúng lúc** — bằng chứng cách làm này có răng.
+
+**Vấn đề — publisher hạ ngầm về `Functional`.** Gặp tên loại không resolve được, bản cũ in một dòng `⚠` rồi **vẫn ghi lên AIO** với `Functional`. Cảnh báo trôi mất trong log của lệnh đẩy hàng trăm case, còn dữ liệu thì sai vĩnh viễn — **AIO không có API xoá**. Đúng cơ chế đã làm 14 case `Highest` tụt xuống Medium. Chữa: bỏ hằng `CASE_TYPE_FALLBACK`, gom lỗi trên **toàn bộ** danh sách rồi **DỪNG TRƯỚC vòng ghi** (dừng giữa vòng để lại nửa bộ trên AIO không dọn được), in kèm danh sách tên AIO đang có. Đã chạy thật: bộ đã khai đủ (SAPP-26878) dry-run **qua**; bộ chưa khai (SAPP-24395) **CHẶN** và **gọi tên từng TC ID**.
+
+**Mới — cảnh báo tag ↔ loại.** Case gắn `[Security]` mà khai `Functional` thì kêu, kèm trỏ tới mục "KHÔNG chọn khi" của loại được gợi ý. **Cảnh báo chứ không chặn**, có lý do: chính bảng 9 loại liệt kê các ca chồng lấn HỢP LỆ (`[Display]` nhưng lỗi do BE tính sai ⇒ `Functional` chứ không phải `UI`) — chặn ở đây là phạt đúng những case phân loại tinh nhất, và dạy người ta gán tag cho khớp gate thay vì suy nghĩ. Case mang **nhiều** tag ánh xạ được thì im lặng: bản thân tag đã không quyết được loại.
+
+Kèm: test khoá **mọi tag trong bảng phải là tag chiều CÓ THẬT** của kit (`TAG_OF`) — bảng dạy một tag mà `dim:coverage` không biết thì bảng và gate đánh nhau, người dùng lãnh đủ.
+
+**Chi phí phải nói rõ:** gate publisher chặn cả việc **publish lại** 12 bộ cũ (chưa có cột). Lối ra là kéo lại mirror (`aio:pull:write` nay mang Case Type về) hoặc điền cột. Mirror cũ **không** dùng được: bản của SAPP-13964 có **63/63 case trống loại** vì được kéo trước khi pull có cột này.
+
+Test: `case-type-gate.spec.ts` 16 · khối `Loại case` ở `expansion-gates.spec.ts` 7 · `precondition-catalog.spec.ts` cập nhật. Toàn bộ infra **227/227**, lint 0 error, `gate:policy` 4/4.
+
 ## 2026-08-20 (c) — trục PHÂN LOẠI của case: khai chứ không đoán; + máy gác vệ sinh mù `.md`
 
 **Vấn đề 1 — Case Type trên AIO là trường chết.** AIO có sẵn 6 Case Type (`Unit`·`Integration`·`Functional`·`API`·`Performance`·`Security`) nhưng Excel canonical không có cột nào mang nó, nên publisher **SUY** từ tên nhóm chức năng. Đo trên 1.399 case đã publish: **96% rơi về `Functional`**, `Integration` và `Performance` = **0** ⇒ mọi phép lọc/báo cáo theo Case Type là vô nghĩa. Gốc của lỗi là ép **hai trục** làm một: nhóm chức năng trả lời *"thuộc mảng nghiệp vụ nào"* (→ thư mục), Case Type trả lời *"kiểm thử kiểu gì"*.

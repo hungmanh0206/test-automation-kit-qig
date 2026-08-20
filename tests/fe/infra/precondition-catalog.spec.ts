@@ -101,7 +101,7 @@ test.describe('@infra [PRE-NN] ↔ catalog Setup Strategy', () => {
  * fallback Medium — 14 case của một bộ bị hạ ưu tiên âm thầm. Nay canonical dùng `Critical`, `Highest`
  * chỉ còn là alias có cảnh báo, và đường log bug tự map `Critical → Highest` cho Jira.
  */
-test.describe('@infra thang Ưu tiên (Critical) + 6 Loại case', () => {
+test.describe('@infra thang Ưu tiên (Critical) + 9 Loại case', () => {
   const mk = (priority: string, risk = 'Major', caseType = '') => doc([{ ...tc('T1', '[api] x'), priority, risk, caseType }], []);
 
   test('Critical hợp lệ ở cột Ưu tiên (đỉnh thang AIO)', () => {
@@ -126,8 +126,12 @@ test.describe('@infra thang Ưu tiên (Critical) + 6 Loại case', () => {
     expect(src).toMatch(/critical:\s*1/);
   });
 
-  test('Loại case: 6 giá trị AIO nhận thì OK, ngoài 6 thì CHẶN, không khai thì chỉ cảnh báo', () => {
-    for (const t of ['Unit', 'Integration', 'Functional', 'API', 'Performance', 'Security']) {
+  test('Loại case: 9 giá trị đã chốt thì OK, ngoài 9 thì CHẶN, không khai thì chỉ cảnh báo', () => {
+    // Đọc từ nguồn thay vì chép: bảng đã đổi 6 → 9 (20/08/2026) và bản chép tay ở đây là chỗ duy nhất
+    // trong kit còn giữ danh sách cũ — nó đỏ đúng lúc, nhưng lần sau thì đừng để nó tồn tại nữa.
+    // eslint-disable-next-line global-require
+    const CASE_TYPES = require(path.resolve(__dirname, '../../../.agent/config/case_types.json'));
+    for (const t of CASE_TYPES.types.map((x: any) => x.name)) {
       expect(validate(mk('High', 'Major', t)).problems.filter((x: string) => x.includes('Loại case')), t).toEqual([]);
     }
     expect(validate(mk('High', 'Major', 'Smoke')).problems.some((x: string) => x.includes('Loại case'))).toBe(true);

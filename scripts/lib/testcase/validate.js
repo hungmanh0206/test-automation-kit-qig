@@ -6,10 +6,26 @@
  * (KQ khớp bước, range, tautology) vẫn ở output_rules — validate KHÔNG lặp lại, chỉ structural/completeness.
  */
 
+const path = require('path');
 const m = require('./model');
 
-// 6 Case Type mà AIO nhận (khớp `GET /config` → caseTypes). Sai giá trị thì AIO không map được.
-const CASE_TYPE_OK = /^(Unit|Integration|Functional|API|Performance|Security)$/i;
+/*
+ * 9 Case Type — ĐỌC từ `.agent/config/case_types.json`, KHÔNG chép danh sách vào đây.
+ *
+ * Vì sao đọc file: danh sách này từng nằm hardcode ở 5 chỗ (validate · converter · prompt gen · publisher ·
+ * test). Khi user mở rộng 6 → 9 loại, chép tay nghĩa là 5 cơ hội để một chỗ vẫn còn 6 — và chỗ đó sẽ CHẶN
+ * theo bảng cũ trong khi tài liệu dạy bảng mới. Một nguồn thì không có "chỗ đó".
+ *
+ * `legacy` = tên còn tồn tại trên AIO nhưng không thuộc 9 loại đã chốt (hiện: `Unit`): NHẬN kèm cảnh báo để
+ * dữ liệu cũ không đỏ, nhưng case sinh mới không được dùng.
+ */
+const CASE_TYPES = require(path.join(__dirname, '..', '..', '..', '.agent', 'config', 'case_types.json'));
+const CASE_TYPE_NAMES = CASE_TYPES.types.map((t) => t.name);
+const CASE_TYPE_SET = new Set(CASE_TYPE_NAMES.map((n) => n.toLowerCase()));
+const CASE_TYPE_LEGACY = new Set(Object.keys(CASE_TYPES.legacy || {}).map((n) => n.toLowerCase()));
+/** tag (chữ thường, không ngoặc) → tên loại. Dùng cho check "tag nói một đằng, loại khai một nẻo". */
+const TAG_TO_TYPE = new Map();
+for (const t of CASE_TYPES.types) for (const tag of t.tags || []) TAG_TO_TYPE.set(tag.toLowerCase(), t.name);
 
 const REQUIRED_COLS = [
   ['TC ID', m.COL.tcId], ['Module', m.COL.module], ['Trường hợp kiểm thử', m.COL.title],
@@ -76,7 +92,27 @@ function validate(doc) {
      * quay về đúng chỗ cũ: case type vô nghĩa. Thiếu cột ⇒ cảnh báo, publish sẽ suy tạm và nói rõ là suy.
      */
     const ct = String(tc.caseType || '').trim();
-    if (ct && !CASE_TYPE_OK.test(ct)) problems.push(`${id}: \`Loại case\` = "${ct}" không thuộc 6 loại AIO nhận — Unit|Integration|Functional|API|Performance|Security.`);
+    const ctLow = ct.toLowerCase();
+    if (ct && !CASE_TYPE_SET.has(ctLow) && !CASE_TYPE_LEGACY.has(ctLow)) {
+      problems.push(`${id}: \`Loại case\` = "${ct}" không thuộc 9 loại đã chốt — ${CASE_TYPE_NAMES.join('|')}. Định nghĩa + "chọn khi / không chọn khi" của từng loại: \`.agent/config/case_types.json\`.`);
+    } else if (ct && CASE_TYPE_LEGACY.has(ctLow)) {
+      const why = CASE_TYPES.legacy[Object.keys(CASE_TYPES.legacy).find((k) => k.toLowerCase() === ctLow)];
+      warnings.push(`${id}: \`Loại case\` = "${ct}" là tên CŨ, không nằm trong 9 loại đã chốt. ${why} Chọn lại 1 trong: ${CASE_TYPE_NAMES.join('|')}.`);
+    }
+
+    /*
+     * TAG ↔ LOẠI không được nói ngược nhau. CẢNH BÁO chứ không chặn, có chủ đích: bảng "không chọn khi" của
+     * chính 9 loại đã liệt kê những ca chồng lấn HỢP LỆ (vd `[Display]` nhưng lỗi do BE tính sai ⇒ `Functional`,
+     * không phải `UI`). Chặn ở đây là phạt đúng những case phân loại TINH nhất. Chỉ xét khi case mang đúng
+     * MỘT tag đã ánh xạ được — nhiều tag thì bản thân tag đã không quyết được, im lặng mới đúng.
+     */
+    const title = String(tc.title || tc.name || '');
+    const mapped = [...new Set((title.match(/\[([A-Za-z0-9]+)\]/g) || [])
+      .map((x) => TAG_TO_TYPE.get(x.slice(1, -1).toLowerCase()))
+      .filter(Boolean))];
+    if (ct && CASE_TYPE_SET.has(ctLow) && mapped.length === 1 && mapped[0].toLowerCase() !== ctLow) {
+      warnings.push(`${id}: tag chiều gợi \`${mapped[0]}\` nhưng \`Loại case\` khai \`${ct}\`. Không nhất thiết sai — xem mục "không chọn khi" của \`${mapped[0]}\` trong \`.agent/config/case_types.json\`; nếu vẫn giữ \`${ct}\` thì nói rõ lý do ở \`Assumptions\`.`);
+    }
 
     if (p && SEVERITY_ONLY.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" là giá trị SEVERITY, đặt sai cột — \`Ưu tiên\` nhận Critical|High|Medium|Low|Lowest; Blocker/Major/Minor/Trivial thuộc cột \`Severity\`. (\`Critical\` hợp lệ ở CẢ hai cột: nó là đỉnh thang ưu tiên VÀ một mức severity.)`);
   }

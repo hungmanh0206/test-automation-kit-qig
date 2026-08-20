@@ -27,7 +27,7 @@ const fs = require('fs');
 const path = require('path');
 const { AioClient } = require('./aio_client');
 const rc = require(path.resolve(__dirname, '..', '..', 'utils', 'runtime_config'));
-const { parseXlsx } = require(path.resolve(__dirname, '..', '..', 'lib', 'testcase'));
+const { parseXlsx, groupNumbered } = require(path.resolve(__dirname, '..', '..', 'lib', 'testcase'));
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
 const flag = (n) => process.argv.includes(`--${n}`);
@@ -48,29 +48,38 @@ const PRIORITY = { critical: 1, highest: 1, high: 2, medium: 3, low: 4, lowest: 
 const STATUS_PUBLISHED = 3;
 const SCRIPT_CLASSIC = 1;
 const AUTOMATION_MANUAL = 1;
-// Loại case suy từ tên nhóm — đỡ phải khai tay, và sai thì chỉ lệch nhãn chứ không mất dữ liệu.
 /*
  * Case Type: ĐỌC TỪ CỘT `Loại case` do người khai — KHÔNG suy từ tên nhóm nữa.
  * Bản cũ suy từ `Nhóm chức năng`, nhưng đó là trục "test Ở ĐÂU" còn case type là trục "LOẠI KIỂM THỬ NÀO".
  * Ép trục này ra trục kia thì hậu quả đo được ngay: 1.342/1.399 case (96%) rơi về Functional, Integration
  * và Performance = 0 ⇒ lọc/báo cáo theo Case Type trên AIO vô dụng.
  * ID lấy từ `GET /config` của chính AIO (giống cách làm với run status) — không hardcode con số.
+ *
+ * KHÔNG CÒN FALLBACK NGẦM. Bản trước gặp tên không resolve được thì in một dòng ⚠ rồi vẫn đẩy lên với
+ * `Functional`. Đó chính là cơ chế đã làm 14 case `Highest` âm thầm tụt xuống Medium: cảnh báo trôi trong
+ * log của một lệnh đẩy hàng trăm case, còn dữ liệu trên AIO thì sai vĩnh viễn — AIO KHÔNG CÓ API XOÁ.
+ * Nay: dừng TRƯỚC khi ghi, in đủ tên AIO đang có để người sửa biết phải tạo/đổi tên loại nào.
  */
-const CASE_TYPE_FALLBACK = 'Functional';
 function caseTypeResolver(cfg) {
   const byName = Object.fromEntries((cfg.caseTypes || []).map((t) => [String(t.name).toLowerCase(), t.ID]));
-  const fallback = byName[CASE_TYPE_FALLBACK.toLowerCase()];
-  let guessed = 0;
+  const known = (cfg.caseTypes || []).map((t) => t.name);
+  const unresolved = new Map(); // tên đã khai (giữ nguyên chữ) → số case
+  const missing = [];
   return {
     idOf(tc) {
-      const declared = String(tc.caseType || '').trim().toLowerCase();
-      if (declared && byName[declared]) return byName[declared];
-      if (declared) console.log(`  ⚠ ${tc.id || ''}: "Loại case" = "${tc.caseType}" không thuộc 6 loại AIO nhận → dùng ${CASE_TYPE_FALLBACK}`);
-      else guessed += 1;
-      return fallback;
+      const declared = String(tc.caseType || '').trim();
+      if (declared && byName[declared.toLowerCase()]) return byName[declared.toLowerCase()];
+      if (declared) unresolved.set(declared, (unresolved.get(declared) || 0) + 1);
+      else missing.push(tcIdOf(tc) || '(khong co TC ID)');
+      return null;
     },
-    report() {
-      if (guessed) console.log(`⚠ ${guessed} case CHƯA khai cột "Loại case" → tạm gán ${CASE_TYPE_FALLBACK}. Đây là SUY ĐOÁN, không phải phân loại — bổ sung cột thì lọc theo Case Type trên AIO mới có nghĩa.`);
+    /** Trả về lời giải thích nếu KHÔNG được phép publish; `null` nghĩa là sạch. */
+    problem() {
+      const L = [];
+      if (missing.length) L.push(`${missing.length} case CHƯA khai cột "Loại case": ${missing.slice(0, 10).join(', ')}${missing.length > 10 ? ` … +${missing.length - 10}` : ''}`);
+      for (const [name, n] of unresolved) L.push(`"${name}" (${n} case) không có trên AIO`);
+      if (!L.length) return null;
+      return `${L.join('\n  - ')}\n  AIO đang có: ${known.join(' · ')}\n→ Sửa cột "Loại case" trong Excel, hoặc tạo/đổi tên loại trên AIO cho khớp. KHÔNG tự gán tạm: AIO không có API xoá nên nhãn sai là sai vĩnh viễn.`;
     },
   };
 }
@@ -106,6 +115,20 @@ async function main() {
   }
   const tests = picked.slice(0, LIMIT);
   if (!tests.length) { console.error(`ERROR: không đọc được case nào từ ${FILE}`); process.exit(2); }
+
+  /*
+   * GATE Case Type — chạy TRƯỚC vòng ghi, trên TOÀN BỘ danh sách.
+   * Phải chặn ở đây chứ không giữa vòng lặp: `--apply` ghi tuần tự, nên dừng giữa chừng để lại một nửa bộ
+   * trên AIO với nhãn đúng và một nửa chưa lên — mà AIO KHÔNG CÓ API XOÁ để dọn.
+   */
+  {
+    tests.forEach((t) => CT.idOf(t));
+    const problem = CT.problem();
+    if (problem) {
+      console.error(`CHẶN: "Loại case" chưa dùng được\n  - ${problem}`);
+      process.exit(1);
+    }
+  }
 
   /*
    * Chốt QA: ghi thật phải có người duyệt.
@@ -171,10 +194,17 @@ async function main() {
       automationStatus: { ID: AUTOMATION_MANUAL },
       automationKey: tcId,                       // nơi trú của TC ID (tags không lưu được)
       jiraRequirementIDs: reqIds,
-      steps: (t.steps || []).map((s, n) => ({
-        step: lineText(s),
+      /*
+       * Ghép bước với kết quả theo KHỐI, không theo chỉ số phẳng.
+       * Prompt gen §6 cho phép mỗi bước có nhiều dòng con "- ..."; splitNumbered trả PHẲNG (dòng con mang
+       * n = null) nên zip theo chỉ số vừa LỆCH bước vừa CẮT phần dôi. Đo trên bộ SAPP-26878 (101 case):
+       * 300/682 dòng kết quả (44,0%) bị vứt ở 83 case, và bước sau còn nhận nhầm kết quả của bước trước.
+       * Hợp đồng: khối của bước N = dòng đánh số N + mọi dòng con của nó (xem groupNumbered).
+       */
+      steps: groupNumbered(t.steps || []).map((s, n) => ({
+        step: s.text,
         data: n === 0 ? String(t.data || '') : '',
-        expectedResult: lineText((t.expected || [])[n]),
+        expectedResult: (groupNumbered(t.expected || [])[n] || {}).text || '',
         stepType: 'TEXT',
       })).filter((s) => s.step),
     };
@@ -186,7 +216,6 @@ async function main() {
     } else { failed++; errors.push(`${tcId}: HTTP ${res.status} ${String(res.text).slice(0, 120)}`); }
     await aio.pause();
   }
-  CT.report();
   console.log(`\nTẠO ${created} · CẬP NHẬT ${updated} · LỖI ${failed}`);
   errors.slice(0, 5).forEach((e) => console.log(`  ✗ ${e}`));
   if (failed) process.exitCode = 1;

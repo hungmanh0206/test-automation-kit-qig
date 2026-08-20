@@ -241,6 +241,8 @@ test.describe('@infra hồi quy: biến chưa khai + gate báo oan', () => {
  */
 test.describe('@infra Loại case — cột người khai, không suy từ nhóm chức năng', () => {
   const model = require(path.join(REPO, 'scripts/lib/testcase'));
+  // eslint-disable-next-line global-require
+  const CASE_TYPES = require(path.join(REPO, '.agent/config/case_types.json'));
 
   test('parser đọc được cột Loại case (và các tên gọi tương đương)', () => {
     const head = '| TC ID | Loại case | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |';
@@ -250,7 +252,7 @@ test.describe('@infra Loại case — cột người khai, không suy từ nhóm
     expect(doc.tests[0].caseType).toBe('Integration');
   });
 
-  test('giá trị ngoài 6 loại AIO nhận thì bị chặn — không để consumer bỏ qua âm thầm', () => {
+  test('giá trị ngoài 9 loại đã chốt thì bị chặn — không để consumer bỏ qua âm thầm', () => {
     const head = '| TC ID | Case Type | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |';
     const sep = '|---|---|---|---|---|---|---|---|---|---|';
     const bad = '| T1 | Smoke | M | [Positive] X | - | - | 1. Mở | 1. OK | High | Major |';
@@ -267,12 +269,44 @@ test.describe('@infra Loại case — cột người khai, không suy từ nhóm
     expect(src).toMatch(/cfg\.caseTypes/);
   });
 
-  test('template sinh case DẠY cột này kèm đủ 6 giá trị', () => {
+  test('template sinh case DẠY đủ 9 loại, kèm ĐỊNH NGHĨA và ca "KHÔNG chọn khi"', () => {
     const md = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/02_gen_testcases.md'), 'utf8');
     expect(md).toMatch(/\| TC ID \| Loại case \|/);
-    for (const v of ['Functional', 'API', 'Integration', 'Security', 'Performance', 'Unit']) {
-      expect(md, `template thiếu giá trị ${v}`).toContain(v);
+    /*
+     * Không chỉ đòi có TÊN loại: tên trần thì agent vẫn phải đoán. Bảng phải mang cả ĐỊNH NGHĨA và
+     * mục "KHÔNG chọn khi" — chính hai cột đó tách được các ca chồng lấn ([Display] nhưng lỗi do BE
+     * tính sai ⇒ Functional chứ không phải UI). Thiếu chúng thì cột `Loại case` lại thành trường điền bừa.
+     */
+    for (const t of CASE_TYPES.types) {
+      expect(md, `template thiếu loại ${t.name}`).toContain(`\`${t.name}\``);
+      expect(md, `template có tên ${t.name} nhưng thiếu định nghĩa`).toContain(t.definition);
+      expect(md, `template có tên ${t.name} nhưng thiếu ca "KHÔNG chọn khi"`).toContain(t.not_when);
     }
+  });
+
+  test('mọi tag trong case_types.json phải là tag chiều CÓ THẬT của kit', () => {
+    /*
+     * Bảng loại case gợi ý tag; hệ tag chiều lại có máy kiểm riêng (`dim:coverage`). Nếu bảng dạy một tag
+     * mà `TAG_OF` không biết, agent gắn tag đó rồi bị gate chiều loại — bảng và gate đánh nhau, người dùng
+     * lãnh đủ. Test này giữ hai bên khớp.
+     */
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/dimension_coverage.js'), 'utf8');
+    const m = src.match(/const TAG_OF = \{([^}]*)\}/);
+    expect(m, 'không đọc được TAG_OF — đổi tên biến thì phải sửa test này').toBeTruthy();
+    const known = new Set([...m![1].matchAll(/'([a-z0-9]+)'/g)].map((x) => x[1]));
+    const missing = CASE_TYPES.types.flatMap((t: any) => t.tags.filter((g: string) => !known.has(g.toLowerCase())).map((g: string) => `${t.name}→[${g}]`));
+    expect(missing, `tag không có trong TAG_OF: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  test('publisher KHÔNG còn hạ ngầm về Functional khi tên loại không khớp AIO', () => {
+    /*
+     * Bản cũ in một dòng ⚠ rồi vẫn ghi với `Functional`. Cảnh báo trôi mất trong log của lệnh đẩy hàng
+     * trăm case, còn dữ liệu trên AIO sai vĩnh viễn vì AIO không có API xoá. Đúng cơ chế đã làm 14 case
+     * `Highest` tụt xuống Medium.
+     */
+    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/publish_testcases_aio.js'), 'utf8');
+    expect(src, 'còn hằng số fallback = còn đường hạ ngầm').not.toMatch(/CASE_TYPE_FALLBACK/);
+    expect(src, 'phải DỪNG trước vòng ghi').toMatch(/CT\.problem\(\)/);
   });
 
   test('pull mang Case Type từ AIO về lại Excel — round-trip không mất trục', () => {

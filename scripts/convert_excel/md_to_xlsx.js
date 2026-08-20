@@ -379,8 +379,8 @@ async function main() {
   }
 
   /*
-   * GATE `Loại case`: case SINH MỚI phải tự xác định 1 trong 6 loại AIO nhận
-   * (Unit · Integration · Functional · API · Performance · Security).
+   * GATE `Loại case`: case SINH MỚI phải tự xác định 1 trong 9 loại đã chốt. Danh sách + định nghĩa +
+   * "chọn khi / không chọn khi" của từng loại nằm ở `.agent/config/case_types.json` (nguồn DUY NHẤT).
    *
    * VÌ SAO CHẶN Ở BƯỚC CONVERT chứ không thêm vào REQUIRED_COLS: `validate()` là bộ đọc DÙNG CHUNG, thêm
    * vào đó thì mọi bộ TC cũ (9 task, đều 9 cột) đỏ theo — đúng cái bẫy "siết sai chỗ". Convert md→xlsx là
@@ -400,7 +400,7 @@ async function main() {
     const missing = (doc.tests || []).filter((t) => !String(t.caseType || "").trim()).map((t) => t.tcId || "(no-id)");
     if (missing.length) {
       const head = `${missing.length} case CHƯA điền cột \`Loại case\`: ${missing.slice(0, 12).join(", ")}${missing.length > 12 ? ` … +${missing.length - 12}` : ""}`;
-      const msg = `[gate loại-case] ✗ ${head}\n→ Điền cột \`Loại case\` cho từng case (bảng 6 giá trị ở prompt 02) rồi convert lại.`;
+      const msg = `[gate loại-case] ✗ ${head}\n→ Điền cột \`Loại case\` cho từng case (bảng 9 loại ở prompt 02 §Loại case) rồi convert lại.`;
       if (!LENIENT && !QA_APPROVED) { console.error(msg); process.exit(1); }
       console.warn(`${msg}\n  [${LENIENT ? "--lenient/QA_STRICT=0" : "--qa-approved"}] bỏ qua gate — vẫn convert.`);
     }

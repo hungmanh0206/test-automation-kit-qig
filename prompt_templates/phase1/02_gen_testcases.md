@@ -31,27 +31,40 @@ Mục tiêu là coverage cao nhất có thể trong scope đã cung cấp, bao g
 
 | TC ID | Loại case | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |
 
-## Cột `Loại case` — 6 giá trị, KHÁC hẳn `Nhóm chức năng`
+## Cột `Loại case` — 9 loại, KHÁC hẳn `Nhóm chức năng`
 
 Hai trục khác nhau, đừng lẫn:
 - **Nhóm chức năng** (sheet/cột riêng) = *"test Ở ĐÂU"* — màn/luồng nghiệp vụ → thành **folder** trên AIO.
-- **Loại case** = *"LOẠI KIỂM THỬ NÀO"* → thành **Case Type** trên AIO, dùng để **lọc và báo cáo**.
+- **Loại case** = *"KIỂM THỬ KIỂU GÌ"* → thành **Case Type** trên AIO, dùng để **lọc và báo cáo**.
 
-| Giá trị | Dùng khi |
-|---|---|
-| `Functional` | kiểm hành vi nghiệp vụ qua UI — **mặc định** khi không rơi vào loại nào dưới |
-| `API` | gọi thẳng endpoint, khẳng định về payload/response/status code |
-| `Integration` | nối 2 hệ thống: đồng bộ HubSpot/SAP, webhook, job liên hệ thống |
-| `Security` | phân quyền, IDOR, injection, session/token |
-| `Performance` | thời gian phản hồi, tải, SLA |
-| `Unit` | kiểm một đơn vị code tách biệt (hiếm ở tầng QA) |
+**Thứ tự xét:** Xét CHUYÊN BIỆT trước, `Functional` là mặc định CUỐI CÙNG khi không khớp loại nào. Thứ tự xét: Security → Accessibility → Performance → Database → API → UI → E2E → Integration → Functional. Một case chỉ mang ĐÚNG MỘT loại; nếu thấy hợp 2 loại thì case đang gộp 2 mục đích — tách case, đừng chọn bừa.
 
-Chỉ nhận đúng 6 giá trị trên — sai chính tả thì AIO không map được và case rơi về `Functional` âm thầm.
+| # | Loại | Định nghĩa | Tag thường đi kèm | Chọn khi | KHÔNG chọn khi |
+|---|---|---|---|---|---|
+| 1 | **`Security`** | Kiểm kiểm soát truy cập và bảo vệ dữ liệu: ai được làm gì, dữ liệu nào bị lộ. | `[Security]` `[Guard]` | IDOR · leo thang quyền · ma trận role×action (đặc biệt ô DENY) · mass-assignment · lộ field nội bộ · header/cookie bảo mật. | Bị chặn theo rule NGHIỆP VỤ chứ không theo quyền → `Functional`. |
+| 2 | **`Accessibility`** | Kiểm khả năng tiếp cận: dùng được bằng bàn phím và trình đọc màn hình. | `[A11y]` | label/aria · tương phản màu · thứ tự focus · điều hướng bàn phím · axe-core. | Chỉ sai bố cục/thẩm mỹ → `UI`. |
+| 3 | **`Performance`** | Kiểm thời gian phản hồi và khả năng chịu tải, SO VỚI NGƯỠNG ĐÃ KHAI. | `[Perf]` | Có ngưỡng SLA/NFR cụ thể · danh sách nhiều bản ghi · LCP/TTFB · tải đồng thời. | Không có ngưỡng để so → KHÔNG sinh case, ghi N/A. Case perf không neo ngưỡng là case không phán được. |
+| 4 | **`Database`** | Kiểm dữ liệu THỰC SỰ được lưu đúng ở tầng lưu trữ (read-only verify). | `[SideEffect]` | Persist đúng giá trị (không làm tròn/cắt/lệch timezone) · side-effect sang bảng khác · dữ liệu rác sau cleanup. | Chỉ kiểm qua API mà không truy DB → `API`. |
+| 5 | **`API`** | Kiểm hợp đồng và dữ liệu ở tầng API, độc lập UI. | `[API]` `[BEData]` | Status code · schema/contract · field trong response (`null` vs `""` vs thiếu key) · mã lỗi · phân trang · payload. | Gọi API chỉ để DỰNG dữ liệu rồi kiểm trên màn → `UI`/`Functional`. |
+| 6 | **`UI`** | Kiểm thứ người dùng NHÌN THẤY: bố cục, hiển thị, hình học, trạng thái màn, responsive. | `[UI]` `[Display]` `[Design]` | Đối chiếu Figma/UI contract · format hiển thị · empty/loading/error state · text dài tràn · breakpoint · element đè nhau · visual regression. | Dữ liệu hiển thị sai do BE TÍNH sai → `Functional`; do API TRẢ sai → `API`. |
+| 7 | **`E2E`** | Luồng xuyên nhiều màn hoặc nhiều hệ thống, mô phỏng hành trình người dùng thật. | `[E2E]` | Chuỗi ≥3 màn HOẶC đi qua ≥2 app/hệ thống · kiểm kết quả CUỐI chuỗi. | Chỉ một màn dù nhiều bước → `Functional`. |
+| 8 | **`Integration`** | Kiểm ĐIỂM NỐI giữa module hoặc với hệ thống bên ngoài — nơi hai bên bàn giao dữ liệu. | `[Export]` | Đồng bộ 2 module · webhook/callback · bên thứ ba (cổng thanh toán, SMS, ERP) · import/export liên hệ thống. | Luồng xuyên màn nhưng CÙNG một hệ thống → `E2E`. |
+| 9 | **`Functional`** | Kiểm hành vi nghiệp vụ đúng/sai theo rule: logic, validation, luồng trong một chức năng. Là MẶC ĐỊNH khi không khớp loại chuyên biệt nào. | `[Validation]` `[Calc]` `[Resilience]` `[Ordering]` `[Impact]` | Validate field · tính toán · rule nghiệp vụ · luồng thao tác thông thường · regression theo thay đổi · chịu lỗi/gián đoạn · thứ tự thao tác. | Trọng tâm là hiển thị → `UI`; là contract API → `API`; là quyền → `Security`. |
 
-> **Vì sao thêm cột này:** trước đây kit **suy** loại từ tên nhóm chức năng. Đo trên 1.399 case đã publish:
+Chỉ nhận đúng 9 giá trị trên (đúng chính tả, đúng hoa/thường không bắt buộc). Sai giá trị = **CHẶN** ở design gate; bỏ trống = **CHẶN** ở bước convert md→xlsx. Nguồn duy nhất của bảng này: `.agent/config/case_types.json` — sửa ở đó, đừng sửa bảng.
+
+**Cách chọn khi phân vân** — đọc dòng "KHÔNG chọn khi" của loại bạn đang định gán TRƯỚC, vì nó nói thẳng ca dễ nhầm. Ba câu hỏi tách được hầu hết ca:
+1. *Nếu bug xảy ra, ai sửa và sửa ở đâu?* → FE dựng màn = `UI` · BE trả sai = `API` · rule nghiệp vụ = `Functional` · tầng lưu = `Database`.
+2. *Bỏ UI đi thì case còn chạy được không?* → còn = `API`/`Database` · không = `UI`/`Functional`/`E2E`.
+3. *Case này đi qua mấy màn, mấy hệ thống?* → ≥3 màn hoặc ≥2 app = `E2E` · đúng điểm bàn giao giữa 2 bên = `Integration` · 1 màn = `Functional`.
+
+Một case mang **đúng một** loại. Thấy hợp 2 loại nghĩa là case đang gộp 2 mục đích — **tách case**, đừng chọn bừa; case gộp cũng làm `Kết quả mong đợi` không khớp số bước và bị gate chặn ở chỗ khác.
+
+> **Vì sao có cột này:** trước đây kit **suy** loại từ tên nhóm chức năng. Đo trên 1.399 case đã publish:
 > **96% rơi về `Functional`**, `Integration` và `Performance` = **0** ⇒ lọc theo Case Type trên AIO vô dụng,
 > và người đọc báo cáo dễ kết luận nhầm rằng bộ test không có mảng tích hợp. Ép trục "ở đâu" ra trục
-> "loại nào" thì sai là tất yếu — nên nay là cột **người khai**, không suy.
+> "loại nào" thì sai là tất yếu — nên nay là cột **người khai**, không suy. Publisher cũng đã bỏ
+> fallback ngầm: tên không khớp AIO thì **DỪNG**, không đẩy lên với nhãn `Functional`.
 
 ---
 
@@ -265,6 +278,10 @@ Quy tắc cho từng loại dữ liệu:
 - **Mỗi bước một dòng kết quả riêng**, đánh số KHỚP với cột `Các bước thực hiện` (bước 1 → kết quả 1, bước 2 → kết quả 2...). KHÔNG gộp nhiều bước vào một mục (cấm kiểu `1-2.`, `1-3.`). Bước chọn/nhập/navigate cũng phải có kết quả tương ứng (ghi phản hồi tức thời có thật: field nhận giá trị, tùy chọn được chọn, trang điều hướng đúng...), KHÔNG bịa assertion ngoài tài liệu.
 - **Mỗi ý một dòng**: nếu một bước có nhiều điểm cần kiểm chứng thì tách mỗi ý thành một dòng con `- <ý>`. TUYỆT ĐỐI không nhồi nhiều ý vào một dòng bằng dấu `;`.
 - **Xuống dòng bằng `<br>`**: mọi dòng (kết quả từng bước và các ý con) ngăn cách bằng `<br>` để Excel hiển thị nhiều dòng, không viết liền một dòng dài.
+- **HỢP ĐỒNG bước ↔ kết quả (đây là chỗ từng làm mất 44% nội dung khi publish):** khối kết quả của bước N = **dòng đánh số N + MỌI dòng con `- …` đứng sau nó** cho tới dòng đánh số kế tiếp. Khối đó là **một đơn vị**: khi publish lên TMS nó đi trọn vào `expectedResult` của đúng bước N.
+  - Vì thế ràng buộc đúng là **số dòng ĐÁNH SỐ của cột kết quả = số bước**; số dòng con thì tuỳ ý. KHÔNG phải "số dòng bằng số bước".
+  - Consumer **KHÔNG được** ghép `steps[i] ↔ expected[i]` theo chỉ số phẳng: mảng sau `splitNumbered` có dòng con mang `n = null`, ghép kiểu đó vừa lệch bước vừa cắt mất phần dôi. Dùng `groupNumbered()` của `scripts/lib/testcase`.
+  - Đo thật trên bộ SAPP-26878 (101 case) trước khi vá: **300/682 dòng kết quả (44,0%) bị vứt ở 83/101 case**, và bước sau nhận nhầm kết quả của bước trước — ví dụ bước "mở hóa đơn bộ B" lại mang con số của bộ A.
 - Mô tả CHÍNH XÁC: text nào hiển thị, URL chuyển đến đâu, element nào thay đổi
 - Bao gồm cả response HTTP nếu là API test
 - Với UI, nêu rõ field state: enabled/disabled/readonly/visible/hidden, selected value, validation message, toast, row count, pagination, modal state.
@@ -272,7 +289,7 @@ Quy tắc cho từng loại dữ liệu:
 - Với E2E, nêu rõ side-effect ở hệ thống khác: app/site liên quan, integration, notification hoặc data count nếu nằm trong scope.
 - Expected không được chỉ ghi "thành công", "báo lỗi", "hiển thị đúng".
 
-✅ ĐÚNG (mỗi bước một dòng, mỗi ý một dòng, ngăn bằng `<br>`):
+✅ ĐÚNG (mỗi bước MỘT KHỐI: dòng đánh số + các ý con của nó, ngăn bằng `<br>`) — ví dụ dưới có **2 bước** nên cột kết quả có đúng **2 dòng đánh số**, 3 dòng con thuộc về bước 2:
 ```
 1. Trường "Allow split via VNPay?" là Checkbox (không phải dropdown), Optional<br>2. Sau khi tick, hiển thị:<br>- Section "Set up payment via VNPay"<br>- Nút "Add installment" enabled<br>- Ràng buộc: tổng các đợt phải bằng số tiền order
 ```

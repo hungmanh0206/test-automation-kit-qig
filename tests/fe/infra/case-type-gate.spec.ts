@@ -5,8 +5,10 @@ import path from 'path';
 import { spawnSync } from 'child_process';
 
 /*
- * Test cho gate `Loại case` — case sinh mới phải TỰ XÁC ĐỊNH 1 trong 6 loại AIO nhận
- * (Unit · Integration · Functional · API · Performance · Security).
+ * Test cho gate `Loại case` — case sinh mới phải TỰ XÁC ĐỊNH 1 trong 9 loại đã chốt.
+ *
+ * Danh sách KHÔNG chép vào test: đọc thẳng `.agent/config/case_types.json` — nguồn duy nhất. Chép vào đây
+ * nghĩa là khi bảng đổi (6 → 9 hôm 20/08/2026), test vẫn xanh với bảng cũ và không ai biết chỗ nào còn sót.
  *
  * Luật nằm ở HAI chỗ, có chủ đích, và test này canh cả hai để không ai gộp nhầm về một:
  *   - CỘT VẮNG MẶT  → `scripts/convert_excel/md_to_xlsx.js` (biên SINH case; bộ TC cũ 9 cột không convert
@@ -16,6 +18,8 @@ import { spawnSync } from 'child_process';
  */
 
 const REPO = path.resolve(__dirname, '..', '..', '..');
+// eslint-disable-next-line global-require
+const CASE_TYPES = require(path.join(REPO, '.agent', 'config', 'case_types.json'));
 const CONVERT = path.join(REPO, 'scripts', 'convert_excel', 'md_to_xlsx.js');
 const node = process.execPath;
 
@@ -48,18 +52,18 @@ test.describe('gate Loại case', () => {
     expect(fs.existsSync(out), 'đã chặn thì KHÔNG được đẻ file ra').toBe(false);
   });
 
-  test('giá trị ngoài 6 loại → CHẶN ở design gate (validate.js), không phải ở converter', () => {
+  test('giá trị ngoài 9 loại → CHẶN ở design gate (validate.js), không phải ở converter', () => {
     const [md, out] = fixture(`${H10}| T1 | Regression | ${TAIL}\n| T2 | API | ${NEG}\n`);
     const r = run([CONVERT, md, out]);
     expect(r.code).toBe(1);
-    expect(r.out).toContain('không thuộc 6 loại AIO nhận');
+    expect(r.out).toContain('không thuộc 9 loại đã chốt');
   });
 
-  for (const v of ['Unit', 'Integration', 'Functional', 'API', 'Performance', 'Security']) {
+  for (const v of CASE_TYPES.types.map((t: any) => t.name)) {
     test(`\`${v}\` là giá trị hợp lệ → convert ĐI QUA`, () => {
       const [md, out] = fixture(`${H10}| T1 | ${v} | ${TAIL}\n| T2 | ${v} | ${NEG}\n`);
       const r = run([CONVERT, md, out]);
-      expect(r.code, `gate chặn oan "${v}" — đây là 1 trong 6 loại AIO khai ở GET /config`).toBe(0);
+      expect(r.code, `gate chặn oan "${v}" — đây là 1 trong 9 loại khai ở case_types.json`).toBe(0);
       expect(fs.existsSync(out)).toBe(true);
     });
   }
@@ -85,5 +89,32 @@ test.describe('gate Loại case', () => {
     const r = run([CONVERT, md, out, '--lenient']);
     expect(r.code).toBe(0);
     expect(r.out, 'bỏ qua gate mà im lặng = lối thoát biến thành lối mòn').toContain('[gate loại-case]');
+  });
+  /*
+   * TAG ↔ LOẠI: CẢNH BÁO, KHÔNG CHẶN — và đây là lựa chọn có lý do, không phải nương tay.
+   * Chính bảng 9 loại liệt kê các ca chồng lấn HỢP LỆ ở mục "KHÔNG chọn khi": `[Display]` mà lỗi do BE
+   * tính sai thì đúng loại là `Functional` chứ không phải `UI`. Chặn ở đây là phạt đúng những case được
+   * phân loại tinh nhất, và dạy người ta né gate bằng cách gán tag cho khớp thay vì suy nghĩ.
+   */
+  test('tag gợi một loại mà cột khai loại khác → CẢNH BÁO, vẫn convert được', () => {
+    const sec = 'M | [Negative][Security] Người dùng role Sale mở đơn của người khác | [ui] Đã đăng nhập OPS bằng tài khoản Sale | orderId của phòng ban khác | 1. Mở thẳng URL chi tiết đơn đó | 1. Bị chặn, hiện "Không có quyền truy cập" và dữ liệu đơn không đổi | High | Major |';
+    const [md, out] = fixture(`${H10}| T1 | Functional | ${sec}
+| T2 | API | ${NEG}
+`);
+    const r = run([CONVERT, md, out]);
+    expect(r.code, 'chồng lấn tag/loại là ca hợp lệ — chặn là phạt oan').toBe(0);
+    expect(r.out, 'lệch mà im lặng thì cột này lại thành trường điền bừa').toContain('tag chiều gợi `Security`');
+  });
+
+  test('mang NHIỀU tag ánh xạ được thì im lặng — bản thân tag đã không quyết được loại', () => {
+    const multi = 'M | [Positive][Display][Calc] Tổng tiền hiển thị đúng công thức | [ui] Đã đăng nhập OPS, ở màn Chi tiết đơn | Đơn 2 dòng: 1.000.000 + 500.000 | 1. Mở màn Chi tiết đơn | 1. Ô "Tổng tiền" hiện 1.500.000đ | High | Major |';
+    // T2 khai `Functional` cho khớp tag `[Validation]`: nếu để lệch, cảnh báo của T2 sẽ làm test này
+    // tưởng T1 kêu — đúng lượt chạy đầu đã dính, fixture phải cô lập đúng dòng đang kiểm.
+    const [md, out] = fixture(`${H10}| T1 | API | ${multi}
+| T2 | Functional | ${NEG}
+`);
+    const r = run([CONVERT, md, out]);
+    expect(r.code).toBe(0);
+    expect(r.out, 'hai tag trỏ hai loại khác nhau — đoán tiếp là đoán bừa').not.toContain('tag chiều gợi');
   });
 });
