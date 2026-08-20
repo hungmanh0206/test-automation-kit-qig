@@ -7,6 +7,26 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-20 (c) — trục PHÂN LOẠI của case: khai chứ không đoán; + máy gác vệ sinh mù `.md`
+
+**Vấn đề 1 — Case Type trên AIO là trường chết.** AIO có sẵn 6 Case Type (`Unit`·`Integration`·`Functional`·`API`·`Performance`·`Security`) nhưng Excel canonical không có cột nào mang nó, nên publisher **SUY** từ tên nhóm chức năng. Đo trên 1.399 case đã publish: **96% rơi về `Functional`**, `Integration` và `Performance` = **0** ⇒ mọi phép lọc/báo cáo theo Case Type là vô nghĩa. Gốc của lỗi là ép **hai trục** làm một: nhóm chức năng trả lời *"thuộc mảng nghiệp vụ nào"* (→ thư mục), Case Type trả lời *"kiểm thử kiểu gì"*.
+
+Chữa: thêm cột `Loại case` vào template (9→10 cột) + gate **CHẶN ở biên SINH case** (`md_to_xlsx.js`), KHÔNG thêm vào `REQUIRED_COLS`. Chỗ chặn là quyết định có đo: `validate()` là bộ đọc dùng chung — siết ở đó thì **cả 9 bộ TC cũ (đều 9 cột) đỏ oan** trong khi không ai làm sai; đo lại sau khi sửa: **13 bộ cũ, 0 bộ bị chặn vì cột mới** (523 vi phạm của SAPP-23439 là tag `Tiền điều kiện` có từ trước, 0 dòng liên quan). Một luật một chỗ: converter lo *cột vắng mặt*, `validate.js` lo *giá trị sai*.
+
+**Vấn đề 2 — thang ưu tiên hạ cấp âm thầm.** Canonical dùng tên thang **Jira** (`Highest`) trong khi AIO đứng đầu bằng `Critical`; publisher map theo TÊN, không có khoá `highest` nên rơi fallback `|| 3` = Medium ⇒ **14 case của một bộ bị hạ ưu tiên mà không ai biết**. Chữa: canonical đổi sang `Critical|High|Medium|Low|Lowest`; `Highest` còn là alias **có cảnh báo** để không phá bộ đang chạy; đường log bug tự map ngược `Critical → Highest` cho Jira.
+
+**Vấn đề 3 — máy gác vệ sinh nguồn mù với `.md`.** Máy gác ký tự điều khiển lạc chỉ quét `.js/.ts/.json` dưới `scripts/` + `tests/`. Quét lại **toàn bộ file đã track** thì lòi ra: chính `CHANGELOG.md` — đoạn văn **ĐANG MÔ TẢ** cái bẫy "escape bị heredoc ăn" — tự giữ **5 ký tự `0x08` thật**, và không máy nào kêu kể từ lúc viết. Chữa: mở phạm vi sang `.md` + `prompt_templates/` · `.agent/` · `partial-rerun/` + 6 doc gốc ở thư mục repo. Prompt và rule là bề mặt **ĐIỀU KHIỂN HÀNH VI** — escape hỏng ở đó làm luật im lặng không khớp y hệt như trong code. Đối chứng âm đã chạy: bơm 1 file `.md` bẩn vào `prompt_templates/` → gate **ĐỎ đúng file**, gỡ ra thì xanh (gate không chỉ sống trên fixture).
+
+**Luật vào canonical trong CÙNG đợt** (RULE_GLOBAL §Shared Change Gate): quy ước `Loại case` + thang ưu tiên đã viết vào `RULE_GLOBAL.md` và digest `core_rules.md`. Lần commit gate đầu tiên tôi quên — đúng lớp lỗi mà điều luật đó sinh ra để chống: gate chặn người dùng theo một luật **không tồn tại trong nguồn rule**.
+
+Kèm: `skills:index` tái sinh không còn bẩn cây — bản `INDEX.md` trong repo từng bị **sửa tay** (`**AIO Tests**`) trong khi nguồn `SKILL.md` để trơn, nên mỗi lần chạy đúng lệnh tái sinh là mất sửa tay. Đưa phần định dạng về NGUỒN; chạy 2 lần liên tiếp cây sạch.
+
+Test: `tests/fe/infra/case-type-gate.spec.ts` (11 test) + khối `Loại case` trong `expansion-gates.spec.ts` + `cli-guard.spec.ts` mở rộng. Toàn bộ infra **215/215**, lint 0 error, `gate:policy` 4/4.
+
+Commit: `045bcdc` · `5785f51` · `a041956` · `4067d94` · `04fca86`.
+
+> **Cùng ngày nhưng CHƯA ghi vào file này** (luồng khác, không phải đợt này): `6056916` `4ec0b6a` `0a4c8a0` (precondition thành MỘT TRƯỜNG, bỏ mã `PRE-NN`), `64e7d22` (mirror AIO phải chứng minh còn tươi), `3fb94f9` (status không phải verdict bị đẩy thành "Not Run"), `ff8cc36` (`trace:matrix` crash + self-review báo oan task backend).
+
 ## 2026-08-20 (b) — BỎ HẲN Xray: xoá 14 file, 1 công tắc, 42 biến env, và cấm cả cái tên
 
 User chốt: *"bây giờ cũng không cần giữ Xray nữa, tôi cần sạch và kể cả comment"*. Trước đó kit đang ở
