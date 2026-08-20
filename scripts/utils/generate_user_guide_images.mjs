@@ -52,7 +52,7 @@ const boards = [
     inputs: ['PROJECT_OUTPUT_DIR', 'TASK_KEY', 'RUN_ID khi cần', 'task.md', 'Excel baseline'],
     steps: [
       { icon: 'RQ', c: C.info, title: 'requirements/', body: 'Jira, Confluence, Figma, Swagger snapshot' },
-      { icon: 'TC', c: C.success, title: 'test-cases/', body: 'Markdown + Excel (SoT gen/publish) + from-xray/' },
+      { icon: 'TC', c: C.success, title: 'test-cases/', body: 'Markdown + Excel (SoT gen/publish) + from-aio/' },
       { icon: 'RP', c: C.amber, title: 'reports/', body: 'Phase 1, execution, publish summary' },
       { icon: 'EV', c: C.ink, title: 'test-results/', body: 'Screenshot, video, trace, response' },
       { icon: 'CH', c: C.info, title: 'change/regen/', body: 'Partial rerun diff, impact, approved merge' },
@@ -249,7 +249,7 @@ body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-s
 </body></html>`;
 }
 
-// Sơ đồ traceability Xray (thay mermaid trong USER_GUIDE 5.5.0)
+// Sơ đồ traceability AIO Tests (thay mermaid trong USER_GUIDE 5.5.0). Ảnh Xray cũ giữ làm tham chiếu lịch sử.
 function traceabilityHtml() {
   const org = (a, t, s) => `<div class="tnode org" style="--a:${a}"><div class="tn-t">${esc(t)}</div><div class="tn-s">${esc(s)}</div></div>`;
   const chev = (lbl) => `<div class="tchev"><svg width="22" height="12" viewBox="0 0 22 12" fill="none"><path d="M1 1l10 9 10-9" stroke="#E6A300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>${lbl ? `<span>${esc(lbl)}</span>` : ''}</div>`;
@@ -286,23 +286,23 @@ body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-s
 .chipset .todo{background:#F2EEE6;color:#57534A}
 </style></head><body>
 <div class="diagram" id="diagram">
-  <div class="dhead"><span class="deyebrow">Mô hình Xray · Traceability</span><div class="dsub">1 task chạy trọn bộ testcase — Test → Test Plan → Test Execution</div></div>
+  <div class="dhead"><span class="deyebrow">Mô hình AIO Tests · Traceability</span><div class="dsub">1 task chạy trọn bộ testcase — Case → Cycle → Run</div></div>
   <div class="tgroup">
-    <div class="tg-eyebrow">Test gắn với</div>
+    <div class="tg-eyebrow">Case gắn với</div>
     <div class="trow">
-      ${org(C.info, 'Task cha (requirement)', 'Coverage — panel "Test Coverage"')}
-      ${org(C.ink, 'Test Repository folder', 'nhóm chức năng')}
-      ${org(C.amber, 'Precondition [PRE-NN]', 'tiền điều kiện dùng chung')}
+      ${org(C.info, 'Story cha (requirement)', 'jiraRequirementIDs — KHÔNG có panel Coverage')}
+      ${org(C.ink, 'Folder <root>/<nhóm>', 'cây 2 cấp, dựng TỪ Excel')}
+      ${org(C.amber, 'precondition', 'field TRONG case — không còn issue riêng')}
     </div>
   </div>
   ${chev('')}
-  <div class="tcenter"><div class="tnode hub">TEST<span>testcase · để Open</span></div></div>
-  ${chev('được gom vào (roll-up theo sprint)')}
-  ${line(C.success, '<b>Test Plan</b> — 1 sprint <span class="sm">(QA tạo tay đầu sprint)</span>')}
+  <div class="tcenter"><div class="tnode hub">CASE<span>testcase · TC ID ở automationKey</span></div></div>
+  ${chev('gom theo sprint')}
+  ${line(C.success, '<b>Thư mục cycle</b> — 1 sprint <span class="sm">(--folder; AIO KHÔNG có Test Plan)</span>')}
   ${chev('chứa mỗi lần chạy')}
-  ${line(C.info, '<b>Test Execution</b> — 1 lần chạy = toàn bộ TC')}
-  ${chev('sinh kết quả')}
-  ${line(C.gold, '<b>Test Run</b><span class="chipset"><i class="pass">PASS</i><i class="fail">FAIL</i><i class="todo">TO DO</i></span>')}
+  ${line(C.info, '<b>Cycle</b> — 1 lần chạy = toàn bộ TC <span class="sm">(cùng --cycle-title thì dùng lại, không đẻ trùng)</span>')}
+  ${chev('sinh kết quả — evidence neo được xuống TỪNG BƯỚC')}
+  ${line(C.gold, '<b>Run + run-step</b><span class="chipset"><i class="pass">Passed</i><i class="fail">Failed</i><i class="todo">Blocked</i><i class="todo">Not Run</i></span>')}
 </div></body></html>`;
 }
 
@@ -322,8 +322,8 @@ const run = async () => {
   try { await page.evaluate(() => document.fonts.ready); } catch {}
   await page.waitForTimeout(150);
   const dia = await page.$('#diagram');
-  await dia.screenshot({ path: path.join(outDir, 'xray-traceability.png') });
-  console.log('generated xray-traceability.png');
+  await dia.screenshot({ path: path.join(outDir, 'aio-traceability.png') });
+  console.log('generated aio-traceability.png');
   await browser.close();
 };
 run().then(() => console.log('done')).catch((e) => { console.error(e); process.exit(1); });

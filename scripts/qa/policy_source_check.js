@@ -325,7 +325,9 @@ if (fs.existsSync(SKILLS_DIR)) {
  */
 {
   const DOC_ROOTS = ['prompt_templates', '.agent', 'partial-rerun', 'docs/library/src'];
-  const DOC_FILES = ['README.md', 'QUICKSTART.md', 'USER_GUIDE.md', 'RULE_GLOBAL.md', 'CLAUDE.md'];
+  // `.env.example` cũng là tài liệu HƯỚNG DẪN: chú thích trong đó dạy người ta đặt biến gì. Bỏ nó ra ngoài
+  // thì dòng "xray (MẶC ĐỊNH)" nằm đó 1 ngày mà gate vẫn xanh (đo 20/08/2026).
+  const DOC_FILES = ['README.md', 'QUICKSTART.md', 'USER_GUIDE.md', 'RULE_GLOBAL.md', 'CLAUDE.md', '.env.example'];
   const LEGACY_CMD = /npm run jira:testcase-(publish|cleanup)|integrations\/jira\/(publish_testcases|pull_testcases|push_test_execution|update_xray_steps|cleanup_xray_tests)\.js/;
   // Loại TÊN BIẾN trước khi soi: `PUSH_XRAY_EXECUTION`, `XRAY_EXEC_STEP_STATUS`… giữ nguyên tên cho tương
   // thích ngược nhưng nay điều khiển đường AIO. Không loại thì mỗi dòng nhắc biến đó bị báo oan (đo: 3/15

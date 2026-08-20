@@ -662,6 +662,8 @@ Nguyên tắc Phase 2:
 
 Một task chạy trọn bộ testcase cùng lúc, nên chỉ cần **Case → Cycle → Run**. AIO **không có** Test Set, Test Plan, Precondition issue — mô hình gọn hơn Xray.
 
+![Mô hình AIO Tests — traceability](docs/user-guide-images/aio-traceability.png)
+
 | Lớp | Vai trò | Kit làm gì |
 |---|---|---|
 | **Case** | 1 testcase | `npm run aio:publish` tạo/cập nhật từ Excel; TC ID nằm ở **`automationKey`** (không dùng `tags` — AIO trả 200 nhưng không lưu) |
@@ -677,7 +679,7 @@ Một task chạy trọn bộ testcase cùng lúc, nên chỉ cần **Case → C
 - Cleanup ≠ xoá: case rời khỏi Excel thì chuyển **Deprecated** (`npm run aio:deprecate-stale`), giữ nguyên lịch sử run.
 - Chín đặc tính đã đo của AIO (rate limit trả **body rỗng** chứ không phải 429, `PUT .../detail` ghi đè toàn phần, `key` ≠ `ID`, `POST` case đã có trong cycle thì **đẻ run mới**…): [scripts/integrations/aio/README.md](scripts/integrations/aio/README.md) — đọc trước khi tự phát hiện lại bằng cách mất dữ liệu.
 
-> 🕘 Mô hình Xray cũ (Test → Test Plan → Test Execution, panel Test Coverage, Test Repository folder, Precondition issue) đã **đóng băng sau 21/08/2026**; ảnh `docs/user-guide-images/xray-traceability.png` giữ lại làm tham chiếu lịch sử.
+> 🕘 Mô hình Xray cũ (Test → Test Plan → Test Execution, panel Test Coverage, Test Repository folder, Precondition issue) đã **đóng băng sau 21/08/2026**; ảnh mô hình cũ ([`xray-traceability.png`](docs/user-guide-images/xray-traceability.png)) giữ lại làm tham chiếu lịch sử.
 
 ### 5.5.1 Đầu sprint — không phải tạo gì
 
