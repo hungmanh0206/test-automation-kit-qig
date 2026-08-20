@@ -40,7 +40,11 @@ const LIMIT = Number(arg('limit', Infinity));
 const ONLY = new Set(String(arg('only', '')).split(',').map((s) => s.trim().toUpperCase()).filter(Boolean));
 const QA_APPROVED = flag('qa-approved') || process.env.JIRA_TESTCASE_QA_APPROVED === '1';
 
-const PRIORITY = { critical: 1, high: 2, medium: 3, low: 4, lowest: 5 };
+/*
+ * Map TÊN → ID priority của AIO. `highest` là alias BẮT BUỘC: bộ TC cũ dùng tên thang Jira, và trước đây
+ * thiếu khoá này nên mọi case `Highest` rơi về fallback `|| 3` = Medium — hạ ưu tiên âm thầm (đo: 14 case).
+ */
+const PRIORITY = { critical: 1, highest: 1, high: 2, medium: 3, low: 4, lowest: 5 };
 const STATUS_PUBLISHED = 3;
 const SCRIPT_CLASSIC = 1;
 const AUTOMATION_MANUAL = 1;

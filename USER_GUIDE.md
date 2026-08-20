@@ -1113,7 +1113,7 @@ Chi tiết ở Mục 8.
 | Coverage | Mức độ requirement/business rule/API behavior được testcase cover. |
 | Risk-based Gate | Đánh giá theo risk, không chỉ theo số lượng testcase. |
 | **Severity** (cột 8, tên cũ "Mức độ rủi ro") | **Hậu quả nếu lỗi xảy ra** — thang `Blocker · Critical · Major · Minor · Trivial`. Là **trục riêng**, không phải bản sao của `Ưu tiên`. Ma trận quyết định + cây hỏi ở prompt gen §7b/§8; `md_to_xlsx` chặn nếu điền giá trị Severity vào cột `Ưu tiên`. Bộ cũ dùng thang 3 mức (Cao/TB/Thấp) vẫn hợp lệ, **không cần chuyển ngược**. |
-| **Ưu tiên** (cột 7) | **Thứ tự làm trước/sau** — `Highest…Lowest`. Khác Severity: một lỗi hậu quả lớn nhưng cực hiếm có thể để Priority thấp, và ngược lại. |
+| **Ưu tiên** (cột 7) | **Thứ tự làm trước/sau** — `Critical…Lowest` (khớp thang AIO; khi log bug Jira, `Critical` được map sang `Highest`). Khác Severity: một lỗi hậu quả lớn nhưng cực hiếm có thể để Priority thấp, và ngược lại. |
 | `ui_catalog.json` | Bản kiểm kê **field/cột theo tài liệu** của từng màn (`requirements/ui_catalog.json`). Là thứ **duy nhất** bắt được "màn thiếu một trường"/"mọc thêm cột lạ"/"hai màn lệch nhãn" — case theo bước không thấy vì thiếu field thì mọi step vẫn xanh. Bắt buộc khi bộ có case hiển thị (`design_gate` chặn). |
 | `db_readonly` (§13b prompt gen) | Dòng verification **thêm vào case mutation đã có** (không đẻ TC riêng), dạng `db_readonly: SELECT …`. Chỉ dùng ở 5 chỗ UI/API *không thể* phân biệt: soft-vs-hard delete · cascade/bản ghi mồ côi · field không render · ghi trùng · trường dẫn xuất lệch bản ghi gốc. Read-only qua `uatPgClient.ts`, **không** dựng state, **không** phải evidence. |
 | Critical/High Gap | Gap quan trọng có thể block kết luận PASS. |

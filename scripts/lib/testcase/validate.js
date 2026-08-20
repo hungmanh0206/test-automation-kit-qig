@@ -22,12 +22,21 @@ const REQUIRED_FIELDS = [['module', 'Module'], ['title', 'Trường hợp kiểm
 // GIÁ TRỊ hợp lệ. `Ưu tiên` phải là 1 trong 5 priority CÓ THẬT trên Jira: bug được log lấy Priority TỪ CHÍNH
 // cột này (prompt `08_log_bug_jira.md`), giá trị lạ (`Critical`, `P0`…) ⇒ Jira không set được ⇒ bug rơi về
 // default, mất luôn tín hiệu ưu tiên. Trước đây prompt §7/§8 có quy định nhưng KHÔNG có gì kiểm.
-const PRIORITY_OK = /^(highest|high|medium|low|lowest)$/i;
+/*
+ * Thang ƯU TIÊN canonical = thang của AIO: Critical|High|Medium|Low|Lowest.
+ * `Highest` là tên của JIRA (và của bộ TC cũ) — vẫn NHẬN để không phá bộ đang chạy, nhưng cảnh báo:
+ * publisher map theo TÊN nên trước đây mọi `Highest` rơi về fallback Medium (đo: 14 case của một bộ).
+ * Đường log bug tự map `Critical → Highest` khi ghi Jira, nên canonical không cần theo tên Jira.
+ */
+const PRIORITY_OK = /^(critical|high|medium|low|lowest)$/i;
+const PRIORITY_LEGACY = /^highest$/i;
 // SEVERITY (thang mới, 5 mức) = hậu quả NẾU lỗi xảy ra. Khác `Ưu tiên` (thứ tự sửa, đẩy vào field Priority
 // của Jira). Trước đây cột này là "Mức độ rủi ro" 3 mức; thang 3 mức vẫn NHẬN để bộ TC cũ không đỏ, nhưng
 // deprecated — cảnh báo 1 lần/file (không phải mỗi dòng, tránh 530 dòng nhiễu).
 // LƯU Ý: Jira hiện CHƯA có field Severity → giá trị này giữ ở testcase/report, KHÔNG đẩy lên Jira.
 const SEVERITY_OK = /^(blocker|critical|major|minor|trivial)$/i;
+// Giá trị CHỈ có nghĩa ở cột Severity. `Critical` cố ý KHÔNG nằm đây: nó hợp lệ ở cả hai cột.
+const SEVERITY_ONLY = /^(blocker|major|minor|trivial)$/i;
 const RISK_LEGACY = /^(high|medium|low|cao|trung bình|trung binh|thấp|thap)$/i;
 const RISK_OK = new RegExp(`${SEVERITY_OK.source}|${RISK_LEGACY.source}`, 'i');
 const RISK_HIGH = /^(blocker|critical|high|cao)$/i;
@@ -57,7 +66,8 @@ function validate(doc) {
     const id = tc.tcId || '(no-id)';
     const p = String(tc.priority || '').trim();
     const r = String(tc.risk || '').trim();
-    if (p && !PRIORITY_OK.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" không phải priority Jira — chỉ dùng Highest|High|Medium|Low|Lowest (vd "Critical" → "Highest"). Bug log lên Jira lấy Priority TỪ cột này nên giá trị lạ = Jira dùng default, mất tín hiệu ưu tiên.`);
+    if (p && !PRIORITY_OK.test(p) && !PRIORITY_LEGACY.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" không thuộc thang Critical|High|Medium|Low|Lowest. Giá trị lạ bị mọi consumer bỏ qua âm thầm: AIO map priority theo TÊN (rơi về Medium), Jira dùng default.`);
+    if (p && PRIORITY_LEGACY.test(p)) warnings.push(`${id}: \`Ưu tiên\` = "Highest" là tên thang CŨ (Jira) — canonical nay dùng **Critical** (khớp AIO). Vẫn nhận, nhưng nên đổi: publisher chỉ map đúng nhờ alias, còn báo cáo/lọc thì hai tên khác nhau làm số liệu tách đôi.`);
     if (r && !RISK_OK.test(r)) problems.push(`${id}: \`Severity\` = "${r}" không thuộc thang Blocker|Critical|Major|Minor|Trivial (§8); thang cũ High|Medium|Low vẫn tạm nhận. Giá trị ngoài cả hai thang bị mọi consumer bỏ qua âm thầm.`);
 
     /*
@@ -68,7 +78,7 @@ function validate(doc) {
     const ct = String(tc.caseType || '').trim();
     if (ct && !CASE_TYPE_OK.test(ct)) problems.push(`${id}: \`Loại case\` = "${ct}" không thuộc 6 loại AIO nhận — Unit|Integration|Functional|API|Performance|Security.`);
 
-    if (p && SEVERITY_OK.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" là giá trị SEVERITY, đặt sai cột — \`Ưu tiên\` chỉ nhận Highest|High|Medium|Low|Lowest (đẩy vào field Priority của Jira); Severity thuộc cột \`Severity\`.`);
+    if (p && SEVERITY_ONLY.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" là giá trị SEVERITY, đặt sai cột — \`Ưu tiên\` nhận Critical|High|Medium|Low|Lowest; Blocker/Major/Minor/Trivial thuộc cột \`Severity\`. (\`Critical\` hợp lệ ở CẢ hai cột: nó là đỉnh thang ưu tiên VÀ một mức severity.)`);
   }
   // 2c) CONSISTENCY — 2 cột không được nói ngược nhau. Cảnh báo (không chặn) vì vẫn có ngoại lệ hợp lý,
   // nhưng phải nêu ra: rủi ro High = tài chính/bảo mật/không rollback được, gán ưu tiên thấp là tự mâu thuẫn
@@ -81,7 +91,7 @@ function validate(doc) {
     // Ô ⚠ của ma trận §7b: không cấm, nhưng phải có lý do dịch bậc — nếu không thì 1 trong 2 cột chấm sai.
     if (/^blocker$/i.test(r) && /^(medium|low|lowest)$/i.test(p)) warnings.push(`${id}: ô ⚠ trong ma trận §7b — \`Severity\` Blocker nhưng \`Ưu tiên\` ${p}. Hợp lệ khi chức năng CHƯA bật cho người dùng / sắp bỏ; phải ghi lý do dịch bậc trong \`Assumptions\`. Đừng hạ Severity cho "đẹp ô" — phạm vi hẹp là lý do hạ Ưu tiên, không phải hạ Severity.`);
     else if (RISK_HIGH.test(r) && /^(low|lowest)$/i.test(p)) warnings.push(`${id}: ô ⚠ trong ma trận §7b — \`Severity\` ${r} (mất dữ liệu/sai tiền/bảo mật) nhưng \`Ưu tiên\` ${p}; ghi lý do dịch bậc hoặc sửa 1 trong 2 cột.`);
-    if (RISK_LOW.test(r) && /^highest$/i.test(p)) warnings.push(`${id}: ô ⚠ trong ma trận §7b — \`Severity\` ${r} (hiển thị/thẩm mỹ, dữ liệu dưới đúng) nhưng \`Ưu tiên\` Highest. Hợp lệ khi khách nhìn trực tiếp lúc trả tiền / sắp demo; phải ghi lý do trong \`Assumptions\`.`);
+    if (RISK_LOW.test(r) && /^(critical|highest)$/i.test(p)) warnings.push(`${id}: ô ⚠ trong ma trận §7b — \`Severity\` ${r} (hiển thị/thẩm mỹ, dữ liệu dưới đúng) nhưng \`Ưu tiên\` Highest. Hợp lệ khi khách nhìn trực tiếp lúc trả tiền / sắp demo; phải ghi lý do trong \`Assumptions\`.`);
   }
   // 2d) THANG CŨ (set-level, 1 lần/file) — bộ TC cũ dùng High/Medium/Low thì nhắc chuyển, KHÔNG chặn và
   // KHÔNG cảnh báo từng dòng (530 dòng cảnh báo = tiếng ồn, sẽ bị lướt).

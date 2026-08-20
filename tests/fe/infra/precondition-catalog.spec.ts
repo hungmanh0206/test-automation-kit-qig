@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import fs from 'fs';
 import path from 'path';
 
 /*
@@ -89,5 +90,47 @@ test.describe('@infra [PRE-NN] ↔ catalog Setup Strategy', () => {
     const v = validate(doc([tc('TC_1', '[api] Order ở TO_PURCHASE'), tc('TC_2', '[ui] Order ở TO_PURCHASE')], []));
     expect(v.warnings.some((w: string) => w.includes('cách dựng khác nhau'))).toBe(true);
     expect(v.problems.filter((x: string) => x.includes('cách dựng khác nhau')), 'cảnh báo, không chặn').toEqual([]);
+  });
+});
+
+/*
+ * @infra — THANG ƯU TIÊN & LOẠI CASE phải khớp thứ AIO thật sự nhận.
+ *
+ * Đo 20/08/2026: AIO `casePriorities` = Critical|High|Medium|Low|Lowest, còn Jira = Highest|…. Kit trước
+ * đây dùng tên Jira nên publisher (map theo TÊN, không có khoá `highest`) đẩy mọi case `Highest` về
+ * fallback Medium — 14 case của một bộ bị hạ ưu tiên âm thầm. Nay canonical dùng `Critical`, `Highest`
+ * chỉ còn là alias có cảnh báo, và đường log bug tự map `Critical → Highest` cho Jira.
+ */
+test.describe('@infra thang Ưu tiên (Critical) + 6 Loại case', () => {
+  const mk = (priority: string, risk = 'Major', caseType = '') => doc([{ ...tc('T1', '[api] x'), priority, risk, caseType }], []);
+
+  test('Critical hợp lệ ở cột Ưu tiên (đỉnh thang AIO)', () => {
+    expect(validate(mk('Critical')).problems.filter((x: string) => x.includes('Ưu tiên'))).toEqual([]);
+  });
+
+  test('Highest vẫn NHẬN nhưng cảnh báo là thang cũ — không phá bộ đang chạy', () => {
+    const v = validate(mk('Highest'));
+    expect(v.problems.filter((x: string) => x.includes('Ưu tiên'))).toEqual([]);
+    expect(v.warnings.some((w: string) => w.includes('thang CŨ'))).toBe(true);
+  });
+
+  test('Blocker/Major/Minor/Trivial ở cột Ưu tiên ⇒ CHẶN (đặt sai cột)', () => {
+    for (const bad of ['Blocker', 'Major', 'Minor', 'Trivial']) {
+      expect(validate(mk(bad)).problems.some((x: string) => x.includes('đặt sai cột')), `${bad} phải bị chặn`).toBe(true);
+    }
+  });
+
+  test('publisher map Highest → Critical(1), KHÔNG rơi về Medium', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/publish_testcases_aio.js'), 'utf8');
+    expect(src, 'thiếu alias là hạ ưu tiên âm thầm').toMatch(/highest:\s*1/);
+    expect(src).toMatch(/critical:\s*1/);
+  });
+
+  test('Loại case: 6 giá trị AIO nhận thì OK, ngoài 6 thì CHẶN, không khai thì chỉ cảnh báo', () => {
+    for (const t of ['Unit', 'Integration', 'Functional', 'API', 'Performance', 'Security']) {
+      expect(validate(mk('High', 'Major', t)).problems.filter((x: string) => x.includes('Loại case')), t).toEqual([]);
+    }
+    expect(validate(mk('High', 'Major', 'Smoke')).problems.some((x: string) => x.includes('Loại case'))).toBe(true);
+    expect(validate(mk('High', 'Major', '')).problems.filter((x: string) => x.includes('Loại case'))).toEqual([]);
   });
 });

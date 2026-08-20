@@ -139,7 +139,7 @@ Quy tắc Jira issue:
 - `Sprint` và `Fix versions` của Sub-bug phải được điền theo đúng giá trị đang có trên Story/Task parent `[JIRA_STORY_KEY]`.
 - Không tự chọn Sprint/Fix versions khác parent và không hard-code theo task cụ thể; luôn lấy từ parent issue ở thời điểm log bug.
 - `Priority` phải được set theo testcase:
-  - Giá trị hợp lệ: `Highest`, `High`, `Medium`, `Low`, `Lowest`.
+  - Testcase dùng thang `Critical|High|Medium|Low|Lowest`; khi ghi Jira, kit tự map `Critical → Highest` (tên đỉnh thang của Jira). Bộ TC cũ ghi `Highest` vẫn đúng.
   - Nếu testcase không có priority hợp lệ, không ép field để Jira dùng default.
 - Assignee phải lấy từ cấu hình:
   - FE bug: ưu tiên `JIRA_FE_ASSIGNEE`.

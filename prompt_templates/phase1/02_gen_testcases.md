@@ -297,11 +297,11 @@ Quy tắc cho từng loại dữ liệu:
 ```
 
 ## 7. Ưu tiên
-Chỉ dùng đúng các giá trị Priority có trong Jira: `Highest`, `High`, `Medium`, `Low`, `Lowest`. Không dùng `Critical`, `P0`, `P1` hoặc giá trị khác trong cột `Ưu tiên`.
+Chỉ dùng 5 giá trị: `Critical`, `High`, `Medium`, `Low`, `Lowest` (khớp thang priority của AIO Tests). KHÔNG dùng `P0`/`P1`/`Blocker`. Bộ TC cũ ghi `Highest` (tên thang Jira) vẫn được nhận nhưng nên đổi sang `Critical`; khi log bug, kit tự map `Critical → Highest` cho Jira.
 
 | Level | Khi nào |
 |---|---|
-| **Highest** | Chức năng cốt lõi, hệ thống không dùng được nếu fail, mất dữ liệu hoặc ảnh hưởng bảo mật nghiêm trọng |
+| **Critical** | Chức năng cốt lõi, hệ thống không dùng được nếu fail, mất dữ liệu hoặc ảnh hưởng bảo mật/tiền |
 | **High** | Tính năng chính, ảnh hưởng nghiệp vụ lớn hoặc block nhóm người dùng quan trọng |
 | **Medium** | Tính năng phụ, ảnh hưởng một nhóm người dùng nhưng có workaround |
 | **Low** | Edge case, ảnh hưởng ít, không block luồng chính |
@@ -319,7 +319,7 @@ Severity chấm trước (§8, theo hậu quả). Priority = **lấy Severity l�
 
 **Ma trận hợp lệ** (● mặc định · ○ hợp lệ, nêu lý do dịch bậc trong `Assumptions` · ⚠ phải giải trình, gate cảnh báo):
 
-| Severity ↓ / Priority → | Highest | High | Medium | Low | Lowest |
+| Severity ↓ / Priority → | Critical | High | Medium | Low | Lowest |
 |---|---|---|---|---|---|
 | **Blocker** | ● | ○ | ⚠ | ⚠ | ⚠ |
 | **Critical** | ○ | ● | ○ | ⚠ | ⚠ |
@@ -329,7 +329,7 @@ Severity chấm trước (§8, theo hậu quả). Priority = **lấy Severity l�
 
 **Đọc ma trận:**
 - **Đường chéo ● là mặc định** — không có lý do dịch bậc thì chọn ô này.
-- **Ô ⚠ không bị cấm**, nhưng phải viết lý do. Hai ô ⚠ hay đúng nhất trong thực tế: `Blocker` + `Medium/Low` (mất dữ liệu ở chức năng **chưa bật** cho ai) và `Minor/Trivial` + `Highest` (sai hiển thị ở **màn khách nhìn thấy lúc trả tiền**). Không có lý do ⇒ một trong hai cột đang chấm sai.
+- **Ô ⚠ không bị cấm**, nhưng phải viết lý do. Hai ô ⚠ hay đúng nhất trong thực tế: `Blocker` + `Medium/Low` (mất dữ liệu ở chức năng **chưa bật** cho ai) và `Minor/Trivial` + `Critical` (lỗi hiển thị nhưng khách nhìn trực tiếp lúc trả tiền).
 - **Đừng hạ Severity để ô trông "đẹp"**. Phạm vi hẹp, chưa ai dùng, sắp bỏ — tất cả đều là lý do hạ **Priority**, không phải hạ Severity. Đây là lỗi chấm sai phổ biến nhất.
 - Nếu trong một bộ testcase mà Severity và Priority **luôn trùng nhau ở mọi dòng** thì một trong hai cột đang được điền máy móc — bảng này vô dụng khi đó.
 
@@ -508,7 +508,7 @@ Xuất kết quả dưới dạng bảng Markdown:
 ```markdown
 | TC ID | Loại case | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |
 |---|---|---|---|---|---|---|---|---|
-| App 1_LOGIN_TC_001 | Đăng nhập | [Positive] Đăng nhập thành công với email và mật khẩu hợp lệ | [PRE-01] Hệ thống chạy tại [URL], tài khoản auto_login_001@test.com Active, chưa đăng nhập | email: auto_login_001@test.com<br>password: Test@12345 | 1. Navigate đến [URL]/login<br>2. Nhập email: auto_login_001@test.com<br>3. Nhập password: Test@12345<br>4. Click button "Đăng nhập" | 1. Trang /login hiển thị đúng form đăng nhập<br>2. Field email nhận đúng giá trị đã nhập<br>3. Field password hiển thị ký tự ẩn<br>4. Sau khi click, hệ thống:<br>- Hiện loading spinner 1-3s<br>- Redirect /dashboard<br>- Toast "Đăng nhập thành công"<br>- Tên user hiển thị trên header | Highest | High |
+| App 1_LOGIN_TC_001 | Đăng nhập | [Positive] Đăng nhập thành công với email và mật khẩu hợp lệ | [pre_existing] Hệ thống chạy tại [URL], tài khoản auto_login_001@test.com Active, chưa đăng nhập | email: auto_login_001@test.com<br>password: Test@12345 | 1. Navigate đến [URL]/login<br>2. Nhập email: auto_login_001@test.com<br>3. Nhập password: Test@12345<br>4. Click button "Đăng nhập" | 1. Trang /login hiển thị đúng form đăng nhập<br>2. Field email nhận đúng giá trị đã nhập<br>3. Field password hiển thị ký tự ẩn<br>4. Sau khi click, hệ thống:<br>- Hiện loading spinner 1-3s<br>- Redirect /dashboard<br>- Toast "Đăng nhập thành công"<br>- Tên user hiển thị trên header | Critical | High |
 ```
 
 Sau bảng, thêm:
