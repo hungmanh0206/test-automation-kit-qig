@@ -378,6 +378,34 @@ async function main() {
     }
   }
 
+  /*
+   * GATE `Loại case`: case SINH MỚI phải tự xác định 1 trong 6 loại AIO nhận
+   * (Unit · Integration · Functional · API · Performance · Security).
+   *
+   * VÌ SAO CHẶN Ở BƯỚC CONVERT chứ không thêm vào REQUIRED_COLS: `validate()` là bộ đọc DÙNG CHUNG, thêm
+   * vào đó thì mọi bộ TC cũ (9 task, đều 9 cột) đỏ theo — đúng cái bẫy "siết sai chỗ". Convert md→xlsx là
+   * ĐÚNG biên sinh case: bộ cũ không convert lại nên không bị đụng, bộ mới thì không lọt.
+   *
+   * VÌ SAO PHẢI CHẶN: kit từng SUY loại từ tên nhóm chức năng ⇒ đo trên 1.399 case đã publish thì 96% rơi
+   * về `Functional`, `Integration` và `Performance` = 0 ⇒ lọc/báo cáo theo Case Type trên AIO vô dụng.
+   * Để trống rồi suy sau là quay lại đúng chỗ đó.
+   *
+   * CHỈ LO "CỘT VẮNG MẶT". Giá trị điền SAI (vd `Regression`) đã do `validate.js` — bộ đọc dùng chung —
+   * bắt ở design gate ngay phía trên; một luật một chỗ, đừng chép sang đây thành hai nguồn.
+   */
+  {
+    const LENIENT = args.includes("--lenient") || process.env.QA_STRICT === "0";
+    const QA_APPROVED = args.includes("--qa-approved");
+    const doc = canonical.parseMarkdown(fs.readFileSync(inputPath, "utf8"));
+    const missing = (doc.tests || []).filter((t) => !String(t.caseType || "").trim()).map((t) => t.tcId || "(no-id)");
+    if (missing.length) {
+      const head = `${missing.length} case CHƯA điền cột \`Loại case\`: ${missing.slice(0, 12).join(", ")}${missing.length > 12 ? ` … +${missing.length - 12}` : ""}`;
+      const msg = `[gate loại-case] ✗ ${head}\n→ Điền cột \`Loại case\` cho từng case (bảng 6 giá trị ở prompt 02) rồi convert lại.`;
+      if (!LENIENT && !QA_APPROVED) { console.error(msg); process.exit(1); }
+      console.warn(`${msg}\n  [${LENIENT ? "--lenient/QA_STRICT=0" : "--qa-approved"}] bỏ qua gate — vẫn convert.`);
+    }
+  }
+
   // GATE gen-testcase: CHẶN convert nếu "Kết quả mong đợi" không khớp số bước / gộp range / chung chung.
   // `;`-packing chỉ cảnh báo (không chặn). Bỏ qua: --lenient / QA_STRICT=0 / --qa-approved.
   {
