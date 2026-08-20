@@ -232,3 +232,52 @@ test.describe('@infra hồi quy: biến chưa khai + gate báo oan', () => {
     expect(src).toMatch(/na_reasons/);
   });
 });
+
+// ── 7. Cột `Loại case` — trục phân loại RIÊNG, không suy từ nhóm chức năng ────────────────────────────────
+/*
+ * Đo trên 1.399 case đã publish: 96% rơi về `Functional`, `Integration` và `Performance` = 0 — vì kit SUY
+ * case type từ tên nhóm chức năng. Đó là hai trục khác nhau ("test Ở ĐÂU" vs "LOẠI KIỂM THỬ NÀO"), ép cái
+ * này ra cái kia thì sai là tất yếu, và hậu quả là lọc/báo cáo theo Case Type trên AIO vô dụng.
+ */
+test.describe('@infra Loại case — cột người khai, không suy từ nhóm chức năng', () => {
+  const model = require(path.join(REPO, 'scripts/lib/testcase'));
+
+  test('parser đọc được cột Loại case (và các tên gọi tương đương)', () => {
+    const head = '| TC ID | Loại case | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |';
+    const sep = '|---|---|---|---|---|---|---|---|---|---|';
+    const row = '| T1 | Integration | M | [Positive] Đồng bộ HubSpot | - | - | 1. Mở | 1. OK | High | Major |';
+    const doc = model.parseMarkdown([head, sep, row].join('\n'));
+    expect(doc.tests[0].caseType).toBe('Integration');
+  });
+
+  test('giá trị ngoài 6 loại AIO nhận thì bị chặn — không để consumer bỏ qua âm thầm', () => {
+    const head = '| TC ID | Case Type | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |';
+    const sep = '|---|---|---|---|---|---|---|---|---|---|';
+    const bad = '| T1 | Smoke | M | [Positive] X | - | - | 1. Mở | 1. OK | High | Major |';
+    const doc = model.parseMarkdown([head, sep, bad].join('\n'));
+    const v = model.validate(doc);
+    expect(v.problems.join(' '), 'giá trị lạ phải bị nêu tên').toMatch(/Loại case.*Smoke/);
+  });
+
+  test('publish KHÔNG còn suy case type từ tên nhóm', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/publish_testcases_aio.js'), 'utf8');
+    expect(src, 'còn suy từ group là quay lại đúng chỗ cũ: 96% Functional').not.toMatch(/typeOf\(t\.group/);
+    expect(src).toMatch(/caseTypeResolver/);
+    // ID phải hỏi AIO, không hardcode con số như bản cũ (4 = API, 6 = Security).
+    expect(src).toMatch(/cfg\.caseTypes/);
+  });
+
+  test('template sinh case DẠY cột này kèm đủ 6 giá trị', () => {
+    const md = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/02_gen_testcases.md'), 'utf8');
+    expect(md).toMatch(/\| TC ID \| Loại case \|/);
+    for (const v of ['Functional', 'API', 'Integration', 'Security', 'Performance', 'Unit']) {
+      expect(md, `template thiếu giá trị ${v}`).toContain(v);
+    }
+  });
+
+  test('pull mang Case Type từ AIO về lại Excel — round-trip không mất trục', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/pull_testcases_aio.js'), 'utf8');
+    expect(src).toMatch(/'Loại case'/);
+    expect(src).toMatch(/\(c\.type \|\| \{\}\)\.name/);
+  });
+});

@@ -27,9 +27,31 @@ Mục tiêu là coverage cao nhất có thể trong scope đã cung cấp, bao g
 - URL hệ thống: [URL STAGING]
 - Loại test: [UI E2E / API / E2E]
 
-# Template bắt buộc (9 cột)
+# Template bắt buộc (10 cột)
 
-| TC ID | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |
+| TC ID | Loại case | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |
+
+## Cột `Loại case` — 6 giá trị, KHÁC hẳn `Nhóm chức năng`
+
+Hai trục khác nhau, đừng lẫn:
+- **Nhóm chức năng** (sheet/cột riêng) = *"test Ở ĐÂU"* — màn/luồng nghiệp vụ → thành **folder** trên AIO.
+- **Loại case** = *"LOẠI KIỂM THỬ NÀO"* → thành **Case Type** trên AIO, dùng để **lọc và báo cáo**.
+
+| Giá trị | Dùng khi |
+|---|---|
+| `Functional` | kiểm hành vi nghiệp vụ qua UI — **mặc định** khi không rơi vào loại nào dưới |
+| `API` | gọi thẳng endpoint, khẳng định về payload/response/status code |
+| `Integration` | nối 2 hệ thống: đồng bộ HubSpot/SAP, webhook, job liên hệ thống |
+| `Security` | phân quyền, IDOR, injection, session/token |
+| `Performance` | thời gian phản hồi, tải, SLA |
+| `Unit` | kiểm một đơn vị code tách biệt (hiếm ở tầng QA) |
+
+Chỉ nhận đúng 6 giá trị trên — sai chính tả thì AIO không map được và case rơi về `Functional` âm thầm.
+
+> **Vì sao thêm cột này:** trước đây kit **suy** loại từ tên nhóm chức năng. Đo trên 1.399 case đã publish:
+> **96% rơi về `Functional`**, `Integration` và `Performance` = **0** ⇒ lọc theo Case Type trên AIO vô dụng,
+> và người đọc báo cáo dễ kết luận nhầm rằng bộ test không có mảng tích hợp. Ép trục "ở đâu" ra trục
+> "loại nào" thì sai là tất yếu — nên nay là cột **người khai**, không suy.
 
 ---
 
@@ -484,7 +506,7 @@ Nếu một dimension (mục 7-17) không áp dụng cho scope, ghi rõ `N/A + l
 Xuất kết quả dưới dạng bảng Markdown:
 
 ```markdown
-| TC ID | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |
+| TC ID | Loại case | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |
 |---|---|---|---|---|---|---|---|---|
 | App 1_LOGIN_TC_001 | Đăng nhập | [Positive] Đăng nhập thành công với email và mật khẩu hợp lệ | [PRE-01] Hệ thống chạy tại [URL], tài khoản auto_login_001@test.com Active, chưa đăng nhập | email: auto_login_001@test.com<br>password: Test@12345 | 1. Navigate đến [URL]/login<br>2. Nhập email: auto_login_001@test.com<br>3. Nhập password: Test@12345<br>4. Click button "Đăng nhập" | 1. Trang /login hiển thị đúng form đăng nhập<br>2. Field email nhận đúng giá trị đã nhập<br>3. Field password hiển thị ký tự ẩn<br>4. Sau khi click, hệ thống:<br>- Hiện loading spinner 1-3s<br>- Redirect /dashboard<br>- Toast "Đăng nhập thành công"<br>- Tên user hiển thị trên header | Highest | High |
 ```

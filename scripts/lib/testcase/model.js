@@ -48,6 +48,17 @@ const COL = {
   // Blocker|Critical|Major|Minor|Trivial áp từ task mới, bộ TC cũ giữ nguyên header không phải sửa.
   risk: (n) => n.includes('risk') || n.includes('rui ro') || n.includes('severity'),
   group: (n) => ['nhom chuc nang', 'functional group', 'test group', 'group', 'phan nhom'].includes(n),
+  /*
+   * `Loại case` — TRỤC KHÁC HẲN `Nhóm chức năng`.
+   *   Nhóm chức năng trả lời "test Ở ĐÂU" (màn/luồng nghiệp vụ) → thành FOLDER trên AIO.
+   *   Loại case      trả lời "LOẠI KIỂM THỬ NÀO" (Unit|Integration|Functional|API|Performance|Security)
+   *                  → thành Case Type trên AIO, dùng để lọc và báo cáo.
+   * Trước đây kit SUY loại từ tên nhóm (`/^api/` → API, `/security/` → Security, còn lại → Functional).
+   * Đo trên 1.399 case đã publish: **96% rơi về Functional**, Integration và Performance = 0 ⇒ lọc theo
+   * Case Type trên AIO vô dụng, và người đọc dễ kết luận nhầm là bộ test không có mảng tích hợp.
+   * Ép một trục ra trục kia thì kết quả sai là tất yếu — nên nay là cột NGƯỜI KHAI.
+   */
+  caseType: (n) => ['loai case', 'case type', 'loai kiem thu', 'loai test', 'type'].includes(n),
 };
 // matcher cột Setup Strategy contract (normalized)
 const SETUP_COL = {
@@ -141,7 +152,7 @@ function buildTestCase(headers, cells, story = '') {
     steps: splitNumbered(stepsRaw), stepsRaw,
     expected: splitNumbered(expectedRaw), expectedRaw,
     priority: get(COL.priority), risk: get(COL.risk),
-    dimensions: dimensionsOf(title), oracleRefs: oracleRefsOf(title), group: get(COL.group),
+    dimensions: dimensionsOf(title), oracleRefs: oracleRefsOf(title), group: get(COL.group), caseType: get(COL.caseType),
     traceability: { reqId: '', story: story || '' },
     _cells,
   };

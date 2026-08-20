@@ -8,6 +8,9 @@
 
 const m = require('./model');
 
+// 6 Case Type mà AIO nhận (khớp `GET /config` → caseTypes). Sai giá trị thì AIO không map được.
+const CASE_TYPE_OK = /^(Unit|Integration|Functional|API|Performance|Security)$/i;
+
 const REQUIRED_COLS = [
   ['TC ID', m.COL.tcId], ['Module', m.COL.module], ['Trường hợp kiểm thử', m.COL.title],
   ['Tiền điều kiện', m.COL.precondition], ['Các bước thực hiện', m.COL.steps],
@@ -56,6 +59,14 @@ function validate(doc) {
     const r = String(tc.risk || '').trim();
     if (p && !PRIORITY_OK.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" không phải priority Jira — chỉ dùng Highest|High|Medium|Low|Lowest (vd "Critical" → "Highest"). Bug log lên Jira lấy Priority TỪ cột này nên giá trị lạ = Jira dùng default, mất tín hiệu ưu tiên.`);
     if (r && !RISK_OK.test(r)) problems.push(`${id}: \`Severity\` = "${r}" không thuộc thang Blocker|Critical|Major|Minor|Trivial (§8); thang cũ High|Medium|Low vẫn tạm nhận. Giá trị ngoài cả hai thang bị mọi consumer bỏ qua âm thầm.`);
+
+    /*
+     * `Loại case` — CHƯA bắt buộc (mọi bộ TC hiện có đều chưa có cột này; đòi ngay là đỏ toàn bộ).
+     * Nhưng ĐÃ KHAI thì phải đúng 1 trong 6 giá trị AIO nhận, không thì consumer bỏ qua âm thầm và ta lại
+     * quay về đúng chỗ cũ: case type vô nghĩa. Thiếu cột ⇒ cảnh báo, publish sẽ suy tạm và nói rõ là suy.
+     */
+    const ct = String(tc.caseType || '').trim();
+    if (ct && !CASE_TYPE_OK.test(ct)) problems.push(`${id}: \`Loại case\` = "${ct}" không thuộc 6 loại AIO nhận — Unit|Integration|Functional|API|Performance|Security.`);
 
     if (p && SEVERITY_OK.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" là giá trị SEVERITY, đặt sai cột — \`Ưu tiên\` chỉ nhận Highest|High|Medium|Low|Lowest (đẩy vào field Priority của Jira); Severity thuộc cột \`Severity\`.`);
   }

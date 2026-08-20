@@ -36,8 +36,8 @@ const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 
 const flag = (n) => process.argv.includes(`--${n}`);
 
 // Giữ ĐÚNG bộ cột/độ rộng của Excel canonical — lệch một cột là parseXlsx đọc sai field mà không báo lỗi.
-const HEADERS = ['TC ID', 'Nhóm chức năng', 'Module', 'Trường hợp kiểm thử', 'Tiền điều kiện', 'Dữ liệu test', 'Các bước thực hiện', 'Kết quả mong đợi', 'Ưu tiên', 'Mức độ rủi ro'];
-const COL_WIDTHS = [16, 22, 22, 50, 42, 40, 60, 60, 12, 14];
+const HEADERS = ['TC ID', 'Loại case', 'Nhóm chức năng', 'Module', 'Trường hợp kiểm thử', 'Tiền điều kiện', 'Dữ liệu test', 'Các bước thực hiện', 'Kết quả mong đợi', 'Ưu tiên', 'Mức độ rủi ro'];
+const COL_WIDTHS = [16, 14, 22, 22, 50, 42, 40, 60, 60, 12, 14];
 const PRIORITY_NAME = { 1: 'Critical', 2: 'High', 3: 'Medium', 4: 'Low', 5: 'Lowest' };
 const numbered = (arr) => arr.map((s, i) => `${i + 1}. ${String(s || '').trim()}`).join('\n');
 
@@ -125,6 +125,7 @@ async function main() {
     const folderPath = pathById[(c.folder || {}).ID] || '';
     rows.push([
       c.automationKey || '',
+      (c.type || {}).name || '',                        // Loại case ← Case Type trên AIO (round-trip)
       (c.folder || {}).name || '',                       // Nhóm chức năng = folder lá (đúng chiều publish)
       folderPath.split('/').slice(0, -1).join(' / '),     // Module = nhánh cha
       c.title || '',

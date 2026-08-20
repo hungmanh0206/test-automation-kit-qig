@@ -45,7 +45,31 @@ const STATUS_PUBLISHED = 3;
 const SCRIPT_CLASSIC = 1;
 const AUTOMATION_MANUAL = 1;
 // Loại case suy từ tên nhóm — đỡ phải khai tay, và sai thì chỉ lệch nhãn chứ không mất dữ liệu.
-const typeOf = (group) => (/^api\b/i.test(group) ? 4 : /security|permission|phân quyền/i.test(group) ? 6 : 3);
+/*
+ * Case Type: ĐỌC TỪ CỘT `Loại case` do người khai — KHÔNG suy từ tên nhóm nữa.
+ * Bản cũ suy từ `Nhóm chức năng`, nhưng đó là trục "test Ở ĐÂU" còn case type là trục "LOẠI KIỂM THỬ NÀO".
+ * Ép trục này ra trục kia thì hậu quả đo được ngay: 1.342/1.399 case (96%) rơi về Functional, Integration
+ * và Performance = 0 ⇒ lọc/báo cáo theo Case Type trên AIO vô dụng.
+ * ID lấy từ `GET /config` của chính AIO (giống cách làm với run status) — không hardcode con số.
+ */
+const CASE_TYPE_FALLBACK = 'Functional';
+function caseTypeResolver(cfg) {
+  const byName = Object.fromEntries((cfg.caseTypes || []).map((t) => [String(t.name).toLowerCase(), t.ID]));
+  const fallback = byName[CASE_TYPE_FALLBACK.toLowerCase()];
+  let guessed = 0;
+  return {
+    idOf(tc) {
+      const declared = String(tc.caseType || '').trim().toLowerCase();
+      if (declared && byName[declared]) return byName[declared];
+      if (declared) console.log(`  ⚠ ${tc.id || ''}: "Loại case" = "${tc.caseType}" không thuộc 6 loại AIO nhận → dùng ${CASE_TYPE_FALLBACK}`);
+      else guessed += 1;
+      return fallback;
+    },
+    report() {
+      if (guessed) console.log(`⚠ ${guessed} case CHƯA khai cột "Loại case" → tạm gán ${CASE_TYPE_FALLBACK}. Đây là SUY ĐOÁN, không phải phân loại — bổ sung cột thì lọc theo Case Type trên AIO mới có nghĩa.`);
+    },
+  };
+}
 const lineText = (x) => (typeof x === 'string' ? x : (x && (x.text || x.value || x.line)) || '');
 const tcIdOf = (t) => t.id || (t._cells && (t._cells['TC ID'] || t._cells['TC_ID'])) || '';
 
@@ -68,6 +92,7 @@ function writeReport(r) {
 async function main() {
   if (!FILE) { console.error('ERROR: cần --file <đường dẫn .xlsx>'); process.exit(2); }
   const aio = new AioClient({ throttleMs: Number(arg('throttle', 0)) || undefined });
+  const CT = caseTypeResolver((await aio.call('GET', '/config')).json || {});
   const doc = await parseXlsx(path.resolve(FILE));
   const picked = ONLY.size ? (doc.tests || []).filter((t) => ONLY.has(String(tcIdOf(t)).toUpperCase())) : (doc.tests || []);
   if (ONLY.size && picked.length !== ONLY.size) {
@@ -137,7 +162,7 @@ async function main() {
       folder: folders[`${rootName}/${t.group}`] ? { ID: folders[`${rootName}/${t.group}`] } : undefined,
       priority: { ID: PRIORITY[String(t.priority || '').toLowerCase()] || 3 },
       status: { ID: STATUS_PUBLISHED },
-      type: { ID: typeOf(t.group || '') },
+      type: { ID: CT.idOf(t) },
       scriptType: { ID: SCRIPT_CLASSIC },       // bắt buộc khi có steps
       automationStatus: { ID: AUTOMATION_MANUAL },
       automationKey: tcId,                       // nơi trú của TC ID (tags không lưu được)
@@ -157,6 +182,7 @@ async function main() {
     } else { failed++; errors.push(`${tcId}: HTTP ${res.status} ${String(res.text).slice(0, 120)}`); }
     await aio.pause();
   }
+  CT.report();
   console.log(`\nTẠO ${created} · CẬP NHẬT ${updated} · LỖI ${failed}`);
   errors.slice(0, 5).forEach((e) => console.log(`  ✗ ${e}`));
   if (failed) process.exitCode = 1;
