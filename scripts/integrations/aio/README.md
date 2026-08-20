@@ -73,6 +73,7 @@ một execution, `--out <file.md>` để ghi báo cáo).
 | Test Execution → Cycle | 15 | **15/15** có cycle tương ứng | đủ |
 | Test Run | **2103** | **2103** · mỗi cycle có số case phân biệt = số run | đủ, không case nào bị chồng attempt |
 | Trạng thái run | `Failed=47 Not Run=70 Passed=1986` | **giống hệt** | đủ |
+| Test Plan → thư mục cycle | 2 (`[Test Plan] OPs/LMS Sprint 47`) | **2 thư mục** · 16/17 cycle nằm đúng thư mục | đủ (cycle ngoài thư mục là `Ad hoc` của hệ thống) |
 
 Hai cycle "dôi" trên AIO là `Ad hoc` (cycle hệ thống của app) và `[SAPP-26523] Test Execution - 2026-08-19`
 (lượt push thật để nghiệm thu tầng AIO) — không phải rác di trú.
