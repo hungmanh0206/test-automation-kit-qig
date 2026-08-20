@@ -199,3 +199,36 @@ test.describe('@infra đối chiếu UI↔API — không được mù với lư�
       .not.toMatch(/launchPersistentContext\([^)]*\)[\s\S]{0,200}for \(const m of mutants\)/);
   });
 });
+
+// ── 6. Hai lỗi refactor: biến chưa khai, và gate báo oan task backend ─────────────────────────────────────
+/*
+ * Cùng một đợt refactor sinh ra hai lỗi khác loại, và cả hai chỉ lộ khi CHẠY THẬT:
+ *  - `traceability_matrix.js` dùng `publishedTc`/`published` mà không nơi nào khai ⇒ ReferenceError. Lệnh
+ *    này nằm trong bảng gate bắt buộc của run_phase1_template ⇒ nó vỡ là cả bước Phase 1 vỡ theo.
+ *  - `self_review` đòi `ui_catalog.json` cho MỌI bộ, không đọc `dimension_manifest.json` ⇒ task backend
+ *    thuần (đã khai đúng ui_display/display_conformance = n/a kèm lý do) bị CHẶN ở finalize. Gate báo oan
+ *    thì người ta học cách bỏ qua gate — hỏng nặng hơn không có gate.
+ */
+test.describe('@infra hồi quy: biến chưa khai + gate báo oan', () => {
+  test('traceability_matrix không còn định danh chưa khai', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/traceability_matrix.js'), 'utf8');
+    // `publishedTc` phải được DỰNG, không chỉ được DÙNG.
+    expect(src, 'publishedTc chỉ có chỗ dùng mà không có chỗ khai').toMatch(/loadPublished|const publishedTc\s*=/);
+    // Biến tổng phải là publishedCount — bản cũ còn sót `published` trần ngoài scope map().
+    const outside = src.split('rows.map(')[1] || '';
+    expect(outside.includes('${published}'), 'còn dùng `published` ngoài phạm vi callback').toBe(false);
+  });
+
+  test('không có mirror from-aio thì KHÔNG được kết luận "chưa publish"', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/traceability_matrix.js'), 'utf8');
+    expect(src, 'phải phân biệt "chưa kéo mirror" với "chưa publish"').toMatch(/knowPublish/);
+  });
+
+  test('self_review đọc dimension_manifest để miễn check bề mặt cho task không UI', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/self_review.js'), 'utf8');
+    expect(src, 'không đọc manifest thì task backend nào cũng bị chặn oan').toMatch(/dimension_manifest\.json/);
+    expect(src).toMatch(/uiNotApplicable/);
+    // Miễn phải kèm LÝ DO — nếu không thì gõ đúng hai chữ "n/a" là thoát.
+    expect(src).toMatch(/na_reasons/);
+  });
+});

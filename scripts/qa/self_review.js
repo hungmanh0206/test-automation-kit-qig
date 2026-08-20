@@ -399,12 +399,39 @@ if (statusFile && fs.existsSync(statusFile)) {
         groups.push(name);
       }
     }
+    /*
+     * (a2) TASK KHÔNG CÓ UI thì check này KHÔNG áp dụng — đọc `dimension_manifest.json`.
+     * Trước đây check đòi `ui_catalog.json` cho MỌI bộ, không hề đọc manifest, nên task backend thuần
+     * (vd SAPP-26878: FS ghi rõ "không có màn hình UI người dùng") bị CHẶN ở finalize dù đã khai đúng
+     * `ui_display: n/a` + `display_conformance: n/a` kèm lý do. Gate báo oan thì người ta học cách bỏ qua
+     * gate — hỏng còn nặng hơn không có gate.
+     *
+     * Chỉ miễn khi CẢ HAI chiều UI đều n/a VÀ có lý do: `dimension_coverage` đã bắt buộc "n/a phải kèm lý
+     * do", nên ở đây đòi lý do là để không ai thoát bằng cách gõ đúng hai chữ "n/a".
+     */
+    const mPath = path.join(taskDir, 'requirements', 'dimension_manifest.json');
+    let uiNotApplicable = null;
+    if (fs.existsSync(mPath)) {
+      try {
+        const mf = JSON.parse(fs.readFileSync(mPath, 'utf8'));
+        const dims = mf.dimensions || {};
+        const reasons = mf.na_reasons || {};
+        const bothNa = dims.ui_display === 'n/a' && dims.display_conformance === 'n/a';
+        const why = String(reasons.display_conformance || reasons.ui_display || '').trim();
+        if (bothNa && why) uiNotApplicable = why;
+        else if (bothNa) warnings.push('manifest khai `ui_display`/`display_conformance` = n/a nhưng THIẾU `na_reasons` — chưa đủ để miễn check độ phủ bề mặt.');
+      } catch (e) { warnings.push(`\`dimension_manifest.json\` không đọc được: ${e.message}`); }
+    }
+
     // (b) bề mặt đã được khai để đối chiếu máy — ui_catalog.json
     let screens = [];
     const cat = path.join(taskDir, 'requirements', 'ui_catalog.json');
     if (fs.existsSync(cat)) { try { screens = (JSON.parse(fs.readFileSync(cat, 'utf8')).screens || []).map((s) => s.name || ''); } catch (e) { problems.push(`\`ui_catalog.json\` không đọc được: ${e.message}`); } }
 
-    if (groups.length) {
+    if (uiNotApplicable) {
+      note = `${groups.length} nhóm chức năng · task KHÔNG có UI (manifest khai n/a)`;
+      warnings.push(`Bỏ qua độ phủ bề mặt: manifest khai task không có UI — "${String(uiNotApplicable).slice(0, 120)}". Nếu về sau task CÓ màn thì phải khai lại required và bổ sung ui_catalog.json.`);
+    } else if (groups.length) {
       const covered = []; const missing = [];
       const screenTokens = screens.map((s) => new Set(norm(s)));
       for (const g of groups) {

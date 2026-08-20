@@ -46,7 +46,32 @@ function parseTestcases(dir) {
   return rows;
 }
 
-function main() {
+/*
+ * Tập TC ĐÃ PUBLISH = có mặt trong mirror `test-cases/from-aio/*.xlsx` (bản kéo về từ AIO).
+ * Refactor bỏ Xray đã viết ngữ nghĩa này vào header nhưng KHÔNG viết phần dựng biến, chỉ thêm chỗ dùng
+ * `publishedTc.has(...)` ⇒ ReferenceError ngay khi map rows. Lệnh này nằm trong bảng gate bắt buộc của
+ * `run_phase1_template.md` nên nó vỡ là cả bước Phase 1 vỡ theo.
+ *
+ * KHÔNG có mirror ⇒ trả `null` (KHÔNG phải Set rỗng): Set rỗng sẽ gắn cờ "chưa-publish" cho TOÀN BỘ TC,
+ * biến "chưa kéo mirror về" thành "chưa publish" — báo oan đúng kiểu mà kit cấm.
+ */
+async function loadPublished(taskOutputDir) {
+  const dir = path.join(taskOutputDir, 'test-cases', 'from-aio');
+  if (!fs.existsSync(dir)) return null;
+  const files = fs.readdirSync(dir).filter((f) => /\.xlsx$/i.test(f));
+  if (!files.length) return null;
+  const out = new Set();
+  for (const f of files) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const doc = await testcaseModel.parseXlsx(path.join(dir, f));
+      for (const t of doc.tests || []) if (t.tcId) out.add(normId(t.tcId));
+    } catch (e) { console.warn(`[trace] bỏ qua ${f}: ${e.message}`); }
+  }
+  return out;
+}
+
+async function main() {
   const T = taskDir();
   const taskKey = arg('task') || process.env.TASK_KEY || path.basename(T);
   const RUN_ID = process.env.RUN_ID || arg('run-id') || '';
@@ -73,12 +98,14 @@ function main() {
     return '';
   };
 
+  const publishedTc = await loadPublished(T);
+  const knowPublish = publishedTc !== null;
   const rows = tcs.map((tc) => {
-    const published = publishedTc.has(normId(tc.tcId));
+    const published = knowPublish ? publishedTc.has(normId(tc.tcId)) : null;
     const exec = execByTc.get(tc.tcId) || '';
     const bug = tcHasBug(tc.tcId);
     const flags = [];
-    if (!published) flags.push('chưa-publish');
+    if (knowPublish && !published) flags.push('chưa-publish');
     if (!exec) flags.push('chưa-execute');
     if (/FAIL/.test(exec)) flags.push('FAIL');
     return { req: taskKey, module: tc.module, tcId: tc.tcId, published, auto: exec ? 'yes' : 'no', exec: exec || '—', bug: bug || '—', flags: flags.join(', ') };
@@ -87,7 +114,7 @@ function main() {
   // Ghi CSV + MD.
   fs.mkdirSync(path.join(T, 'reports'), { recursive: true });
   const csv = ['REQ,Module,TC,PUBLISH,AUTO,EXEC,BUG,Flags',
-    ...rows.map((r) => [r.req, r.module, r.tcId, r.published ? 'yes' : 'no', r.auto, r.exec, (r.bug || '').replace(/,/g, ' '), r.flags].map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    ...rows.map((r) => [r.req, r.module, r.tcId, r.published === null ? '?' : (r.published ? 'yes' : 'no'), r.auto, r.exec, (r.bug || '').replace(/,/g, ' '), r.flags].map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
   fs.writeFileSync(path.join(T, 'reports', 'traceability-matrix.csv'), csv, 'utf8');
 
   const publishedCount = rows.filter((r) => r.published).length;
@@ -96,15 +123,15 @@ function main() {
   const withBug = rows.filter((r) => r.bug !== '—').length;
   const L = ['# Traceability Matrix — ' + taskKey, '',
     `> ${new Date().toISOString().slice(0, 19).replace('T', ' ')} · join REQ→TC→AUTO→EXEC→BUG từ artifact task (không gọi AIO/Jira).`,
-    `> TC: ${rows.length} · đã publish: ${publishedCount} · execute: ${executed} · FAIL: ${failed} · có bug: ${withBug} · bug keys: ${bugKeysAll.join(', ') || '—'}`,
-    `> Lỗ hổng: ${rows.length - published} TC chưa publish · ${rows.length - executed} TC chưa execute.`, '',
+    `> TC: ${rows.length} · đã publish: ${knowPublish ? publishedCount : 'không rõ'} · execute: ${executed} · FAIL: ${failed} · có bug: ${withBug} · bug keys: ${bugKeysAll.join(', ') || '—'}`,
+    `> Lỗ hổng: ${knowPublish ? `${rows.length - publishedCount} TC chưa publish` : 'publish: KHÔNG RÕ (chưa có mirror test-cases/from-aio — chạy `npm run aio:pull:write`)'} · ${rows.length - executed} TC chưa execute.`, '',
     '| REQ | Module | TC | PUBLISH | AUTO | EXEC | BUG | Flags |', '|---|---|---|---|---|---|---|---|'];
-  for (const r of rows) L.push(`| ${r.req} | ${r.module} | ${r.tcId} | ${r.published ? 'yes' : '—'} | ${r.auto} | ${r.exec} | ${r.bug} | ${r.flags} |`);
+  for (const r of rows) L.push(`| ${r.req} | ${r.module} | ${r.tcId} | ${r.published === null ? '?' : (r.published ? 'yes' : '—')} | ${r.auto} | ${r.exec} | ${r.bug} | ${r.flags} |`);
   fs.writeFileSync(path.join(T, 'reports', 'traceability-matrix.md'), L.join('\n'), 'utf8');
 
-  console.log(`[trace] ${taskKey}: ${rows.length} TC · publish ${published} · execute ${executed} · FAIL ${failed} · bug ${withBug}`);
+  console.log(`[trace] ${taskKey}: ${rows.length} TC · publish ${knowPublish ? publishedCount : '?'} · execute ${executed} · FAIL ${failed} · bug ${withBug}`);
   console.log(`[trace] → ${path.join(T, 'reports', 'traceability-matrix.md')} (+ .csv)`);
   if (rows.length === 0) console.log('[trace] (0 TC — kiểm test-cases/*.md có bảng 9 cột không).');
 }
 
-main();
+main().catch((e) => { console.error('[trace] LỖI:', e.message); process.exit(1); });
