@@ -25,8 +25,8 @@ Dùng prompt này khi cần chạy lại testcase fail trước đó hoặc veri
 |---|---|---|
 | `PROJECT_OUTPUT_DIR` | Có | Thư mục output gốc của project. |
 | `TASK_KEY` | Có | Phạm vi task/feature. |
-| `TESTCASE_SOURCE` | Không bắt buộc | **`xray` (mặc định)** hoặc `excel`. `xray`: kéo testcase liên quan từ Xray về local trước khi rerun (xem dưới); `excel`: dùng Excel local. |
-| `PUSH_XRAY_EXECUTION` | Không bắt buộc | `1` để đẩy trạng thái các TC vừa rerun lên Xray dưới dạng Test Execution mới (xem dưới). |
+| `TESTCASE_SOURCE` | Không bắt buộc | **`aio` (mặc định)** hoặc `excel` (`xray` = legacy). `aio`: kéo testcase liên quan từ AIO về local trước khi rerun (xem dưới); `excel`: dùng Excel local. |
+| `PUSH_XRAY_EXECUTION` | Không bắt buộc | `1` để đẩy trạng thái các TC vừa rerun lên TMS dưới dạng cycle/execution mới (tên biến giữ nguyên cho tương thích ngược; từ GĐ5 nó điều khiển đường **AIO**). |
 | `RUN_ID` | Không bắt buộc | Bắt buộc nếu rerun song song cùng một `TASK_KEY`. |
 | `TC_IDS_OR_N/A` | Không bắt buộc | Danh sách testcase cần rerun. |
 | `JIRA_BUG_KEYS_OR_N/A` | Không bắt buộc | Bug cần verify hoặc giữ mở. |
@@ -46,14 +46,14 @@ Dùng prompt này khi cần chạy lại testcase fail trước đó hoặc veri
 | Bước | Hành động |
 |---:|---|
 | 1 | Echo scope `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `TASK_OUTPUT_DIR`, `RUN_ID` nếu có; nếu sai task thì dừng. |
-| 1b | **Mặc định (`TESTCASE_SOURCE=xray`)**: kéo testcase liên quan từ Xray về local trước khi rerun — `node scripts/integrations/jira/pull_testcases.js --only <TC_IDS> --write` (bỏ `--only` để kéo cả task). Dùng `test-cases/from-xray/*.xlsx` làm nguồn expected. Cần `XRAY_CLIENT_ID`/`XRAY_CLIENT_SECRET`; nếu report cảnh báo TC thiếu steps thì dừng và báo user. Bỏ qua bước này nếu `TESTCASE_SOURCE=excel`. |
+| 1b | **Mặc định (`TESTCASE_SOURCE=aio`)**: kéo testcase liên quan từ AIO về local trước khi rerun — `npm run aio:pull:write -- --story <JIRA_STORY_KEY>`. Dùng `test-cases/from-aio/*.xlsx` làm nguồn expected. Cần `AIO_API_TOKEN`; nếu report cảnh báo TC thiếu steps thì dừng và báo user. Bỏ qua bước này nếu `TESTCASE_SOURCE=excel`. (Legacy `xray`: `node scripts/integrations/jira/pull_testcases.js --only <TC_IDS> --write --test-management-tool xray`.) |
 | 2 | Xác định rerun type: failed testcase, fixed Jira bug hoặc automation/setup issue trong phạm vi bug rerun. |
 | 3 | Đọc report/task artifact gần nhất theo file priority bên dưới. |
 | 4 | Rerun targeted scope trước, không chạy full suite nếu không cần. |
 | 5 | Nếu fail/skip do automation/setup/data/env, sửa root cause và rerun lại. |
 | 6 | Nếu `PASS` thật cho Jira bug đã fix, attach evidence **đã annotate** + comment ngắn gọn **nhúng ảnh inline** rồi chuyển bug sang `Done` (chi tiết ở mục "Re-run bug Jira đã được fix"). |
 | 7 | Nếu `FAIL`, `SKIP` hoặc `BLOCKED`, giữ bug mở, ghi lý do vào report local; nếu user yêu cầu thì comment tag Dev + evidence annotate (đỏ = điểm lỗi). |
-| 7b | **Sau khi rerun xong — TỰ TẠO Test Execution, KHÔNG cần QA xác nhận** (re-run là mốc verify rõ ràng; trừ `PUSH_XRAY_EXECUTION=0`): cập nhật `test-results[/runs/RUN_ID]/testcase-status.json` cho các TC vừa chạy — **case FAILED phải kèm `steps[]`/`failedStep` + evidence bước lỗi** → `node scripts/integrations/jira/push_test_execution.js --task [TASK_KEY] --story [JIRA_STORY_KEY] --project-output [PROJECT_OUTPUT_DIR] --auto` (+ `--run-id [RUN_ID]`), `--dry-run` xem nhanh rồi `--write` luôn (không chờ QA). **Cơ chế chung** (guard · status-map · step-level · assignee · đóng execution · lưu ý coverage · evidence ảnh/video cho MỌI case+step · comment Test Run gọn) **giống Phase 2 §13b** (`run_phase2_template.md`) — không lặp lại ở đây. 🔀 **Sang AIO** thì thay bằng `npm run aio:push-exec:apply -- --task [TASK_KEY] --run-id [RUN_ID] --cycle-title "[TASK_KEY] Test Execution - Lần <N>"` (cùng đầu vào, cùng gate; cycle mới cho mỗi lượt re-run). **Đặc thù re-run (built-in):** title `Lần <N>` (N = số execution + 1); tự dò & link Test Plan theo sprint (`[Test Plan] <tên sprint>`); tự điền field (Test Execution ← copy từ Story: Sprint/Start date/SAPP-Due date — **KHÔNG** gắn Fix versions vào Details, bật lại `--fill-fixversions`/`XRAY_EXECUTION_FILL_FIXVERSIONS=1`; Test Plan ← theo sprint, chỉ khi trống). Override `--test-plan`/`--no-test-plan`; `--execution-key [KEY]` để append vào execution có sẵn (giữ tên). |
+| 7b | **Sau khi rerun xong — TỰ TẠO cycle trên AIO, KHÔNG cần QA xác nhận** (re-run là mốc verify rõ ràng; trừ `PUSH_XRAY_EXECUTION=0`): cập nhật `test-results[/runs/RUN_ID]/testcase-status.json` cho các TC vừa chạy — **case FAIL phải kèm `steps[]`/`failedStep` + evidence bước lỗi** → `npm run aio:push-exec -- --task [TASK_KEY] --run-id [RUN_ID] --cycle-title "[TASK_KEY] Test Execution - Lần <N>"` xem preview rồi `npm run aio:push-exec:apply -- ...` luôn (không chờ QA). **Cơ chế chung** (hai gate trước khi ghi · status-map từ `verdict_taxonomy.json` · evidence neo xuống từng bước · guard 0-conclusive · loại case `carriedOver` · comment run gọn) **giống Phase 2 §13b** (`run_phase2_template.md`) — không lặp lại ở đây. **Đặc thù re-run:** mỗi lượt một cycle mới, title `Lần <N>` (N = số lần chạy + 1); `--folder "<Tên sprint>"` để cycle nằm đúng thư mục sprint (AIO không có Test Plan). Chạy lại cùng `--cycle-title` thì dùng lại cycle cũ thay vì đẻ trùng. |
 | 8 | Lặp lại cho đến khi toàn bộ bug trong scope đã `Done` hoặc còn blocker/product fail cần Dev xử lý. |
 
 ## An toàn khi chạy song song nhiều story

@@ -8,7 +8,7 @@ Dùng prompt này khi tài liệu requirement/design/API đã được cập nh�
 
 Phase này chỉ chuẩn bị review package. Nó không merge testcase chính, không execute testcase và không tự chuyển sang Phase 2.
 
-Sau khi Human Review approve, `run_requirement_apply_approved.md` sẽ (tự động theo flow): merge testcase → **re-publish TC UPDATED+NEW lên Xray** (đúng subfolder Test Repository) → **pull affected từ Xray** làm nguồn execute → partial execute subset → **đẩy Test Execution + link Test Plan**. Draft ở phase này vì vậy cần TC ID + lifecycle + source trace rõ để phase sau map đúng.
+Sau khi Human Review approve, `run_requirement_apply_approved.md` sẽ (tự động theo flow): merge testcase → **re-publish TC UPDATED + NEW lên AIO Tests** → optional Deprecate case rời Excel → partial execute subset → đẩy cycle.
 
 ## When To Use
 

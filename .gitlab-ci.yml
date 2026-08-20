@@ -1,6 +1,6 @@
 # GitLab CI — bản tương đương .github/workflows (dùng GitHub thì xoá file này, và ngược lại).
 # static: mỗi push/MR (không secret). integration + regression: manual/scheduled.
-# Secrets khai ở Settings → CI/CD → Variables (masked/protected): JIRA_*, XRAY_*, OPS_*, CONFLUENCE_*.
+# Secrets khai ở Settings → CI/CD → Variables (masked/protected): JIRA_*, AIO_API_TOKEN, OPS_*, CONFLUENCE_*.
 
 stages:
   - static

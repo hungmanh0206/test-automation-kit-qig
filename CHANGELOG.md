@@ -7,6 +7,68 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-08-20 — Xray → AIO Tests: đóng nốt LỚP TÀI LIỆU + dựng máy kiểm TMS-drift
+
+Bối cảnh: **GĐ1–GĐ5 đã chuyển xong ở tầng CODE** (`715f8e4`, `ac49e7a`, `d5ce910`, `92ab7df`, merge `6446dd6`):
+8 script trong `scripts/integrations/aio/`, công tắc duy nhất `TEST_MANAGEMENT_TOOL` mặc định `aio`
+(`scripts/integrations/tms.js`), 5 entrypoint Xray **tự chặn** kèm lệnh thay thế, gate nhận cả
+`from-xray`/`from-aio`. CHANGELOG chưa có mục cho đợt đó — mục này ghi bù, cùng với phần còn thiếu.
+
+**Vấn đề đo được (20/08/2026)**: code có răng nhưng **tài liệu thì không gì gác** — 23 file hướng dẫn
+(~250 lần nhắc) vẫn dạy Xray là đường chính: `prompt_templates/phase1/04_auto_publish_jira.md` 41 lần nhắc
+Xray / 1 lần nhắc AIO, `run_phase2_template.md` 25/5, `USER_GUIDE.md` 69/0, `README.md` 24/0,
+`QUICKSTART.md` 16/0. `.agent/workflows/phase2_01_prepare_execution.md` **tự mâu thuẫn** (dòng 19 nói mặc
+định `aio`, dòng 39 nói mặc định `xray`). Nghĩa là **agent chạy đúng theo prompt sẽ đụng thẳng cửa chặn**
+vừa dựng, còn người đọc thì học sai mô hình. Đúng kiểu lỗ hổng kit gặp nhiều lần: thiếu MÁY KIỂM, không
+thiếu quy định.
+
+**Changed — lớp tài liệu (AIO là đường chính, Xray xuống mục "LEGACY")**:
+- Viết lại: `prompt_templates/phase1/04_auto_publish_jira.md`, `.agent/workflows/phase1_04_auto_publish_jira.md`,
+  `.agent/skills/shared/jira_testcase_publisher/SKILL.md`, `partial-rerun/run_xray_test_cleanup.md`,
+  §5.5.0–5.5.2 của `USER_GUIDE.md` (mô hình Case → Cycle → Run thay Test → Test Plan → Test Execution),
+  §13b của `run_phase2_template.md`, mục "Mô hình Traceability" của `README.md`.
+- Sửa "mặc định là Xray" → "mặc định là AIO" ở `RULE_GLOBAL.md`, `.agent/rules/core_rules.md`,
+  4 workflow Phase 1/2, 2 prompt execute, 3 template run, 3 file `partial-rerun`, `QUICKSTART.md`,
+  `.agent/config/project_context.md`, `verdict_taxonomy.json` (chú thích), `skills/INDEX.md`.
+- Glossary web `docs/library/src/**` (+ build lại `index.html`): status ánh xạ sang **AIO** thay Xray
+  (`aio:` thay `xray:`, `BLOCKED_SETUP → Blocked` thay vì bị ép thành "TO DO"), `XRAY_MODEL` → `TMS_MODEL`.
+- `profiles/task.env.example`: nói rõ `JIRA_XRAY_ASSIGNEE`/`XRAY_EXECUTION_DONE_STATUS` **chỉ còn tác dụng ở
+  đường legacy** (case/cycle AIO không phải Jira issue nên không có assignee/workflow).
+- `.env`: khai **tường minh** `TEST_MANAGEMENT_TOOL=aio` + `TESTCASE_SOURCE=aio` thay vì sống nhờ default.
+
+**Fixed — CI đang sẽ đỏ mà chưa ai chạy tới**: `.github/workflows/integration-check.yml` gọi
+`npm run jira:testcase-publish:dry-run`, mà lệnh đó **tự chặn** khi tool là `aio` ⇒ job chắc chắn fail.
+Nay: env `AIO_API_TOKEN` thay `XRAY_CLIENT_*`, bước dry-run chuyển sang `npm run aio:publish` (tự tìm Excel
+canonical của task, không có thì bỏ qua chứ không fail giả).
+
+**Added — live-check AIO trong `integration:check:live`**: trước đây nhãn ghi "Jira/Confluence/Xray" nhưng
+**không có** phép kiểm Xray nào. Nay có `testAio()` gọi `GET /project/<KEY>/config` — và **coi body rỗng là
+lỗi**, vì rate limit của AIO trả body rỗng chứ không phải 429 (đặc tính đã đo). Nghiệm thu thật: 4/4 service OK.
+
+**Added — máy kiểm `TMS-DRIFT` trong `gate:policy`** (`scripts/qa/policy_source_check.js`): chặn 2 luật trên
+tài liệu hướng dẫn (`prompt_templates/**`, `.agent/**`, `partial-rerun/**`, `docs/library/src/**`, README /
+QUICKSTART / USER_GUIDE / RULE_GLOBAL / CLAUDE):
+1. dòng dạy lệnh Xray legacy (`jira:testcase-publish`, `jira:testcase-cleanup`, 5 script Xray);
+2. dòng mô tả `xray` là **mặc định**.
+Thoát bằng cách ghi rõ trên CHÍNH dòng đó: `legacy`/`đóng băng`/`--test-management-tool xray`.
+- **Chống báo oan**: bỏ TÊN BIẾN `*_XRAY_*`/`XRAY_*` trước khi soi — `PUSH_XRAY_EXECUTION` giữ tên cho tương
+  thích ngược nhưng nay điều khiển đường AIO; không loại thì **3/15 hit đầu là oan**, mà gate báo oan thì
+  người ta tắt gate chứ không sửa nội dung.
+- **Có răng thật**: lượt đầu bắt **15 dòng** tôi tự sót (12 thật + 3 oan) — trong đó `README.md` còn 3 lệnh
+  publish Xray ở bảng Common Commands, `partial-rerun` còn 2 lệnh cleanup, glossary còn 2 `cmd:`.
+- **Đối chứng âm**: bơm lại bản CŨ của `04_auto_publish_jira.md` từ `git show HEAD:` ⇒ gate ra **4 hit**;
+  phục hồi ⇒ xanh. Không dựa fixture, chạy trên nội dung thật.
+- `partial-rerun` được thêm vào `SEARCH_ROOTS` của check "npm script mồ côi": nó là **điểm vào** thật, thiếu
+  nó thì lệnh chỉ còn nằm ở mục LEGACY của nhánh phụ sẽ bị báo mồ côi oan.
+
+**Added — 4 test khoá luật** (`tests/fe/infra/gates.spec.ts`): repo thật phải sạch · dòng vi phạm phải bị chặn ·
+dòng có nhãn legacy KHÔNG bị chặn · tên biến `PUSH_XRAY_EXECUTION` KHÔNG bị coi là "dạy Xray". Probe là **file
+thật** ghi vào root đang được quét rồi xoá trong `finally` (gate đọc đĩa). Nghiệm thu: **53/53** spec gates xanh.
+
+**Còn lại (chờ user quyết)**: `aio:migrate-tc`/`aio:migrate-exec` **chưa chạy apply lần nào** — không có
+artefact di trú nào trong `outputs/`. Xray đóng băng sau **21/08/2026**, nên nếu muốn giữ lịch sử Test/Run cũ
+của 9 task đã publish thì phải chạy TRƯỚC mốc đó; bỏ thì Xray thành nơi chỉ-đọc để tra cứu.
+
 ## 2026-08-19 (r) — mở đường CHẶN cho ②: verification theo ASSERTION, không theo bước
 
 Lượt (n) đo được 68% case ghi ít verification hơn số assertion, nhưng **cố ý chỉ cảnh báo** vì `steps[]` là *proxy*

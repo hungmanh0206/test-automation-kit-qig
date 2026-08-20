@@ -23,7 +23,7 @@ Sinh bộ testcase đủ chi tiết để automation engineer có thể execute 
    - API/E2E/Permission nếu gắn với flow cụ thể thì vẫn đặt dưới nhóm business flow đó.
    - Chỉ dùng `API`, `E2E/Cross-app`, `Permission/Security` làm nhóm chính khi testcase không thuộc flow nghiệp vụ cụ thể.
    - Negative/Boundary/Error/Rollback là loại testcase hoặc label phụ, không phải nhóm chính nếu đã có business flow rõ.
-   - Label phụ theo layer/risk/priority sẽ được sinh khi publish Xray/Jira, không thêm cột riêng vào bảng testcase.
+   - Không thêm cột label riêng vào bảng testcase: AIO case không phải Jira issue nên không có label — nhóm chức năng thể hiện bằng **folder** AIO, TC ID nằm ở `automationKey`.
 3. Áp dụng kỹ thuật phù hợp:
    - Equivalence Partitioning
    - Boundary Value Analysis

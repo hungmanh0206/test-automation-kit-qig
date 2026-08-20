@@ -1,4 +1,4 @@
-# Integration check — MANUAL. Kiểm kết nối Jira/Confluence/Xray + DRY-RUN publish/bug.
+# Integration check — MANUAL. Kiểm kết nối Jira/Confluence/AIO Tests + DRY-RUN publish/bug.
 # KHÔNG publish/log Jira thật (giữ human gate --qa-approved là hành động local).
 name: integration-check
 
@@ -26,8 +26,9 @@ jobs:
       JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
       JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
       JIRA_USERNAME: ${{ secrets.JIRA_EMAIL }}
-      XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
-      XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+      AIO_API_TOKEN: ${{ secrets.AIO_API_TOKEN }}
+      AIO_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY }}
+      JIRA_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY }}
       CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
       CONFLUENCE_USERNAME: ${{ secrets.CONFLUENCE_USERNAME }}
       CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
@@ -39,12 +40,17 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: Live connection check (Jira/Confluence/Xray)
+      - name: Live connection check (Jira/Confluence/AIO Tests)
         run: npm run integration:check:live
 
-      - name: Dry-run publish testcase (KHÔNG publish thật)
+      # AIO là tool mặc định (GĐ5) ⇒ lệnh Xray cũ TỰ CHẶN, job sẽ đỏ nếu còn gọi. Publisher AIO nhận
+      # --file nên phải tìm Excel canonical của task; không có file thì bỏ qua bước (không fail giả).
+      - name: Dry-run publish testcase lên AIO (KHÔNG ghi thật)
         if: ${{ inputs.task_key != '' && inputs.story_key != '' && inputs.project_output_dir != '' }}
-        run: npm run jira:testcase-publish:dry-run -- --project-output "${{ inputs.project_output_dir }}" --task "${{ inputs.task_key }}" --story "${{ inputs.story_key }}"
+        run: |
+          f=$(ls "${{ inputs.project_output_dir }}/tasks/${{ inputs.task_key }}/test-cases/"*.xlsx 2>/dev/null | head -1)
+          if [ -z "$f" ]; then echo "Bỏ qua: không thấy Excel canonical trong test-cases/"; exit 0; fi
+          npm run aio:publish -- --file "$f" --story "${{ inputs.story_key }}"
 
       - name: Dry-run bug reporter (KHÔNG log bug thật)
         if: ${{ inputs.task_key != '' && inputs.story_key != '' && inputs.project_output_dir != '' }}

@@ -30,10 +30,10 @@ Phase này chỉ xử lý phần đã approve. Nó không đọc lại tài li�
 | `APPROVED_REVIEW_FILE` | Yes | Path tới `change/regen/review-checklist.md` đã được review. |
 | `APPROVED_TC_IDS` | Recommended | Nếu bỏ trống, lấy từ review checklist. |
 | `EXECUTION_SCOPE_NOTE` | Optional | Ghi chú nếu QA Lead muốn mở rộng subset. |
-| `REPUBLISH_XRAY` | Optional | `1` (mặc định nếu testcase từng publish) — re-publish TC UPDATED+NEW lên Xray sau merge (Step 2b). |
-| `TESTCASE_SOURCE` | Optional | `xray` (mặc định) hoặc `excel`. `xray`: sau re-publish, pull TC affected từ Xray làm nguồn execute. |
-| `PUSH_XRAY_EXECUTION` | Optional | `1` (mặc định như các phase) — tạo Test Execution + link Test Plan sau execute (Step 6b). |
-| `XRAY_TEST_PLAN_KEY` | Optional | Test Plan sprint để link Test Execution (kit chỉ link, không tạo). |
+| `REPUBLISH_XRAY` | Optional | `1` (mặc định nếu testcase từng publish) — re-publish TC UPDATED+NEW lên **AIO Tests** sau merge (Step 2b). Tên biến giữ nguyên cho tương thích ngược. |
+| `TESTCASE_SOURCE` | Optional | `aio` (mặc định) hoặc `excel` (`xray` = legacy). `aio`: sau re-publish, pull TC affected từ AIO làm nguồn execute; `excel`: execute từ Excel local đã merge. |
+| `PUSH_XRAY_EXECUTION` | Optional | `1` (mặc định như các phase) — tạo **cycle** trên AIO sau execute (Step 6b). Tên biến giữ nguyên cho tương thích ngược. |
+| Thư mục cycle | Optional | `--folder "<Tên sprint>"` để nhóm cycle theo sprint (AIO KHÔNG có Test Plan). |
 
 ## Gate Before Running
 
@@ -114,48 +114,47 @@ Sau merge:
 - Export/update Excel nếu Markdown testcase chính thay đổi.
 - Update `snapshot_context.json`.
 - Ghi `change/regen/merge-summary.md`.
-- Nếu Excel thay đổi và testcase đã từng publish lên Jira/Xray, ghi rõ recommended next step: chạy `partial-rerun/run_xray_test_cleanup.md` để cleanup mirror; không cleanup tự động nếu chưa có QA approval riêng.
+- Nếu Excel thay đổi và testcase đã từng publish lên TMS, ghi rõ recommended next step: chạy `partial-rerun/run_xray_test_cleanup.md` (Deprecate case rời Excel) sau khi re-publish.
 
-### Step 2b: Re-publish Xray (TC UPDATED + NEW)
+### Step 2b: Re-publish testcase lên AIO (TC UPDATED + NEW)
 
-Chỉ chạy khi testcase đã từng publish lên Xray (có `reports/jira-testcase-publish.json`) và `REPUBLISH_XRAY != 0`. Mục đích: đẩy phần thay đổi lên Xray để Xray khớp Excel và làm **nguồn execute**.
+Chỉ chạy khi testcase đã từng publish lên TMS (có `reports/aio-testcase-publish-summary.md`, hoặc `reports/jira-testcase-publish.json` với bộ cũ) và `REPUBLISH_XRAY != 0`. Mục đích: đẩy phần thay đổi lên AIO để AIO khớp Excel và làm **nguồn execute**.
 
-- Chạy `publish_testcases.js` **chỉ cho TC UPDATED + NEW đã approve** — dedup đảm bảo **update TC cũ theo TC ID + tạo TC mới**, KHÔNG re-create toàn bộ:
-  > 🔀 `TEST_MANAGEMENT_TOOL=aio` → `npm run aio:publish -- --file <Excel> --story <JIRA_STORY_KEY> --only <UPDATED+NEW TC_IDs> --folder-root "<base folder như lần trước>"` rồi thêm `--apply --qa-approved`. Dedup bên AIO khớp theo `automationKey` (= TC ID) nên cũng UPDATE chứ không tạo trùng — quan trọng vì **AIO không có API xoá**. Lệnh Xray sẽ tự chặn.
+- Chạy `aio:publish` **chỉ cho TC UPDATED + NEW đã approve** — dedup theo `automationKey` (= TC ID) đảm bảo **update case cũ + tạo case mới**, KHÔNG re-create toàn bộ (quan trọng vì **AIO không có API xoá**):
 
 ```powershell
-node scripts/integrations/jira/publish_testcases.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --only <UPDATED+NEW TC_IDs> --test-repo-folder "<base folder như lần publish trước>" --dry-run
-node scripts/integrations/jira/publish_testcases.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --only <UPDATED+NEW TC_IDs> --test-repo-folder "<base folder như lần publish trước>" --publish --qa-approved
+npm run aio:publish -- --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx --story <JIRA_STORY_KEY> --only <UPDATED+NEW TC_IDs> --folder-root "<base folder như lần publish trước>"
+npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --only <UPDATED+NEW TC_IDs> --folder-root "<base folder như lần publish trước>" --qa-approved
 ```
 
-- Dùng lại **đúng `--test-repo-folder` base** như lần publish gốc; subfolder theo sheet chức năng đã bật mặc định (`XRAY_TEST_REPO_SUBFOLDER_BY_SHEET=1`) → TC tự vào đúng subfolder (kể cả TC NEW).
-- Dry-run trước để xác nhận số update/created + folder đúng, rồi `--publish --qa-approved`.
-- Precondition mới đi kèm khi cần: thêm `--push-xray-preconditions`.
-- Nếu testcase CHƯA từng publish Xray → bỏ qua bước này (chạy `TESTCASE_SOURCE=excel`).
+- Dùng lại **đúng `--folder-root`** như lần publish gốc; nhóm chức năng thành subfolder cấp 2 (`<root>/<nhóm>`) nên TC NEW tự vào đúng chỗ. ⚠ Bộ migrate từ Xray có cây 3 cấp — `aio:publish` chỉ dựng 2 cấp, nên với bộ đó hãy vá tại chỗ bằng `--only`.
+- Dry-run là **mặc định**: xác nhận số update/created + cây folder đúng, rồi mới `aio:publish:apply ... --qa-approved`.
+- Precondition đi theo case (field `precondition`), không cần flag riêng — AIO không có Precondition issue.
+- Nếu testcase CHƯA từng publish lên AIO → bỏ qua bước này (chạy `TESTCASE_SOURCE=excel`).
 
-### Step 3: Optional Xray Test Cleanup (chạy SAU Step 2b re-publish)
+### Step 3: Optional Testcase Cleanup — Deprecate (chạy SAU Step 2b re-publish)
 
 > Cleanup CHỈ gắn label stale/restore cho TC bị **bỏ khỏi Excel** — KHÔNG tạo/không update TC (việc đó do Step 2b re-publish). Chạy sau re-publish để dọn TC không còn hợp lệ.
 
 Chỉ chạy khi tất cả điều kiện đúng:
 
 - Excel/testcase canonical đã merge theo Human Review approval.
-- Testcase đã từng publish lên Jira/Xray trước đó.
+- Testcase đã từng publish lên AIO (hoặc Xray, với bộ cũ) trước đó.
 - QA/Human Review xác nhận muốn cleanup mirror.
 
 Mặc định chỉ dry-run:
 
 ```powershell
-npm run jira:testcase-cleanup:dry-run -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY>
+npm run aio:deprecate-stale -- --story <JIRA_STORY_KEY> --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx
 ```
 
 Apply thật chỉ khi có approval riêng:
 
 ```powershell
-npm run jira:testcase-cleanup -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY> --apply --qa-approved
+npm run aio:deprecate-stale:apply -- --story <JIRA_STORY_KEY> --file <...>.xlsx
 ```
 
-Không hard delete Xray `Test` hoặc `Test Set`. Stale Test chỉ được label cleanup. Unlink khỏi Story/Task chỉ khi QA yêu cầu thêm `--unlink`.
+Không xoá case. Case rời khỏi Excel chỉ được chuyển `caseStatus` sang **Deprecated** (`npm run aio:deprecate-stale`), giữ nguyên lịch sử run; TC quay lại Excel thì trả về Published.
 
 ### Step 4: Select Partial Execution Scope
 
@@ -181,13 +180,13 @@ Output:
 change/partial-execution/selected-tc-list.txt
 ```
 
-**Nguồn execute (mặc định `TESTCASE_SOURCE=xray`):** sau Step 2b re-publish, kéo **các TC affected** từ Xray về canonical local để execute (Xray là source of truth, đúng subset — không kéo cả task):
+**Nguồn execute (mặc định `TESTCASE_SOURCE=aio`):** sau Step 2b re-publish, kéo testcase từ AIO về canonical local để execute (AIO là source of truth khi execute):
 
 ```powershell
-node scripts/integrations/jira/pull_testcases.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --only <selected TC_IDs> --write
+npm run aio:pull:write -- --story <JIRA_STORY_KEY>
 ```
 
-→ execute từ `test-cases/from-xray/*.xlsx`. Nếu `TESTCASE_SOURCE=excel`: execute từ Excel local đã merge.
+→ execute từ `test-cases/from-aio/*.xlsx` (chỉ chạy subset TC affected đã chọn). Nếu `TESTCASE_SOURCE=excel`: execute từ Excel local đã merge.
 
 ### Step 5: Execute And Capture Evidence
 
@@ -219,20 +218,20 @@ change/partial-execution/artifacts/
 | `SKIP_BLOCKED` | Skip có lý do hợp lệ và không thể tránh ngay. |
 | `NEED_REVIEW` | Expected/source vẫn chưa đủ rõ, không merge/execute tiếp. |
 
-### Step 6b: Đẩy Test Execution + link Test Plan (khi `PUSH_XRAY_EXECUTION=1`)
+### Step 6b: Đẩy kết quả lên AIO — tạo cycle (khi `PUSH_XRAY_EXECUTION=1`)
 
-Sau khi phân loại, tạo Test Execution trên Xray cho **subset đã execute** — như các phase khác:
+Sau khi phân loại, tạo **cycle** trên AIO cho **subset đã execute** — như các phase khác:
 
-- Ghi `test-results[/runs/<RUN_ID>]/testcase-status.json` cho subset đã execute (status theo tên Xray: `PASSED`/`FAILED`/`TO DO`; bản ghi `FAILED` kèm step-level/evidence).
-- Tạo Test Execution + link Test Plan sprint:
+- Ghi `test-results[/runs/<RUN_ID>]/testcase-status.json` cho subset đã execute (status theo canonical trong `.agent/config/verdict_taxonomy.json`; bản ghi `FAIL` kèm step-level + evidence bước lỗi).
+- Tạo cycle (và thư mục cycle theo sprint):
 
 ```powershell
-node scripts/integrations/jira/push_test_execution.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --only <selected TC_IDs> --test-plan <XRAY_TEST_PLAN_KEY> --dry-run
-node scripts/integrations/jira/push_test_execution.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --only <selected TC_IDs> --test-plan <XRAY_TEST_PLAN_KEY> --write
+npm run aio:push-exec -- --task <TASK_KEY> --only <selected TC_IDs> --folder "<Tên sprint>" [--run-id <RUN_ID>]
+npm run aio:push-exec:apply -- --task <TASK_KEY> --only <selected TC_IDs> --folder "<Tên sprint>" [--run-id <RUN_ID>]
 ```
 
 - **Chỉ gồm subset đã execute** (partial), không phải toàn bộ task.
-- Link vào Test Plan **có sẵn** (`--test-plan`/`XRAY_TEST_PLAN_KEY`); kit chỉ link, không tạo Test Plan.
+- AIO KHÔNG có Test Plan: dùng `--folder "<Tên sprint>"` để nhóm cycle. Chạy lại cùng `--cycle-title` thì dùng lại cycle cũ, không đẻ cycle trùng.
 - Cơ chế chung (status-map, validate theo `getStatuses`, tên execution, pre-create field bắt buộc, đóng execution) **giống Phase 2 §13b** — xem `prompt_templates/run_phase2_template.md`, không lặp lại ở đây.
 - Dry-run trước rồi `--write`.
 
@@ -268,7 +267,7 @@ Không log Jira trực tiếp trong Partial Rerun. Jira chỉ được log sau k
 - Không đọc tài liệu nguồn để tự regenerate lại trong Phase 2.
 - Không chạy full regression mặc định.
 - Không log Jira bug trực tiếp từ Partial Rerun này.
-- Không hard delete hoặc cleanup Xray mirror nếu chưa có QA approval riêng.
+- Không cleanup (Deprecate) case trên AIO nếu chưa có QA approval riêng.
 - Re-publish (Step 2b) **chỉ TC UPDATED + NEW** (dedup: update theo TC ID + tạo mới), KHÔNG re-create toàn bộ; dùng lại đúng base folder + subfolder-by-sheet.
 - Execute + Test Execution chỉ cho **subset affected/UPDATED/NEW đã chọn**, không toàn bộ; Test Plan chỉ **link** (không tạo).
 - Nếu có `FAIL_PRODUCT_CANDIDATE`, phải tạo `bug-candidates.md` thay vì log Jira.
@@ -280,12 +279,12 @@ Trả lời ngắn:
 
 - Review file đã dùng.
 - TC đã merge.
-- Re-publish Xray summary (updated/created + folder) nếu chạy Step 2b.
+- Re-publish AIO summary (updated/created + cây folder) nếu chạy Step 2b.
 - TC đã execute (subset).
 - Pass/fail/skip.
 - Evidence path.
 - Test Execution key + Test Plan link nếu chạy Step 6b.
-- Xray cleanup summary path nếu đã chạy cleanup mirror.
+- Cleanup (Deprecate) summary path nếu đã chạy cleanup.
 - Bug candidate path nếu có.
 - Risk/blocker còn lại.
 - Có cần Phase 2/Main Flow triage bug không.

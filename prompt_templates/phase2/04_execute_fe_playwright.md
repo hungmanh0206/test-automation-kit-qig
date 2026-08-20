@@ -5,14 +5,14 @@
 > ⚡ **Kỷ luật execute (RULE_GLOBAL §"Execution Discipline"):** batch NHIỀU case/1 lượt (ÍT script toàn diện, chạy song song — không "mỗi case 1 vòng"); KHÔNG mặc định TODO/SKIP khi chưa thử (dùng hết fixture/deal/account đã cấp, case negative tự tạo input); KHÔNG hỏi lắt nhắt (gom câu hỏi 1 lần); báo cáo gộp, ít vòng.
 
 > 🛑 **CHECKLIST 6 KHỐI — xác nhận TRƯỚC KHI execute** (forcing function; `output_gate` sẽ **CHẶN** nếu output vi phạm — đọc & làm, đừng lướt):
-> 1. **Nguồn & scope** — `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (Xray/excel) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
+> 1. **Nguồn & scope** — `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (AIO/excel) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
 > 2. **Oracle độc lập** — mỗi case có "Kết quả mong đợi" cụ thể (giá trị/URL/element theo spec). Oracle rỗng hoặc app==app (tautology) → DỪNG, lấy giá trị spec. *(gate: oracle-rỗng = CHẶN · tautology = cảnh báo)*
 > 3. **Batch & drive thật** — gom NHIỀU case/ÍT script chạy song song; dùng hết fixture/deal/account; case negative tự tạo input. KHÔNG TODO/SKIP khi chưa thử.
 > 4. **Phân tầng kết quả** — mỗi case → PASS/FAIL/SKIP/BLOCKED_SETUP/SKIP_SETUP. FAIL phải PHÂN TẦNG: product bug vs `setup_failure` vs infra/flaky. "Không phán được" KHÔNG thành PASS. *(gate: FAIL thiếu tầng-lỗi = CHẶN)*
 > 5. **Loại flaky** — FAIL rerun 2–3 lần loại flaky/setup TRƯỚC khi kết luận product bug / log Jira.
 > 6. **Evidence** — mọi case (PASS+FAIL)+step có ảnh/video đúng màn, highlight, mask PII; case phức tạp có video. CẤM `.json/.md/.log`. *(gate: thiếu evidence/step-status = CHẶN)*
 
-> 📋 **Attestation (G6) — sau execute, ghi vào `testcase-status.json`:** field `attestation` = `{ "oracleSource": "<xray|spec|figma|api-contract>", "executed": <số case đã chạy>, "allEvidenceAttached": true, "failuresClassified": true, "rerunDone": true }`. Gate ĐỐI CHIẾU tự-khai với sự thật (executed thật, evidence, tầng-lỗi) — lệch = cảnh báo. Khai ĐÚNG, đừng tick suông.
+> 📋 **Attestation (G6) — sau execute, ghi vào `testcase-status.json`:** field `attestation` = `{ "oracleSource": "<aio|spec|figma|api-contract>", "executed": <số case đã chạy>, "allEvidenceAttached": true, "failuresClassified": true, "rerunDone": true }`. Gate ĐỐI CHIẾU tự-khai với sự thật (executed thật, evidence, tầng-lỗi) — lệch = cảnh báo. Khai ĐÚNG, đừng tick suông.
 
 > 🧩 **Helper (tuỳ chọn) — `scripts/utils/test_context.js`:** automation standalone có thể `const ctx = createTestContext({ taskKey, tcId })` để gom sẵn 1 chỗ: `ctx.evidence()` (EvidenceRecorder đúng task/run), `ctx.onCleanup(fn)`/`ctx.runCleanup()` (dọn data LIFO), `ctx.taskOutputDir`/`ctx.metadata` — thay vì tự wire runtime/evidence/cleanup rời rạc.
 
@@ -31,7 +31,7 @@ Framework:
 - Testcase output: cập nhật `Status` = PASS/FAIL/SKIP và `Actual Result` sau execution.
 
 Input:
-- Test Cases: nguồn canonical local theo `TESTCASE_SOURCE` — **mặc định `xray`** (`<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-xray/*.xlsx`, kéo từ Xray ở Bước 0), hoặc `excel` (`[PATH_TO_TESTCASE_XLSX]` / `test-cases/*.xlsx`). Execute đọc file local — không gọi Jira/Xray từng case.
+- Test Cases: nguồn canonical local theo `TESTCASE_SOURCE` — **mặc định `aio`** (`<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-aio/*.xlsx`, kéo bằng `npm run aio:pull:write -- --story [JIRA_STORY_KEY]` ở Bước 0), hoặc `excel` (`[PATH_TO_TESTCASE_XLSX]` / `test-cases/*.xlsx`); `xray` là legacy. Execute đọc file local — không gọi AIO/Jira từng case.
 - URL: [URL staging]
 - Credentials: lấy từ env variables, không hardcode credential.
   - **Login helper dùng chung**: mỗi app 1 helper ở `tests/fe/support/<app>Login.ts` (+ `support/auth/` cho reuse-session). Login ĐÚNG 1 LẦN/worker rồi cache/reuse — nhiều hệ thống khoá theo SỐ LẦN đăng nhập (throttle/lockout).
@@ -46,7 +46,7 @@ Input:
 # Precondition Resolution Pass (bắt buộc, chạy TRƯỚC khi generate/execute)
 > 📚 **TRA KHO HỌC TRƯỚC KHI TỰ MÒ** (rẻ hơn mò lại nhiều lần, và đây là chỗ 80% thời gian bị tiêu):
 > - **`knowledge/setup_recipes/`** — đã có ai dựng state này chưa? Đọc `steps` (ĐÚNG THỨ TỰ) + `pitfalls` (thứ chỉ biết sau khi vấp) + `verification`. Dựng xong mà chưa verify thì coi như chưa có state.
-> - **`knowledge/environment/`** — trước khi kết luận "app lỗi": token TTL, login throttle/lockout, headless trắng, quirk toolchain (Jira/Xray/HubSpot) đều nằm ở đây. Fail vì mấy thứ này là `setup_failure`/`infra`, KHÔNG phải product bug.
+> - **`knowledge/environment/`** — trước khi kết luận "app lỗi": token TTL, login throttle/lockout, headless trắng, quirk toolchain (Jira/AIO/HubSpot) đều nằm ở đây. Fail vì mấy thứ này là `setup_failure`/`infra`, KHÔNG phải product bug.
 > - **`knowledge/locators/`** — element khó (menu ⋮, popup, cổng thanh toán): đọc `symptom` xem có khớp triệu chứng đang gặp không, rồi làm theo `technique`. Fail ngắt quãng thường là SAI KỸ THUẬT THAO TÁC, không phải flaky vô cớ.
 > - **`knowledge/system/`** type `data_model` — `test_implication` cho biết mô hình dữ liệu bắt test phải làm khác đi thế nào (vd sau mutation phải resolve theo TÊN, không dùng lại id).
 >
@@ -55,7 +55,7 @@ Input:
 
 Cho toàn bộ selected TC, chạy pass này trước khi sinh hoặc chạy bất kỳ spec nào:
 
-1. Đọc selected TC từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-xray/*.xlsx`) trước, sau đó đọc `### Precondition Execution Matrix` trong `reports/phase1-summary.md` (và catalog `## Setup Strategy (Hợp đồng tiền điều kiện)` trong file testcase Markdown khi cần chi tiết).
+1. Đọc selected TC từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-aio/*.xlsx`) trước, sau đó đọc `### Precondition Execution Matrix` trong `reports/phase1-summary.md` (và catalog `## Setup Strategy (Hợp đồng tiền điều kiện)` trong file testcase Markdown khi cần chi tiết).
 2. Với mỗi selected TC, map `Setup Method`:
    - `api` → gọi business/public test API theo `Setup Source`.
    - `factory`/`test_hook` → dùng factory/hook tương ứng.
@@ -72,7 +72,7 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 
 # Các bước thực thi
 1. Echo `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `TASK_OUTPUT_DIR`, `RUN_ID` nếu có; nếu sai task thì dừng.
-2. Đọc `.agent/config/project_context.md` và testcase từ nguồn canonical local theo `TESTCASE_SOURCE` (mặc định `test-cases/from-xray/*.xlsx`; `excel` → `test-cases/*.xlsx`).
+2. Đọc `.agent/config/project_context.md` và testcase từ nguồn canonical local theo `TESTCASE_SOURCE` (mặc định `test-cases/from-aio/*.xlsx`; `excel` → `test-cases/*.xlsx`).
 3. Chạy `Precondition Resolution Pass` (section ở trên) cho toàn bộ selected TC trước khi generate/execute. KHÔNG tự đoán endpoint/payload/fixture nếu contract đã có; nếu contract sai/khác thực tế thì sửa contract và ghi rõ, không đoán ngầm.
 4. Generate/update Playwright script nếu missing/stale. Mặc định ghi spec/helper story-specific dưới `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/automation/`; chỉ ghi vào `tests/fe/` khi cần core suite và file đã namespace theo `[TASK_KEY]`.
 5. Execute testcase thật theo đúng steps/expected, không được skip để tăng pass rate.
@@ -240,7 +240,7 @@ Gen chỉ ghi 1 giá trị mẫu trong testcase (tránh nổ số case). Khi exe
 - **Verify đúng màn trước khi chấp nhận.** Sau khi chụp, PHẢI kiểm ảnh đúng màn/kết quả của case: KHÔNG phải trang lỗi (404/500/blank/timeout/"can't find that page"), KHÔNG phải màn sai bước, KHÔNG phải loading dở, KHÔNG phải cổng/màn của bước khác. Sai màn → sửa selector/điều hướng và chụp lại; không push evidence sai. (Với data động: xác nhận order/link còn sống trước khi drive — link chết trả 404.)
 - **Mỗi case dùng evidence của chính nó** — không mượn ảnh case khác, không placeholder. Không re-drive được (order đã tiêu, link chết) thì dùng đúng ảnh gốc thật của chính case đó và ghi rõ lý do.
 - Dùng helper chuẩn **`scripts/utils/evidence_recorder.js`** để tự động: highlight element → screenshot vào `test-results/artifacts/<TC_ID>/step-NN-<status>.png` → ghi `steps[]` (status + evidence từng bước) + evidence cấp case vào `test-results/testcase-status.json`. (API: `new EvidenceRecorder({taskKey, projectOutputDir, runId})` → `rec.case(tcId)` → `await c.step(page, tên, {highlight, assert|status, mask})` → `await c.finish()` → `rec.write()`.)
-- Khi push execution, chạy kèm `--with-evidence` để đính ảnh cấp case; per-step evidence luôn được đính từ `steps[]`. Push có gate `checkEvidenceCoverage`: nếu case execute thiếu step-evidence sẽ **WARN** (hoặc **lỗi** khi bật `--require-step-evidence`/`XRAY_REQUIRE_STEP_EVIDENCE=1`).
+- Khi push execution, chạy kèm `--with-evidence` để đính ảnh cấp case; per-step evidence luôn được đính từ `steps[]`. Push có gate `checkEvidenceCoverage`: nếu case execute thiếu step-evidence sẽ **WARN** (hoặc **lỗi** khi bật `--require-step-evidence`/`XRAY_REQUIRE_STEP_EVIDENCE=1`). Trên AIO (`npm run aio:push-exec`) evidence neo xuống **từng bước** khi `testcase-status.json` có `steps[].evidence`.
 
 # Phân loại failure và yêu cầu evidence
 Trước hết loại trừ `setup_failure` (failure ở bước setup/verify precondition trong Precondition Resolution Pass — sửa setup rồi rerun, KHÔNG log Jira bug). Chỉ khi precondition đã verify đạt mà behavior vẫn sai mới phân loại product failure theo 3 nhóm evidence:

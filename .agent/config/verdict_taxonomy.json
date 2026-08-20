@@ -41,14 +41,14 @@
       "loggableAsBug": false,
       "xray": "TODO",
       "aio": "Not Run",
-      "meaning": "Chưa thực thi (mặc định Xray) — KHÔNG dùng khi đã chạy được."
+      "meaning": "Chưa thực thi (AIO `1 Not Run`) — KHÔNG dùng khi đã chạy được."
     },
     "EXPANSION_FINDING": {
       "executed": true,
       "loggableAsBug": true,
       "xray": null,
       "aio": null,
-      "meaning": "Phát hiện từ MỞ RỘNG quanh case (5 trục), KHÔNG phải verdict của case gốc: app tự mâu thuẫn với chính nó (giá trị lệch giữa 2 bề mặt · mắt đứt trong chuỗi lưu trữ · field thừa/thiếu so tài liệu). Không cần oracle ngoài vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một nơi sai. CỐ Ý không map sang Xray status: trộn vào execution sẽ làm pass-rate mất nghĩa và triage lẫn lộn — báo riêng ở reports/expansion-findings.md."
+      "meaning": "Phát hiện từ MỞ RỘNG quanh case (5 trục), KHÔNG phải verdict của case gốc: app tự mâu thuẫn với chính nó (giá trị lệch giữa 2 bề mặt · mắt đứt trong chuỗi lưu trữ · field thừa/thiếu so tài liệu). Không cần oracle ngoài vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một nơi sai. CỐ Ý không map sang status run của TMS: trộn vào execution sẽ làm pass-rate mất nghĩa và triage lẫn lộn — báo riêng ở reports/expansion-findings.md."
     },
     "OBSERVATION": {
       "executed": true,

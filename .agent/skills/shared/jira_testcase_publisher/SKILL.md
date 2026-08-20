@@ -1,117 +1,99 @@
 ---
 name: jira_testcase_publisher
-description: Publish testcase từ Excel canonical lên Jira/Xray sau Phase 1; cleanup lifecycle Xray Test thuộc partial-rerun khi Excel thay đổi.
+description: Publish testcase từ Excel canonical lên AIO Tests sau Phase 1 (npm run aio:publish); cleanup lifecycle (Deprecate) thuộc partial-rerun khi Excel thay đổi. Đường Xray là legacy.
 ---
 
-# Jira Testcase Publisher
+# Testcase Publisher (AIO Tests)
+
+> Tên skill giữ nguyên `jira_testcase_publisher` cho tương thích ngược (AIO Tests là app trong Jira), nhưng **đích đến là AIO Tests** từ GĐ5 — Xray đóng băng sau 21/08/2026.
 
 ## Purpose
 
-Publish bộ testcase đã được QA xác nhận từ Excel lên Jira/Xray để QA/Dev review, track và làm nguồn cho Phase 2 execute. Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **authoring/publish** (sửa nội dung ở Excel rồi re-publish); Phase 2 execute mặc định đọc từ Xray (`TESTCASE_SOURCE=xray`). Publish là step riêng trong phạm vi Phase 1. Khi Excel thay đổi sau publish, cleanup lifecycle Xray Test thuộc nhánh phụ `partial-rerun/run_xray_test_cleanup.md`.
+Publish bộ testcase đã được QA xác nhận từ Excel lên **AIO Tests** để QA/Dev review, track và làm nguồn cho Phase 2 execute. Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **authoring/publish** (sửa nội dung ở Excel rồi re-publish); Phase 2 execute mặc định đọc từ AIO (`TESTCASE_SOURCE=aio`). Publish là step riêng trong phạm vi Phase 1. Khi Excel thay đổi sau publish, cleanup lifecycle thuộc nhánh phụ `partial-rerun/run_xray_test_cleanup.md`.
 
 ## Responsibilities
 
 | Trách nhiệm | Yêu cầu |
 |---|---|
 | Source | Chỉ đọc Excel `.xlsx` đã export từ Phase 1, ưu tiên sheet `Test Cases`. |
-| QA gate | Chỉ publish thật khi có QA confirmation rõ ràng. |
-| Publish | Tạo Xray `Test` issue theo `JIRA_TESTCASE_ISSUE_TYPE=Test` hoặc CLI `--issue-type "Test"`. |
-| Requirement link | Link từng Xray `Test` issue về Jira Story/Task bằng `XRAY_REQUIREMENT_LINK_TYPE` mặc định `Tests`. |
-| Test Set | Optional: tạo/tái sử dụng Xray `Test Set` theo business flow trong cột `Module` khi bật `XRAY_TEST_SET_ENABLED=1` hoặc `--with-test-sets`. |
-| Labels | Thêm label phụ `group-*`, `layer-*`, `risk-*`, `priority-*` để lọc trên Xray/Jira. |
-| Safety | Chạy dry-run trước nếu user/prompt/env chưa cho phép ghi Jira thật. |
-| Deduplicate | Dedupe bằng label theo `TASK_KEY` + `TC ID` để tránh tạo trùng. |
-| Cleanup | Khi Excel bỏ TC đã publish, cleanup thuộc partial-rerun sau Human Review approval: đánh dấu Xray Test bằng label cleanup; khi TC quay lại Excel, restore label cleanup. |
-| No hard delete | Không xóa cứng Xray `Test` issue trong workflow chuẩn. |
-| Report | Ghi kết quả publish local dưới `<TASK_OUTPUT_DIR>/reports/`. |
+| QA gate | Chỉ publish thật khi có QA confirmation rõ ràng **và** `--qa-approved`. |
+| Publish | Tạo/cập nhật **case** trên AIO: `title`, `steps[]`, `precondition`, `priority`, `type`, `scriptType` (bắt buộc khi có steps). |
+| Khoá liên kết | `TC ID` → **`automationKey`** (KHÔNG dùng `tags`: AIO trả 200 nhưng không lưu — đã đo). Story → `jiraRequirementIDs`. |
+| Nhóm chức năng | → **folder** `<root>/<nhóm>` (cây **2 cấp**, dựng TỪ Excel, không hardcode danh sách tên). |
+| Tiền điều kiện | Nằm trong field `precondition` của chính case; mã `[PRE-NN]` giữ trong text để tra chéo (AIO không có Precondition issue dùng chung). |
+| Safety | **Mặc định dry-run**; chỉ `--apply` mới ghi. AIO **KHÔNG có API xoá** ⇒ sai là phải dọn tay trên UI. |
+| Deduplicate | Theo `automationKey`: đã có → UPDATE (`mergePut`, vì `PUT .../detail` ghi đè toàn phần), chưa có → tạo. Chạy lại không tạo trùng. |
+| Cleanup | Khi Excel bỏ TC đã publish: `npm run aio:deprecate-stale` → đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), sau Human Review approval. |
+| No hard delete | Không xoá case (và cũng không có API để xoá). |
+| Report | Tự ghi kết quả publish local dưới `<TASK_OUTPUT_DIR>/reports/` — script AIO không tự ghi report. |
 
 ## Inputs
 
 | Input | Nguồn |
 |---|---|
-| Excel testcase | `<TASK_OUTPUT_DIR>/test-cases/*.xlsx` hoặc CLI `--excel` |
-| Jira parent/story | `JIRA_STORY_KEY` hoặc CLI `--story` |
-| Jira project | `JIRA_PROJECT_KEY` hoặc suy từ story key |
-| Issue type | `JIRA_TESTCASE_ISSUE_TYPE=Test` cho Xray |
-| Xray test type | `XRAY_TEST_TYPE=Manual`, optional `XRAY_TEST_TYPE_FIELD_ID` nếu Jira bắt buộc |
-| Xray requirement link | `XRAY_REQUIREMENT_LINK_ENABLED=1`, `XRAY_REQUIREMENT_LINK_TYPE=Tests`, `XRAY_REQUIREMENT_LINK_DIRECTION=test_to_story` |
-| Xray Test Set | Optional `XRAY_TEST_SET_ENABLED=1`, `XRAY_TEST_SET_ISSUE_TYPE=Test Set`, `XRAY_TEST_SET_LINK_TYPE=Tests` |
+| Excel testcase | `<TASK_OUTPUT_DIR>/test-cases/*.xlsx` qua CLI `--file` |
+| Jira story (requirement) | `JIRA_STORY_KEY` hoặc CLI `--story` |
+| Công cụ TMS | `TEST_MANAGEMENT_TOOL=aio` (mặc định) |
+| Token AIO | `AIO_API_TOKEN` (bắt buộc) — Jira API token KHÔNG dùng được |
+| Project/endpoint | `AIO_PROJECT_KEY` (mặc định `JIRA_PROJECT_KEY`) · `AIO_BASE_URL` · `AIO_THROTTLE_MS` |
+| Gốc cây folder | CLI `--folder-root` (mặc định `JIRA_STORY_KEY`, fallback tên file Excel) |
 | Rules | `RULE_GLOBAL.md`, active prompt |
 
 ## Outputs
 
 | Output | Vị trí |
 |---|---|
-| Jira testcase issues/mirror | Jira project configured by env |
-| Publish JSON | `<TASK_OUTPUT_DIR>/reports/jira-testcase-publish.json` |
-| Publish summary | `<TASK_OUTPUT_DIR>/reports/jira-testcase-publish-summary.md` |
-| Cleanup JSON | `<TASK_OUTPUT_DIR>/reports/jira-testcase-cleanup.json` |
-| Cleanup summary | `<TASK_OUTPUT_DIR>/reports/jira-testcase-cleanup-summary.md` |
+| Case trên AIO Tests | Project AIO theo env |
+| Publish summary | `<TASK_OUTPUT_DIR>/reports/aio-testcase-publish-summary.md` (agent tự ghi) |
+| Cleanup summary | `<TASK_OUTPUT_DIR>/reports/aio-deprecate-summary.md` (agent tự ghi) |
 
 ## Commands
 
-Dry-run:
+Dry-run (mặc định — không ghi gì lên AIO):
 
 ```bash
-npm run jira:testcase-publish:dry-run -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR>
-# 🔀 Đang chuyển sang AIO Tests: nếu TEST_MANAGEMENT_TOOL=aio thì lệnh trên TỰ CHẶN và chỉ sang
-#    npm run aio:publish -- --file <Excel> --story <JIRA_STORY_KEY>   →   ... aio:publish:apply ... --qa-approved
-#    AIO không có Test Set / link requirement / precondition-issue. Chi tiết: scripts/integrations/aio/README.md
+npm run aio:publish -- --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx --story <JIRA_STORY_KEY>
+# [--limit 5] [--only TC_001,TC_007] [--folder-root "<tên gốc>"] [--throttle 130]
 ```
 
-Publish thật:
+Publish thật (sau khi QA duyệt và đã soi dry-run):
 
 ```bash
-npm run jira:testcase-publish -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --publish --qa-approved
+npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --qa-approved
 ```
 
-Publish kèm Test Set theo business flow:
+Cleanup lifecycle khi Excel bỏ bớt TC (partial-rerun, sau Human Review):
 
 ```bash
-npm run jira:testcase-publish -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --publish --qa-approved --with-test-sets
+npm run aio:deprecate-stale                # xem trước
+npm run aio:deprecate-stale:apply          # đổi caseStatus sang Deprecated
 ```
 
-Partial-rerun cleanup dry-run:
+Đường Xray (LEGACY — chỉ đọc/đối chiếu bộ cũ; tự chặn khi `TEST_MANAGEMENT_TOOL=aio`):
 
 ```bash
-npm run jira:testcase-cleanup:dry-run -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR>
-```
-
-Partial-rerun cleanup apply:
-
-```bash
-npm run jira:testcase-cleanup -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --apply --qa-approved
-```
-
-Partial-rerun cleanup apply và unlink stale Test khỏi Story/Task nếu QA yêu cầu:
-
-```bash
-npm run jira:testcase-cleanup -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --apply --qa-approved --unlink
+npm run jira:testcase-publish:dry-run -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --test-management-tool xray
 ```
 
 ## Decision Rules
 
 - Không publish từ Markdown nếu Excel đã tồn tại; Excel là canonical source.
-- Không publish thật nếu QA chưa xác nhận `APPROVED`; script publish thật cũng cần `--qa-approved` hoặc `JIRA_TESTCASE_QA_APPROVED=1`.
-- Vì test management dùng Xray, không dùng generic issue type `Test Case` trừ khi Jira project cấu hình riêng như vậy. Mặc định là Xray `Test`.
-- Mỗi Xray `Test` issue phải link về đúng Jira Story/Task từ `JIRA_STORY_KEY` hoặc CLI `--story`, ví dụ `PROJ-123`.
-- Nhóm chính lấy từ business flow trong cột `Module`; label phụ theo layer/risk/priority không thay thế nhóm chính.
-- Test Set theo business flow là optional. Nếu bật, mỗi nhóm chính trong `Module` có một Xray `Test Set`; gắn Test vào Test Set qua `XRAY_TEST_SET_LINK_TYPE`.
-- Nếu Excel không còn TC ID đã publish, không hard delete Xray Test; dùng cleanup để thêm label `deprecated`, `out-of-scope`, `stale-from-excel`.
-- Nếu TC ID quay lại Excel nhưng Xray Test đang có label cleanup, cleanup được phép remove các label đó để restore.
-- Unlink stale Xray Test khỏi Story/Task chỉ khi QA yêu cầu rõ (`--unlink` hoặc `XRAY_CLEANUP_UNLINK_STALE=1`).
-- Không coi Phase 1 hoàn tất nếu Excel thiếu hoặc không đọc được.
-- Nếu Jira config/quyền/issue type chưa sẵn sàng, ghi blocker hoặc chỉ dry-run; không tạo issue mơ hồ.
+- Không publish thật nếu QA chưa xác nhận `APPROVED`; script cũng đòi `--qa-approved` (hoặc `JIRA_TESTCASE_QA_APPROVED=1`) khi `--apply`.
+- **Luôn xem dry-run trước** — nhất là danh sách folder sẽ tạo: tên nhóm lệch/typo phải sửa trước khi ghi, vì folder/case tạo rồi không xoá được qua API.
+- Case AIO **không phải Jira issue** ⇒ không có Test Set, requirement issue-link/panel Test Coverage, Precondition issue riêng, Test Type, assignee, label. Đừng đi tìm rồi kết luận "thiếu".
+- Nhóm chính lấy từ cột `Nhóm chức năng` (fallback đoạn đầu `Module`) và thể hiện bằng folder AIO.
+- Nếu Excel không còn TC ID đã publish, dùng `aio:deprecate-stale` (Deprecated), không xoá.
+- Nếu token/quyền chưa sẵn sàng, ghi blocker hoặc chỉ dry-run; không tạo case mơ hồ.
 - Nếu publish lỗi một phần, giữ Excel và report local làm source; không sửa testcase để khớp lỗi publish.
-- Phase 2 execute mặc định lấy nguồn từ Xray (`TESTCASE_SOURCE=xray`, kéo về canonical local `from-xray/*.xlsx`); `excel` là opt-out. Excel là source of truth khi gen/publish (skill này).
+- Bộ testcase migrate từ Xray có cây folder sâu 3 cấp, còn `aio:publish` chỉ dựng 2 cấp ⇒ thêm case vào bộ cũ thì vá tại chỗ (`--only`), đừng publish lại cả bộ.
+- Phase 2 execute mặc định lấy nguồn từ AIO (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx` bằng `npm run aio:pull:write`); `excel` là opt-out; `xray` là legacy.
 
 ## Anti-Patterns
 
-- Tạo Jira testcase trực tiếp từ requirement khi chưa có Excel.
-- Sửa nội dung testcase trực tiếp trên Xray thay vì sửa Excel rồi re-publish.
-- Tạo Xray Test nhưng không link về Story/Task, khiến QA không thấy coverage theo requirement/task.
-- Tạo trùng testcase trên Jira khi cùng `TASK_KEY` + `TC ID` đã publish.
-- Tạo Test Set theo layer/risk thay vì business flow chính trong `Module`.
-- Xóa cứng Xray `Test` issue chỉ vì TC bị bỏ khỏi Excel.
-- Unlink stale Test khỏi Story/Task khi chưa có QA confirmation.
-- Trộn Jira testcase publish với Jira bug logging sau Phase 2.
+- Tạo testcase trên TMS trực tiếp từ requirement khi chưa có Excel.
+- Sửa nội dung case trực tiếp trên UI AIO thay vì sửa Excel rồi re-publish — `PUT .../detail` ghi đè toàn phần nên bản sửa tay sẽ mất.
+- Chạy `--apply` khi chưa soi dry-run (không có API xoá để lùi).
+- Đưa TC ID vào `tags` (AIO trả 200 nhưng không lưu) hoặc ghép `[TC] <ID> -` vào `title`.
+- Khớp case theo **tiêu đề** thay vì `automationKey` — nhiều case trùng tiêu đề ở nhóm khác nhau (đã mất 12 run khi migrate).
+- Publish lại cả bộ chỉ để thêm vài case (đè folder/cây, tốn rate limit).
+- Trộn testcase publish với Jira bug logging sau Phase 2.

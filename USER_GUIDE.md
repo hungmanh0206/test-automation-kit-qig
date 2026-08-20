@@ -27,9 +27,9 @@ Test Automation Kit hỗ trợ QA làm việc theo từng story/task:
 Requirement
 -> Sinh testcase (Excel source of truth)
 -> QA review/confirmation
--> Auto publish testcase lên Jira/Xray
--> Execute automation (mặc định đọc testcase từ Xray)
--> Đẩy trạng thái PASS/FAIL lên Xray (Test Execution) + gắn Test Plan
+-> Auto publish testcase lên AIO Tests
+-> Execute automation (mặc định đọc testcase từ AIO)
+-> Đẩy trạng thái PASS/FAIL lên AIO (cycle) trong thư mục sprint
 -> Triage bug
 -> Log Jira nếu đủ điều kiện
 -> Re-run sau khi Dev fix
@@ -47,9 +47,9 @@ Main Flow hiện tại:
 Phase 1
 -> Excel source of truth
 -> Review / QA Confirmation
--> Auto Publish testcase lên Jira/Xray
--> Phase 2 Execute (mặc định đọc testcase từ Xray)
--> Đẩy Test Execution (PASS/FAIL/TO DO) lên Xray + gắn Test Plan sprint
+-> Auto Publish testcase lên AIO Tests
+-> Phase 2 Execute (mặc định đọc testcase từ AIO)
+-> Đẩy cycle (Passed/Failed/Blocked/Not Run) lên AIO + thư mục sprint
 -> Validation
 -> Jira Bug
 -> Dev Fix
@@ -63,7 +63,7 @@ Phase 1
 |---|---|---|---|
 | Phase 1 | Sinh testcase từ Jira/Confluence/Figma/Swagger và export Excel source of truth. Auto Publish Jira là step riêng trong Phase 1 sau khi QA xác nhận. | Testcase Markdown, Excel, coverage report, Jira publish summary nếu đã chạy step publish. | QA Member, QA Lead. |
 | Review | Kiểm tra coverage, risk và chất lượng testcase. | Quyết định có chạy Phase 2 chưa. | QA Member, QA Lead. |
-| Phase 2 | Execute automation thật (mặc định đọc testcase từ Xray), giảm skip/fail sai, rồi đẩy trạng thái lên Xray dưới dạng Test Execution. | Execution summary, evidence, result, Test Execution + Test Plan trên Xray. | QA Member, Automation, QA Lead khi cần. |
+| Phase 2 | Execute automation thật (mặc định đọc testcase từ AIO Tests), giảm skip/fail sai, rồi đẩy trạng thái lên AIO khi QA duyệt. |
 | Jira Bug | Log bug khi fail là product bug thật. | Jira bug + evidence ảnh/video. | QA Member, QA Lead. |
 | Re-run | Chạy lại bug/case fail sau khi Dev fix. | Rerun report, evidence PASS/FAIL. | QA Member, QA Lead khi cần. |
 
@@ -73,7 +73,7 @@ Phase 1
 |---|---|
 | Không chạy nhầm `TASK_KEY`. | Tránh ghi đè output của story khác. |
 | Không chạy Phase 2 khi Phase 1 chưa được review. | Tránh execute sai expected result. |
-| Execute mặc định đọc testcase từ Xray (`TESTCASE_SOURCE=xray`); Excel là source-of-truth khi gen/publish. | Đặt `TESTCASE_SOURCE=excel` nếu muốn chạy thuần Excel local (chưa publish/offline). |
+| Execute mặc định đọc testcase từ AIO (`TESTCASE_SOURCE=aio`); Excel là source-of-truth khi gen/publish |
 | Không skip case để làm đẹp pass rate. | Report phải phản ánh chất lượng thật. |
 | Không log Jira bug nếu fail do setup/test data/automation. | Tránh tạo noise cho Dev. |
 | Không đổi expected result nếu chưa có source xác nhận. | Tránh biến product bug thành pass ảo. |
@@ -323,7 +323,7 @@ Nhóm config thường gặp:
 | `*_USERNAME`, `*_PASSWORD` | Account test. |
 | `*_API_BASE_URL`, `*_SWAGGER_URL` | API automation và Swagger/OpenAPI. |
 
-Khi chạy song song nhiều task, chỉ để **giá trị tĩnh** (Figma/Confluence/Jira/Xray/HubSpot API key + base URL) trong `.env` chung; **giá trị động** theo task (`PROJECT_OUTPUT_DIR`, `TASK_KEY`, link story/confluence/figma cụ thể, tài khoản đăng nhập từng app) đặt trong `profiles/<TASK_KEY>/task.env` và nạp qua biến `TASK_ENV`. Chi tiết ở mục 8.
+Khi chạy song song nhiều task, chỉ để **giá trị tĩnh** (Figma/Confluence/Jira/AIO/HubSpot API key + base URL) ở `.env` chung.
 
 Không cấu hình DB credential/connection string generic (`TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*`) và **không dựng state bằng DB**. Ngoại lệ DUY NHẤT: read-only verify/chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatPgClient.ts` (biến `LIB_MASTER_DB_*`, read-only: chỉ SELECT trong transaction READ ONLY) — dùng để khoanh tầng lỗi (vd "field trống do FE hay BE?") khi API/UI không đủ. Kho UAT/PROD tách biệt: chỉ cấu hình creds kho UAT, không cấu hình thì không truy cập. Ghi DB thẳng bỏ qua business logic nên DB chỉ để chẩn đoán, KHÔNG dựng state, KHÔNG phải evidence Jira; PII đọc ra phải mask + không export file. Case cần **dựng** trạng thái backend sâu vẫn bị chặn vì **thiếu capability an toàn (test hook/API/sandbox)** và đánh dấu `Needs hook`/`Manual-only` (xem `tests/support/setup/hooks/README.md`).
 
@@ -417,20 +417,20 @@ outputs/<project>/tasks/<TASK_KEY>/
 ├── test-cases/
 │   ├── *.md
 │   ├── *.xlsx                     # Excel gen ở Phase 1 (source khi gen/publish)
-│   ├── from-xray/                 # canonical kéo từ Xray (nguồn execute mặc định)
-│   │   └── <TASK_KEY>_from_xray.xlsx
+│   ├── from-aio/                  # canonical kéo từ AIO Tests (nguồn execute mặc định)
+│   │   └── <TASK_KEY>_from_aio.xlsx
 │   └── snapshot_context.json
 ├── test-results/
 │   ├── execution-results.md
 │   ├── results.json
-│   ├── testcase-status.json       # trạng thái từng TC để đẩy lên Xray (PASSED/FAILED/TO DO/EXECUTING)
+│   ├── testcase-status.json       # trạng thái từng TC để đẩy lên AIO (theo verdict_taxonomy.json)
 │   ├── artifacts/
 │   └── playwright-report/
 ├── reports/
 │   ├── phase1-summary.md
 │   ├── execution-summary.md
-│   ├── xray-pull-summary.md        # log kéo testcase từ Xray
-│   ├── xray-execution-summary.md   # log Test Execution đã tạo
+│   ├── aio-pull-summary.md        # log kéo testcase từ AIO Tests
+│   ├── aio-execution-summary.md   # log cycle đã tạo
 │   └── rerun/
 ├── change/
 └── task.md
@@ -534,7 +534,7 @@ Kiểm trước khi đưa QA duyệt: `npm run dim:coverage -- --enforce` (thi�
 
 Phase 1 không được execute automation.
 
-Sau khi Excel tạo thành công, prompt sinh testcase dừng ở trạng thái `Jira testcase publish: Pending QA confirmation`. Auto Publish Jira là step riêng trong Phase 1, chỉ chạy bằng `prompt_templates/phase1/04_auto_publish_jira.md` sau khi QA xác nhận Excel/testcase được phép publish. Excel là source-of-truth khi gen/publish. **Lưu ý flow mới:** Phase 2 execute **mặc định đọc testcase từ Xray** (`TESTCASE_SOURCE=xray`), nên **publish (step 04) là bước cần trước Phase 2**; Phase 2 sẽ tự kéo testcase từ Xray về `test-cases/from-xray/` để chạy. Muốn chạy thuần Excel local thì đặt `TESTCASE_SOURCE=excel`. Nếu Excel thay đổi sau publish, không cleanup trong Phase 1 chính; dùng nhánh phụ `partial-rerun/run_xray_test_cleanup.md` sau Human Review approval.
+Sau khi Excel tạo thành công, prompt sinh testcase dừng ở trạng thái `Testcase publish (AIO): Pending QA confirmation`.
 
 ### 5.3 Review sau Phase 1
 
@@ -584,9 +584,9 @@ QA confirmation Status = APPROVED.
 Mode = DRY_RUN trước, sau đó PUBLISH khi QA cho phép ghi Jira thật.
 ```
 
-Step này đọc Excel source of truth trong `test-cases/*.xlsx`, publish testcase mirror lên Jira/Xray dưới dạng Xray `Test` issue: đẩy steps vào tab `Test details` (Test Type=Manual), Precondition dùng chung theo mã `[PRE-xx]`, sắp mỗi Test vào subfolder Test Repository theo nhóm chức năng (tên sheet trong Excel), gắn label tối thiểu (marker `automation-testcase` + khóa dedup `task-*`/`tc-*`) và link từng Test về Story/Task (`<TASK_KEY>`). Nhóm chức năng thể hiện qua subfolder Test Repository, không tạo Test Set và không gắn label group/layer/risk/priority. Nếu QA chưa xác nhận, không publish thật; chỉ dry-run hoặc giữ trạng thái `Pending QA confirmation`.
+Step này đọc Excel source of truth trong `test-cases/*.xlsx` rồi publish thành **case trên AIO Tests** (`npm run aio:publish` xem trước → `aio:publish:apply ... --qa-approved`).
 
-Nếu Excel thay đổi sau khi đã publish Xray Test, không cleanup trong Phase 1 chính. Chạy cleanup mirror trong nhánh phụ Partial Rerun sau khi testcase thay đổi đã được Human Review approve.
+Nếu Excel thay đổi sau khi đã publish, không cleanup trong Phase 1 chính. Chạy cleanup (Deprecate) theo nhánh phụ `partial-rerun/run_xray_test_cleanup.md` sau Human Review.
 
 ### 5.4 Chờ Dev implement
 
@@ -617,9 +617,9 @@ Prompt mẫu:
 ```text
 Đọc và chạy file prompt_templates/run_phase2_template.md để execute Phase 2.
 Task key là <TASK_KEY>.
-Nguồn testcase mặc định là Xray (TESTCASE_SOURCE=xray): kéo testcase từ Xray về local rồi execute. Đặt TESTCASE_SOURCE=excel nếu muốn chạy thuần Excel local.
+Nguồn testcase mặc định là AIO Tests (TESTCASE_SOURCE=aio): kéo testcase từ AIO về local rồi execute. Đặt TESTCASE_SOURCE=excel nếu muốn chạy thuần Excel local.
 Nếu có bug thì tạm thời chưa log Jira, chỉ report local.
-Mặc định (PUSH_XRAY_EXECUTION=confirm): khi cycle execute conclusive, trình preview cho QA duyệt rồi mới tạo Test Execution; =auto để tạo ngay, =0 để tắt.
+Mặc định (PUSH_XRAY_EXECUTION=confirm): khi cycle execute conclusive, trình preview cho QA duyệt rồi mới tạo cycle trên AIO; =auto để tạo ngay, =0 để tắt.
 ```
 
 Output bắt buộc:
@@ -630,18 +630,18 @@ Output bắt buộc:
 | Evidence | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/artifacts/` |
 | Execution result | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/execution-results.md` |
 | Execution summary | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/execution-summary.md` |
-| Trạng thái TC (máy đọc, để đẩy Xray) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/testcase-status.json` |
-| Test Execution log (khi `PUSH_XRAY_EXECUTION` ≠ 0) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/xray-execution-summary.md` |
+| Trạng thái TC (máy đọc, để đẩy AIO) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/testcase-status.json` |
+| Cycle log (khi `PUSH_XRAY_EXECUTION` ≠ 0) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/aio-execution-summary.md` |
 | Task log | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/task.md` |
 
-**Bước đầu Phase 2 (mặc định `TESTCASE_SOURCE=xray`)** — kéo testcase từ Xray về canonical local trước khi execute:
+**Bước đầu Phase 2 (mặc định `TESTCASE_SOURCE=aio`)** — kéo testcase từ AIO về canonical local trước khi execute:
 
 ```text
-node scripts/integrations/jira/pull_testcases.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --dry-run
-node scripts/integrations/jira/pull_testcases.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --write
+npm run aio:pull -- --story <JIRA_STORY_KEY>          # xem trước
+npm run aio:pull:write -- --story <JIRA_STORY_KEY>    # ghi test-cases/from-aio/<TASK_KEY>_from_aio.xlsx
 ```
 
-Cần `XRAY_CLIENT_ID`/`XRAY_CLIENT_SECRET` + Phase 1 đã publish testcase lên Xray. Nếu pull không thấy Test nào → chưa publish (publish trước, hoặc tạm `TESTCASE_SOURCE=excel`). Nếu `TESTCASE_SOURCE=excel` thì bỏ qua bước này và đọc `test-cases/*.xlsx` local.
+Cần `AIO_API_TOKEN` + Phase 1 đã publish testcase lên AIO. Nếu pull không thấy case nào → chưa publish (publish trước, hoặc tạm `TESTCASE_SOURCE=excel`). Nếu report cảnh báo TC thiếu steps thì DỪNG và báo user.
 
 Trước khi generate/execute, Phase 2 chạy **Precondition Resolution Pass**: đọc `### Precondition Execution Matrix` → setup/verify/cleanup precondition qua setup layer `tests/support/setup/` bằng UI/API public-business contract, fixture hoặc test hook nếu có (KHÔNG bắt UI dựng tiền điều kiện nếu case không test flow tạo điều kiện đó; KHÔNG dựng state bằng DB — verify có thể dùng read-only UAT DB qua guarded client, read-only). Lỗi setup/verify là `setup_failure` (không phải product bug); thiếu capability (API/hook/mock/sandbox/fixture) → `BLOCKED_SETUP`; không tự động hóa được setup nếu không can thiệp DB/backend state → `SKIP_SETUP`. Ba trạng thái này không log Jira.
 
@@ -649,7 +649,7 @@ Nguyên tắc Phase 2:
 
 | Chủ đề | Rule |
 |---|---|
-| Nguồn testcase | Mặc định (`TESTCASE_SOURCE=xray`) kéo testcase từ Xray về `test-cases/from-xray/*.xlsx` rồi execute từ đó (canonical local); đặt `TESTCASE_SOURCE=excel` để dùng `test-cases/*.xlsx`. |
+| Nguồn testcase | Mặc định (`TESTCASE_SOURCE=aio`) kéo testcase từ AIO về `test-cases/from-aio/*.xlsx` rồi execute từ đó (canonical local); đặt `TESTCASE_SOURCE=excel` để dùng Excel local; `xray` là legacy. |
 | Precondition | Setup theo Setup Strategy contract qua UI/API/fixture/hook an toàn; chỉ `Manual-only` mới skip vì setup. |
 | Execute thật | Không pass ảo bằng skip/mock sai/sửa expected tùy tiện. |
 | Skip | Hạn chế tối đa, mỗi skip phải có lý do và khả năng fix. |
@@ -658,62 +658,51 @@ Nguyên tắc Phase 2:
 | Evidence | Ảnh/video không được trắng. Case phức tạp nên có video. |
 | Assertion | Không xóa assertion quan trọng để tăng pass rate. |
 
-### 5.5.0 Mô hình Xray chuẩn (traceability) — team tham chiếu
+### 5.5.0 Mô hình AIO Tests (traceability) — team tham chiếu
 
-Một task chạy trọn bộ testcase cùng lúc, nên chỉ cần **Test → Test Plan → Test Execution** (không cần Test Set).
+Một task chạy trọn bộ testcase cùng lúc, nên chỉ cần **Case → Cycle → Run**. AIO **không có** Test Set, Test Plan, Precondition issue — mô hình gọn hơn Xray.
 
-![Mô hình Xray — traceability](docs/user-guide-images/xray-traceability.png)
-
-| Lớp | Vai trò | Kit |
+| Lớp | Vai trò | Kit làm gì |
 |---|---|---|
-| **Task → Test** (coverage) | Độ phủ yêu cầu — xem ở panel **"Test Coverage"** của Task (không đọc link thô) | **Giữ per-test link** (`XRAY_REQUIREMENT_LINK_ENABLED=1`) |
-| **Test Repository folder** | Tổ chức test theo nhóm chức năng | Tự tạo subfolder theo sheet (`XRAY_TEST_REPO_SUBFOLDER_BY_SHEET=1`) |
-| **Precondition** | Tiền điều kiện dùng chung `[PRE-NN]` | Tự tạo + link, folder **"Preconditions"** |
-| **Test Plan** | Scope 1 sprint (`[Test Plan] <sprint>`), roll-up nhiều lần chạy | QA tạo tay (§5.5.1); đóng **Done cuối sprint** |
-| **Test Execution** | 1 lần chạy = **toàn bộ TC** | Phase 2 (QA duyệt preview) / Re-run (auto); tự link Test Plan |
+| **Case** | 1 testcase | `npm run aio:publish` tạo/cập nhật từ Excel; TC ID nằm ở **`automationKey`** (không dùng `tags` — AIO trả 200 nhưng không lưu) |
+| **Case → Story** | Nối case về requirement | `jiraRequirementIDs` (`--story`). Case KHÔNG phải Jira issue ⇒ không có panel "Test Coverage", assignee, sprint, workflow |
+| **Folder** | Tổ chức case theo nhóm chức năng | Cây **2 cấp** `<root>/<nhóm chức năng>`, dựng TỪ Excel (`--folder-root`) |
+| **precondition** | Tiền điều kiện | Là **field trong case** (mã `[PRE-NN]` giữ trong text để tra chéo) — không còn issue dùng chung |
+| **Thư mục cycle** | Nhóm các lần chạy theo sprint | `--folder "<Tên sprint>"` — tự tạo, thay cho Test Plan |
+| **Cycle** | 1 lần chạy = **toàn bộ TC** | `npm run aio:push-exec` (QA duyệt preview) — chạy lại cùng `--cycle-title` thì dùng lại cycle cũ |
+| **Run + run-step** | Kết quả từng case/bước | Passed / Failed / Blocked / Not Run; **evidence neo được xuống TỪNG BƯỚC** |
 
-- **Status**: Test để **Open** (kết quả nằm ở Test Run, không phải ở Test) · Test Execution → **Done** khi lần chạy đó khép lại (bật tự động: `XRAY_EXECUTION_DONE_STATUS=Done`; case còn FAIL vẫn Done được — retest nằm ở execution "Lần N+1") · Test Plan → **Done** cuối sprint (QA) · Sub-bug → Done khi verify PASS (kit).
-- Không dùng Test Set (mặc định `XRAY_TEST_SET_ENABLED=0`) — nhìn cây theo Test Repository folder là đủ.
+- **`caseStatus` là vòng đời BIÊN SOẠN** (Draft · Under Review · Published · **Deprecated**), KHÔNG phải kết quả chạy — kết quả nằm ở run của cycle.
+- **Không có API xoá** (case · attachment · run cuối của case · cycle): sai là phải vào UI dọn tay ⇒ mọi lệnh mặc định **dry-run**, chỉ `--apply` mới ghi.
+- Cleanup ≠ xoá: case rời khỏi Excel thì chuyển **Deprecated** (`npm run aio:deprecate-stale`), giữ nguyên lịch sử run.
+- Chín đặc tính đã đo của AIO (rate limit trả **body rỗng** chứ không phải 429, `PUT .../detail` ghi đè toàn phần, `key` ≠ `ID`, `POST` case đã có trong cycle thì **đẻ run mới**…): [scripts/integrations/aio/README.md](scripts/integrations/aio/README.md) — đọc trước khi tự phát hiện lại bằng cách mất dữ liệu.
 
-#### Panel "Test Coverage" bị trống? (config admin SAPP — xác nhận 1 lần cho project)
+> 🕘 Mô hình Xray cũ (Test → Test Plan → Test Execution, panel Test Coverage, Test Repository folder, Precondition issue) đã **đóng băng sau 21/08/2026**; ảnh `docs/user-guide-images/xray-traceability.png` giữ lại làm tham chiếu lịch sử.
 
-1. **Chiều link** — kit lo tự động (`XRAY_REQUIREMENT_LINK_DIRECTION=test_to_story`): Test ở slot `inwardIssue`, requirement ở `outwardIssue`. Kiểm nhanh: `GET /rest/api/3/issue/<REQUIREMENT>?fields=issuelinks` → link "Test" phải nằm ở `inwardIssue`.
-2. **Coverable Issue Types** — Task/Story phải nằm trong *Xray Settings → Requirement Coverage → Coverable Issue Types* (chỉ admin sửa).
-3. **Coverage strategy = Latest Execution** — panel lấy kết quả lần chạy mới nhất, nhờ đó re-run pass ở lần sau là OK.
+### 5.5.1 Đầu sprint — không phải tạo gì
 
-> ⚠️ Đừng sửa tay step/status của execution CŨ: nó bump `finishedOn` thành hiện tại → coverage lấy nhầm run cũ. Cần thì đặt lại ngày bằng `updateTestRun(id, finishedOn)` (định dạng `YYYY-MM-DDTHH:mm:ssZ`).
+AIO không có Test Plan, nên **bỏ hẳn bước "QA tạo Test Plan đầu sprint"**. Thay vào đó, lần push đầu tiên của sprint truyền `--folder "<Tên sprint>"`; thư mục cycle được tạo nếu chưa có, các cycle sau tự nằm cùng chỗ.
 
-### 5.5.1 Đầu sprint — Tạo Test Plan (QA, 1 lần/sprint)
+Case cũng không có assignee (không phải Jira issue), nên `JIRA_XRAY_ASSIGNEE` trong `profiles/<KEY>/task.env` **không còn tác dụng** ở đường AIO — muốn ghi người chạy thì để trong `comment` của run.
 
-Test Plan gom Test Execution của cả sprint → **QA tạo tay 1 lần đầu sprint** (không tự động, tránh trùng khi nhiều task chạy song song). Sau đó mọi Test Execution tự dò & link vào theo sprint.
+### 5.5.2 Đẩy trạng thái lên AIO (cycle)
 
-Script idempotent (đã có `[Test Plan] <sprint>` thì dùng lại, không tạo trùng); tự điền Sprint + Start/Due date + Fix versions + assignee.
-
-> **Assignee** (Test / Test Plan / Test Execution): đặt 1 biến `JIRA_XRAY_ASSIGNEE` trong `profiles/<KEY>/task.env` (tên hiển thị hoặc email). Bỏ trống = không gán; override tạm `--assignee "<tên>"`.
-
-```text
-TASK_ENV=profiles/<KEY>/task.env node scripts/integrations/jira/create_test_plan.js --story <JIRA_STORY_KEY> --dry-run   # xem trước
-TASK_ENV=profiles/<KEY>/task.env node scripts/integrations/jira/create_test_plan.js --story <JIRA_STORY_KEY> --write     # tạo thật
-# chỉ định sprint thủ công: thêm --sprint "OPs Sprint 47"
-```
-
-### 5.5.2 Đẩy trạng thái lên Xray (Test Execution)
-
-Sau execute, Phase 2 ghi `test-results/testcase-status.json` rồi đẩy thành **Test Execution**. Mặc định `PUSH_XRAY_EXECUTION=confirm`: chạy `--dry-run` cho QA duyệt preview, chỉ `--write` sau khi QA xác nhận (`=auto` tạo ngay, `=0` tắt).
+Sau execute, Phase 2 ghi `test-results/testcase-status.json` rồi đẩy thành **cycle**. Mặc định `PUSH_XRAY_EXECUTION=confirm` (tên biến giữ nguyên cho tương thích ngược): chạy dry-run cho QA duyệt preview, chỉ `:apply` sau khi QA xác nhận.
 
 ```text
-node scripts/integrations/jira/push_test_execution.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --dry-run
-# thêm --write để tạo thật · --with-evidence để đính ảnh/video vào từng run
+npm run aio:push-exec -- --task <TASK_KEY> [--folder "<Tên sprint>"] [--cycle-title "..."] [--run-id <RUN_ID>]
+npm run aio:push-exec:apply -- --task <TASK_KEY> --folder "<Tên sprint>"
 ```
 
 | Khái niệm | Ý nghĩa |
 |---|---|
-| Test Execution | 1 lần chạy; tên `[<TASK_KEY>] Test Execution - Lần <N> - <scope> - <version>`; tự điền Sprint / Fix versions / Start / Due date theo Story. |
-| Trạng thái | **PASSED / FAILED / TO DO / EXECUTING** (SKIP/blocker → `TO DO`, lý do ở comment). |
-| Test Plan | Tự dò & link theo sprint của Story (`[Test Plan] <Sprint>`); override `--test-plan`, tắt `--no-test-plan`. Kit chỉ **link** — QA tạo (§5.5.1). |
-| An toàn | Mặc định `--dry-run`; custom field bắt buộc (SAPP `customfield_10037/10039`) tự xử lý. |
+| Cycle | 1 lần chạy; mặc định tên `[<TASK_KEY>] Test Execution - <ngày>`, đổi bằng `--cycle-title`. Chạy lại cùng title = **dùng lại cycle cũ**, bỏ qua evidence đã có (dedup theo bước) |
+| Trạng thái | Lấy từ **1 nguồn** `.agent/config/verdict_taxonomy.json` (cột `aio`) → Passed / Failed / **Blocked** / Not Run; ID nội bộ đọc từ `GET /config` của chính AIO |
+| Thư mục cycle | `--folder "<Tên sprint>"` thay cho Test Plan (AIO không có Test Plan) |
+| Hai gate trước khi ghi | (1) `output_gate` chất lượng output; (2) **mở rộng 5 trục** — task có case band *high* đã execute mà chưa có `reports/expansion-plan.md` thì CHẶN. Cố ý bỏ qua: `--qa-approved` |
+| An toàn | Mặc định dry-run; run **0 conclusive** (toàn Not Run) không tạo cycle rác; case `carriedOver` của lượt trước tự bị loại |
 
-Schema: `{ "tests": [ { "tcId", "status", "comment", "evidence": [] } ] }` — `tcId` khớp TC ID canonical; map TC→Xray lấy từ `reports/jira-testcase-publish.json`.
+Schema: `{ "tests": [ { "tcId", "status", "comment", "evidence": [], "steps": [{ "status", "evidence": [] }] } ] }` — `tcId` phải khớp TC ID canonical vì đó là khoá nối sang case (`automationKey`). **Tuyệt đối không khớp theo tiêu đề**: nhiều case trùng tiêu đề ở nhóm khác nhau, khớp kiểu đó dồn nhiều run vào một case (đã mất 12 run khi migrate).
 
 ### 5.6 Triage fail/skip
 
@@ -772,7 +761,7 @@ Re-run bug/case fail: <BUG_KEY hoặc TC_ID>.
 
 Re-run chỉ xử lý bug/case fail đã có. Không dùng Re-run để cập nhật testcase theo tài liệu mới.
 
-Re-run cũng theo `TESTCASE_SOURCE` (mặc định kéo TC liên quan từ Xray về local trước khi chạy). Sau re-run, **TỰ TẠO Test Execution mới "Lần N" — KHÔNG cần QA xác nhận** (re-run là mốc verify rõ ràng); vẫn theo guard conclusive. Đặt `PUSH_XRAY_EXECUTION=0` để tắt. (Khác Phase 2: Phase 2 mặc định cần QA duyệt preview trước.)
+Re-run cũng theo `TESTCASE_SOURCE` (mặc định kéo TC từ AIO về local trước khi chạy). Sau re-run, cycle mới được tạo tự động (không cần QA duyệt lại).
 
 Khi bug đã fix và testcase PASS thật:
 
@@ -810,11 +799,11 @@ Không dùng Partial Rerun nếu story chưa có testcase baseline. Khi đó ch�
 |---|---|---|
 | Prepare Review | `partial-rerun/run_requirement_prepare_review.md` | Tạo diff, impact, testcase draft và review checklist. |
 | Apply Approved | `partial-rerun/run_requirement_apply_approved.md` | Sau Human Review approve, merge testcase và partial execute subset affected. |
-| Xray Test Cleanup | `partial-rerun/run_xray_test_cleanup.md` | Optional sau Apply Approved nếu Excel thay đổi và testcase đã từng publish lên Xray. |
+| Testcase Cleanup (Deprecate) | `partial-rerun/run_xray_test_cleanup.md` | Optional sau Apply Approved nếu Excel thay đổi. |
 
-### 6.3 Cleanup Xray Test mirror
+### 6.3 Cleanup testcase — Deprecate case rời Excel
 
-Cleanup Xray Test chỉ dùng khi Excel source of truth đã thay đổi sau khi testcase từng được publish lên Jira/Xray. Trường hợp thường gặp là Partial Rerun đã merge `UPDATED`, `NEW` hoặc `DEPRECATED` testcase sau Human Review.
+Cleanup chỉ dùng khi Excel source of truth đã thay đổi sau khi testcase từng được publish lên AIO. Trên AIO, cleanup = đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), KHÔNG xoá.
 
 Prompt:
 
@@ -825,13 +814,13 @@ partial-rerun/run_xray_test_cleanup.md
 Dry-run trước:
 
 ```text
-npm run jira:testcase-cleanup:dry-run -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY>
+npm run aio:deprecate-stale -- --story <JIRA_STORY_KEY> --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx
 ```
 
 Apply thật sau QA/Human Review approval:
 
 ```text
-npm run jira:testcase-cleanup -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY> --apply --qa-approved
+npm run aio:deprecate-stale:apply -- --story <JIRA_STORY_KEY> --file <...>.xlsx
 ```
 
 Rule:
@@ -839,11 +828,11 @@ Rule:
 | Rule | Ý nghĩa |
 |---|---|
 | Không chạy từ Phase 1 chính | Cleanup chỉ chạy sau khi baseline Excel thay đổi trong Partial Rerun. |
-| Không hard delete Xray `Test` | Giữ audit trail và tránh mất lịch sử review. |
+| Không xoá case | Giữ audit trail + lịch sử run; AIO cũng không có API xoá. |
 | Stale Test | Test không còn trong Excel được gắn label `deprecated`, `out-of-scope`, `stale-from-excel`. |
 | Restore Test | Test quay lại Excel được remove label cleanup. |
 | Optional unlink | Chỉ thêm `--unlink` khi QA muốn bỏ link stale Test khỏi Story/Task. |
-| Excel là source of truth khi cleanup | Cleanup đối chiếu Excel với Xray Test đã publish; Excel quyết định Test nào còn hiệu lực (khác với execute — mặc định đọc từ Xray). |
+| Excel là source of truth khi cleanup | Cleanup đối chiếu Excel với case đã publish trên AIO; Excel quyết định TC nào còn active. |
 
 ### 6.4 Rule bắt buộc
 
@@ -924,7 +913,7 @@ Nguyên tắc vàng: không conversation nào sửa `.env`/`.env.local` chung. M
 
 | Nhóm | Ví dụ | Nơi đặt |
 |---|---|---|
-| Tĩnh (giống mọi task) | `FIGMA_API_KEY`, `CONFLUENCE_URL`/`CONFLUENCE_API_TOKEN`, `JIRA_URL`/`JIRA_USERNAME`/`JIRA_API_TOKEN`/`JIRA_PROJECT_KEY`, `XRAY_CLIENT_ID`/`XRAY_CLIENT_SECRET`, `HUBSPOT_ACCESS_TOKEN`, base URL `LMS_BASE_URL`/`OPS_BASE_URL`/`*_SWAGGER_URL` | `.env` chung |
+| Tĩnh (giống mọi task) | `FIGMA_API_KEY`, `CONFLUENCE_URL`/`CONFLUENCE_API_TOKEN`, `JIRA_URL`/`JIRA_USERNAME`/`JIRA_API_TOKEN`, `AIO_API_TOKEN`, `HUBSPOT_ACCESS_TOKEN` — để ở `.env` chung. |
 | Động (theo task) | `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `RUN_ID`, `JIRA_STORY_URL`/`JIRA_EPIC_URL`/`JIRA_STORY_KEY`, `CONFLUENCE_REQUIREMENT_URL`/`CONFLUENCE_BRD_URL`, `FIGMA_FILE_URL`, `GOOGLE_DOCUMENT_ID`/`GOOGLE_SHEET_URL`, tài khoản `LMS_USERNAME`/`LMS_PASSWORD`/`LMS_API_TOKEN`, `OPS_USERNAME`/`OPS_PASSWORD`/`OPS_API_TOKEN` | `profiles/<TASK_KEY>/task.env` |
 
 Profile chỉ cần chứa key động; key tĩnh thiếu trong profile sẽ tự lấy từ `.env` chung (`scripts/utils/runtime_config.js` nạp profile ưu tiên hơn `.env`/`.env.local`). Tạo profile nhanh: `npm run profile:create -- <TASK_KEY>` (sinh `profiles/<TASK_KEY>/task.env` từ template, không ghi đè).
@@ -991,7 +980,7 @@ Phase 1
 | `prompt_templates/run_phase_re-run_template.md` | Re-run bug/case fail. |
 | `partial-rerun/run_requirement_prepare_review.md` | Tài liệu nguồn đổi, cần diff/impact/testcase draft. |
 | `partial-rerun/run_requirement_apply_approved.md` | Sau Human Review approve change. |
-| `partial-rerun/run_xray_test_cleanup.md` | Cleanup lifecycle Xray Test khi Excel thay đổi sau partial rerun approved. |
+| `partial-rerun/run_xray_test_cleanup.md` | Cleanup lifecycle testcase (Deprecate trên AIO) khi Excel thay đổi sau partial rerun approved. |
 
 ### 9.2 Prompt mẫu
 
@@ -1019,8 +1008,8 @@ Phase 2:
 ```text
 Đọc và chạy file prompt_templates/run_phase2_template.md.
 Execute Phase 2 cho <TASK_KEY>.
-Nguồn testcase mặc định là Xray (TESTCASE_SOURCE=xray); đặt TESTCASE_SOURCE=excel nếu muốn chạy thuần Excel.
-PUSH_XRAY_EXECUTION mặc định=confirm (trình preview cho QA duyệt rồi mới tạo Test Execution khi run conclusive); =auto tạo ngay, =0 tắt.
+Nguồn testcase mặc định là AIO Tests (TESTCASE_SOURCE=aio); đặt TESTCASE_SOURCE=excel nếu muốn chạy thuần local.
+PUSH_XRAY_EXECUTION mặc định=confirm (trình preview cho QA duyệt rồi mới tạo cycle trên AIO khi run conclusive).
 Nếu có bug thì chưa log Jira, chỉ report local.
 ```
 
@@ -1050,7 +1039,7 @@ HUMAN_REVIEW_STATUS=APPROVED.
 APPROVED_REVIEW_FILE=<path-to-review-checklist.md>.
 ```
 
-Partial Rerun - Cleanup Xray Tests:
+Partial Rerun - Cleanup testcase (Deprecate):
 
 ```text
 Đọc partial-rerun/run_xray_test_cleanup.md và chạy.
@@ -1061,16 +1050,16 @@ Mode = DRY_RUN hoặc APPLY.
 
 ### 9.3 Command thường dùng
 
-Bảng command canonical nằm ở [README.md](README.md) mục **Common Commands** (install, `npm test`, `test:task*`, Jira bug reporter...). Danh sách đầy đủ lệnh Jira/Xray (publish, pull, push execution, cleanup) ở [scripts/integrations/jira/README.md](scripts/integrations/jira/README.md).
+Bảng command canonical nằm ở [README.md](README.md) mục **Common Commands** (install, `npm test`, `test:task*`, Jira bug reporter...). Danh sách đầy đủ lệnh AIO Tests (publish, pull, push execution, cleanup) ở [scripts/integrations/jira/README.md](scripts/integrations/jira/README.md).
 
-Hai lệnh mới của flow execute-trên-Xray:
+Hai lệnh của flow execute-trên-AIO:
 
 ```text
-# Kéo testcase từ Xray về local (đầu Phase 2 khi TESTCASE_SOURCE=xray)
-node scripts/integrations/jira/pull_testcases.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --write
+# Kéo testcase từ AIO về local (đầu Phase 2 khi TESTCASE_SOURCE=aio)
+npm run aio:pull:write -- --story <JIRA_STORY_KEY>
 
-# Đẩy trạng thái lên Xray thành Test Execution (mặc định confirm: preview cho QA rồi mới --write)
-node scripts/integrations/jira/push_test_execution.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR> --write --test-plan <TEST_PLAN_KEY>
+# Đẩy trạng thái lên AIO thành cycle (mặc định confirm: preview cho QA rồi mới :apply)
+npm run aio:push-exec:apply -- --task <TASK_KEY> --folder "<Tên sprint>"
 ```
 
 Khi dùng profile (chạy song song hoặc muốn nhất quán), thêm tiền tố `TASK_ENV` cho mỗi command, ví dụ PowerShell:
@@ -1088,7 +1077,7 @@ Chi tiết ở Mục 8.
 | AI không tìm thấy file | Mở sai folder trong VS Code. | Mở đúng root `test-automation-kit_v2`. |
 | Phase 1 thiếu requirement | Link/token/quyền chưa đủ hoặc đọc sai scope. | Kiểm tra Jira/Confluence/Figma/Swagger và `.env`. |
 | Excel không export | Thiếu dependency hoặc bảng testcase sai format. | Chạy `npm install`, kiểm tra bảng có cột `TC ID`. |
-| Xray Test cũ vẫn còn sau khi bỏ TC khỏi Excel | Cleanup mirror chưa chạy hoặc chưa được QA approve. | Chạy `partial-rerun/run_xray_test_cleanup.md` dry-run sau Apply Approved; chỉ apply khi có approval. |
+| Case cũ vẫn còn sau khi bỏ TC khỏi Excel | Cleanup chưa chạy hoặc chưa được QA approve | Chạy `npm run aio:deprecate-stale` xem trước rồi `:apply` — case chuyển Deprecated, không xoá. |
 | Phase 2 skip nhiều | Auth/data/API/env chưa sẵn sàng. | Fix setup/data/root cause rồi execute lại. |
 | Evidence trắng | Capture sai thời điểm hoặc page chưa render. | Capture lại sau khi page ổn định; case phức tạp dùng video. |
 | Fail không rõ nguyên nhân | Chưa phân loại product/setup/data/automation. | Rerun targeted và đọc artifact liên quan. |
@@ -1106,14 +1095,14 @@ Chi tiết ở Mục 8.
 | Thuật ngữ | Giải thích |
 |---|---|
 | Phase 1 | Sinh testcase, Excel và coverage report. |
-| Excel source of truth | File `.xlsx` trong `test-cases/` là nguồn chính khi GEN/PUBLISH testcase (Phase 1). Phase 2 execute thì mặc định đọc từ Xray. |
-| `TESTCASE_SOURCE` | Nguồn testcase cho Phase 2 execute/rerun: `xray` (mặc định — kéo từ Xray về `test-cases/from-xray/`) hoặc `excel` (đọc `test-cases/*.xlsx` local). |
-| Pull testcase (từ Xray) | `pull_testcases.js` kéo Xray Test về canonical local để execute; lấy steps/expected từ Xray, fallback description. |
-| Jira/Xray testcase mirror | Xray `Test` issue publish từ Excel + link Story/Task. Theo flow mới, đây là **nguồn execute mặc định** (kéo về local trước khi chạy). |
-| Test Execution | Issue Xray ghi 1 lần chạy — trạng thái từng test run. Tạo bằng `push_test_execution.js`; mỗi lần chạy tạo 1 execution mới. |
-| Test Plan | Container Xray gom test + roll-up trạng thái qua nhiều Test Execution (thường theo sprint). Kit chỉ link execution vào plan có sẵn, không tạo. |
-| Xray status | Trạng thái test run trên Xray: `PASSED` / `FAILED` / `TO DO` / `EXECUTING`. SKIP/BLOCKED của kit map về `TO DO` (lý do ở comment). |
-| Xray Test cleanup | Step thuộc partial rerun để đối chiếu Excel với Xray Test đã publish; stale Test được label deprecated/out-of-scope/stale-from-excel, không hard delete. |
+| Excel source of truth | File `.xlsx` trong `test-cases/` là nguồn chính khi GEN/PUBLISH testcase (Phase 1). Phase 2 execute thì mặc định đọc từ AIO Tests. |
+| `TESTCASE_SOURCE` | Nguồn testcase cho Phase 2 execute/rerun: `aio` (mặc định — kéo từ AIO về `test-cases/from-aio/`), `excel` (Excel local), `xray` (legacy). |
+| Pull testcase (từ AIO) | `npm run aio:pull:write` kéo case trên AIO về canonical local để execute; lấy steps/expected từ đó. |
+| Testcase mirror trên AIO | Case publish từ Excel + `jiraRequirementIDs` về Story/Task. Đây là **nguồn execute** của Phase 2. |
+| Cycle | 1 lần chạy trên AIO — chứa run của từng case (và run-step). Tạo bằng `npm run aio:push-exec`. |
+| Thư mục cycle | AIO không có Test Plan; các cycle của 1 sprint gom vào thư mục cycle (`--folder "<Tên sprint>"`). |
+| Trạng thái run (AIO) | `Passed` / `Failed` / `Blocked` / `Not Run` / `In Progress` — map từ verdict canonical trong `.agent/config/verdict_taxonomy.json` (cột `aio`). |
+| Testcase cleanup | Step thuộc partial rerun: đối chiếu Excel với case đã publish; case rời Excel chuyển `caseStatus` **Deprecated**, quay lại Excel thì trả về Published. |
 | Label tối thiểu | Marker `automation-testcase` + khóa dedup `task-*`/`tc-*`; nhóm chức năng thể hiện qua subfolder Test Repository, không dùng label group/layer/risk/priority. |
 | Phase 2 | Execute automation và tổng hợp kết quả. |
 | Re-run | Chạy lại bug/case fail sau khi Dev fix hoặc sửa setup/automation. |
@@ -1144,10 +1133,10 @@ Chi tiết ở Mục 8.
 |---|---|
 | Phase 1 | Testcase Markdown, Excel source of truth, `phase1-summary.md`, `task.md`. |
 | Auto Publish Jira | QA confirmation, Jira publish summary, Jira mirror created/dry-run rõ ràng. |
-| Cleanup Xray Tests | Sau partial rerun approved: cleanup dry-run/apply summary, stale/restore/unlink rõ ràng, không hard delete Test issue. |
+| Cleanup testcase | Sau partial rerun approved: dry-run/apply summary rõ số case chuyển Deprecated / trả về Published, kèm đối soát sau khi ghi. |
 | Review Phase 1 | Coverage %, Final Decision, High/Critical gaps rõ ràng. |
 | Phase 2 | Execution summary, pass/fail/skip count, evidence, root cause classification, `testcase-status.json`. |
-| Đẩy Xray (mặc định confirm: QA duyệt, run conclusive) | Test Execution đã tạo (status PASSED/FAILED/TO DO/EXECUTING), tên chuẩn `Lần <N>`, link Test Plan sprint nếu có. |
+| Đẩy AIO (mặc định confirm: QA duyệt, run conclusive) | Cycle đã tạo (run Passed/Failed/Blocked + evidence từng bước), đúng thư mục sprint. |
 | Jira bug | Description 4 phần, ảnh/video evidence, expected/actual rõ. |
 | Re-run | Rerun report, evidence PASS/FAIL, Jira Done nếu PASS thật. |
 
@@ -1171,12 +1160,12 @@ Chi tiết ở Mục 8.
 | `RULE_GLOBAL.md` | Rule global. |
 | `prompt_templates/run_phase1_template.md` | Prompt Phase 1. |
 | `prompt_templates/phase1/04_auto_publish_jira.md` | Prompt Auto Publish Jira trong Phase 1 sau QA confirmation. |
-| `partial-rerun/run_xray_test_cleanup.md` | Prompt Cleanup Xray Tests khi Excel thay đổi sau partial rerun approved. |
+| `partial-rerun/run_xray_test_cleanup.md` | Prompt cleanup testcase (Deprecate trên AIO) khi Excel thay đổi sau partial rerun approved. |
 | `prompt_templates/run_phase2_template.md` | Prompt Phase 2. |
 | `prompt_templates/run_phase_re-run_template.md` | Prompt Re-run. |
-| `scripts/integrations/jira/pull_testcases.js` | Kéo testcase từ Xray về canonical local (nguồn execute mặc định). |
-| `scripts/integrations/jira/push_test_execution.js` | Đẩy trạng thái lên Xray thành Test Execution + link Test Plan. |
-| `scripts/integrations/jira/README.md` | Tài liệu đầy đủ lệnh Jira/Xray (publish/pull/push/cleanup). |
+| `scripts/integrations/aio/pull_testcases_aio.js` | Kéo testcase từ AIO về canonical local (nguồn execute mặc định). |
+| `scripts/integrations/aio/push_execution_aio.js` | Đẩy trạng thái lên AIO thành cycle + evidence từng bước. |
+| `scripts/integrations/aio/README.md` | Tài liệu đầy đủ lệnh AIO (publish/pull/push/deprecate/migrate) + 9 đặc tính đã đo. Bản Xray legacy: `scripts/integrations/jira/README.md`. |
 | `partial-rerun/run_requirement_prepare_review.md` | Partial Rerun - Prepare Review. |
 | `partial-rerun/run_requirement_apply_approved.md` | Partial Rerun - Apply Approved. |
 | `tests/support/setup/README.md` | Setup layer dùng chung (factory/hook/fixture/mock/cleanup/contract). |

@@ -14,6 +14,9 @@ const checks = [
   { label: 'Jira token hoặc PAT', keys: ['JIRA_API_TOKEN', 'JIRA_PAT'], level: 'required' },
   { label: 'Jira project key', keys: ['JIRA_PROJECT_KEY'], level: 'required' },
   { label: 'Jira story key', keys: ['JIRA_STORY_KEY', 'TASK_KEY'], level: 'warning' },
+  // AIO Tests là test-management tool mặc định từ GĐ5 (Xray đóng băng sau 21/08/2026).
+  { label: 'AIO token', keys: ['AIO_API_TOKEN'], level: 'required' },
+  { label: 'AIO project key', keys: ['AIO_PROJECT_KEY', 'JIRA_PROJECT_KEY'], level: 'required' },
   { label: 'Confluence URL', keys: ['CONFLUENCE_URL'], level: 'warning' },
   { label: 'Confluence user', keys: ['CONFLUENCE_USERNAME', 'JIRA_EMAIL', 'JIRA_USERNAME'], level: 'warning' },
   { label: 'Confluence token', keys: ['CONFLUENCE_API_TOKEN'], level: 'warning' },
@@ -74,6 +77,12 @@ async function runLiveChecks() {
   let failed = 0;
   failed += await runLiveCheck('Jira', testJira);
 
+  if (isConfigured('AIO_API_TOKEN') && (isConfigured('AIO_PROJECT_KEY') || isConfigured('JIRA_PROJECT_KEY'))) {
+    failed += await runLiveCheck('AIO Tests', testAio);
+  } else {
+    console.log('[WARN] AIO live: thiếu AIO_API_TOKEN / project key, bỏ qua live check.');
+  }
+
   if (hasAll(['CONFLUENCE_URL', 'CONFLUENCE_USERNAME', 'CONFLUENCE_API_TOKEN'])) {
     failed += await runLiveCheck('Confluence', testConfluence);
   } else {
@@ -111,6 +120,21 @@ async function testJira() {
     headers: buildJiraHeaders(),
     timeout: TIMEOUT_MS,
   });
+}
+
+/*
+ * AIO: gọi `GET /config` của chính project — endpoint nhẹ nhất và cũng là nơi kit đọc enum trạng thái.
+ * LƯU Ý đặc tính đã đo: rate limit của AIO trả **body rỗng** chứ không phải 429, nên body rỗng ở đây
+ * cũng tính là lỗi tạm thời, không phải "kết nối OK".
+ */
+async function testAio() {
+  const base = stripTrailingSlash(process.env.AIO_BASE_URL || 'https://tcms.aiojiraapps.com/aio-tcms/api/v1');
+  const project = process.env.AIO_PROJECT_KEY || process.env.JIRA_PROJECT_KEY;
+  const res = await axios.get(`${base}/project/${encodeURIComponent(project)}/config`, {
+    headers: { Authorization: `AioAuth ${process.env.AIO_API_TOKEN}`, Accept: 'application/json' },
+    timeout: TIMEOUT_MS,
+  });
+  if (!res.data || !Object.keys(res.data).length) throw new Error('AIO trả body rỗng (dấu hiệu rate limit), thử lại sau.');
 }
 
 async function testConfluence() {

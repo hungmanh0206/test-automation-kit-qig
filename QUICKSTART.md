@@ -48,11 +48,11 @@
 | `TASK_KEY=<TASK_KEY>` | Scope folder của task/feature. |
 | `RUN_ID=<safe-run-id>` | Optional; bắt buộc khi chạy song song nhiều session cùng `TASK_KEY`. |
 | `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN` | Jira integration. |
-| `TEST_MANAGEMENT_TOOL=xray`, `JIRA_TESTCASE_ISSUE_TYPE=Test`, `JIRA_TESTCASE_DRY_RUN` | Publish testcase từ Excel lên Jira/Xray sau QA confirmation trong Phase 1. |
-| `XRAY_TEST_TYPE`, `XRAY_TEST_TYPE_FIELD_ID` | Optional; dùng khi Xray/Jira bắt buộc field `Test Type`. |
-| `XRAY_REQUIREMENT_LINK_TYPE=Tests` | Link Xray `Test` issue về Story/Task như `<TASK_KEY>`. |
-| `XRAY_TEST_SET_ENABLED`, `XRAY_TEST_SET_LINK_TYPE` | Optional; tạo Xray `Test Set` theo business flow trong cột `Module`. |
-| `XRAY_CLEANUP_DEPRECATE_LABELS`, `XRAY_CLEANUP_UNLINK_STALE` | Cleanup Xray Test lifecycle khi Excel bỏ bớt hoặc restore TC đã publish. |
+| `TEST_MANAGEMENT_TOOL=aio` (mặc định), `AIO_API_TOKEN` | Publish testcase từ Excel lên **AIO Tests** sau QA confirmation trong Phase 1. Lệnh Xray cũ tự chặn. |
+| `AIO_PROJECT_KEY`, `AIO_BASE_URL`, `AIO_THROTTLE_MS` | Optional; `AIO_PROJECT_KEY` mặc định lấy `JIRA_PROJECT_KEY`, `AIO_THROTTLE_MS` khi bị rate limit (AIO trả **body rỗng** thay vì 429). |
+| `JIRA_STORY_KEY` / `--story` | Ghi vào `jiraRequirementIDs` của case — đường nối case ↔ Story/Task. |
+| `TESTCASE_SOURCE=aio` (mặc định) | Nguồn execute Phase 2: `npm run aio:pull:write` kéo về `test-cases/from-aio/*.xlsx`; `excel` là opt-out, `xray` là legacy. |
+| `PUSH_XRAY_EXECUTION=confirm` | Đẩy kết quả execute thành **cycle** trên AIO sau khi QA duyệt preview (tên biến giữ nguyên cho tương thích ngược). |
 | `CONFLUENCE_URL` | Requirement source nếu dùng Confluence. |
 | `FIGMA_API_KEY` | Figma fetch nếu dùng design source. |
 | `<APP>_BASE_URL`, `<APP>_LOGIN_URL` | UI automation. |
@@ -94,7 +94,7 @@ Excel (Source of truth khi gen/publish)
 ↓
 QA xác nhận
 ↓
-Auto Publish Jira → Xray (nguồn execute Phase 2)
+Auto Publish → AIO Tests (nguồn execute Phase 2)
 ```
 
 **Trước khi QA xác nhận, chạy 2 gate chiều coverage:**
@@ -107,48 +107,48 @@ npm run domain:trace-back                 # case có oracle nghiệp vụ mà kh
 
 Bộ testcase có **hai trục**: *module* = test **ở đâu**, *chiều* = hỏi **loại câu hỏi nào** (validate · hiển thị · công thức · BE conformance · guard · bảo mật · perf · change-impact). Phủ kín module mà trống một chiều thì bộ vẫn *trông* đầy đủ. Mỗi case gắn **tag chiều** trong tiêu đề (`[Positive][Display] …`); 15 chương nội dung ở [`prompt_templates/phase1/dimensions/`](prompt_templates/phase1/dimensions/); luật đầy đủ ở [RULE_GLOBAL §Chiều coverage](RULE_GLOBAL.md).
 
-Auto Publish Jira là step riêng trong phạm vi Phase 1. Excel là source of truth khi gen/publish. Khi chạy Phase 2, agent **mặc định lấy nguồn từ Xray** (`TESTCASE_SOURCE=xray`: kéo về canonical local `test-cases/from-xray/*.xlsx` rồi execute) — nên publish là bước cần trước Phase 2; đặt `TESTCASE_SOURCE=excel` để dùng Excel local.
+Auto Publish là step riêng trong phạm vi Phase 1. Excel là source of truth khi gen/publish. Khi chạy Phase 2, agent **mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`: kéo về canonical local `test-cases/from-aio/*.xlsx` rồi execute từ đó), `excel` là opt-out.
 
-## Phase 1 - Auto Publish Jira
+## Phase 1 - Auto Publish Testcase (AIO Tests)
 
 Chỉ chạy sau khi QA đã xác nhận Excel/testcase được phép publish. Dùng prompt riêng [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md).
 
-Kiểm tra payload publish trước khi ghi Jira thật:
+Kiểm tra payload publish trước khi ghi thật (AIO **không có API xoá** — bắt buộc xem dry-run):
 
 ```text
-npm run jira:testcase-publish:dry-run -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY>
+npm run aio:publish -- --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx --story <JIRA_STORY_KEY>
 ```
 
-Publish thật khi đã cấu hình đúng issue type/quyền Jira và QA đã approve:
+Publish thật khi có `AIO_API_TOKEN` và QA đã approve:
 
 ```text
-npm run jira:testcase-publish -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY> --publish --qa-approved
+npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --qa-approved
 ```
 
-Publish kèm Xray Test Set theo business flow:
+Đẩy lại vài case lẻ sau khi sửa Excel (dedup theo `automationKey` nên là UPDATE, không tạo trùng):
 
 ```text
-npm run jira:testcase-publish -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY> --publish --qa-approved --with-test-sets
+npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --qa-approved --only TC_001,TC_007
 ```
 
-Với Xray, `--story <JIRA_STORY_KEY>` không chỉ là metadata local: script sẽ link từng Xray `Test` issue về Story/Task đó bằng link type `XRAY_REQUIREMENT_LINK_TYPE` mặc định `Tests`.
+`--story <JIRA_STORY_KEY>` không chỉ là metadata local: nó được ghi vào `jiraRequirementIDs` của case. Nhóm chức năng thành **folder** `<root>/<nhóm>` (cây 2 cấp, dựng từ Excel); TC ID nằm ở `automationKey` (KHÔNG dùng `tags` — AIO trả 200 nhưng không lưu).
 
-Nếu bật `--with-test-sets`, script tạo/tái sử dụng một `Test Set` cho mỗi business flow chính trong cột `Module` rồi gắn các `Test` vào Test Set tương ứng. Nếu Jira/Xray instance dùng link type khác mặc định, cấu hình `XRAY_TEST_SET_LINK_TYPE`.
+AIO case không phải Jira issue nên **không có** Test Set, requirement issue-link, Precondition issue riêng, assignee hay label — tiền điều kiện nằm trong field `precondition` của chính case. Khác biệt mô hình đầy đủ: [scripts/integrations/aio/README.md](scripts/integrations/aio/README.md).
 
-## Partial Rerun - Cleanup Xray Tests
+## Partial Rerun - Cleanup testcase (Deprecate)
 
-Khi Excel source of truth thay đổi sau khi đã publish Xray Test, cleanup thuộc nhánh phụ Partial Rerun. Dùng prompt riêng [partial-rerun/run_xray_test_cleanup.md](partial-rerun/run_xray_test_cleanup.md) sau khi `run_requirement_apply_approved.md` đã merge testcase được Human Review approve. Workflow chuẩn không xóa cứng Xray `Test`; chỉ đánh dấu stale bằng label cleanup và optional unlink khỏi Story/Task khi QA xác nhận.
+Khi Excel source of truth thay đổi sau khi đã publish, cleanup thuộc nhánh phụ Partial Rerun. Trên AIO, cleanup = đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), KHÔNG xoá. Dùng prompt riêng [partial-rerun/run_xray_test_cleanup.md](partial-rerun/run_xray_test_cleanup.md).
 
 Preview trước:
 
 ```text
-npm run jira:testcase-cleanup:dry-run -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY>
+npm run aio:deprecate-stale -- --story <JIRA_STORY_KEY> --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx
 ```
 
 Apply thật sau QA approval:
 
 ```text
-npm run jira:testcase-cleanup -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY> --story <JIRA_STORY_KEY> --apply --qa-approved
+npm run aio:deprecate-stale:apply -- --story <JIRA_STORY_KEY> --file <...>.xlsx
 ```
 
 Nếu QA muốn bỏ link coverage của stale Test khỏi Story/Task, thêm `--unlink`.
@@ -189,7 +189,7 @@ Execution mode: SELECTED_TESTCASES
 Selected TC IDs: <TC_ID_1>, <TC_ID_2>
 Generate/update Playwright script nếu cần, execute, auto-heal, tạo local report.
 Không tạo Jira bug thật nếu chưa được xác nhận.
-Nguồn testcase: TESTCASE_SOURCE=xray (mặc định — kéo từ Xray về test-cases/from-xray/ rồi execute) hoặc excel (test-cases/*.xlsx).
+Nguồn testcase: TESTCASE_SOURCE=aio (mặc định — kéo từ AIO về test-cases/from-aio/ rồi execute) hoặc excel (test-cases/*.xlsx); xray là legacy.
 ```
 
 ## Run Task-Scoped Playwright
@@ -254,8 +254,8 @@ Tái dùng login/catalog; kết quả ghi `<TASK_OUTPUT_DIR>/reports/` và lên 
 | Playwright báo thiếu browser | Browser runtime chưa cài | Chạy `npx playwright install`. |
 | MCP không kết nối | Token/quyền hoặc MCP config sai | Kiểm tra `.env.local` và IDE MCP settings. |
 | Phase 1 không fetch được requirement | URL/quyền Jira/Confluence/Figma sai | Kiểm tra link, token, quyền page/file. |
-| Publish testcase Jira bị lỗi | Issue type/quyền Jira/Xray/custom field chưa đúng | Chạy dry-run, kiểm tra `JIRA_TESTCASE_ISSUE_TYPE=Test`, `JIRA_PROJECT_KEY`, `JIRA_STORY_KEY`, `XRAY_TEST_TYPE_FIELD_ID`. |
-| Xray Test cũ vẫn còn sau khi bỏ TC khỏi Excel | Workflow không hard delete issue | Chạy cleanup dry-run, sau đó apply để thêm label `deprecated/out-of-scope/stale-from-excel`; thêm `--unlink` nếu QA muốn bỏ link khỏi Story. |
+| Publish testcase bị lỗi | Thiếu `AIO_API_TOKEN`, sai `AIO_PROJECT_KEY`, hoặc AIO trả body rỗng (rate limit) | Chạy dry-run, kiểm tra token/project, thêm `--throttle 130`; case có steps thì `scriptType` là bắt buộc (script tự set) |
+| Case cũ vẫn còn sau khi bỏ TC khỏi Excel | Workflow không xoá case (AIO cũng không có API xoá) | Chạy `npm run aio:deprecate-stale` xem trước, rồi `:apply` để đổi `caseStatus` sang Deprecated; TC quay lại Excel thì tự trả về Published |
 | Phase 2 bị `SKIP` nhiều | Auth/data/API/env chưa sẵn sàng hoặc case cần state sâu không có API/hook | Kiểm tra credential, base URL, Swagger URL, fixture/test hook; case thiếu capability an toàn (không dựng được qua API/hook/sandbox) đánh dấu `Needs hook`/`Manual-only` — KHÔNG dùng DB để né (xem `tests/support/setup/hooks/README.md`). |
 | Jira bug không tạo được | Chưa đủ config hoặc chưa được phép log thật | Chạy dry-run trước, kiểm tra `JIRA_*` keys. |
 
@@ -273,4 +273,4 @@ Quick Start chuẩn giúp project mới có cùng layout output và cùng điề
 | [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md) | Prompt riêng cho Auto Publish Jira trong Phase 1 sau QA confirmation. |
 | [prompt_templates/run_phase2_template.md](prompt_templates/run_phase2_template.md) | Template Phase 2. |
 | [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) | Template Re-run bug/case fail và Jira bug đã fix. |
-| [partial-rerun/run_xray_test_cleanup.md](partial-rerun/run_xray_test_cleanup.md) | Prompt cleanup lifecycle Xray Test sau partial rerun approved. |
+| [partial-rerun/run_xray_test_cleanup.md](partial-rerun/run_xray_test_cleanup.md) | Prompt cleanup lifecycle testcase (Deprecate trên AIO) sau partial rerun approved. |

@@ -14,7 +14,7 @@ Nhánh này không thuộc Main Flow, không tự chạy, không block Phase 1/P
 |---|---|
 | Jira/Confluence/Figma/Swagger đổi nội dung nhưng link/path giữ nguyên | Chạy `run_requirement_prepare_review.md`. |
 | Đã có Human Review approve testcase thay đổi | Chạy `run_requirement_apply_approved.md`. |
-| Đã merge Excel/testcase thay đổi và cần đồng bộ Jira/Xray mirror | Chạy `run_xray_test_cleanup.md`. |
+| Đã merge Excel/testcase thay đổi và cần đồng bộ mirror trên AIO | Chạy `run_xray_test_cleanup.md` (nay dùng `aio:deprecate-stale`). |
 | Chưa có testcase baseline | Chạy Phase 1 chính, không dùng partial rerun. |
 | Dev fix bug đã log | Dùng Re-run chính, không dùng partial rerun. |
 | Cần log Jira bug | Chuyển về Phase 2/Main Flow bug triage, không log trực tiếp từ partial rerun. |
@@ -34,11 +34,11 @@ Apply Approved
 ↓
 Merge testcase đã approve
 ↓
-Re-publish Xray (update TC cũ + tạo TC mới, đúng subfolder)
+Re-publish AIO (update case cũ + tạo case mới, đúng folder)
 ↓
-Optional Xray Test Cleanup (label stale TC bị bỏ khỏi Excel)
+Optional Cleanup — Deprecate case bị bỏ khỏi Excel
 ↓
-Pull affected từ Xray → Partial Execute subset (mặc định TESTCASE_SOURCE=xray)
+Pull từ AIO → Partial Execute subset (mặc định TESTCASE_SOURCE=aio)
 ↓
 Push Test Execution + link Test Plan (subset)
 ↓
@@ -88,8 +88,8 @@ Mục tiêu:
 - Chỉ chạy khi có Human Review approve.
 - Merge testcase theo lifecycle đã approve.
 - Export/update Excel nếu testcase chính thay đổi.
-- **Re-publish Xray** TC `UPDATED` + `NEW` (dedup: update theo TC ID + tạo mới, vào đúng subfolder Test Repository); Optional cleanup chỉ **label stale** TC bị bỏ khỏi Excel.
-- Chọn subset execute: testcase `NEW`, `UPDATED`, và testcase bị ảnh hưởng. Mặc định execute **từ Xray** (pull affected về canonical local).
+- **Re-publish AIO** TC `UPDATED` + `NEW` (dedup theo `automationKey`: update case cũ + tạo mới, vào đúng folder); Optional cleanup chỉ đổi `caseStatus` sang **Deprecated**, không xoá.
+- Chọn subset execute: testcase `NEW`, `UPDATED`, và testcase bị ảnh hưởng. Mặc định execute **từ AIO** (pull về canonical local).
 - Không chạy full regression mặc định.
 - Execute thật subset đã chọn.
 - **Đẩy Test Execution + link Test Plan** cho subset đã execute (như các phase khác); kit chỉ link Test Plan, không tạo.
@@ -107,7 +107,7 @@ Output chính:
     ├── bug-candidates.md
     └── artifacts/
 <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-publish-summary.md (re-publish Step 2b)
-<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/xray-execution-summary.md (Test Execution Step 6b)
+<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/aio-execution-summary.md (cycle — Step 6b)
 <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-cleanup-summary.md (nếu chạy cleanup mirror)
 ```
 
@@ -132,8 +132,8 @@ Output chính:
 ## Quy tắc execute
 
 - Sau merge + re-publish, chỉ partial execute subset bị ảnh hưởng.
-- Nguồn execute mặc định là **Xray** (`TESTCASE_SOURCE=xray`): pull TC affected về canonical local rồi execute; `excel` để chạy thuần local.
-- Execute xong, đẩy **Test Execution** (chỉ subset) + link **Test Plan** có sẵn (`PUSH_XRAY_EXECUTION=1`); kit chỉ link, không tạo Test Plan.
+- Nguồn execute mặc định là **AIO Tests** (`TESTCASE_SOURCE=aio`): pull về canonical local rồi execute subset; `excel` để chạy thuần local; `xray` là legacy.
+- Execute xong, đẩy **cycle** (chỉ subset) vào thư mục cycle theo sprint (`PUSH_XRAY_EXECUTION=1` — tên biến giữ nguyên; AIO không có Test Plan).
 - Không chạy full regression mặc định.
 - Full regression chỉ khi business flow/API contract/UI shared thay đổi diện rộng hoặc QA Lead yêu cầu.
 - Với `RUN_ID`, output execute nằm dưới:
@@ -143,17 +143,17 @@ Output chính:
 <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/runs/<RUN_ID>/
 ```
 
-## Xray cleanup trong partial rerun
+## Cleanup (Deprecate) trong partial rerun
 
-Nếu testcase baseline đã từng publish lên Jira/Xray và Apply Approved làm Excel thay đổi:
+Nếu testcase baseline đã từng publish lên AIO và Apply Approved làm Excel thay đổi:
 
 - **Re-publish (Step 2b, `publish_testcases.js`) chạy TRƯỚC cleanup** — re-publish tạo TC mới + update TC cũ; cleanup **chỉ label stale** TC bị bỏ khỏi Excel, KHÔNG tạo/update TC.
 - Chạy `partial-rerun/run_xray_test_cleanup.md` sau khi merge + re-publish approved testcase.
 - Luôn dry-run trước, apply thật chỉ khi Human Review/QA approval rõ ràng.
-- Không hard delete Xray `Test` hoặc `Test Set`.
-- Stale Xray Test chỉ được label `deprecated,out-of-scope,stale-from-excel`.
+- Không xoá case (AIO cũng không có API xoá).
+- Case rời Excel chỉ được chuyển `caseStatus` sang **Deprecated** (giữ lịch sử run); quay lại Excel thì trả về Published.
 - Unlink stale Test khỏi Story/Task là optional, chỉ bật khi QA yêu cầu.
-- Excel vẫn là source of truth; Jira/Xray chỉ là mirror.
+- Excel vẫn là source of truth khi cleanup; AIO là mirror ở context đó.
 
 ## Bug candidate handoff
 

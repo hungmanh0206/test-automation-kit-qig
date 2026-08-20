@@ -222,7 +222,7 @@ test.describe('@infra TEST_MANAGEMENT_TOOL — chạy nhầm bộ phải bị CH
     });
   }
 
-  test('xray (mặc định) KHÔNG bị chặn oan — phải đi tiếp tới lỗi thiếu config bình thường', () => {
+  test('xray khai TƯỜNG MINH thì KHÔNG bị chặn oan — phải đi tiếp tới lỗi thiếu config bình thường', () => {
     const r = run([path.join(REPO, XRAY_ENTRYPOINTS[1]), '--dry-run'], { TEST_MANAGEMENT_TOOL: 'xray' });
     expect(r.out).not.toMatch(/CHẶN: TEST_MANAGEMENT_TOOL/);
   });
@@ -449,5 +449,52 @@ test.describe('@infra luật mở rộng — chặn ở cả finalize lẫn đư
       expect(src, `${f} phải dùng plan_guard`).toMatch(/plan_guard/);
       expect(src, `${f} không được tự gọi bandOf — luật sẽ trôi khỏi nhau`).not.toMatch(/\.bandOf\(/);
     }
+  });
+});
+
+/*
+ * TMS-DRIFT (gate:policy): tài liệu không được dạy đường Xray như đường chính.
+ *
+ * Vì sao phải có test: code đã có răng (5 entrypoint Xray tự chặn) nhưng TÀI LIỆU thì trước đó không gì gác —
+ * đo 20/08/2026 có 23 file hướng dẫn vẫn dạy `npm run jira:testcase-publish` và `TESTCASE_SOURCE=xray` là
+ * "mặc định", tức agent chạy đúng prompt sẽ đụng thẳng cửa chặn. Test khoá cả hai chiều: repo thật phải sạch,
+ * VÀ luật phải thực sự bắt được dòng vi phạm (không phải gate xanh vì chẳng kiểm gì).
+ */
+test.describe('@infra gate:policy — TMS-drift', () => {
+  const GATE = path.join(REPO, 'scripts/qa/policy_source_check.js');
+  const LF = String.fromCharCode(10);   // tránh ký tự escape: heredoc/shell từng bóp nó thành newline thật
+  /** Ghi file thật vào một root ĐANG được quét rồi xoá ngay — gate đọc đĩa, fixture trong RAM không kiểm được gì. */
+  const withProbe = (name: string, body: string, assertFn: (out: string, code: number) => void) => {
+    const tmp = path.join(REPO, 'partial-rerun', name);
+    fs.writeFileSync(tmp, body);
+    try { const r = run([GATE]); assertFn(r.out, r.code); } finally { fs.unlinkSync(tmp); }
+  };
+
+  test('repo thật: không tài liệu nào dạy đường Xray như đường chính', () => {
+    const r = run([GATE]);
+    expect(r.out).toContain('TMS-drift sạch');
+    expect(r.code, 'gate:policy phải xanh trên repo thật').toBe(0);
+  });
+
+  test('luật CÓ RĂNG: dòng dạy lệnh Xray legacy (không ghi legacy) bị CHẶN', () => {
+    withProbe('_tms_drift_probe.md',
+      ['# probe', ''  , 'Chạy `npm run jira:testcase-publish -- --task X --story Y` để publish.'].join(LF) + LF,
+      (out, code) => {
+        expect(code, 'phải chặn').not.toBe(0);
+        expect(out).toContain('_tms_drift_probe.md');
+        expect(out).toContain('TMS-DRIFT');
+      });
+  });
+
+  test('KHÔNG báo oan: dòng nói về đường cũ có nhãn legacy được cho qua', () => {
+    withProbe('_tms_drift_probe2.md',
+      ['# probe', ''  , 'Đường LEGACY (Xray đóng băng sau 21/08/2026): `npm run jira:testcase-publish -- --test-management-tool xray`.'].join(LF) + LF,
+      (out) => expect(out).not.toContain('_tms_drift_probe2.md'));
+  });
+
+  test('KHÔNG báo oan: tên biến PUSH_XRAY_EXECUTION không phải là "dạy Xray"', () => {
+    withProbe('_tms_drift_probe3.md',
+      ['# probe', ''  , 'MẶC ĐỊNH `PUSH_XRAY_EXECUTION=confirm`: QA duyệt preview rồi mới tạo cycle trên AIO.'].join(LF) + LF,
+      (out) => expect(out).not.toContain('_tms_drift_probe3.md'));
   });
 });

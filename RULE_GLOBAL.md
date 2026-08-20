@@ -53,7 +53,7 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 | Project output root | `PROJECT_OUTPUT_DIR` (trong task.env) |
 | Task scope | `TASK_KEY` (trong task.env) |
 | Parallel run scope | `RUN_ID` nếu chạy nhiều session cùng `TASK_KEY` |
-| Runtime secrets (TĨNH, dùng chung) | `.env.local`, `.env`, CI env hoặc secret store (base URL + API key Figma/Confluence/Jira/Xray/HubSpot) |
+| Runtime secrets (TĨNH, dùng chung) | `.env.local`, `.env`, CI env hoặc secret store (base URL + API key Figma/Confluence/Jira/AIO/HubSpot) |
 | Workflow-specific context | Prompt template hoặc `.agent/config/project_context.md` |
 
 **Tạo profile task (một lần, chỉ 1 lệnh):** khi user yêu cầu "Tạo profile cho `<TASK_KEY>`" → chạy `node scripts/utils/create_profile.js <TASK_KEY> [--project-output outputs/<PROJECT>]` (hoặc `npm run profile:create -- <TASK_KEY>`). Lệnh copy `profiles/task.env.example` → `profiles/<TASK_KEY>/task.env`, prefill `TASK_KEY`+`JIRA_STORY_KEY`, KHÔNG ghi đè nếu đã tồn tại; QA điền credential + link. Profile CHỈ chứa giá trị động: `PROJECT_OUTPUT_DIR, TASK_KEY, JIRA_STORY_KEY, JIRA_STORY_URL, CONFLUENCE_REQUIREMENT_URL, CONFLUENCE_BRD_URL, FIGMA_FILE_URL, GOOGLE_DOCUMENT_ID, GOOGLE_SHEET_URL, LMS_USERNAME/PASSWORD/API_TOKEN, OPS_USERNAME/PASSWORD/API_TOKEN` (+ assignee/HubSpot per-task nếu cần). File task.env KHÔNG commit (gitignore `profiles/**/task.env`).
@@ -65,7 +65,7 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 | Markdown/report | Tiếng Việt chuẩn có dấu, UTF-8, không lộ secret. |
 | Test results | Nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/`. |
 | Evidence | Chỉ **ảnh/video** làm evidence (xem §"Evidence — Quy chuẩn bắt buộc"); `trace/log` là diagnostic local, KHÔNG phải evidence. Lưu đúng scope task. |
-| Jira testcase publish | Step riêng trong phạm vi Phase 1; chỉ publish từ Excel canonical sau khi QA xác nhận. Excel là source of truth khi gen/publish; **Phase 2 execute mặc định lấy nguồn từ Xray** (`TESTCASE_SOURCE=xray`, kéo về canonical local `from-xray/*.xlsx`), `excel` là opt-out. |
+| Testcase publish (AIO Tests) | Step riêng trong phạm vi Phase 1; chỉ publish từ Excel canonical sau khi QA xác nhận (`npm run aio:publish:apply -- ... --qa-approved`). Excel là source of truth khi gen/publish; **Phase 2 execute mặc định lấy nguồn từ AIO** (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx`), `excel` là opt-out, `xray` là legacy. |
 | Jira bug | Chỉ tạo khi fail đã được xác nhận là product/API bug. |
 | Testcase (md/Excel) | Cột "Kết quả mong đợi" đánh số **KHỚP từng bước** (bước 1→KQ 1, 2→2…), xuống dòng `<br>`; **CẤM gộp range** kiểu `1-2.`/`2-3.`; không ghi chung chung ("thành công"/"đúng"). Áp cả khi gen VÀ khi chỉnh sửa TC thủ công. Chi tiết: prompt gen Phase 1 §6. |
 
@@ -119,9 +119,9 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 
 - Mỗi story không bắt buộc chạy liền một mạch. Luồng chuẩn là:
   `Requirement -> Generate Testcase -> Excel (source of truth) -> QA confirmation -> Auto Publish Jira -> chờ Dev implement -> Phase 2 -> chờ Dev fix bug nếu có -> Re-run`.
-- Sau bước generate testcase, Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **gen/publish**. Nội dung testcase phải sửa ở Excel rồi re-publish — không sửa trực tiếp trên Xray làm nguồn authoring.
-- **Phase 2 execute mặc định lấy nguồn từ Xray** (`TESTCASE_SOURCE=xray`): kéo về canonical local `<TASK_OUTPUT_DIR>/test-cases/from-xray/*.xlsx` rồi execute từ đó (Xray publish TỪ Excel nên nhất quán). `TESTCASE_SOURCE=aio` đọc `<TASK_OUTPUT_DIR>/test-cases/from-aio/*.xlsx` (kéo bằng `npm run aio:pull:write -- --story <KEY>`; cùng bộ cột/định dạng nên parser canonical không phân biệt nguồn). `TESTCASE_SOURCE=excel` (opt-out) đọc `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`. Dù nguồn nào, execute đọc file canonical LOCAL — không gọi Jira/Xray cho từng case.
-- Auto Publish Jira là step riêng trong phạm vi Phase 1, chạy bằng prompt riêng sau khi QA xác nhận Excel/testcase. Không publish Jira thật khi chưa có QA confirmation rõ ràng.
+- Sau bước generate testcase, Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **gen/publish**. Nội dung testcase phải sửa ở Excel rồi re-publish — không sửa trực tiếp trên AIO làm nguồn authoring (`PUT .../detail` ghi đè toàn phần nên bản sửa tay sẽ mất khi re-publish).
+- **Phase 2 execute mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`): kéo về canonical local `<TASK_OUTPUT_DIR>/test-cases/from-aio/*.xlsx` bằng `npm run aio:pull:write -- --story <KEY>` rồi execute từ đó (AIO publish TỪ Excel nên nhất quán; cùng bộ cột/định dạng nên parser canonical không phân biệt nguồn). `TESTCASE_SOURCE=excel` (opt-out) đọc `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`. `TESTCASE_SOURCE=xray` là **legacy** (`from-xray/*.xlsx`; Xray đóng băng sau 21/08/2026). Dù nguồn nào, execute đọc file canonical LOCAL — không gọi AIO/Jira cho từng case.
+- Auto Publish testcase là step riêng trong phạm vi Phase 1, chạy bằng prompt riêng sau khi QA xác nhận Excel/testcase. Không publish thật khi chưa có QA confirmation rõ ràng (script đòi `--qa-approved`; AIO không có API xoá nên phải xem dry-run trước).
 - **Test management tool là AIO Tests** (mặc định `TEST_MANAGEMENT_TOOL=aio` từ 19/08/2026). Publish/pull/push đi qua `scripts/integrations/aio/`. Xray là **legacy**: đóng băng sau 21/08/2026, chỉ vào được khi khai báo rõ `--test-management-tool xray`; 5 script Xray tự CHẶN ở mặc định.
 - **Đã chuyển xong Xray → AIO Tests** (GĐ1–GĐ5; Xray đóng băng sau 21/08/2026). Công tắc DUY NHẤT là `TEST_MANAGEMENT_TOOL` (`xray` | `aio`). Đặt `aio` thì 4 script Xray (`publish_testcases` · `push_test_execution` · `update_xray_steps` · `cleanup_xray_tests`) **tự CHẶN kèm lệnh AIO thay thế** — đây là forcing function, không phải quy ước, vì hai bộ script ăn CHUNG đầu vào nên chạy nhầm KHÔNG báo lỗi mà ghi trót lọt vào sai hệ thống. Trên AIO: case **không phải Jira issue** (mất Test Set/link-requirement/assignee/precondition-issue), Test Execution → **Cycle**, Test Plan → **thư mục cycle**, và evidence neo được xuống **từng bước**. Không có API xoá ⇒ mọi script mặc định dry-run, sai phải dọn tay trên UI. Chi tiết: `scripts/integrations/aio/README.md`.
 - Publish testcase lên Jira phải đọc từ Excel canonical. Chạy dry-run trước nếu cần preview; publish thật chỉ khi QA/user approve. Ghi kết quả vào `<TASK_OUTPUT_DIR>/reports/jira-testcase-publish-summary.md`.
@@ -229,7 +229,7 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
    tautology **nhân theo số trục**, tạo ra PASS giả nhìn rất thuyết phục. Ba loại kết luận, không có loại thứ tư:
    - `EXPANSION_FINDING` — app **tự mâu thuẫn với chính nó** (lệch giữa 2 bề mặt · mắt đứt trong chuỗi lưu trữ ·
      field thừa/thiếu so tài liệu). Không cần oracle ngoài, vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một
-     nơi sai. Log bug được, **KHÔNG phải verdict của case gốc** (cố ý không map Xray — trộn vào là pass-rate mất nghĩa).
+     nơi sai. Log bug được, **KHÔNG phải verdict của case gốc** (cố ý không map sang status run của TMS — trộn vào là pass-rate mất nghĩa).
    - `PASS`/`FAIL` — **chỉ khi** có `oracle_ref` hợp lệ (`BR-`/`SM-`/`PM-`/`SS-`/`DM-`/`UI-`) và `expected` lấy từ đó.
    - `OBSERVATION` — không có neo. **Nhất quán ≠ đúng**: 4 điểm khớp nhau vẫn có thể sai cả 4 (ca thật: USD không
      quy đổi, `form/payload/api/ui` đều `10` trong khi đúng là `260.500`). Bắt buộc kèm câu hỏi mở; không vào pass-rate.
@@ -358,7 +358,7 @@ Gán sai tầng khiến ticket đi nhầm người và bị dev bounce lại, m�
 
 ### Evidence — Quy chuẩn bắt buộc
 
-Áp dụng cho MỌI case đã execute (PASS và FAIL) và MỌI step. Vi phạm bất kỳ điểm nào bên dưới = evidence KHÔNG hợp lệ, KHÔNG được đưa vào report/push Xray/Jira.
+Áp dụng cho MỌI case đã execute (PASS và FAIL) và MỌI step. Vi phạm bất kỳ điểm nào bên dưới = evidence KHÔNG hợp lệ, KHÔNG được đưa vào report/push AIO/Jira.
 
 1. **Chỉ ảnh hoặc video — cấm file dữ liệu thô.** Evidence hợp lệ chỉ là ảnh (`.png/.jpg/.jpeg/.webp`) hoặc video (`.mp4/.webm`). TUYỆT ĐỐI KHÔNG dùng `.json`, `.md`, `.txt`, `.log`, `.html`, `.csv`, `trace.zip` hay file dữ liệu thô nào làm evidence của case/step — kể cả `order_state.json`, `api_response.json`, execution summary. Cần chứng minh dữ liệu API/DB/state thì **chụp ảnh màn UI** hiển thị dữ liệu đó (hoặc màn có giá trị tương ứng), không đính file dữ liệu.
 2. **Highlight đúng element đang kiểm.** Mỗi ảnh phải khoanh (tham số `highlight` của `evidence_recorder`) đúng phần tử của step đó: nút / field / dòng bảng / nhãn / thông báo / giá trị. Cấm ảnh full-page chung chung không chỉ rõ điểm kiểm.
@@ -370,7 +370,7 @@ Gán sai tầng khiến ticket đi nhầm người và bị dev bounce lại, m�
 
 ### Comment kết quả (Test Execution) — Quy chuẩn trình bày
 
-Field `comment` của mỗi case (trong `testcase-status.json`, đẩy lên Test Run của Xray) là chỗ QA đọc để hiểu kết quả — phải gọn, dễ nhìn, KHÔNG dán debug.
+Field `comment` của mỗi case (trong `testcase-status.json`, đẩy lên run của AIO Tests) là chỗ QA đọc để hiểu kết quả — phải gọn, dễ nhìn, KHÔNG dán debug.
 
 1. **Văn xuôi gọn, không debug.** Comment là 1–2 câu mô tả kết quả quan sát được. CẤM dán dấu vết kỹ thuật: `key=value` (`editable=false`, `disabled=true`, `atGateway=true`, `match=true`), dump state kiểu `A→A` / `tx 2→2` / `paid 6000000→6000000`, mảng regex/selector, `val="…"`, `matched=[…]`. Viết lại thành ý người đọc hiểu.
 2. **Không lặp trạng thái ở đầu comment.** KHÔNG mở đầu bằng `[PASS]`/`[FAIL]`/`[PASSED]`/`[Positive]`/`[Negative]` — status đã có badge riêng trên Test Run. (Kit tự thêm tag cho SKIP/BLOCKED/EXECUTING để phân biệt "TO DO" — đừng tự viết tag đó.)

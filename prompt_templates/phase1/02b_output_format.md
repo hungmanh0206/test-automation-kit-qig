@@ -119,7 +119,7 @@ Sau khi lưu file Markdown testcase:
 4. Nếu có nhiều file Markdown testcase, export từng file có bảng `TC ID` sang một file `.xlsx` tương ứng.
 5. Sau khi export, kiểm tra file `.xlsx` tồn tại và cập nhật đường dẫn Excel vào `task.md` hoặc summary output.
 6. Nếu thiếu dependency `exceljs`, báo rõ blocker; không bỏ qua bước Excel và không coi Phase 1 hoàn tất.
-7. Sau khi export Excel, coi file Excel là source of truth **khi gen/publish** (Phase 2 execute mặc định lấy nguồn từ Xray, `TESTCASE_SOURCE=xray`).
+7. Sau khi export Excel, coi file Excel là source of truth **khi gen/publish** (Phase 2 execute mặc định lấy nguồn từ AIO Tests, `TESTCASE_SOURCE=aio`).
 8. Không publish Jira trong prompt sinh testcase. Ghi trạng thái `Jira testcase publish: Pending QA confirmation`; Auto Publish Jira là step riêng trong phạm vi Phase 1 và chỉ chạy bằng `prompt_templates/phase1/04_auto_publish_jira.md` sau khi QA xác nhận Excel.
 9. Sau khi export Excel, tạo/cập nhật `reports/phase1-summary.md` theo format Phase 1 Summary Report ở trên.
 10. Cập nhật `task.md` với đường dẫn Markdown testcase, Excel testcase, trạng thái chờ QA xác nhận publish Jira và Phase 1 summary report.
@@ -147,4 +147,4 @@ Sau khi lưu file Markdown testcase:
 15. Không coi Phase 1 hoàn tất nếu testcase/report/task log dùng tiếng Việt không dấu hoặc bị lỗi encoding/mojibake
 16. Không coi Phase 1 hoàn tất nếu thiếu section `## Setup Strategy (Hợp đồng tiền điều kiện)`, hoặc còn precondition không có `[PRE-NN]`, hoặc `Setup Source` chung chung không đủ để Phase 2 setup/manual rõ
 17. `Setup Source` cho strategy `api` phải dựa trên Swagger đã fetch ở `requirements/swagger/`; nếu không có cách setup thì đánh dấu `Needs hook` hoặc `Manual-only` thay vì bịa endpoint
-18. Sau khi Excel tạo thành công, KHÔNG publish Jira trong prompt này; ghi `Pending QA confirmation`. Auto Publish Jira chạy bằng prompt riêng sau khi QA xác nhận. Excel là source of truth khi gen/publish; Phase 2 execute mặc định lấy nguồn từ Xray (`TESTCASE_SOURCE=xray`, kéo về canonical local `from-xray/*.xlsx`), `excel` là opt-out
+18. Sau khi Excel tạo thành công, KHÔNG publish Jira trong prompt này; ghi `Pending QA confirmation`. Auto Publish testcase chạy bằng prompt riêng sau khi QA xác nhận. Excel là source of truth khi gen/publish; Phase 2 execute mặc định lấy nguồn từ AIO Tests (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx`), `excel` là opt-out, `xray` là legacy

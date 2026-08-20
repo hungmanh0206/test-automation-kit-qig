@@ -31,7 +31,7 @@
 | Ma trận tổ hợp + expected | `<TASK_OUTPUT_DIR>/test-cases/<basename>_matrix.md` |
 | Ghi chú strategy + mức cắt giảm | Đầu file matrix + Coverage Gaps của `phase1-summary.md` |
 
-Mỗi hàng ma trận = 1 testcase → export Excel + publish Xray bằng script hiện có (`scripts/convert_excel/md_to_xlsx.js`, `scripts/integrations/jira/publish_testcases.js`), vào đúng nhóm chức năng. Sau đó validate bằng `tc_validator` như testcase thường.
+Mỗi hàng ma trận = 1 testcase → export Excel + publish AIO Tests bằng script hiện có (`scripts/convert_excel/md_to_xlsx.js`, `scripts/integrations/aio/publish_testcases_aio.js`), vào đúng nhóm chức năng. Sau đó validate bằng `tc_validator` như testcase thường.
 
 # Rules
 

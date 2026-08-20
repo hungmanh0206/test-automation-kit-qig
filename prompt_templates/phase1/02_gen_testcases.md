@@ -45,7 +45,7 @@ Mục tiêu là coverage cao nhất có thể trong scope đã cung cấp, bao g
 
 ## 0. Phân nhóm testcase bắt buộc
 
-Testcase phải được phân biệt rõ theo **nhóm chính là business flow** để QA review, export Excel và publish Xray/Jira dễ lọc.
+Testcase phải được phân biệt rõ theo **nhóm chính là business flow** để QA review, export Excel và publish AIO Tests dễ lọc (nhóm chức năng → folder AIO).
 
 Vẫn giữ đúng template 9 cột. Không tự thêm cột thứ 10 trong Markdown. Thay vào đó, cột `Module` phải dùng format:
 
@@ -61,7 +61,7 @@ Nguyên tắc đặt nhóm:
 - Chỉ dùng nhóm chính `API` khi testcase kiểm endpoint/platform behavior không thuộc flow nghiệp vụ cụ thể nào.
 - Với E2E/cross-app, nếu flow có business flow rõ thì nhóm chính vẫn là flow đó, ví dụ `Tạo / App 1 tạo bản ghi -> App 2 sync`; chỉ dùng `E2E/Cross-app` khi flow chính là sync/tích hợp đa hệ thống.
 - Với permission/security, nếu permission gắn với flow rõ thì nhóm chính vẫn là flow đó, ví dụ `Sửa / Permission role teacher cannot edit`; chỉ dùng `Permission/Security` khi testcase chủ yếu kiểm auth/role/security độc lập.
-- KHÔNG thêm cột label vào bảng testcase. Khi publish Xray/Jira, label để TỐI THIỂU (marker `automation-testcase` + khoá dedup `task-*`/`tc-*`); nhóm chức năng thể hiện qua Xray Test Set và subfolder Test Repository (theo sheet chức năng), KHÔNG dùng label group/layer/risk/priority/xray.
+- KHÔNG thêm cột label vào bảng testcase. AIO case không phải Jira issue nên **không có label**: nhóm chức năng thể hiện qua **folder AIO** (`<root>/<nhóm chức năng>`, dựng từ sheet chức năng), TC ID nằm ở `automationKey`.
 - `Khác` chỉ dùng khi requirement không thuộc nhóm nào rõ ràng và phải giải thích trong Coverage Gaps.
 
 ### 0b. TAG CHIỀU trong tiêu đề — BẮT BUỘC, có máy kiểm

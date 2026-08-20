@@ -7,7 +7,7 @@
 | File | Trigger | Vai trò | Cần secret? |
 |---|---|---|---|
 | `static-check.yml` | **mỗi push/PR** | **preflight config/context integrity (G1)** + `node --check` toàn bộ script + validate JSON config/knowledge + dry-run an toàn (dashboard rỗng, risk cold-start, security-guard từ chối). Bắt vỡ tooling. | ❌ Không |
-| `integration-check.yml` | **manual** | Kiểm kết nối Jira/Confluence/Xray + **dry-run** publish/bug (KHÔNG publish thật). | ✅ JIRA/XRAY/CONFLUENCE |
+| `integration-check.yml` | **manual** | Kiểm kết nối Jira/Confluence/**AIO Tests** + **dry-run** publish/bug (KHÔNG ghi thật). | ✅ JIRA/AIO/CONFLUENCE |
 | `task-execute.yml` | **manual** (dispatch task_key/suite) | Phase 2 task-scoped, sharded + risk-gate + artifact theo task. Chỉ chạy spec **đã committed**. | ✅ OPS (+JIRA nếu cần) |
 | `ci.yml` | **nightly + manual** (KHÔNG every-push) | Live regression sharded → gộp 1 HTML report. `--pass-with-no-tests` khi chưa có spec. | ✅ OPS |
 
@@ -18,7 +18,7 @@
 | Secret | Dùng cho |
 |---|---|
 | `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` | integration check, dry-run publish/bug |
-| `XRAY_CLIENT_ID`, `XRAY_CLIENT_SECRET` | Xray (nếu dùng) |
+| `AIO_API_TOKEN` | AIO Tests (test-management tool mặc định; Xray đóng băng sau 21/08/2026) |
 | `CONFLUENCE_URL`, `CONFLUENCE_USERNAME`, `CONFLUENCE_API_TOKEN` | integration check Confluence |
 | `OPS_BASE_URL`, `OPS_USERNAME`, `OPS_PASSWORD` | login khi execute FE/regression |
 | `METRICS_PUSH_TOKEN` *(chỉ GitLab, tuỳ chọn)* | BẬT persistence metrics — commit-back `knowledge/metrics/` xuyên run (xem mục dưới) |
