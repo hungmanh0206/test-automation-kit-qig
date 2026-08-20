@@ -9,7 +9,7 @@ description: Phân loại tiền điều kiện, chọn setup method (factory/ho
 
 Với mỗi precondition của testcase, quyết định cách đạt trạng thái đó tự động và rẻ nhất trong biên an toàn:
 chọn setup method, chỉ ra capability cần (API/factory/hook/fixture/mock), viết verification +
-cleanup, đánh dấu readiness/blocker. Sinh nội dung cho `## Setup Strategy (Hợp đồng tiền điều kiện)`
+cleanup, đánh dấu readiness/blocker. Sinh tag `[<method>]` cho từng cell `Tiền điều kiện` + phần chi tiết ở `### Setup Readiness` của `phase1-summary.md`.
 và `### Precondition Execution Matrix` ở Phase 1, và là chuẩn để Phase 2 đánh giá Definition of Ready.
 
 Skill này không đề xuất DB để DỰNG state hoặc đọc toàn bộ source backend. Nếu state cần can thiệp sâu mà không có API/test hook/fixture an toàn, đánh dấu `Needs hook` hoặc `Manual-only`. VERIFY state (khi API/UI không expose) có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) làm `Setup Verification`.
@@ -73,7 +73,7 @@ không hardcode một task vào template chung.
 
 Một testcase chỉ READY cho automation khi đủ tất cả:
 
-1. Precondition rõ (gắn `PRE-NN`).
+1. Precondition rõ, viết thành `[<method>] <mô tả trạng thái>` ngay trong cell `Tiền điều kiện` (không còn mã `PRE-NN`, không còn bảng catalog riêng).
 2. Setup method rõ.
 3. Test data cụ thể hoặc fixture reference rõ.
 4. Verification trước execute.
@@ -120,7 +120,7 @@ Chỉ `needs_hook`/`needs_account`/`needs_sandbox` là "capability gap" đi vào
 
 | Output | Vị trí |
 |---|---|
-| Setup Strategy contract (PRE-NN) | Section trong testcase Markdown |
+| Cách dựng | Tag `[<method>]` trong cell `Tiền điều kiện`; chi tiết theo task ở `### Setup Readiness` của `phase1-summary.md`; recipe tái dùng ở `knowledge/setup_recipes/` |
 | Precondition Execution Matrix | `reports/phase1-summary.md` |
 | Missing capability/blocker | Matrix `Blocker` + Phase 1 summary `### Setup Readiness` |
 | Capability / Test-Hook Request (handoff Dev) | `reports/capability-request.md` (khi còn `Needs hook`/`Manual-only`) |

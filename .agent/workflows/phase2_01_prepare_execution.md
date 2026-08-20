@@ -17,7 +17,7 @@ Tránh chạy nhầm task, nhầm story hoặc thiếu env khiến testcase bị
 2. Nếu yêu cầu hiện tại không nêu rõ `TASK_KEY`, không dùng `TASK_KEY` từ `.env` hoặc context cũ để chạy; phải hỏi lại.
 3. Đọc artifact local:
    - Nguồn execute theo `TESTCASE_SOURCE`: **mặc định `aio`** → `<TASK_OUTPUT_DIR>/test-cases/from-aio/*.xlsx` (kéo bằng `npm run aio:pull:write -- --story <JIRA_STORY_KEY>` ở Bước 0); `excel` → `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`.
-   - `<TASK_OUTPUT_DIR>/test-cases/` Markdown chỉ dùng để đọc section chi tiết như `## Setup Strategy (Hợp đồng tiền điều kiện)` khi Excel chưa đủ thông tin setup.
+   - `<TASK_OUTPUT_DIR>/test-cases/` Markdown chỉ dùng khi cần đọc chi tiết vượt ngoài cell `Tiền điều kiện` (cách dựng chi tiết nằm ở `### Setup Readiness` của `phase1-summary.md`).
    - `<TASK_OUTPUT_DIR>/reports/phase1-summary.md` (gồm `### Setup Readiness` và `### Precondition Execution Matrix` — dùng để chọn case automatable / cần hook / blocked trước khi execute)
    - `<TASK_OUTPUT_DIR>/reports/capability-request.md` (nếu có — danh sách capability gap; xem Capability gate ở Rules)
    - `<TASK_OUTPUT_DIR>/task.md`
@@ -38,7 +38,7 @@ Tránh chạy nhầm task, nhầm story hoặc thiếu env khiến testcase bị
 - Không đọc lại toàn bộ requirement thô nếu Phase 1 summary đã đủ.
 - **Phase 2 execute mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`): kéo về canonical local `test-cases/from-aio/*.xlsx` (`npm run aio:pull:write -- --story <JIRA_STORY_KEY>`) rồi execute từ file đó — KHÔNG gọi AIO/Jira cho từng case lúc execute. `TESTCASE_SOURCE=excel` để dùng Excel local. (Excel là source of truth khi gen/publish.)
 - Không chạy Phase 2 nếu không có testcase đã review.
-- Resolve Setup Strategy contract (PRE-NN) cho scope đã chọn trước khi execute; nếu có `PRE-NN = Needs hook` mà hook chưa tồn tại, ghi blocker thay vì skip âm thầm. Chỉ TC có `Automation Readiness = Manual-only` mới được skip vì setup.
+- Resolve cách dựng precondition theo tag `[<method>]` của từng TC trong scope trước khi execute; thiếu capability thì ghi blocker, KHÔNG dựng bằng DB.
 - Definition of Ready (DoR) trước khi execute mỗi TC: precondition rõ + setup method rõ + test data/fixture rõ + verification + cleanup + capability (API/hook/mock/sandbox/fixture) đã tồn tại. Thiếu bất kỳ điều nào → KHÔNG chạy bừa và KHÔNG connect DB: ghi `BLOCKED_SETUP` (capability/contract chưa đủ) hoặc `SKIP_SETUP` (`Manual-only`) kèm missing capability cụ thể.
 - Capability gate (DoR cấp task trước Phase 2): nếu tồn tại `reports/capability-request.md` với item chưa `Resolved`/`Accepted`, các TC phụ thuộc capability đó KHÔNG được coi là runnable — ghi `BLOCKED_SETUP` thay vì cố chạy. Mỗi blocker/SKIP phải gắn 1 Blocker Root Cause (`needs_hook`/`needs_account`/`needs_sandbox`/`spec_mismatch`/`manual_inherent`/`external_dependency` — xem skill `precondition_setup_planner`), KHÔNG gộp chung "backend state".
 

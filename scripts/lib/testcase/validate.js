@@ -113,6 +113,57 @@ function validate(doc) {
     if (miss.length) warnings.push(`Catalog Setup Strategy thiếu hẳn cột: ${miss.join(', ')} (đo trên ${doc.setup.length} dòng). Thiếu Cleanup = precondition dựng rồi không dọn ⇒ case sau chạy trên state bẩn; thiếu Verification = không biết đã dựng xong chưa. Template đầy đủ ở prompt gen §Setup Strategy.`);
   }
 
+  /*
+   * 2f) PRECONDITION TỰ MÔ TẢ CÁCH DỰNG (áp cho bộ KHÔNG dùng catalog).
+   *
+   * Precondition giờ chỉ là một trường của testcase — không còn thực thể riêng, không còn sheet. Nhưng
+   * Phase 2 vẫn phải biết DỰNG BẰNG GÌ để chọn api/factory/hook/ui hay bỏ sang manual. Chỗ duy nhất
+   * sống sót round-trip publish→pull (AIO không có field "cách dựng") là CHÍNH text precondition, nên
+   * method đi vào tag đầu cell: `[api] Deal đã ở stage X`.
+   *
+   * CHẶN khi thiếu/lạ tag: không có nó thì Phase 2 quay lại đoán — và đoán sai ở tầng setup thì mọi
+   * verdict sau đó vô nghĩa (fail vì state, không vì sản phẩm). Bộ CÓ catalog thì bỏ qua luật này để
+   * không phá bộ cũ.
+   */
+  if (!(doc.setup || []).length) {
+    const METHODS = ['api', 'factory', 'test_hook', 'ui', 'pre_existing', 'manual'];
+    const byDesc = new Map();
+    for (const tc of doc.tests) {
+      const id = tc.tcId || '(no-id)';
+      const cell = String(tc.precondition || '').trim();
+      if (!cell) continue;                       // ô rỗng đã bị luật (2) chặn, không báo trùng
+      for (const part of cell.split(/<br\s*\/?>|\n/).map((x) => x.trim()).filter(Boolean)) {
+        const m = part.match(/^\[([a-z_]+)\]\s*(.*)$/i);
+        if (!m) {
+          problems.push(`${id}: ô \`Tiền điều kiện\` thiếu tag cách dựng — phải mở đầu bằng \`[${METHODS.join('|')}]\` (vd \`[api] Deal đã ở stage Soạn thảo hợp đồng\`). Không có tag thì Phase 2 phải ĐOÁN cách dựng state, và đoán sai ở tầng setup làm mọi verdict sau đó vô nghĩa.`);
+          continue;
+        }
+        const method = m[1].toLowerCase();
+        if (!METHODS.includes(method)) {
+          problems.push(`${id}: tag cách dựng \`[${m[1]}]\` không thuộc ${METHODS.join('|')}. KHÔNG có \`db\` — dựng state bằng DB bị cấm (RULE_GLOBAL).`);
+          continue;
+        }
+        const desc = m[2].trim().toLowerCase().replace(/\s+/g, ' ');
+        if (!desc) problems.push(`${id}: tag [${method}] không kèm mô tả trạng thái — cell phải tự đọc được.`);
+        else {
+          if (!byDesc.has(desc)) byDesc.set(desc, new Map());
+          const mm = byDesc.get(desc);
+          if (!mm.has(method)) mm.set(method, []);
+          mm.get(method).push(id);
+        }
+      }
+    }
+    /*
+     * MỘT TRẠNG THÁI — HAI CÁCH DỰNG: dấu hiệu người viết chưa quyết, hoặc copy lệch. Bỏ mã `[PRE-NN]`
+     * đồng nghĩa mất dedup, nên đây là máy thay thế: cùng mô tả thì phải cùng method.
+     */
+    for (const [desc, mm] of byDesc) {
+      if (mm.size < 2) continue;
+      const detail = [...mm.entries()].map(([k, ids]) => `${k} (${ids.slice(0, 2).join(', ')}${ids.length > 2 ? '…' : ''})`).join(' vs ');
+      warnings.push(`Cùng một trạng thái "${desc.slice(0, 60)}" được khai ${mm.size} cách dựng khác nhau: ${detail}. Chọn một cách, nếu thật sự khác nhau thì mô tả phải khác nhau.`);
+    }
+  }
+
   // 3) DIMENSION (set-level) — cảnh báo.
   const dims = new Set(doc.tests.flatMap((t) => t.dimensions));
   if (!dims.has('negative')) warnings.push('Bộ testcase chưa có case [Negative] nào — mọi chức năng nên có ≥1 negative');

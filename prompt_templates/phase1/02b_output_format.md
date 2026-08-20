@@ -47,13 +47,13 @@ Report phải đủ chi tiết để review chất lượng bộ testcase mà kh
      `| Testcase | Issue | Severity | Recommendation |`
    - `### Setup Readiness`
      `| Automation Readiness | Số PRE | Số TC ảnh hưởng | Ghi chú/Blocker |`
-     Thống kê tổng hợp theo `Ready` / `Needs hook` / `Manual-only`; liệt kê rõ các `PRE-NN = Needs hook` (kèm hook đề xuất) và `Manual-only` (kèm lý do) vì đây là input cho gate Phase 2.
+     Thống kê tổng hợp theo `Ready` / `Needs hook` / `Manual-only` (suy từ tag `[<method>]`); liệt kê rõ precondition `Needs hook` (kèm hook đề xuất) và `Manual-only` (kèm lý do). Đây cũng là nơi ghi CHI TIẾT dựng theo task: endpoint/payload/fixture id · cách xác minh · cách dọn.
    - `### Precondition Execution Matrix`
-     `| TC ID | Precondition | Type | Setup Method | Verification | Cleanup | Readiness | Blocker |`
+     `| TC ID | Precondition | Setup Method | Readiness | Blocker |`
      BẮT BUỘC. Một dòng cho MỖI TC trong scope, suy ra bằng cách join danh sách testcase với catalog `## Setup Strategy (Hợp đồng tiền điều kiện)`:
-     - `Precondition`: `PRE-NN` (kèm mô tả ngắn); nếu TC dùng nhiều precondition thì liệt kê tất cả.
-     - `Type`: giá trị `Precondition Type`.
-     - `Setup Method`: giá trị `Setup Strategy` (`api`/`factory`/`test_hook`/`ui`/`pre_existing`/`manual`).
+     - `Precondition`: mô tả trạng thái (bỏ tag); nhiều precondition thì liệt kê tất cả.
+     - `Setup Method`: **lấy từ tag `[<method>]`** trong chính cột `Tiền điều kiện` — không khai lại ở đâu khác.
+     - `Readiness`: suy từ method — `pre_existing`/`api`/`factory`/`ui` → `Ready`; `test_hook` → `Needs hook`; `manual` → `Manual-only`.
      - `Verification`: giá trị `Setup Verification`.
      - `Cleanup`: giá trị `Cleanup/Rollback`.
      - `Readiness`: `Ready` / `Needs hook` / `Manual-only`.
@@ -77,8 +77,8 @@ Report phải đủ chi tiết để review chất lượng bộ testcase mà kh
    - Markdown testcase tồn tại.
    - Excel testcase tồn tại.
    - Phase 1 summary report tồn tại và có `### Setup Readiness` + `### Precondition Execution Matrix` (1 dòng/TC trong scope).
-   - Section `## Setup Strategy (Hợp đồng tiền điều kiện)` tồn tại; mọi precondition trong bảng testcase có tag `[PRE-NN]` map tới catalog; không còn `PRE-NN` mồ côi.
-   - **Hai vai của tiền điều kiện, đừng trộn**: (a) **TEXT** `[PRE-NN] <mô tả>` trong cột `Tiền điều kiện` — cái này đi theo case lên AIO (field `precondition` của case); (b) **CÔNG THỨC DỰNG** trong catalog `## Setup Strategy` → sheet `Preconditions` của Excel — **AIO không có chỗ chứa nó**, nên nó phải sống trong repo và `npm run aio:pull:write` copy sang bản kéo về (nếu không, Phase 2 execute từ nguồn mặc định sẽ không biết dựng gì).
+   - Mọi cell `Tiền điều kiện` có tag `[<method>]` hợp lệ + mô tả trạng thái (KHÔNG còn `[PRE-NN]`, KHÔNG còn sheet `Preconditions`). `npm run design:gate` chặn cell thiếu tag/tag lạ và cảnh báo khi một trạng thái có 2 cách dựng.
+   - **Chi tiết dựng KHÔNG nằm trong file testcase**: cell chỉ mang tag `[<method>]` + mô tả trạng thái; endpoint/payload/fixture id/cách xác minh/cách dọn thuộc kho tái dùng `knowledge/setup_recipes/` (`npm run howto:check`). Cell là thứ đi theo case lên AIO nên phải tự đọc được; recipe là thứ dùng lại giữa các task nên phải ở kho.
    - Nếu matrix còn `Needs hook`/`Manual-only`: `reports/capability-request.md` tồn tại và liệt kê capability còn thiếu (loại/endpoint/PRE/TC/owner).
    - `task.md` đã được cập nhật đường dẫn output và trạng thái chờ QA xác nhận trước khi publish Jira testcase.
 
@@ -88,7 +88,7 @@ Report phải đủ chi tiết để review chất lượng bộ testcase mà kh
 
    `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/capability-request.md`
 
-   Mục tiêu: gom mọi blocker thành MỘT danh sách capability để gửi Dev/BE/DevOps, thay vì để rải rác trong matrix và bị phát hiện lại ở từng task. Đây là input Definition of Ready trước Phase 2. Nếu tất cả `PRE-NN` đều `Ready`, chỉ ghi 1 dòng "Không có capability gap" (không cần bảng).
+   Mục tiêu: gom mọi blocker thành MỘT danh sách capability để gửi Dev/BE/DevOps, thay vì để rải rác trong matrix và bị phát hiện lại ở Phase 2.
 
    Nội dung bắt buộc:
    - `## Tổng quan`: bảng đếm `Ready` / `Needs hook` / `Manual-only` (số PRE + số TC ảnh hưởng) — khớp `### Setup Readiness`.
@@ -146,6 +146,6 @@ Sau khi lưu file Markdown testcase:
 13. Mỗi testcase phải có nhóm chức năng rõ ràng trong cột `Module`; Excel export phải thể hiện được nhóm đó để lọc/review
 14. Không coi Phase 1 hoàn tất nếu thiếu `reports/phase1-summary.md` hoặc report không có tổng testcase, breakdown theo loại, `Coverage Summary`, `Risk-based Gate`, `High/Critical Gaps`, `Testcase Quality Issues` và `Final Decision`
 15. Không coi Phase 1 hoàn tất nếu testcase/report/task log dùng tiếng Việt không dấu hoặc bị lỗi encoding/mojibake
-16. Không coi Phase 1 hoàn tất nếu thiếu section `## Setup Strategy (Hợp đồng tiền điều kiện)`, hoặc còn precondition không có `[PRE-NN]`, hoặc `Setup Source` chung chung không đủ để Phase 2 setup/manual rõ
+16. Không coi Phase 1 hoàn tất nếu còn cell `Tiền điều kiện` thiếu tag `[<method>]`, hoặc `Setup Source` chung chung không đủ để Phase 2 setup/manual rõ
 17. `Setup Source` cho strategy `api` phải dựa trên Swagger đã fetch ở `requirements/swagger/`; nếu không có cách setup thì đánh dấu `Needs hook` hoặc `Manual-only` thay vì bịa endpoint
 18. Sau khi Excel tạo thành công, KHÔNG publish trong prompt này; ghi `Pending QA confirmation`. Auto Publish testcase chạy bằng prompt riêng sau khi QA xác nhận. Excel là source of truth khi gen/publish; Phase 2 execute mặc định lấy nguồn từ AIO Tests (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx`), `excel` là opt-out.

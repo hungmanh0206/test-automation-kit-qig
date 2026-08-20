@@ -27,7 +27,7 @@ Phase 2 chỉ execute phần có thể chạy an toàn qua UI/API public-busines
 | Input | Nguồn |
 |---|---|
 | Testcase đã review | Canonical local theo `TESTCASE_SOURCE`: **mặc định `test-cases/from-aio/*.xlsx`** (aio — kéo bằng `npm run aio:pull:write`), hoặc `test-cases/*.xlsx` (excel); Markdown cùng thư mục chỉ dùng để đọc chi tiết setup khi cần |
-| Setup Strategy contract | Section `## Setup Strategy (Hợp đồng tiền điều kiện)` (catalog PRE-NN) trong file testcase |
+| Cách dựng precondition | Tag `[<method>]` trong cell `Tiền điều kiện` của từng TC; chi tiết ở `### Setup Readiness` của `phase1-summary.md` + `knowledge/setup_recipes/` |
 | Phase 1 summary | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/phase1-summary.md` |
 | Runtime config | `.env.local`, `.env`, CI env; không in secret |
 | Rules | `RULE_GLOBAL.md`, `.agent/rules/*.md`, active prompt |
@@ -48,7 +48,7 @@ Phase 2 chỉ execute phần có thể chạy an toàn qua UI/API public-busines
 - Nếu Phase 2 bắt đầu sau thời gian chờ Dev implement, đọc lại artifact local trước; không dựa vào context hội thoại cũ.
 - Khi execute, lấy TC ID/steps/expected/status target từ nguồn canonical local (theo `TESTCASE_SOURCE`, xem Inputs); không gọi AIO/Jira từng case. (Excel là source of truth khi gen/publish.)
 - Trước khi generate/execute, chạy Precondition Resolution Pass cho selected TC: đọc Precondition Execution Matrix → map setup method → reuse setup layer `tests/support/setup/` (đặc thù story để ở `<TASK_OUTPUT_DIR>/automation/setup/`) → verify precondition trước assertion chính → cleanup theo `RUN_ID`. Chỉ promote setup helper vào `tests/support/setup/` khi generic và được approve.
-- Setup precondition theo Setup Strategy contract (PRE-NN): setup/verify/cleanup theo `Setup Source`/`Setup Verification`/`Cleanup`, không đoán nếu contract đã có. Chỉ skip vì setup khi `Automation Readiness = Manual-only`; `Needs hook` thiếu hook là blocker, không skip âm thầm.
+- Setup precondition theo tag `[<method>]` của chính TC: setup/verify/cleanup qua UI/API/factory/hook an toàn, KHÔNG dùng DB; fail ở tầng này là `setup_failure`, không phải product bug.
 - Không dùng direct DB connection, `TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*` hoặc backend source inspection để DỰNG precondition. Nếu contract yêu cầu trạng thái sâu nhưng chỉ có DB/backend mới dựng được, ghi `BLOCKED_SETUP`/`SKIP_SETUP` và tạo manual steps. VERIFY state có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) khi API/UI không expose.
 - Setup/verify fail là `setup_failure`: sửa setup rồi rerun, không kết luận product bug và không log Jira.
 - Áp Definition of Ready trước khi execute: thiếu precondition/setup method/data/verification/cleanup/capability → `BLOCKED_SETUP` (capability hook/mock/sandbox chưa có) hoặc `SKIP_SETUP` (`Manual-only`) kèm missing capability cụ thể; không chạy bừa.

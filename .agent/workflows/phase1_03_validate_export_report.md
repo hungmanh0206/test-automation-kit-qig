@@ -15,7 +15,7 @@
    - Test data không placeholder.
    - Trace được requirement.
    - Assertion intent rõ.
-   - Mỗi precondition có tag `[PRE-NN]` map tới catalog Setup Strategy; `Setup Source`/`Setup Verification`/`Cleanup` đủ cụ thể để Phase 2 setup qua UI/API/fixture/hook an toàn hoặc đánh dấu manual; `Automation Readiness` đã gán (`Ready`/`Needs hook`/`Manual-only`).
+   - Mỗi cell `Tiền điều kiện` có tag `[<method>]` hợp lệ + mô tả trạng thái; một trạng thái không được có 2 cách dựng.
    - **Ép bằng máy (G5 design_gate):** structural (đủ cột canonical) + completeness (ô lõi Module/Trường hợp/Các bước/Ưu tiên/Mức độ rủi ro không rỗng) = **CHẶN**. Chạy `npm run design:gate -- --dir <test-cases/>` (thêm `--with-rows` để check luôn row-quality/oracle); TỰ CHẠY khi convert (Bước 4). Dimension/depth per-module: Bước 6a risk gate.
 2. Review coverage:
    - Requirement Coverage = Covered Requirements / Total In-scope Requirements * 100%.
@@ -46,7 +46,7 @@
 | Không còn Critical/High open question | Có |
 | Không có testcase quan trọng bị skip | Có |
 | Negative/security/rollback case trong scope được cover | Có |
-| Mọi precondition có Setup Strategy contract (PRE-NN) đủ để Phase 2 setup an toàn hoặc manual rõ | Có |
+| Mọi precondition có tag `[<method>]` đủ để Phase 2 dựng (chi tiết ở `### Setup Readiness`) | `design:gate` chặn cell thiếu tag |
 | Phase 1 summary có `### Precondition Execution Matrix` (1 dòng/TC trong scope) | Có |
 | Nếu matrix còn `Needs hook`/`Manual-only` thì `reports/capability-request.md` tồn tại | Có (nếu applicable) |
 

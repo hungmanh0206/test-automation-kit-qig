@@ -23,7 +23,7 @@ flowchart TD
 
 | Layer | Purpose |
 |---|---|
-| Phase 1 | Đọc requirement/design/API và sinh testcase Markdown + Excel + coverage report + Setup Strategy contract (PRE-NN) + Precondition Execution Matrix; Excel là source of truth **khi gen/publish** và là input cho step publish sau QA confirmation (Phase 2 execute mặc định từ AIO Tests). |
+| Phase 1 | Đọc requirement/design/API và sinh testcase Markdown + Excel + coverage report + `### Setup Readiness` (mỗi cell `Tiền điều kiện` mang tag `[<method>]`); Excel là source of truth **khi gen/publish** và là input cho step publish sau QA confirmation (Phase 2 execute mặc định từ AIO Tests). |
 | Testcase Publish (AIO Tests) | Step riêng trong phạm vi Phase 1: sau khi QA xác nhận Excel, đọc Excel canonical, tạo/cập nhật **case** trên AIO (`npm run aio:publish`), nhóm chức năng thành **folder** `<root>/<nhóm>`, TC ID ở `automationKey`, tiền điều kiện trong field `precondition`. Mặc định dry-run — AIO không có API xoá. |
 | Testcase Lifecycle Cleanup | Step thuộc nhánh phụ `partial-rerun`: khi Excel thay đổi sau publish và đã qua Human Review, đối chiếu TC ID với case trên AIO rồi đổi `caseStatus` sang **Deprecated** (giữ lịch sử run); TC quay lại Excel thì trả về Published. Không xoá. |
 | Phase 2 | Đọc testcase từ nguồn canonical local (mặc định kéo từ AIO, `TESTCASE_SOURCE=aio`; `excel` là opt-out), chạy Precondition Resolution Pass qua UI/API public-business, execute Playwright, thu evidence ảnh/video, đẩy kết quả thành cycle trên AIO. |

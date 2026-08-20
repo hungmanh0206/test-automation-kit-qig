@@ -48,8 +48,8 @@ Thực thi BE API testcases bằng Playwright request context, không mở brows
 
 Cho toàn bộ selected TC, chạy pass này trước khi sinh hoặc chạy bất kỳ spec nào:
 
-1. Đọc selected TC từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-aio/*.xlsx`) trước, sau đó đọc `### Precondition Execution Matrix` trong `reports/phase1-summary.md` (và catalog `## Setup Strategy (Hợp đồng tiền điều kiện)` trong file testcase Markdown khi cần chi tiết).
-2. Với mỗi selected TC, map `Setup Method`:
+1. Đọc selected TC từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-aio/*.xlsx`). Cách dựng precondition lấy từ **tag `[<method>]`** ở đầu cell `Tiền điều kiện`; chi tiết (endpoint/payload/fixture id · verification · cleanup) đọc `### Setup Readiness` trong `reports/phase1-summary.md`, và tra `knowledge/setup_recipes/` trước khi tự mò. Bộ testcase CŨ chưa có tag thì đọc `### Precondition Execution Matrix` như trước.
+2. Với mỗi selected TC, lấy `Setup Method` **từ tag `[<method>]` ở đầu cell `Tiền điều kiện`** (bộ cũ chưa có tag thì đọc `### Precondition Execution Matrix` của `phase1-summary.md`), rồi map:
    - `api` → gọi business/public test API theo `Setup Source`.
    - `factory`/`test_hook` → dùng factory/hook tương ứng.
    - `pre_existing`/`pre_existing_fixture` → verify fixture tồn tại, không tạo mới.
@@ -134,7 +134,7 @@ không neo. Độ sâu theo **risk band** — xem chi phí trước khi chạy: 
 - Không được bỏ schema/body assertion quan trọng.
 - Không được mock API chính đang cần kiểm thử contract thật, trừ khi testcase là fault injection hoặc dependency ngoài scope.
 - Không được skip case vì thiếu data nếu có thể tạo data bằng API/factory và rollback.
-- Setup phải theo Setup Strategy contract (PRE-NN): setup bằng `Setup Source`, verify bằng `Setup Verification`, rollback bằng `Cleanup/Rollback`. Skip vì setup chỉ hợp lệ khi `Automation Readiness = Manual-only`; `Needs hook` thiếu hook thì ghi blocker + đề xuất hook, không false-pass.
+- Setup phải theo tag `[<method>]` trong cell `Tiền điều kiện` (chi tiết ở `### Setup Readiness` của `phase1-summary.md` + `knowledge/setup_recipes/`): dựng qua api/factory/test_hook/pre_existing/ui, KHÔNG dựng bằng DB, và phải xác minh state trước khi chạy assertion chính.
 - Không dùng direct DB connection, `TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*` hoặc backend source inspection để làm tiền điều kiện (DỰNG state). Read-only verify/chẩn đoán trên **UAT DB** được phép qua guarded client `tests/support/setup/db/uatPgClient.ts` (chỉ `LIB_MASTER_DB_*`, read-only, chỉ SELECT); DB không phải evidence Jira, PII phải mask.
 - Nếu token/auth/env sai, phải sửa cấu hình và rerun trước khi cân nhắc skip.
 - Không coi API execution hoàn tất nếu còn fail do prompt chưa rõ, setup, test data, auth, dependency, timeout hoặc execute flow.

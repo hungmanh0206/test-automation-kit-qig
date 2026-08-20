@@ -17,7 +17,7 @@ Tạo hoặc đề xuất test data phục vụ testcase và automation, đảm 
 | Traceability | Data có prefix/time/random đủ truy vết TC hoặc run. |
 | Parallel safety | Data unique, tránh conflict giữa session. |
 | Cleanup | Ghi rõ pre-existing, created-by-test, cleanup-required hoặc read-only fixture. |
-| Setup contract | Cung cấp `Setup Source`/`Setup Verification`/`Cleanup`/`Automation Readiness` cho catalog Setup Strategy (PRE-NN) của testcase Phase 1. |
+| Cách dựng | Tag `[<method>]` trong cell `Tiền điều kiện`; chi tiết (source/verification/cleanup) ở `### Setup Readiness` của `phase1-summary.md` |
 
 ## Inputs
 
@@ -34,7 +34,7 @@ Tạo hoặc đề xuất test data phục vụ testcase và automation, đảm 
 | Test data table | Testcase Markdown hoặc `reports/phase1-summary.md` |
 | Fixture/factory notes | Spec/helper hoặc report liên quan |
 | Cleanup plan | Actual result/report khi execute |
-| Setup Strategy contract input | Catalog PRE-NN trong testcase Markdown (Setup Source/Verification/Cleanup/Readiness) |
+| Cách dựng input | Tag `[<method>]` của từng TC (`api`/`factory`/`test_hook`/`ui`/`pre_existing`/`manual`) |
 
 ## Decision Rules
 

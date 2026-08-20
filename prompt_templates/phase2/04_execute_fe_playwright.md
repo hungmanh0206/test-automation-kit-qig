@@ -55,8 +55,8 @@ Input:
 
 Cho toàn bộ selected TC, chạy pass này trước khi sinh hoặc chạy bất kỳ spec nào:
 
-1. Đọc selected TC từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-aio/*.xlsx`) trước, sau đó đọc `### Precondition Execution Matrix` trong `reports/phase1-summary.md` (và catalog `## Setup Strategy (Hợp đồng tiền điều kiện)` trong file testcase Markdown khi cần chi tiết).
-2. Với mỗi selected TC, map `Setup Method`:
+1. Đọc selected TC từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-aio/*.xlsx`). Cách dựng precondition lấy từ **tag `[<method>]`** ở đầu cell `Tiền điều kiện`; chi tiết (endpoint/payload/fixture id · verification · cleanup) đọc `### Setup Readiness` trong `reports/phase1-summary.md`, và tra `knowledge/setup_recipes/` trước khi tự mò. Bộ testcase CŨ chưa có tag thì đọc `### Precondition Execution Matrix` như trước.
+2. Với mỗi selected TC, lấy `Setup Method` **từ tag `[<method>]` ở đầu cell `Tiền điều kiện`** (bộ cũ chưa có tag thì đọc `### Precondition Execution Matrix` của `phase1-summary.md`), rồi map:
    - `api` → gọi business/public test API theo `Setup Source`.
    - `factory`/`test_hook` → dùng factory/hook tương ứng.
    - `pre_existing`/`pre_existing_fixture` → verify fixture tồn tại, không tạo mới.

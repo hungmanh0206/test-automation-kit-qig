@@ -46,7 +46,7 @@ Test data phải đủ cụ thể để Phase 2 automation có thể dùng trự
    - `created by test`: dữ liệu được tạo trong test.
    - `cleanup required`: dữ liệu cần xóa/rollback sau test.
    - `read-only fixture`: dữ liệu chỉ dùng để đọc/verify.
-   - Data State phải nhất quán với section `## Setup Strategy (Hợp đồng tiền điều kiện)` của testcase: `created by test`/`cleanup required` map tới `Setup Strategy = api/factory/test_hook` + `Cleanup/Rollback`; `pre-existing`/`read-only fixture` map tới `Setup Strategy = pre_existing` + `Setup Verification`.
+   - Data State phải nhất quán với tag `[<method>]` trong cell `Tiền điều kiện` của testcase: `created by test`/`cleanup required` map tới `api`/`factory`/`test_hook`/`ui`; `pre_existing` thì KHÔNG được đánh `created by test`.
 
 7. Với dữ liệu cross-system App 1 / App 2:
    - Ghi rõ user role, site, class, program, subject, exam, registered state, linked/unlinked state.

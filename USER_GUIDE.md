@@ -496,7 +496,7 @@ Output bắt buộc:
 | Testcase Excel source of truth | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-cases/*.xlsx` |
 | Phase 1 report | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/phase1-summary.md` (gồm `### Setup Readiness` + `### Precondition Execution Matrix`) |
 | Capability / Test-Hook Request | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/capability-request.md` (handoff Dev khi còn `Needs hook`/`Manual-only`) |
-| Setup Strategy contract | Section `## Setup Strategy (Hợp đồng tiền điều kiện)` trong `test-cases/*.md` (catalog `PRE-NN`) |
+| Cách dựng precondition | Tag `[<method>]` ngay trong cell `Tiền điều kiện` của từng TC; chi tiết theo task ở `### Setup Readiness` của `reports/phase1-summary.md` |
 | Task log | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/task.md` |
 
 Testcase tốt cần có:
@@ -513,7 +513,7 @@ Testcase tốt cần có:
 | Nhóm chức năng | Dễ lọc trong Excel theo module/feature/API/flow. |
 
 Bắt buộc thêm (để Phase 2 không phải đoán tiền điều kiện):
-- Section `## Setup Strategy (Hợp đồng tiền điều kiện)` trong testcase: catalog `PRE-NN` gồm Type, Setup Method, Setup Source, Verification, Cleanup, Automation Readiness. Mỗi cột Tiền điều kiện gắn tag `[PRE-NN]`.
+- Mỗi cell `Tiền điều kiện` có dạng `[<method>] <mô tả trạng thái>` — method ∈ `api`|`factory`|`test_hook`|`ui`|`pre_existing`|`manual` (KHÔNG có `db`). Precondition là MỘT TRƯỜNG của testcase: không còn mã riêng, không còn sheet riêng.
 - `### Precondition Execution Matrix` trong `phase1-summary.md`: 1 dòng/TC để biết case nào automatable (`Ready`), cần hook (`Needs hook`), hay blocked (`Manual-only`).
 - Chi tiết schema: skill `precondition_setup_planner` và `prompt_templates/phase1/02_gen_testcases.md`.
 
@@ -560,7 +560,7 @@ Quality gate:
 | Negative/error case | Được cover nếu nằm trong scope. |
 | Excel | Export thành công và lọc được theo nhóm. |
 | Jira testcase publish | Chỉ chạy sau QA confirmation; nếu chưa approve thì trạng thái phải là `Pending QA confirmation`. |
-| Setup Readiness | Mỗi precondition có `PRE-NN` đủ để setup qua UI/API/fixture/hook an toàn hoặc ghi manual rõ; case `Needs hook`/`Manual-only` ghi rõ blocker/missing capability. |
+| Setup Readiness | Mỗi precondition có tag `[<method>]` đủ để setup qua UI/API/fixture/hook an toàn; `test_hook` = cần Dev mở hook, `manual` = không tự động hoá được (phải nêu lý do) |
 
 > **Ép bằng máy (forcing functions round-3):** `npm run preflight` (config/input đủ) · `npm run design:gate -- --dir test-cases/ --with-rows` (đủ cột / không rỗng ô lõi / oracle) · gate gen-testcase TỰ CHẠY khi convert · `npm run self-review -- --task <TASK_KEY>` (checklist gộp trước finalize). Chi tiết `scripts/qa/README.md`.
 
@@ -669,7 +669,7 @@ Một task chạy trọn bộ testcase cùng lúc, nên chỉ cần **Case → C
 | **Case** | 1 testcase | `npm run aio:publish` tạo/cập nhật từ Excel; TC ID nằm ở **`automationKey`** (không dùng `tags` — AIO trả 200 nhưng không lưu) |
 | **Case → Story** | Nối case về requirement | `jiraRequirementIDs` (`--story`). Case KHÔNG phải Jira issue ⇒ không có panel "Test Coverage", assignee, sprint, workflow |
 | **Folder** | Tổ chức case theo nhóm chức năng | Cây **2 cấp** `<root>/<nhóm chức năng>`, dựng TỪ Excel (`--folder-root`) |
-| **precondition** | Tiền điều kiện | Là **field trong case** (mã `[PRE-NN]` giữ trong text để tra chéo) — không còn issue dùng chung |
+| **precondition** | Tiền điều kiện | Là **field trong case**, dạng `[<method>] <mô tả>` — mang cả trạng thái cần có và cách dựng, nên sống sót round-trip publish→pull |
 | **Thư mục cycle** | Nhóm các lần chạy theo sprint | `--folder "<Tên sprint>"` — tự tạo, thay cho Test Plan |
 | **Cycle** | 1 lần chạy = **toàn bộ TC** | `npm run aio:push-exec` (QA duyệt preview) — chạy lại cùng `--cycle-title` thì dùng lại cycle cũ |
 | **Run + run-step** | Kết quả từng case/bước | Passed / Failed / Blocked / Not Run; **evidence neo được xuống TỪNG BƯỚC** |
@@ -1122,7 +1122,7 @@ Chi tiết ở Mục 8.
 | Flaky | Test lúc pass lúc fail do timing/env/data không ổn định. |
 | `TASK_KEY` | Scope folder của story/task, ví dụ `<TASK_KEY>`. |
 | `RUN_ID` | ID riêng cho một lần chạy, dùng khi chạy song song hoặc tách artifact. |
-| `PRE-NN` / Setup Strategy contract | Catalog tiền điều kiện trong testcase: Type, Setup Method, Source, Verification, Cleanup, Readiness. |
+| Tag `[<method>]` | Cách dựng precondition, ghi ngay trong cell `Tiền điều kiện`: `api`/`factory`/`test_hook`/`ui`/`pre_existing`/`manual`. Readiness suy từ đây: `test_hook` → cần hook, `manual` → không tự động hoá được. |
 | Precondition Execution Matrix | Bảng 1 dòng/TC trong `phase1-summary.md`: case nào automatable / cần hook / blocked. |
 | Precondition Resolution Pass | Bước Phase 2 setup/verify/cleanup tiền điều kiện qua UI/API/fixture/hook an toàn trước khi execute; không dựng state bằng DB (verify có thể dùng read-only UAT DB qua guarded client). |
 | Setup layer | `tests/support/setup/`: factory/hook/fixture/mock/cleanup/contract dùng chung. |

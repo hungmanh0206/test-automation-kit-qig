@@ -68,4 +68,26 @@ test.describe('@infra [PRE-NN] ↔ catalog Setup Strategy', () => {
     expect(v.problems.filter((x: string) => /PRE-/.test(x)), 'hai TC dùng chung một mã là bình thường').toEqual([]);
     expect(v.warnings.filter((w: string) => /không case nào dùng/.test(w))).toEqual([]);
   });
+  test('bộ MỚI (không catalog): cell thiếu tag cách dựng ⇒ CHẶN, tag [db] cũng CHẶN', () => {
+    const noTag = validate(doc([tc('TC_1', 'Order đã ở TO_PURCHASE')], []));
+    expect(noTag.problems.some((x: string) => x.includes('thiếu tag cách dựng')), 'thiếu tag phải chặn').toBe(true);
+    const db = validate(doc([tc('TC_2', '[db] Order đã ở TO_PURCHASE')], []));
+    expect(db.problems.some((x: string) => x.includes('không thuộc')), 'dựng state bằng DB bị cấm').toBe(true);
+  });
+
+  test('bộ MỚI đúng chuẩn: nhiều tag tách bằng <br> vẫn hợp lệ', () => {
+    const v = validate(doc([tc('TC_1', '[pre_existing] Lớp CFA1-01 có ≥2 activity<br>[api] Order ở TO_PURCHASE')], []));
+    expect(v.problems.filter((x: string) => x.includes('tag cách dựng') || x.includes('không thuộc'))).toEqual([]);
+  });
+
+  test('bộ CŨ (có catalog) KHÔNG bị luật tag chạm — không phá bộ đang chạy', () => {
+    const v = validate(doc([tc('TC_1', '[PRE-01] đã đăng nhập')], [{ preId: 'PRE-01', desc: 'đã đăng nhập', method: 'ui' }]));
+    expect(v.problems.filter((x: string) => x.includes('tag cách dựng'))).toEqual([]);
+  });
+
+  test('một trạng thái hai cách dựng ⇒ CẢNH BÁO (thứ thay cho dedup của mã cũ)', () => {
+    const v = validate(doc([tc('TC_1', '[api] Order ở TO_PURCHASE'), tc('TC_2', '[ui] Order ở TO_PURCHASE')], []));
+    expect(v.warnings.some((w: string) => w.includes('cách dựng khác nhau'))).toBe(true);
+    expect(v.problems.filter((x: string) => x.includes('cách dựng khác nhau')), 'cảnh báo, không chặn').toEqual([]);
+  });
 });

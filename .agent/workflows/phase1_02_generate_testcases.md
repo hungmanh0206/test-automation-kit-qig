@@ -32,7 +32,7 @@ Sinh bộ testcase đủ chi tiết để automation engineer có thể execute 
 4. Với field validation, mỗi field/rule quan trọng phải có testcase riêng.
 5. Dữ liệu test phải cụ thể, không dùng placeholder mơ hồ.
 6. Expected result phải mô tả rõ behavior, UI state, API response, API/UI-visible state change hoặc error message cần validate.
-7. Sinh section `## Setup Strategy (Hợp đồng tiền điều kiện)` (catalog `PRE-NN`) theo schema ở `prompt_templates/phase1/02_gen_testcases.md` mục 9; gắn tag `[PRE-NN]` vào cột Tiền điều kiện. Dùng skill `precondition_setup_planner` để phân loại + chọn method. `Setup Source` cho strategy `api` lấy từ Swagger đã fetch, không bịa endpoint; không dùng DB/backend source làm setup capability.
+7. Mỗi cell `Tiền điều kiện` viết `[<method>] <mô tả trạng thái>`; KHÔNG sinh bảng catalog riêng, KHÔNG sinh sheet `Preconditions`. Chi tiết dựng theo task ghi ở `### Setup Readiness` của `phase1-summary.md`.
 
 ## Rules
 
@@ -47,6 +47,6 @@ Sinh bộ testcase đủ chi tiết để automation engineer có thể execute 
 |---|---|
 | Testcase Markdown draft | `<TASK_OUTPUT_DIR>/test-cases/` |
 | Section phân nhóm testcase | Trong file testcase |
-| Setup Strategy contract (catalog PRE-NN) | Trong file testcase, sau section phân nhóm |
+| Cách dựng precondition | Tag `[<method>]` trong cell `Tiền điều kiện` của từng TC |
 | Requirement mapping | Trong testcase hoặc Phase 1 summary |
 | Change impact từ diff (optional) | `<TASK_OUTPUT_DIR>/requirements/git-impact.md` (skill `git_impact_analyzer`) |

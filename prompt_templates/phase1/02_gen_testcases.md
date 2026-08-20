@@ -179,8 +179,11 @@ Liệt kê đầy đủ, cụ thể:
 - Trạng thái dữ liệu: `Tài khoản auto_test@test.com đã tồn tại, trạng thái Active`
 - Trạng thái người dùng: `Người dùng chưa đăng nhập, đang ở trang /login`
 - Không để trống hoặc ghi chung chung "Hệ thống hoạt động bình thường"
-- Mỗi cell `Tiền điều kiện` phải bắt đầu bằng tag `[PRE-NN]` (có thể nhiều tag) trỏ tới dòng tương ứng trong section `## Setup Strategy (Hợp đồng tiền điều kiện)`. Nhiều TC dùng chung precondition thì dùng chung `PRE-NN`. Xem mục 9.
-- BẮT BUỘC kèm mô tả ngắn ngay sau mỗi tag để cell tự đọc được mà không cần kéo xuống catalog, định dạng `[PRE-NN] <mô tả trạng thái ngắn>`. Nhiều precondition thì xuống dòng bằng `<br>`, ví dụ: `[PRE-01] Admin đăng nhập, session hợp lệ<br>[PRE-05] Bản ghi cha tồn tại với 3 mục con`. Mô tả ngắn phải khớp cột `Mô tả trạng thái` của `PRE-NN` trong catalog. Không để tag trơ trụi không mô tả.
+- Mỗi cell `Tiền điều kiện` phải mở đầu bằng **tag cách dựng** `[<method>]`, method ∈ `api` | `factory` | `test_hook` | `ui` | `pre_existing` | `manual`; nhiều precondition thì tách bằng `<br>`, mỗi mảnh một tag.
+  Định dạng: `[<method>] <mô tả trạng thái cụ thể>` — vd `[api] Order đã ở trạng thái TO_PURCHASE`, `[pre_existing] Lớp CFA1-01 có ≥2 activity`, `[manual] Thẻ NCB sandbox đã bật OTP`.
+  **Vì sao tag nằm TRONG cell chứ không ở bảng riêng**: precondition giờ chỉ là một TRƯỜNG của testcase (không còn thực thể/issue riêng), và AIO — nơi Phase 2 kéo testcase về — KHÔNG có field nào chứa "cách dựng". Thứ gì phải sống sót round-trip publish→pull thì phải nằm trong chính text precondition.
+  Cùng một trạng thái thì phải cùng một method và **mô tả giống hệt** (đây là thứ thay cho dedup của mã cũ; `design:gate` cảnh báo khi một trạng thái có 2 cách dựng).
+  KHÔNG có method `db`: dựng state bằng DB bị cấm (RULE_GLOBAL §UAT non-destructive + DB read-only).
 
 ## 4. Dữ liệu Test (QUAN TRỌNG NHẤT)
 **TUYỆT ĐỐI KHÔNG dùng placeholder** như "email hợp lệ", "mật khẩu đúng", "dữ liệu hợp lệ"
@@ -348,48 +351,20 @@ không ai dùng = `Blocker` + ưu tiên `Medium`.
 > ⚙️ **Có máy kiểm**: giá trị ngoài `Blocker|Critical|Major|Minor|Trivial` = **CHẶN** (thang cũ `High|Medium|Low` vẫn tạm nhận cho bộ TC cũ, kèm cảnh báo 1 lần/file — bộ cũ **không cần** chuyển). Ghi giá trị Severity vào cột `Ưu tiên` = **CHẶN** (sai cột). Hai cột §7/§8 **không được nói ngược nhau**: `Blocker/Critical` + ưu tiên `Low/Lowest`, hoặc `Minor/Trivial` + ưu tiên `Highest` ⇒ **cảnh báo**.
 > ⚠️ **Jira hiện CHƯA có field Severity** → giá trị này chỉ sống trong testcase + report, **KHÔNG** đẩy lên Jira. `Priority` của bug vẫn lấy từ cột §7.
 
-## 9. Setup Strategy (Hợp đồng tiền điều kiện) — BẮT BUỘC
+## 9. Cách dựng tiền điều kiện — BẮT BUỘC (tag `[<method>]` trong chính cell)
 
-Cột `Tiền điều kiện` chỉ mô tả *trạng thái cần có*. Phase 2 còn cần biết *cách đạt được trạng thái đó* để tự setup thay vì đoán. Vì template giữ đúng 9 cột (không thêm cột thứ 10), thông tin setup được đặt trong một section riêng sau bảng testcase, dạng catalog tái sử dụng theo ID.
+Cột `Tiền điều kiện` mang **cả hai** thứ Phase 2 cần: *trạng thái cần có* (mô tả) và *cách đạt được* (tag `[<method>]`).
+Không còn bảng `## Setup Strategy` riêng và không còn sheet `Preconditions`: precondition là một trường của testcase, giữ ở hai nơi là mở đường cho lệch.
 
-Dùng skill `precondition_setup_planner` để phân loại precondition, chọn setup method và đánh dấu readiness/blocker.
+Dùng skill `precondition_setup_planner` để chọn method và phát hiện blocker.
 
-Sau `## Phân nhóm testcase`, thêm section bắt buộc `## Setup Strategy (Hợp đồng tiền điều kiện)` gồm bảng:
+**Ưu tiên method** (đắt dần): `pre_existing` → `api`/`factory` → `test_hook` → `ui` → `manual`.
+KHÔNG bắt UI dựng tiền điều kiện nếu testcase không nhằm test chính flow tạo ra trạng thái đó.
 
-| Precondition ID | Mô tả trạng thái | Precondition Type | Setup Strategy | Setup Source | Setup Verification | Cleanup/Rollback | Automation Readiness |
-|---|---|---|---|---|---|---|---|
+**Chi tiết dựng (endpoint/payload/fixture id, cách xác minh, cách dọn) KHÔNG viết vào file testcase** — nó thuộc kho tái dùng `knowledge/setup_recipes/` (mỗi record có `method`, `steps`, `verification`, `pitfalls`, `applies_when`; kiểm bằng `npm run howto:check`). Lý do: cùng một trạng thái thường dùng lại ở nhiều task, còn file testcase thì thuộc một task; nhét recipe vào file testcase là copy nó mãi mãi.
+Nếu precondition chưa có recipe và cũng chưa dựng được: đặt tag `[manual]` và nêu blocker ở `### Setup Readiness` của `phase1-summary.md`.
 
-Quy tắc:
-- Mỗi precondition distinct = 1 `PRE-NN` (2-3 chữ số, liên tục). Nhiều TC dùng cùng một `PRE-NN` là bình thường — mã là **khoá tra catalog**, không phải một thực thể riêng phải khai lại. KHÔNG cần cột `Linked TC IDs`: quan hệ suy được từ chính cột `Tiền điều kiện` của từng TC, giữ tay chỉ tạo chỗ để lệch (`npm run design:gate` chặn mã trỏ vào hư không, và cảnh báo mã khai mà không TC nào dùng).
-- Mỗi cell `Tiền điều kiện` trong bảng testcase phải bắt đầu bằng tag `[PRE-NN]` kèm mô tả ngắn (`[PRE-NN] <mô tả trạng thái ngắn>`, nhiều tag tách bằng `<br>`) trỏ tới dòng tương ứng trong catalog. Mô tả ngắn phải khớp cột `Mô tả trạng thái` của `PRE-NN`. Mỗi `PRE-NN` trong catalog phải được ít nhất 1 TC tham chiếu.
-- `Precondition Type` ∈ `auth_session` | `state_exist` | `state_mutation` | `config` | `pre_existing_fixture` | `none`.
-- `Setup Strategy` ∈ `api` | `factory` | `test_hook` | `ui` | `pre_existing` | `manual`. Ưu tiên `pre_existing` → `api`/`factory` → `test_hook` → `ui` → `manual`; không có strategy DB.
-- KHÔNG bắt UI dựng tiền điều kiện nếu testcase không nhằm test flow tạo tiền điều kiện đó; setup qua `api`/`factory`/`test_hook`/`pre_existing`, UI chỉ làm behavior chính của case. Mock/test double chỉ dùng cho dependency ngoài scope (fault injection), không mock behavior đang test. Không dùng DB để DỰNG state (chỉ `api`/`factory`/`test_hook`/`pre_existing`); verify state có thể dùng read-only UAT DB qua guarded client (read-only, chỉ SELECT) khi API/UI không expose.
-- `Setup Source` phải CỤ THỂ, đủ để Phase 2 dùng trực tiếp, KHÔNG ghi chung chung:
-  - `api`: method + endpoint + payload skeleton, ví dụ `POST /api/v1/resources { type:"parent", children:["A","B","C"] }`.
-  - `factory`/`test_hook`: tên factory/hook + tham số, ví dụ `userFactory.setActionCount(userId, 2)`.
-  - `pre_existing`/`pre_existing_fixture`: định danh fixture cụ thể (id/code/class code), không ghi "user bất kỳ".
-  - Endpoint/payload phải lấy từ Swagger đã fetch ở `requirements/swagger/`; KHÔNG bịa endpoint. Nếu Swagger không có cách setup state, đặt `Automation Readiness = Needs hook` hoặc `Manual-only` và ghi rõ hook/manual steps đề xuất.
-  - Nếu precondition phụ thuộc precondition khác, ghi `(depends PRE-xx)` trong `Setup Source`.
-- `Setup Verification`: cách xác nhận setup thành công TRƯỚC khi assert, ví dụ `GET /api/v1/resources?parentId={id} trả 3 mục con` hoặc `GET /api/v1/users/{id} trả action_count=2`. Nếu API/UI không expose state cần verify: có thể dùng **read-only UAT DB** qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) làm verification, ví dụ `db_readonly: SELECT count(*) FROM ... WHERE ...`; nếu cả DB UAT cũng không expose → đặt `Automation Readiness = Needs hook`/`Manual-only`. KHÔNG dùng DB để DỰNG state. *(Đây là verify **tiền điều kiện đã dựng xong chưa**. Verify **kết quả sau khi case chạy mutation** là chuyện khác — xem §13b, và cũng chỉ dùng trong 5 tình huống liệt kê ở đó.)*
-- `Cleanup/Rollback`: hành động rollback cụ thể (ưu tiên scope theo `RUN_ID`) hoặc `none` + lý do. `state_mutation` và data tạo mới BẮT BUỘC có cleanup hoặc lý do không cleanup được.
-- `Automation Readiness`:
-  - `Ready`: Phase 2 tự setup hoàn toàn qua `api`/`factory`/`pre_existing` đã verify được bằng UI/API/fixture/hook an toàn. Phase 2 KHÔNG được skip các TC này vì lý do setup.
-  - `Needs hook`: cần test hook/setup endpoint chưa tồn tại. Đây là blocker cần bổ sung; Phase 2 ghi blocker và đề xuất hook, không false-pass, không skip âm thầm.
-  - `Manual-only`: setup không thể tự động hóa nếu không can thiệp DB/backend state. Đây là cơ sở DUY NHẤT để Phase 2 skip TC vì setup, và phải kèm lý do/manual steps.
-- `Linked TC IDs`: danh sách TC dùng precondition này (trace ngược).
-
-Ví dụ catalog:
-
-| PRE-01 | Tài khoản Admin đã đăng nhập, session hợp lệ | auth_session | api | `POST /api/v1/auth/login { username:"<admin>" }` → lưu token | `GET /api/v1/auth/me` trả role=admin | none (session read-only) | Ready | APP_ORDER_TC_001, APP_ORDER_TC_002 |
-| PRE-05 | Bản ghi nghiệp vụ "parent" tồn tại với 3 mục con | state_exist | api | `POST /api/v1/resources { type:"parent", children:["A","B","C"] }` (depends PRE-01) | `GET /api/v1/resources?parentId={id}` trả 3 mục con | `DELETE /api/v1/resources/{parentId}` theo RUN_ID | Ready | APP_ORDER_TC_010 |
-| PRE-09 | User đã đạt giới hạn thao tác (max 2 lần) | state_mutation | test_hook | `userFactory.setActionCount(userId, 2)` (depends PRE-01) | `GET /api/v1/users/{id}` trả action_count=2 | reset action_count của userId theo RUN_ID | Needs hook | APP_PROFILE_TC_023 |
-
----
-
-# Yêu cầu coverage và risk
-
-Trước khi sinh TC, thực hiện:
+**Readiness suy từ tag, không khai tay**: `pre_existing`/`api`/`factory`/`ui` → *Ready*; `test_hook` → *Needs hook* (cần Dev/BE mở hook, ghi vào handoff); `manual` → *Manual-only* (case đó KHÔNG tự động hoá được, nêu rõ lý do).
 
 ## 0. Coverage Map bắt buộc
 Tạo coverage map nội bộ trước khi viết testcase. Map phải bao gồm:
@@ -516,7 +491,7 @@ Xuất kết quả dưới dạng bảng Markdown:
 
 Sau bảng, thêm:
 - **Phân nhóm testcase:** Bảng nhóm chức năng → phạm vi → TC ID → tổng.
-- **Setup Strategy (Hợp đồng tiền điều kiện):** Catalog `PRE-NN` theo schema mục 9; mọi precondition trong bảng testcase phải map được tới một `PRE-NN`.
+- **Tiền điều kiện:** mỗi cell `[<method>] <mô tả trạng thái>` (method ∈ api|factory|test_hook|ui|pre_existing|manual). Chi tiết dựng theo task ghi ở `### Setup Readiness` của `phase1-summary.md`; recipe tái dùng ở `knowledge/setup_recipes/`.
 - **Tổng TC:** X (Positive: A, Negative: B, Boundary: C, Edge: D)
 - **Coverage:** Danh sách fields đã có TC validation
 - **Risk Assessment:** Tóm tắt risk level từng chức năng
