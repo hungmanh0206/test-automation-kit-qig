@@ -48,11 +48,30 @@ async function main() {
   if (!STORY && !ROOT) { console.error('ERROR: cần --story <JIRA-KEY> hoặc --folder-root <tên> để khoanh phạm vi.'); process.exit(2); }
 
   const aio = new AioClient();
-  const cfg = (await aio.call('GET', '/config')).json || {};
-  const caseStatus = Object.fromEntries((cfg.caseStatuses || []).map((s) => [String(s.name).toLowerCase(), s.ID]));
+  /*
+   * ĐỌC /config: phải TÁCH hai ca, nếu không thì chẩn đoán sai.
+   *   body rỗng            = rate limit đã cạn retry (đặc tính đo được: AIO quá tải trả RỖNG, không trả 429)
+   *                          → chỉ cần chạy lại chậm hơn (--throttle 300).
+   *   có body mà thiếu enum = cấu hình AIO thật sự khác → mới là việc phải đi kiểm.
+   * Gặp thật 20/08/2026: sau một loạt lệnh đọc, script in "không có caseStatuses" trong khi /config có đủ
+   * 4 trạng thái — thông báo đó đẩy người đọc đi soi cấu hình AIO thay vì chỉ cần hạ nhịp gọi.
+   */
+  const cfgRes = await aio.call('GET', '/config');
+  if (!cfgRes.json || !Object.keys(cfgRes.json).length) {
+    // 404/401/403 = sai URL hoặc sai quyền; rỗng-mà-200 (hoặc status 0 sau khi cạn retry) = rate limit.
+    const why = cfgRes.status >= 400
+      ? `HTTP ${cfgRes.status} — sai AIO_BASE_URL / AIO_PROJECT_KEY hoặc token không đủ quyền`
+      : 'body RỖNG — dấu hiệu RATE LIMIT của AIO (nó không trả 429); chạy lại với --throttle 300';
+    console.error(`ERROR: không đọc được /config: ${why}. Dừng để khỏi ghi bừa.`);
+    process.exit(1);
+  }
+  const caseStatus = Object.fromEntries((cfgRes.json.caseStatuses || []).map((s) => [String(s.name).toLowerCase(), s.ID]));
   const DEPRECATED = caseStatus.deprecated;
   const PUBLISHED = caseStatus.published;
-  if (!DEPRECATED || !PUBLISHED) { console.error('ERROR: /config không có caseStatuses Published/Deprecated — dừng để khỏi ghi bừa.'); process.exit(1); }
+  if (!DEPRECATED || !PUBLISHED) {
+    console.error(`ERROR: /config CÓ trả về nhưng thiếu caseStatus Published/Deprecated (đang có: ${Object.keys(caseStatus).join(', ') || 'không có gì'}) — dừng để khỏi ghi bừa.`);
+    process.exit(1);
+  }
 
   const doc = await parseXlsx(path.resolve(FILE));
   const inExcel = new Set((doc.tests || []).map(tcIdOf).filter(Boolean));

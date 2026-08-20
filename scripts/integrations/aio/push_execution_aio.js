@@ -53,7 +53,9 @@ function buildStatusMap(cfg) {
   const idOf = (list) => Object.fromEntries((list || []).map((s) => [String(s.name).toLowerCase(), s.ID]));
   const run = idOf(cfg && cfg.runStatuses);
   const step = idOf(cfg && cfg.runStepStatuses);
-  if (!run[NOT_RUN.toLowerCase()]) throw new Error('AIO /config không trả runStatuses — không suy được ID trạng thái, dừng để khỏi ghi bừa.');
+  // Tách rate-limit (body rỗng) khỏi "thiếu enum" — lý do ghi ở deprecate_stale_aio.js.
+  if (!cfg || !Object.keys(cfg).length) throw new Error('AIO /config trả RỖNG — dấu hiệu rate limit (AIO không trả 429), KHÔNG phải thiếu cấu hình. Chạy lại với AIO_THROTTLE_MS=300.');
+  if (!run[NOT_RUN.toLowerCase()]) throw new Error(`AIO /config có body nhưng thiếu runStatuses (đang có: ${Object.keys(run).join(', ') || 'không có gì'}) — dừng để khỏi ghi bừa.`);
   const aioName = (kitStatus) => {
     const canon = outputGate.canonStatus(kitStatus);
     const entry = taxonomy.statuses[canon];
