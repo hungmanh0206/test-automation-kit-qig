@@ -209,6 +209,12 @@ const XRAY_ENTRYPOINTS = [
   'scripts/integrations/jira/update_xray_steps.js',
   'scripts/integrations/jira/cleanup_xray_tests.js',
   'scripts/integrations/jira/pull_testcases.js',
+  // Ba script Xray-era KHÔNG có npm script (gọi bằng `node …`) nên trước đó không ai nhắc, không ai cản:
+  // create_test_plan đẻ issue Test Plan mà AIO không có; hai script kia sửa thứ trên AIO không tồn tại
+  // (assignee của test, issue-link precondition→requirement).
+  'scripts/integrations/jira/create_test_plan.js',
+  'scripts/integrations/jira/unassign_all_tests.js',
+  'scripts/integrations/jira/cleanup_precondition_requirement_links.js',
 ];
 
 test.describe('@infra TEST_MANAGEMENT_TOOL — chạy nhầm bộ phải bị CHẶN, không im lặng ghi sai chỗ', () => {

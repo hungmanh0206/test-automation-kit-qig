@@ -19,6 +19,13 @@ const { loadEnv, buildJiraHeaders, log, resolveJiraAccountId } = require('./util
 require('../../utils/runtime_config'); // nạp root .env + TASK_ENV (nếu set)
 loadEnv();
 
+/*
+ * CỬA TOOL: AIO KHÔNG có Test Plan (cycle được gom bằng THƯ MỤC cycle: `--folder "<Tên sprint>"`).
+ * Chạy script này khi kit đang ở AIO chỉ tạo ra một issue Xray không ai dùng — và trông y như đã
+ * làm đúng việc. Chặn tại đây, kèm đường đi đúng.
+ */
+require('../tms').assertTool('xray', 'npm run aio:push-exec -- --task <TASK_KEY> --folder "<Tên sprint>"  (AIO không có Test Plan)');
+
 const args = parseArgs(process.argv.slice(2));
 const argStr = (k) => (typeof args[k] === 'string' ? args[k].trim() : '');
 const argFlag = (k) => args[k] === true || args[k] === 'true';

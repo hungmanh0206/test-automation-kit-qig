@@ -8,6 +8,10 @@ const path = require('path');
 const axios = require('axios');
 const { loadEnv, buildJiraHeaders } = require('./utils.js');
 loadEnv();
+
+// CỬA TOOL: trên AIO, tiền điều kiện là FIELD trong case — không có Precondition issue, cũng không
+// có issue-link tới requirement để dọn. Script này chỉ còn nghĩa với dữ liệu Xray cũ.
+require('../tms').assertTool('xray', '(không cần trên AIO: precondition là field trong case, không có issue-link)');
 const APPLY = process.argv.includes('--apply');
 const BASE = process.env.JIRA_BASE_URL.replace(/\/+$/, '');
 const H = buildJiraHeaders();

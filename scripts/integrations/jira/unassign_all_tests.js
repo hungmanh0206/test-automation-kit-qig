@@ -8,6 +8,10 @@ const path = require('path');
 const axios = require('axios');
 const { loadEnv, buildJiraHeaders } = require('./utils.js');
 loadEnv();
+
+// CỬA TOOL: case/cycle trên AIO không phải Jira issue nên KHÔNG có assignee để gỡ — script này chỉ
+// còn nghĩa với Xray Test cũ. Chạy khi đang ở AIO là sửa dữ liệu Xray đã đóng băng.
+require('../tms').assertTool('xray', '(không cần trên AIO: case/cycle không có assignee)');
 const APPLY = process.argv.includes('--apply');
 const BASE = process.env.JIRA_BASE_URL.replace(/\/+$/, '');
 const H = buildJiraHeaders();
