@@ -1,0 +1,201 @@
+import { test, expect } from '@playwright/test';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { execFileSync } from 'child_process';
+
+/*
+ * Test cho nhóm gate MỞ RỘNG 5 TRỤC — tách khỏi `gates.spec.ts` có chủ đích.
+ *
+ * VÌ SAO TÁCH FILE: bốn khối test này từng nằm trong `gates.spec.ts` và đã bị dọn mất khi file đó được
+ * viết lại trong đợt gỡ Xray (20/08/2026). Code gate thì còn nguyên — nghĩa là gate vẫn chạy nhưng KHÔNG
+ * còn gì canh gate, đúng lớp lỗi mà cả kit này sinh ra để chống. Để riêng thì hai luồng sửa song song
+ * không giẫm lên nhau.
+ *
+ * KHÔNG khôi phục khối `TEST_MANAGEMENT_TOOL`: `scripts/integrations/tms.js` và các entrypoint Xray đã bị
+ * xoá, nên luật "chạy nhầm tool" hết đối tượng — bỏ là ĐÚNG, không phải mất mát.
+ */
+
+const REPO = path.resolve(__dirname, '..', '..', '..');
+const node = process.execPath;
+const run = (args: string[], env: Record<string, string> = {}) => {
+  try {
+    return { code: 0, out: execFileSync(node, args, { cwd: REPO, encoding: 'utf8', env: { ...process.env, ...env } }) };
+  } catch (e: any) {
+    return { code: e.status ?? 1, out: `${e.stdout || ''}${e.stderr || ''}` };
+  }
+};
+
+const TC_HEADER = '| TC ID | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |\n|---|---|---|---|---|---|---|---|---|\n';
+const tcRow = (id: string, expected: string) =>
+  `| ${id} | M | [Positive] Case tiền | Đăng nhập | - | 1. Mở màn | ${expected} | High | Major |\n`;
+
+/** Task tối thiểu: có 1 case band HIGH (Ưu tiên High) ĐÃ execute. `withPlan` quyết định có artefact kế hoạch. */
+function makeExecutedTask(withPlan: boolean) {
+  const pod = fs.mkdtempSync(path.join(os.tmpdir(), 'expgate-'));
+  const t = path.join(pod, 'tasks', 'T-1');
+  fs.mkdirSync(path.join(t, 'test-cases'), { recursive: true });
+  fs.mkdirSync(path.join(t, 'test-results'), { recursive: true });
+  fs.mkdirSync(path.join(t, 'reports'), { recursive: true });
+  fs.writeFileSync(path.join(t, 'test-cases', 'tc.md'), `# fixture\n\n${TC_HEADER}${tcRow('TC_001', '1. Net = 2.500.000')}`, 'utf8');
+  fs.writeFileSync(path.join(t, 'test-results', 'testcase-status.json'), JSON.stringify({
+    taskKey: 'T-1',
+    tests: [{ tcId: 'TC_001', status: 'PASSED', comment: 'Net đúng 2.500.000 theo bảng giá.', evidence: ['a.png'] }],
+  }), 'utf8');
+  if (withPlan) fs.writeFileSync(path.join(t, 'reports', 'expansion-plan.md'), '# Kế hoạch mở rộng\n', 'utf8');
+  return { env: { TASK_KEY: 'T-1', PROJECT_OUTPUT_DIR: pod }, taskDir: t };
+}
+
+// ── 1. Bắt buộc CÂN NHẮC mở rộng, không bắt buộc mở đủ trục ───────────────────────────────────────────────
+/*
+ * Đo 19/08/2026 trên 9 task (1014 case, 382 band high): 7/9 task có 0/5 trục, mà task DUY NHẤT đủ 5/5 lại
+ * có 3 báo cáo `proven=0`. Chặn theo "có artefact hay không" ⇒ chỉ dạy nhau chạm file cho có. Nên chặn thứ
+ * rẻ mà quyết định được: đã chạy `expansion:plan` để nhìn chi phí rồi chốt phạm vi hay chưa.
+ */
+test.describe('@infra mở rộng 5 trục — chặn "chưa cân nhắc", không chặn "chưa mở đủ"', () => {
+  test('case band HIGH đã execute mà CHƯA có expansion-plan → CHẶN, kèm lệnh gỡ', () => {
+    const { env } = makeExecutedTask(false);
+    const r = run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1'], env);
+    expect(r.out).toMatch(/case band HIGH đã execute nhưng CHƯA có/);
+    expect(r.out, 'chặn mà không chỉ đường đi tiếp thì chỉ là bức tường').toMatch(/expansion:plan/);
+  });
+
+  test('có expansion-plan rồi thì hết chặn — nhưng vẫn NHẮC trục nào chưa soi', () => {
+    const { env } = makeExecutedTask(true);
+    const r = run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1'], env);
+    expect(r.out).not.toMatch(/case band HIGH đã execute nhưng CHƯA có/);
+    expect(r.out, 'bỏ chặn không có nghĩa là im').toMatch(/CHƯA ai soi/);
+  });
+
+  test('expansion_plan.js ghi artefact MẶC ĐỊNH — kế hoạch không để lại dấu vết thì không gate được', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/expansion_plan.js'), 'utf8');
+    expect(src).toMatch(/arg\('out'\)\s*\|\|/);
+    expect(src).toContain('expansion-plan.md');
+  });
+});
+
+// ── 2. self-review phải CÓ RĂNG ở bước finalize ───────────────────────────────────────────────────────────
+/*
+ * Bản mặc định luôn exit 0 (advisory — đúng hợp đồng đã ghi trong tài liệu), còn `output_gate` ở publish
+ * KHÔNG kiểm mở rộng. Nếu finalize cũng chỉ đọc báo cáo thì đường lọt bug vẫn nguyên: execute bám đúng chữ
+ * trong case → 0 trục → đẩy "toàn PASS" → không gì cản. `--enforce` là chỗ duy nhất có exit code.
+ */
+test.describe('@infra self-review --enforce — chặn thật, không chỉ in báo cáo', () => {
+  test('mặc định vẫn exit 0 — giữ hợp đồng advisory', () => {
+    const { env } = makeExecutedTask(false);
+    const r = run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1'], env);
+    expect(r.code, 'bản thường không được chặn').toBe(0);
+    expect(r.out).toMatch(/CHẶN/);
+  });
+
+  test('--enforce exit ≠ 0 và nêu ĐÍCH DANH gate còn chặn', () => {
+    const { env } = makeExecutedTask(false);
+    const r = run([path.join(REPO, 'scripts/qa/self_review.js'), '--task', 'T-1', '--enforce'], env);
+    expect(r.code, 'còn CHẶN mà vẫn exit 0 thì gate vô nghĩa').not.toBe(0);
+    expect(r.out).toMatch(/--enforce: exit 1 vì còn CHẶN ở: \S+/);
+  });
+
+  test('điểm vào Phase 2 phải trỏ bản :enforce, không phải bản advisory', () => {
+    const tpl = fs.readFileSync(path.join(REPO, 'prompt_templates/run_phase2_template.md'), 'utf8');
+    expect(tpl, 'finalize mà dùng bản advisory thì không chặn được gì').toMatch(/self-review:enforce/);
+    expect(tpl).toMatch(/expansion:plan/);
+  });
+});
+
+// ── 3. Luật mở rộng phải đứng ở CẢ HAI cửa ────────────────────────────────────────────────────────────────
+/*
+ * `self-review --enforce` là bước NGƯỜI/agent tự chạy — bỏ qua nó rồi đẩy thẳng kết quả lên TCM thì trước
+ * đây không gì cản (lượt execute SAPP-26523: 3 case, 0/5 trục, mọi gate xanh). Nên luật đứng thêm ở
+ * `push_execution_aio` — chỗ có exit code nằm trên đường GHI THẬT.
+ */
+test.describe('@infra luật mở rộng — chặn ở cả finalize lẫn đường publish', () => {
+  test('push_execution_aio CHẶN khi có case band high mà chưa có kế hoạch (chạy offline)', () => {
+    const { env, taskDir } = makeExecutedTask(false);
+    const r = run([path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), '--task', 'T-1', '--task-output', taskDir], env);
+    expect(r.code, 'đường publish không chặn thì bỏ qua finalize là lọt').not.toBe(0);
+    expect(r.out).toMatch(/GATE MỞ RỘNG/);
+    expect(r.out).toMatch(/expansion:plan/);
+    expect(r.out, 'phải có đường thoát có chủ ý').toMatch(/--qa-approved/);
+  });
+
+  test('có kế hoạch rồi thì gate mở rộng cho qua', () => {
+    const { env, taskDir } = makeExecutedTask(true);
+    const r = run([path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), '--task', 'T-1', '--task-output', taskDir], env);
+    expect(r.out).not.toMatch(/GATE MỞ RỘNG/);
+  });
+
+  test('MỘT nguồn: cả hai cửa qua plan_guard, không tự tính band', () => {
+    for (const f of ['scripts/qa/self_review.js', 'scripts/integrations/aio/push_execution_aio.js']) {
+      const src = fs.readFileSync(path.join(REPO, f), 'utf8');
+      expect(src, `${f} phải dùng plan_guard`).toMatch(/plan_guard/);
+      expect(src, `${f} không được tự gọi bandOf — luật sẽ trôi khỏi nhau`).not.toMatch(/\.bandOf\(/);
+    }
+  });
+});
+
+// ── 4. Chiều coverage mới phải vào CANONICAL, không chỉ đẻ file prompt ────────────────────────────────────
+/*
+ * Kit đếm độ phủ theo `DIMS` trong dimension_coverage.js. Thêm `dimensions/NN_x.md` mà quên đăng ký thì
+ * chiều đó KHÔNG BAO GIỜ được đếm: prompt bảo làm, máy không biết nó tồn tại, báo cáo coverage vẫn xanh.
+ */
+test.describe('@infra chiều coverage — file prompt và canonical phải khớp nhau', () => {
+  const DIM_DIR = path.join(REPO, 'prompt_templates/phase1/dimensions');
+  const covSrc = fs.readFileSync(path.join(REPO, 'scripts/qa/dimension_coverage.js'), 'utf8');
+  const navSrc = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/02_gen_testcases.md'), 'utf8');
+  const dimFiles = fs.readdirSync(DIM_DIR).filter((f) => /^\d+_.*\.md$/.test(f));
+  const secOf = (f: string) => `§${String(f.match(/^(\d+)/)?.[1] ?? '').replace(/^0+/, '')}`;
+
+  test('mỗi file dimensions/ đều được đăng ký trong DIMS', () => {
+    const missing = dimFiles.filter((f) => !covSrc.includes(`sec: '${secOf(f)}'`));
+    expect(missing, `chưa vào canonical: ${missing.join(', ')} → thêm vào DIMS + TAG_OF`).toEqual([]);
+    expect(dimFiles.length).toBeGreaterThanOrEqual(18);
+  });
+
+  test('mỗi file dimensions/ đều có trong bảng điều hướng của 02_gen_testcases', () => {
+    const missing = dimFiles.filter((f) => !navSrc.includes(`dimensions/${f}`));
+    expect(missing, `bảng điều hướng thiếu: ${missing.join(', ')} → agent sẽ không mở file đó`).toEqual([]);
+  });
+
+  test('mỗi chiều trong DIMS đều có TAG_OF — thiếu thì case gắn tag vẫn không được tính', () => {
+    const ids = [...covSrc.matchAll(/\{ id: '([a-z0-9_]+)', sec:/g)].map((m) => m[1]);   // e2e có CHỮ SỐ
+    const tagBlock = covSrc.slice(covSrc.indexOf('const TAG_OF'), covSrc.indexOf('const COVERAGE_TAGS'));
+    const missing = ids.filter((id) => !tagBlock.includes(`${id}:`));
+    expect(missing, `thiếu TAG_OF: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  test('lệnh mà chiều §20 dạy phải TỒN TẠI (dạy lệnh ma là tự tạo lỗ)', () => {
+    const md = fs.readFileSync(path.join(DIM_DIR, '20_bug_history.md'), 'utf8');
+    expect(md).toMatch(/npm run bugs:checklist/);
+    const pkg = JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'), 'utf8'));
+    expect(pkg.scripts['bugs:checklist'], 'prompt dạy lệnh chưa có trong package.json').toBeTruthy();
+    expect(fs.existsSync(path.join(REPO, 'scripts/qa/bugs_checklist.js'))).toBe(true);
+  });
+});
+
+// ── 5. Bộ đọc UI↔API phải thấy được LƯỚI ─────────────────────────────────────────────────────────────────
+/*
+ * Đo 20/08/2026: `pairsOf()` chỉ nhận khuôn FORM nên trên màn danh sách đọc được ĐÚNG 1 cặp ⇒ mọi phép đối
+ * chiếu UI↔API trên lưới bất khả, và mutation_check báo trục ② 0/5 với lý do "không tìm được nhãn UI".
+ * Sau khi thêm khuôn lưới + bỏ qua `tr.ant-table-measure-row` (0 ô): 1 → 18 cặp, trục ② 0/5 → 5/5.
+ * Theo file tổng hợp bug: 45% lỗi hiển thị + 43% lỗi tiền — phần lớn sống trên lưới.
+ */
+test.describe('@infra đối chiếu UI↔API — không được mù với lưới', () => {
+  const src = fs.readFileSync(path.join(REPO, 'scripts/qa/cross_surface_diff.js'), 'utf8');
+
+  test('pairsOf đọc được cả bảng, không chỉ khuôn form', () => {
+    expect(src, 'thiếu nhánh đọc <thead>/<td> ⇒ màn danh sách chỉ ra 1 cặp').toMatch(/thead th/);
+    expect(src).toMatch(/tbody tr/);
+  });
+
+  test('bỏ qua dòng đo của Ant Design — lấy dòng ĐẦU TIÊN CÓ Ô', () => {
+    expect(src, 'lấy `tbody tr` đầu là trúng tr.ant-table-measure-row (0 ô) ⇒ không sinh được cặp nào')
+      .toMatch(/find\(\(r\) => r\.querySelectorAll\('td'\)\.length\)/);
+  });
+
+  test('mutation_check dùng page MỚI mỗi mutant — dùng lại page thì SPA cache, không gọi API nữa', () => {
+    const mut = fs.readFileSync(path.join(REPO, 'scripts/qa/mutation_check.js'), 'utf8');
+    expect(mut).toMatch(/ctx\.newPage\(\)/);
+    expect(mut, 'context mới sẽ mất cookie ⇒ phải login lại ⇒ dính khoá đăng nhập của OPS')
+      .not.toMatch(/launchPersistentContext\([^)]*\)[\s\S]{0,200}for \(const m of mutants\)/);
+  });
+});
