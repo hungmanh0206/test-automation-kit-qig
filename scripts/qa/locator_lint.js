@@ -42,7 +42,7 @@ const RULES = [
   { id: 'coord-click', sev: 'P0', re: /\b(?:mouse|page\.mouse)\.click\s*\(\s*[\w.[\]]+\s*,/,
     why: 'Click theo TOẠ ĐỘ: lệch ngay khi scroll/animation/đổi viewport, và không hề biết đã bấm trúng gì.',
     fix: 'Định vị bằng locator có nghĩa trong scope đã neo; nếu buộc phải dùng phần tử lạ thì `safe_target.one()` rồi `.click()`.' },
-  { id: 'force-click', sev: 'P0', re: /force\s*:\s*true/,
+  { id: 'force-click', sev: 'P0', re: /force\s*:\s*true/, not: /rmSync|rmdirSync|unlinkSync|mkdirSync|cpSync|copyFileSync|renameSync|writeFileSync|createWriteStream|fs\s*\.\s*\w+|recursive\s*:/,
     why: 'force:true BỎ QUA actionability (bị che, disabled, ngoài màn) → bấm xuyên overlay, trúng thứ khác.',
     fix: 'Bỏ force; chờ điều kiện thật (`waitFor`, `toBeEnabled`). Nếu bắt buộc: giữ force NHƯNG assert danh tính element trước + nghiệm thu kết quả sau.' },
   { id: 'body-regex', sev: 'P0', re: /body\.innerText[\s\S]{0,40}?\.match\s*\(|innerText\s*\.\s*match\s*\(/,
@@ -105,6 +105,7 @@ for (const { f, scope } of targets()) {
     const line = lines[i];
     if (/locator-lint-disable-next-line\s+\S/.test(lines[i - 1] || '')) continue; // bỏ qua CÓ lý do
     for (const r of RULES) {
+      if (r.not && r.not.test(line)) continue;            // ngữ cảnh loại trừ (Node fs dùng trùng tên option force)
       if (r.re.test(line)) {
         const rel = path.relative(REPO, f);
         findings.push({ file: rel, line: i + 1, scope, layer: layerOf(rel), rule: r, code: line.trim().slice(0, 90) });

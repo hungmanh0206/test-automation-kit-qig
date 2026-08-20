@@ -45,4 +45,27 @@ test.describe('@infra [PRE-NN] ↔ catalog Setup Strategy', () => {
     const v = validate(doc([tc('TC_1', '[PRE-01] a<br>[PRE-02] b')], [{ preId: 'PRE-01', desc: 'a' }, { preId: '[PRE-02] b', desc: 'b' }]));
     expect(v.problems.filter((p: string) => /PRE-/.test(p))).toEqual([]);
   });
+  test('catalog thiếu hẳn cột Cleanup/Verification/Type ⇒ CẢNH BÁO cấp bộ, đúng 1 dòng (không spam từng row)', () => {
+    const setup = Array.from({ length: 5 }, (_, i) => ({ preId: `PRE-0${i + 1}`, desc: 'x', method: 'ui' }));
+    const tests = setup.map((s2, i) => tc(`TC_${i}`, `[${s2.preId}] x`));
+    const v = validate(doc(tests, setup));
+    const hit = v.warnings.filter((w: string) => /Catalog Setup Strategy thiếu hẳn cột/.test(w));
+    expect(hit.length, 'phải gọn 1 dòng cho cả bộ, không phải 5 dòng').toBe(1);
+    expect(hit[0]).toContain('Cleanup/Rollback');
+    expect(hit[0]).toContain('đo trên 5 dòng');
+    expect(v.problems.filter((x: string) => /Catalog/.test(x)), 'cảnh báo, KHÔNG chặn — bộ cũ không bị khoá cứng').toEqual([]);
+  });
+
+  test('KHÔNG báo oan: catalog có đủ cột thì im lặng', () => {
+    const setup = [{ preId: 'PRE-01', desc: 'x', method: 'api', type: 'state_exist', verification: 'GET /x trả 200', cleanup: 'xoá bằng API' }];
+    const v = validate(doc([tc('TC_1', '[PRE-01] x')], setup));
+    expect(v.warnings.filter((w: string) => /Catalog Setup Strategy/.test(w))).toEqual([]);
+  });
+
+  test('quan hệ TC↔mã suy được từ cột Tiền điều kiện — không cần cột giữ tay "Linked TC IDs"', () => {
+    // Chính vì suy được nên template đã bỏ cột đó: giữ tay chỉ tạo chỗ để lệch.
+    const v = validate(doc([tc('TC_1', '[PRE-01] a'), tc('TC_2', '[PRE-01] a')], [{ preId: 'PRE-01', desc: 'a', method: 'ui' }]));
+    expect(v.problems.filter((x: string) => /PRE-/.test(x)), 'hai TC dùng chung một mã là bình thường').toEqual([]);
+    expect(v.warnings.filter((w: string) => /không case nào dùng/.test(w))).toEqual([]);
+  });
 });

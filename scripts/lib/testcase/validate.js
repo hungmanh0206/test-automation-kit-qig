@@ -101,6 +101,16 @@ function validate(doc) {
     }
     const unused = [...declared].filter((c) => !usedBy.has(c));
     if (unused.length) warnings.push(`${unused.length} mã khai trong catalog mà KHÔNG case nào dùng: ${unused.slice(0, 8).join(', ')}${unused.length > 8 ? ' …' : ''} — hoặc thiếu case, hoặc catalog còn rác của lượt trước.`);
+
+    /*
+     * ĐỘ ĐẦY ĐỦ CỦA CATALOG (cấp bộ, 1 dòng — không spam từng row).
+     * Template khai 9 cột nhưng bộ thật đo được chỉ có 4 (thiếu Type/Source/Verification/Cleanup/Readiness),
+     * và không gì kêu. Thiếu `Cleanup` là thiếu đúng phần khiến precondition dựng-rồi-không-dọn — chính là
+     * nguồn của case sau chạy trên state bẩn. Cảnh báo chứ không chặn: bộ cũ không nên bị khoá cứng.
+     */
+    const has = (f) => doc.setup.some((s) => String(s[f] || '').trim());
+    const miss = [['cleanup', 'Cleanup/Rollback'], ['verification', 'Setup Verification'], ['type', 'Precondition Type']].filter(([f]) => !has(f)).map(([, label]) => label);
+    if (miss.length) warnings.push(`Catalog Setup Strategy thiếu hẳn cột: ${miss.join(', ')} (đo trên ${doc.setup.length} dòng). Thiếu Cleanup = precondition dựng rồi không dọn ⇒ case sau chạy trên state bẩn; thiếu Verification = không biết đã dựng xong chưa. Template đầy đủ ở prompt gen §Setup Strategy.`);
   }
 
   // 3) DIMENSION (set-level) — cảnh báo.

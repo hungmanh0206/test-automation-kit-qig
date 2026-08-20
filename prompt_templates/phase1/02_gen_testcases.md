@@ -356,11 +356,11 @@ Dùng skill `precondition_setup_planner` để phân loại precondition, chọn
 
 Sau `## Phân nhóm testcase`, thêm section bắt buộc `## Setup Strategy (Hợp đồng tiền điều kiện)` gồm bảng:
 
-| Precondition ID | Mô tả trạng thái | Precondition Type | Setup Strategy | Setup Source | Setup Verification | Cleanup/Rollback | Automation Readiness | Linked TC IDs |
-|---|---|---|---|---|---|---|---|---|
+| Precondition ID | Mô tả trạng thái | Precondition Type | Setup Strategy | Setup Source | Setup Verification | Cleanup/Rollback | Automation Readiness |
+|---|---|---|---|---|---|---|---|
 
 Quy tắc:
-- Mỗi precondition distinct = 1 `PRE-NN` (2-3 chữ số, liên tục). Nhiều TC dùng chung precondition thì dùng chung 1 `PRE-NN`; không lặp lại recipe.
+- Mỗi precondition distinct = 1 `PRE-NN` (2-3 chữ số, liên tục). Nhiều TC dùng cùng một `PRE-NN` là bình thường — mã là **khoá tra catalog**, không phải một thực thể riêng phải khai lại. KHÔNG cần cột `Linked TC IDs`: quan hệ suy được từ chính cột `Tiền điều kiện` của từng TC, giữ tay chỉ tạo chỗ để lệch (`npm run design:gate` chặn mã trỏ vào hư không, và cảnh báo mã khai mà không TC nào dùng).
 - Mỗi cell `Tiền điều kiện` trong bảng testcase phải bắt đầu bằng tag `[PRE-NN]` kèm mô tả ngắn (`[PRE-NN] <mô tả trạng thái ngắn>`, nhiều tag tách bằng `<br>`) trỏ tới dòng tương ứng trong catalog. Mô tả ngắn phải khớp cột `Mô tả trạng thái` của `PRE-NN`. Mỗi `PRE-NN` trong catalog phải được ít nhất 1 TC tham chiếu.
 - `Precondition Type` ∈ `auth_session` | `state_exist` | `state_mutation` | `config` | `pre_existing_fixture` | `none`.
 - `Setup Strategy` ∈ `api` | `factory` | `test_hook` | `ui` | `pre_existing` | `manual`. Ưu tiên `pre_existing` → `api`/`factory` → `test_hook` → `ui` → `manual`; không có strategy DB.

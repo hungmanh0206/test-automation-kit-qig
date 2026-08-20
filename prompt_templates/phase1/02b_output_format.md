@@ -78,6 +78,7 @@ Report phải đủ chi tiết để review chất lượng bộ testcase mà kh
    - Excel testcase tồn tại.
    - Phase 1 summary report tồn tại và có `### Setup Readiness` + `### Precondition Execution Matrix` (1 dòng/TC trong scope).
    - Section `## Setup Strategy (Hợp đồng tiền điều kiện)` tồn tại; mọi precondition trong bảng testcase có tag `[PRE-NN]` map tới catalog; không còn `PRE-NN` mồ côi.
+   - **Hai vai của tiền điều kiện, đừng trộn**: (a) **TEXT** `[PRE-NN] <mô tả>` trong cột `Tiền điều kiện` — cái này đi theo case lên AIO (field `precondition` của case); (b) **CÔNG THỨC DỰNG** trong catalog `## Setup Strategy` → sheet `Preconditions` của Excel — **AIO không có chỗ chứa nó**, nên nó phải sống trong repo và `npm run aio:pull:write` copy sang bản kéo về (nếu không, Phase 2 execute từ nguồn mặc định sẽ không biết dựng gì).
    - Nếu matrix còn `Needs hook`/`Manual-only`: `reports/capability-request.md` tồn tại và liệt kê capability còn thiếu (loại/endpoint/PRE/TC/owner).
    - `task.md` đã được cập nhật đường dẫn output và trạng thái chờ QA xác nhận trước khi publish Jira testcase.
 
