@@ -161,8 +161,8 @@ Lượt (n) đo được 68% case ghi ít verification hơn số assertion, như
 `deriveAssertions` chỉ **đánh dấu** `compound`, **không tự tách** theo dấu phẩy — tự tách sẽ cắt sai đúng những câu
 có số ("Tổng 1.234.567đ, đúng định dạng"), và một gate cắt sai thì mất uy tín ngay lần đầu.
 
-**Bẫy `` với chữ có dấu — lần thứ TƯ trong phiên.** `/,\s*(và|kèm)/` không bao giờ khớp ", và" vì "à" không
-phải word-char ⇒ `compound` luôn false. Đáng ghi: **máy gác vệ sinh source không bắt được loại này**, vì `` ở đây
+**Bẫy `\b` với chữ có dấu — lần thứ TƯ trong phiên.** `/,\s*(và|kèm)\b/` không bao giờ khớp ", và" vì "à" không
+phải word-char ⇒ `compound` luôn false. Đáng ghi: **máy gác vệ sinh source không bắt được loại này**, vì `\b` ở đây
 **hợp lệ về cú pháp**, chỉ sai ngữ nghĩa với tiếng Việt. Bài học: có lớp lỗi chỉ **test hành vi** mới bắt được, không
 lint nào thay được — nên mỗi luật mới phải có test khẳng định nó **thật sự khớp** trên dữ liệu tiếng Việt.
 
@@ -264,7 +264,7 @@ oracle: BE có Swagger nên assert `total = 540000`; FE chỉ có Figma nên ass
 
 **Added — máy gác VỆ SINH MÃ NGUỒN** (`cli-guard.spec.ts`): quét `scripts/` + `tests/` tìm ký tự điều khiển lạc
 (0x08/0x0B/0x0C/0x1B). Lý do rất cụ thể: escape đi qua shell/heredoc bị biến thành **ký tự thật** nằm trong regex —
-trong phiên này tôi mắc **3 lần với ``** (`output_rules`, `spec_extract`, `figma_to_ui_contract`) và 2 lần với
+trong phiên này tôi mắc **3 lần với `\b`** (`output_rules`, `spec_extract`, `figma_to_ui_contract`) và 2 lần với
 `
 `; script vẫn chạy êm nhưng luật **không bao giờ khớp**. Lần này chính test `cli-guard` bắt được thiếu
 `require.main` guard (lỗi thứ 6 cùng loại) — máy gác viết ra hôm nay đã trả nợ ngay trong ngày.
@@ -689,7 +689,7 @@ Hubspot` ⇒ `closest()` leo quá cao và sinh extra oan) · alias cho "Thông t
 
 **Added — `tests/fe/infra/spec-extract.spec.ts`** (8 test, suite hạ tầng 56 → 64): mỗi test khoá đúng một lỗ ở trên, kèm fixture FSD thu nhỏ giữ nguyên các đặc điểm đã gây lỗi (heading in nghiêng, số mục trùng 2 file, nhãn lặp, field điều kiện).
 
-**Bẫy lặp lại lần thứ ba:** ký tự `` bị công cụ trung gian biến thành **backspace (0x08)** nằm trong regex ⇒ `Button` không bao giờ khớp mà script vẫn chạy êm. Lần này phát hiện nhờ soi số (0 control giữa 119 button). Đã quét cả repo, không còn 0x08 lạc.
+**Bẫy lặp lại lần thứ ba:** ký tự `\b` bị công cụ trung gian biến thành **backspace (0x08)** nằm trong regex ⇒ `Button` không bao giờ khớp mà script vẫn chạy êm. Lần này phát hiện nhờ soi số (0 control giữa 119 button). Đã quét cả repo, không còn 0x08 lạc.
 
 **Trạng thái nghiệm thu:** 3/4 mục (42/43/54) đã chứng minh được **catalog hỏi đúng câu** ở mức offline; STT 53 cần một fixture order Chuyển đổi để bind. Cả 4 mục **chưa** chạy thật trên UAT — đó là bước kế tiếp và cần xác nhận trước khi chạm UAT.
 

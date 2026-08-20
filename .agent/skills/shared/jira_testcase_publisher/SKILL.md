@@ -1,6 +1,6 @@
 ---
 name: jira_testcase_publisher
-description: Publish testcase từ Excel canonical lên AIO Tests sau Phase 1 (npm run aio:publish); cleanup lifecycle (Deprecate) thuộc partial-rerun khi Excel thay đổi.
+description: Publish testcase từ Excel canonical lên **AIO Tests** sau Phase 1 (`npm run aio:publish`); cleanup lifecycle (Deprecate) thuộc partial-rerun khi Excel thay đổi.
 ---
 
 # Testcase Publisher (AIO Tests)

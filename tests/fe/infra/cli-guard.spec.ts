@@ -44,20 +44,35 @@ test('@infra script CLI nào gọi process.exit ở top-level thì phải có re
  * (backspace 0x08, CR, LF) nằm luôn trong regex — script vẫn chạy êm nhưng luật KHÔNG BAO GIỜ khớp. Trong một
  * phiên tôi mắc đúng lỗi này **3 lần với `\b`** (`output_rules`, `spec_extract`, `figma_to_ui_contract`) và 2 lần
  * với `\r\n`. Lỗi lặp lại thì phải có máy gác, không dựa vào nhớ.
+ *
+ * PHẠM VI GỒM CẢ `.md`, và đó là lỗ hổng có thật chứ không phải phòng xa: bản trước chỉ quét `.js/.ts/.json`
+ * dưới `scripts/` + `tests/`, nên khi chính `CHANGELOG.md` — đoạn văn ĐANG MÔ TẢ cái bẫy này — bị nuốt escape
+ * và giữ 5 ký tự 0x08 thật, không máy nào kêu (đo 20/08/2026). Prompt template và `.agent/rules` còn nguy hơn:
+ * chúng là bề mặt ĐIỀU KHIỂN HÀNH VI, một escape hỏng ở đó làm luật im lặng không khớp y như trong code.
+ * `outputs/`, `knowledge/`, `node_modules/` đứng ngoài: dữ liệu chạy thật, không phải nguồn kit.
  */
 test('@infra source không chứa ký tự điều khiển lạc (0x08/0x0B/0x0C/0x1B)', () => {
-  const roots = [path.resolve(__dirname, '../../../scripts'), path.resolve(__dirname, '../../../tests')];
+  const REPO = path.resolve(__dirname, '../../../');
+  const roots = ['scripts', 'tests', 'prompt_templates', '.agent', 'partial-rerun'].map((d) => path.join(REPO, d));
   const bad: string[] = [];
+  const check = (p: string) => {
+    const src = fs.readFileSync(p, 'utf8');
+    const m = src.match(/[\x08\x0B\x0C\x1B]/);
+    if (m) bad.push(`${path.relative(REPO, p).split(path.sep).join('/')} (ký tự 0x${m[0].charCodeAt(0).toString(16)})`);
+  };
   const walk = (dir: string) => {
+    if (!fs.existsSync(dir)) return;
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const p = path.join(dir, e.name);
-      if (e.isDirectory()) { walk(p); continue; }
-      if (!/\.(js|ts|mjs|cjs|json)$/.test(e.name)) continue;
-      const src = fs.readFileSync(p, 'utf8');
-      const m = src.match(/[\x08\x0B\x0C\x1B]/);
-      if (m) bad.push(`${path.relative(process.cwd(), p)} (ký tự 0x${m[0].charCodeAt(0).toString(16)})`);
+      if (e.isDirectory()) { if (!/^(node_modules|\.git)$/.test(e.name)) walk(p); continue; }
+      if (/\.(js|ts|mjs|cjs|json|md)$/.test(e.name)) check(p);
     }
   };
   roots.forEach(walk);
+  // Doc gốc ở thư mục repo — CHANGELOG là nơi đã dính, đừng để nó ngoài tầm lần nữa.
+  for (const f of ['CHANGELOG.md', 'README.md', 'USER_GUIDE.md', 'QUICKSTART.md', 'RULE_GLOBAL.md', 'CLAUDE.md']) {
+    const abs = path.join(REPO, f);
+    if (fs.existsSync(abs)) check(abs);
+  }
   expect(bad, `ký tự điều khiển lạc — gần như luôn là escape bị shell/heredoc ăn: ${bad.join(', ')}`).toEqual([]);
 });
