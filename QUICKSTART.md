@@ -51,7 +51,7 @@
 | `AIO_API_TOKEN` | Publish testcase từ Excel lên **AIO Tests** sau QA confirmation trong Phase 1. |
 | `AIO_PROJECT_KEY`, `AIO_BASE_URL`, `AIO_THROTTLE_MS` | Optional; `AIO_PROJECT_KEY` mặc định lấy `JIRA_PROJECT_KEY`, `AIO_THROTTLE_MS` khi bị rate limit (AIO trả **body rỗng** thay vì 429). |
 | `JIRA_STORY_KEY` / `--story` | Ghi vào `jiraRequirementIDs` của case — đường nối case ↔ Story/Task. |
-| `TESTCASE_SOURCE=aio` (mặc định) | Nguồn execute Phase 2: `npm run aio:pull:write` kéo về `test-cases/from-aio/*.xlsx`; `excel` là opt-out. |
+| `TESTCASE_SOURCE=aio` (mặc định) | Nguồn execute Phase 2: `npm run aio:pull:write` kéo về `test-cases/from-aio/*.xlsx` **kèm manifest độ tươi**; `excel` là opt-out. AIO là source of truth ⇒ trước khi execute chạy `npm run aio:verify:enforce` (preflight chặn nếu mirror pull >12 giờ). |
 | `PUSH_EXECUTION=confirm` | Đẩy kết quả execute thành **cycle** trên AIO sau khi QA duyệt preview . |
 | `CONFLUENCE_URL` | Requirement source nếu dùng Confluence. |
 | `FIGMA_API_KEY` | Figma fetch nếu dùng design source. |
@@ -94,7 +94,7 @@ Excel (Source of truth khi gen/publish)
 ↓
 QA xác nhận
 ↓
-Auto Publish → AIO Tests (nguồn execute Phase 2)
+Auto Publish → AIO Tests (source of truth của testcase)
 ```
 
 **Trước khi QA xác nhận, chạy 2 gate chiều coverage:**

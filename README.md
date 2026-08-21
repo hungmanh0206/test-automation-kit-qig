@@ -157,10 +157,10 @@ test-automation-kit/
 
 | Phase | Input | Output | Gate |
 |---|---|---|---|
-| Phase 1 | Jira, Confluence, Figma, Swagger, file local | Testcase Markdown, Excel source of truth (khi gen/publish), coverage summary, Setup Strategy contract, Precondition Execution Matrix, `task.md` | Coverage/risk review đủ rõ; mọi precondition có contract auto/manual rõ. |
+| Phase 1 | Jira, Confluence, Figma, Swagger, file local | Testcase Markdown + Excel source of truth (khi gen/publish) + coverage summary + `### Setup Readiness` (mỗi cell `Tiền điều kiện` mang tag `[<method>]`) | Cột `Loại case` ∈ 6 type AIO; `Ưu tiên` ∈ Critical…Lowest; mọi precondition có tag cách dựng. |
 | Testcase Publish (AIO) | Excel source of truth + QA confirmation | Case trên AIO Tests + publish summary | Step riêng trong Phase 1; publish thật chỉ sau khi QA approve (`--qa-approved`) và đã soi dry-run. |
 | Testcase Cleanup (Deprecate) | Excel source of truth sau partial rerun + Human Review/QA cleanup confirmation | Cleanup summary; case rời Excel chuyển `caseStatus` → Deprecated, quay lại Excel → Published | Không xoá case (AIO không có API xoá); chỉ apply sau Human Review. |
-| Phase 2 | Testcase canonical local (mặc định AIO via `TESTCASE_SOURCE=aio`; Excel là opt-out), Setup Strategy contract, env, app/API URLs, credentials | Playwright results, evidence, execution summary, cycle trên AIO | Non-destructive UAT; evidence ảnh/video cho mọi case đã execute. |
+| Phase 2 | Testcase canonical local (mặc định AIO via `TESTCASE_SOURCE=aio`; Excel là opt-out) + tag `[<method>]` của từng precondition + env/app/API URLs/credentials | Playwright results, evidence, execution summary, cycle trên AIO | Mirror phải TƯƠI (`aio:verify:enforce`; preflight chặn nếu pull >12 giờ); non-destructive UAT; evidence cho mọi case đã execute. |
 | Bug Triage | Failed testcase, logs, screenshot/video | Bug candidate hoặc non-product issue | Không log Jira nếu fail do setup/prompt/test data. |
 | Jira Logging | Confirmed product/API bug | Jira sub-bug + ảnh/video evidence | Có expected, actual, reproduce steps và evidence rõ. |
 | Rerun | Bug/case fail đã fix hoặc cần verify | Rerun report, Jira Done nếu PASS thật | Có evidence PASS ảnh/video nếu chuyển Jira sang Done. |

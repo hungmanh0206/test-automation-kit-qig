@@ -430,7 +430,9 @@ outputs/<project>/tasks/<TASK_KEY>/
 │   ├── phase1-summary.md
 │   ├── execution-summary.md
 │   ├── aio-pull-summary.md        # log kéo testcase từ AIO Tests
-│   ├── aio-execution-summary.md   # log cycle đã tạo
+│   ├── aio-testcase-publish-summary.md # publish: tạo/cập nhật/lỗi + cây folder (script TỰ ghi)
+│   ├── aio-execution-summary.md   # push: cycle, verdict, case bị loại + lý do (script TỰ ghi)
+│   ├── aio-deprecate-summary.md   # cleanup: Deprecated/Published + đối soát (script TỰ ghi)
 │   └── rerun/
 ├── change/
 └── task.md
@@ -639,18 +641,22 @@ Output bắt buộc:
 ```text
 npm run aio:pull -- --story <JIRA_STORY_KEY>          # xem trước
 npm run aio:pull:write -- --story <JIRA_STORY_KEY>    # ghi test-cases/from-aio/<TASK_KEY>_from_aio.xlsx
+npm run aio:verify                                    # đối soát mirror còn khớp AIO (updatedDate từng case)
+npm run aio:verify-fields                             # đối soát TỪNG TRƯỜNG Excel ↔ AIO (2xx không đủ)
 ```
+
+> **AIO là source of truth ⇒ mirror phải TƯƠI.** `aio:pull:write` ghi kèm manifest (`updatedDate` từng case); `aio:verify:enforce` so lại bằng MỘT lệnh list và **exit 1** nếu AIO đã đổi. `preflight --mode phase2` CHẶN khi mirror pull cách đây **>12 giờ** — execute trên mirror cũ là chấm verdict theo expected có thể đã bị sửa mà mọi thứ vẫn xanh.
 
 Cần `AIO_API_TOKEN` + Phase 1 đã publish testcase lên AIO. Nếu pull không thấy case nào → chưa publish (publish trước, hoặc tạm `TESTCASE_SOURCE=excel`). Nếu report cảnh báo TC thiếu steps thì DỪNG và báo user.
 
-Trước khi generate/execute, Phase 2 chạy **Precondition Resolution Pass**: đọc `### Precondition Execution Matrix` → setup/verify/cleanup precondition qua setup layer `tests/support/setup/` bằng UI/API public-business contract, fixture hoặc test hook nếu có (KHÔNG bắt UI dựng tiền điều kiện nếu case không test flow tạo điều kiện đó; KHÔNG dựng state bằng DB — verify có thể dùng read-only UAT DB qua guarded client, read-only). Lỗi setup/verify là `setup_failure` (không phải product bug); thiếu capability (API/hook/mock/sandbox/fixture) → `BLOCKED_SETUP`; không tự động hóa được setup nếu không can thiệp DB/backend state → `SKIP_SETUP`. Ba trạng thái này không log Jira.
+Trước khi generate/execute, Phase 2 chạy **Precondition Resolution Pass**: đọc **tag `[<method>]`** ở đầu mỗi cell `Tiền điều kiện` → setup/verify/cleanup qua setup layer `tests/support/setup/` (api/factory/test_hook/ui/pre_existing) hoặc bỏ sang `manual`; chi tiết dựng theo task ở `### Setup Readiness` của `phase1-summary.md`, recipe tái dùng ở `knowledge/setup_recipes/`. Fail ở tầng này là `setup_failure`, KHÔNG phải product bug.
 
 Nguyên tắc Phase 2:
 
 | Chủ đề | Rule |
 |---|---|
 | Nguồn testcase | Mặc định (`TESTCASE_SOURCE=aio`) kéo testcase từ AIO về `test-cases/from-aio/*.xlsx` rồi execute từ đó (canonical local); đặt `TESTCASE_SOURCE=excel` để dùng Excel local. |
-| Precondition | Setup theo Setup Strategy contract qua UI/API/fixture/hook an toàn; chỉ `Manual-only` mới skip vì setup. |
+| Precondition | Setup theo **tag `[<method>]`** trong cell `Tiền điều kiện` (api/factory/test_hook/ui/pre_existing/manual) qua capability an toàn — KHÔNG bằng DB; chỉ `manual` mới skip vì setup. |
 | Execute thật | Không pass ảo bằng skip/mock sai/sửa expected tùy tiện. |
 | Skip | Hạn chế tối đa, mỗi skip phải có lý do và khả năng fix. |
 | Fail | Phải phân loại root cause. |
