@@ -25,16 +25,23 @@ const GATE = path.join(REPO, 'scripts/qa/ci_scope_check.js');
  * Chạy gate trong một repo git GIẢ: `git ls-files` phải thấy đúng bộ file của từng ca, và tuyệt đối
  * không sửa gì trong repo thật. Rẻ: `git init` + 1 commit, ~200ms.
  */
-const sandbox = (files: Record<string, string>) => {
+const sandbox = (files: Record<string, string>, opts: { git?: boolean } = {}) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ciscope-'));
   for (const [rel, body] of Object.entries(files)) {
     const p = path.join(root, rel);
     fs.mkdirSync(path.dirname(p), { recursive: true });
     fs.writeFileSync(p, body);
   }
-  // Gate tự tính REPO_ROOT = ../.. so với chính nó ⇒ phải đặt đúng `scripts/qa/` trong sandbox.
+  /*
+   * Gate tự tính REPO_ROOT = ../.. so với chính nó ⇒ phải đặt đúng `scripts/qa/` trong sandbox.
+   * Và phải copy CẢ dependency của nó: từ 23/08/2026 gate dùng `scripts/utils/tracked_files.js`; thiếu file
+   * đó thì sandbox chết vì "Cannot find module" — lỗi harness, nhưng đọc như gate hỏng.
+   */
   fs.mkdirSync(path.join(root, 'scripts', 'qa'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'scripts', 'utils'), { recursive: true });
   fs.copyFileSync(GATE, path.join(root, 'scripts', 'qa', 'ci_scope_check.js'));
+  fs.copyFileSync(path.join(REPO, 'scripts/utils/tracked_files.js'), path.join(root, 'scripts', 'utils', 'tracked_files.js'));
+  if (opts.git === false) return root;      // mô phỏng bản giải nén ZIP: KHÔNG có .git
   const git = (...a: string[]) => spawnSync('git', a, { cwd: root, encoding: 'utf8' });
   git('init', '-q');
   git('add', '-A');
@@ -304,5 +311,61 @@ test.describe('@infra heavy-gates — có đường CI nhưng phải do người
     expect(sc, 'file branding dashboard không phải catalog security — tham số sai nghĩa sẽ hỏng khi ai đó sửa logic đọc catalog').not.toContain('security_check.js --catalog .agent/config/dashboard.branding.example.json');
     expect(sc).toContain('tests/fixtures/minimal_ui_catalog.json');
     expect(fs.existsSync(path.join(REPO, 'tests/fixtures/minimal_ui_catalog.json')), 'fixture phải được track, không phải file tạm').toBe(true);
+  });
+});
+
+/*
+ * KHÔNG CÓ `.git` (giải nén ZIP · artifact CI · thư mục copy) — `git ls-files` chết. `secret_scan.js` đã vá
+ * bằng fallback working-tree từ trước, nhưng bài học nằm trong MỘT file nên `json_check`/`ci_scope_check`
+ * (viết 23/08/2026) lặp lại đúng lỗi đó, và `ci_scope_check` thì CRASH hẳn với stack trace thô.
+ * Nay cả ba dùng chung `scripts/utils/tracked_files.js`. Test này khoá: không crash · nói rõ đang ở chế độ
+ * nào · và HẠ luật phụ thuộc "đã track" xuống cảnh báo (vì working-tree không phân biệt được track hay chưa
+ * ⇒ giữ nguyên mức CHẶN sẽ báo oan hàng loạt).
+ */
+const NL = String.fromCharCode(10);   // dung fromCharCode: escape newline hay bi cong cu sinh file bien thanh dong thuc
+
+test.describe('@infra không có .git — gate phải chạy được, không crash', () => {
+  const zipLike = () => sandbox({
+    ...CI_OK, ...INFRA_OK,
+    '.agent/config/ci_scope.json': CFG(),
+    'tests/mobile-web/SAPP-22827/student_delete.spec.ts': `import { test } from '@playwright/test';${NL}`,
+  }, { git: false });
+
+  test('ci:scope: KHÔNG crash, exit 0, và nói rõ đang quét working-tree', () => {
+    const r = run(zipLike());
+    expect(r.code, `crash/đỏ khi thiếu .git: ${r.out}`).toBe(0);
+    expect(r.out).toContain('WORKING-TREE');
+    expect(r.out, 'không được ném stack trace Node').not.toMatch(/at Object\.<anonymous>|Command failed/);
+  });
+
+  test('ci:scope: luật "spec theo task đang được track" HẠ xuống cảnh báo (không báo oan)', () => {
+    const r = run(zipLike());
+    expect(r.out).toMatch(/spec theo task có trên đĩa/);
+    expect(r.out, 'ở chế độ này không kết luận được nên không được CHẶN').not.toContain('git rm --cached');
+  });
+
+  test('ci:scope: các luật KHÔNG phụ thuộc "đã track" vẫn có răng (vd `.only`)', () => {
+    const root = sandbox({
+      ...CI_OK, '.agent/config/ci_scope.json': CFG(),
+      'tests/fe/infra/a.spec.ts': `import { test } from '@playwright/test';${NL}${'test' + '.' + 'only'}('x', () => {});${NL}`,
+    }, { git: false });
+    const r = run(root);
+    expect(r.code, 'fallback không được làm gate mất răng hoàn toàn').toBe(1);
+    expect(r.out).toContain('.only');
+  });
+
+  test('--print-nightly vẫn in được phạm vi (CI lấy scope qua đây)', () => {
+    const root = zipLike();
+    const r = spawnSync(process.execPath, [path.join(root, 'scripts', 'qa', 'ci_scope_check.js'), '--print-nightly'], { cwd: root, encoding: 'utf8' });
+    expect(r.status).toBe(0);
+    expect(String(r.stdout).trim()).toBe('tests/fe/infra');
+  });
+
+  test('cả 3 gate đọc-file-track đều đi qua MỘT helper (bài học không lặp lần thứ tư)', () => {
+    for (const f of ['scripts/qa/ci_scope_check.js', 'scripts/qa/json_check.js', 'scripts/qa/secret_scan.js']) {
+      const body = fs.readFileSync(path.join(REPO, f), 'utf8');
+      expect(body, `${f} phải dùng utils/tracked_files`).toContain('tracked_files');
+      expect(body, `${f} còn gọi trực tiếp git ls-files ⇒ sẽ chết lại khi không có .git`).not.toMatch(/execFileSync\('git', \['ls-files/);
+    }
   });
 });

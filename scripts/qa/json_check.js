@@ -19,23 +19,22 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { listFiles, worktreeNotice } = require(path.resolve(__dirname, '..', 'utils', 'tracked_files'));
 
 const REPO = path.resolve(__dirname, '..', '..');
 
+/*
+ * Không có `.git` (giải nén ZIP, artifact CI, thư mục copy) thì vẫn phải kiểm được: JSON hỏng vẫn hỏng dù
+ * repo có git hay không. Chặn chỉ vì thiếu `.git` là chặn oan. Dùng chung `utils/tracked_files.js` để bài
+ * học này không phải vá lần thứ tư ở script kế tiếp.
+ */
 function trackedJson() {
-  const out = execFileSync('git', ['ls-files', '-z', '*.json'], { cwd: REPO, encoding: 'utf8' });
-  return out.split('\0').filter(Boolean);
+  return listFiles({ root: REPO, patterns: ['*.json'], filter: /\.json$/ });
 }
 
 function main() {
-  let files;
-  try {
-    files = trackedJson();
-  } catch (e) {
-    console.error(`[json] ✗ không hỏi được git đang track gì (${e.message}) ⇒ KHÔNG kết luận "đạt".`);
-    process.exit(2);
-  }
+  const { files, mode } = trackedJson();
+  if (mode === 'worktree') console.warn(worktreeNotice('json'));
 
   if (!files.length) {
     console.error('[json] ✗ 0 file .json được track — phép đo hỏng (sai cwd? repo trống?), không phải "sạch".');
@@ -55,7 +54,7 @@ function main() {
     console.error('[json]   JSON hỏng ở config = gate đọc nó sẽ chết giữa phase, hoặc tệ hơn: bị bắt lỗi rồi bỏ qua âm thầm.');
     process.exit(1);
   }
-  console.log(`[json] ✓ ${files.length} file .json được track đều parse được.`);
+  console.log(`[json] ✓ ${files.length} file .json ${mode === 'git' ? 'được track' : 'trên working-tree'} đều parse được.`);
 }
 
 if (require.main === module) main();

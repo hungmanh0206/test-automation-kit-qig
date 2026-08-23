@@ -27,7 +27,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { listFiles, worktreeNotice } = require(path.resolve(__dirname, '..', 'utils', 'tracked_files'));
 
 const REPO = path.resolve(__dirname, '..', '..');
 const CFG_PATH = path.join(REPO, '.agent', 'config', 'ci_scope.json');
@@ -36,10 +36,19 @@ const CI_FILES = ['.github/workflows/ci.yml', '.gitlab-ci.yml'];
 
 const cfg = () => JSON.parse(fs.readFileSync(CFG_PATH, 'utf8'));
 
-/** Spec ĐANG ĐƯỢC TRACK (không phải trên đĩa): thứ CI nhìn thấy sau checkout. */
+/*
+ * Spec ĐANG ĐƯỢC TRACK (không phải mọi file trên đĩa): thứ CI nhìn thấy sau checkout.
+ * KHÔNG có `.git` (ZIP/artifact/copy) thì tuyệt đối không được crash — trước 23/08/2026 hàm này ném stack
+ * trace thô, đúng lỗi `secret_scan.js` đã vá từ lâu mà bài học không lan sang script mới. Nay dùng chung
+ * `utils/tracked_files.js`, và trả kèm `mode` để luật phụ thuộc "đã track" tự hạ xuống cảnh báo.
+ */
 function trackedSpecs() {
-  const out = execFileSync('git', ['ls-files', '-z', 'tests/**/*.spec.ts', 'tests/**/*.spec.js'], { cwd: REPO, encoding: 'utf8' });
-  return out.split('\0').filter(Boolean).map((p) => p.replace(/\\/g, '/'));
+  const { files, mode } = listFiles({
+    root: REPO,
+    patterns: ['tests/**/*.spec.ts', 'tests/**/*.spec.js'],
+    filter: /^tests\/.*\.spec\.(ts|js)$/,
+  });
+  return { specs: files, mode };
 }
 
 const inScope = (file, roots) => roots.some((r) => file === r || file.startsWith(`${r.replace(/\/+$/, '')}/`));
@@ -65,20 +74,30 @@ function check() {
   const c = cfg();
   const problems = [];
   const warnings = [];
-  const specs = trackedSpecs();
+  const { specs, mode } = trackedSpecs();
+  if (mode === 'worktree') warnings.push(worktreeNotice('ci-scope').replace('[ci-scope] ⚠ ', ''));
 
   if (!specs.length) {
     problems.push('0 spec được track ⇒ phép đo hỏng (sai cwd? không có git?), KHÔNG phải "sạch".');
-    return { problems, warnings, specs };
+    return { problems, warnings, specs, mode };
   }
 
   // ① spec theo task không được track
   const debt = new Set(c.taskSpecDebt || []);
-  for (const f of specs.filter((f) => TASK_DIR.test(f))) {
-    if (inScope(f, c.allowedTaskSpecDirs || [])) continue;
-    const msg = `spec THEO TASK đang được track: ${f}`;
-    if (debt.has(f)) warnings.push(`${msg} — đã khai ở \`taskSpecDebt\`; suite chung vẫn nhìn thấy nó, nên bỏ track (\`git rm --cached\`) khi task đóng.`);
-    else problems.push(`${msg} ⇒ suite chung sẽ chạy nó. Test theo task ở lại máy người chạy task: \`git rm --cached <file>\` (file vẫn còn trên đĩa) + thêm luật vào \`.gitignore\`.`);
+  const taskSpecs = specs.filter((f) => TASK_DIR.test(f) && !inScope(f, c.allowedTaskSpecDirs || []));
+  if (mode === 'worktree') {
+    /*
+     * Ở chế độ working-tree KHÔNG phân biệt được track hay chưa, nên luật này chỉ còn là cảnh báo. GỘP
+     * thành MỘT dòng: bản ZIP có 48 spec task trên đĩa (hợp lệ — chúng ở máy người chạy task), in 48 dòng
+     * giống nhau chỉ làm người đọc bỏ qua cả phần còn lại.
+     */
+    if (taskSpecs.length) warnings.push(`${taskSpecs.length} spec theo task có trên đĩa (vd ${taskSpecs.slice(0, 2).join(', ')}) — chế độ WORKING-TREE không phân biệt được track hay chưa nên KHÔNG kết luận. Chạy trong repo có \`.git\` để kiểm luật này.`);
+  } else {
+    for (const f of taskSpecs) {
+      const msg = `spec THEO TASK đang được track: ${f}`;
+      if (debt.has(f)) warnings.push(`${msg} — đã khai ở \`taskSpecDebt\`; suite chung vẫn nhìn thấy nó, nên bỏ track (\`git rm --cached\`) khi task đóng.`);
+      else problems.push(`${msg} ⇒ suite chung sẽ chạy nó. Test theo task ở lại máy người chạy task: \`git rm --cached <file>\` (file vẫn còn trên đĩa) + thêm luật vào \`.gitignore\`.`);
+    }
   }
 
   // ② phạm vi nightly không được chứa spec drive UAT
@@ -128,13 +147,13 @@ function check() {
     for (const l of bare) problems.push(`${rel}: còn lệnh chạy CẢ suite — \`${l.trim().slice(0, 90)}\` ⇒ mọi spec được track đều bị chạy, kể cả spec drive UAT.`);
   }
 
-  return { problems, warnings, specs };
+  return { problems, warnings, specs, mode };
 }
 
 function main() {
   if (process.argv.includes('--print-nightly')) { process.stdout.write((cfg().nightly || []).join(' ')); return; }
 
-  const { problems, warnings, specs } = check();
+  const { problems, warnings, specs, mode } = check();
   for (const w of warnings) console.log(`[ci-scope] ⚠ ${w}`);
   if (problems.length) {
     console.error(`[ci-scope] ✗ ${problems.length} vi phạm phạm vi CI:`);
@@ -142,7 +161,7 @@ function main() {
     console.error('[ci-scope]   Luật: CLAUDE.md §2 (UAT non-destructive, xác nhận trước MỖI lượt) + §5 (scope & isolation).');
     process.exit(1);
   }
-  console.log(`[ci-scope] ✓ ${specs.length} spec được track · nightly = ${(cfg().nightly || []).join(' ')} · không spec nào trong phạm vi đó chạm UAT${warnings.length ? ` · ${warnings.length} nợ đã khai` : ''}.`);
+  console.log(`[ci-scope] ✓ ${specs.length} spec ${mode === 'git' ? 'được track' : 'trên working-tree'} · nightly = ${(cfg().nightly || []).join(' ')} · không spec nào trong phạm vi đó chạm UAT${warnings.length ? ` · ${warnings.length} nợ đã khai` : ''}.`);
 }
 
 if (require.main === module) main();

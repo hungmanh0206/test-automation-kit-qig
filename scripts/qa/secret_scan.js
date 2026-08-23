@@ -30,7 +30,14 @@ const SKIP_DIR = /^(node_modules|\.git|outputs|playwright-report|test-results|re
 
 // Danh sách file để quét: ưu tiên git ls-files (chỉ file đã track); KHÔNG có .git (vd chạy từ ZIP)
 // → fallback quét working-tree, bỏ thư mục nặng/generated.
+const { listFiles: sharedList, worktreeNotice: sharedNotice } = require(path.resolve(__dirname, '..', 'utils', 'tracked_files'));
+// Dùng CHUNG helper (23/08/2026): bản copy cũ ở đây là lý do bài học không lan sang json_check/ci_scope_check.
 function trackedFiles() {
+  const r = sharedList({ root: rc.REPO_ROOT, filter: /./ });
+  if (r.mode === 'worktree') console.warn(sharedNotice('secret-scan'));
+  return r.files;
+}
+function _trackedFilesLegacy() {
   try {
     const out = execSync('git ls-files', { cwd: rc.REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
     const files = out.split(/\r?\n/).filter(Boolean);
