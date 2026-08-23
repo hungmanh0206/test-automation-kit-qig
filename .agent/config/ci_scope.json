@@ -9,6 +9,9 @@
   "uatEnvPrefixes": ["OPS_", "LMS_", "HUBSPOT_"],
   "_uatSignals_why": "Spec cần app sống/creds = IMPORT helper đăng nhập, hoặc ĐỌC env creds/base-url. Đo bằng import + `process.env.X`, KHÔNG bằng grep chữ: bản đầu tôi lấy `page.goto`/`storageState` làm dấu hiệu thì `infra/screen-snapshot` (goto file fixture) và `infra/auth-session-lock` (chỉ nhắc tên hàm trong assert) bị gắn cờ oan. Cách đo hiện tại: 8/8 spec drive UAT bị bắt, 29/29 spec infra KHÔNG bị bắt.",
 
+  "selfTestExempt": ["tests/fe/infra/ci-scope.spec.ts"],
+  "_selfTestExempt_why": "Test CUA CHINH gate nay chua fixture `import opsLogin` / `process.env.OPS_USERNAME` duoi dang CHUOI de kiem gate co bat khong ⇒ gate tu gan co chinh no. Mien tru HEP: dung 1 file, va co test khoa so luong (them file thu 2 = do). Cung khuon voi `SELF` trong policy_source_check.js.",
+
   "taskSpecDebt": ["tests/fe/SAPP-26523/vnpay-transaction-dropdown.spec.ts"],
   "_taskSpecDebt_why": "Spec theo task đã track TRƯỚC đợt siết này. Khai ra để gate CẢNH BÁO (nợ nhìn thấy được) thay vì đỏ ngay — chủ repo quyết bỏ track hay giữ. File theo task MỚI thì ĐỎ, không có ngoại lệ ngầm.",
 

@@ -84,7 +84,15 @@ function check() {
   // ② phạm vi nightly không được chứa spec drive UAT
   const roots = c.nightly || [];
   if (!roots.length) problems.push('`nightly` rỗng trong `.agent/config/ci_scope.json` ⇒ CI không biết chạy gì.');
-  for (const f of specs.filter((f) => inScope(f, roots))) {
+  /*
+   * MIỄN TRỪ HẸP: test của chính gate này chứa fixture `import opsLogin` / `process.env.OPS_USERNAME`
+   * DƯỚI DẠNG CHUỖI để kiểm gate có bắt không ⇒ gate tự gắn cờ chính nó. Đúng khuôn `SELF` trong
+   * `policy_source_check.js`. Có test khoá số lượng: thêm file thứ 2 vào danh sách = ĐỎ, để miễn trừ
+   * không lặng lẽ phình thành cửa hậu.
+   */
+  const exempt = new Set(c.selfTestExempt || []);
+  if (exempt.size > 1) problems.push(`\`selfTestExempt\` có ${exempt.size} file — miễn trừ phải HẸP (đúng test của chính gate). Nhiều hơn 1 là cửa hậu: spec drive UAT chỉ cần khai vào đây là lọt.`);
+  for (const f of specs.filter((f) => inScope(f, roots) && !exempt.has(f))) {
     const hits = uatSignalsIn(f, c);
     if (hits.length) problems.push(`${f} nằm trong phạm vi nightly nhưng drive UAT (dấu hiệu: ${hits.join(', ')}) ⇒ CI generic sẽ tự chạm UAT mà không ai xác nhận. Bỏ khỏi \`nightly\`, hoặc bỏ phụ thuộc app khỏi spec.`);
   }

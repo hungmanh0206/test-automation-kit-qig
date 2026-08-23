@@ -178,3 +178,24 @@ test.describe('@infra ci:scope — repo THẬT phải sạch', () => {
     expect(r.specs.length, 'phải đếm được spec thật, 0 = phép đo hỏng').toBeGreaterThan(20);
   });
 });
+
+test.describe('@infra ci:scope — miễn trừ phải HẸP, không thành cửa hậu', () => {
+  test('file được khai `selfTestExempt` ⇒ không bị gắn cờ (test của chính gate mang fixture UAT)', () => {
+    const root = sandbox({
+      ...CI_OK, ...INFRA_OK,
+      '.agent/config/ci_scope.json': CFG({ selfTestExempt: ['tests/fe/infra/ci-scope.spec.ts'] }),
+      'tests/fe/infra/ci-scope.spec.ts': "import { opsLogin } from '../support/opsLogin';\nconst u = process.env.OPS_USERNAME;\n",
+    });
+    expect(run(root).code, run(root).out).toBe(0);
+  });
+
+  test('khai >1 file vào selfTestExempt ⇒ CHẶN (miễn trừ rộng = spec nào cũng lọt được)', () => {
+    const root = sandbox({
+      ...CI_OK, ...INFRA_OK,
+      '.agent/config/ci_scope.json': CFG({ selfTestExempt: ['tests/fe/infra/ci-scope.spec.ts', 'tests/fe/infra/khac.spec.ts'] }),
+    });
+    const r = run(root);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain('cửa hậu');
+  });
+});
