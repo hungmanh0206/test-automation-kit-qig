@@ -494,6 +494,21 @@ Tuân theo `.agent/rules/locator_healing_policy.md`.
 | `original` / `healed_to` | Locator trước/sau heal; `healed_to` không được dùng CSS động/`nth-child`/XPath tuyệt đối. |
 | `confidence_basis` | 3 tiêu chí đã thoả: `accessible_name_exact`, `same_role`, `same_dom_region` (phải đủ cả 3). |
 
+## `explorations/<TASK_KEY>__<YYYY-MM-DD>.json` — vùng ĐÃ soi bằng exploratory
+
+Sinh bởi `npm run explore:close`. Trả lời câu hỏi mà trước đây không ai trả lời được: **vùng nào đã được
+dò bằng tay rồi?** Thiếu nó thì mỗi sprint lại dò trúng chỗ cũ, và `explore:charter` không có gì để trừ điểm.
+
+| Field | Nghĩa |
+|---|---|
+| `areas[]` | vùng đã dò (tên module/màn như QA gọi) — khoá để phiên sau tránh |
+| `tours[]` | tour đã dùng (theo `exploratory/tours.md`) — dò lại cùng vùng nhưng tour khác thì vẫn có giá trị |
+| `counts` | `observations` · `crashes` · `drafts` — độ "được soi" của vùng |
+| `charter_excerpt` | 3 dòng đầu charter, để đọc lại biết phiên đó nhắm gì |
+
+**Nạp lại được?** Không — phiên exploratory là thao tác người, không tái tạo từ log. Thuộc nhóm phải sao lưu
+(`npm run knowledge:backup`).
+
 ## `index.json`
 
 Index phẳng để tra cứu theo module/tag mà không phải quét toàn bộ thư mục.

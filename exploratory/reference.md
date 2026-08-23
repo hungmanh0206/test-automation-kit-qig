@@ -59,7 +59,9 @@ exploratory/run_exploratory_session.md
 └── draft-testcases.md      # testcase draft (CHƯA tính coverage) để đưa vào Phase 1 backlog
 ```
 
-## Heuristic tours (gợi ý, không bắt buộc đủ hết)
+## Heuristic tours
+
+Checklist đầy đủ: [`tours.md`](tours.md) — SFDPOT có nội dung thật (mỗi chữ 4–6 phép dò + tín hiệu nghi vấn), cộng 5 tour bổ sung và luật **dừng sớm**. Dưới đây chỉ là bản rút gọn để nhớ tên tour:
 
 - **SFDPOT**: Structure, Function, Data, Platform, Operations, Time.
 - **CRUD + boundary**: tạo/đọc/sửa/xóa với biên (rỗng/min/max/max+1/ký tự lạ/Unicode).
