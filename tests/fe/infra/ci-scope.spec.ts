@@ -271,3 +271,38 @@ test.describe('@infra playwright.config — tuỳ chọn runner phải được 
     expect(src).toMatch(/PW_TEST_ID_ATTR \? \{ testIdAttribute/);
   });
 });
+
+/*
+ * GATE NẶNG — trước 23/08/2026 `mutation:check`/`lighthouse`/`perf`/`load`/`security` không có ĐƯỜNG CI
+ * nào: chạy hay không phụ thuộc ai đó nhớ ra. Nhưng cũng KHÔNG được để cron: cả 5 cần app sống và 4/5 gửi
+ * request thật tới UAT, mà CLAUDE.md §2 buộc xác nhận trước MỖI lượt chạm UAT — cron 01:00 chính là thứ
+ * luật đó cấm. Đường đúng: `workflow_dispatch` — cú bấm của con người LÀ sự xác nhận.
+ */
+test.describe('@infra heavy-gates — có đường CI nhưng phải do người bấm', () => {
+  const WF = path.join(REPO, '.github/workflows/heavy-gates.yml');
+
+  test('KHÔNG có cron — gate nã UAT không được tự chạy', () => {
+    const body = fs.readFileSync(WF, 'utf8');
+    expect(body).toContain('workflow_dispatch');
+    expect(body, 'có cron = tự chạm UAT mà không ai xác nhận').not.toMatch(/^\s*schedule:/m);
+  });
+
+  test('thiếu xác nhận NON-PROD ⇒ job ĐỎ, không phải "skipped"', () => {
+    const body = fs.readFileSync(WF, 'utf8');
+    expect(body).toMatch(/confirm_nonprod/);
+    expect(body, 'phải exit 1 — skipped đọc như "không cần chạy", đúng kiểu false-green').toMatch(/!= "NON-PROD"[\s\S]{0,600}exit 1/);
+  });
+
+  test('mutation/security phải nhận catalog của TASK, không mượn file khác', () => {
+    const body = fs.readFileSync(WF, 'utf8');
+    expect(body).toMatch(/requirements\/ui_catalog\.json/);
+    expect(body, 'thiếu catalog thì ĐỎ, không chạy nửa vời').toMatch(/test -f "\$CAT"/);
+  });
+
+  test('security_check trong static-check dùng catalog ĐÚNG NGHĨA (không mượn file branding)', () => {
+    const sc = fs.readFileSync(path.join(REPO, '.github/workflows/static-check.yml'), 'utf8');
+    expect(sc, 'file branding dashboard không phải catalog security — tham số sai nghĩa sẽ hỏng khi ai đó sửa logic đọc catalog').not.toContain('security_check.js --catalog .agent/config/dashboard.branding.example.json');
+    expect(sc).toContain('tests/fixtures/minimal_ui_catalog.json');
+    expect(fs.existsSync(path.join(REPO, 'tests/fixtures/minimal_ui_catalog.json')), 'fixture phải được track, không phải file tạm').toBe(true);
+  });
+});

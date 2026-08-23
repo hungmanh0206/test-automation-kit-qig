@@ -1,0 +1,19 @@
+{
+  "_why": "Catalog TỐI THIỂU cho test hạ tầng/CI. Trước 23/08/2026 static-check truyền `--catalog .agent/config/dashboard.branding.example.json` cho security_check — file branding dashboard, KHÔNG phải catalog. Test đó chỉ kiểm 'thiếu --confirm-nonprod thì phải exit != 0' nên vẫn đúng mục đích, nhưng tham số sai nghĩa sẽ hỏng ngay khi ai đó sửa logic đọc catalog, và người đọc CI thì hiểu sai.",
+  "screens": [
+    {
+      "key": "smoke",
+      "name": "Smoke Screen",
+      "url": "/smoke",
+      "sections": [
+        {
+          "heading": "Khối mẫu",
+          "labels": [
+            "Trường A",
+            "Trường B"
+          ]
+        }
+      ]
+    }
+  ]
+}

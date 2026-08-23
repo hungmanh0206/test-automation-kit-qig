@@ -1,0 +1,95 @@
+# Gate NẶNG (mutation · lighthouse · perf · load · security) — CHỈ chạy khi CON NGƯỜI bấm.
+#
+# VÌ SAO KHÔNG ĐỂ CRON: cả 5 gate này đều cần **app sống**, và 4/5 gửi request THẬT tới UAT
+# (lighthouse/perf/load nã trang, security probe endpoint). CLAUDE.md §2 buộc "xác nhận trước MỖI lượt
+# chạm UAT" — một cron 01:00 hằng đêm chính là thứ luật đó cấm: không ai xác nhận, không ai nhìn, và
+# `load` thì còn đẩy tải lên môi trường người khác đang dùng.
+# Cho nên đường đúng KHÔNG phải "nhồi vào nightly" mà là **workflow_dispatch**: cú bấm của con người
+# CHÍNH LÀ sự xác nhận, kèm input `confirm_nonprod` phải gõ đúng chữ.
+#
+# Trước 23/08/2026 chúng hoàn toàn thủ công (không có đường CI nào) — nghĩa là chạy hay không phụ thuộc
+# việc ai đó nhớ ra. File này giữ nguyên tính "phải xác nhận" nhưng cho nó một đường đi có log, có
+# artifact, và có người chịu trách nhiệm (actor của lần dispatch).
+name: heavy-gates
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_output_dir:
+        description: 'PROJECT_OUTPUT_DIR (vd outputs/lms-operations-automation)'
+        required: true
+      task_key:
+        description: 'TASK_KEY (gate nặng luôn chạy theo MỘT task — cần catalog/artefact của task đó)'
+        required: true
+      gates:
+        description: 'Gate cần chạy'
+        required: true
+        default: 'mutation'
+        type: choice
+        options: [mutation, lighthouse, perf, security, load]
+      confirm_nonprod:
+        description: 'Gõ đúng "NON-PROD" để xác nhận target KHÔNG phải production'
+        required: true
+      base_url:
+        description: 'URL đích (bỏ trống = lấy từ profiles/<TASK_KEY>/task.env trên runner nếu có)'
+        required: false
+
+jobs:
+  heavy:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_OUTPUT_DIR: ${{ inputs.project_output_dir }}
+      TASK_KEY: ${{ inputs.task_key }}
+      OPS_BASE_URL: ${{ inputs.base_url || secrets.OPS_BASE_URL }}
+      OPS_USERNAME: ${{ secrets.OPS_USERNAME }}
+      OPS_PASSWORD: ${{ secrets.OPS_PASSWORD }}
+    steps:
+      - name: Chặn nếu chưa xác nhận NON-PROD
+        run: |
+          # Không dùng `if:` của Actions ở đây: muốn job ĐỎ RÕ RÀNG khi thiếu xác nhận, chứ không "skipped"
+          # im lặng — skipped đọc như "không cần chạy", đúng kiểu false-green mà kit chống.
+          if [ "${{ inputs.confirm_nonprod }}" != "NON-PROD" ]; then
+            echo "✗ Thiếu xác nhận: input confirm_nonprod phải là chuỗi NON-PROD."
+            echo "  Gate nặng gửi request THẬT tới app; chạy trên production là ngoài phạm vi được phép."
+            exit 1
+          fi
+          echo "OK: đã xác nhận NON-PROD bởi ${{ github.actor }}"
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+
+      - name: Kiểm input tối thiểu (thiếu thì ĐỎ, không chạy nửa vời)
+        run: |
+          test -n "$OPS_BASE_URL" || { echo "✗ thiếu OPS_BASE_URL (input base_url hoặc secret)"; exit 1; }
+          node scripts/qa/preflight_gate.js --mode generic
+
+      - name: Playwright browser (gate nào cần trình duyệt)
+        if: inputs.gates != 'load'
+        run: npx playwright install --with-deps chromium
+
+      - name: Chạy gate
+        run: |
+          set -e
+          CAT="$PROJECT_OUTPUT_DIR/tasks/$TASK_KEY/requirements/ui_catalog.json"
+          case "${{ inputs.gates }}" in
+            mutation)
+              test -f "$CAT" || { echo "✗ thiếu $CAT — mutation:check cần catalog field của task"; exit 1; }
+              npm run mutation:check -- --catalog "$CAT" --out "$PROJECT_OUTPUT_DIR/tasks/$TASK_KEY/reports/mutation-check.md" --min-score 100
+              ;;
+            lighthouse) npm run lighthouse ;;
+            perf)       npm run perf ;;
+            security)   npm run security -- --catalog "$CAT" --confirm-nonprod ;;
+            load)       npm run load ;;
+          esac
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: heavy-gate-${{ inputs.gates }}-${{ inputs.task_key }}
+          path: |
+            ${{ inputs.project_output_dir }}/tasks/${{ inputs.task_key }}/reports/
+            ${{ inputs.project_output_dir }}/tasks/${{ inputs.task_key }}/test-results/
+          if-no-files-found: warn
+          retention-days: 14

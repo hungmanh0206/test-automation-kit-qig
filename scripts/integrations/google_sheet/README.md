@@ -1,4 +1,11 @@
-# Google Sheets Integration
+# Google Sheets Integration — LEGACY (23/08/2026)
+
+> **KHÔNG dùng trong luồng chuẩn.** Testcase canonical là **Excel** trong `<TASK_OUTPUT_DIR>/test-cases/`,
+> và test-management là **AIO Tests**. Đo 23/08/2026: 0 workflow/prompt/npm script nào gọi thư mục này.
+> Giữ lại vì có project cần xuất bản kết quả cho stakeholder NGOÀI repo — dùng thì gọi trực tiếp bằng
+> `node scripts/integrations/google_sheet/<file>.js`, và đừng đưa nó vào luồng chuẩn.
+> (Ngược lại, `../google_doc/` KHÔNG legacy: nó là đường đọc spec Google Doc — `npm run gdoc:read`.)
+
 
 > Scripts for reading testcase/test data from Google Sheets or writing execution results back to Google Sheets.
 

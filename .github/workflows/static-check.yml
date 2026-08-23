@@ -64,7 +64,7 @@ jobs:
       - name: Security guard phải TỪ CHỐI khi thiếu --confirm-nonprod
         run: |
           # security_check là never-auto: chạy không có --confirm-nonprod phải exit != 0 (không nã UAT).
-          if node scripts/qa/security_check.js --catalog .agent/config/dashboard.branding.example.json; then
+          if node scripts/qa/security_check.js --catalog tests/fixtures/minimal_ui_catalog.json; then
             echo "LỖI: security_check KHÔNG được chạy khi thiếu --confirm-nonprod"; exit 1
           else
             echo "OK: security guard từ chối đúng"

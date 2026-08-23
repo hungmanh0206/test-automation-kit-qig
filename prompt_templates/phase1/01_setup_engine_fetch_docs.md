@@ -35,6 +35,15 @@ Kết nối nguồn tài liệu, tiếp nhận requirement và chuẩn bị cont
 Lệnh in ra 3 thứ:
 1. **Ngưỡng việc-nên-làm** cho từng file: `<8k` đọc trực tiếp · `8–25k` chỉ đọc mục cần · `>25k` **giao subagent** trích rồi chỉ nhận phần đã trích (thêm `--contract` để lấy hợp đồng trích xuất dán cho subagent: trả JSON theo `knowledge/SCHEMA.md`, mọi rule phải có `source` tới đúng tab/mục, chỗ tài liệu không trả lời được thì cho vào `open_questions` — **cấm suy diễn lấp chỗ trống**).
 2. **Tài liệu có NHIỀU BẢN** — cùng nội dung khác định dạng (`.json` vs `.md`) hoặc nhiều lần export. Chỉ đọc bản nên đọc; đo thật tiết kiệm ~670k token mà không mất chữ nào.
+> **Google Doc là nguồn spec: đọc bằng `npm run gdoc:read -- --doc-id <ID> --out <file.md>`**, đừng copy tay.
+> Hai bẫy đã trả giá thật, script này đã vá cả hai — copy tay thì mất cả hai:
+> - **Nhiều TAB bị cắt IM LẶNG**: thiếu `includeTabsContent` thì API chỉ trả tab đầu (đo thật: 18.5KB so với
+>   345KB toàn tài liệu). Script log ra số tab đọc được — đọc log đó, đừng bỏ qua.
+> - **Spec bổ sung của BA nằm ở nội dung TÔ MÀU / suggested**, không phải văn xuôi thường; phải đọc
+>   `textRun.backgroundColor` mới thấy. Bỏ qua là bỏ nguyên nhóm yêu cầu mới nhất.
+> Google Sheets (`scripts/integrations/google_sheet/`) là **LEGACY**: testcase canonical nay là Excel trong
+> `<TASK_OUTPUT_DIR>/test-cases/` + AIO Tests. Chỉ dùng khi stakeholder ngoài repo yêu cầu bản Sheets.
+
 3. **⚠⚠ Bản cũ NHỎ HƠN HẲN bản mới** = bản **thiếu nội dung**, không phải "bản khác ngày". Đọc nó là đọc thiếu spec. *(Đã xảy ra thật: export Google Doc trước khi vá `includeTabsContent` chỉ lấy 1/15 tab — 6,6k thay vì 108k.)*
 
 > ⚠️ Giao subagent **KHÔNG** làm giảm tổng token (subagent phải nạp lại luật + ngữ cảnh). Nó đổi lấy việc **luồng chính không chứa nguyên văn tài liệu**, nên phần sau của lượt không bị bóp. Đừng kỳ vọng sai.
