@@ -78,6 +78,43 @@ for (const rel of trackedFiles()) {
   });
 }
 
+/*
+ * CREDENTIAL NẰM TRONG CÂY REPO — dù KHÔNG bị track. `.gitignore` chỉ bảo vệ GIT: nó không bảo vệ khi ai đó
+ * zip thư mục, copy sang máy khác, hay upload artifact chứa cả cây. Đo 23/08/2026: chạy gate này ở bản
+ * giải nén (chế độ working-tree) thì nó bắt được `scripts/integrations/google_doc/service_account.json`
+ * kèm `private_key` — file gitignore đúng, nhưng vẫn đi theo mọi bản ZIP.
+ * Nên kiểm SỰ TỒN TẠI theo TÊN FILE, độc lập với việc track hay chưa, và luôn chạy ở cả 2 chế độ.
+ * Cách đúng: để credential NGOÀI repo (vd `~/.sapp-keys/<tên>/`) rồi trỏ bằng biến env đường dẫn TUYỆT ĐỐI.
+ */
+/*
+ * Khớp TÊN rồi XÁC NHẬN NỘI DUNG. Chỉ tên là không đủ: `.*-key.json` bắt luôn
+ * `knowledge/system/sap-sync__dealid-key.json` (một record nghiệp vụ) ⇒ báo oan ngay lần chạy đầu, mà gate
+ * báo oan một lần là mất uy tín vĩnh viễn. Nội dung phải có dấu hiệu credential thật.
+ */
+const CRED_FILE = /^(service_account.*\.json|.*oauth-credentials.*\.json|token\.json.*|credentials\.json|.*-key\.json)$/i;
+const CRED_CONTENT = /"private_key"\s*:|BEGIN (RSA |EC )?PRIVATE KEY|"client_secret"\s*:|"refresh_token"\s*:/;
+const credOnDisk = [];
+(function walkCred(dir, rel) {
+  let entries;
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { return; }
+  for (const en of entries) {
+    const childRel = rel ? `${rel}/${en.name}` : en.name;
+    if (en.isDirectory()) { if (!SKIP_DIR.test(en.name)) walkCred(path.join(dir, en.name), childRel); continue; }
+    if (!CRED_FILE.test(en.name)) continue;
+    let body = '';
+    try { body = fs.readFileSync(path.join(dir, en.name), 'utf8'); } catch (e) { continue; }
+    if (CRED_CONTENT.test(body)) credOnDisk.push(childRel);
+  }
+})(rc.REPO_ROOT, '');
+
+if (credOnDisk.length) {
+  console.error(`[secret-scan] ✗ ${credOnDisk.length} file credential nằm TRONG cây repo (dù có gitignore hay không):`);
+  for (const f of credOnDisk) console.error('  - ' + f);
+  console.error('  -> .gitignore KHONG bao ve khi zip/copy/artifact. Chuyen ra ngoai repo (vd ~/.sapp-keys/<ten>/)');
+  console.error('     roi tro bang bien env duong dan TUYET DOI (xem scripts/integrations/google_doc/.env.example).');
+  process.exit(1);
+}
+
 if (!findings.length) { console.log('[secret-scan] OK — khong thay secret bi commit tren file da track.'); process.exit(0); }
 console.error('[secret-scan] Nghi co secret bi commit (' + findings.length + '):');
 for (const f of findings) console.error('  - ' + f.file + ':' + f.line + ' [' + f.pattern + '] ' + f.snippet);

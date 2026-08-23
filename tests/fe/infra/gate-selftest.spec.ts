@@ -317,3 +317,33 @@ test.describe('@infra metrics/reliability — skip không được kéo TRI', ()
     expect(runRec.skipped, 'số skip vẫn phải có ở mức run — chỗ đó nó có nghĩa').toBe(2);
   });
 });
+
+/*
+ * CREDENTIAL TRONG CÂY REPO — `.gitignore` chỉ bảo vệ GIT, không bảo vệ khi zip/copy/upload artifact.
+ * Đo 23/08/2026: `scripts/integrations/google_doc/service_account.json` gitignore hoàn hảo nhưng vẫn nằm
+ * trên đĩa kèm `private_key`, nên đi theo mọi bản ZIP. Đã chuyển ra `~/.sapp-keys/` và trỏ bằng env
+ * đường dẫn tuyệt đối; `secret:scan` giờ CHẶN nếu có file credential trong cây repo.
+ */
+test.describe('@infra secret:scan — credential không được nằm trong cây repo', () => {
+  const SCAN = path.join(REPO, 'scripts/qa/secret_scan.js');
+
+  test('repo hiện tại: KHÔNG còn file credential nào trên đĩa', () => {
+    const r = run(SCAN, []);
+    expect(r.out, 'còn credential trong cây repo').not.toContain('file credential nằm TRONG cây repo');
+    expect(r.code, r.out).toBe(0);
+  });
+
+  test('luật kiểm TÊN + NỘI DUNG, không chỉ tên (chống báo oan)', () => {
+    const src = fs.readFileSync(SCAN, 'utf8');
+    expect(src).toMatch(/CRED_FILE\s*=/);
+    expect(src, 'chỉ khớp tên thì `sap-sync__dealid-key.json` (knowledge record) bị bắt oan').toMatch(/CRED_CONTENT\s*=/);
+    expect(src).toMatch(/private_key|PRIVATE KEY/);
+  });
+
+  test('không phụ thuộc việc file có được track hay không (đó là lỗ mà .gitignore không bịt)', () => {
+    const src = fs.readFileSync(SCAN, 'utf8');
+    // Vòng quét credential phải đi trên ĐĨA (readdirSync), không qua danh sách tracked.
+    expect(src).toMatch(/walkCred/);
+    expect(src).toMatch(/readdirSync/);
+  });
+});
