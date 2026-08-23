@@ -315,3 +315,53 @@ test.describe('@infra Loại case — cột người khai, không suy từ nhóm
     expect(src).toMatch(/\(c\.type \|\| \{\}\)\.name/);
   });
 });
+
+/*
+ * @infra — CHIỀU §22 (callback ĐẾN từ bên thứ ba). Thêm 23/08/2026 sau khi ĐO giao thức thật của dự án:
+ * GraphQL/WebSocket/SSE/gRPC/SOAP = 0 dấu vết trong `knowledge/`+`tests/`, nên KHÔNG thêm (thêm chỉ phình
+ * kit). Nhưng callback thanh toán thì có thật, và đã có bug thật do NGƯỜI phát hiện: callback trùng làm
+ * `Paid Amount` cộng đôi (SAPP-28236) — nghĩa là máy lẽ ra phải bắt mà không có chiều nào dạy sinh case đó.
+ *
+ * Bẫy đã dính khi thêm: khai chiều ở `dimension_coverage.js` là KHÔNG đủ. `dimensionsOf` của model chỉ nhận
+ * tag nằm trong `DIMENSION_TAGS`, nên case gắn `[Callback]` vẫn đếm 0 — gate im lặng báo "thiếu chiều" trong
+ * khi case có thật. Test dưới khoá cả ba mắt xích: tag parse được · máy đếm được · tài liệu tới được.
+ */
+test.describe('@infra §22 inbound callback — 3 mắt xích phải khớp', () => {
+  const DIMCOV = path.join(REPO, 'scripts/qa/dimension_coverage.js');
+
+  test('tag `[Callback]` được model nhận (khai ở DIMENSION_TAGS, không chỉ ở gate)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const model = require(path.join(REPO, 'scripts/lib/testcase/model.js'));
+    expect(model.dimensionsOf('[Callback] Gửi lại callback trùng'), 'thiếu ở DIMENSION_TAGS ⇒ đếm 0 mà không ai biết').toContain('callback');
+    expect(model.DIMENSION_TAGS).toContain('callback');
+  });
+
+  test('gate coverage biết chiều §22 và map đúng tag', () => {
+    const src = fs.readFileSync(DIMCOV, 'utf8');
+    expect(src).toContain("id: 'inbound_callback'");
+    expect(src, 'TAG_OF thiếu ⇒ chế độ NHÃN không cộng case nào cho §22').toMatch(/inbound_callback: 'callback'/);
+  });
+
+  test('file chiều tồn tại, có checklist thật, và neo vào bug đã xảy ra', () => {
+    const p = path.join(REPO, 'prompt_templates/phase1/dimensions/22_inbound_callback.md');
+    const body = fs.readFileSync(p, 'utf8');
+    // Checklist, không phải 5 gạch đầu dòng: mỗi ca phải nói rõ dựng thế nào + oracle đo ở đâu.
+    expect(body.split('\n').filter((l) => /^\| \d+ \|/.test(l)).length, 'cần ≥8 ca cụ thể').toBeGreaterThanOrEqual(8);
+    for (const must of ['HMAC', 'replay', 'at-least-once', 'SAPP-28236']) expect(body).toContain(must);
+    // Không được lấy response callback làm oracle (app==app).
+    expect(body).toMatch(/tautology|app==app/);
+  });
+
+  test('§22 có trong bảng chỉ mục chiều của prompt gen (nếu không thì không ai mở file)', () => {
+    const idx = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/02_gen_testcases.md'), 'utf8');
+    expect(idx).toContain('22_inbound_callback.md');
+    expect(idx).toContain('`[Callback]`');
+  });
+
+  test('§5 và §9 phải trỏ sang §22 — hai chiều dễ bị tưởng đã phủ', () => {
+    for (const f of ['05_api.md', '09_side_effect.md']) {
+      const body = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/dimensions', f), 'utf8');
+      expect(body, `${f} không trỏ §22 ⇒ agent đọc nó sẽ tưởng idempotency/webhook đã phủ hết`).toContain('22_inbound_callback.md');
+    }
+  });
+});

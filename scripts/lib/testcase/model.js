@@ -49,6 +49,16 @@ const COL = {
   risk: (n) => n.includes('risk') || n.includes('rui ro') || n.includes('severity'),
   group: (n) => ['nhom chuc nang', 'functional group', 'test group', 'group', 'phan nhom'].includes(n),
   /*
+   * `Tag` — nơi trú MỚI của khối `[Positive][Calc][BR-…]`, tách khỏi `Trường hợp kiểm thử`.
+   *
+   * TRƯỚC 21/08/2026 tag nằm TRONG tiêu đề, lý do ghi ở `dimensionsOf` bên dưới: hồi đó template
+   * đang khoá 9 cột nên thêm cột là phá mọi consumer. Lý do đó ĐÃ HẾT HIỆU LỰC — `Loại case` thêm
+   * vào thành cột thứ 10, và mọi consumer nay đọc theo TÊN cột qua `colIndex()` chứ không theo vị trí.
+   * Đổi lại vì tag là tín hiệu cho MÁY: người mở case trên AIO để chạy phải đọc qua 3 khối ngoặc mới
+   * tới nội dung. Tách ra thì tiêu đề đọc thẳng, mà máy vẫn gác đủ.
+   */
+  tags: (n) => n === 'tag' || n === 'tags' || n.includes('tag chieu') || n.includes('tag'),
+  /*
    * `Loại case` — TRỤC KHÁC HẲN `Nhóm chức năng`.
    *   Nhóm chức năng trả lời "test Ở ĐÂU" (màn/luồng nghiệp vụ) → thành FOLDER trên AIO.
    *   Loại case      trả lời "LOẠI KIỂM THỬ NÀO" (Unit|Integration|Functional|API|Performance|Security)
@@ -95,6 +105,31 @@ function splitNumbered(cell) {
   });
 }
 
+/**
+ * Gộp kết quả/bước đã tách thành KHỐI theo số thứ tự.
+ *
+ * VÌ SAO CẦN: prompt §6 bắt "mỗi bước một dòng kết quả" ĐỒNG THỜI "mỗi ý một dòng con `- …`". Hai luật đó
+ * đúng cho người đọc, nhưng `splitNumbered` trả phẳng: dòng đánh số có `n = 1,2,3`, dòng con có `n = null`.
+ * Consumer nào zip `steps[i] ↔ expected[i]` theo CHỈ SỐ là lệch ngay từ dòng con đầu tiên — và phần dôi ra
+ * bị cắt mất. Đo thật trên bộ SAPP-26878 (101 case): 300/682 dòng kết quả (44%) bị vứt ở 83 case, và các
+ * bước sau còn nhận nhầm kết quả của bước trước.
+ *
+ * HỢP ĐỒNG: khối của bước N = dòng đánh số N + MỌI dòng con đứng sau nó cho tới dòng đánh số kế tiếp.
+ * Dòng con đứng trước dòng đánh số đầu tiên (hiếm) gom vào khối `n = null` mở đầu để không nuốt mất chữ.
+ *
+ * @param {{n:number|null, text:string}[]} parts kết quả của splitNumbered
+ * @returns {{n:number|null, text:string, lines:string[]}[]} mỗi phần tử là MỘT khối, text đã nối bằng \n
+ */
+function groupNumbered(parts) {
+  const out = [];
+  for (const p of parts || []) {
+    if (p.n !== null && p.n !== undefined) out.push({ n: p.n, lines: [p.text] });
+    else if (out.length) out[out.length - 1].lines.push(p.text);
+    else out.push({ n: null, lines: [p.text] });
+  }
+  return out.map((b) => ({ n: b.n, lines: b.lines, text: b.lines.join('\n') }));
+}
+
 // Tag chiều đọc từ `[...]` trong tiêu đề. Hai nhóm:
 //   - LOẠI case: positive/negative/boundary/edge — bộ testcase nào cũng dùng.
 //   - CHIỀU COVERAGE (§3–§17 của prompt gen): thêm 14/08/2026 để `dimension_coverage.js` chặn được theo NHÃN
@@ -108,6 +143,9 @@ const DIMENSION_TAGS = [
   'security', 'e2e', 'regression',
   'validation', 'ui', 'export', 'resilience', 'sideeffect', 'guard', 'design', 'display', 'calc', 'bedata', 'perf', 'api', 'impact',
   'ordering', 'bughistory', 'a11y',
+  // §22 (23/08/2026): chiều callback ĐẾN từ bên thứ ba. Thêm ở đây MỚI có tác dụng — `dimensionsOf`
+  // chỉ nhận tag nằm trong danh sách này, nên chiều mới mà quên khai thì case gắn tag vẫn ra 0.
+  'callback',
 ];
 /** Dimension từ tag [..] trong title (vd "[Negative] ..." → ['negative']). */
 function dimensionsOf(title) {
@@ -138,12 +176,47 @@ function oracleRefsOf(title) {
   return [...out];
 }
 
+/**
+ * Tên tag GIỮ NGUYÊN chữ gốc, để đẩy lên **Field Tags của AIO**.
+ *
+ * Khác `dimensionsOf` (normalize về id máy: `bedata`, `sideeffect`) — chỗ này là NHÃN CHO NGƯỜI đọc trên
+ * AIO nên phải giữ đúng `BEData`, `SideEffect`, `BR-SAPSYNC-001`. Lấy cả tag chiều lẫn id oracle: trên AIO
+ * lọc "case nào phủ BR-SAPSYNC-004" là việc dùng thật.
+ *
+ * HAI NGUỒN, KHÔNG hợp bừa:
+ *   - có cột `Tag` (bộ từ 21/08/2026) ⇒ đọc ĐÚNG cột đó;
+ *   - không có ⇒ bộ cũ, tag nằm ở ĐẦU tiêu đề ⇒ chỉ lấy khối ngoặc LIỀN NHAU ở đầu.
+ * Không quét ngoặc giữa câu: `Kiểm [FBP] Ngày ghi nhận…` thì `[FBP]` là TÊN TRƯỜNG trên phiếu, hốt vào
+ * thành tag là bịa ra nhãn không ai khai.
+ */
+function tagNamesOf(tagCell, title) {
+  const cell = String(tagCell || '').trim();
+  const lead = String(title || '').match(/^(?:\s*\[[^\]]*\])+/);
+  const src = cell || (lead ? lead[0] : '');
+  const out = [];
+  const seen = new Set();
+  for (const m of src.match(/\[([^\]]+)\]/g) || []) {
+    const name = m.slice(1, -1).trim();
+    if (!name || seen.has(name.toLowerCase())) continue;
+    seen.add(name.toLowerCase());
+    out.push(name);
+  }
+  return out;
+}
+
 /** Dựng 1 TestCase từ headers + cells (1 dòng bảng). */
 function buildTestCase(headers, cells, story = '') {
   const get = (matcher) => { const i = colIndex(headers, matcher); return i >= 0 ? cleanCell(cells[i] || '') : ''; };
   const _cells = {};
   headers.forEach((h, i) => { _cells[h] = cleanCell(cells[i] || ''); });
   const title = get(COL.title);
+  /*
+   * HỢP hai nguồn, KHÔNG phải fallback: bộ mới khai tag ở cột `Tag` và tiêu đề đã sạch; bộ cũ
+   * (mọi bộ đã publish trước 21/08/2026) vẫn để tag trong tiêu đề. Lấy hợp thì cả hai đời đều đo
+   * được, và bộ đang chuyển dở — tag ở cả hai chỗ — cũng không mất tín hiệu nào.
+   */
+  const tagCell = get(COL.tags);
+  const tagSrc = `${tagCell} ${title}`;
   const stepsRaw = get(COL.steps);
   const expectedRaw = get(COL.expected);
   return {
@@ -152,7 +225,8 @@ function buildTestCase(headers, cells, story = '') {
     steps: splitNumbered(stepsRaw), stepsRaw,
     expected: splitNumbered(expectedRaw), expectedRaw,
     priority: get(COL.priority), risk: get(COL.risk),
-    dimensions: dimensionsOf(title), oracleRefs: oracleRefsOf(title), group: get(COL.group), caseType: get(COL.caseType),
+    dimensions: dimensionsOf(tagSrc), oracleRefs: oracleRefsOf(tagSrc), tags: tagCell,
+    group: get(COL.group), caseType: get(COL.caseType),
     traceability: { reqId: '', story: story || '' },
     _cells,
   };
@@ -171,5 +245,5 @@ function buildSetup(headers, cells) {
 module.exports = {
   stripEmoji, cleanCell, splitMarkdownRow, normalizeHeader,
   COL, SETUP_COL, isTestCaseHeader, isSetupContractHeader, colIndex,
-  splitNumbered, dimensionsOf, oracleRefsOf, buildTestCase, buildSetup, DIMENSION_TAGS,
+  splitNumbered, groupNumbered, dimensionsOf, oracleRefsOf, tagNamesOf, buildTestCase, buildSetup, DIMENSION_TAGS,
 };

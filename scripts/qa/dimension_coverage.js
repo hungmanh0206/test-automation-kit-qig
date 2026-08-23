@@ -78,6 +78,12 @@ const DIMS = [
   { id: 'ordering', sec: '§19', label: 'Ordering / Sequence', group: /ordering|thu tu/, re: /sai thu tu|dao thu tu|thu tu thao tac|quay lui|quay lai buoc|bam back|xen ke|hai tab|2 tab|bo do giua chung|reset khi doi/ },
   { id: 'bug_history', sec: '§20', label: 'Error Guessing từ bug lịch sử', group: /bughistory|bug lich su/, re: /bug lich su|tung xay ra|da tung loi|lap lai loi|regression tu bug|knowledge\/bugs/ },
   { id: 'accessibility', sec: '§21', label: 'Accessibility (A11y)', group: /a11y|accessib/, re: /\ba11y\b|accessib|\baria\b|contrast|focus order|dieu huong ban phim|screen reader|label for|nhan gan dung/ },
+
+  // Chiều thêm 23/08/2026 sau khi ĐO: kit có idempotency phía GỬI (§5/§8) và webhook ĐI RA (§9), nhưng
+  // KHÔNG chiều nào đứng ở phía NHẬN callback bên thứ ba — nơi mình không kiểm soát số lần/thứ tự gửi.
+  // Bằng chứng là bug thật: callback thanh toán trùng làm Paid Amount cộng đôi (SAPP-28236), do NGƯỜI
+  // phát hiện chứ không máy nào bắt.
+  { id: 'inbound_callback', sec: '§22', label: 'Inbound Callback / Webhook (phía NHẬN)', group: /callback|webhook|ipn/, re: /callback|webhook|ipn|secure ?hash|hmac|chu ky (sai|hop le)|replay|gui lai callback|callback trung|at[- ]least[- ]once|vnp_/ },
 ];
 
 // Self-check bảng DIMS: id trùng hoặc pattern không phải RegExp thì báo ngay, đừng để lệch âm thầm.
@@ -119,7 +125,7 @@ const blob = (t) => norm(`${t.title} ${t.stepsRaw} ${t.expectedRaw} ${t.data}`);
 //   này KHÔNG đủ tin: recall thiếu (§5 API đếm 0 trong khi có 17 case nhắc "api") và precision kém
 //   (§12 nhận cả "Chọn Next → hiển thị màn Confirm" — vì `hiển thị` là động từ chuẩn của MỌI expected tiếng
 //   Việt). Nên chế độ này chỉ để BIẾT chỗ nào có thể hổng, và script TỪ CHỐI chặn.
-const TAG_OF = { field_validation: 'validation', ui_display: 'ui', api: 'api', e2e: 'e2e', export_import: 'export', resilience: 'resilience', side_effect: 'sideeffect', guard: 'guard', design_figma: 'design', display_conformance: 'display', business_logic: 'calc', be_conformance: 'bedata', security: 'security', perf: 'perf', change_impact: 'impact', ordering: 'ordering', bug_history: 'bughistory', accessibility: 'a11y' };
+const TAG_OF = { field_validation: 'validation', ui_display: 'ui', api: 'api', e2e: 'e2e', export_import: 'export', resilience: 'resilience', side_effect: 'sideeffect', guard: 'guard', design_figma: 'design', display_conformance: 'display', business_logic: 'calc', be_conformance: 'bedata', security: 'security', perf: 'perf', change_impact: 'impact', ordering: 'ordering', bug_history: 'bughistory', accessibility: 'a11y', inbound_callback: 'callback' };
 const COVERAGE_TAGS = new Set(Object.values(TAG_OF));
 const labelled = tests.filter((t) => (t.dimensions || []).some((x) => COVERAGE_TAGS.has(x)));
 const MODE = labelled.length ? 'label' : 'hint';

@@ -29,7 +29,7 @@ Mục tiêu là coverage cao nhất có thể trong scope đã cung cấp, bao g
 
 # Template bắt buộc (10 cột)
 
-| TC ID | Loại case | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |
+| TC ID | Loại case | Tag | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên |
 
 ## Cột `Loại case` — 9 loại, KHÁC hẳn `Nhóm chức năng`
 
@@ -82,7 +82,7 @@ Một case mang **đúng một** loại. Thấy hợp 2 loại nghĩa là case �
 
 Testcase phải được phân biệt rõ theo **nhóm chính là business flow** để QA review, export Excel và publish AIO Tests dễ lọc (nhóm chức năng → folder AIO).
 
-Vẫn giữ đúng template 9 cột. Không tự thêm cột thứ 10 trong Markdown. Thay vào đó, cột `Module` phải dùng format:
+Vẫn giữ đúng template 10 cột — KHÔNG tự thêm cột thứ 11. Thay vào đó, cột `Module` phải dùng format:
 
 `[Nhóm chức năng] / [User Story hoặc màn hình/API/flow cụ thể]`
 
@@ -99,9 +99,13 @@ Nguyên tắc đặt nhóm:
 - KHÔNG thêm cột label vào bảng testcase. AIO case không phải Jira issue nên **không có label**: nhóm chức năng thể hiện qua **folder AIO** (`<root>/<nhóm chức năng>`, dựng từ sheet chức năng), TC ID nằm ở `automationKey`.
 - `Khác` chỉ dùng khi requirement không thuộc nhóm nào rõ ràng và phải giải thích trong Coverage Gaps.
 
-### 0b. TAG CHIỀU trong tiêu đề — BẮT BUỘC, có máy kiểm
+### 0b. TAG CHIỀU ở cột `Tag` — BẮT BUỘC, có máy kiểm
 
-Mỗi case ghi thêm **1 tag chiều** vào `Trường hợp kiểm thử`, ngay sau tag loại: `[Positive][Display] Lưới … đúng + đủ cột`. Không thêm cột, không đổi template 9 cột — tag nằm trong chính tiêu đề (cùng cơ chế đang đọc `[Positive]`/`[Negative]`).
+Tag ghi ở **cột `Tag`**, KHÔNG ghi vào tiêu đề. Mỗi case: `[<Loại>][<Chiều>][<Oracle-ref>]` — ví dụ `[Positive][Display][BR-GRID-001]`.
+
+> **Đổi từ 21/08/2026.** Trước đây tag nằm TRONG `Trường hợp kiểm thử` vì template khoá 9 cột, thêm cột là phá mọi consumer. Lý do đó hết hiệu lực: `Loại case` đã thành cột thứ 10, và consumer nay đọc theo TÊN cột qua `colIndex()` chứ không theo vị trí. Tag là tín hiệu cho **máy**; bắt người mở case ra chạy phải lướt qua 3 khối ngoặc mới tới nội dung là đặt sai chỗ.
+>
+> `model.js` lấy **HỢP** của cột `Tag` và tiêu đề, nên bộ TC cũ (tag còn trong tiêu đề) vẫn đo được — không phải đi sửa lại bộ đã publish.
 
 | Chiều (mục) | Tag | Chiều (mục) | Tag |
 |---|---|---|---|
@@ -117,6 +121,33 @@ Mỗi case ghi thêm **1 tag chiều** vào `Trường hợp kiểm thử`, ngay
 **Vì sao bắt buộc:** `npm run dim:coverage -- --enforce` đếm case **theo tag** rồi chặn nếu thiếu chiều mà `requirements/dimension_manifest.json` khai là `required`. Không có tag thì gate rơi về chế độ GỢI Ý (suy từ văn bản) và **tự từ chối chặn** — vì đo trên bộ 530 case thật, suy diễn vừa thiếu recall (§5 đếm 0 dù có 17 case nhắc "api") vừa kém precision (§12 nhận cả case điều hướng, do "hiển thị" là động từ chuẩn của MỌI expected tiếng Việt). Tag là đường duy nhất để chiều coverage được **máy** gác, thay vì phụ thuộc việc bạn có đọc §3–§17 hay không.
 
 Case phủ nhiều chiều thì ghi nhiều tag (`[Negative][Validation][Security]`). Chiều không áp dụng cho task thì khai `"n/a"` **kèm lý do** trong `dimension_manifest.json` — bỏ chiều mà không nói vì sao sẽ bị cảnh báo.
+
+### 0b-ter. TIÊU ĐỀ = NỘI DUNG, và phải TỰ ĐỦ NGHĨA
+
+Tag đã ra cột riêng, nên tiêu đề không còn chỗ dựa: đọc một mình nó phải hiểu được case kiểm gì và **đúng là thế nào**. Ba đoạn nối bằng ` - `:
+
+```
+<Đối tượng/màn> - <Hành động hoặc điều kiện> - <Kết quả cụ thể đo được>
+```
+
+```
+✓ Tạo Business Partner trên SAP B1 - Sinh mã KH đúng cú pháp C + CCCD khi khách Cá nhân chưa có BP
+✓ Ghi nhận giao dịch tiền về - Tiền mặt NEU sinh Incoming Payment với G/L 111101
+✓ Cập nhật Business Partner - Định danh CCCD đổi thì tạo BP MỚI, không update BP cũ
+```
+
+**Bốn lỗi bị chặn — mỗi lỗi đều từng xảy ra thật:**
+
+| Lỗi | Ví dụ SAI | Vì sao chặn |
+|---|---|---|
+| Đoạn kết quả nói chung chung | `… - Hệ thống hoạt động đúng` | Đọc tiêu đề không biết oracle là gì ⇒ người chạy phải mò cả cột `Kết quả mong đợi` mới biết mình đang kiểm gì |
+| **Tiền tố hằng số** | `Cross-app - …` gắn cho **101/101** case | Một trường mà mọi dòng cùng giá trị thì KHÔNG phân biệt được gì. Nó chỉ chiếm chỗ và đẩy nội dung thật ra xa. Thông tin đó thuộc `Loại case` (`E2E`/`Integration`) và tên folder, không thuộc tiêu đề |
+| Dựa vào tag để đủ nghĩa | `Chặn khi khoá sổ` (nghĩa nằm ở `[Negative]`) | Tag giờ ở cột khác; tiêu đề mất tag là mất nghĩa |
+| Lặp lại tên nhóm/folder | `Business Partner - Business Partner - …` | Nhóm đã là folder trên AIO, nhắc lại là dư |
+
+**Vẫn được để `[...]` GIỮA câu** khi đó là tên trường thật trên giao diện/tài liệu — `Kiểm [FBP] Ngày ghi nhận doanh thu - …`. Chỉ khối ngoặc **liền nhau ở đầu chuỗi** mới bị coi là tag.
+
+`publish_testcases_aio.js` còn một lớp chắn cuối: `displayTitle()` cắt khối tag ở đầu tiêu đề trước khi đẩy lên AIO, để bộ TC cũ vẫn ra tiêu đề sạch mà không phải sửa lại nguồn.
 
 ### 0b-bis. Gắn tag rồi thì `Kết quả mong đợi` phải MANG BẰNG CHỨNG của chiều đó
 
@@ -324,71 +355,13 @@ Chỉ dùng 5 giá trị: `Critical`, `High`, `Medium`, `Low`, `Lowest` (khớp 
 | **Low** | Edge case, ảnh hưởng ít, không block luồng chính |
 | **Lowest** | Lỗi nhỏ/cosmetic, typo, hiển thị phụ hoặc tác động rất thấp |
 
-### 7b. Ma trận Severity × Priority — bảng quyết định
+### 7b. Ưu tiên chấm theo HẬU QUẢ nếu case fail, không theo cảm giác
 
-Severity chấm trước (§8, theo hậu quả). Priority = **lấy Severity làm mốc rồi dịch theo bối cảnh**:
+Không còn cột `Severity` trong bộ testcase (bỏ 21/08/2026) — nên **không** còn bước "chấm Severity trước rồi dịch ra Priority". Chấm `Ưu tiên` trực tiếp bằng bảng 5 mức ở §7, tự hỏi: *case này fail thì hậu quả tới đâu, và có đường vòng không?*
 
-| Dịch | Khi nào (đủ 1 điều kiện là dịch) |
-|---|---|
-| **+1 bậc** | khách/đối tác nhìn thấy trực tiếp · dính tiền đang chạy thật · sắp go-live/demo trong sprint · người dùng cuối không có cách nào đi vòng |
-| **giữ nguyên** | không rơi vào 2 nhóm còn lại |
-| **−1 bậc** | chức năng **chưa bật** cho người dùng · chỉ xảy ra ở nhánh cấu hình hiếm · có workaround dễ và đã hướng dẫn được · chức năng đã có lịch bỏ/thay thế |
-
-**Ma trận hợp lệ** (● mặc định · ○ hợp lệ, nêu lý do dịch bậc trong `Assumptions` · ⚠ phải giải trình, gate cảnh báo):
-
-| Severity ↓ / Priority → | Critical | High | Medium | Low | Lowest |
-|---|---|---|---|---|---|
-| **Blocker** | ● | ○ | ⚠ | ⚠ | ⚠ |
-| **Critical** | ○ | ● | ○ | ⚠ | ⚠ |
-| **Major** | ○ | ○ | ● | ○ | ⚠ |
-| **Minor** | ⚠ | ○ | ○ | ● | ○ |
-| **Trivial** | ⚠ | ⚠ | ○ | ○ | ● |
-
-**Đọc ma trận:**
-- **Đường chéo ● là mặc định** — không có lý do dịch bậc thì chọn ô này.
-- **Ô ⚠ không bị cấm**, nhưng phải viết lý do. Hai ô ⚠ hay đúng nhất trong thực tế: `Blocker` + `Medium/Low` (mất dữ liệu ở chức năng **chưa bật** cho ai) và `Minor/Trivial` + `Critical` (lỗi hiển thị nhưng khách nhìn trực tiếp lúc trả tiền).
-- **Đừng hạ Severity để ô trông "đẹp"**. Phạm vi hẹp, chưa ai dùng, sắp bỏ — tất cả đều là lý do hạ **Priority**, không phải hạ Severity. Đây là lỗi chấm sai phổ biến nhất.
-- Nếu trong một bộ testcase mà Severity và Priority **luôn trùng nhau ở mọi dòng** thì một trong hai cột đang được điền máy móc — bảng này vô dụng khi đó.
-
-> ⚙️ **Có máy kiểm** (`design_gate` → `scripts/lib/testcase/validate.js`): giá trị ngoài 5 mức trên = **CHẶN**. Lý do không phải hình thức: bug log lên Jira lấy `Priority` **từ chính cột này** (`08_log_bug_jira.md`), giá trị lạ ⇒ Jira không set được ⇒ bug rơi về default, mất luôn tín hiệu ưu tiên.
-
-## 8. Severity (cột thứ 8 — tên cũ "Mức độ rủi ro")
-
-Severity = **hậu quả NẾU case này fail**. Khác §7 `Ưu tiên` (= thứ tự sửa). Hai trục tách nhau là bình thường:
-lỗi cosmetic ở màn thanh toán trước ngày demo = `Trivial` + ưu tiên `High`; mất dữ liệu ở module sprint này
-không ai dùng = `Blocker` + ưu tiên `Medium`.
-
-**Chấm bằng CÂY QUYẾT ĐỊNH — đi từ trên xuống, dừng ở câu ĐÚNG đầu tiên. Không chấm theo cảm giác.**
-
-| # | Câu hỏi phân biệt | Nếu ĐÚNG |
-|---|---|---|
-| 1 | Có **mất/sai dữ liệu không hồi được**, **sai số tiền/doanh thu**, **lộ dữ liệu người khác**, hoặc **hệ thống/luồng chính không dùng được** và KHÔNG có đường vòng? | **Blocker** |
-| 2 | Luồng chính sai/không hoàn thành được, nhưng **có đường vòng** (thao tác khác, sửa tay, làm lại) — hoặc dữ liệu sai nhưng **phát hiện và sửa được** trước khi ảnh hưởng tiền/đối soát? | **Critical** |
-| 3 | Một **chức năng phụ** sai, hoặc luồng chính sai ở **nhánh điều kiện hẹp** (1 loại đơn, 1 role, 1 cấu hình) — người dùng vẫn làm được việc chính? | **Major** |
-| 4 | **Hiển thị/nội dung sai** nhưng dữ liệu bên dưới ĐÚNG: sai nhãn, sai định dạng, sai đơn vị hiển thị, thiếu/thừa trường, sai thứ tự, sai thông báo? | **Minor** |
-| 5 | Chỉ **thẩm mỹ**: lệch spacing/màu/căn lề, typo không gây hiểu sai, tooltip thiếu? | **Trivial** |
-
-**Quy tắc phân định khi lưỡng lự (bắt buộc áp dụng, theo thứ tự):**
-1. **Tiền và dữ liệu thắng mọi thứ** — dính tiền/doanh thu/đối soát mà sai SỐ ⇒ tối thiểu `Critical`, sai không hồi được ⇒ `Blocker`. Sai đơn vị/định dạng *hiển thị* mà số lưu vẫn đúng ⇒ `Minor` (đừng đẩy lên vì thấy chữ "tiền").
-2. **Có đường vòng hay không** là ranh giới `Blocker` / `Critical`. Phải viết đường vòng đó ra trong `Kết quả mong đợi`/`Assumptions`; không nêu được ⇒ coi là không có.
-3. **Phạm vi hẹp không hạ severity của hậu quả** — chỉ hạ khi hậu quả nhẹ. 1 role mất dữ liệu vẫn là `Blocker`. Phạm vi hẹp thuộc §7 `Ưu tiên`.
-4. **Case negative/guard** lấy severity theo **hậu quả nếu guard KHÔNG chặn** (vd thu vượt trên đơn đã trả đủ ⇒ `Critical`), không phải theo độ khó tái hiện.
-5. **Không suy severity từ Impact của module.** Impact ở `risk_model.json` dùng cho risk band cấp module; severity là hậu quả của **chính case này**.
-
-**Ví dụ đã chốt (dùng làm mốc so sánh):**
-
-| Tình huống thật | Severity | Vì sao |
-|---|---|---|
-| Callback thanh toán trùng làm Paid Amount cộng đôi, đối soát lệch | Blocker | sai số tiền, đã ghi nhận, không tự hồi |
-| Đơn đã trả đủ vẫn tạo được giao dịch thu thêm (guard thiếu) | Critical | sai tiền nhưng phát hiện/hủy được trước đối soát |
-| Đồng bộ sang hệ ngoài lấy nhầm nguồn (Contact vs Deal) nên field sai người | Critical | dữ liệu sai bản chất, phải sửa lại thủ công |
-| Order gia hạn thiếu 1 option trong dropdown tính phí | Major | chức năng phụ / nhánh hẹp, việc chính vẫn chạy |
-| Discount 10 USD hiển thị "10đ" (giá trị lưu vẫn đúng) | Minor | sai đơn vị HIỂN THỊ, dữ liệu dưới đúng |
-| Section thiếu trường `Net Price` | Minor | thiếu thông tin hiển thị, không sai dữ liệu |
-| Lệch spacing giữa checkbox và các box còn lại | Trivial | thuần thẩm mỹ |
-
-> ⚙️ **Có máy kiểm**: giá trị ngoài `Blocker|Critical|Major|Minor|Trivial` = **CHẶN** (thang cũ `High|Medium|Low` vẫn tạm nhận cho bộ TC cũ, kèm cảnh báo 1 lần/file — bộ cũ **không cần** chuyển). Ghi giá trị Severity vào cột `Ưu tiên` = **CHẶN** (sai cột). Hai cột §7/§8 **không được nói ngược nhau**: `Blocker/Critical` + ưu tiên `Low/Lowest`, hoặc `Minor/Trivial` + ưu tiên `Highest` ⇒ **cảnh báo**.
-> ⚠️ **Jira hiện CHƯA có field Severity** → giá trị này chỉ sống trong testcase + report, **KHÔNG** đẩy lên Jira. `Priority` của bug vẫn lấy từ cột §7.
+> **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase — chấm lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc. Bug thật vẫn có Severity: chấm lúc log bug, cây quyết định nằm ở [`phase2/08_log_bug_jira.md`](../phase2/08_log_bug_jira.md).
+>
+> Việc duy nhất cột đó còn gánh trong kit là **risk band** (mở rộng 5 trục hay 1 trục). `bandOf()` lấy `max(risk, priority)`; sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột làm đổi band 0 case** ⇒ `Ưu tiên` một mình đủ quyết định độ sâu. Đừng điền lại cột này "cho chắc": thêm cột lạ sẽ bị gate chặn.
 
 ## 9. Cách dựng tiền điều kiện — BẮT BUỘC (tag `[<method>]` trong chính cell)
 
@@ -494,6 +467,7 @@ Khai `n/a` cho một chiều mà thực tế nó áp dụng = **bỏ chiều có
 | §19 | Ordering / Sequence Coverage | `[Ordering]` | luồng có ≥2 bước mà người dùng có thể làm SAI THỨ TỰ / quay lui / xen kẽ | [`19_ordering.md`](dimensions/19_ordering.md) |
 | §20 | Error Guessing từ BUG LỊCH SỬ | `[BugHistory]` | `knowledge/bugs/` có entry cùng module với scope (`npm run bugs:checklist`) | [`20_bug_history.md`](dimensions/20_bug_history.md) |
 | §21 | Accessibility (A11y) Coverage | `[A11y]` | scope có màn UI thao tác được: form/bảng/modal/menu | [`21_accessibility.md`](dimensions/21_accessibility.md) |
+| §22 | Inbound Callback / Webhook (phía NHẬN) | `[Callback]` | hệ thống NHẬN request từ bên thứ ba (VNPay/VietQR, HubSpot, SAP, SMS) — kể cả khi chỉ là "báo kết quả" | [`22_inbound_callback.md`](dimensions/22_inbound_callback.md) |
 
 ## 18. Self-check vét cạn biên (BẮT BUỘC trước khi kết thúc)
 Tự rà và ghi vào `reports/phase1-summary.md` (Coverage Gaps) nếu thiếu:
@@ -523,7 +497,7 @@ Nếu một dimension (mục 7-17) không áp dụng cho scope, ghi rõ `N/A + l
 Xuất kết quả dưới dạng bảng Markdown:
 
 ```markdown
-| TC ID | Loại case | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |
+| TC ID | Loại case | Tag | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên |
 |---|---|---|---|---|---|---|---|---|
 | App 1_LOGIN_TC_001 | Đăng nhập | [Positive] Đăng nhập thành công với email và mật khẩu hợp lệ | [pre_existing] Hệ thống chạy tại [URL], tài khoản auto_login_001@test.com Active, chưa đăng nhập | email: auto_login_001@test.com<br>password: Test@12345 | 1. Navigate đến [URL]/login<br>2. Nhập email: auto_login_001@test.com<br>3. Nhập password: Test@12345<br>4. Click button "Đăng nhập" | 1. Trang /login hiển thị đúng form đăng nhập<br>2. Field email nhận đúng giá trị đã nhập<br>3. Field password hiển thị ký tự ẩn<br>4. Sau khi click, hệ thống:<br>- Hiện loading spinner 1-3s<br>- Redirect /dashboard<br>- Toast "Đăng nhập thành công"<br>- Tên user hiển thị trên header | Critical | High |
 ```
