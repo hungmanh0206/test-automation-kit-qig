@@ -298,7 +298,19 @@ async function main() {
     fs.writeFileSync(out, `${L.join('\n')}\n`);
     console.log(`[mut] báo cáo: ${out}`);
   }
-  if (ENFORCE && applied.length && killed.length < applied.length) process.exit(1);
+  /*
+   * NGƯỠNG KHAI ĐƯỢC. `--enforce` trước đây chặn khi CÒN 1 mutant sống — tức ngưỡng ngầm 100%, không ai
+   * viết ra và không hạ được có chủ đích. Ngưỡng ngầm thì hoặc bị tắt hẳn, hoặc bị `--qa-approved` cho qua.
+   * Nay: `--min-score <0..100>` (mặc định 100, giữ nguyên hành vi cũ) — hạ thì phải GÕ RA, và log ghi lại.
+   */
+  const MIN_SCORE = Math.max(0, Math.min(100, Number(arg('min-score', '100'))));
+  if (ENFORCE && applied.length) {
+    if (score < MIN_SCORE) {
+      console.error(`[mut] ✗ CHẶN: mutation score ${score}% < ngưỡng ${MIN_SCORE}% (${applied.length - killed.length} mutant sống sót). Mỗi mutant sống là một vùng bộ kiểm KHÔNG thấy — bổ sung assertion cho đúng field đó, đừng hạ ngưỡng để cho qua.`);
+      process.exit(1);
+    }
+    if (MIN_SCORE < 100) console.log(`[mut] (đạt theo ngưỡng đã khai ${MIN_SCORE}% — nhưng ${applied.length - killed.length} mutant vẫn sống, tức vùng mù vẫn còn.)`);
+  }
 }
 
 if (require.main === module) main();

@@ -39,6 +39,17 @@ Chạy pass này cho toàn bộ selected TC trước khi sinh/cập nhật spec.
    - Có cleanup/rollback nếu tạo dữ liệu.
 6. Không xóa assertion quan trọng hoặc đổi expected result tùy tiện.
 
+7. **GATE CHẤT LƯỢNG CODE — chạy TRƯỚC khi execute, không phải sau khi vỡ:**
+   `npm run lint:locator` (soi mới) → `npm run lint:locator:enforce` (CHẶN nếu phát sinh P0 mới so với baseline).
+   Phase 1 có `design_gate` chặn testcase kém; khâu sinh CODE trước đây KHÔNG có gate tương đương, nên code
+   brittle chỉ lộ ra lúc chạy — và lúc đó nó lộ ra dưới dạng "FAIL" trông như bug sản phẩm.
+   Gate bắt: click theo toạ độ · `force: true` · regex trên `body.innerText` · `querySelectorAll('*')` ·
+   `.first()`/`.nth()` ở cấp trang · hard-wait ≥5s · **XPath** · **assertion yếu** (`toBeTruthy()` trên giá
+   trị đọc từ app — pass với BẤT KỲ chuỗi khác rỗng, kể cả giá trị sai).
+   Bỏ qua phải CÓ LÝ DO: `// locator-lint-disable-next-line <lý do>` ngay trên dòng.
+   Runtime làm đúng: `scripts/utils/ui/safe_target.js` (`one`/`section`/`clickVerified`/`readValue`).
+
+
 ## Rules
 
 - Không mock/stub logic chính nếu testcase cần validate behavior thật.

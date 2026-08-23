@@ -103,3 +103,85 @@ test.describe('@infra dim:coverage — ngưỡng theo risk band', () => {
     expect(r.code, 'UNKNOWN ⇒ ngưỡng 3, bộ có 1 case ⇒ vẫn chặn').toBe(1);
   });
 });
+
+/*
+ * PHASE 2 — ba ngưỡng từng để lỏng, nay có số và có máy.
+ *   ① khâu sinh CODE automation không có gate (Phase 1 có design_gate, Phase 2 thì không) ⇒ nối lint:locator
+ *      vào phase2_02 + điểm-vào, thêm 2 rule: XPath và assertion yếu.
+ *   ② "rerun đủ vòng" — taxonomy đã khai `rerun.min=2` nhưng không máy nào đếm ⇒ output_gate đòi `reruns`
+ *      ở FAIL tầng product/api (case sắp thành bug Jira), KHÔNG đòi ở setup/script (chúng đi sửa, không đi Jira).
+ *   ③ mutation `--enforce` từng chặn khi còn 1 mutant sống = ngưỡng NGẦM 100% ⇒ `--min-score` khai được.
+ */
+test.describe('@infra phase2 — ngưỡng rerun/lint/mutation có số', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const gate = require(path.join(REPO, 'scripts/qa/output_gate.js'));
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const TAX = require(path.join(REPO, '.agent/config/verdict_taxonomy.json'));
+
+  const doc = (o: Record<string, unknown>) => ({ taskKey: 'T', tests: [{ tcId: 'TC_1', status: 'FAILED', comment: 'so với BR-X: expected 5, actual 7', evidence: ['a.png'], ...o }] });
+  const rerunProblems = (d: unknown) => gate.gateTestExecution(d).problems.filter((p: string) => /rerun/i.test(p));
+
+  test('FAIL tầng product_bug không khai `reruns` ⇒ CHẶN (đây là case sắp thành bug Jira)', () => {
+    expect(rerunProblems(doc({ failureLayer: 'product_bug' })).length).toBeGreaterThan(0);
+  });
+
+  test(`rerun dưới ngưỡng taxonomy (${TAX.rerun.min}) ⇒ CHẶN, kèm đúng con số`, () => {
+    const p = rerunProblems(doc({ failureLayer: 'product_bug', reruns: 1 }));
+    expect(p.length).toBe(1);
+    expect(p[0]).toContain(`≥${TAX.rerun.min}`);
+  });
+
+  test('rerun đủ ngưỡng ⇒ cho qua', () => {
+    expect(rerunProblems(doc({ failureLayer: 'product_bug', reruns: TAX.rerun.min }))).toEqual([]);
+  });
+
+  test('setup_failure / script_error KHÔNG bị đòi rerun (không đi Jira ⇒ siết là báo oan)', () => {
+    for (const layer of ['setup_failure', 'script_error', 'infra_flaky']) {
+      expect(rerunProblems(doc({ failureLayer: layer })), layer).toEqual([]);
+    }
+  });
+
+  test('ngưỡng rerun đọc từ verdict_taxonomy, không hardcode trong gate', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/output_gate.js'), 'utf8');
+    expect(src).toMatch(/loadTaxonomy\(\)[^;]*rerun/);
+    expect(TAX.rerun.min).toBeGreaterThanOrEqual(2);
+  });
+
+  test('lint:locator có rule XPath + assertion yếu, và mẫu hợp lệ KHÔNG bị bắt', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { RULES } = require(path.join(REPO, 'scripts/qa/locator_lint.js'));
+    const re = (id: string) => {
+      const r = RULES.find((x: { id: string }) => x.id === id);
+      expect(r, `thiếu rule ${id}`).toBeTruthy();
+      return r.re as RegExp;
+    };
+    expect(re('xpath-locator').test("page.locator('//div[@id=\"x\"]')")).toBe(true);
+    expect(re('xpath-locator').test("page.locator('.sapp-btn')"), 'CSS thường KHÔNG phải XPath').toBe(false);
+    expect(re('weak-assert').test('expect(await row.textContent()).toBeTruthy()')).toBe(true);
+    // 219 chỗ trong tests/fe/infra dùng toBeTruthy() cho giá trị JS thuần — bắt hết là gate chết ngay lần đầu.
+    expect(re('weak-assert').test('expect(cfg.enabled).toBeTruthy()'), 'giá trị JS thuần KHÔNG được bắt').toBe(false);
+  });
+
+  test('require lint:locator KHÔNG làm CLI chạy (bẫy đã gặp ở mutation_check)', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/locator_lint.js'), 'utf8');
+    expect(src).toMatch(/require\.main === module/);
+  });
+
+  test('gate code automation được nối vào CẢ workflow lẫn điểm-vào (F3)', () => {
+    for (const f of ['.agent/workflows/phase2_02_generate_or_update_automation.md', 'prompt_templates/run_phase2_template.md']) {
+      expect(fs.readFileSync(path.join(REPO, f), 'utf8'), f).toContain('lint:locator');
+    }
+  });
+
+  test('mutation_check có `--min-score` khai được, mặc định 100 (giữ hành vi cũ)', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/mutation_check.js'), 'utf8');
+    expect(src).toMatch(/arg\('min-score', '100'\)/);
+    expect(src, 'phải so với ngưỡng, không phải "còn mutant sống là chặn"').toMatch(/score < MIN_SCORE/);
+  });
+
+  test('self-review nhắc mutation khi có case band HIGH (trigger, không phụ thuộc người nhớ)', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/self_review.js'), 'utf8');
+    expect(src).toMatch(/mutation:check/);
+    expect(src, 'phải là CẢNH BÁO — mutation cần app sống + catalog, chặn sẽ khoá task backend').toMatch(/warnings\.push\('task có case band HIGH/);
+  });
+});

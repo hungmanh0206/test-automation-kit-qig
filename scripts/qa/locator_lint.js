@@ -63,6 +63,19 @@ const RULES = [
   { id: 'blind-wait', sev: 'P1', re: /waitForTimeout\s*\(\s*([5-9]\d{3}|\d{5,})\s*\)/,
     why: 'Hard wait dài thường dùng để CHE locator/điều kiện sai, làm lỗi thật khó lộ.',
     fix: 'Chờ điều kiện cụ thể (element/response/state) thay vì ngủ.' },
+  /*
+   * Hai rule thêm 23/08/2026 — lớp "code automation sinh ra kém mà không gì chặn tới lúc chạy".
+   * Đo trước khi thêm để không báo oan: XPath hiện có 1 chỗ trong toàn repo, còn mẫu assertion yếu ở
+   * dạng HẸP (`expect(await …).toBeTruthy()` / trên biến locator) hiện **0 chỗ**. Cố ý KHÔNG bắt
+   * `toBeTruthy()` chung — 219 chỗ trong `tests/fe/infra` dùng nó để assert giá trị JS thuần, hoàn toàn
+   * hợp lệ; bắt hết là gate báo oan 219 lần và chết ngay lần đầu.
+   */
+  { id: 'xpath-locator', sev: 'P1', re: /(?:locator|\$x)\s*\(\s*['"`](?:\/\/|\(\/\/)|xpath\s*=/,
+    why: 'XPath bám cấu trúc DOM (thứ tự, cấp cha-con) — đổi layout là vỡ, và khi vỡ nó vẫn "tìm thấy" phần tử khác chứ không báo lỗi rõ.',
+    fix: '`getByRole`/`getByLabel` + accessible name trong scope đã neo; cần quan hệ DOM thì dùng `locator(css).filter({ hasText })`.' },
+  { id: 'weak-assert', sev: 'P1', re: /expect\s*\(\s*(?:await\s+)[^)]*\)\s*\.\s*(?:toBeTruthy|not\s*\.\s*toBeNull)\s*\(\s*\)|expect\s*\(\s*(?:page|locator|el|row|scope|card|modal)\b[^)]*\)\s*\.\s*(?:toBeTruthy|not\s*\.\s*toBeNull)\s*\(\s*\)/,
+    why: '"Có tồn tại" KHÔNG phải oracle: `toBeTruthy()` trên giá trị đọc từ app pass với BẤT KỲ chuỗi khác rỗng — kể cả giá trị SAI. Đây là cách nhanh nhất tạo PASS giả.',
+    fix: 'So với GIÁ TRỊ CỤ THỂ theo spec (`toBe`, `toHaveText`, `toContainText` với chuỗi verbatim). Nếu chỉ cần biết có hiện: `toBeVisible()`.' },
 ];
 
 function listFiles(dir, out = []) {
@@ -97,6 +110,15 @@ function targets() {
   return files;
 }
 
+/*
+ * CHẶN "require() làm CLI chạy": test cần đọc `RULES` để kiểm chính bộ luật (kể cả ca ÂM TÍNH), mà file
+ * này thi hành ngay ở top-level. Cùng bẫy đã gặp ở `mutation_check.js`. `return` ở top-level của CommonJS
+ * là hợp lệ (module được bọc trong function) nên dừng ở đây là đủ, không phải thụt lề cả file.
+ */
+module.exports = { RULES };
+if (require.main === module) mainCli();
+
+function mainCli() {
 const findings = [];
 for (const { f, scope } of targets()) {
   let lines;
@@ -191,3 +213,4 @@ if (ENFORCE && !Object.keys(base).length) {
   process.exit(1);
 }
 process.exit(0);
+}

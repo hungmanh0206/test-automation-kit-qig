@@ -496,6 +496,27 @@ if (taskDir) {
       if (g.problem) problems.push(g.problem);
     }
   } catch (e) { warnings.push(`không đo được band để kiểm kế hoạch mở rộng: ${e.message}`); }
+
+  /*
+   * MUTATION CHECK — máy DUY NHẤT trả lời "bộ kiểm có thật sự bắt được bug không" (mọi máy khác cố tìm
+   * thêm bug; máy này đo năng lực phát hiện). Nhưng nó chạy tuỳ hứng: workflow chỉ ghi "chạy khi task có
+   * case band high", không trigger, không ai đếm. Thứ giá trị nhất mà phụ thuộc người nhớ.
+   * Nay: task có case band HIGH đã execute mà không có báo cáo mutation ⇒ CẢNH BÁO (không chặn — nó cần
+   * app sống + `ui_catalog.json`, chặn ở đây sẽ khoá cả task backend/API không có màn).
+   */
+  try {
+    const planGuard = require(path.resolve(__dirname, "..", "lib", "expansion", "plan_guard"));
+    const stPath4 = path.join(taskDir, "test-results", "testcase-status.json");
+    if (fs.existsSync(stPath4)) {
+      const doc4 = JSON.parse(fs.readFileSync(stPath4, "utf8"));
+      const hasHigh = planGuard.executedFromStatus(doc4).some((r) => /high/i.test(String(r.band || r.risk || "")));
+      const reportsDir = path.join(taskDir, "reports");
+      const hasMut = fs.existsSync(reportsDir) && fs.readdirSync(reportsDir).some((f) => /mutation/i.test(f));
+      if (hasHigh && !hasMut) {
+        warnings.push('task có case band HIGH đã execute mà CHƯA có báo cáo mutation (`reports/mutation-*.md`) ⇒ chưa có gì chứng minh bộ kiểm bắt được bug, chỉ chứng minh nó xanh. Chạy `TASK_ENV=... npm run mutation:check -- --catalog <ui_catalog.json> --out reports/mutation-check.md` (tiêm lỗi ở tầng page.route, KHÔNG chạm dữ liệu UAT). Task không có màn UI thì ghi lý do vào báo cáo phase.');
+      }
+    }
+  } catch (e) { warnings.push(`không đo được nhu cầu mutation check: ${e.message}`); }
   // CHỐNG "có file là xong": báo cáo tồn tại nhưng KHÔNG chứng minh được gì thì trục đó vẫn chưa soi.
   // Đọc DÒNG MÁY do chính mỗi máy phát ra (`<!-- gate: proven=N inconclusive=M broken=K -->`) chứ KHÔNG sniff
   // văn xuôi: bản đầu match chữ "đo thiếu điểm" trong dòng tổng kết (giá trị 0) nên báo oan đúng báo cáo SẠCH.

@@ -137,6 +137,24 @@ function gateTestExecution(doc, { fix = false } = {}) {
       // `failureLayer` là field CHUẨN (theo verdict_taxonomy) — phải tính, không chỉ dò chữ trong comment.
       const failText = [t.failureLayer, t.comment, t.rootCause, t.actualResult, t.actual, t.classification, t.failureType, t.category]
         .filter(Boolean).join(' ');
+      /*
+       * RERUN PHẢI ĐỊNH LƯỢNG. `verdict_taxonomy.rerun` đã khai `min: 2 · max: 3` từ lâu, nhưng workflow
+       * chỉ ghi "rerun đủ vòng" và KHÔNG máy nào đếm ⇒ "đủ" là bao nhiêu tuỳ người. Case FAIL ở tầng
+       * product/api_bug là case sắp thành bug Jira, nên đúng chỗ phải chứng minh đã loại flaky:
+       * khai `reruns: <số lần đã chạy lại>` trong record. Chỉ đòi ở tầng bug — setup_failure/script_error
+       * không cần (chúng đi sửa, không đi Jira), tránh siết chỗ không cần.
+       */
+      const layer = String(t.failureLayer || '').toLowerCase();
+      const isBugLayer = /product|api/.test(layer) && !/setup|script|infra|flaky/.test(layer);
+      if (isBugLayer) {
+        const minRerun = Number(((loadTaxonomy() || {}).rerun || {}).min || 2);
+        const got = Number(t.reruns ?? t.rerunCount ?? NaN);
+        if (!Number.isFinite(got)) {
+          problems.push(`${id}: FAIL tầng "${layer}" (sắp thành bug) nhưng KHÔNG khai số lần rerun. Thêm \`reruns: <số>\` vào record — taxonomy đòi ≥${minRerun} lần để loại flaky/setup trước khi kết luận sản phẩm sai.`);
+        } else if (got < minRerun) {
+          problems.push(`${id}: FAIL tầng "${layer}" chỉ rerun ${got} lần, taxonomy đòi ≥${minRerun} (verdict_taxonomy.rerun.min). Chạy lại rồi cập nhật, hoặc hạ tầng lỗi nếu chưa chứng minh được là sản phẩm sai.`);
+        }
+      }
       if (!rules.hasFailureLayer(failText)) {
         problems.push(`${id}: FAIL nhưng KHÔNG phân tầng lỗi (product/api_bug? setup_failure? script_error? infra/flaky? thiếu data/quyền?) — nêu rõ tầng + root cause trong comment hoặc field failureLayer`);
       }
