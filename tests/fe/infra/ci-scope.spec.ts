@@ -199,3 +199,75 @@ test.describe('@infra ci:scope — miễn trừ phải HẸP, không thành cử
     expect(r.out).toContain('cửa hậu');
   });
 });
+
+/*
+ * `.only` — đường false-green nặng nhất còn sống tới 23/08/2026. Đo: cắm 1 `test.only` vào
+ * `assertions.spec.ts` ⇒ `test_inventory_gate` báo HAS_TESTS · 535 test (vì `--list` liệt kê hết) mà run
+ * thật chạy 1 test rồi in "1 passed". Hai lớp chặn: `forbidOnly: CI` (đỏ ở CI) + gate này (đỏ lúc push).
+ */
+test.describe('@infra ci:scope — `.only` không được lọt', () => {
+  const ONLY = `test${'.'}only`;   // ghép chuỗi: để CHÍNH file này không bị gate của nó bắt
+
+  test('spec có .only ⇒ CHẶN, nói rõ bao nhiêu spec sẽ KHÔNG chạy', () => {
+    const root = sandbox({
+      ...CI_OK, '.agent/config/ci_scope.json': CFG(),
+      'tests/fe/infra/a.spec.ts': `import { test } from '@playwright/test';\n${ONLY}('x', () => {});\n`,
+      'tests/fe/infra/b.spec.ts': "import { test } from '@playwright/test';\ntest('y', () => {});\n",
+    });
+    const r = run(root);
+    expect(r.code, 'inventory gate KHÔNG bắt được ca này ⇒ phải chặn ở đây').toBe(1);
+    expect(r.out).toContain('a.spec.ts');
+    expect(r.out).toContain('.only');
+  });
+
+  test('`describe.only` cũng bị bắt (không chỉ test.only)', () => {
+    const root = sandbox({
+      ...CI_OK, '.agent/config/ci_scope.json': CFG(),
+      'tests/fe/infra/a.spec.ts': `import { test } from '@playwright/test';\ntest.describe${'.'}only('g', () => { test('x', () => {}); });\n`,
+    });
+    expect(run(root).code).toBe(1);
+  });
+
+  test('chữ "only" trong văn bản/tên biến ⇒ KHÔNG báo oan', () => {
+    const root = sandbox({
+      ...CI_OK, ...INFRA_OK, '.agent/config/ci_scope.json': CFG(),
+      'tests/fe/infra/c.spec.ts': "import { test } from '@playwright/test';\n// read-only field, only-on-failure\nconst onlyOne = 1;\ntest('x', () => { void onlyOne; });\n",
+    });
+    expect(run(root).code, run(root).out).toBe(0);
+  });
+});
+
+test.describe('@infra playwright.config — tuỳ chọn runner phải được KHAI, không để mặc định', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const src = fs.readFileSync(path.join(REPO, 'playwright.config.js'), 'utf8');
+
+  test('forbidOnly bật ở CI', () => {
+    expect(src, 'thiếu ⇒ test.only lọt lên CI và CI vẫn xanh').toMatch(/forbidOnly:\s*CI/);
+  });
+
+  test('retries ở CI ≥1 — nếu 0 thì reliability_index không bao giờ có dữ liệu flaky', () => {
+    const m = src.match(/retries:\s*CI\s*\?\s*(\d+)/);
+    expect(m, 'retries phải khai theo CI').toBeTruthy();
+    expect(Number(m![1]), 'Playwright chỉ gắn `flaky` cho test pass SAU retry').toBeGreaterThanOrEqual(1);
+  });
+
+  test('expect.timeout > 5s mặc định (UAT chậm) và test timeout > 30s', () => {
+    expect(Number(src.match(/expect:\s*\{[^}]*timeout:\s*([\d_]+)/)![1].replace(/_/g, ''))).toBeGreaterThan(5000);
+    expect(Number(src.match(/^\s*timeout:\s*([\d_]+)/m)![1].replace(/_/g, ''))).toBeGreaterThan(30000);
+  });
+
+  test('action/navigation timeout tách riêng để chẩn đoán được chậm ở đâu', () => {
+    expect(src).toMatch(/actionTimeout:/);
+    expect(src).toMatch(/navigationTimeout:/);
+  });
+
+  test('maxFailures + workers khai theo CI', () => {
+    expect(src).toMatch(/maxFailures:\s*CI/);
+    expect(src).toMatch(/workers:\s*CI/);
+  });
+
+  test('baseURL/testIdAttribute chỉ khai KHI có env — không hardcode site vào kit chung', () => {
+    expect(src).toMatch(/OPS_BASE_URL \? \{ baseURL/);
+    expect(src).toMatch(/PW_TEST_ID_ATTR \? \{ testIdAttribute/);
+  });
+});

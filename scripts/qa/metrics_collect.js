@@ -58,6 +58,7 @@ const passed = passedClean; const flaky = passedFlaky; const passRate = cleanPas
 
 // Per-TC: walk suites đệ quy.
 const tcRecs = [];
+let skippedTc = 0;   // record `skipped` đã BỎ — báo ra ngoài, không im lặng
 function walk(suites, file) {
   for (const s of suites || []) {
     const f = s.file || file || '';
@@ -73,6 +74,16 @@ function walk(suites, file) {
         // Chuẩn hoá path về repo-relative (Playwright trả path tương đối testDir) để downstream
         // (select_tests, dashboard) map được sang file thật trong repo.
         const fileRel = f && !f.startsWith('tests/') && /\.spec\.[jt]s$/.test(f) ? `tests/${f}` : f;
+        /*
+         * KHÔNG ghi record `skipped` vào tc-history. Test bị skip KHÔNG nói gì về độ tin cậy của nó —
+         * nhưng `reliability_index` tính TRI = pass sạch / TỔNG record, nên mỗi lần chạy một file lẻ là
+         * 500+ test còn lại bị ghi `skipped` và kéo TRI của chúng về 0.
+         * Đo 23/08/2026 trên kho thật: 1548 record = 1537 skipped · 10 failed · 1 passed ⇒ reliability
+         * quarantine 437/438 test với TRI 0 · flaky 0. Máy không thiếu dữ liệu — nó đang phán trên NHIỄU,
+         * và "quarantine gần như cả suite" là kết luận sai chứ không phải cảnh báo.
+         * Số skip vẫn được giữ ở mức RUN (`runRec.skipped`) — chỗ đó nó có nghĩa.
+         */
+        if (status === 'skipped') { skippedTc += 1; continue; }
         tcRecs.push({ at, label, key: `${fileRel}::${spec.title}`, file: fileRel, title: spec.title, status, retries, flaky: isFlaky });
       }
     }
@@ -99,5 +110,6 @@ if (fs.existsSync(runsFile)) {
 fs.appendFileSync(runsFile, JSON.stringify(runRec) + '\n', 'utf8');
 if (tcRecs.length) fs.appendFileSync(path.join(OUT, 'tc-history.jsonl'), tcRecs.map((r) => JSON.stringify(r)).join('\n') + '\n', 'utf8');
 
+if (skippedTc) console.log(`[metrics] bo ${skippedTc} record \`skipped\` khoi tc-history (skip khong noi gi ve do tin cay; van giu o muc run).`);
 console.log(`[metrics] run "${label}": ${testsFound} test · clean ${passedClean} · flaky ${passedFlaky} · fail ${failed} · skip ${skipped} · ${durationSec}s · cleanPassRate ${cleanPassRate ?? 'n/a'} · eventual ${eventualPassRate ?? 'n/a'}`);
 console.log(`[metrics] → knowledge/metrics/runs.jsonl (+${tcRecs.length} per-TC vào tc-history.jsonl)`);

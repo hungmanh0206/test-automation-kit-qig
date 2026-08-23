@@ -250,3 +250,70 @@ test.describe('@infra preflight — knowledge chưa có bản sao ngoài máy', 
     expect(preflight.checkKnowledgeBackup(tmp('kn-'), {})).toEqual([]);
   });
 });
+
+/*
+ * RELIABILITY/METRICS — `skipped` không phải tín hiệu độ tin cậy.
+ * Đo 23/08/2026 trên kho thật: 1548 record = 1537 skipped · 10 failed · 1 passed ⇒ bảng reliability cũ
+ * "quarantine 437/438 test, TRI 0, flaky 0". Nguyên nhân: chạy một file lẻ thì 500+ test còn lại được ghi
+ * `skipped`, mà TRI = pass sạch / TỔNG. Máy không thiếu dữ liệu — nó KẾT LUẬN SAI trên nhiễu.
+ */
+test.describe('@infra metrics/reliability — skip không được kéo TRI', () => {
+  const RELI = path.join(REPO, 'scripts/qa/reliability_index.js');
+  const COLLECT = path.join(REPO, 'scripts/qa/metrics_collect.js');
+
+  const history = (rows: Array<Record<string, unknown>>) => {
+    const d = tmp('reli-');
+    const f = path.join(d, 'tc-history.jsonl');
+    fs.writeFileSync(f, `${rows.map((r) => JSON.stringify(r)).join('\n')}\n`);
+    return { dir: d, file: f };
+  };
+  const R = (status: string, extra: Record<string, unknown> = {}) => ({
+    at: '2026-08-01T00:00:00.000Z', label: 'x', key: 'tests/a.spec.ts::t1', file: 'tests/a.spec.ts', title: 't1', status, retries: 0, flaky: false, ...extra,
+  });
+
+  test('test pass 3 lần + 20 record skip ⇒ KHÔNG quarantine (trước đây bị TRI 0)', () => {
+    const h = history([...Array(3)].map(() => R('passed')).concat([...Array(20)].map(() => R('skipped'))));
+    const r = run(RELI, ['--in', h.file, '--out', h.dir, '--min-runs', '3']);
+    expect(r.code, r.out).toBe(0);
+    expect(r.out).toContain('bỏ 20/23');
+    const idx = JSON.parse(fs.readFileSync(path.join(h.dir, 'reliability-index.json'), 'utf8'));
+    expect(idx.tests[0].runs, 'chỉ đếm lần ĐÃ CHẠY').toBe(3);
+    expect(idx.tests[0].tri).toBe(1);
+    expect(idx.tests[0].quarantine).toBe(false);
+  });
+
+  test('toàn bộ record là skip ⇒ KHÔNG kết luận gì (không phán "cả suite hỏng")', () => {
+    const h = history([...Array(5)].map(() => R('skipped')));
+    const r = run(RELI, ['--in', h.file, '--out', h.dir]);
+    expect(r.out).toContain('KHÔNG có record nào đã chạy');
+    expect(fs.existsSync(path.join(h.dir, 'quarantine.json')), 'không được ghi quarantine từ nhiễu').toBe(false);
+  });
+
+  test('flaky thật (pass sau retry) VẪN được tính — đó là tín hiệu cần giữ', () => {
+    const h = history([R('passed', { retries: 1, flaky: true }), R('passed'), R('passed')]);
+    const r = run(RELI, ['--in', h.file, '--out', h.dir, '--min-runs', '3']);
+    const idx = JSON.parse(fs.readFileSync(path.join(h.dir, 'reliability-index.json'), 'utf8'));
+    expect(idx.tests[0].flakyRate, r.out).toBeGreaterThan(0);
+    expect(idx.tests[0].eventualSuccess).toBe(1);
+  });
+
+  test('metrics_collect KHÔNG ghi record skip vào tc-history, nhưng vẫn giữ số ở mức run', () => {
+    const d = tmp('mc-');
+    const results = path.join(d, 'results.json');
+    fs.writeFileSync(results, JSON.stringify({
+      stats: { expected: 1, unexpected: 0, flaky: 0, skipped: 2, duration: 1000 },
+      suites: [{ file: 'a.spec.ts', specs: [
+        { title: 'chay', tests: [{ status: 'expected', results: [{ status: 'passed' }] }] },
+        { title: 'skip1', tests: [{ status: 'skipped', results: [] }] },
+        { title: 'skip2', tests: [{ status: 'skipped', results: [] }] },
+      ] }],
+    }));
+    const r = run(COLLECT, ['--results', results, '--out', d, '--label', 'selftest']);
+    expect(r.code, r.out).toBe(0);
+    const tc = fs.readFileSync(path.join(d, 'tc-history.jsonl'), 'utf8').trim().split('\n');
+    expect(tc.length, 'chỉ 1 dòng: test đã chạy').toBe(1);
+    expect(r.out).toContain('bo 2 record');
+    const runRec = JSON.parse(fs.readFileSync(path.join(d, 'runs.jsonl'), 'utf8').trim());
+    expect(runRec.skipped, 'số skip vẫn phải có ở mức run — chỗ đó nó có nghĩa').toBe(2);
+  });
+});

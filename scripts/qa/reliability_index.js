@@ -39,8 +39,22 @@ if (!fs.existsSync(IN)) {
 }
 
 const recs = fs.readFileSync(IN, 'utf8').split(/\r?\n/).filter(Boolean).map((l) => { try { return JSON.parse(l); } catch (e) { return null; } }).filter(Boolean);
+/*
+ * BỎ record `skipped` trước khi tính. Skip KHÔNG nói gì về độ tin cậy, nhưng TRI = pass sạch / TỔNG nên
+ * mỗi record skip kéo TRI xuống. Chạy một file lẻ ⇒ 500+ test còn lại bị ghi skip ⇒ TRI của chúng về 0.
+ * Đo 23/08/2026 trên kho thật: 1548 record = 1537 skipped · 10 failed · 1 passed ⇒ bảng cũ "quarantine
+ * 437/438 test, TRI 0, flaky 0". Đó không phải cảnh báo mà là KẾT LUẬN SAI sinh từ nhiễu.
+ * `metrics_collect` đã ngừng ghi skip từ cùng ngày; lọc ở đây để dữ liệu CŨ không tiếp tục đầu độc.
+ */
+const skippedRecs = recs.filter((r) => String(r.status || '') === 'skipped').length;
+const usable = recs.filter((r) => String(r.status || '') !== 'skipped');
+if (skippedRecs) console.log(`[reliability] bỏ ${skippedRecs}/${recs.length} record \`skipped\` (không mang tín hiệu độ tin cậy; TRI tính trên ${usable.length} record đã CHẠY).`);
+if (!usable.length) {
+  console.log('[reliability] KHÔNG có record nào đã chạy ⇒ không kết luận gì. Cần chạy suite với retry (CI) để sinh tín hiệu clean/flaky.');
+  process.exit(0);
+}
 const byKey = new Map();
-for (const r of recs) {
+for (const r of usable) {
   const g = byKey.get(r.key) || { key: r.key, file: r.file, title: r.title, total: 0, cleanPass: 0, flaky: 0, fail: 0, lastAt: '' };
   g.total++;
   const st = String(r.status || '');

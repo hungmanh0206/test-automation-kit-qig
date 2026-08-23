@@ -98,7 +98,23 @@ function check() {
   }
   for (const r of roots) if (!specs.some((f) => inScope(f, [r]))) problems.push(`phạm vi nightly \`${r}\` KHÔNG có spec nào được track ⇒ nightly sẽ xanh mà chẳng chạy gì (false-green).`);
 
-  // ③ CI phải lấy phạm vi từ config, không được còn `playwright test` trần
+  /*
+   * ③ `.only` lọt vào spec được track = FALSE-GREEN nặng nhất còn sống trong kit. Đo 23/08/2026: cắm 1
+   * `test.only` vào `tests/fe/infra/assertions.spec.ts` ⇒ `test_inventory_gate` báo **HAS_TESTS · 535
+   * test** (vì `--list` vẫn liệt kê hết) nhưng run thật chạy **1 test** và in "1 passed". Mọi gate khác
+   * nhìn đâu cũng xanh trong khi 534 test không chạy.
+   * `forbidOnly: CI` trong `playwright.config.js` chặn ở CI. Gate này chặn SỚM HƠN — lúc push, trước khi
+   * đốt runner. Ghép chuỗi để chính file này không tự khớp.
+   */
+  const ONLY_RE = new RegExp(`\\b(test|describe|it)\\s*\\.\\s*${'only'}\\s*\\(`);
+  for (const f of specs) {
+    if (exempt.has(f)) continue;
+    let body = '';
+    try { body = fs.readFileSync(path.join(REPO, f), 'utf8'); } catch (e) { continue; }
+    if (ONLY_RE.test(body)) problems.push(`${f} có \`.only\` ⇒ run sẽ chạy ĐÚNG spec đó rồi báo xanh, trong khi ${specs.length - 1} spec còn lại không chạy (inventory gate vẫn đếm đủ nên không bắt được). Bỏ \`.only\` trước khi push.`);
+  }
+
+  // ④ CI phải lấy phạm vi từ config, không được còn `playwright test` trần
   for (const rel of CI_FILES) {
     const p = path.join(REPO, rel);
     if (!fs.existsSync(p)) continue;
