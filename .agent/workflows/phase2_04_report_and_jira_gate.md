@@ -104,6 +104,16 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
    - Cập nhật `knowledge/index.json`.
    - KHÔNG ghi case `BLOCKED_SETUP`/`SKIP_SETUP`/flaky/setup vào `knowledge/bugs/`. Không ghi secret/PII.
 
+9d. **Sao lưu knowledge ghi tay — NGAY SAU 9c, vì lượt này vừa sinh record mới:**
+   `KNOWLEDGE_BACKUP_DIR=<thư mục NGOÀI repo> npm run knowledge:backup` → rồi `-- --verify <bundle>`.
+   Chỉ sao lưu `domain/ system/ decisions/ setup_recipes/ environment/ locators/ explorations/` — phần
+   KHÔNG nạp lại được từ nguồn máy (là công sức xác nhận của BA/dev qua nhiều tháng). `bugs/`,
+   `historical_execution/`, `metrics/` CỐ Ý không sao lưu: nạp lại được từ Jira/AIO.
+   Vì sao bắt buộc: `knowledge/**` bị gitignore (dữ liệu công ty) ⇒ **không remote nào giữ hộ**, mất máy
+   là mất hẳn. Đây là loại mất mát duy nhất trong kit mà không script nào cứu được.
+   Máy nhắc: `preflight` cảnh báo khi có record ghi tay mà chưa khai `KNOWLEDGE_BACKUP_DIR`;
+   `self-review` cảnh báo thêm khi đã khai mà **chưa có bundle** hoặc bundle **cũ ≥7 ngày**.
+
 ## Rules
 
 - Không log Jira cho case skip.
