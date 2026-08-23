@@ -31,13 +31,8 @@ jobs:
           find scripts -name '*.mjs' -print0 | while IFS= read -r -d '' f; do node --check "$f"; done
           echo "node --check OK"
 
-      - name: JSON validity (config + knowledge index)
-        run: |
-          node -e "
-          const fs=require('fs');
-          ['knowledge/index.json','.agent/config/risk_model.example.json','.agent/config/dashboard.branding.example.json']
-            .forEach(f=>{JSON.parse(fs.readFileSync(f,'utf8'));console.log('JSON OK',f);});
-          "
+      - name: JSON validity (mọi .json đang được track — danh sách viết tay đã từng đỏ oan)
+        run: npm run json:check
 
       - name: Policy 1-nguồn (F3 — RULE_GLOBAL canonical, core_rules là digest có pointer)
         run: npm run gate:policy
