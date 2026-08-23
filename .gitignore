@@ -222,3 +222,18 @@ knowledge/bugs/*.json
 #     vẫn phải chụp lại — cam kết sai chỗ.
 #  Cách dùng: chụp baseline TRƯỚC đợt chạy (đã soi ảnh), so trong cùng lượt/cùng máy. Xem tests/fe/visual/.
 tests/fe/visual/**-snapshots/
+
+# ── Test THEO TASK — không thuộc kit dùng chung ─────────────────────────────────────────────────────
+#  Vì sao: commit 6773d1e vô tình track 46 spec của SAPP-22827 + 8 spec DB dựng-tay. Hậu quả đo được:
+#  nightly `npx playwright test` (01:00 VN) chạy CẢ suite ⇒ tự động drive OPS UAT (`student_delete*`,
+#  `calendar_destructive`, `calendar_create`…) hằng đêm mà không ai xác nhận — vi phạm "UAT
+#  non-destructive + xác nhận trước mỗi lượt chạm UAT". Test theo task ở lại máy người chạy task.
+tests/mobile-web/SAPP-*/
+tests/support/setup/db/connection.check.spec.ts
+tests/support/setup/db/db2.connect.spec.ts
+tests/support/setup/db/verify.beforeafter.spec.ts
+tests/support/setup/db/verify.confirm.spec.ts
+tests/support/setup/db/verify.db2.beforeafter.spec.ts
+tests/support/setup/db/verify.rootcause.spec.ts
+tests/support/setup/db/verify.sapp14127.spec.ts
+tests/support/setup/db/verify.validate-dryrun.spec.ts
