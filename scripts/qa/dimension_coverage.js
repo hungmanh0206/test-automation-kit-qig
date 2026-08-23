@@ -222,19 +222,73 @@ if (MODE === 'label') {
   console.log('[dim]   và kém precision (§12 nhận cả case điều hướng, vì "hiển thị" là động từ chuẩn của mọi expected tiếng Việt).');
   console.log('[dim]   Dùng để BIẾT chỗ có thể hổng, rồi soi TC mẫu. Muốn chặn được thì gắn tag chiều lúc gen (xem §0 prompt gen).\n');
 }
-console.log('| Chiều | § | Case | Trạng thái | TC mẫu (soi lại được) |');
-console.log('|---|---|---|---|---|');
+/*
+ * NGƯỠNG ĐỊNH LƯỢNG (thêm 23/08/2026). Trước đó phép đo là NHỊ PHÂN: "có ≥1 case cho chiều X" là ĐẠT.
+ * Hệ quả đo được: bộ 530 case thật có §12 (Display — chiều BẮT BUỘC, luôn nạp) chỉ ~12% case, và gate
+ * vẫn PASS. Có mặt ≠ đủ.
+ *
+ * Ngưỡng lấy từ `depthPolicy[band].minCasesPerDimension` trong `.agent/config/risk_model.json` — CÙNG
+ * chỗ `risk_gate` đọc `minCount`, để không sinh nguồn thứ hai. Band = band CAO NHẤT trong risk register
+ * của task (task có 1 module High thì cả bộ phải sâu theo High).
+ * Manifest override được từng chiều: `"display_conformance": { "required": true, "min": 8 }` — dạng chuỗi
+ * "required"/"n/a" cũ vẫn chạy nguyên.
+ */
+const RISK_MODEL = (() => {
+  try { return JSON.parse(fs.readFileSync(path.join(rc.REPO_ROOT, '.agent', 'config', 'risk_model.json'), 'utf8')); } catch (e) { return {}; }
+})();
+const bandOfTask = (() => {
+  try {
+    const rr = JSON.parse(fs.readFileSync(path.join(taskDir, 'reports', 'risk-register.json'), 'utf8'));
+    const rows = Array.isArray(rr) ? rr : (rr.modules || []);
+    const bands = new Set(rows.map((r) => String(r.band || '').toLowerCase()));
+    if (bands.has('high')) return 'High';
+    if (bands.has('medium')) return 'Medium';
+    if (bands.has('low')) return 'Low';
+  } catch (e) { /* chưa có risk register */ }
+  return 'UNKNOWN';
+})();
+const policy = (RISK_MODEL.depthPolicy || {})[bandOfTask] || {};
+const DEFAULT_MIN = Number(policy.minCasesPerDimension || 0) || 1;
+/** Khai chiều: chuỗi "required"/"n/a" (cũ) hoặc object { required, min } (mới). */
+const declOf = (id) => {
+  const raw = manifest && manifest.dimensions ? manifest.dimensions[id] : undefined;
+  if (raw && typeof raw === 'object') return { state: raw.required === false ? 'n/a' : 'required', min: Number(raw.min || 0) || DEFAULT_MIN };
+  return { state: raw, min: DEFAULT_MIN };
+};
+const totalTests = tests.length || 1;
+console.log(`[dim] ngưỡng mỗi chiều required: ≥${DEFAULT_MIN} case (band cao nhất của task = ${bandOfTask}, từ depthPolicy.minCasesPerDimension)`);
+console.log('| Chiều | § | Case | % bộ | Ngưỡng | Trạng thái | TC mẫu (soi lại được) |');
+console.log('|---|---|---|---|---|---|---|');
 
 const missingRequired = [];
+const belowThreshold = [];
 for (const d of DIMS) {
   const list = hits.get(d.id);
-  const decl = manifest && manifest.dimensions ? manifest.dimensions[d.id] : undefined;
+  const { state: decl, min } = declOf(d.id);
+  const share = Math.round((list.length / totalTests) * 1000) / 10;
+  const need = decl === 'required' ? `≥${min}` : '—';
   let state;
   if (decl === 'n/a') state = 'N/A (khai)';
   else if (list.length === 0 && decl === 'required') { state = '❌ THIẾU'; missingRequired.push(d); }
   else if (list.length === 0) state = '⚠ 0 case';
+  else if (decl === 'required' && list.length < min) { state = `⚠ MỎNG ${list.length}/${min}`; belowThreshold.push({ d, have: list.length, min }); }
   else state = `✓ ${list.length}`;
-  console.log(`| ${d.label} | ${d.sec} | ${list.length} | ${state} | ${list.slice(0, SAMPLES).join(', ') || '—'} |`);
+  console.log(`| ${d.label} | ${d.sec} | ${list.length} | ${share}% | ${need} | ${state} | ${list.slice(0, SAMPLES).join(', ') || '—'} |`);
+}
+
+/*
+ * PHÂN BỐ: 530 case trải đều 22 chiều rất khác 530 case dồn vào 3 chiều, mà bảng trên (đọc từng dòng)
+ * không cho thấy điều đó. In luôn độ lệch để thấy ngay — không cần ai tự cộng lại.
+ */
+{
+  const ranked = DIMS.map((d) => ({ label: d.label, sec: d.sec, n: hits.get(d.id).length }))
+    .filter((x) => x.n > 0).sort((a, b) => b.n - a.n);
+  if (ranked.length) {
+    const top3 = ranked.slice(0, 3);
+    const top3Share = Math.round((top3.reduce((s, x) => s + x.n, 0) / totalTests) * 1000) / 10;
+    console.log(`\n[dim] phân bố: ${ranked.length}/${DIMS.length} chiều có case · 3 chiều lớn nhất giữ ${top3Share}% (${top3.map((x) => `${x.sec} ${x.n}`).join(' · ')})`);
+    if (top3Share >= 70) console.log('[dim] ⚠ LỆCH: bộ case dồn vào ít chiều ⇒ phủ RỘNG chứ chưa SÂU đều. Xem chiều nào đang mỏng ở cột "Ngưỡng".');
+  }
 }
 
 if (!manifest) {
@@ -271,4 +325,16 @@ if (missingRequired.length) {
   console.error('[dim] (chưa --enforce nên KHÔNG chặn — nhưng đây là thiếu thật.)');
 } else if (manifest) {
   console.log('\n[dim] ✓ Mọi chiều khai bắt buộc đều có case.');
+}
+
+/*
+ * DƯỚI NGƯỠNG — tách khỏi "THIẾU" vì hai chuyện khác nhau: THIẾU là chưa nghĩ tới chiều đó; MỎNG là có
+ * nghĩ nhưng phủ hình thức (1 case cho một chiều bắt buộc). Cả hai đều chặn ở `--enforce`, nhưng thông
+ * điệp phải khác để người sửa biết phải làm gì.
+ */
+if (belowThreshold.length) {
+  console.error(`\n[dim] ✗ ${belowThreshold.length} chiều bắt buộc DƯỚI NGƯỠNG (band ${bandOfTask} ⇒ ≥${DEFAULT_MIN} case/chiều):`);
+  for (const b of belowThreshold) console.error(`  - ${b.d.label} (${b.d.sec}) — có ${b.have}, cần ${b.min}. "Có 1 case" không phải phủ: mở mục ${b.d.sec} của prompt gen và bổ sung ca thật, hoặc hạ ngưỡng có chủ ý bằng \`"${b.d.id}": { "required": true, "min": ${b.have} }\` kèm lý do.`);
+  if (ENFORCE) process.exit(1);
+  console.error('[dim] (chưa --enforce nên KHÔNG chặn — nhưng phủ hình thức thì báo cáo coverage đang nói sai.)');
 }

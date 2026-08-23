@@ -22,7 +22,6 @@
       "Exam": 3,
       "Question Bank": 3,
       "Report": 3,
-
       "Check tiền & Ghi nhận doanh thu": 5,
       "Ghi nhận DT theo loại": 5,
       "Công thức phí Service Fee": 5,
@@ -32,7 +31,6 @@
       "Checkout Thanh toán": 5,
       "Checkout Chuyển đổi": 5,
       "Permission Security": 5,
-
       "Biểu phí bán tài khoản thi": 4,
       "Tạo Add-on Order": 4,
       "Order Gia hạn": 4,
@@ -46,7 +44,6 @@
       "Đồng bộ Order về HubSpot": 4,
       "Đồng bộ Deal gốc": 4,
       "State Transition": 4,
-
       "Quản lý Add-on Product": 3,
       "Quản lý Add-on Product Version": 3,
       "Quản lý Product Version": 3,
@@ -55,15 +52,26 @@
       "Tạo Timeoff Request": 3,
       "Sửa Timeoff Request": 3,
       "Export chấm công": 3,
-
       "UI": 2
     },
     "tagWeights": {
-      "money": 5, "payment": 5, "transaction": 5, "cash": 5, "order": 5, "refund": 5,
-      "security": 5, "auth": 5, "permission": 5,
-      "sync": 4, "hubspot": 4, "integration": 4, "calculation": 4, "attendance": 4,
+      "money": 5,
+      "payment": 5,
+      "transaction": 5,
+      "cash": 5,
+      "order": 5,
+      "refund": 5,
+      "security": 5,
+      "auth": 5,
+      "permission": 5,
+      "sync": 4,
+      "hubspot": 4,
+      "integration": 4,
+      "calculation": 4,
+      "attendance": 4,
       "report": 3,
-      "display": 2, "ui-conformance": 2
+      "display": 2,
+      "ui-conformance": 2
     }
   },
   "likelihood": {
@@ -72,16 +80,76 @@
     "bugWeight": 0.6,
     "failRateWeight": 0.4
   },
-  "bands": { "High": 12, "Medium": 6 },
+  "bands": {
+    "High": 12,
+    "Medium": 6
+  },
   "depthPolicy": {
-    "High":    { "minCount": 10, "requiredDimensions": ["negative", "boundary", "security"] },
-    "Medium":  { "minCount": 5,  "requiredDimensions": ["negative"] },
-    "Low":     { "minCount": 2,  "requiredDimensions": [] },
-    "UNKNOWN": { "minCount": 3,  "requiredDimensions": ["negative"] }
+    "High": {
+      "minCount": 10,
+      "requiredDimensions": [
+        "negative",
+        "boundary",
+        "security"
+      ],
+      "minCasesPerDimension": 5
+    },
+    "Medium": {
+      "minCount": 5,
+      "requiredDimensions": [
+        "negative"
+      ],
+      "minCasesPerDimension": 3
+    },
+    "Low": {
+      "minCount": 2,
+      "requiredDimensions": [],
+      "minCasesPerDimension": 1
+    },
+    "UNKNOWN": {
+      "minCount": 3,
+      "requiredDimensions": [
+        "negative"
+      ],
+      "minCasesPerDimension": 3
+    }
   },
   "dimensionKeywords": {
-    "negative": ["[negative]", "negative", "invalid", "không hợp lệ", "chặn", "required", "reject", "lỗi", "422", "400"],
-    "boundary": ["[boundary]", "boundary", "biên", "min-1", "max+1", "31/2", "nhuận", "00:00", "23:59"],
-    "security": ["idor", "injection", "xss", "privilege", "unauthorized", "403", "401", "mass-assignment", "token", "permission"]
-  }
+    "negative": [
+      "[negative]",
+      "negative",
+      "invalid",
+      "không hợp lệ",
+      "chặn",
+      "required",
+      "reject",
+      "lỗi",
+      "422",
+      "400"
+    ],
+    "boundary": [
+      "[boundary]",
+      "boundary",
+      "biên",
+      "min-1",
+      "max+1",
+      "31/2",
+      "nhuận",
+      "00:00",
+      "23:59"
+    ],
+    "security": [
+      "idor",
+      "injection",
+      "xss",
+      "privilege",
+      "unauthorized",
+      "403",
+      "401",
+      "mass-assignment",
+      "token",
+      "permission"
+    ]
+  },
+  "_depthPolicy_note": "minCount = tong so case toi thieu cho MOT MODULE cua band do (risk_gate). minCasesPerDimension = so case toi thieu cho MOI CHIEU khai `required` (dimension_coverage --enforce). Vi sao them 23/08/2026: truoc do do phu la NHI PHAN 'co >=1 case la dat' — bo 530 case that co chieu §12 chi ~12% ma van PASS. Co mat != du."
 }
