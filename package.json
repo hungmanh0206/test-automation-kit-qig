@@ -17,6 +17,7 @@
     "user-guide:images": "node scripts/utils/generate_user_guide_images.mjs",
     "dashboard": "node scripts/qa/dashboard_generate.js",
     "accessibility": "node scripts/qa/accessibility_check.js",
+    "ui:conformance": "node scripts/qa/ui_conformance_check.js",
     "perf": "node scripts/qa/perf_check.js",
     "security": "node scripts/qa/security_check.js",
     "load": "node scripts/qa/load_check.js",

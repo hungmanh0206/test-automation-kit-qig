@@ -9,7 +9,7 @@
 ## Workflow
 
 1. Validate từng testcase:
-   - Đủ 9 cột.
+   - Đủ 11 cột.
    - Step rõ và executable.
    - Expected result cụ thể.
    - Test data không placeholder.
@@ -34,6 +34,12 @@
 6. **Ma trận traceability (F8)**: chạy `npm run trace:matrix` (hoặc `node scripts/qa/traceability_matrix.js`) → sinh `reports/traceability-matrix.{md,csv}` join REQ→TC→AUTO→EXEC→BUG từ artifact task; đánh dấu TC **chưa publish / chưa execute**. Ở Phase 1 ma trận là bản coverage (TC+publish); refresh lại sau Phase 2 để có EXEC/BUG đầy đủ.
 7. Cập nhật `snapshot_context.json`, `phase1-summary.md` và `task.md`.
 6a. **Risk gate (RBT depth):** chạy `TASK_ENV=... npm run risk:gate` (skill `risk_scorer`) đối chiếu testcase với `depthPolicy` theo band. Module **High risk** thiếu độ sâu → CRITICAL = **Critical gap → không PASS** coverage gate (đồng bộ Decision Rules `tc_validator`). Mặc định cảnh báo; `risk:gate:enforce` chặn CI. QA override band / `gate_waiver` trong `risk-register.json` cho ngoại lệ có lý do.
+6b. **Chiều coverage (BẮT BUỘC):** `TASK_ENV=... npm run dim:coverage -- --enforce` — thiếu chiều đã khai `required` = CHẶN.
+   Đây là thứ duy nhất đo "bộ case có đầy đủ theo chiều" chứ không chỉ đếm số case; bỏ qua thì thiếu-chiều không bao giờ lộ ra.
+6c. **Error Guessing từ bug lịch sử:** `TASK_ENV=... npm run bugs:checklist` — đối chiếu bộ case với bug đã từng xảy ra ở module này.
+   Bug lặp lại là bug rẻ nhất để bắt; không tra kho thì mỗi sprint lại vấp lại.
+6d. **Chiều ngược (spec → case):** `TASK_ENV=... npm run spec:gap` — thứ tài liệu NÊU mà bộ case chưa phủ.
+   Cả 3 lệnh chỉ đọc artefact local, không gọi mạng, nên chạy được cả khi offline.
 6b. Sinh **Traceability Matrix** tường minh `<TASK_OUTPUT_DIR>/reports/traceability-matrix.md` — bảng `| REQ-ID | Requirement/AC | Risk | TC ID (trace) | Status |` (1 dòng/requirement in-scope; `Status` ∈ `Covered`/`Partial`/`Gap`). Hỗ trợ Gap Analysis: requirement `Gap`/`Partial` mức Critical/High phải khớp `### High/Critical Gaps` trong summary. Đây là artifact riêng, chi tiết hơn Coverage Matrix tóm tắt trong summary.
 7. Nếu `### Precondition Execution Matrix` còn dòng `Needs hook`/`Manual-only`, sinh `reports/capability-request.md` (handoff Dev/BE/DevOps): gom capability còn thiếu (loại `test_hook`/`account`/`sandbox`/`api`/`config`, endpoint/tên đề xuất, PRE + TC bị chặn, owner). KHÔNG dùng DB để thay thế. Format chi tiết ở [prompt_templates/phase1/02_gen_testcases.md](../../prompt_templates/phase1/02_gen_testcases.md); contract test hook ở [tests/support/setup/hooks/README.md](../../tests/support/setup/hooks/README.md).
 

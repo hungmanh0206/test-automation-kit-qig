@@ -124,7 +124,57 @@ function runPreflight({ mode = 'generic', task = '', extraRequire = [], allowMis
       }
     }
   }
+
+  // Hai chiều "im lặng là hỏng": harness hook tắt · knowledge chưa có bản sao ngoài máy.
+  // Tách thành hàm thuần (xuất ở cuối file) để có test kiểm chính nó, thay vì kiểm bằng mắt.
+  warnings.push(...checkHarnessHooks(rc.REPO_ROOT));
+  warnings.push(...checkKnowledgeBackup(rc.REPO_ROOT, process.env));
+
   return { problems, warnings, mode, task };
+}
+
+/*
+ * HARNESS HOOK — hai hook mạnh nhất nằm NGOÀI git (cấu hình ở `.claude/settings.json`, đã gitignore).
+ * Máy mới clone: hook không chạy mà không có tiếng động nào — đúng bẫy kit vốn chống ("harness chống
+ * quên" lại phụ thuộc người nhớ cấu hình tay). CẢNH BÁO chứ không CHẶN: đây là cấu hình máy-cá-nhân,
+ * chặn ở đây sẽ khoá cả CI lẫn người mới vào việc.
+ */
+const HARNESS_HOOKS = [
+  ['scripts/qa/hooks/gate_on_write.js', 'chặn output sai NGAY LÚC agent ghi file'],
+  ['scripts/qa/hooks/inject_context.js', 'bơm context để agent không bỏ qua file phải đọc'],
+];
+function checkHarnessHooks(root) {
+  const out = [];
+  const settingsPath = path.join(root, '.claude', 'settings.json');
+  let declared = '';
+  if (fs.existsSync(settingsPath)) {
+    try { declared = JSON.stringify(JSON.parse(fs.readFileSync(settingsPath, 'utf8')).hooks || {}); } catch (e) { out.push('harness: `.claude/settings.json` KHÔNG parse được ⇒ hook coi như TẮT. Sửa JSON rồi mở lại /hooks.'); }
+  } else {
+    out.push('harness: KHÔNG có `.claude/settings.json` ⇒ 2 hook forcing-function đang TẮT. Copy mẫu trong `scripts/qa/hooks/README.md`. Không chặn, nhưng biết mà chạy thì khác hẳn: gate lúc-ghi-file bắt sai sớm hơn gate cuối phase.');
+  }
+  for (const [f, why] of HARNESS_HOOKS) {
+    if (!fs.existsSync(path.join(root, f))) continue;            // hook không có trong repo thì không đòi khai
+    if (declared.includes(path.basename(f))) continue;
+    out.push(`harness: hook \`${path.basename(f)}\` có trong repo nhưng CHƯA được khai trong \`.claude/settings.json\` ⇒ đang tắt (${why}). Mẫu JSON: \`scripts/qa/hooks/README.md\`.`);
+  }
+  return out;
+}
+
+/*
+ * KNOWLEDGE BACKUP — `knowledge:backup` là lệnh KHÔNG được nhắc ở bất kỳ prompt/workflow/rule nào (đo
+ * 23/08/2026: 0 nơi). Nó bảo vệ đúng phần đắt nhất: store ghi tay từ FSD/BA/dev — mất là làm lại công
+ * sức người, không phải chạy lại script. Và `knowledge/**` bị gitignore nên không remote nào giữ hộ.
+ */
+const PRECIOUS_STORES = ['domain', 'system', 'decisions', 'setup_recipes', 'environment', 'locators', 'explorations'];
+function checkKnowledgeBackup(root, env) {
+  let count = 0;
+  for (const s of PRECIOUS_STORES) {
+    const d = path.join(root, 'knowledge', s);
+    if (!fs.existsSync(d)) continue;
+    try { count += fs.readdirSync(d).filter((f) => f.endsWith('.json')).length; } catch (e) { /* thư mục không đọc được: bỏ qua, không phán */ }
+  }
+  if (!count || String((env || {}).KNOWLEDGE_BACKUP_DIR || '').trim()) return [];
+  return [`knowledge: ${count} record thuộc nhóm KHÔNG NẠP LẠI ĐƯỢC mà chưa khai \`KNOWLEDGE_BACKUP_DIR\` ⇒ chưa có bản sao nào ngoài máy này (knowledge/** bị gitignore). Chạy \`KNOWLEDGE_BACKUP_DIR=<thư mục NGOÀI repo> npm run knowledge:backup\`.`];
 }
 
 function main() {
@@ -151,6 +201,6 @@ function main() {
   process.exit(1);
 }
 
-module.exports = { runPreflight, MANIFEST };
+module.exports = { runPreflight, MANIFEST, checkHarnessHooks, checkKnowledgeBackup };
 
 if (require.main === module) main();

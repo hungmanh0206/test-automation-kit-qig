@@ -57,6 +57,11 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
    - **Gate CHẶN → TỰ SỬA trong session rồi chạy lại tới khi PASS**; KHÔNG push kèm vi phạm, KHÔNG chờ user nhắc. Chỉ `--qa-approved` khi QA có lý do rõ (được log).
    - **Bắt buộc tạo bug/Test Execution QUA script kit** (`bug_reporter.js`/`push_test_execution.js`, hoặc `aio/push_execution_aio.js` khi đã sang AIO) — KHÔNG tạo tay bằng Atlassian MCP/API hay UI AIO (tạo tay = bỏ qua gate → sai 4 phần/evidence/comment).
    - 🔀 **AIO Tests**: `npm run aio:push-exec -- --task <TASK_KEY>` chạy **cùng gate này** trước khi ghi. Bản AIO neo evidence xuống **từng bước** nên luật "mỗi step phải có evidence riêng" lần đầu có đường thoả — xem `scripts/integrations/aio/README.md`.
+4a. **Đối soát mở rộng 5 trục:** `TASK_ENV=... npm run expansion:plan -- --audit --enforce` — CHẶN nếu có finding
+   ghi PASS/FAIL mà không có `oracle_ref` (nhất quán KHÔNG phải bằng chứng của đúng). `aio:push-exec` cũng chặn ở
+   `plan_guard`, nhưng chạy ở đây thì biết sớm hơn một bước.
+4a2. **Báo cáo rò (leak):** `TASK_ENV=... npm run leak:report` — bug do người ngoài tìm ra thì phải chỉ được máy nào
+   lẽ ra bắt được. Không có báo cáo này thì "lọt bug" mãi là chuyện cảm tính.
 5. Chạy Jira dry-run trước.
 6. Chỉ log Jira thật khi user yêu cầu hoặc prompt hiện tại cho phép.
 7. Jira description chỉ gồm:

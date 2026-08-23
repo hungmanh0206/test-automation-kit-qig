@@ -26,6 +26,13 @@ Giảm skip/fail giả, đảm bảo case pass thật sự validate đúng behav
    - Rerun đủ vòng để loại flaky/setup.
    - Thu evidence ảnh/video phù hợp (log/response chỉ là diagnostic local).
 
+## Đo suite có bắt được bug không (band high, định kỳ)
+
+`TASK_ENV=... npm run mutation:check -- --catalog <ui_catalog.json>` — bóp méo response ở tầng `page.route()`
+rồi xem suite có ĐỎ không. Đây là thứ DUY NHẤT trả lời "suite xanh vì app đúng, hay vì suite không kiểm gì".
+Không chạm dữ liệu thật (chỉ méo response trên đường về browser). Không đưa vào CI vì cần app sống + catalog;
+chạy khi task có case band *high*, hoặc sau khi sửa assertion diện rộng. Mutant "survived" = chỗ suite mù.
+
 ## Rules
 
 - Không skip testcase chỉ để tăng pass rate.
