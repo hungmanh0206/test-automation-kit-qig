@@ -116,6 +116,43 @@ Sau merge:
 - Ghi `change/regen/merge-summary.md`.
 - Nếu Excel thay đổi và testcase đã từng publish lên TMS, ghi rõ recommended next step: chạy `partial-rerun/run_testcase_cleanup.md` (Deprecate case rời Excel) sau khi re-publish.
 
+### Step 2a: PHIÊN BẢN HOÁ ORACLE + gate nội dung (BẮT BUỘC, TRƯỚC khi publish)
+
+Nhánh này tồn tại vì **requirement đổi nội dung**. Nếu chỉ cập nhật testcase mà không cập nhật kho tri
+thức thì oracle trong `knowledge/` vẫn là bản CŨ — lần sau agent sinh case sẽ dùng rule lỗi thời, và
+`--stale` cũng không phát hiện được vì `confirmed_at` không đổi. Đây là lúc **duy nhất** biết chắc rule nào
+đã đổi VÀ đã có người duyệt (`HUMAN_REVIEW_STATUS = APPROVED`), nên là thời điểm đúng để phiên bản hoá.
+
+1. **Business rule đổi ⇒ record MỚI, không sửa tại chỗ:**
+   - Tạo `knowledge/domain/<BR-ID>.json` với `version: <N+1>`, `supersedes: "<BR-ID>@v<N>"`,
+     `confirmed_at: <ngày duyệt>`, `source` trỏ đúng tài liệu/câu trả lời BA của lượt này.
+   - Bản cũ: `status: superseded` (giữ lại — lịch sử oracle là thứ dùng để giải thích verdict cũ).
+   - Sửa tại chỗ là mất khả năng trả lời "hôm đó case PASS theo rule nào".
+2. **Bảng trạng thái / ma trận quyền đổi** ⇒ cập nhật `knowledge/system/` (`state_machine`,
+   `permission_matrix`) theo cùng nguyên tắc version.
+3. Chạy máy kiểm, theo thứ tự:
+
+```powershell
+npm run domain:check                 # schema + PII + trùng id@version + supersedes có khai chưa
+npm run domain:index                 # dựng lại index sau khi thêm record
+npm run system:check ; npm run system:index
+npm run domain:check -- --stale      # TC đã execute TRƯỚC khi rule đổi ⇒ PHẢI chạy lại
+npm run domain:trace-back            # case UPDATED/NEW có trỏ đúng id rule mới chưa
+```
+
+4. `--stale` trả về TC nào thì **ghi vào `change/regen/merge-summary.md` mục "TC cần rerun vì oracle đổi"**
+   và chuyển sang nhánh `rerun` cho đúng những TC đó. Không im lặng bỏ qua: TC pass theo rule cũ mà rule đã
+   đổi thì kết quả cũ **không còn giá trị**.
+5. **Gate nội dung cho phần vừa merge** — Phase 1 bắt buộc qua, nhánh này trước đây không:
+
+```powershell
+npm run design:gate                                  # cột canonical, ô lõi rỗng, ui_catalog khi có case hiển thị
+TASK_ENV=... npm run dim:coverage -- --enforce        # chiều required + NGƯỠNG theo risk band
+```
+
+   Vì sao cần: TC `NEW`/`UPDATED` ở đây đi **thẳng lên AIO**. Không có gate nội dung thì case thiếu cột/rỗng
+   ô lõi/không có oracle vẫn publish được — trong khi cùng loại case đó bị chặn ở Phase 1.
+
 ### Step 2b: Re-publish testcase lên AIO (TC UPDATED + NEW)
 
 Chỉ chạy khi testcase đã từng publish lên AIO (có `reports/aio-testcase-publish-summary.md`) và `REPUBLISH_TESTCASES != 0`. Mục đích: đẩy phần thay đổi lên AIO để AIO khớp Excel và làm **nguồn execute**.

@@ -291,6 +291,33 @@ test.describe('@infra branch parity — cơ chế đã có phải dùng ở MỌ
     for (const m of ['output_gate.js', 'expansion:plan', 'bugs:checklist']) expect(text, `rerun chưa nhắc ${m}`).toContain(m);
   });
 
+  test('MỌI nhánh của kit phải có trong config — F12 ban đầu bỏ sót partial-rerun', () => {
+    /*
+     * Lỗi một tầng cao hơn: phép đo bỏ sót chính đối tượng cần đo. F12 lúc mới viết chỉ khai 3 nhánh
+     * (phase1/phase2/rerun) nên KHÔNG thể bắt được chuyện `partial-rerun` — nhánh chuyên xử lý
+     * "requirement đổi" — lại là nhánh duy nhất không cập nhật kho tri thức về requirement.
+     * Test này khoá: có thư mục/điểm-vào của một nhánh thì nhánh đó phải nằm trong config.
+     */
+    const cfg = JSON.parse(fs.readFileSync(CFG, 'utf8'));
+    const known = Object.keys(cfg.branches);
+    expect(known, 'thiếu nhánh nào là F12 mù nhánh đó').toEqual(expect.arrayContaining(['phase1', 'phase2', 'rerun', 'partial-rerun']));
+    // Điểm-vào `run_*` nào tồn tại trên đĩa cũng phải được một nhánh nào đó trỏ tới.
+    const declared = Object.values<string[]>(cfg.branches).flat().join(' ');
+    const entries = fs.readdirSync(path.join(REPO, 'prompt_templates')).filter((f) => /^run_.*\.md$/.test(f));
+    for (const e of entries) expect(declared, `điểm-vào ${e} chưa thuộc nhánh nào trong branch_parity`).toContain(e);
+  });
+
+  test('nhánh partial-rerun PHẢI phiên bản hoá oracle + có gate nội dung', () => {
+    const cfg = JSON.parse(fs.readFileSync(CFG, 'utf8'));
+    for (const m of ['domain:check', 'design:gate', 'dim:coverage']) {
+      expect(cfg.machines[m].applies, `${m} phải áp cho partial-rerun`).toContain('partial-rerun');
+    }
+    const body = fs.readFileSync(path.join(REPO, 'partial-rerun/run_requirement_apply_approved.md'), 'utf8');
+    // Phiên bản hoá, không sửa tại chỗ: mất khả năng trả lời "hôm đó case PASS theo rule nào".
+    for (const must of ['supersedes', 'confirmed_at', '--stale', 'superseded']) expect(body, `apply_approved thiếu "${must}"`).toContain(must);
+    expect(body, 'gate nội dung cho phần vừa merge').toMatch(/design:gate/);
+  });
+
   test('gate CÓ RĂNG: gỡ 1 máy khỏi nhánh applies ⇒ gate:policy đỏ', () => {
     // Chạy gate trên bản config đã bẻ (trỏ nhánh rerun sang thư mục rỗng) — không sửa file thật.
     const cfg = JSON.parse(fs.readFileSync(CFG, 'utf8'));
