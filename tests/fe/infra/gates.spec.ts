@@ -157,12 +157,24 @@ test.describe('@infra dim:coverage — chỉ chặn khi số liệu đáng tin',
     expect(r.out, 'chiều khai n/a có lý do thì không bị kêu').not.toMatch(/perf.*KHÔNG có lý do/);
   });
 
-  test('đủ chiều required ⇒ exit 0', () => {
+  test('đủ chiều required + ngưỡng đã khai ⇒ exit 0', () => {
+    // Từ 23/08/2026 độ phủ có NGƯỠNG (depthPolicy.minCasesPerDimension): "có 1 case" không còn tự động đạt.
+    // Task 1 case mà muốn qua thì phải khai min có chủ đích — đúng tinh thần "hạ ngưỡng được, nhưng phải viết ra".
+    const { env } = makeTask(
+      tcRow('T_TC_001', 'Order / Grid', '[Positive][Display] Lưới đủ cột', '1. Cột: A, B'),
+      { manifest: { dimensions: { display_conformance: { required: true, min: 1 } }, na_reasons: {} } },
+    );
+    expect(run(['scripts/qa/dimension_coverage.js', '--enforce'], env).code).toBe(0);
+  });
+
+  test('chiều required chỉ 1 case mà KHÔNG khai ngưỡng ⇒ CHẶN (phủ hình thức)', () => {
     const { env } = makeTask(
       tcRow('T_TC_001', 'Order / Grid', '[Positive][Display] Lưới đủ cột', '1. Cột: A, B'),
       { manifest: { dimensions: { display_conformance: 'required' }, na_reasons: {} } },
     );
-    expect(run(['scripts/qa/dimension_coverage.js', '--enforce'], env).code).toBe(0);
+    const r = run(['scripts/qa/dimension_coverage.js', '--enforce'], env);
+    expect(r.code, 'band UNKNOWN ⇒ ngưỡng 3; 1 case là MỎNG').toBe(1);
+    expect(r.out).toContain('DƯỚI NGƯỠNG');
   });
 
   test('ARTIFACT thắng manifest: có requirements/figma mà khai design "n/a" ⇒ chặn', () => {
@@ -231,5 +243,71 @@ test.describe('@infra gate:policy — NO-XRAY', () => {
     const changelog = fs.readFileSync(path.join(REPO, 'CHANGELOG.md'), 'utf8');
     expect(/xray/i.test(changelog), 'CHANGELOG phải còn dấu vết lịch sử để test này có nghĩa').toBe(true);
     expect(run([GATE]).code).toBe(0);
+  });
+});
+
+/*
+ * @infra F12 — CÂN BẰNG GIỮA CÁC NHÁNH (`branch_parity`).
+ *
+ * Vì sao có: mẫu hình lặp 5 lần trong đợt rà 23/08/2026 — kit xây cơ chế tốt nhưng NỐI KHÔNG ĐỀU. 7 gate
+ * mạnh nhất chỉ là npm script · `knowledge:backup` không ai gọi · khâu sinh code Phase 2 không gate · nhánh
+ * rerun 0 gate máy dù nó là nhánh TRỰC TIẾP chuyển bug sang Done. Cả 5 lần đều do người ngoài chỉ ra, vì
+ * không phép đo nào trả lời "cơ chế nào đã có mà chưa dùng ở nhánh cần nó". Nay câu đó là một phép đo.
+ */
+test.describe('@infra branch parity — cơ chế đã có phải dùng ở MỌI nhánh cần nó', () => {
+  const CFG = path.join(REPO, '.agent/config/branch_parity.json');
+
+  test('config khai đủ: máy nào cũng có `why`, miễn trừ nào cũng có lý do', () => {
+    const cfg = JSON.parse(fs.readFileSync(CFG, 'utf8'));
+    expect(Object.keys(cfg.branches)).toEqual(expect.arrayContaining(['phase1', 'phase2', 'rerun']));
+    for (const [name, spec] of Object.entries<Record<string, never>>(cfg.machines)) {
+      expect(String((spec as { why?: string }).why || ''), `${name} thiếu \`why\``).not.toBe('');
+      const applies = (spec as { applies?: string[] }).applies || [];
+      const waived = (spec as { waived?: Record<string, string> }).waived || {};
+      expect(applies.length, `${name} không áp dụng cho nhánh nào ⇒ khai để làm gì`).toBeGreaterThan(0);
+      for (const [b, why] of Object.entries(waived)) {
+        expect(String(why || '').trim(), `${name} miễn trừ ${b} mà không có lý do`).not.toBe('');
+        expect(applies, `${name}: ${b} vừa applies vừa waived`).not.toContain(b);
+      }
+      // Mỗi nhánh phải được QUYẾT: hoặc applies, hoặc waived có lý do. Không được bỏ lửng.
+      for (const b of Object.keys(cfg.branches)) {
+        expect(applies.includes(b) || Object.keys(waived).includes(b), `${name}: nhánh ${b} chưa được quyết (không applies, không waived)`).toBe(true);
+      }
+    }
+  });
+
+  test('nhánh rerun PHẢI có output_gate + expansion + bugs:checklist (nhánh đóng bug, hậu quả cao nhất)', () => {
+    const cfg = JSON.parse(fs.readFileSync(CFG, 'utf8'));
+    for (const m of ['output_gate.js', 'expansion:plan', 'bugs:checklist']) {
+      expect(cfg.machines[m].applies, `${m} phải áp cho rerun`).toContain('rerun');
+    }
+    const text = cfg.branches.rerun.map((rel: string) => {
+      const abs = path.join(REPO, rel);
+      if (!fs.existsSync(abs)) return '';
+      return fs.statSync(abs).isDirectory()
+        ? fs.readdirSync(abs).map((f) => fs.readFileSync(path.join(abs, f), 'utf8')).join('\n')
+        : fs.readFileSync(abs, 'utf8');
+    }).join('\n');
+    for (const m of ['output_gate.js', 'expansion:plan', 'bugs:checklist']) expect(text, `rerun chưa nhắc ${m}`).toContain(m);
+  });
+
+  test('gate CÓ RĂNG: gỡ 1 máy khỏi nhánh applies ⇒ gate:policy đỏ', () => {
+    // Chạy gate trên bản config đã bẻ (trỏ nhánh rerun sang thư mục rỗng) — không sửa file thật.
+    const cfg = JSON.parse(fs.readFileSync(CFG, 'utf8'));
+    cfg.branches.rerun = ['.gitignore'];   // file KHÔNG nhắc output_gate.js (branch_parity.json tự chứa tên máy)
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'parity-'));
+    const bak = fs.readFileSync(CFG, 'utf8');
+    try {
+      fs.writeFileSync(CFG, JSON.stringify(cfg, null, 2));
+      let out = '';
+      let code = 0;
+      try { out = execFileSync(process.execPath, [path.join(REPO, 'scripts/qa/policy_source_check.js')], { cwd: REPO, encoding: 'utf8' }); }
+      catch (e) { code = 1; out = `${(e as { stdout?: string }).stdout || ''}${(e as { stderr?: string }).stderr || ''}`; }
+      expect(code, 'phải đỏ').toBe(1);
+      expect(out).toContain('branch_parity');
+    } finally {
+      fs.writeFileSync(CFG, bak);
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
   });
 });

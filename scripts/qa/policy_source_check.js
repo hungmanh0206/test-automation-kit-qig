@@ -358,6 +358,49 @@ if (fs.existsSync(SKILLS_DIR)) {
 }
 
 
+/*
+ * F12 — CÂN BẰNG GIỮA CÁC NHÁNH. Mẫu hình lặp 5 lần trong đợt rà 23/08/2026: kit xây cơ chế tốt nhưng nối
+ * KHÔNG ĐỀU — 7 gate mạnh nhất chỉ là npm script · `knowledge:backup` không ai gọi · khâu sinh code Phase 2
+ * không có gate · nhánh rerun 0 gate máy dù nó là nhánh TRỰC TIẾP chuyển bug sang Done. Mỗi lần đều do
+ * người ngoài chỉ ra, vì không phép đo nào trả lời được "cơ chế nào đã có mà chưa dùng ở nhánh cần nó".
+ * Nay có: `.agent/config/branch_parity.json` khai máy nào phải xuất hiện ở nhánh nào; không áp dụng thì
+ * phải ghi `waived` KÈM LÝ DO — miễn trừ viết ra được thì tranh luận được, im lặng thì không.
+ */
+{
+  const cfgPath = path.join(rc.REPO_ROOT, '.agent', 'config', 'branch_parity.json');
+  let cfg = null;
+  try { cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8')); } catch (e) { problems.push(`branch_parity.json không đọc được (${e.message}) ⇒ không đo được độ đều giữa các nhánh.`); }
+  if (cfg) {
+    const textOf = (rel) => {
+      const abs = path.join(rc.REPO_ROOT, rel);
+      if (!fs.existsSync(abs)) return '';
+      if (fs.statSync(abs).isDirectory()) {
+        let all = '';
+        for (const f of fs.readdirSync(abs)) { const p2 = path.join(abs, f); if (fs.statSync(p2).isFile()) all += fs.readFileSync(p2, 'utf8'); }
+        return all;
+      }
+      return fs.readFileSync(abs, 'utf8');
+    };
+    const branchText = {};
+    for (const [b, paths] of Object.entries(cfg.branches || {})) branchText[b] = paths.map(textOf).join(String.fromCharCode(10));
+    let checked = 0;
+    for (const [machine, spec] of Object.entries(cfg.machines || {})) {
+      for (const b of spec.applies || []) {
+        checked += 1;
+        if (!branchText[b]) { problems.push(`branch_parity: nhánh "${b}" khai trong \`applies\` của \`${machine}\` nhưng KHÔNG có file nào ⇒ phép đo hỏng.`); continue; }
+        if (!branchText[b].includes(machine)) {
+          problems.push(`branch_parity: nhánh **${b}** KHÔNG nhắc \`${machine}\` — ${spec.why} Nối vào bước của nhánh đó, hoặc khai \`waived.${b}\` kèm lý do trong \`.agent/config/branch_parity.json\`.`);
+        }
+      }
+      for (const [b, reason] of Object.entries(spec.waived || {})) {
+        if (!String(reason || '').trim()) problems.push(`branch_parity: \`${machine}\` miễn trừ nhánh "${b}" mà KHÔNG có lý do — miễn trừ im lặng là cách bỏ cơ chế mà không ai thấy.`);
+        if ((spec.applies || []).includes(b)) problems.push(`branch_parity: \`${machine}\` vừa \`applies\` vừa \`waived\` nhánh "${b}" — khai xung đột.`);
+      }
+    }
+    if (!problems.some((x) => x.startsWith('branch_parity'))) console.log(`[policy] ✓ ${checked} cặp (máy × nhánh) đều được nối; miễn trừ nào cũng có lý do.`);
+  }
+}
+
 for (const w of warns) console.log(`[policy] ⚠ ${w}`);
 if (problems.length) {
   console.error('[policy] ✗ Vi phạm 1-nguồn-policy (F3):');
