@@ -39,17 +39,23 @@ jobs:
       # Khi đã promote spec thật (F6): bỏ ALLOW_EMPTY để 0-test thành ĐỎ.
       # F1 — inventory gate ĐÚNG SCOPE SHARD (--list --shard) → phát hiện SHARD_EMPTY, KHÔNG dùng
       # --pass-with-no-tests (đã biết shard có test mới chạy) → chặn false-green cả ở mức shard.
+      # Phạm vi lấy từ `.agent/config/ci_scope.json` (1 nguồn) — KHÔNG viết tay ở đây. Gate `ci:scope`
+      # chặn nếu file này còn `playwright test` trần, vì trần = chạy cả suite = tự chạm UAT.
+      - name: Scope (1 nguồn — .agent/config/ci_scope.json)
+        id: scope
+        run: echo "paths=$(npm run -s ci:scope -- --print-nightly)" >> "$GITHUB_OUTPUT"
+
       - name: Test inventory gate (F1 — per shard)
         env:
           ALLOW_EMPTY: '1'
-        run: node scripts/qa/test_inventory_gate.js --out inventory-${{ matrix.shard }}.json -- --shard=${{ matrix.shard }}/4
+        run: node scripts/qa/test_inventory_gate.js --out inventory-${{ matrix.shard }}.json -- --shard=${{ matrix.shard }}/4 ${{ steps.scope.outputs.paths }}
 
       - name: Sharded regression (blob report)
         run: |
           STATE=$(node -e "try{process.stdout.write(JSON.parse(require('fs').readFileSync('inventory-${{ matrix.shard }}.json','utf8')).state)}catch(e){process.stdout.write('INFRA_FAILURE')}")
           echo "shard ${{ matrix.shard }}/4 inventory = $STATE"
           if [ "$STATE" = "HAS_TESTS" ]; then
-            npx playwright test --shard=${{ matrix.shard }}/4 --reporter=blob
+            npx playwright test ${{ steps.scope.outputs.paths }} --shard=${{ matrix.shard }}/4 --reporter=blob
           elif [ "$STATE" = "NO_TESTS" ]; then
             echo "SHARD_EMPTY — shard ${{ matrix.shard }} không có test (suite chung chưa promote spec). KHÔNG phải PASSED."
           else
@@ -95,14 +101,14 @@ jobs:
       - run: npx playwright install --with-deps firefox webkit
 
       - name: Inventory gate (F1 — đúng scope 2 engine phụ)
-        run: node scripts/qa/test_inventory_gate.js --out inventory-xb.json -- --project=firefox-desktop --project=webkit-desktop
+        run: node scripts/qa/test_inventory_gate.js --out inventory-xb.json -- --project=firefox-desktop --project=webkit-desktop $(npm run -s ci:scope -- --print-nightly)
 
       - name: Cross-browser run (Firefox + WebKit)
         run: |
           STATE=$(node -e "try{process.stdout.write(JSON.parse(require('fs').readFileSync('inventory-xb.json','utf8')).state)}catch(e){process.stdout.write('INFRA_FAILURE')}")
           echo "cross-browser inventory = $STATE"
           if [ "$STATE" = "HAS_TESTS" ]; then
-            npx playwright test --project=firefox-desktop --project=webkit-desktop --reporter=html
+            npx playwright test $(npm run -s ci:scope -- --print-nightly) --project=firefox-desktop --project=webkit-desktop --reporter=html
           elif [ "$STATE" = "NO_TESTS" ]; then
             echo "NO_TESTS_EXECUTED — lane cross-browser rỗng (chưa promote spec hoặc GREP không khớp). KHÔNG phải PASSED."
           else

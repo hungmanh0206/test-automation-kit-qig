@@ -18,6 +18,7 @@ static-check:
     - find scripts -name '*.js' -print0 | xargs -0 -n1 node --check
     - find scripts -name '*.mjs' -print0 | xargs -0 -n1 node --check
     - npm run json:check   # mọi .json đang track; KHÔNG hardcode đường dẫn (knowledge/ đã bỏ track ⇒ list cũ đỏ oan)
+    - npm run ci:scope
     - npm run gate:policy
     - npm run secret:scan
     - 'npm audit --omit=dev || echo "(audit advisory — xem canh bao o tren; chua chan o high/moderate)"'
@@ -56,12 +57,14 @@ regression:
     - npm ci --prefer-offline --no-audit --no-fund
     - npx playwright install chromium webkit
     # F1 — chống false-green: đếm test trước; NO_TESTS được GHI RÕ thay vì báo PASSED giả.
-    - node scripts/qa/test_inventory_gate.js --out inventory.json
+    # Phạm vi từ `.agent/config/ci_scope.json` (1 nguồn). Gate `ci:scope` chặn nếu ở đây còn lệnh trần.
+    - export SCOPE="$(npm run -s ci:scope -- --print-nightly)"; echo "scope = $SCOPE"
+    - node scripts/qa/test_inventory_gate.js --out inventory.json -- $SCOPE
     - |
       STATE=$(node -e "try{process.stdout.write(JSON.parse(require('fs').readFileSync('inventory.json','utf8')).state)}catch(e){process.stdout.write('INFRA_FAILURE')}")
       echo "inventory state = $STATE"
       if [ "$STATE" = "HAS_TESTS" ]; then
-        npx playwright test --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL --reporter=blob --pass-with-no-tests
+        npx playwright test $SCOPE --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL --reporter=blob --pass-with-no-tests
       elif [ "$STATE" = "NO_TESTS" ]; then
         echo "NO_TESTS_EXECUTED — suite regression chung chua co spec promoted. KHONG phai PASSED."
       else
@@ -98,12 +101,13 @@ cross-browser:
     # webkit đã cần cho iphone-13 ở lane regression; FIREFOX chỉ cài Ở ĐÂY (đừng thêm vào lane PR).
     - npx playwright install firefox webkit
     # F1 — chống false-green, đếm ĐÚNG SCOPE 2 engine phụ (kể cả khi CROSS_BROWSER_GREP lọc bớt).
-    - node scripts/qa/test_inventory_gate.js --out inventory-xb.json -- --project=firefox-desktop --project=webkit-desktop
+    - export SCOPE="$(npm run -s ci:scope -- --print-nightly)"; echo "scope = $SCOPE"
+    - node scripts/qa/test_inventory_gate.js --out inventory-xb.json -- --project=firefox-desktop --project=webkit-desktop $SCOPE
     - |
       STATE=$(node -e "try{process.stdout.write(JSON.parse(require('fs').readFileSync('inventory-xb.json','utf8')).state)}catch(e){process.stdout.write('INFRA_FAILURE')}")
       echo "cross-browser inventory = $STATE"
       if [ "$STATE" = "HAS_TESTS" ]; then
-        npx playwright test --project=firefox-desktop --project=webkit-desktop --reporter=html
+        npx playwright test $SCOPE --project=firefox-desktop --project=webkit-desktop --reporter=html
       elif [ "$STATE" = "NO_TESTS" ]; then
         echo "NO_TESTS_EXECUTED — lane cross-browser rong (chua promote spec hoac GREP khong khop). KHONG phai PASSED."
       else
@@ -166,10 +170,6 @@ merge-report:
   needs:
     - job: regression
       artifacts: true
-  # METRICS_PUSH_TOKEN (masked CI var, Project Access Token scope write_repository) BẬT commit-back
-  # persistence. Chưa có token → job vẫn chạy, chỉ ra artifact (không đỏ).
-  variables:
-    GIT_DEPTH: "0"   # cần full history để rebase/push commit-back
   script:
     - npm ci --prefer-offline --no-audit --no-fund
     - npx playwright merge-reports --reporter=html blob-report/ || echo "no blob to merge"
@@ -177,27 +177,13 @@ merge-report:
     - PLAYWRIGHT_JSON_OUTPUT_NAME=merged-results.json npx playwright merge-reports --reporter=json blob-report/ || echo "(no blob for json)"
     - node scripts/qa/metrics_collect.js --results merged-results.json --label "ci-$CI_PIPELINE_ID" || echo "(metrics skip)"
     - node scripts/qa/reliability_index.js || echo "(reliability skip)"
-    # Persistence Option A — commit-back metrics vào knowledge/ (versioned). CHỈ scheduled + có token.
-    # Best-effort ([skip ci] tránh loop; || echo để không đỏ pipeline nếu conflict/thiếu quyền).
-    - |
-      if [ "$CI_PIPELINE_SOURCE" = "schedule" ] && [ -n "$METRICS_PUSH_TOKEN" ]; then
-        git config user.email "ci-metrics@sapp.edu.vn"
-        git config user.name "CI Metrics Bot"
-        if git check-ignore -q knowledge/metrics 2>/dev/null; then
-          echo "(persistence) TAT: knowledge/ da bo track tu 2d383e1 (du lieu cong ty) => KPI chi con trong artifact, khong tich luy vao repo. Doi backend khac neu can lich su dai han."
-        fi
-        git add knowledge/metrics/runs.jsonl knowledge/metrics/tc-history.jsonl knowledge/metrics/reliability-index.json knowledge/metrics/reliability-index.md knowledge/metrics/quarantine.json 2>/dev/null || true
-        if git diff --cached --quiet; then
-          echo "(persistence) metrics khong doi — bo qua commit"
-        else
-          git commit -m "chore(metrics): tich luy KPI/reliability tu run $CI_PIPELINE_ID [skip ci]"
-          REMOTE="https://oauth2:${METRICS_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-          git pull --rebase "$REMOTE" "$CI_DEFAULT_BRANCH" || echo "(persistence) rebase skip"
-          git push "$REMOTE" "HEAD:${CI_DEFAULT_BRANCH}" && echo "(persistence) metrics pushed" || echo "(persistence) push skip — kiem tra token/quyen write_repository"
-        fi
-      else
-        echo "(persistence) bo qua commit-back — can scheduled + METRICS_PUSH_TOKEN; hien artifact-only"
-      fi
+    # Persistence: KHÔNG commit-back vào repo nữa. `knowledge/**` đã bỏ track từ `2d383e1` (dữ liệu công
+    # ty, đối xử như `.env`) ⇒ `git add knowledge/metrics/...` không stage được gì, mà vì có `|| true` +
+    # `git diff --cached --quiet` nên job vẫn xanh và in "metrics khong doi": tính năng CHẾT mà trông như
+    # bình thường. Ngắn hạn: KPI nằm ở artifact dưới đây. Dài hạn: `npm run knowledge:backup` ra
+    # `KNOWLEDGE_BACKUP_DIR` (preflight cảnh báo khi chưa khai). Muốn lịch sử ngay trong CI thì phải dựng
+    # backend ngoài repo — quyết định của chủ repo, không phải mặc định im lặng.
+    - echo "(persistence) artifact-only: knowledge/ khong track => khong commit-back. Lich su dai han: npm run knowledge:backup"
   artifacts:
     when: always
     paths: [playwright-report/, knowledge/metrics/]

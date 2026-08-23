@@ -36,6 +36,7 @@
     "quality:decision": "node scripts/qa/quality_decision.js",
     "gate:policy": "node scripts/qa/policy_source_check.js",
     "json:check": "node scripts/qa/json_check.js",
+    "ci:scope": "node scripts/qa/ci_scope_check.js",
     "preflight": "node scripts/qa/preflight_gate.js --mode generic",
     "inventory:gate": "node scripts/qa/test_inventory_gate.js",
     "secret:scan": "node scripts/qa/secret_scan.js",

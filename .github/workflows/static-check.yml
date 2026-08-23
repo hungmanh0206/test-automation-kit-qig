@@ -34,6 +34,9 @@ jobs:
       - name: JSON validity (mọi .json đang được track — danh sách viết tay đã từng đỏ oan)
         run: npm run json:check
 
+      - name: Phạm vi CI (spec theo task không được track · nightly không chạm UAT)
+        run: npm run ci:scope
+
       - name: Policy 1-nguồn (F3 — RULE_GLOBAL canonical, core_rules là digest có pointer)
         run: npm run gate:policy
 

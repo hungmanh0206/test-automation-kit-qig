@@ -21,20 +21,24 @@
 | `AIO_API_TOKEN` | AIO Tests (test-management tool mặc định; Xray đóng băng sau 21/08/2026) |
 | `CONFLUENCE_URL`, `CONFLUENCE_USERNAME`, `CONFLUENCE_API_TOKEN` | integration check Confluence |
 | `OPS_BASE_URL`, `OPS_USERNAME`, `OPS_PASSWORD` | login khi execute FE/regression |
-| `METRICS_PUSH_TOKEN` *(chỉ GitLab, tuỳ chọn)* | BẬT persistence metrics — commit-back `knowledge/metrics/` xuyên run (xem mục dưới) |
+| ~~`METRICS_PUSH_TOKEN`~~ *(BỎ 23/08/2026)* | Từng bật commit-back metrics vào `knowledge/metrics/`. Không dùng nữa: `knowledge/**` đã bỏ track (dữ liệu công ty) nên `git add` không stage được gì — tính năng chết mà job vẫn xanh. KPI ngắn hạn ở artifact; dài hạn `npm run knowledge:backup`. **Xoá biến này khỏi CI variables nếu đã tạo.** |
 
 CI nạp qua **env từ secrets**, KHÔNG tạo file `.env` (đúng rule kit: không commit secret/token/cookie).
 
 > **Khai nhanh (GitLab):** `bash scripts/ci/set-gitlab-variables.sh` (dry-run) → `--apply` để set thật. Script đọc `.env.local` (+ `--ops-from <profile>` cho OPS) và đẩy qua `glab` — chạy **trên máy bạn** sau `glab auth login`; token/password set masked+protected, KHÔNG in giá trị. Cần `glab` cài sẵn.
 
-## Persistence metrics (F10/F11 — Option A: commit-back vào `knowledge/`)
+## Persistence metrics (F10/F11 — artifact-only từ 23/08/2026)
 
-KPI (`runs.jsonl`) + độ tin cậy per-TC (`tc-history.jsonl`) + reliability index chỉ có nghĩa khi **tích luỹ xuyên run**. Mỗi CI checkout là ephemeral → dữ liệu 1-run sẽ mất nếu chỉ để artifact. Kit chọn **Option A**: job `merge-report` (GitLab, **single job** — không đua shard) commit-back các file tổng hợp vào `knowledge/metrics/` (đã un-ignore, versioned cùng triết lý `knowledge/`), dashboard đọc thẳng.
+KPI (`runs.jsonl`) + độ tin cậy per-TC (`tc-history.jsonl`) + reliability index chỉ có nghĩa khi **tích luỹ xuyên run**, mà mỗi CI checkout là ephemeral. Kit từng chọn **Option A: commit-back vào `knowledge/metrics/`**. Cách đó **đã bỏ**, vì nó lặng lẽ chết:
 
-- **Kích hoạt**: tạo **Project Access Token** (GitLab → Settings → Access Tokens; scope `write_repository`, role Developer+) → khai làm CI Variable **`METRICS_PUSH_TOKEN`** (Settings → CI/CD → Variables, **Masked + Protected**).
-- **Điều kiện chạy**: chỉ `CI_PIPELINE_SOURCE == "schedule"` (nightly) **và** có token → commit `chore(metrics): … [skip ci]` (không kích pipeline mới). Chưa có token → job vẫn xanh, **artifact-only** (không đỏ).
-- **An toàn**: best-effort (`git pull --rebase` trước push; `|| echo` nếu conflict/thiếu quyền → không làm đỏ pipeline). Chỉ đẩy 5 file tổng hợp; rác tạm trong dir vẫn gitignored.
-- **GitHub Actions** cố ý **KHÔNG** commit-back (tránh 2 CI cùng push chọi nhau) — GitLab self-hosted là nguồn chân lý; GitHub chỉ upload artifact.
+- Commit `2d383e1` bỏ track `knowledge/**` (dữ liệu công ty, đối xử như `.env`) ⇒ `git add knowledge/metrics/...` không stage được gì.
+- Đoạn script có `|| true` + `git diff --cached --quiet` nên job **vẫn xanh** và in `(persistence) metrics khong doi` — người đọc log tin là "không có gì thay đổi", trong khi thực tế **không còn tích luỹ gì cả**.
+
+Hiện tại:
+- **Ngắn hạn**: KPI nằm trong artifact của job `merge-report` (`knowledge/metrics/`, giữ 2 tuần).
+- **Dài hạn**: `KNOWLEDGE_BACKUP_DIR=<thư mục NGOÀI repo> npm run knowledge:backup` — `preflight` cảnh báo khi kho có record không-nạp-lại-được mà chưa khai đích sao lưu.
+- **`METRICS_PUSH_TOKEN` không còn được đọc.** Nếu đã tạo Project Access Token cho việc này thì **xoá khỏi CI Variables** (và revoke token) — biến sống mà không ai dùng là bề mặt tấn công không lý do.
+- Muốn lịch sử dài hạn **ngay trong CI** thì phải dựng backend ngoài repo (bucket/DB/private repo riêng). Đó là quyết định của chủ repo — kit không tự chọn hộ, và không giả vờ đang làm việc đó.
 
 ## An toàn (bắt buộc)
 
