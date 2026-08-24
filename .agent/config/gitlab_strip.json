@@ -1,0 +1,16 @@
+{
+  "_why": "Nhánh GitLab CỐ Ý không chứa một số đường dẫn mà `main` có ⇒ tree hai bên PHÂN KỲ VĨNH VIỄN. Phân kỳ kiểu này không được phụ thuộc việc ai đó nhớ strip tay mỗi lần push: quên một lần là file quay lại và không ai biết. File này khai danh sách, `npm run sync:gitlab` thi hành.",
+  "_how": "Mỗi mục: `path` (đường dẫn repo-relative) + `why` (vì sao KHÔNG đưa lên GitLab). Không có `why` thì script CHẶN — strip im lặng là cách mất dấu quyết định.",
+  "_history": "24/08/2026: chủ repo yêu cầu bỏ 2 spec db2db3 khỏi nhánh GitLab. Đo trước khi làm: `uatPgClient.ts` GIỐNG HỆT hai bên (cùng blob) nên ràng buộc cũ về file đó đã hết hiệu lực; 2 file db2db3 thì GitLab đã có sẵn từ trước, không phải do lượt sync mang sang.",
+
+  "strip": [
+    {
+      "path": "tests/support/setup/db/db2db3.connect.spec.ts",
+      "why": "Chủ repo yêu cầu nhánh GitLab không chứa spec kết nối DB2+DB3. Spec vẫn có trên `main` (GitHub) và trên đĩa máy chạy task."
+    },
+    {
+      "path": "tests/support/setup/db/verify.db2db3.spec.ts",
+      "why": "Cùng lý do: spec verify DB2+DB3 chỉ giữ ở `main`, không đẩy lên nhánh GitLab."
+    }
+  ]
+}

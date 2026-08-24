@@ -369,3 +369,45 @@ test.describe('@infra không có .git — gate phải chạy được, không cr
     }
   });
 });
+
+/*
+ * PHÂN KỲ CÓ CHỦ ĐÍCH giữa `main` và nhánh GitLab (24/08/2026, theo yêu cầu chủ repo): nhánh GitLab KHÔNG
+ * chứa 2 spec db2db3. Phân kỳ kiểu này hỏng theo cách tệ nhất — quên strip MỘT lần là file quay lại và
+ * không gì báo. Nên nó phải là CẤU HÌNH + SCRIPT, không phải thao tác tay.
+ */
+test.describe('@infra sync:gitlab — strip phải khai được và có máy thi hành', () => {
+  const CFG_STRIP = path.join(REPO, '.agent/config/gitlab_strip.json');
+  const SCRIPT = path.join(REPO, 'scripts/utils/sync_gitlab.js');
+
+  test('mỗi mục strip PHẢI có `why` (strip im lặng = mất dấu quyết định)', () => {
+    const cfg = JSON.parse(fs.readFileSync(CFG_STRIP, 'utf8'));
+    expect(Array.isArray(cfg.strip)).toBe(true);
+    for (const s of cfg.strip) {
+      expect(String(s.path || ''), 'thiếu path').not.toBe('');
+      expect(String(s.why || '').trim(), `${s.path} thiếu \`why\``).not.toBe('');
+    }
+  });
+
+  test('đường dẫn khai strip phải CÓ THẬT trong repo (config lạc hậu = strip nhầm thứ khác)', () => {
+    const cfg = JSON.parse(fs.readFileSync(CFG_STRIP, 'utf8'));
+    for (const s of cfg.strip) {
+      expect(fs.existsSync(path.join(REPO, s.path)), `${s.path} không tồn tại — sửa config`).toBe(true);
+    }
+  });
+
+  test('script KHÔNG chạm index thật, KHÔNG merge cây GitLab vào main, và tự kiểm sau push', () => {
+    const src = fs.readFileSync(SCRIPT, 'utf8');
+    expect(src, 'phải dùng index tạm').toContain('GIT_INDEX_FILE');
+    expect(src, 'tree đẩy lên phải dựng từ main, không merge ngược').toMatch(/commit-tree/);
+    expect(src, 'phải fetch + đối soát tree sau khi push').toMatch(/rev-parse.*\^\{tree\}/);
+    expect(src, 'phải kiểm lại từng đường dẫn strip trên remote').toMatch(/cat-file/);
+    // Dry-run là MẶC ĐỊNH: đẩy remote là việc không hoàn tác dễ.
+    expect(src).toMatch(/--push/);
+  });
+
+  test('có npm script để không ai phải gõ lại chuỗi read-tree/commit-tree bằng tay', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const pkg = require(path.join(REPO, 'package.json'));
+    expect(pkg.scripts['sync:gitlab']).toBe('node scripts/utils/sync_gitlab.js');
+  });
+});

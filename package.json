@@ -38,6 +38,7 @@
     "json:check": "node scripts/qa/json_check.js",
     "gdoc:read": "node scripts/integrations/google_doc/doc_reader.js",
     "ci:scope": "node scripts/qa/ci_scope_check.js",
+    "sync:gitlab": "node scripts/utils/sync_gitlab.js",
     "preflight": "node scripts/qa/preflight_gate.js --mode generic",
     "inventory:gate": "node scripts/qa/test_inventory_gate.js",
     "secret:scan": "node scripts/qa/secret_scan.js",
