@@ -228,7 +228,10 @@ tests/fe/visual/**-snapshots/
 #  nightly `npx playwright test` (01:00 VN) chạy CẢ suite ⇒ tự động drive OPS UAT (`student_delete*`,
 #  `calendar_destructive`, `calendar_create`…) hằng đêm mà không ai xác nhận — vi phạm "UAT
 #  non-destructive + xác nhận trước mỗi lượt chạm UAT". Test theo task ở lại máy người chạy task.
-tests/mobile-web/SAPP-*/
+#  `.gitignore` KHÔNG hỗ trợ comment cuối dòng — để chung dòng thì cả chuỗi comment thành phần của
+#  pattern và luật mất tác dụng IM LẶNG (đã dính 24/08/2026, phát hiện bằng `git check-ignore`).
+#  Tổng quát cho MỌI thư mục test theo task (fe/api/mobile-web/...), không chỉ mobile-web:
+tests/**/SAPP-*/
 tests/support/setup/db/connection.check.spec.ts
 tests/support/setup/db/db2.connect.spec.ts
 tests/support/setup/db/verify.beforeafter.spec.ts
