@@ -34,7 +34,15 @@ const KNOW = path.join(REPO, 'knowledge');
 const DIR = path.resolve(arg('dir', path.join(KNOW, 'domain')));
 
 const ID_RE = /^BR-[A-Z0-9]+-\d{3}$/;
-const STATUSES = ['active', 'superseded', 'deprecated'];
+/*
+ * `invalid` thêm 25/08/2026 — KHÁC hẳn `superseded`:
+ *   superseded = rule ĐÚNG ở thời điểm đó, nghiệp vụ đổi ⇒ có bản mới. Kết quả TC cũ VẪN có giá trị (nó
+ *               pass theo rule đang hiệu lực lúc chạy).
+ *   invalid    = rule SAI TỪ ĐẦU (đọc nhầm FSD, BA nói lại, suy từ app). Mọi TC từng dùng nó làm oracle
+ *               phải bị REVIEW LẠI — không phải chỉ chạy lại: chạy lại theo oracle sai thì vẫn sai.
+ * Trước đó chỉ sửa được bằng tay (đổi status hoặc xoá file) ⇒ không có vết ai gỡ và vì sao.
+ */
+const STATUSES = ['active', 'superseded', 'deprecated', 'invalid'];
 const CONFIRMERS = ['BA', 'Dev', 'QA-Lead', 'PO'];
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 
@@ -60,6 +68,78 @@ function loadRules() {
     .map((f) => ({ file: path.join(DIR, f), rel: path.relative(REPO, path.join(DIR, f)).replace(/\\/g, '/'), data: readJson(path.join(DIR, f)) }));
 }
 
+
+/*
+ * SỬA TẠI CHỖ MÀ KHÔNG BUMP `confirmed_at` — lỗ thật của `--stale`.
+ * `--stale` so `confirmed_at` với lần execute cuối của TC. Nghĩa là ai mở file sửa một câu trong
+ * `statement`/`examples` rồi lưu, KHÔNG đổi `confirmed_at`, thì: oracle đã khác, mà không TC nào bị đánh
+ * dấu phải chạy lại. Không gate nào bắt — vì không có gì để so.
+ * Cách bịt: `content_sha` = hash của phần NỘI DUNG (bỏ metadata seal). Lệch hash ⇒ nội dung đã đổi sau lần
+ * seal ⇒ bắt buộc bump `confirmed_at` rồi `--seal` lại. Đây là thứ duy nhất phân biệt được "rule đổi có
+ * chủ đích" với "ai đó sửa tay rồi quên".
+ */
+const crypto = require('crypto');
+const SEAL_FIELDS = ['content_sha', 'sealed_at'];
+function contentSha(d) {
+  const body = {};
+  for (const k of Object.keys(d).sort()) if (!SEAL_FIELDS.includes(k)) body[k] = d[k];
+  return crypto.createHash('sha256').update(JSON.stringify(body)).digest('hex').slice(0, 16);
+}
+
+/*
+ * ① MÂU THUẪN GIỮA HAI RULE ACTIVE. Đây là loại sai KHÓ nhất: cả hai rule đều có `source`, đều qua
+ * validate, nhưng nói trái nhau ⇒ agent dùng rule nào tìm thấy trước ⇒ oracle sai một cách IM LẶNG.
+ * Không thể đối chiếu ngữ nghĩa bằng máy, nên đây là HEURISTIC có chủ đích: cùng module + trùng ≥2 từ khoá
+ * chủ đề + một bên có từ phủ định mà bên kia không ⇒ nghi vấn, buộc người xem lại. Chỉ CẢNH BÁO, không chặn:
+ * báo oan mà chặn thì người ta tắt cả gate.
+ */
+const NEG_RE = /\b(khong|chua|cam|tu choi|bi chan|khong duoc|loai tru|ngoai tru)\b/;
+const STOP = new Set(['duoc', 'phai', 'khi', 'cua', 'thi', 'neu', 'cho', 'voi', 'trong', 'tren', 'theo', 'moi', 'cac', 'nay', 'gia', 'tri', 'va', 'la', 'co']);
+/*
+ * CHỈ lấy từ trong `statement`. Bản đầu gộp cả `title` + `tags` ⇒ hai rule khác hẳn chủ đề vẫn "khớp 2 từ"
+ * nhờ trùng tag (`discount`) + một động từ chung (`nhan` trong "ghi nhan" vs "xac nhan") ⇒ BÁO OAN ngay ca
+ * thử thứ hai. Tag quá thô để làm bằng chứng cùng-chủ-đề; nó chỉ đủ để cho phép SO SÁNH, không đủ để kết luận.
+ */
+function topicWords(d) {
+  // FIELD THẬT là `rule`, KHÔNG phải `statement`. Bản đầu tôi đọc `d.statement` — field không tồn tại trên
+  // record thật ⇒ topicWords luôn RỖNG ⇒ gate in "0 mâu thuẫn" trên kho 18 rule mà thực chất KHÔNG ĐO GÌ.
+  // Đúng lớp lỗi tệ nhất: máy báo sạch vì nó mù, không vì kho sạch.
+  const raw = String(d.rule || d.statement || '');
+  const norm = String(raw).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return new Set(norm.split(/[^a-z0-9]+/).filter((w) => w.length >= 4 && !STOP.has(w)));
+}
+function findConflicts(list) {
+  const active = list.map((r) => r.data || {}).filter((d) => d.id && String(d.status || 'active') === 'active');
+  const out = [];
+  for (let i = 0; i < active.length; i += 1) {
+    for (let j = i + 1; j < active.length; j += 1) {
+      const a = active[i]; const b = active[j];
+      if (String(a.module || '') !== String(b.module || '')) continue;
+      const ta = topicWords(a); const tb = topicWords(b);
+      const shared = [...ta].filter((w) => tb.has(w));
+      /*
+       * Hai điều kiện, không chỉ một: đủ SỐ từ chung (≥2) VÀ đủ TỈ LỆ trùng trên câu ngắn hơn (≥0.35).
+       * Chỉ đếm số thì hai câu dài bất kỳ cũng dễ chung 2 từ. Đo trên fixture: cặp trái nhau thật (cùng câu,
+       * khác đúng chữ phủ định) có tỉ lệ ~1.0; cặp khác chủ đề chỉ ~0.1.
+       */
+      const ratio = shared.length / Math.max(1, Math.min(ta.size, tb.size));
+      if (shared.length < 2 || ratio < 0.35) continue;
+      /*
+       * `applies_when` là ĐIỀU KIỆN ÁP DỤNG. Hai rule cùng chủ đề mà điều kiện khác nhau ("khi VIP" vs
+       * "khi thường") KHÔNG mâu thuẫn — chúng là hai nhánh của cùng một quy tắc. Chỉ nghi khi điều kiện
+       * GIỐNG nhau (hoặc cả hai đều để trống) mà kết luận trái chiều.
+       */
+      const cond = (x) => String(x.applies_when || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+      if (cond(a) !== cond(b)) continue;
+      const na = NEG_RE.test(String(a.rule || a.statement || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+      const nb = NEG_RE.test(String(b.rule || b.statement || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+      if (na === nb) continue;                                   // cùng chiều khẳng định/phủ định ⇒ bỏ
+      out.push({ a: a.id, b: b.id, module: a.module, shared: shared.slice(0, 4) });
+    }
+  }
+  return out;
+}
+
 /** Validate 1 rule → mảng lỗi (chặn) + cảnh báo. */
 function validate(r) {
   const problems = []; const warnings = [];
@@ -77,6 +157,18 @@ function validate(r) {
   if (!Number.isInteger(d.version) || d.version < 1) problems.push(at('`version` phải là số nguyên ≥ 1'));
   if (!STATUSES.includes(String(d.status || ''))) problems.push(at(`\`status\` phải ∈ ${STATUSES.join('|')}`));
   if (!Array.isArray(d.covered_by)) problems.push(at('`covered_by` phải là mảng TC ID (rỗng cũng được, nhưng phải có field — đây là mắt xích trace ngược)'));
+  // Seal: có `content_sha` mà lệch ⇒ nội dung đã bị sửa sau lần seal.
+  if (String(d.content_sha || '').trim()) {
+    const now = contentSha(d);
+    if (now !== d.content_sha) {
+      problems.push(at(`nội dung ĐÃ ĐỔI sau lần seal (\`content_sha\` ${d.content_sha} ≠ ${now}) mà không seal lại. Nếu đổi có chủ đích: bump \`confirmed_at\` rồi chạy \`npm run domain:check -- --seal\` (để \`--stale\` đánh dấu TC phải chạy lại). Nếu không cố ý đổi: hoàn nguyên nội dung.`));
+    }
+  }
+  if (d.status === 'invalid') {
+    // Go mot oracle la quyet dinh nang — phai de lai vet doc duoc, khong duoc go im lang.
+    if (!String(d.invalidated_reason || '').trim()) problems.push(at('`status: invalid` PHAI co `invalidated_reason` — vi sao rule nay SAI TU DAU (doc nham tai lieu? BA noi lai? suy tu app?)'));
+    if (!DATE_RE.test(String(d.invalidated_at || ''))) problems.push(at('`status: invalid` PHAI co `invalidated_at` (ISO date) — moc de biet ket qua TC nao can review lai'));
+  }
 
   // examples: thứ biến rule thành oracle dùng được → phải có input + expected cụ thể.
   // Bản đầu đòi `expected` phải chứa CHỮ SỐ. Đo trên rule thật (FSD Bảo lưu/Transaction) thì luật đó báo oan
@@ -333,6 +425,46 @@ if (flag('index')) {
   doc.updated_at = new Date().toISOString().slice(0, 10);
   fs.writeFileSync(idxFile, `${JSON.stringify(doc, null, 2)}\n`, 'utf8');
   console.log(`[domain] index.json: +${n} entry business_rule (tổng ${doc.entries.length}).`);
+}
+
+
+// ── MÂU THUẪN GIỮA CÁC RULE ACTIVE (--conflict, mặc định BẬT trong lượt report) ───────────────────
+// Loại sai này không do bịa: cả hai rule đều có source, đều qua validate, nhưng nói trái nhau. Agent dùng
+// rule nào tìm thấy trước ⇒ oracle sai IM LẶNG. Máy không đối chiếu được ngữ nghĩa, nên chỉ nêu NGHI VẤN.
+if (flag('conflict') || (!flag('index') && !flag('validate') && !flag('trace-back'))) {
+  const conflicts = findConflicts(rules);
+  for (const c of conflicts) {
+    warnings.push(`NGHI MÂU THUẪN: \`${c.a}\` vs \`${c.b}\` — cùng module "${c.module}", cùng chủ đề (${c.shared.join(', ')}) mà một bên phủ định bên kia. Đọc lại cả hai: nếu một cái sai từ đầu ⇒ \`status: invalid\` + \`invalidated_reason\`; nếu nghiệp vụ đã đổi ⇒ bản cũ \`superseded\`; nếu cả hai đúng ở ngữ cảnh khác nhau ⇒ ghi rõ điều kiện áp dụng vào \`statement\`.`);
+  }
+  if (!conflicts.length) console.log('[domain] ✓ không cặp rule active nào có dấu hiệu mâu thuẫn (cùng module + cùng chủ đề + trái chiều).');
+  else console.log(`[domain] ⓘ ${conflicts.length} cặp NGHI mâu thuẫn — heuristic, cần người đọc lại; máy không phán đúng/sai ngữ nghĩa.`);
+}
+
+// ── RULE INVALID ⇒ TC TỪNG DÙNG NÓ PHẢI REVIEW LẠI (không phải chỉ chạy lại) ──────────────────────
+// Chạy lại theo một oracle SAI thì vẫn ra kết quả sai. Nên đây là việc của người: đọc lại expected.
+{
+  const invalid = rules.map((r) => r.data || {}).filter((d) => d.id && d.status === 'invalid');
+  for (const d of invalid) {
+    const tcs = Array.isArray(d.covered_by) ? d.covered_by : [];
+    warnings.push(`${d.id}: rule bị GỠ (\`invalid\` từ ${d.invalidated_at || '?'} — ${d.invalidated_reason || 'chưa ghi lý do'})${tcs.length ? ` ⇒ ${tcs.length} TC từng dùng nó làm oracle phải REVIEW LẠI expected, KHÔNG chỉ chạy lại: ${tcs.slice(0, 8).join(', ')}${tcs.length > 8 ? '…' : ''}` : ' (không TC nào trỏ tới — không lan)'}`);
+  }
+  if (invalid.length) console.log(`[domain] ⓘ ${invalid.length} rule ở trạng thái invalid — xem danh sách TC cần review ở phần cảnh báo.`);
+}
+
+// ── --seal: đóng dấu nội dung để phát hiện sửa TẠI CHỖ về sau ─────────────────────────────────────
+if (flag('seal')) {
+  let sealed = 0;
+  for (const r of rules) {
+    const d = r.data || {};
+    if (!d.id || d.__err) continue;
+    const sha = contentSha(d);
+    if (d.content_sha === sha) continue;
+    d.content_sha = sha;
+    d.sealed_at = new Date().toISOString().slice(0, 10);
+    fs.writeFileSync(r.file, `${JSON.stringify(d, null, 2)}\n`, 'utf8');
+    sealed += 1;
+  }
+  console.log(sealed ? `[domain] ✓ đã seal ${sealed} rule (content_sha) — từ giờ sửa tại chỗ mà không bump confirmed_at sẽ bị bắt.` : '[domain] ✓ mọi rule đã seal đúng nội dung hiện tại.');
 }
 
 if (warnings.length) { console.log(`\n⚠ ${warnings.length} cảnh báo:`); warnings.forEach((w) => console.log(`  ~ ${w}`)); }

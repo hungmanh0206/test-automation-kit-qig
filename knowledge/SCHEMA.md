@@ -41,6 +41,25 @@ Bảng trên chia knowledge làm hai loại **rất khác nhau về rủi ro**, 
 Đo 14/08/2026: **15 file** thuộc loại thứ hai. Và vì toàn bộ `knowledge/**` bị gitignore (mirror GitHub là public), chúng tồn tại trên **ĐÚNG MỘT máy — không remote nào có bản nào**. Hôm nay 15 file; sau 6 tháng là hàng trăm business rule đã được BA xác nhận. **Chi phí của việc này chỉ tăng theo thời gian, và không sửa được sau khi mất.**
 
 ```bash
+## Bảo trì tri thức (25/08/2026) — knowledge base KHÔNG tự làm sạch
+
+Kit chặn tốt loại sai do **bịa** (`source` rỗng ⇒ cấm ghi · bug chưa qua gate ⇒ không ghi). Loại còn lại
+khó hơn: **đúng lúc ghi, sai về sau, hoặc mâu thuẫn với record khác**. Máy không phán được ngữ nghĩa, nên
+nó chỉ làm được một việc: **buộc người xem lại**. Ba cơ chế:
+
+| Lệnh | Bắt gì | Mức |
+|---|---|---|
+| `npm run domain:check` (mặc định có `--conflict`) | ≥2 rule **active** cùng `module`, cùng chủ đề (≥2 từ chung trong `rule` **và** tỉ lệ trùng ≥0.35), cùng `applies_when`, mà một bên phủ định bên kia | CẢNH BÁO (heuristic — chặn theo ngữ nghĩa là báo oan có hệ thống) |
+| `status: invalid` + `invalidated_reason` + `invalidated_at` | Rule **SAI TỪ ĐẦU** (khác `superseded`: rule đúng nhưng nghiệp vụ đổi). Gate liệt kê TC trong `covered_by` phải **REVIEW LẠI expected**, không chỉ chạy lại — chạy lại theo oracle sai thì vẫn sai | CHẶN nếu thiếu lý do/ngày |
+| `npm run domain:check -- --seal` → `content_sha` | Sửa nội dung **tại chỗ** mà không bump `confirmed_at`. Đây là lỗ của `--stale` (nó so `confirmed_at` với lần execute cuối, nên sửa mà không bump thì không gì bắt) | CHẶN khi lệch hash |
+
+Rule chưa `--seal` thì **không** bị chặn — seal là tiến hoá dần, không phải rào chặn kho cũ.
+
+> Việc còn lại **không** máy nào làm thay: nhịp **tái xác nhận với BA**. `--stale-months` (mặc định 9) chỉ
+> nhắc rule đã cũ; nó không biết rule còn đúng hay không. Bỏ nhịp đó thì sau 1–2 năm kho tích rule lạc hậu
+> mà vẫn được dùng làm oracle — lúc đó "học sai" gây hại nhất: agent tự tin sai, **có trích nguồn đầy đủ**.
+
+
 KNOWLEDGE_BACKUP_DIR=<thư mục NGOÀI repo> npm run knowledge:backup
 npm run knowledge:backup -- --verify <bundle.json>     # so bundle với hiện trạng
 npm run knowledge:backup -- --restore <bundle.json>    # CHỈ ghi file còn THIẾU, không đè
