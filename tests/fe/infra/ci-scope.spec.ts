@@ -411,3 +411,15 @@ test.describe('@infra sync:gitlab — strip phải khai được và có máy th
     expect(pkg.scripts['sync:gitlab']).toBe('node scripts/utils/sync_gitlab.js');
   });
 });
+
+test.describe('@infra sync:gitlab — lỗi mạng phải đọc được, không phải stack trace', () => {
+  test('mất mạng/VPN ⇒ câu tiếng người + exit code riêng (3), không ném stack Node', () => {
+    // GitLab self-hosted chỉ mở port 22 trong VPN ⇒ đây là ca THƯỜNG XUYÊN, không phải ngoại lệ.
+    // Ném stack `execFileSync` ra là bắt người đọc dò 20 dòng để hiểu "chưa bật VPN".
+    const src = fs.readFileSync(path.join(REPO, 'scripts/utils/sync_gitlab.js'), 'utf8');
+    expect(src).toMatch(/Connection timed out|Could not read from remote repository/);
+    expect(src).toMatch(/VPN/);
+    expect(src, 'exit code riêng để script gọi nó phân biệt được "mạng" với "lỗi thật"').toMatch(/process\.exit\(3\)/);
+    expect(src, 'phải nói rõ CHƯA có gì được đẩy').toMatch(/Chưa có gì được đẩy/);
+  });
+});

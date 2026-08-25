@@ -109,5 +109,25 @@ function main() {
   console.log(`[sync-gitlab] ✓ đã đẩy ${commit.slice(0, 7)} · remote sạch ${strip.length}/${strip.length} đường dẫn strip.`);
 }
 
-if (require.main === module) main();
+/*
+ * Lỗi mạng/VPN là ca THƯỜNG XUYÊN với GitLab self-hosted (port 22 chỉ mở trong VPN). Ném stack trace Node
+ * ra là bắt người đọc dò giữa 20 dòng `execFileSync` để hiểu "chưa bật VPN". Dịch thành câu người đọc được,
+ * và giữ exit code khác 0 để script gọi nó vẫn biết là thất bại.
+ */
+if (require.main === module) {
+  try {
+    main();
+  } catch (e) {
+    const msg = `${e.message || ''}${e.stderr || ''}`;
+    if (/Could not read from remote repository|Connection timed out|Could not resolve hostname|port 22/i.test(msg)) {
+      console.error('[sync-gitlab] ✗ KHÔNG tới được GitLab (port 22). Nguyên nhân thường gặp: chưa bật VPN.');
+      console.error('[sync-gitlab]   Kiểm nhanh: `ssh -T git@gitlab.sapp.edu.vn` — đúng thì in "Welcome to GitLab".');
+      console.error('[sync-gitlab]   Chưa có gì được đẩy; chạy lại đúng lệnh này sau khi có mạng.');
+      process.exit(3);
+    }
+    console.error(`[sync-gitlab] ✗ ${e.message}`);
+    if (e.stderr) console.error(String(e.stderr).trim().split(String.fromCharCode(10)).slice(0, 6).join(String.fromCharCode(10)));
+    process.exit(1);
+  }
+}
 module.exports = { main };
