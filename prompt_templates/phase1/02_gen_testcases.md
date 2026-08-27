@@ -124,17 +124,21 @@ Case phủ nhiều chiều thì ghi nhiều tag (`[Negative][Validation][Securit
 
 ### 0b-ter. TIÊU ĐỀ = NỘI DUNG, và phải TỰ ĐỦ NGHĨA
 
-Tag đã ra cột riêng, nên tiêu đề không còn chỗ dựa: đọc một mình nó phải hiểu được case kiểm gì và **đúng là thế nào**. Ba đoạn nối bằng ` - `:
+Tag đã ra cột riêng, nên tiêu đề không còn chỗ dựa: đọc một mình nó phải hiểu được case kiểm gì và **đúng là thế nào**. Phải chở đủ **BA THÔNG TIN**:
 
 ```
-<Đối tượng/màn> - <Hành động hoặc điều kiện> - <Kết quả cụ thể đo được>
+<Đối tượng/màn> · <Hành động hoặc điều kiện> · <Kết quả cụ thể đo được>
 ```
 
+**Đếm đoạn KHÔNG phải thước đo** — thực tế đối tượng và hành động thường dính liền, nên 2 đoạn nối ` - ` là hình dạng phổ biến nhất và hoàn toàn đạt:
+
 ```
-✓ Tạo Business Partner trên SAP B1 - Sinh mã KH đúng cú pháp C + CCCD khi khách Cá nhân chưa có BP
+✓ Tạo Business Partner - Sinh mã KH đúng cú pháp C + CCCD khi khách Cá nhân chưa có BP
 ✓ Ghi nhận giao dịch tiền về - Tiền mặt NEU sinh Incoming Payment với G/L 111101
 ✓ Cập nhật Business Partner - Định danh CCCD đổi thì tạo BP MỚI, không update BP cũ
 ```
+
+> **Bản đầu của mục này đòi "đúng 3 đoạn" — sai, và sai theo kiểu tự mâu thuẫn** (sửa 24/08/2026): đoạn thứ nhất trong ví dụ cũ chính là `Cross-app`, tức cái **tiền tố hằng số** mà bảng ngay dưới đây CẤM. Bỏ tiền tố đi thì bộ 101 case còn 2 đoạn và lập tức "vi phạm" luật, dù tiêu đề tốt hơn trước. Không có gate nào ép số đoạn (chỉ ép: không tiền tố hằng số, không tag trong tiêu đề) — nên đây là luật-bằng-chữ, và chữ thì phải đúng.
 
 **Bốn lỗi bị chặn — mỗi lỗi đều từng xảy ra thật:**
 
@@ -468,6 +472,7 @@ Khai `n/a` cho một chiều mà thực tế nó áp dụng = **bỏ chiều có
 | §20 | Error Guessing từ BUG LỊCH SỬ | `[BugHistory]` | `knowledge/bugs/` có entry cùng module với scope (`npm run bugs:checklist`) | [`20_bug_history.md`](dimensions/20_bug_history.md) |
 | §21 | Accessibility (A11y) Coverage | `[A11y]` | scope có màn UI thao tác được: form/bảng/modal/menu | [`21_accessibility.md`](dimensions/21_accessibility.md) |
 | §22 | Inbound Callback / Webhook (phía NHẬN) | `[Callback]` | hệ thống NHẬN request từ bên thứ ba (VNPay/VietQR, HubSpot, SAP, SMS) — kể cả khi chỉ là "báo kết quả" | [`22_inbound_callback.md`](dimensions/22_inbound_callback.md) |
+| §23 | DB Persistence (bản ghi sau CRUD) | `[DbPersist]` | case có Create/Update/Delete dữ liệu — kể cả xoá mềm, kể cả đổi 1 field | [`23_db_persistence.md`](dimensions/23_db_persistence.md) |
 
 ## 18. Self-check vét cạn biên (BẮT BUỘC trước khi kết thúc)
 Tự rà và ghi vào `reports/phase1-summary.md` (Coverage Gaps) nếu thiếu:

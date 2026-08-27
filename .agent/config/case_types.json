@@ -2,73 +2,98 @@
   "_doc": "NGUỒN DUY NHẤT của 9 Case Type. Mọi nơi khác (validate.js · prompt gen §Loại case · publisher · test) ĐỌC file này, không chép lại danh sách. Chép lại là cách 9 loại trở thành 6 ở một chỗ và 9 ở chỗ khác.",
   "_decision_order": "Xét CHUYÊN BIỆT trước, `Functional` là mặc định CUỐI CÙNG khi không khớp loại nào. Thứ tự xét: Security → Accessibility → Performance → Database → API → UI → E2E → Integration → Functional. Một case chỉ mang ĐÚNG MỘT loại; nếu thấy hợp 2 loại thì case đang gộp 2 mục đích — tách case, đừng chọn bừa.",
   "_aio_note": "Tên phải TRÙNG tên trên AIO (`GET /config` → `caseTypes`). Đối chiếu 20/08/2026: khớp đủ 9/9 — UI(1) Integration(2) Functional(3) API(4) Performance(5) Security(6) Database(7) E2E(8) Accessibility(9). `Unit` là tên CŨ của id 1, đã đổi thành `UI` nên 1.399 case đã publish giữ nguyên ID. Publisher CHẶN khi tên không resolve được — KHÔNG hạ ngầm về Functional.",
-
   "types": [
     {
       "name": "Security",
       "definition": "Kiểm kiểm soát truy cập và bảo vệ dữ liệu: ai được làm gì, dữ liệu nào bị lộ.",
-      "tags": ["Security", "Guard"],
+      "tags": [
+        "Security",
+        "Guard"
+      ],
       "choose_when": "IDOR · leo thang quyền · ma trận role×action (đặc biệt ô DENY) · mass-assignment · lộ field nội bộ · header/cookie bảo mật.",
       "not_when": "Bị chặn theo rule NGHIỆP VỤ chứ không theo quyền → `Functional`."
     },
     {
       "name": "Accessibility",
       "definition": "Kiểm khả năng tiếp cận: dùng được bằng bàn phím và trình đọc màn hình.",
-      "tags": ["A11y"],
+      "tags": [
+        "A11y"
+      ],
       "choose_when": "label/aria · tương phản màu · thứ tự focus · điều hướng bàn phím · axe-core.",
       "not_when": "Chỉ sai bố cục/thẩm mỹ → `UI`."
     },
     {
       "name": "Performance",
       "definition": "Kiểm thời gian phản hồi và khả năng chịu tải, SO VỚI NGƯỠNG ĐÃ KHAI.",
-      "tags": ["Perf"],
+      "tags": [
+        "Perf"
+      ],
       "choose_when": "Có ngưỡng SLA/NFR cụ thể · danh sách nhiều bản ghi · LCP/TTFB · tải đồng thời.",
       "not_when": "Không có ngưỡng để so → KHÔNG sinh case, ghi N/A. Case perf không neo ngưỡng là case không phán được."
     },
     {
       "name": "Database",
       "definition": "Kiểm dữ liệu THỰC SỰ được lưu đúng ở tầng lưu trữ (read-only verify).",
-      "tags": ["SideEffect"],
+      "tags": [
+        "SideEffect",
+        "DbPersist"
+      ],
       "choose_when": "Persist đúng giá trị (không làm tròn/cắt/lệch timezone) · side-effect sang bảng khác · dữ liệu rác sau cleanup.",
       "not_when": "Chỉ kiểm qua API mà không truy DB → `API`."
     },
     {
       "name": "API",
       "definition": "Kiểm hợp đồng và dữ liệu ở tầng API, độc lập UI.",
-      "tags": ["API", "BEData"],
+      "tags": [
+        "API",
+        "BEData"
+      ],
       "choose_when": "Status code · schema/contract · field trong response (`null` vs `\"\"` vs thiếu key) · mã lỗi · phân trang · payload.",
       "not_when": "Gọi API chỉ để DỰNG dữ liệu rồi kiểm trên màn → `UI`/`Functional`."
     },
     {
       "name": "UI",
       "definition": "Kiểm thứ người dùng NHÌN THẤY: bố cục, hiển thị, hình học, trạng thái màn, responsive.",
-      "tags": ["UI", "Display", "Design"],
+      "tags": [
+        "UI",
+        "Display",
+        "Design"
+      ],
       "choose_when": "Đối chiếu Figma/UI contract · format hiển thị · empty/loading/error state · text dài tràn · breakpoint · element đè nhau · visual regression.",
       "not_when": "Dữ liệu hiển thị sai do BE TÍNH sai → `Functional`; do API TRẢ sai → `API`."
     },
     {
       "name": "E2E",
       "definition": "Luồng xuyên nhiều màn hoặc nhiều hệ thống, mô phỏng hành trình người dùng thật.",
-      "tags": ["E2E"],
+      "tags": [
+        "E2E"
+      ],
       "choose_when": "Chuỗi ≥3 màn HOẶC đi qua ≥2 app/hệ thống · kiểm kết quả CUỐI chuỗi.",
       "not_when": "Chỉ một màn dù nhiều bước → `Functional`."
     },
     {
       "name": "Integration",
       "definition": "Kiểm ĐIỂM NỐI giữa module hoặc với hệ thống bên ngoài — nơi hai bên bàn giao dữ liệu.",
-      "tags": ["Export"],
+      "tags": [
+        "Export"
+      ],
       "choose_when": "Đồng bộ 2 module · webhook/callback · bên thứ ba (cổng thanh toán, SMS, ERP) · import/export liên hệ thống.",
       "not_when": "Luồng xuyên màn nhưng CÙNG một hệ thống → `E2E`."
     },
     {
       "name": "Functional",
       "definition": "Kiểm hành vi nghiệp vụ đúng/sai theo rule: logic, validation, luồng trong một chức năng. Là MẶC ĐỊNH khi không khớp loại chuyên biệt nào.",
-      "tags": ["Validation", "Calc", "Resilience", "Ordering", "Impact"],
+      "tags": [
+        "Validation",
+        "Calc",
+        "Resilience",
+        "Ordering",
+        "Impact"
+      ],
       "choose_when": "Validate field · tính toán · rule nghiệp vụ · luồng thao tác thông thường · regression theo thay đổi · chịu lỗi/gián đoạn · thứ tự thao tác.",
       "not_when": "Trọng tâm là hiển thị → `UI`; là contract API → `API`; là quyền → `Security`."
     }
   ],
-
   "_legacy_note": "KHÔNG có alias nào. `Unit` từng là tên id 1 nhưng đã được đổi thành `UI` trên chính AIO, và đo trên toàn bộ bộ TC đã khai (101 case) thì 0 case dùng `Unit` ⇒ giữ alias là giữ luật chết. Nếu sau này lại đổi tên loại, thêm khoá `legacy` ở đây kèm LÝ DO chứ đừng nới regex.",
   "legacy": {}
 }

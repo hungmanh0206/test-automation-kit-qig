@@ -365,3 +365,45 @@ test.describe('@infra §22 inbound callback — 3 mắt xích phải khớp', ()
     }
   });
 });
+
+/*
+ * @infra — CHIỀU §23 (bản ghi dưới DB sau case CRUD). Cùng khuôn kiểm 3 mắt xích như §22, vì đúng bẫy đó đã
+ * dính một lần: khai chiều ở `dimension_coverage` mà quên `DIMENSION_TAGS` của model thì case gắn tag vẫn
+ * đếm ra 0, và gate báo "thiếu chiều" trong khi case có thật.
+ */
+test.describe('@infra §23 db persistence — 3 mắt xích + nối pipeline', () => {
+  test('tag `[DbPersist]` được model nhận', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const model = require(path.join(REPO, 'scripts/lib/testcase/model.js'));
+    expect(model.DIMENSION_TAGS).toContain('dbpersist');
+    expect(model.dimensionsOf('[DbPersist] Xoá mềm đúng cột')).toContain('dbpersist');
+  });
+
+  test('gate coverage biết §23 và map đúng tag', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/dimension_coverage.js'), 'utf8');
+    expect(src).toContain("id: 'db_persistence'");
+    expect(src).toMatch(/db_persistence: 'dbpersist'/);
+  });
+
+  test('file chiều có checklist thật + 4 ràng buộc chống bug ma', () => {
+    const body = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/dimensions/23_db_persistence.md'), 'utf8');
+    expect(body.split('\n').filter((l) => /^\| \d+ \|/.test(l)).length, 'cần ≥7 ca cụ thể').toBeGreaterThanOrEqual(7);
+    for (const must of ['tautology', 'fieldMap.anchored', 'RUN_ID', 'KHÔNG phải evidence']) expect(body, `thiếu "${must}"`).toContain(must);
+    // Phải nói rõ giới hạn ĐÃ ĐO, không hứa thứ máy không làm được.
+    expect(body).toMatch(/audit/i);
+    expect(body).toContain('inconclusive');
+  });
+
+  test('§23 có trong bảng chỉ mục chiều + Case Type Database có tag', () => {
+    expect(fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/02_gen_testcases.md'), 'utf8')).toContain('23_db_persistence.md');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const ct = require(path.join(REPO, '.agent/config/case_types.json'));
+    const db = (ct.types || []).find((t: { name?: string; type?: string }) => (t.name || t.type) === 'Database');
+    expect(db.tags.map((x: string) => x.toLowerCase())).toContain('dbpersist');
+  });
+
+  test('nối CẢ workflow lẫn điểm-vào (F3 đòi 2 chặng)', () => {
+    expect(fs.readFileSync(path.join(REPO, '.agent/workflows/phase2_02_generate_or_update_automation.md'), 'utf8')).toContain('dbVerify');
+    expect(fs.readFileSync(path.join(REPO, 'prompt_templates/run_phase2_template.md'), 'utf8')).toContain('readonly.verify.spec.ts');
+  });
+});

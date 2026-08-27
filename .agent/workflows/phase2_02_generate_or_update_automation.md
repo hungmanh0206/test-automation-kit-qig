@@ -49,6 +49,24 @@ Chạy pass này cho toàn bộ selected TC trước khi sinh/cập nhật spec.
    Bỏ qua phải CÓ LÝ DO: `// locator-lint-disable-next-line <lý do>` ngay trên dòng.
    Runtime làm đúng: `scripts/utils/ui/safe_target.js` (`one`/`section`/`clickVerified`/`readValue`).
 
+8. **Case Create/Update/Delete ⇒ kiểm CẢ bản ghi dưới DB (chiều §23, tag `[DbPersist]`):**
+   `tests/support/setup/db/dbVerify.ts` — `expectRow` · `expectSoftDeleted` · `expectAbsent` · `expectCount` ·
+   `snapshot`+`expectNoChange`. So sánh bằng matcher theo NGHĨA (`money`/`instant`/`text`), KHÔNG so thô:
+   cùng khái niệm tiền mà `ic_payment_orders.final_price` là `bigint` còn `transaction_orders.amount` là
+   `varchar` ⇒ so thô đỏ hàng loạt dù DB lưu đúng.
+   Vì sao bắt buộc: response API thường ECHO lại request và FE format lại giá trị, nên 7 lớp lỗi (đổi kiểu
+   số · lệch múi giờ · cắt `varchar(n)` · xoá mềm hỏng · bảng liên quan không đổi · double-submit · rollback
+   sai) đều "UI thấy đúng". Riêng *xoá mềm* và *bảng liên quan* gần như không phát hiện được qua UI.
+   BỐN ràng buộc (chi tiết ở `prompt_templates/phase1/dimensions/23_db_persistence.md`):
+   - DB là oracle **PHỤ** — nguồn sự thật vẫn là FSD/`BR-*`. Lấy số từ DB rồi bảo "UI phải giống DB" là tautology.
+     Giá trị chính là KHOANH TẦNG: UI đúng + DB sai ⇒ BE lưu sai; UI sai + DB đúng ⇒ FE render sai.
+   - Chỉ dùng cột **ĐÃ NEO** trong `.agent/config/db.conventions.json → fieldMap.anchored` (hiện 7 cột). Cột
+     ở `unanchored` (11 cột) KHÔNG được dùng để phán — đoán sai cột thì kết luận vẫn ra, lại có số từ DB.
+   - Chỉ verify bản ghi do CHÍNH lượt test tạo (`id`/`RUN_ID`); `snapshot`/`expectNoChange` phải khai `columns`.
+   - DB **KHÔNG phải evidence** (evidence vẫn là ảnh/video); và KHÔNG dựng precondition bằng DB.
+   Điều kiện chạy: `profiles/<TASK>/task.env` có `LIB_MASTER_DB_RO_*` (role CHỈ ĐỌC). Nghiệm thu role:
+   `INFRA_VERIFY=1 … npx playwright test tests/support/setup/db/readonly.verify.spec.ts --project=infra-verify`
+
 
 ## Rules
 

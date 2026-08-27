@@ -146,6 +146,8 @@ const DIMENSION_TAGS = [
   // §22 (23/08/2026): chiều callback ĐẾN từ bên thứ ba. Thêm ở đây MỚI có tác dụng — `dimensionsOf`
   // chỉ nhận tag nằm trong danh sách này, nên chiều mới mà quên khai thì case gắn tag vẫn ra 0.
   'callback',
+  // §23 (27/08/2026): bản ghi dưới DB sau case CRUD. Nhớ bài học §22 — khai ở đây MỚI có tác dụng.
+  'dbpersist',
 ];
 /** Dimension từ tag [..] trong title (vd "[Negative] ..." → ['negative']). */
 function dimensionsOf(title) {
