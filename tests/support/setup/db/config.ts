@@ -43,6 +43,8 @@ export interface DbConventions {
   audit?: { entity: string; entityCol: string; idCol: string; actionCol: string };
   idColumn: string;
   money?: { entities?: Record<string, string[]> };
+  /** Cột là TỈ LỆ/PHẦN TRĂM, không phải tiền — `money()` không áp được (thông điệp "lệch N đồng" là sai nghĩa). */
+  rates?: { entities?: Record<string, string[]>; unitUnknown?: string[] };
   fieldMap?: {
     entity: string;
     /** Khoá THEO MÀN: cùng một cột có nhãn khác nhau ở hai màn. */
@@ -51,6 +53,8 @@ export interface DbConventions {
     valueMaps?: Record<string, Record<string, string>>;
     /** Cột CHƯA phân biệt được — helper phải TỪ CHỐI, không được đoán. */
     unanchored: Record<string, string>;
+    /** Cột KHÔNG PHẢI field hiển thị (vd `order_type` quyết định route) — không bao giờ neo được bằng đọc màn. */
+    notDisplayed?: Record<string, string>;
   };
   safety: {
     requireReadonlyUser: boolean;
@@ -86,7 +90,7 @@ export function loadConventions(repoRoot: string): DbConventions {
    * Đã dính đúng một lần: `fieldMap` khai trong JSON, đo cẩn thận, viết cả test — nhưng loader không trả nó
    * nên 9 test đọc `conv.fieldMap` đỏ vì `undefined`. Từ giờ thêm khối vào JSON mà quên nối vào đây thì CHẶN.
    */
-  const KNOWN = ['softDelete', 'timestamps', 'audit', 'idColumn', 'money', 'relations', 'safety', 'fieldMap'];
+  const KNOWN = ['softDelete', 'timestamps', 'audit', 'idColumn', 'money', 'rates', 'relations', 'safety', 'fieldMap'];
   const unknown = Object.keys(raw as object).filter((k) => !k.startsWith('_') && !KNOWN.includes(k));
   if (unknown.length) {
     throw new DbGuardError(
@@ -104,6 +108,7 @@ export function loadConventions(repoRoot: string): DbConventions {
     audit: c.audit,
     idColumn: c.idColumn,
     money: c.money,
+    rates: c.rates,
     fieldMap: c.fieldMap,
     safety: {
       requireReadonlyUser: c.safety.requireReadonlyUser !== false,   // mặc định BẬT — tắt phải khai tường minh

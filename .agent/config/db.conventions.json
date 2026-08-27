@@ -53,9 +53,7 @@
         "final_price",
         "custom_price",
         "service_fee",
-        "fee_per_month",
-        "service_fee_rate",
-        "fixed_discount"
+        "fee_per_month"
       ],
       "ic_payment_transaction_orders": [
         "amount"
@@ -107,7 +105,9 @@
         "total_discount": "Original Discount Amount",
         "final_price": "Net Amount",
         "service_fee": "Service Fee",
-        "service_fee_rate": "Service Fee Rate"
+        "service_fee_rate": "Service Fee Rate",
+        "fee_per_month": "Service Fee Per Month",
+        "_exact_label_only": "fee_per_month: chu thich phu \"Dua tren muc phi va so thang gia han\" cung mang DUNG con so do (300.000d) ⇒ khop nhan phai EXACT, dung substring/contains."
       },
       "CORE": {
         "_route": "/operations/sales/orders/<id>/detail/overview",
@@ -132,17 +132,23 @@
         "deal_id": "Deal ID",
         "status": "Status",
         "service_fee_type": "Service Fee Type"
+      },
+      "CORE_HUBSPOT": {
+        "_route": "/operations/sales/orders/<id>/detail/overview → bấm tab \"Hubspot Information\"",
+        "_method": "Doc read-only tab Hubspot Information. sync_status KHONG nam o tab Overview — ket luan \"cot nay khong hien thi\" khi moi xem 1 tab la ket luan thieu.",
+        "sync_status": "Synchronized status"
+      },
+      "SERVICE_FEE_HUBSPOT": {
+        "_route": "/operations/sales/service-fee-orders/<id>/detail/overview → tab \"Hubspot Information\"",
+        "sync_status": "Synchronized status"
       }
     },
     "unanchored": {
-      "deposit": "Gia tri 0 o MOI don do duoc (ke ca 4 don co deposit>0, o do deposit == automatic_price == final_price) ⇒ khong the phan biet. Can don co deposit khac ca hai cot kia.",
-      "custom_price": "Chi xuat hien o don CORE va luon TRUNG final_price ⇒ khong phan biet duoc.",
-      "order_type": "Khong hien thi o ca tab Overview lan man danh sach (luoi chi co Service Fee Type). Can man/API khac.",
-      "fee_per_month": "NULL o ca 98 don do duoc (98/98 hang tren 2 man danh sach). Can don TRA GOP co so tien/thang > 0 moi phan biet duoc voi cac cot tien khac.",
-      "fixed_discount": "NULL o ca 98 don do duoc. Can don ap giam gia CO DINH (khong phai giam theo %) de cot nay khac 0 va khac total_discount.",
-      "payment_method": "NULL / khong hien thi o ca tab Overview lan man danh sach. Can don da thanh toan qua mot cong cu the (VNPay/VietQR) roi doi chieu man chi tiet giao dich.",
-      "sync_status": "Khong hien thi o bat ky man nao da do. Can man dong bo HubSpot hoac API tra ve truong nay.",
-      "full_name": "NULL o moi ban ghi (ho ten tach o first_name/last_name). Chi neo duoc neu app bat dau ghi cot nay; hien tai dung first_name/last_name."
+      "deposit": "DOI LY DO (28/08): da tim duoc don co deposit PHAN BIET (a4b10fbd = 1.000.000, e4a87e98 = 1.500.000, khac moi cot tien khac) va con so do KHONG XUAT HIEN o bat ky nhan nao tren tab Overview cua CORE ⇒ khong phai \"trung gia tri\" ma la \"khong hien thi o man nay\". KHONG can fixture; can doc man thanh toan/split-bill.",
+      "custom_price": "Cot DUY NHAT that su can FIXTURE: quet TOAN BO DB (132 ban ghi non-null) khong co don nao custom_price khac moi cot tien khac ⇒ khong the neo bang du lieu san co. Can don dat gia custom khac ca automatic_price va final_price.",
+      "fixed_discount": "Chi 3 ban ghi trong toan DB, gia tri 5/10/15 — qua nho de la VND nen kha nang cao la PHAN TRAM, nhung KHONG hien tren tab Overview cua SF (da doc 2 don) nen chua xac dinh duoc kieu. Ghi o khoi \"rates\" voi kieu CHUA XAC DINH, khong doan.",
+      "payment_method": "Da doc Overview cua 1 don INSTALLMENT (7c93f58b) va 1 don ONETIME (2559981c): khong nhan nao hien gia tri nay. Nhan \"Payment Method\" tren man la COT CUA BANG GIAO DICH (moi giao dich mot phuong thuc) — KHAC CAP voi payment_method cua DON, dung lay nhan do neo cot nay.",
+      "full_name": "VI DU MANH NHAT cho luat \"dung suy tu ten cot\": DB co cot full_name nhung TOAN NULL (1005 ban ghi), trong khi UI CO nhan \"Full name\" — nhan do lay tu first_name/last_name. Neo \"Full name\" -> full_name la SAI hoan toan du ten trung khop."
     },
     "valueMaps": {
       "_why": "Ban do GIA TRI (enum DB -> nhan tieng Viet tren UI) — khac ban do COT. Do 28/08/2026 READ-ONLY tren man danh sach, noi 98 hang voi DB. Luat neo: enum -> nhan phai la HAM (1 enum chi 1 nhan) VA DON ANH (2 enum khong dung chung nhan); vi pham bat ky dieu nao thi ghi CHUA NEO, khong chon nhan pho bien nhat.",
@@ -163,7 +169,29 @@
         "CHUYEN_DOI": "Chuyển đổi",
         "BAO_LUU": "Bảo lưu",
         "TU_VAN_KHOA_HOC": "Tư vấn khóa học"
-      }
+      },
+      "ic_payment_orders.sync_status": {
+        "SYNC_SUCCESS": "Thành công",
+        "SYNC_FAIL": "Thất bại"
+      },
+      "_coverage": "DAY DU hay chua, noi ro tung cot: status = 6/6 enum cua DB (DAY DU). sync_status = 2/2 enum non-null (DAY DU). service_fee_type = 6 enum — DAY DU CHO MAN SERVICE_FEE, con 3 enum (DANG_KY_CBE 43, MUA_TAI_KHOAN_CERT 49, MUA_TAI_KHOAN_BECKER 22) chi ton tai o don ADD_ON nen phai neo o man add-on, chua doc. Do dem tren 249 hang man SF + 247 hang man CORE (khong phai 50 hang: trang dau 50 hang chi thay 6/9 enum, do la ly do phai keo page_size len 250)."
+    },
+    "notDisplayed": {
+      "_why": "Cot KHONG PHAI field hien thi — tach khoi \"unanchored\" vi khong bao gio neo duoc bang cach doc man, va de o \"unanchored\" thi cu tuong con viec phai lam.",
+      "order_type": "Quyet dinh ROUTE/MAN (CORE -> /orders, SERVICE_FEE -> /service-fee-orders, ADD_ON -> man add-on) chu khong hien duoi dang mot field. Khoa man trong byScreen CHINH LA gia tri cot nay."
     }
+  },
+  "rates": {
+    "_why": "TACH KHOI khoi \"money\". DO bien do gia tri: service_fee_rate n=39 distinct=3 min=0 max=20; fixed_discount n=3 distinct=3 min=5 max=15. Bien do 0..20 khong the la tien VND. Goi money() len chung thi thong diep sai (\"lech 5 dong\" cho mot ti le) va so sanh sai ngu nghia.",
+    "entities": {
+      "ic_payment_orders": [
+        "service_fee_rate",
+        "fixed_discount"
+      ]
+    },
+    "unitUnknown": [
+      "fixed_discount"
+    ],
+    "_unit_note": "service_fee_rate: da neo nhan \"Service Fee Rate\" o man SERVICE_FEE. fixed_discount: CHUA xac dinh la % hay tien — chua thay hien o man nao."
   }
 }

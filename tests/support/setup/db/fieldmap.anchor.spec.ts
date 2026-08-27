@@ -104,3 +104,45 @@ test('neo status/service_fee_type/tiền ở MÀN DANH SÁCH, khoá nối = Mã 
   }
   fs.writeFileSync(path.join(REQ, 'db_status_label_map.json'), `${JSON.stringify(report, null, 2)}\n`);
 });
+
+/*
+ * ĐỐI CHIẾU THEO GIÁ TRỊ (không theo nhãn). Tìm theo nhãn ("có nhãn nào chứa chữ deposit?") là cách bỏ sót:
+ * app có thể hiện cùng con số dưới một nhãn hoàn toàn khác. Nên: lấy mọi cặp (nhãn → giá trị) đọc được từ
+ * UI, chuẩn hoá số, rồi hỏi "giá trị này khớp cột DB nào". Chỉ neo khi khớp ĐÚNG MỘT cột.
+ */
+const numOf = (t: string): string | null => {
+  const raw = String(t || '').replace(/\s/g, '');
+  if (!/\d/.test(raw)) return null;
+  const neg = /^-|^\(.*\)$/.test(raw);
+  const d = raw.replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '');
+  return d.length ? (neg ? `-${d}` : d) : null;
+};
+
+test('đối chiếu THEO GIÁ TRỊ: nhãn UI nào ứng với cột DB nào (vòng 3)', async () => {
+  const f = path.join(REQ, process.env.DB_MAP_PAIRS || 'ui_pairs_round3.json');
+  test.skip(!fs.existsSync(f), `chưa có ${f}`);
+  const cases = JSON.parse(fs.readFileSync(f, 'utf8')) as { id: string; type: string; pairs: { label: string; value: string }[] }[];
+  const COLS = ['original_price', 'automatic_price', 'total_discount', 'deposit', 'final_price', 'custom_price',
+    'service_fee', 'fee_per_month', 'service_fee_rate', 'fixed_discount'];
+
+  for (const c of cases) {
+    const [row] = await queryUatReadonly<Record<string, string>>(
+      `SELECT ${COLS.map((x) => `"${x}"::text AS "${x}"`).join(', ')} FROM ic_payment_orders WHERE id = $1::uuid`,
+      [c.id], { dbPrefix: 'LIB_MASTER_DB_RO' });
+    if (!row) { console.log(`[v3] ${c.type}: không thấy hàng DB`); continue; }
+
+    console.log(`[v3] === ${c.type} ===`);
+    for (const col of COLS) {
+      const v = row[col];
+      if (v === null || v === undefined) continue;
+      // Nhãn nào hiện đúng con số của cột này?
+      const labels = [...new Set(c.pairs.filter((p) => numOf(p.value) === numOf(v)).map((p) => p.label))];
+      // Cột nào KHÁC cũng có đúng con số đó? (nếu có thì nhãn không phân biệt được cột)
+      const rivals = COLS.filter((o) => o !== col && numOf(row[o]) === numOf(v));
+      const verdict = !labels.length ? 'KHÔNG hiện trên màn'
+        : rivals.length ? `trùng số với ${rivals.join(',')} ⇒ CHƯA NEO`
+          : labels.length === 1 ? `NEO → "${labels[0]}"` : `hiện ở ${labels.length} nhãn: ${JSON.stringify(labels)}`;
+      console.log(`      ${col.padEnd(17)} = ${String(v).padEnd(14)} ${verdict}`);
+    }
+  }
+});

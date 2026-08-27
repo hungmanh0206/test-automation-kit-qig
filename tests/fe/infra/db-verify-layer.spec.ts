@@ -279,6 +279,51 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
     }
   });
 
+  test('cột TỈ LỆ phải ra khỏi danh sách tiền (money() lên tỉ lệ là sai nghĩa)', () => {
+    /*
+     * ĐO 28/08: service_fee_rate max=20 (distinct 3), fixed_discount 5/10/15 (3 bản ghi) — biên độ 0..20
+     * không thể là VND. Để chúng trong `money` thì `money()` vẫn "chạy" nhưng thông điệp thành "lệch 5 đồng"
+     * cho một tỉ lệ, và gate độ-phủ-cột-tiền đếm sai. Cột nào chưa biết đơn vị phải khai `unitUnknown`.
+     */
+    const conv = loadConventions(REPO);
+    const money = conv.money?.entities?.ic_payment_orders || [];
+    const rates = conv.rates?.entities?.ic_payment_orders || [];
+    expect(rates.length, 'chưa khai cột tỉ lệ nào').toBeGreaterThan(0);
+    for (const r of rates) expect(money, `"${r}" vừa là tiền vừa là tỉ lệ — phải chọn một`).not.toContain(r);
+    for (const u of conv.rates?.unitUnknown || []) {
+      expect(rates, `"${u}" khai unitUnknown thì phải nằm trong rates`).toContain(u);
+    }
+  });
+
+  test('mỗi cột TỈ LỆ cũng phải được QUYẾT (neo / treo / không-hiển-thị)', () => {
+    const conv = loadConventions(REPO);
+    const fm = conv.fieldMap!;
+    const anchored = new Set(Object.values(fm.byScreen).flatMap((c) => Object.keys(c)).filter((k) => !k.startsWith('_')));
+    const decided = new Set([...Object.keys(fm.unanchored), ...Object.keys(fm.notDisplayed || {})].map((k) => k.split('@')[0]));
+    for (const col of conv.rates?.entities?.ic_payment_orders || []) {
+      expect(anchored.has(col) || decided.has(col), `cột tỉ lệ "${col}" chưa được quyết`).toBe(true);
+    }
+  });
+
+  test('notDisplayed phải rời khỏi unanchored (không đếm hai lần thành việc-phải-làm)', () => {
+    const fm = fieldMap();
+    for (const col of Object.keys(fm.notDisplayed || {})) {
+      if (col.startsWith('_')) continue;
+      expect(fm.unanchored[col], `"${col}" vừa notDisplayed vừa unanchored`).toBeUndefined();
+      expect(String((fm.notDisplayed || {})[col]).length, `"${col}" phải nói rõ vì sao không hiển thị`).toBeGreaterThan(25);
+    }
+  });
+
+  test('valueMaps phải khai ĐỘ PHỦ enum (đủ hay thiếu, thiếu cái nào)', () => {
+    /*
+     * Bẫy đã dính: neo status/service_fee_type từ 50 hàng đầu rồi tưởng xong. DB có 9 service_fee_type mà
+     * 50 hàng chỉ thấy 6 — bản đồ THIẾU mà trông như đủ. Nên bắt buộc khai `_coverage` nói rõ đủ/thiếu.
+     */
+    const maps = fieldMap().valueMaps || {};
+    expect(String(maps._coverage || ''), 'thiếu `_coverage`: không ai biết bản đồ enum đã đủ chưa').toMatch(/DAY DU|ĐẦY ĐỦ|đủ/);
+    expect(String(maps._coverage).length).toBeGreaterThan(80);
+  });
+
   test('mỗi cột unanchored phải nói RÕ vì sao (để biết cần fixture gì)', () => {
     for (const [col, why] of Object.entries(fieldMap().unanchored)) {
       expect(String(why).trim().length, `"${col}" thiếu lý do`).toBeGreaterThan(25);

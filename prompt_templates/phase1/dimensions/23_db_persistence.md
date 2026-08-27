@@ -53,20 +53,28 @@ giống DB" là **tautology** — cấm. Giá trị lớn nhất của kiểm so
 
 **② Chỉ dùng cột ĐÃ NEO, và neo theo ĐÚNG MÀN.** `db.conventions.json → fieldMap` có **hai bản đồ**:
 
-- `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. 4 màn đã neo: `SERVICE_FEE` (7 cột) · `CORE` (4) ·
-  `CORE_LIST` (5) · `SERVICE_FEE_LIST` (4). Khoá theo màn vì CÙNG một cột có nhãn khác nhau:
-  `original_price` là **"Gross Amount"** ở CORE nhưng **"Gross Price"** ở SERVICE_FEE; và `final_price`
-  **chưa neo** ở tab Overview của CORE trong khi **đã neo** ("Net Amount") ở màn danh sách CORE_LIST.
+- `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. **6 màn** đã neo: `SERVICE_FEE` (8 cột) ·
+  `CORE` (4) · `CORE_LIST` (5) · `SERVICE_FEE_LIST` (4) · `CORE_HUBSPOT` (1) · `SERVICE_FEE_HUBSPOT` (1).
+  Khoá theo màn vì CÙNG một cột có nhãn khác nhau: `original_price` là **"Gross Amount"** ở CORE nhưng
+  **"Gross Price"** ở SERVICE_FEE; `final_price` **chưa neo** ở tab Overview của CORE mà **đã neo**
+  ("Net Amount") ở màn danh sách; `sync_status` chỉ có ở **tab Hubspot Information**, không có ở Overview —
+  kết luận "cột này không hiển thị" khi mới xem một tab là kết luận thiếu.
 - `fieldMap.valueMaps` — **giá trị enum DB → nhãn tiếng Việt**, khoá `"<bảng>.<cột>"`. Đã neo
-  `ic_payment_orders.status` (6 enum, ví dụ `PARTIALLY_PAID` → "Đã thanh toán 1 phần") và
-  `service_fee_type` (6 enum). Đo trên 98 hàng ở cả hai màn danh sách, luật neo: **hàm** (1 enum → 1 nhãn)
-  **và đơn ánh** (2 enum không dùng chung nhãn).
+  `status` (6/6 enum — đủ), `sync_status` (2/2 — đủ), `service_fee_type` (6 enum — **đủ cho màn Service Fee**;
+  3 enum `DANG_KY_CBE`/`MUA_TAI_KHOAN_CERT`/`MUA_TAI_KHOAN_BECKER` chỉ tồn tại ở đơn **ADD_ON** nên phải neo
+  ở màn add-on). Luật neo: **hàm** (1 enum → 1 nhãn) **và đơn ánh** (2 enum không dùng chung nhãn). Khối
+  `_coverage` **bắt buộc** nói rõ đủ/thiếu — bẫy đã dính: neo từ 50 hàng đầu rồi tưởng xong, trong khi DB có
+  9 enum mà 50 hàng chỉ thấy 6.
+- `notDisplayed` — cột **không phải field**: `order_type` quyết định route/màn, khoá màn trong `byScreen`
+  chính là giá trị của nó. Để chung với `unanchored` thì cứ tưởng còn việc phải làm.
+- `rates` (tách khỏi `money`) — `service_fee_rate` (max 20) và `fixed_discount` (5/10/15) là **tỉ lệ**, không
+  phải tiền. Gọi `money()` lên tỉ lệ thì thông điệp thành "lệch 5 đồng" cho một phần trăm.
 
 Tra bản đồ **phải đi qua helper** `uiLabelOfColumn(conv, screen, column)` và
 `uiLabelOfValue(conv, 'bảng.cột', enum)` trong `config.ts` — hai hàm này **NÉM** khi cột/enum chưa neo hoặc
 khi bạn hỏi nhãn của màn khác. Đọc `conv.fieldMap` trực tiếp là bỏ mất lớp chặn đó.
 
-Cột trong `unanchored` (hiện **8 mục**, mỗi mục ghi rõ **cần fixture gì**) thì **KHÔNG được dùng để phán** —
+Cột trong `unanchored` (hiện **5 mục**, mỗi mục ghi rõ **cần fixture gì**) thì **KHÔNG được dùng để phán** —
 đoán sai cột thì kết luận vẫn ra, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường. Cần thêm cột
 thì neo trước bằng fixture phân biệt: nhãn chỉ được neo khi giá trị của nó **phân biệt** được với mọi cột
 cùng loại trên **toàn bộ** hàng đo (xem `fieldMap._how_to_reanchor`), đừng suy từ tên cột.
@@ -77,6 +85,25 @@ người khác là nguồn flaky và là đường ra kết luận sai. `snapsho
 
 **④ DB KHÔNG phải evidence.** Evidence vẫn là ảnh/video màn hình đúng chuẩn; số liệu DB đi vào phần nhận
 định dưới dạng số đo (`hs_net_amount = 0`, `deleted_at IS NULL`). Và không dựng precondition bằng DB.
+
+## Neo thêm cột: HỎI DB TRƯỚC, đừng tạo fixture ngay
+
+`tests/support/setup/db/fieldmap.candidates.spec.ts` hỏi DB: **đơn nào SẴN CÓ mà giá trị cột đó tự phân biệt**
+với mọi cột cùng loại. Vòng 3 (28/08) chạy phép này ra kết quả: **6/8 cột treo có bản ghi thật** ⇒ neo được mà
+**không chạm dữ liệu UAT**, chỉ còn `custom_price` là thật sự cần fixture. Trước đó cả 8 cột đều bị ghi "cần
+fixture" chỉ vì 6 đơn mở tay không đủ đa dạng — *"6 đơn tôi mở"* không phải *"mọi đơn"*.
+
+Hai bẫy khi viết truy vấn tìm ứng viên:
+
+- Dùng `IS DISTINCT FROM`, **không** `<>` / `NOT IN (...)`. Với NULL thì `<>` trả NULL nên hàng bị loại oan,
+  và `NOT IN` có NULL thì kết quả **rỗng** — rồi kết luận "DB không có đơn nào" trong khi có.
+- Tìm theo **GIÁ TRỊ**, không theo **NHÃN**. Hỏi "có nhãn nào chứa chữ deposit không?" là bỏ sót: app hoàn
+  toàn có thể hiện con số đó dưới nhãn khác. Đúng cách: lấy mọi cặp (nhãn → giá trị) trên màn, chuẩn hoá số,
+  rồi hỏi "giá trị này khớp cột DB nào" — và chỉ neo khi khớp **đúng một** cột.
+
+Kết quả có giá trị nhất của vòng 3 lại là một câu **phủ định**: `deposit` có đơn phân biệt (1.000.000 và
+1.500.000) mà **con số đó không xuất hiện ở bất kỳ nhãn nào** trên tab Overview ⇒ lý do treo đổi từ *"trùng giá
+trị"* sang *"màn này không hiển thị"* — hai việc phải làm hoàn toàn khác nhau.
 
 ## Hai giới hạn ĐÃ ĐO của DB này (đừng hứa thứ máy không làm được)
 
