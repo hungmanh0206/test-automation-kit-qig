@@ -234,3 +234,39 @@ test.describe('@infra asMatcher — giá trị trần vẫn dùng được', () 
     expect((exact('paid').compare(' paid ') as { why: string }).why).toContain('khoảng trắng');
   });
 });
+
+test.describe('@infra fieldMap — cột chưa neo KHÔNG được dùng để phán', () => {
+  /*
+   * Bản đồ cột↔field neo bằng fixture phân biệt (27/08/2026, 4 đơn thật, đọc UI read-only).
+   * Test này khoá đúng một điều: `unanchored` phải LUÔN được khai và không được rỗng-vì-quên. Cột chưa neo
+   * mà đem đi kết luận "UI đúng + DB sai = bug persist" thì sinh ra bug ma CÓ SỐ TỪ DB — thuyết phục hơn
+   * bug ma thường, và đúng lớp sai đã làm 10 ticket bị reject ngày 23–24/08.
+   */
+  test('mỗi cột tiền/enum của bảng lõi phải nằm ở anchored HOẶC unanchored — không được bỏ lửng', () => {
+    const conv = loadConventions(REPO);
+    const fm = (conv as unknown as { fieldMap?: { entity: string; anchored: Record<string, string>; unanchored: Record<string, string> } }).fieldMap;
+    expect(fm, 'thiếu `fieldMap` ⇒ không ai biết cột nào neo được').toBeTruthy();
+    const decided = new Set([...Object.keys(fm!.anchored), ...Object.keys(fm!.unanchored)]);
+    const moneyCols = (conv.money?.entities || {})[fm!.entity] || [];
+    for (const col of moneyCols) {
+      expect(decided.has(col), `cột tiền "${col}" chưa được QUYẾT (anchored/unanchored)`).toBe(true);
+    }
+  });
+
+  test('mỗi cột `unanchored` phải nói RÕ vì sao chưa neo (để biết cần fixture gì)', () => {
+    const conv = loadConventions(REPO);
+    const fm = (conv as unknown as { fieldMap: { unanchored: Record<string, string> } }).fieldMap;
+    for (const [col, why] of Object.entries(fm.unanchored)) {
+      expect(String(why).trim().length, `"${col}" thiếu lý do`).toBeGreaterThan(15);
+    }
+  });
+
+  test('nhãn UI của cột đã neo phải là chuỗi thật, không rỗng/không phải số', () => {
+    const conv = loadConventions(REPO);
+    const fm = (conv as unknown as { fieldMap: { anchored: Record<string, string> } }).fieldMap;
+    expect(Object.keys(fm.anchored).length, 'neo được ít nhất vài cột').toBeGreaterThanOrEqual(5);
+    for (const [col, label] of Object.entries(fm.anchored)) {
+      expect(label.replace(/[^A-Za-zÀ-ỹ]/g, '').length, `nhãn của "${col}" trông như số/rỗng: "${label}"`).toBeGreaterThanOrEqual(2);
+    }
+  });
+});
