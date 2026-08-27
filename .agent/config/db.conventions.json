@@ -153,11 +153,11 @@
       }
     },
     "unanchored": {
-      "deposit": "DOI LY DO (28/08): da tim duoc don co deposit PHAN BIET (a4b10fbd = 1.000.000, e4a87e98 = 1.500.000, khac moi cot tien khac) va con so do KHONG XUAT HIEN o bat ky nhan nao tren tab Overview cua CORE ⇒ khong phai \"trung gia tri\" ma la \"khong hien thi o man nay\". KHONG can fixture; can doc man thanh toan/split-bill.",
+      "deposit": "DO 3 don co deposit PHAN BIET (a4b10fbd=1.000.000, e4a87e98=1.500.000, c021a242=1.000.000) tren tab Overview VA tab List Transaction: con so do KHONG xuat hien o nhan nao. Ung vien \"Pay-back\" da bi BAC BO — nhan do bang 1.000.000d o c021a242 nhung bang 0d o CA HAI don kia, tuc khop 1 don la trung hop chu khong phai neo. KHONG can fixture; can man khac (thanh toan/split-bill/form sua don).",
       "custom_price": "Cot DUY NHAT that su can FIXTURE: quet TOAN BO DB (132 ban ghi non-null) khong co don nao custom_price khac moi cot tien khac ⇒ khong the neo bang du lieu san co. Can don dat gia custom khac ca automatic_price va final_price.",
-      "fixed_discount": "Chi 3 ban ghi trong toan DB, gia tri 5/10/15 — qua nho de la VND nen kha nang cao la PHAN TRAM, nhung KHONG hien tren tab Overview cua SF (da doc 2 don) nen chua xac dinh duoc kieu. Ghi o khoi \"rates\" voi kieu CHUA XAC DINH, khong doan.",
-      "payment_method": "Da doc Overview cua 1 don INSTALLMENT (7c93f58b) va 1 don ONETIME (2559981c): khong nhan nao hien gia tri nay. Nhan \"Payment Method\" tren man la COT CUA BANG GIAO DICH (moi giao dich mot phuong thuc) — KHAC CAP voi payment_method cua DON, dung lay nhan do neo cot nay.",
-      "full_name": "VI DU MANH NHAT cho luat \"dung suy tu ten cot\": DB co cot full_name nhung TOAN NULL (1005 ban ghi), trong khi UI CO nhan \"Full name\" — nhan do lay tu first_name/last_name. Neo \"Full name\" -> full_name la SAI hoan toan du ten trung khop."
+      "fixed_discount": "DO 2 don (fixed_discount = 10 va 15) tren tab Overview VA tab Hubspot Information: khong hien. Chuoi \"10%\" duy nhat tim thay lai nam trong TEN LIEN HE test (\"IT M4-10%\"), khong phai gia tri truong. Chi 3 ban ghi trong toan DB, gia tri 5/10/15 — qua nho de la VND nen kha nang cao la PHAN TRAM, nhung chua thay hien nen chua xac dinh duoc kieu (khai o khoi `rates`.unitUnknown).",
+      "payment_method": "DO 8 don tren man Overview: 4 don INSTALLMENT + 4 don ONETIME, CUA CAC KHACH KHAC NHAU. Ket qua: 35 nhan co mat o moi don, 0 nhan phan biet duoc hai nhom ⇒ cot nay KHONG the hien tren Overview. Luot do dau chi dung 2+2 don thi ra 4 \"nhan phan biet duoc\" — trong do co ca \"Status\"=\"Split bill\" vs \"None\" — nhung TAT CA bien mat khi thay don gan-ban-sao (cung khach, cung so tien) bang don cua khach khac ⇒ deu la trung hop. Nhan \"Payment Method\" tren man la COT CUA BANG GIAO DICH (moi giao dich mot phuong thuc), khac cap voi cot cua DON. Con phai doc: form tao/sua don.",
+      "full_name": "DO tren 1005 ban ghi DB (cot full_name TOAN NULL) va tren man Overview cua 6 don (nhan \"Full name\" CO hien, gia tri lay tu first_name/last_name). Day la VI DU MANH NHAT cho luat \"dung suy tu ten cot\": ten nhan trung khop ten cot ma neo vao la sai hoan toan. Chi neo duoc neu app bat dau ghi cot nay."
     },
     "valueMaps": {
       "_why": "Ban do GIA TRI (enum DB -> nhan tieng Viet tren UI) — khac ban do COT. Do 28/08/2026 READ-ONLY tren man danh sach, noi 98 hang voi DB. Luat neo: enum -> nhan phai la HAM (1 enum chi 1 nhan) VA DON ANH (2 enum khong dung chung nhan); vi pham bat ky dieu nao thi ghi CHUA NEO, khong chon nhan pho bien nhat.",
@@ -195,7 +195,8 @@
     "notDisplayed": {
       "_why": "Cot KHONG PHAI field hien thi — tach khoi \"unanchored\" vi khong bao gio neo duoc bang cach doc man, va de o \"unanchored\" thi cu tuong con viec phai lam.",
       "order_type": "Quyet dinh ROUTE/MAN (CORE -> /orders, SERVICE_FEE -> /service-fee-orders, ADD_ON -> man add-on) chu khong hien duoi dang mot field. Khoa man trong byScreen CHINH LA gia tri cot nay."
-    }
+    },
+    "_method_enum_by_groups": "Neo cot ENUM khong hien dang chuoi: lay HAI NHOM don CUNG MAN khac nhau dung o cot do, roi tim nhan nao (a) co o MOI don ca hai nhom, (b) gia tri KHONG DOI trong tung nhom, (c) gia tri KHAC nhau giua hai nhom. Thieu (b) thi moi nhan hien so tien deu lot; thieu (a) thi khac biet do thu khac cung lot. VA moi nhom phai >= 3 don CUA CAC KHACH KHAC NHAU: hai don gan-ban-sao (cung khach, cung so tien) lam moi phep so nhom ra ket qua GIA. Cai dat: tests/support/setup/db/fieldmap.anchor.spec.ts, test \"SO HAI NHOM\"."
   },
   "rates": {
     "_why": "TACH KHOI khoi \"money\". DO bien do gia tri: service_fee_rate n=39 distinct=3 min=0 max=20; fixed_discount n=3 distinct=3 min=5 max=15. Bien do 0..20 khong the la tien VND. Goi money() len chung thi thong diep sai (\"lech 5 dong\" cho mot ti le) va so sanh sai ngu nghia.",

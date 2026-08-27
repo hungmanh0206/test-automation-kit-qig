@@ -120,6 +120,12 @@ Hai bẫy khi viết truy vấn tìm ứng viên:
   toàn có thể hiện con số đó dưới nhãn khác. Đúng cách: lấy mọi cặp (nhãn → giá trị) trên màn, chuẩn hoá số,
   rồi hỏi "giá trị này khớp cột DB nào" — và chỉ neo khi khớp **đúng một** cột.
 
+**Cột enum không hiện dạng chuỗi** (vd `payment_method`) thì đối chiếu theo giá trị vô dụng — phải **so hai
+nhóm** đơn cùng màn khác nhau đúng ở cột đó, và chỉ nhận nhãn nào *(a)* có ở mọi đơn của cả hai nhóm, *(b)*
+không đổi trong từng nhóm, *(c)* khác nhau giữa hai nhóm. **Mỗi nhóm phải ≥3 đơn của KHÁCH KHÁC NHAU**: lượt
+đo đầu chỉ dùng 2+2 đơn ra **4 nhãn "phân biệt được"** (kể cả `Status = "Split bill"` vs `"None"`, nghe rất
+thuyết phục) — tất cả **biến mất** khi thay cặp gần-bản-sao (cùng khách, cùng số tiền) bằng đơn của khách khác.
+
 Kết quả có giá trị nhất của vòng 3 lại là một câu **phủ định**: `deposit` có đơn phân biệt (1.000.000 và
 1.500.000) mà **con số đó không xuất hiện ở bất kỳ nhãn nào** trên tab Overview ⇒ lý do treo đổi từ *"trùng giá
 trị"* sang *"màn này không hiển thị"* — hai việc phải làm hoàn toàn khác nhau.

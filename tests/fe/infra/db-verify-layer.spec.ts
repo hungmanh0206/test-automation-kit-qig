@@ -327,6 +327,29 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
     expect(String(maps._coverage).length).toBeGreaterThan(80);
   });
 
+  test('lý do treo phải là SỐ ĐO, không phải phỏng đoán (nêu bao nhiêu đơn / màn nào)', () => {
+    /*
+     * Vòng 5 đổi cả 3 lý do treo từ "không hiển thị" (nghe như phỏng đoán) sang số đo cụ thể: bao nhiêu đơn,
+     * màn/tab nào, ứng viên nào đã bị bác bỏ. Luật này giữ chuẩn đó — lý do treo mà không có số thì lần sau
+     * không ai biết đã đo tới đâu, và sẽ đo lại từ đầu.
+     */
+    const un = fieldMap().unanchored;
+    for (const [col, why] of Object.entries(un)) {
+      const w = String(why);
+      expect(/d/.test(w), `"${col}": lý do treo không có con số nào (bao nhiêu đơn? bao nhiêu bản ghi?)`).toBe(true);
+      expect(/DO |ĐO |Quet|Quét|quet|man |màn |tab /.test(w), `"${col}": lý do treo phải nói ĐO ở đâu`).toBe(true);
+    }
+  });
+
+  test('phương pháp so-hai-nhóm phải được khai VÀ có máy chạy nó', () => {
+    const fm = fieldMap() as unknown as { _method_enum_by_groups?: string };
+    const m = String(fm._method_enum_by_groups || '');
+    expect(m.length, 'conventions chưa khai phương pháp neo cột enum').toBeGreaterThan(80);
+    expect(m, 'phải ghi ràng buộc ≥3 đơn của khách khác nhau — đây là chỗ đã tạo 4 kết quả giả').toMatch(/3 don|3 đơn/);
+    const spec = fs.readFileSync(path.join(REPO, 'tests/support/setup/db/fieldmap.anchor.spec.ts'), 'utf8');
+    expect(spec, 'khai phương pháp mà không có máy chạy thì chỉ là văn bản').toContain('SO HAI NHÓM');
+  });
+
   test('mỗi cột unanchored phải nói RÕ vì sao (để biết cần fixture gì)', () => {
     for (const [col, why] of Object.entries(fieldMap().unanchored)) {
       expect(String(why).trim().length, `"${col}" thiếu lý do`).toBeGreaterThan(25);

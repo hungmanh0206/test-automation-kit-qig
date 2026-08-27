@@ -176,3 +176,63 @@ test('đối chiếu THEO GIÁ TRỊ: nhãn UI nào ứng với cột DB nào (v
     }
   }
 });
+
+/*
+ * NEO CỘT ENUM BẰNG CÁCH SO HAI NHÓM.
+ *
+ * Cột như `payment_method` không hiện dạng chuỗi enum, nên đối chiếu theo giá trị (như vòng 3) không dùng
+ * được. Cách đúng: lấy HAI NHÓM đơn CÙNG MÀN, khác nhau ở đúng cột cần neo, rồi tìm nhãn nào:
+ *   (a) có mặt ở MỌI đơn của cả hai nhóm,
+ *   (b) giá trị KHÔNG ĐỔI trong từng nhóm,
+ *   (c) giá trị KHÁC nhau giữa hai nhóm.
+ * Thiếu (b) thì mọi nhãn hiện số tiền đều lọt (mỗi đơn một số); thiếu (a) thì nhãn chỉ xuất hiện ở một nhóm
+ * cũng lọt, mà đó có thể là khác biệt do thứ khác. Đủ ba điều mới là nhãn của cột đó.
+ */
+const GROUPS: Record<string, Record<string, string[]>> = JSON.parse(process.env.DB_GROUPS || JSON.stringify({
+  payment_method: { INSTALLMENT: ['I1_ov', 'I1_tx', 'I2_ov', 'I2_tx'], ONETIME: ['O1_ov', 'O1_tx', 'O2_ov', 'O2_tx'] },
+}));
+
+test('neo cột enum bằng cách SO HAI NHÓM đơn', async () => {
+  const f = path.join(REQ, process.env.DB_MAP_PAIRS || 'ui_pairs_round5.json');
+  test.skip(!fs.existsSync(f), `chưa có ${f}`);
+  const cases = JSON.parse(fs.readFileSync(f, 'utf8')) as { type: string; pairs: { label: string; value: string }[] }[];
+  const byType = new Map(cases.map((c) => [c.type, c.pairs]));
+
+  for (const [col, groups] of Object.entries(GROUPS)) {
+    // Gộp mọi view của cùng một đơn: nhãn ở tab nào cũng tính (một màn không phải cả app).
+    const perGroup: Record<string, Map<string, Set<string>>[]> = {};
+    let missing = false;
+    for (const [g, types] of Object.entries(groups)) {
+      const orders = new Map<string, Map<string, Set<string>>>();
+      for (const t of types) {
+        const pairs = byType.get(t);
+        if (!pairs) { console.log(`[g2] ${col}: thiếu view "${t}" trong file cặp`); missing = true; continue; }
+        const key = t.replace(/_(ov|tx|hs)$/, '');
+        const m = orders.get(key) || new Map<string, Set<string>>();
+        for (const p of pairs) (m.get(p.label) || m.set(p.label, new Set()).get(p.label)!).add(p.value);
+        orders.set(key, m);
+      }
+      perGroup[g] = [...orders.values()];
+    }
+    if (missing) continue;
+
+    const gNames = Object.keys(perGroup);
+    const allOrders = gNames.flatMap((g) => perGroup[g]);
+    const common = [...allOrders[0].keys()].filter((l) => allOrders.every((o) => o.has(l)));
+
+    const hits: string[] = [];
+    for (const label of common) {
+      const valOf = (o: Map<string, Set<string>>) => [...o.get(label)!].sort().join('|');
+      const perG = gNames.map((g) => {
+        const vs = [...new Set(perGroup[g].map(valOf))];
+        return vs.length === 1 ? vs[0] : null;                 // (b) không đổi trong nhóm
+      });
+      if (perG.some((v) => v === null)) continue;
+      if (new Set(perG).size !== gNames.length) continue;      // (c) khác nhau giữa các nhóm
+      hits.push(`"${label}" → ${gNames.map((g, i) => `${g}=${JSON.stringify(perG[i])}`).join(' · ')}`);
+    }
+    console.log(`[g2] ${col}: ${common.length} nhãn có ở mọi đơn · ${hits.length} nhãn phân biệt được nhóm`);
+    for (const h of hits.slice(0, 8)) console.log(`      ${h}`);
+    if (!hits.length) console.log('      ⇒ KHÔNG neo được: không nhãn nào phân biệt hai nhóm ở các màn đã đọc');
+  }
+});
