@@ -436,9 +436,14 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
     expect(uiLabelOfColumn(conv, 'CORE_LIST', 'final_price')).toBe('Net Amount');
     expect(uiLabelOfColumn(conv, 'SERVICE_FEE', 'original_price')).toBe('Gross Price');
     // Cột đang treo ⇒ ném, và phải NÓI RA lý do treo để biết cần fixture gì.
-    expect(() => uiLabelOfColumn(conv, 'CORE', 'deposit')).toThrow(/CHƯA NEO/);
-    expect(() => uiLabelOfColumn(conv, 'CORE', 'deposit')).toThrow(/Lý do đang treo/);
-    // Neo ở màn khác ⇒ vẫn ném, và phải chỉ ra neo ở màn nào (chứ không im lặng trả nhãn màn kia).
+    expect(() => uiLabelOfColumn(conv, 'CORE', 'custom_price')).toThrow(/CHƯA NEO/);
+    expect(() => uiLabelOfColumn(conv, 'CORE', 'custom_price')).toThrow(/Lý do đang treo/);
+    /*
+     * Neo ở màn khác ⇒ vẫn ném, và phải chỉ ra neo ở màn nào. `deposit` là ví dụ đắt nhất: nó neo ở
+     * CORE_EDIT dưới nhãn "Paid Amount", mà màn CORE cũng CÓ nhãn "Paid Amount" — chỉ khác nghĩa. Im lặng
+     * trả nhãn của màn kia là so sai cột mà vẫn ra kết luận.
+     */
+    expect(() => uiLabelOfColumn(conv, 'CORE', 'deposit')).toThrow(/chỉ neo ở: CORE_EDIT/);
     expect(() => uiLabelOfColumn(conv, 'CORE', 'final_price')).toThrow(/chỉ neo ở: SERVICE_FEE, CORE_LIST/);
     expect(() => uiLabelOfColumn(conv, 'MAN_LA', 'deal_id')).toThrow(/chưa có trong fieldMap/);
   });

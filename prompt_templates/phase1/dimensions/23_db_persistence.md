@@ -53,8 +53,9 @@ giống DB" là **tautology** — cấm. Giá trị lớn nhất của kiểm so
 
 **② Chỉ dùng cột ĐÃ NEO, và neo theo ĐÚNG MÀN.** `db.conventions.json → fieldMap` có **hai bản đồ**:
 
-- `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. **6 màn** đã neo: `SERVICE_FEE` (8 cột) ·
-  `CORE` (4) · `CORE_LIST` (5) · `SERVICE_FEE_LIST` (4) · `CORE_HUBSPOT` (1) · `SERVICE_FEE_HUBSPOT` (1).
+- `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. **8 màn** đã neo: `SERVICE_FEE` (8 cột) ·
+  `CORE` (4) · `CORE_LIST` (5) · `SERVICE_FEE_LIST` (4) · `ADD_ON_LIST` (5) · `CORE_HUBSPOT` (1) ·
+  `SERVICE_FEE_HUBSPOT` (1) · `CORE_EDIT` (1).
   Khoá theo màn vì CÙNG một cột có nhãn khác nhau: `original_price` là **"Gross Amount"** ở CORE nhưng
   **"Gross Price"** ở SERVICE_FEE; `final_price` **chưa neo** ở tab Overview của CORE mà **đã neo**
   ("Net Amount") ở màn danh sách; `sync_status` chỉ có ở **tab Hubspot Information**, không có ở Overview —
@@ -74,7 +75,7 @@ Tra bản đồ **phải đi qua helper** `uiLabelOfColumn(conv, screen, column)
 `uiLabelOfValue(conv, 'bảng.cột', enum)` trong `config.ts` — hai hàm này **NÉM** khi cột/enum chưa neo hoặc
 khi bạn hỏi nhãn của màn khác. Đọc `conv.fieldMap` trực tiếp là bỏ mất lớp chặn đó.
 
-Cột trong `unanchored` (hiện **5 mục**, mỗi mục ghi rõ **cần fixture gì**) thì **KHÔNG được dùng để phán** —
+Cột trong `unanchored` (hiện **4 mục**, mỗi mục ghi rõ **cần fixture gì**) thì **KHÔNG được dùng để phán** —
 đoán sai cột thì kết luận vẫn ra, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường. Cần thêm cột
 thì neo trước bằng fixture phân biệt: nhãn chỉ được neo khi giá trị của nó **phân biệt** được với mọi cột
 cùng loại trên **toàn bộ** hàng đo (xem `fieldMap._how_to_reanchor`), đừng suy từ tên cột.
@@ -119,6 +120,12 @@ Hai bẫy khi viết truy vấn tìm ứng viên:
 - Tìm theo **GIÁ TRỊ**, không theo **NHÃN**. Hỏi "có nhãn nào chứa chữ deposit không?" là bỏ sót: app hoàn
   toàn có thể hiện con số đó dưới nhãn khác. Đúng cách: lấy mọi cặp (nhãn → giá trị) trên màn, chuẩn hoá số,
   rồi hỏi "giá trị này khớp cột DB nào" — và chỉ neo khi khớp **đúng một** cột.
+
+**Form giữ giá trị ở `input.value`, KHÔNG ở `textContent`** — và OPS còn dùng **ant-select** (là `div`,
+không phải `<select>`) nên `input.value` của nó **rỗng**, còn radio/checkbox thì `value` là hằng số của từng ô
+(đọc `value` là ra giá trị của ô **chưa chọn**). Bản đọc form đầu tiên báo `select=0` ở **mọi** form OPS — đó
+là **instrument mù**, không phải "form không có field". Phải đọc `.ant-select-selection-item` và trạng thái
+`checked`; đọc xong mới được kết luận "cột này không hiển thị".
 
 **Cột enum không hiện dạng chuỗi** (vd `payment_method`) thì đối chiếu theo giá trị vô dụng — phải **so hai
 nhóm** đơn cùng màn khác nhau đúng ở cột đó, và chỉ nhận nhãn nào *(a)* có ở mọi đơn của cả hai nhóm, *(b)*
