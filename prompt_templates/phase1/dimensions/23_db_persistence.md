@@ -133,6 +133,13 @@ không đổi trong từng nhóm, *(c)* khác nhau giữa hai nhóm. **Mỗi nh�
 đo đầu chỉ dùng 2+2 đơn ra **4 nhãn "phân biệt được"** (kể cả `Status = "Split bill"` vs `"None"`, nghe rất
 thuyết phục) — tất cả **biến mất** khi thay cặp gần-bản-sao (cùng khách, cùng số tiền) bằng đơn của khách khác.
 
+**Cột không phải field nhập thì phải TRUY NGUỒN, đừng đọc thêm màn.** `payment_method` không có ở 6 loại màn
+(Overview · List · List Transaction · Hubspot · form sửa · form tạo cả 3 loại đơn). Hai giả thuyết bị bác bằng
+số đo: DB **không có** cột/bảng nào tên split/installment, và giá trị **không tương quan** với số đợt thanh
+toán (68 đơn INSTALLMENT có 0 giao dịch; đơn ONETIME có tới 5). Manh mối thật nằm ở **schema**: bảng có cột
+song sinh `forced_payment_method` và `payment_page_url` ⇒ giá trị do người học chọn ở **trang thanh toán**,
+OPS chỉ có thể *ép*. Đọc thêm màn OPS nữa là vô ích — đọc `information_schema` rẻ hơn và trả lời đúng câu hỏi.
+
 Kết quả có giá trị nhất của vòng 3 lại là một câu **phủ định**: `deposit` có đơn phân biệt (1.000.000 và
 1.500.000) mà **con số đó không xuất hiện ở bất kỳ nhãn nào** trên tab Overview ⇒ lý do treo đổi từ *"trùng giá
 trị"* sang *"màn này không hiển thị"* — hai việc phải làm hoàn toàn khác nhau.
