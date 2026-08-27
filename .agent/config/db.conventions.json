@@ -1,0 +1,57 @@
+{
+  "_why": "Quy ước DB của dự án — TRI THỨC, không phải secret, nên file này ĐƯỢC COMMIT. Creds đi riêng ở `profiles/<TASK_KEY>/task.env` (prefix `LIB_MASTER_DB_RO_`). Mọi giá trị dưới đây ĐO TỪ SCHEMA THẬT `sapp-platform-uat` ngày 27/08/2026 qua `information_schema`, không phỏng đoán.",
+  "_enforced_by": "tests/support/setup/db/config.ts + guard.ts. Bảng/khái niệm chưa khai ở đây thì helper TỪ CHỐI phán (trả `inconclusive`) thay vì đoán — đoán ra số từ DB là cách tạo bug ma trông rất thuyết phục.",
+
+  "idColumn": "id",
+
+  "softDelete": {
+    "_why": "ĐO: `deleted_at` chỉ có ở 9/16 bảng. 7 bảng nối KHÔNG có cột này ⇒ không thể dùng một quy ước toàn cục. Bảng khai `none` thì `expectSoftDeleted` phải từ chối phán, vì ở đó xoá là xoá CỨNG.",
+    "default": { "mode": "timestamp", "column": "deleted_at" },
+    "byEntity": {
+      "ic_payment_combo_product_instances": { "mode": "none" },
+      "ic_payment_order_combo_instances": { "mode": "none" },
+      "ic_payment_order_product_instances": { "mode": "none" },
+      "ic_payment_promotion_combination_instances": { "mode": "none" },
+      "ic_payment_promotion_combo_instances": { "mode": "none" },
+      "ic_payment_promotion_order_instances": { "mode": "none" },
+      "ic_payment_promotion_product_instances": { "mode": "none" }
+    }
+  },
+
+  "timestamps": {
+    "_why": "ĐO: 39/39 cột thời gian là `timestamp WITHOUT time zone` ⇒ dữ liệu KHÔNG mang offset. `storedZone` để TRỐNG có chủ đích: chưa ai xác nhận app ghi theo UTC hay +07, nên `instant()` trả `inconclusive` thay vì đoán. Điền sau khi xác nhận bằng một mốc đã biết chắc (tạo giao dịch lúc 23:00 rồi soi giá trị lưu).",
+    "createdAt": "created_at",
+    "updatedAt": "updated_at",
+    "storedZone": ""
+  },
+
+  "audit": {
+    "_why": "ĐO: KHÔNG có bảng audit hành động người dùng. `ic_payment_webhook_logs` là log webhook (bên thứ ba gọi vào), không phải audit. Cột ai-sửa chỉ có ở 2 bảng (`created_by_staff_id` trên combos/products); `ic_payment_orders` và `ic_payment_transaction_orders` KHÔNG có cột nào ghi người sửa. Vì vậy `expectAudit` KHÔNG áp được cho 2 bảng lõi — checklist §23 chỉ kiểm `updated_at` có nhảy. Hứa kiểm audit trong khi bảng không có cột audit là hứa thứ máy không làm được.",
+    "supported": false
+  },
+
+  "money": {
+    "_why": "CÙNG khái niệm tiền, HAI kiểu lưu — đây là lý do lớp so sánh phải type-aware: `orders` lưu `bigint`, còn `transaction_orders.amount` lưu `character varying` (chuỗi).",
+    "entities": {
+      "ic_payment_orders": ["original_price", "automatic_price", "total_discount", "deposit", "final_price", "custom_price", "service_fee", "fee_per_month", "service_fee_rate", "fixed_discount"],
+      "ic_payment_transaction_orders": ["amount"]
+    }
+  },
+
+  "relations": {
+    "_why": "Bảng phải đổi theo khi sửa bản ghi chính — nguồn cho `expectCount` quan hệ cha–con.",
+    "ic_payment_orders": [
+      { "entity": "ic_payment_transaction_orders", "fk": "order_id" },
+      { "entity": "ic_payment_order_product_instances", "fk": "order_id" },
+      { "entity": "ic_payment_order_combo_instances", "fk": "order_id" }
+    ]
+  },
+
+  "safety": {
+    "requireReadonlyUser": true,
+    "allowedHosts": ["db-uat.sapp.edu.vn"],
+    "denyHostPatterns": ["prod", "production", "live"],
+    "statementTimeoutMs": 5000,
+    "maxRows": 500
+  }
+}
