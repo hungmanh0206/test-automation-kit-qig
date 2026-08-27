@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { isUatDbConfigured } from './uatPgClient';
 import { getDb, closeDb, checkRow, expectRow, expectSoftDeleted, expectNotDeleted, expectCount, snapshot, expectNoChange, expectAudit } from './dbVerify';
-import { money, text } from './match';
+import { money, text, instant } from './match';
 import { buildWhere } from './adapters/postgres';
 import { DbGuardError } from './types';
 
@@ -148,5 +148,29 @@ test.describe('@infra-verify buildWhere — dịch Where sang SQL (không cần 
 
   test('where rỗng ⇒ TRUE (không sinh `WHERE` cụt)', () => {
     expect(buildWhere({}).clause).toBe('TRUE');
+  });
+});
+
+test.describe('@infra-verify instant() sau khi khai storedZone=UTC', () => {
+  test.skip(!isUatDbConfigured(PREFIX), `chưa khai ${PREFIX}_*`);
+
+  test('so mốc thời gian trên DỮ LIỆU THẬT: đúng UTC ⇒ match, cùng số nhưng +07 ⇒ lệch 7 giờ', async () => {
+    const { client, conv } = await getDb();
+    expect(conv.timestamps.storedZone, 'conventions phải khai storedZone (đo được, không đoán)').toBe('UTC');
+
+    const [o] = await client.findMany(ORDERS, { deleted_at: { op: 'null' } }, { columns: ['id', 'created_at'], limit: 1 });
+    test.skip(!o, 'UAT trống');
+    const naive = String(o.created_at instanceof Date ? o.created_at.toISOString().replace(/Z$/, '') : o.created_at).replace(' ', 'T');
+
+    // Đọc giá trị naive như UTC ⇒ phải KHỚP.
+    // DB lưu tới mili giây, expected ghi tới giây ⇒ khai dung sai 1s cho ĐÚNG mức spec quy định.
+    const ok = await checkRow(ORDERS, { id: o.id }, { created_at: instant(`${naive.slice(0, 19)}Z`, { storedZone: 'UTC', toleranceMs: 1000 }) });
+    expect(ok.diffs, JSON.stringify(ok.diffs)).toEqual([]);
+    expect(ok.inconclusive, 'đã khai storedZone nên không còn inconclusive').toEqual([]);
+
+    // Cùng số nhưng gán +07 ⇒ mốc thật lệch 7 giờ ⇒ phải BÁO LỆCH, và nói rõ là múi giờ.
+    const bad = await checkRow(ORDERS, { id: o.id }, { created_at: instant(`${naive.slice(0, 19)}+07:00`, { storedZone: 'UTC', toleranceMs: 1000 }) });
+    expect(bad.diffs.length).toBe(1);
+    expect(bad.diffs[0].why).toMatch(/múi giờ|7 giờ/);
   });
 });

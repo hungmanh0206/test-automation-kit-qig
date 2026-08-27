@@ -235,38 +235,112 @@ test.describe('@infra asMatcher — giá trị trần vẫn dùng được', () 
   });
 });
 
-test.describe('@infra fieldMap — cột chưa neo KHÔNG được dùng để phán', () => {
+test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG được dùng để phán', () => {
   /*
-   * Bản đồ cột↔field neo bằng fixture phân biệt (27/08/2026, 4 đơn thật, đọc UI read-only).
-   * Test này khoá đúng một điều: `unanchored` phải LUÔN được khai và không được rỗng-vì-quên. Cột chưa neo
-   * mà đem đi kết luận "UI đúng + DB sai = bug persist" thì sinh ra bug ma CÓ SỐ TỪ DB — thuyết phục hơn
-   * bug ma thường, và đúng lớp sai đã làm 10 ticket bị reject ngày 23–24/08.
+   * Vòng 2 (27/08/2026) bác giả định "một bản đồ cho cả DB": màn Service Fee và màn Core hiển thị CÙNG một
+   * cột dưới HAI nhãn khác nhau — `original_price` là "Gross Amount" ở CORE nhưng "Gross Price" ở
+   * SERVICE_FEE. Nếu neo toàn cục thì giao rỗng; nếu bỏ luật giao thì neo SAI MÀN rồi phán chắc chắn trên
+   * cột sai. Nên bản đồ BẮT BUỘC có khoá là màn.
    */
-  test('mỗi cột tiền/enum của bảng lõi phải nằm ở anchored HOẶC unanchored — không được bỏ lửng', () => {
-    const conv = loadConventions(REPO);
-    const fm = (conv as unknown as { fieldMap?: { entity: string; anchored: Record<string, string>; unanchored: Record<string, string> } }).fieldMap;
-    expect(fm, 'thiếu `fieldMap` ⇒ không ai biết cột nào neo được').toBeTruthy();
-    const decided = new Set([...Object.keys(fm!.anchored), ...Object.keys(fm!.unanchored)]);
-    const moneyCols = (conv.money?.entities || {})[fm!.entity] || [];
-    for (const col of moneyCols) {
-      expect(decided.has(col), `cột tiền "${col}" chưa được QUYẾT (anchored/unanchored)`).toBe(true);
+  const fieldMap = () => {
+    const conv = loadConventions(REPO) as unknown as {
+      fieldMap?: { entity: string; byScreen: Record<string, Record<string, string>>; unanchored: Record<string, string> };
+    };
+    expect(conv.fieldMap, 'thiếu `fieldMap` ⇒ không ai biết cột nào neo được').toBeTruthy();
+    return conv.fieldMap!;
+  };
+
+  test('bản đồ phải khoá THEO MÀN, không phẳng', () => {
+    const fm = fieldMap();
+    expect(fm.byScreen, 'bản đồ phẳng là neo sai màn').toBeTruthy();
+    expect(Object.keys(fm.byScreen).length).toBeGreaterThanOrEqual(2);
+    for (const [screen, cols] of Object.entries(fm.byScreen)) {
+      expect(cols._route, `màn ${screen} thiếu \`_route\` — không biết neo trên URL nào`).toBeTruthy();
     }
   });
 
-  test('mỗi cột `unanchored` phải nói RÕ vì sao chưa neo (để biết cần fixture gì)', () => {
+  test('CÙNG một cột được phép có nhãn KHÁC nhau giữa hai màn (đó là lý do phải khoá theo màn)', () => {
+    const fm = fieldMap();
+    expect(fm.byScreen.SERVICE_FEE.original_price).toBe('Gross Price');
+    expect(fm.byScreen.CORE.original_price).toBe('Gross Amount');
+    expect(fm.byScreen.SERVICE_FEE.original_price).not.toBe(fm.byScreen.CORE.original_price);
+  });
+
+  test('mỗi cột tiền phải được QUYẾT: neo ở ít nhất 1 màn HOẶC khai unanchored', () => {
     const conv = loadConventions(REPO);
-    const fm = (conv as unknown as { fieldMap: { unanchored: Record<string, string> } }).fieldMap;
-    for (const [col, why] of Object.entries(fm.unanchored)) {
-      expect(String(why).trim().length, `"${col}" thiếu lý do`).toBeGreaterThan(15);
+    const fm = fieldMap();
+    const anchoredCols = new Set(Object.values(fm.byScreen).flatMap((c) => Object.keys(c)).filter((k) => !k.startsWith('_')));
+    const unanchored = new Set(Object.keys(fm.unanchored).map((k) => k.split('@')[0]));
+    for (const col of (conv.money?.entities || {})[fm.entity] || []) {
+      expect(anchoredCols.has(col) || unanchored.has(col), `cột tiền "${col}" chưa được quyết`).toBe(true);
     }
   });
 
-  test('nhãn UI của cột đã neo phải là chuỗi thật, không rỗng/không phải số', () => {
-    const conv = loadConventions(REPO);
-    const fm = (conv as unknown as { fieldMap: { anchored: Record<string, string> } }).fieldMap;
-    expect(Object.keys(fm.anchored).length, 'neo được ít nhất vài cột').toBeGreaterThanOrEqual(5);
-    for (const [col, label] of Object.entries(fm.anchored)) {
-      expect(label.replace(/[^A-Za-zÀ-ỹ]/g, '').length, `nhãn của "${col}" trông như số/rỗng: "${label}"`).toBeGreaterThanOrEqual(2);
+  test('mỗi cột unanchored phải nói RÕ vì sao (để biết cần fixture gì)', () => {
+    for (const [col, why] of Object.entries(fieldMap().unanchored)) {
+      expect(String(why).trim().length, `"${col}" thiếu lý do`).toBeGreaterThan(25);
     }
+  });
+
+  test('nhãn đã neo phải là chuỗi thật, không phải số', () => {
+    for (const [screen, cols] of Object.entries(fieldMap().byScreen)) {
+      for (const [col, label] of Object.entries(cols)) {
+        if (col.startsWith('_')) continue;
+        expect(label.replace(/[^A-Za-zÀ-ỹ]/g, '').length, `${screen}.${col} nhãn trông như số: "${label}"`).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+});
+
+test.describe('@infra instant() — thông điệp phải đúng ĐỘ LỚN của độ lệch', () => {
+  /*
+   * Bản đầu làm tròn ra phút rồi kiểm `% 60 === 0`, nên lệch 825ms cũng ra "lệch 0 giờ — dấu hiệu sai quy
+   * đổi múi giờ". Đo thật trên `created_at = 2025-05-08 00:14:55.825`. Thông điệp sai loại còn tệ hơn
+   * không có thông điệp: nó phái người đọc đi tìm bug timezone không tồn tại.
+   */
+  test('lệch mili giây ⇒ nói MS + gợi ý toleranceMs, KHÔNG nói múi giờ', () => {
+    const r = instant('2025-05-08T00:14:55Z', { storedZone: 'UTC' }).compare('2025-05-08 00:14:55.825');
+    expect(r.verdict).toBe('mismatch');
+    expect((r as { why: string }).why).toContain('ms');
+    expect((r as { why: string }).why).toContain('toleranceMs');
+    expect((r as { why: string }).why, 'đừng vu cho múi giờ').not.toContain('múi giờ');
+  });
+
+  test('khai toleranceMs 1s ⇒ khớp (spec chỉ quy định tới giây)', () => {
+    const r = instant('2025-05-08T00:14:55Z', { storedZone: 'UTC', toleranceMs: 1000 }).compare('2025-05-08 00:14:55.825');
+    expect(r.verdict).toBe('match');
+  });
+
+  test('lệch tròn giờ ⇒ VẪN nói múi giờ (không mất tín hiệu thật)', () => {
+    const r = instant('2025-05-08T00:14:55Z', { storedZone: 'UTC', toleranceMs: 1000 }).compare('2025-05-08 07:14:55.000');
+    expect((r as { why: string }).why).toContain('múi giờ');
+    expect((r as { why: string }).why).toContain('7 giờ');
+  });
+
+  test('lệch vài giây ⇒ nói giây, không nói ms cũng không nói giờ', () => {
+    const r = instant('2025-05-08T00:14:55Z', { storedZone: 'UTC' }).compare('2025-05-08 00:15:20.000');
+    expect((r as { why: string }).why).toMatch(/giây/);
+    expect((r as { why: string }).why).not.toContain('múi giờ');
+  });
+
+  test('conventions đã khai storedZone=UTC (đo được, không đoán)', () => {
+    const conv = loadConventions(REPO);
+    expect(conv.timestamps.storedZone).toBe('UTC');
+  });
+});
+
+test.describe('@infra instant() — tín hiệu múi giờ không được mất vì nhiễu mili giây', () => {
+  test('lệch 7 giờ + 825ms (DB lưu ms) ⇒ VẪN nói múi giờ', () => {
+    // Bản trước kiểm `absMs % 3_600_000 === 0` nên ca này rơi xuống "lệch 420 phút" và mất tín hiệu.
+    const r = instant('2025-05-08T00:14:55+07:00', { storedZone: 'UTC' }).compare('2025-05-08 00:14:55.825');
+    expect(r.verdict).toBe('mismatch');
+    expect((r as { why: string }).why).toContain('múi giờ');
+    expect((r as { why: string }).why).toContain('7 giờ');
+  });
+
+  test('lệch 25 phút ⇒ vẫn nói phút, KHÔNG vu cho múi giờ', () => {
+    const r = instant('2025-05-08T00:14:55Z', { storedZone: 'UTC' }).compare('2025-05-08 00:39:55.000');
+    expect((r as { why: string }).why).toContain('phút');
+    expect((r as { why: string }).why).not.toContain('múi giờ');
   });
 });

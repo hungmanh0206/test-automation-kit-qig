@@ -118,7 +118,7 @@ const offsetMinutes = (zone: string): number => {
   return (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3]));
 };
 
-export function instant(expectedIso: string, opts: { storedZone?: string } = {}): Matcher {
+export function instant(expectedIso: string, opts: { storedZone?: string; toleranceMs?: number } = {}): Matcher {
   const expMs = Date.parse(expectedIso);
   return {
     kind: 'instant',
@@ -140,11 +140,32 @@ export function instant(expectedIso: string, opts: { storedZone?: string } = {})
       const off = offsetMinutes(zone);
       if (!Number.isFinite(off)) return { verdict: 'inconclusive', why: `\`storedZone\` không hợp lệ: "${zone}" (dùng 'UTC' hoặc '+07:00')` };
       const gotMs = Date.parse(`${naive.iso}Z`) - off * 60_000;
-      if (gotMs === expMs) return { verdict: 'match' };
-      const diffMin = Math.round((gotMs - expMs) / 60_000);
-      const why = diffMin % 60 === 0
-        ? `lệch ${diffMin / 60} giờ — dấu hiệu sai quy đổi múi giờ (cột không lưu offset)`
-        : `lệch ${diffMin} phút`;
+      const diffMs = gotMs - expMs;
+      const tol = Math.max(0, Number(opts.toleranceMs || 0));
+      if (Math.abs(diffMs) <= tol) return { verdict: 'match' };
+
+      /*
+       * THÔNG ĐIỆP PHẢI ĐÚNG ĐỘ LỚN. Bản đầu tôi làm tròn ra phút rồi kiểm `% 60 === 0` ⇒ lệch 825ms cũng
+       * ra "lệch 0 giờ — dấu hiệu sai quy đổi múi giờ". Đo thật trên `ic_payment_orders.created_at`
+       * (`2025-05-08 00:14:55.825`): expected ghi tới giây là đủ để nổ, và người đọc sẽ đi tìm bug timezone
+       * KHÔNG tồn tại. Lệch dưới 1 phút thì nói bằng ms/giây và gợi ý `toleranceMs`, không nói múi giờ.
+       */
+      const absMs = Math.abs(diffMs);
+      let why: string;
+      if (absMs < 1000) why = `lệch ${diffMs} ms — chỉ khác phần mili giây (DB lưu ms, expected thường ghi tới giây). Dùng \`instant(v, { toleranceMs: 1000 })\` nếu spec chỉ quy định tới giây.`;
+      else if (absMs < 60_000) why = `lệch ${(diffMs / 1000).toFixed(3)} giây`;
+      else {
+        /*
+         * Nhận "lệch tròn giờ" phải CHỊU ĐƯỢC nhiễu dưới giây. Bản trước kiểm `absMs % 3_600_000 === 0` nên
+         * lệch 7 giờ + 825 ms (DB lưu mili giây!) rơi xuống nhánh "lệch 420 phút" và MẤT tín hiệu múi giờ —
+         * đúng tín hiệu quan trọng nhất của cột không lưu offset. Đo thật trên `created_at` có `.825`.
+         */
+        const hours = diffMs / 3_600_000;
+        const nearWholeHour = Math.abs(diffMs - Math.round(hours) * 3_600_000) <= Math.max(tol, 1000);
+        why = nearWholeHour
+          ? `lệch ${Math.round(hours)} giờ — dấu hiệu sai quy đổi múi giờ (cột không lưu offset)`
+          : `lệch ${Math.round(diffMs / 60_000)} phút`;
+      }
       return { verdict: 'mismatch', expected: expectedIso, actual: `${naive.iso} (đọc theo ${zone})`, why };
     },
   };

@@ -33,10 +33,10 @@
     }
   },
   "timestamps": {
-    "_why": "ĐO: 39/39 cột thời gian là `timestamp WITHOUT time zone` ⇒ dữ liệu KHÔNG mang offset. `storedZone` để TRỐNG có chủ đích: chưa ai xác nhận app ghi theo UTC hay +07, nên `instant()` trả `inconclusive` thay vì đoán. Điền sau khi xác nhận bằng một mốc đã biết chắc (tạo giao dịch lúc 23:00 rồi soi giá trị lưu).",
+    "_why": "DO: 39/39 cot thoi gian la `timestamp WITHOUT time zone` ⇒ du lieu KHONG mang offset. storedZone = UTC, xac dinh 27/08/2026 bang phep do READ-ONLY (khong can ai bam gi): ban ghi MOI NHAT cua 4 bang doc lap (orders.created_at/updated_at, transactions.created_at, webhook_logs.created_at) deu nam ~30-40 phut TRUOC gio UTC thuc te. Neu app ghi +07 thi ban ghi moi nhat phai o TUONG LAI ~6.5h so voi UTC — khong phai. Session TimeZone cua DB cung la Etc/UTC. Diem yeu cua phep do (noi ra de sau nay doi chieu): neu UAT im ang nhieu gio thi do tre 'im ang' lan voi lech mui gio; luc do script _tzprobe tu tu choi phan. Doi ket luan nay thi phai do lai, dung sua tay.",
     "createdAt": "created_at",
     "updatedAt": "updated_at",
-    "storedZone": ""
+    "storedZone": "UTC"
   },
   "audit": {
     "_why": "ĐO: KHÔNG có bảng audit hành động người dùng. `ic_payment_webhook_logs` là log webhook (bên thứ ba gọi vào), không phải audit. Cột ai-sửa chỉ có ở 2 bảng (`created_by_staff_id` trên combos/products); `ic_payment_orders` và `ic_payment_transaction_orders` KHÔNG có cột nào ghi người sửa. Vì vậy `expectAudit` KHÔNG áp được cho 2 bảng lõi — checklist §23 chỉ kiểm `updated_at` có nhảy. Hứa kiểm audit trong khi bảng không có cột audit là hứa thứ máy không làm được.",
@@ -93,31 +93,42 @@
     "maxRows": 500
   },
   "fieldMap": {
-    "_why": "BAN DO cot DB <-> nhan UI. Neo bang FIXTURE PHAN BIET (gia tri phai DUY NHAT trong hang DB) tren 4 don thuc, doc UI READ-ONLY ngay 27/08/2026. Cot o `unanchored` KHONG duoc dung de phan quyet dinh: bang khoanh tang UI x DB chi dung khi biet chac cot nao ung voi field nao — doan sai cot thi ket luan van ra, lai co SO TU DB nen trong thuyet phuc hon bug ma thuong.",
-    "_evidence": "outputs/lms-operations-automation/tasks/SAPP-24395/requirements/db_field_map_final.json + anh evidence/db-map/*.png. Don dung de neo: 7869e2b1 (SF, 5 gia tri khac nhau ke ca 1 gia tri AM), 98863049 (CORE co custom price), 6e8a01cd (SF), 7c93f58b (CORE).",
-    "_how_to_reanchor": "Doi UI thi chay lai: node outputs/.../automation/_db_field_map.js (doc UI) roi doi chieu. Chi neo khi nhan khop o MOI don co gia tri (phep giao), khong lay nhan cua mot don roi suy ra.",
+    "_why": "BAN DO cot DB <-> nhan UI, KHOA THEO MAN (order_type). Vong 2 (27/08/2026) da BAC gia dinh 'mot ban do cho ca DB': man Service Fee va man Core hien CUNG mot cot duoi HAI nhan khac nhau — `original_price` la 'Gross Amount' o CORE nhung la 'Gross Price' o SERVICE_FEE. Neo toan cuc thi giao rong; bo luat giao thi neo sai man.",
+    "_method": "Doc UI READ-ONLY 6 don thuc, trich cap nhan->gia tri, roi lay GIAO cac tap nhan khop qua moi don CUNG MAN. Chi neo khi gia tri DUY NHAT trong hang DB (chong 'hai cot cung so'). Cot o `unanchored` KHONG duoc dung de phan.",
+    "_evidence": "requirements/ui_pairs_for_db_map.json (raw cap nhan-gia tri) + evidence/db-map/*.png (6 anh full-page). Don: f25ce82a, 9773d42b, 7869e2b1, 98863049, 6e8a01cd, 7c93f58b.",
+    "_how_to_reanchor": "Doi UI thi chay lai `node outputs/.../automation/_db_field_map.js` (chi doc), roi lay giao theo man. Them cot moi PHAI co don ma gia tri cot do khac moi cot khac.",
     "entity": "ic_payment_orders",
-    "anchored": {
-      "deal_id": "Deal ID",
-      "original_price": "Gross Amount",
-      "total_discount": "Order Discount",
-      "final_price": "Net Amount",
-      "service_fee": "Service Fee",
-      "service_fee_rate": "Service Fee Rate",
-      "province": "Tỉnh/ Thành phố"
+    "byScreen": {
+      "SERVICE_FEE": {
+        "_route": "/operations/sales/service-fee-orders/<id>/detail/overview",
+        "deal_id": "Deal ID",
+        "original_price": "Gross Price",
+        "automatic_price": "Total Course Transfer Amount",
+        "total_discount": "Original Discount Amount",
+        "final_price": "Net Amount",
+        "service_fee": "Service Fee",
+        "service_fee_rate": "Service Fee Rate"
+      },
+      "CORE": {
+        "_route": "/operations/sales/orders/<id>/detail/overview",
+        "deal_id": "Deal ID",
+        "original_price": "Gross Amount",
+        "total_discount": "Order Discount",
+        "province": "Tỉnh/ Thành phố"
+      }
     },
     "unanchored": {
-      "automatic_price": "con 2 ung vien (Tai khoan SAPP / Total Course Transfer Amount) — can don co automatic_price KHAC final_price VA khac original_price",
-      "deposit": "gia tri 0 o ca 4 don ⇒ khong phan biet duoc; can don co deposit > 0",
-      "custom_price": "chi 1 don co gia tri, va no TRUNG final_price",
-      "fee_per_month": "NULL o 4 don",
-      "fixed_discount": "NULL o 4 don",
-      "status": "khong khop nhan nao tren Overview (enum hien dang chu khac, vd PURCHASED -> 'Da thanh toan')",
-      "order_type": "khong hien thi trong Overview",
-      "service_fee_type": "khong hien thi (hoac hien duoi dang nhan tieng Viet khac chuoi enum)",
-      "payment_method": "NULL/khong hien thi o 4 don",
+      "deposit": "Gia tri 0 o MOI don do duoc (ke ca 4 don co deposit>0, o do deposit == automatic_price == final_price) ⇒ khong the phan biet. Can don co deposit khac ca hai cot kia.",
+      "custom_price": "Chi xuat hien o don CORE va luon TRUNG final_price ⇒ khong phan biet duoc.",
+      "final_price@CORE": "Tren man CORE luon trung automatic_price hoac custom_price. Neo duoc o man SERVICE_FEE (nho gia tri AM), chua neo duoc o CORE.",
+      "status": "KHONG hien duoi dang chu tren tab Overview. Da thu phep so sanh 2 don khac status (TO_PURCHASE vs PURCHASED/PURCHASING): khong co chuoi nao dang nhan trang thai xuat hien/mat di. Nhan 'Status' tren man nay thuoc khoi Split bill, KHONG phai status don. Enum thuc te: PURCHASED/EXPIRED/TO_PURCHASE/CANCEL/PURCHASING/PARTIALLY_PAID. Neo o man DANH SACH (chua thu).",
+      "order_type": "khong hien thi tren Overview",
+      "fee_per_month": "NULL o moi don do duoc",
+      "fixed_discount": "NULL o moi don do duoc",
+      "service_fee_type": "khong hien thi dang chuoi enum",
+      "payment_method": "NULL/khong hien thi",
       "sync_status": "khong hien thi",
-      "full_name": "NULL o 4 don (ho ten tach o first_name/last_name)"
+      "full_name": "NULL (ho ten tach o first_name/last_name)"
     }
   }
 }

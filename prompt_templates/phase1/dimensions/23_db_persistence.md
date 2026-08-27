@@ -51,8 +51,11 @@ giống DB" là **tautology** — cấm. Giá trị lớn nhất của kiểm so
 | ❌ | ✅ | FE render sai | `product_bug` (FE) |
 | ❌ | ❌ | Logic sai từ gốc | `product_bug` |
 
-**② Chỉ dùng cột ĐÃ NEO.** `db.conventions.json → fieldMap.anchored` (hiện **7 cột**). Cột trong
-`unanchored` (hiện **11 cột**, mỗi cột có ghi lý do) thì **KHÔNG được dùng để phán** — đoán sai cột thì kết
+**② Chỉ dùng cột ĐÃ NEO, và neo theo ĐÚNG MÀN.** `db.conventions.json → fieldMap.byScreen` — hiện
+`SERVICE_FEE` **7 cột**, `CORE` **4 cột**. Bản đồ khoá theo màn vì CÙNG một cột có nhãn khác nhau ở hai màn:
+`original_price` là **"Gross Amount"** ở CORE nhưng **"Gross Price"** ở SERVICE_FEE — dùng nhãn của màn kia
+là neo sai cột rồi phán chắc chắn. Cột trong `unanchored` (hiện **11 mục**, mỗi mục ghi rõ cần fixture gì)
+thì **KHÔNG được dùng để phán** — đoán sai cột thì kết
 luận vẫn ra, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường. Cần thêm cột thì neo trước bằng
 fixture phân biệt (`node outputs/.../automation/_db_field_map.js`), đừng suy từ tên cột.
 
@@ -68,9 +71,12 @@ người khác là nguồn flaky và là đường ra kết luận sai. `snapsho
 - **Không có audit hành động người dùng.** `ic_payment_orders` và `ic_payment_transaction_orders` KHÔNG có
   cột nào ghi người sửa; `ic_payment_webhook_logs` là log webhook. ⇒ Ca #5 chỉ kiểm `updated_at`,
   `expectAudit()` sẽ **từ chối** thay vì trả kết quả rỗng.
-- **39/39 cột thời gian là `timestamp WITHOUT time zone`.** Khi `conventions.timestamps.storedZone` còn
-  trống, `instant()` trả **`inconclusive`** — đó là câu trả lời đúng, không phải lỗi. Xác nhận múi giờ (tạo
-  gì đó lúc 23:00 rồi soi giá trị lưu) mới bật được ca #2 phần ngày.
+- **39/39 cột thời gian là `timestamp WITHOUT time zone`** — dữ liệu không mang offset.
+  `conventions.timestamps.storedZone = "UTC"`, xác định 27/08/2026 bằng phép đo READ-ONLY: bản ghi mới nhất
+  của 4 bảng độc lập đều nằm ~30 phút TRƯỚC giờ UTC thực tế (nếu app ghi +07 thì chúng phải ở tương lai
+  ~6.5h). Chưa khai `storedZone` thì `instant()` trả **`inconclusive`** — đó là câu trả lời đúng, không phải
+  lỗi. Và vì DB lưu tới **mili giây** còn spec thường ghi tới giây, dùng `instant(v, { toleranceMs: 1000 })`
+  cho đúng mức spec quy định; thiếu dung sai thì lệch 825ms cũng thành FAIL.
 
 ## Liên quan
 
