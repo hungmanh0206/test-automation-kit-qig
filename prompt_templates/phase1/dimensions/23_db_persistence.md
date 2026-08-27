@@ -86,6 +86,25 @@ người khác là nguồn flaky và là đường ra kết luận sai. `snapsho
 **④ DB KHÔNG phải evidence.** Evidence vẫn là ảnh/video màn hình đúng chuẩn; số liệu DB đi vào phần nhận
 định dưới dạng số đo (`hs_net_amount = 0`, `deleted_at IS NULL`). Và không dựng precondition bằng DB.
 
+## Cửa vào: preflight CHẶN trước khi chạy
+
+Khai chiều này trong `dimension_manifest.json` (hoặc dùng tag `[DbPersist]`) là **bật thêm một nhóm kiểm ở
+preflight**:
+
+```
+node scripts/qa/preflight_gate.js --mode phase2 --task <TASK_KEY>
+```
+
+Nhóm đó chặn khi: thiếu `.agent/config/db.conventions.json` · conventions không parse được · thiếu
+`softDelete.default`/`idColumn`/`safety` · `safety.requireReadonlyUser: false` · `fieldMap.byScreen` rỗng ·
+thiếu `profiles/<TASK>/task.env` hoặc thiếu khoá `LIB_MASTER_DB_RO_*` · HOST khớp `denyHostPatterns` · HOST
+không có trong `allowedHosts`. Và nó **đọc quyền thật từ catalog**: user có bất kỳ quyền ghi nào ⇒ CHẶN;
+**đọc được 0 dòng quyền cũng CHẶN** (phép đo hỏng, không phải "sạch"). Không kết nối được DB cũng chặn — task
+cần §23 mà không tới được DB thì không chạy được; đường thoát tường minh là `--skip-db-live`.
+
+Tên user **không** phải bằng chứng: user không có chữ `readonly`/`_ro` chỉ bị **cảnh báo**, vì chặn theo tên
+là chặn theo phỏng đoán.
+
 ## Neo thêm cột: HỎI DB TRƯỚC, đừng tạo fixture ngay
 
 `tests/support/setup/db/fieldmap.candidates.spec.ts` hỏi DB: **đơn nào SẴN CÓ mà giá trị cột đó tự phân biệt**

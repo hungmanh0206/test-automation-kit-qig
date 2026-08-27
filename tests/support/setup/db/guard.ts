@@ -1,4 +1,4 @@
-import { DbGuardError, type GrantRow } from './types';
+import { DbGuardError, WRITE_PRIVILEGES, type GrantRow } from './types';
 
 /*
  * guard.ts — CHỨNG MINH USER LÀ READ-ONLY, bằng cách ĐỌC QUYỀN chứ không thử ghi.
@@ -14,8 +14,11 @@ import { DbGuardError, type GrantRow } from './types';
  * INSERT/UPDATE/DELETE/TRUNCATE trên **232 bảng** — con số đó DBA sửa được ngay, khác hẳn "probe ghi được".
  */
 
-/** Quyền đủ để đổi dữ liệu. `REFERENCES`/`TRIGGER` không đổi dữ liệu trực tiếp ⇒ không tính. */
-export const WRITE_PRIVILEGES = ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE'] as const;
+/*
+ * Tập quyền ghi nay khai ở `types.ts` (một nguồn) và adapter phải chuẩn hoá về tập đó — xem ghi chú
+ * `TỪ VỰNG QUYỀN` ở types.ts. Khai lại ở đây là mở đường cho hai bản trôi khỏi nhau.
+ */
+export { WRITE_PRIVILEGES };
 
 export interface ReadOnlyProof {
   readonly: boolean;

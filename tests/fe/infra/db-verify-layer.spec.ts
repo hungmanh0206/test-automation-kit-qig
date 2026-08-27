@@ -3,6 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { money, instant, text, exact, asMatcher } from '../../support/setup/db/match';
+import { normalizePrivilege } from '../../support/setup/db/types';
 import { proveReadOnlyFromGrants, assertReadOnly, assertReadOnlyQuery, assertHostAllowed, WRITE_PRIVILEGES } from '../../support/setup/db/guard';
 import { loadConventions, softDeleteFor, loadConnection } from '../../support/setup/db/config';
 import { DbGuardError, type GrantRow } from '../../support/setup/db/types';
@@ -21,7 +22,9 @@ import { DbGuardError, type GrantRow } from '../../support/setup/db/types';
  */
 const REPO = path.resolve(__dirname, '..', '..', '..');
 
-const grant = (table: string, privilege: string): GrantRow => ({ table, privilege });
+/* Fixture đi qua `normalizePrivilege` như adapter thật — fixture bỏ qua bước chuẩn hoá là test một đường,
+ * production chạy một đường khác. */
+const grant = (table: string, privilege: string): GrantRow => ({ table, privilege: normalizePrivilege(privilege) });
 
 test.describe('@infra db guard — chứng minh read-only bằng ĐỌC QUYỀN', () => {
   test('user chỉ có SELECT ⇒ ĐẠT (role read-only đúng chuẩn không được bị từ chối oan)', () => {
@@ -360,6 +363,36 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
         expect(en, `enum "${en}" phải là HOA_GACH_DUOI`).toMatch(/^[A-Z][A-Z0-9_]*$/);
         expect(l.trim().length, `nhãn của ${en} rỗng`).toBeGreaterThan(0);
       }
+    }
+  });
+
+  test('nhãn KHÔNG được trùng tên enum (enum thô lọt vào bản đồ = hoặc bug FE, hoặc bản đồ làm cho xong)', () => {
+    /*
+     * Luật này bắt được một bug thật (28/08): màn Add-on hiện `CHUYEN_DOI` thô thay vì "Chuyển đổi". Nếu cứ
+     * ghi CHUYEN_DOI → "CHUYEN_DOI" vào bản đồ thì phép đo sau này lấy chính cái sai làm chuẩn rồi assert
+     * theo nó — bug biến thành "hành vi mong đợi". Lệch phải nằm ở `_deviations`, không nằm trong bản đồ.
+     */
+    const maps = fieldMap().valueMaps || {};
+    for (const [key, m] of Object.entries(maps)) {
+      if (key.startsWith('_')) continue;
+      for (const [en, label] of Object.entries(m as Record<string, string>)) {
+        if (en.startsWith('_')) continue;
+        expect(label, `${key}: nhãn của "${en}" chính là tên enum ⇒ hoặc app hiện enum thô (bug), hoặc bản đồ chưa đo`).not.toBe(en);
+        expect(label, `${key}: nhãn của "${en}" vẫn là HOA_GACH_DUOI`).not.toMatch(/^[A-Z][A-Z0-9_]*$/);
+      }
+    }
+  });
+
+  test('_deviations: khoá phải trỏ vào màn CÓ THẬT và nói rõ lệch gì', () => {
+    const fm = fieldMap();
+    const dev = (fm.valueMaps || {})._deviations as Record<string, string> | undefined;
+    if (!dev) return;                                   // chưa có lệch nào là chuyện bình thường
+    for (const [key, why] of Object.entries(dev)) {
+      if (key.startsWith('_')) continue;
+      expect(key, 'khoá lệch phải là "<bảng>.<cột>@<MÀN>"').toMatch(/^[a-z_]+\.[a-z_]+@[A-Z_]+$/);
+      const screen = key.split('@')[1];
+      expect(Object.keys(fm.byScreen), `màn "${screen}" trong _deviations không có trong byScreen`).toContain(screen);
+      expect(String(why).length, `lệch "${key}" phải ghi rõ hiện tượng + vì sao chưa log`).toBeGreaterThan(80);
     }
   });
 

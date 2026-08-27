@@ -11,7 +11,18 @@ import { queryUatReadonly, isUatDbConfigured } from './uatPgClient';
 const REQ = path.resolve(process.cwd(), process.env.DB_ANCHOR_DIR
   || 'outputs/lms-operations-automation/tasks/SAPP-24395/requirements');
 const UUID = /^[0-9a-f]{8}[_-][0-9a-f]{4}[_-][0-9a-f]{4}[_-][0-9a-f]{4}[_-][0-9a-f]{12}$/i;
-const norm = (s: string) => s.replace(/[\s ]/g, '');
+/*
+ * Chuan hoa so: bo MOI ky tu khong phai chu so, giu dau am. Ban dau chi bo khoang trang nen man CORE
+ * ("60 000 000") thi khop ma man ADD_ON ("5.000.000") thi truot 129/133 — va suyt ghi nhan thanh phat hien
+ * "UI hien con so khac han DB". Hai man cung app dinh dang nghin KHAC nhau (dau cach vs dau cham), nen ham
+ * so sanh khong duoc phu thuoc dinh dang.
+ */
+const norm = (v: string) => {
+  const raw = String(v ?? '');
+  const neg = /^\s*-/.test(raw);
+  const d = raw.replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '');
+  return d ? (neg ? `-${d}` : d) : '';
+};
 
 /** Neo theo CHỈ SỐ CỘT lấy từ `<th>`. Lưới Metronic clone cột dính ⇒ header lặp 2 lần, lấy lần XUẤT HIỆN ĐẦU. */
 function colOf(headers: string[], name: string): number { return headers.indexOf(name); }
@@ -27,7 +38,12 @@ test('neo status/service_fee_type/tiền ở MÀN DANH SÁCH, khoá nối = Mã 
   for (const s of screens) {
     const iId = colOf(s.headers, 'Mã đơn hàng');
     const iStatus = colOf(s.headers, 'Status');
-    const iSft = colOf(s.headers, 'Service Fee Type');
+    /*
+     * CÙNG cột DB, HAI nhãn header tuỳ màn: `service_fee_type` là "Service Fee Type" ở màn Service Fee nhưng
+     * "Add-on Order Type" ở màn Add-on. Đây đúng lý do bản đồ phải khoá theo màn — nhưng ở BƯỚC ĐO thì phải
+     * nhận cả hai, không thì màn add-on đọc ra 0 cặp mà không báo gì.
+     */
+    const iSft = [ 'Service Fee Type', 'Add-on Order Type' ].map((h) => colOf(s.headers, h)).find((i) => i >= 0) ?? -1;
     const iGross = colOf(s.headers, 'Gross Amount');
     const iNet = colOf(s.headers, 'Net Amount');
 
@@ -52,6 +68,9 @@ test('neo status/service_fee_type/tiền ở MÀN DANH SÁCH, khoá nối = Mã 
     const enumLabels: Record<string, Record<string, Set<string>>> = { status: {}, service_fee_type: {} };
     const MONEY_COLS = ['original_price', 'final_price', 'automatic_price', 'custom_price', 'total_discount', 'deposit', 'service_fee'];
     const rival: Record<string, { hit: number; miss: number }> = {};
+    /* Giữ vài hàng CỤ THỂ để phân biệt "lệch chỉ số cột" với "UI hiện con số khác hẳn" — hai nguyên nhân
+     * khác nhau hoàn toàn, mà chỉ nhìn tỉ lệ khớp thì không tách được. */
+    const samples: Record<string, string[]> = {};
 
     for (const p of pairs) {
       const d = byId.get(p.id); if (!d) continue;
@@ -70,6 +89,9 @@ test('neo status/service_fee_type/tiền ở MÀN DANH SÁCH, khoá nối = Mã 
        */
       for (const [label, idx] of [['Gross Amount', iGross], ['Net Amount', iNet]] as [string, number][]) {
         if (idx < 0 || !p.row[idx]) continue;
+        if ((samples[label] = samples[label] || []).length < 3) {
+          samples[label].push(`UI="${p.row[idx]}" · DB ${MONEY_COLS.filter((c) => d[c] != null).map((c) => `${c}=${d[c]}`).join(' ')}`.slice(0, 180));
+        }
         for (const col of MONEY_COLS) {
           const k = `${label}|${col}`;
           rival[k] = rival[k] || { hit: 0, miss: 0 };
@@ -96,7 +118,15 @@ test('neo status/service_fee_type/tiền ở MÀN DANH SÁCH, khoá nối = Mã 
     const moneyAnchor: Record<string, string | string[]> = {};
     for (const label of ['Gross Amount', 'Net Amount']) {
       const full = MONEY_COLS.filter((c) => rival[`${label}|${c}`] && rival[`${label}|${c}`].miss === 0 && rival[`${label}|${c}`].hit > 0);
-      if (!full.length) continue;
+      if (!MONEY_COLS.some((c) => rival[`${label}|${c}`])) { continue; }   // màn này không có cột đó
+      if (!full.length) {
+        // KHÔNG neo được thì phải nói RÕ vì sao, không im lặng bỏ qua — im lặng là mất một phát hiện.
+        const near = MONEY_COLS.map((c) => ({ c, ...(rival[`${label}|${c}`] || { hit: 0, miss: 0 }) }))
+          .filter((x) => x.hit > 0).sort((a, b) => b.hit - a.hit).slice(0, 4);
+        console.log(`  tiền    "${label}" → KHÔNG neo. Khớp một phần: ${near.map((x) => `${x.c} ${x.hit}/${x.hit + x.miss}`).join(' · ') || 'không cột nào khớp hàng nào'}`);
+        for (const ex of samples[label] || []) console.log(`            ví dụ ${ex}`);
+        continue;
+      }
       moneyAnchor[label] = full.length === 1 ? full[0] : full;
       console.log(`  tiền    "${label}" → ${full.length === 1 ? `NEO ${full[0]}` : `CHƯA NEO, khớp ${full.length} cột: ${full.join(', ')}`}`);
     }

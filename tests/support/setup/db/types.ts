@@ -46,10 +46,44 @@ export interface DbClient {
   close(): Promise<void>;
 }
 
+/*
+ * TỪ VỰNG QUYỀN — CHUẨN HOÁ Ở ADAPTER, không ở lớp phán.
+ *
+ * Lỗ hổng đã bịt (28/08/2026): `guard.ts` so quyền bằng đúng chữ SQL (`INSERT`/`UPDATE`/`DELETE`/`TRUNCATE`).
+ * Postgres và MySQL dùng đúng những chữ đó nên nhìn thì "chạy tốt", nhưng Mongo gọi hành động ghi là
+ * `insert`/`update`/`remove`/`drop` ⇒ thêm adapter Mongo là `guard` **không thấy quyền ghi nào** và kết luận
+ * "read-only" cho một user ghi được. Đúng loại lỗ hổng tệ nhất: sai mà mọi phép kiểm đều xanh.
+ *
+ * Hợp đồng: **adapter PHẢI trả `privilege` theo tập chuẩn dưới đây**, tự dịch từ phương ngữ của nó. Lớp phán
+ * (`guard.ts`) chỉ được biết tập chuẩn — không được biết Postgres hay Mongo.
+ */
+export type Privilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'OTHER';
+
+/** Quyền đủ để ĐỔI dữ liệu. `REFERENCES`/`TRIGGER`/`OTHER` không đổi dữ liệu trực tiếp ⇒ không tính. */
+export const WRITE_PRIVILEGES: readonly Privilege[] = ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE'];
+
+/**
+ * Dịch tên quyền của từng phương ngữ sang tập chuẩn. Hàm THUẦN, dùng bởi adapter.
+ * Chữ lạ → `OTHER` (không đoán là ghi, cũng không đoán là đọc).
+ */
+export function normalizePrivilege(raw: string): Privilege {
+  const p = String(raw || '').trim().toUpperCase();
+  const MAP: Record<string, Privilege> = {
+    SELECT: 'SELECT', FIND: 'SELECT', READ: 'SELECT',
+    INSERT: 'INSERT',
+    UPDATE: 'UPDATE',
+    DELETE: 'DELETE', REMOVE: 'DELETE',
+    TRUNCATE: 'TRUNCATE', DROP: 'TRUNCATE', DROPCOLLECTION: 'TRUNCATE',
+  };
+  return MAP[p] || 'OTHER';
+}
+
 /** Một dòng quyền đọc từ catalog (`information_schema.role_table_grants` hoặc tương đương). */
 export interface GrantRow {
+  /** Bảng (SQL) hoặc collection (Mongo). */
   table: string;
-  privilege: string;
+  /** ĐÃ CHUẨN HOÁ qua `normalizePrivilege` — adapter chịu trách nhiệm, không phải lớp phán. */
+  privilege: Privilege;
 }
 
 /*

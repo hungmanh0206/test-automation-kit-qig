@@ -24,6 +24,7 @@ const fs = require('fs');
 const { getTestcaseDirs } = require('../utils/runtime_config');
 const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
+const dbv = require(path.resolve(__dirname, 'lib', 'db_verify_preflight'));
 
 // Manifest input bắt buộc theo mode. Chỉ liệt file TRACKED (CI thấy) để không false-block.
 //
@@ -130,7 +131,20 @@ function runPreflight({ mode = 'generic', task = '', extraRequire = [], allowMis
   warnings.push(...checkHarnessHooks(rc.REPO_ROOT));
   warnings.push(...checkKnowledgeBackup(rc.REPO_ROOT, process.env));
 
-  return { problems, warnings, mode, task };
+  /*
+   * DB VERIFY (§23) — chỉ kiểm khi task KHAI dùng. Trước 28/08/2026 `db.conventions.json` không được gate
+   * nào nhắc tới, nên thiếu config/creds chỉ lộ ra lúc spec đã chạy. Xem `lib/db_verify_preflight.js`.
+   */
+  const dbDecl = dbv.detectDbVerifyDeclared(rc.REPO_ROOT, {
+    task,
+    projectOutputDir,
+    testcaseDirs: (taskDir) => getTestcaseDirs(taskDir, { mirrorsFirst: false }),
+  });
+  const db = dbv.checkDbVerifyStatic(rc.REPO_ROOT, { task, declared: dbDecl.declared, why: dbDecl.why });
+  problems.push(...db.problems);
+  warnings.push(...db.warnings);
+
+  return { problems, warnings, mode, task, dbVerifyDeclared: dbDecl.declared };
 }
 
 /*
@@ -177,7 +191,7 @@ function checkKnowledgeBackup(root, env) {
   return [`knowledge: ${count} record thuộc nhóm KHÔNG NẠP LẠI ĐƯỢC mà chưa khai \`KNOWLEDGE_BACKUP_DIR\` ⇒ chưa có bản sao nào ngoài máy này (knowledge/** bị gitignore). Chạy \`KNOWLEDGE_BACKUP_DIR=<thư mục NGOÀI repo> npm run knowledge:backup\`.`];
 }
 
-function main() {
+async function main() {
   const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
   const has = (n) => process.argv.includes(`--${n}`);
   const csv = (s) => String(s || '').split(',').map((x) => x.trim()).filter(Boolean);
@@ -190,6 +204,16 @@ function main() {
   if (res.error) { console.error(`[preflight] ${res.error}`); process.exit(2); }
   const { problems, warnings } = res;
 
+  /*
+   * Phép đo SỐNG chỉ chạy khi task khai dùng §23. Mặc định BẬT: bằng chứng read-only là thứ phải ĐO, không
+   * phải thứ tin theo tên user. Bỏ qua phải tường minh để không thành lối tắt im lặng.
+   */
+  if (res.dbVerifyDeclared && !has('skip-db-live')) {
+    problems.push(...await dbv.checkDbReadonlyLive(rc.REPO_ROOT, { task }));
+  } else if (res.dbVerifyDeclared) {
+    warnings.push('DB verify: [--skip-db-live] bỏ qua phép đọc quyền — chưa có bằng chứng user là read-only.');
+  }
+
   console.log(`[preflight] mode=${mode}${task ? ` · task=${task}` : ''} · ${problems.length} CHẶN · ${warnings.length} cảnh báo.`);
   if (warnings.length) { console.log('\n[preflight] ⚠ Cảnh báo:'); warnings.forEach((w) => console.log(`  ~ ${w}`)); }
   if (!problems.length) { console.log('\n[preflight] ✓ ĐẠT — input bắt buộc đủ & config parse được.'); process.exit(0); }
@@ -201,6 +225,6 @@ function main() {
   process.exit(1);
 }
 
-module.exports = { runPreflight, MANIFEST, checkHarnessHooks, checkKnowledgeBackup };
+module.exports = { runPreflight, MANIFEST, checkHarnessHooks, checkKnowledgeBackup, dbVerify: dbv };
 
-if (require.main === module) main();
+if (require.main === module) main().catch((e) => { console.error('[preflight] LỖI:', e.message); process.exit(2); });

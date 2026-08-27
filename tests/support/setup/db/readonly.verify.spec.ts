@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { queryUatReadonly, isUatDbConfigured } from './uatPgClient';
+import { normalizePrivilege } from './types';
 import { proveReadOnlyFromGrants, assertReadOnly } from './guard';
 import type { GrantRow } from './types';
 
@@ -30,7 +31,7 @@ test.describe('@infra-verify role chỉ-đọc', () => {
       [],
       { dbPrefix: PREFIX },
     );
-    const grants: GrantRow[] = rows.map((r) => ({ table: r.table_name, privilege: r.privilege_type }));
+    const grants: GrantRow[] = rows.map((r) => ({ table: r.table_name, privilege: normalizePrivilege(r.privilege_type) }));
     const proof = proveReadOnlyFromGrants(grants);
 
     console.log(`[ro-verify] ${grants.length} dòng quyền · read-only: ${proof.readonly ? 'ĐÚNG' : 'SAI'}`

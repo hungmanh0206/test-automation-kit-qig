@@ -141,6 +141,15 @@
       "SERVICE_FEE_HUBSPOT": {
         "_route": "/operations/sales/service-fee-orders/<id>/detail/overview → tab \"Hubspot Information\"",
         "sync_status": "Synchronized status"
+      },
+      "ADD_ON_LIST": {
+        "_route": "/operations/sales/add-on-orders?page_index=1&page_size=250",
+        "_method": "Noi 133/133 hang. \"Gross Amount\" khop original_price toan bo hang va KHONG khop cot tien nao khac. \"Net Amount\" khop DONG THOI final_price va automatic_price o ca 133 hang ⇒ KHONG phan biet duoc, khong neo (khac man CORE_LIST, o do Net Amount neo duoc).",
+        "id": "Mã đơn hàng",
+        "deal_id": "Deal ID",
+        "status": "Status",
+        "service_fee_type": "Add-on Order Type",
+        "original_price": "Gross Amount"
       }
     },
     "unanchored": {
@@ -168,13 +177,20 @@
         "KHONG_GHI_NHAN_PHI": "Không ghi nhận phí",
         "CHUYEN_DOI": "Chuyển đổi",
         "BAO_LUU": "Bảo lưu",
-        "TU_VAN_KHOA_HOC": "Tư vấn khóa học"
+        "TU_VAN_KHOA_HOC": "Tư vấn khóa học",
+        "MUA_TAI_KHOAN_CERT": "Mua tài khoản Cert",
+        "MUA_TAI_KHOAN_BECKER": "Mua tài khoản Becker",
+        "DANG_KY_CBE": "Đăng ký CBE"
       },
       "ic_payment_orders.sync_status": {
         "SYNC_SUCCESS": "Thành công",
         "SYNC_FAIL": "Thất bại"
       },
-      "_coverage": "DAY DU hay chua, noi ro tung cot: status = 6/6 enum cua DB (DAY DU). sync_status = 2/2 enum non-null (DAY DU). service_fee_type = 6 enum — DAY DU CHO MAN SERVICE_FEE, con 3 enum (DANG_KY_CBE 43, MUA_TAI_KHOAN_CERT 49, MUA_TAI_KHOAN_BECKER 22) chi ton tai o don ADD_ON nen phai neo o man add-on, chua doc. Do dem tren 249 hang man SF + 247 hang man CORE (khong phai 50 hang: trang dau 50 hang chi thay 6/9 enum, do la ly do phai keo page_size len 250)."
+      "_coverage": "DAY DU hay chua, noi ro tung cot: status = 6/6 enum cua DB (DAY DU, do doc lap tren CA BA man danh sach, ket qua trung nhau). sync_status = 2/2 enum non-null (DAY DU). service_fee_type = 9/9 enum non-null (DAY DU sau vong 4): 6 enum doc o man Service Fee (249 hang) + 3 enum chi ton tai o don ADD_ON doc o man Add-on (133 hang). Vi sao phai doc 3 man: trang dau 50 hang cua MOT man chi thay 6/9 enum — ban do THIEU ma trong nhu du, do la ly do khoi nay bat buoc phai co.",
+      "_deviations": {
+        "_why": "Lech GIUA MAN da DO duoc — giu rieng, KHONG tron vao ban do nhan. Ban do nhan la thu app LE RA phai hien; lech la PHAT HIEN. Tron vao nhau thi phep kiem sau nay lay chinh cai sai lam chuan roi assert theo no.",
+        "ic_payment_orders.service_fee_type@ADD_ON_LIST": "CHUYEN_DOI hien ra ENUM THO \"CHUYEN_DOI\" (3 don), trong khi cung enum do hien \"Chuyen doi\" o man Service Fee va 3 enum khac cung cot cung man deu co nhan tieng Viet. Nghi bug FE thieu anh xa enum -> nhan. Chua log Jira: nhan DUNG cho man Add-on phai neo vao Figma/FSD, khong neo vao man kia. Chi tiet: reports/FINDING_addon_rawenum_label.md"
+      }
     },
     "notDisplayed": {
       "_why": "Cot KHONG PHAI field hien thi — tach khoi \"unanchored\" vi khong bao gio neo duoc bang cach doc man, va de o \"unanchored\" thi cu tuong con viec phai lam.",

@@ -1,6 +1,6 @@
 import { Client, type ClientConfig, type QueryResultRow } from 'pg';
 import { assertHostAllowed, assertReadOnlyQuery, proveReadOnlyFromGrants, assertReadOnly } from '../guard';
-import { DbGuardError, type DbClient, type GrantRow, type QueryOpts, type Row, type Where, type WhereOp } from '../types';
+import { DbGuardError, type DbClient, type GrantRow, type QueryOpts, type Row, type Where, type WhereOp , normalizePrivilege } from '../types';
 import type { DbConnection, DbConventions } from '../config';
 
 /*
@@ -120,7 +120,7 @@ export class PostgresAdapter implements DbClient {
         `SELECT table_name, privilege_type FROM information_schema.role_table_grants
           WHERE grantee = current_user AND table_schema = 'public'`,
       );
-      const proof = proveReadOnlyFromGrants(g.rows.map((r) => ({ table: r.table_name, privilege: r.privilege_type })));
+      const proof = proveReadOnlyFromGrants(g.rows.map((r) => ({ table: r.table_name, privilege: normalizePrivilege(r.privilege_type) })));
       try {
         assertReadOnly(proof, { user: this.conn.user, database: this.conn.database });
       } catch (e) {
@@ -168,7 +168,8 @@ export class PostgresAdapter implements DbClient {
         WHERE grantee = current_user AND table_schema = 'public'`,
       [],
     );
-    return rows.map((r) => ({ table: r.table_name, privilege: r.privilege_type }));
+    // Chuẩn hoá TẠI ĐÂY: lớp phán chỉ được biết tập quyền chuẩn (xem `TỪ VỰNG QUYỀN` ở types.ts).
+    return rows.map((r) => ({ table: r.table_name, privilege: normalizePrivilege(r.privilege_type) }));
   }
 
   async close(): Promise<void> {
