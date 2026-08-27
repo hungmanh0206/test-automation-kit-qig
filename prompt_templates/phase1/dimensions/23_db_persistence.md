@@ -51,13 +51,25 @@ giống DB" là **tautology** — cấm. Giá trị lớn nhất của kiểm so
 | ❌ | ✅ | FE render sai | `product_bug` (FE) |
 | ❌ | ❌ | Logic sai từ gốc | `product_bug` |
 
-**② Chỉ dùng cột ĐÃ NEO, và neo theo ĐÚNG MÀN.** `db.conventions.json → fieldMap.byScreen` — hiện
-`SERVICE_FEE` **7 cột**, `CORE` **4 cột**. Bản đồ khoá theo màn vì CÙNG một cột có nhãn khác nhau ở hai màn:
-`original_price` là **"Gross Amount"** ở CORE nhưng **"Gross Price"** ở SERVICE_FEE — dùng nhãn của màn kia
-là neo sai cột rồi phán chắc chắn. Cột trong `unanchored` (hiện **11 mục**, mỗi mục ghi rõ cần fixture gì)
-thì **KHÔNG được dùng để phán** — đoán sai cột thì kết
-luận vẫn ra, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường. Cần thêm cột thì neo trước bằng
-fixture phân biệt (`node outputs/.../automation/_db_field_map.js`), đừng suy từ tên cột.
+**② Chỉ dùng cột ĐÃ NEO, và neo theo ĐÚNG MÀN.** `db.conventions.json → fieldMap` có **hai bản đồ**:
+
+- `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. 4 màn đã neo: `SERVICE_FEE` (7 cột) · `CORE` (4) ·
+  `CORE_LIST` (5) · `SERVICE_FEE_LIST` (4). Khoá theo màn vì CÙNG một cột có nhãn khác nhau:
+  `original_price` là **"Gross Amount"** ở CORE nhưng **"Gross Price"** ở SERVICE_FEE; và `final_price`
+  **chưa neo** ở tab Overview của CORE trong khi **đã neo** ("Net Amount") ở màn danh sách CORE_LIST.
+- `fieldMap.valueMaps` — **giá trị enum DB → nhãn tiếng Việt**, khoá `"<bảng>.<cột>"`. Đã neo
+  `ic_payment_orders.status` (6 enum, ví dụ `PARTIALLY_PAID` → "Đã thanh toán 1 phần") và
+  `service_fee_type` (6 enum). Đo trên 98 hàng ở cả hai màn danh sách, luật neo: **hàm** (1 enum → 1 nhãn)
+  **và đơn ánh** (2 enum không dùng chung nhãn).
+
+Tra bản đồ **phải đi qua helper** `uiLabelOfColumn(conv, screen, column)` và
+`uiLabelOfValue(conv, 'bảng.cột', enum)` trong `config.ts` — hai hàm này **NÉM** khi cột/enum chưa neo hoặc
+khi bạn hỏi nhãn của màn khác. Đọc `conv.fieldMap` trực tiếp là bỏ mất lớp chặn đó.
+
+Cột trong `unanchored` (hiện **8 mục**, mỗi mục ghi rõ **cần fixture gì**) thì **KHÔNG được dùng để phán** —
+đoán sai cột thì kết luận vẫn ra, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường. Cần thêm cột
+thì neo trước bằng fixture phân biệt: nhãn chỉ được neo khi giá trị của nó **phân biệt** được với mọi cột
+cùng loại trên **toàn bộ** hàng đo (xem `fieldMap._how_to_reanchor`), đừng suy từ tên cột.
 
 **③ Chỉ verify bản ghi do CHÍNH lượt test tạo** (lọc theo `id`/`RUN_ID`). UAT dùng chung: assert lên dữ liệu
 người khác là nguồn flaky và là đường ra kết luận sai. `snapshot`/`expectNoChange` **bắt buộc khai `columns`**

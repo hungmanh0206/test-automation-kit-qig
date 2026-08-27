@@ -89,7 +89,7 @@ const DIMS = [
   // Chieu them 27/08/2026 sau khi dung tang kiem DB: UI/API KHONG du de noi ban ghi da luu dung —
   // response thuong echo lai request, con FE format lai gia tri. 7 lop loi (doi kieu so, lech mui gio,
   // cat varchar, xoa mem hong, bang lien quan khong doi, double-submit, rollback sai) deu 'UI thay dung'.
-  { id: 'db_persistence', sec: '§23', label: 'DB Persistence (bản ghi sau CRUD)', group: /dbpersist|persist|ban ghi/, re: /dbpersist|ban ghi (duoi )?db|deleted_at|xoa mem|soft[- ]delete|luu (dung|sai) (vao )?db|updated_at|rollback|khong doi gi trong db/ },];
+  { id: 'db_persistence', sec: '§23', label: 'DB Persistence (bản ghi sau CRUD)', group: /dbpersist|persist|ban ghi/, re: /dbpersist|ban ghi (duoi )?db|\bdeleted_at\b|xoa mem|soft[- ]delete|luu (dung|sai) (vao )?db|updated_at|rollback|khong doi gi trong db/ },];
 
 // Self-check bảng DIMS: id trùng hoặc pattern không phải RegExp thì báo ngay, đừng để lệch âm thầm.
 {

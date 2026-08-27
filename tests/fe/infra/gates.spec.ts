@@ -167,6 +167,34 @@ test.describe('@infra dim:coverage — chỉ chặn khi số liệu đáng tin',
     expect(run(['scripts/qa/dimension_coverage.js', '--enforce'], env).code).toBe(0);
   });
 
+  test('§23 đếm ĐÚNG theo tag [DbPersist] — khoá HÀNH VI, không chỉ khoá văn bản', () => {
+    /*
+     * Vì sao có test này: `dimension_coverage.js` từng bị shell/heredoc biến word-boundary (\\b) trong regex §23 thành ký tự
+     * 0x08, nên luật nhận `deleted_at` HỎNG ÂM THẦM. Gate quét-ký-tự-lạ bắt được triệu chứng, nhưng nếu chỉ
+     * xoá ký tự lạ thì regex mất word-boundary mà mọi gate vẫn xanh — hỏng về NGHĨA, không ai biết. Nên phải
+     * có một phép kiểm chạy CLI thật và xem con số đếm, chứ không đọc file dưới dạng chuỗi.
+     */
+    const { env } = makeTask(
+      tcRow('T_TC_001', 'Order / Delete', '[Negative][DbPersist] Xoá đơn → deleted_at được set', '1. Bản ghi còn, deleted_at IS NOT NULL')
+      + tcRow('T_TC_002', 'Order / Delete', '[Negative][DbPersist] Xoá đơn con → bảng nối không còn hàng', '1. expectCount(...) = 0'),
+      { manifest: { dimensions: { db_persistence: { required: true, min: 2 } }, na_reasons: {} } },
+    );
+    const r = run(['scripts/qa/dimension_coverage.js', '--enforce'], env);
+    expect(r.out, 'phải đếm được chiều §23').toMatch(/DB Persistence/);
+    expect(r.code, `§23 đủ 2 case mà vẫn chặn:
+${r.out}`).toBe(0);
+  });
+
+  test('§23 thiếu case ⇒ VẪN chặn (kiểm-âm: test trên không xanh vì gate bị vô hiệu)', () => {
+    const { env } = makeTask(
+      tcRow('T_TC_001', 'Order / Delete', '[Negative][DbPersist] Xoá đơn → deleted_at được set', '1. deleted_at IS NOT NULL'),
+      { manifest: { dimensions: { db_persistence: { required: true, min: 2 } }, na_reasons: {} } },
+    );
+    const r = run(['scripts/qa/dimension_coverage.js', '--enforce'], env);
+    expect(r.code, 'mới 1/2 case mà không chặn ⇒ ngưỡng không có tác dụng').toBe(1);
+    expect(r.out).toMatch(/MỎNG 1\/2|DB Persistence/);
+  });
+
   test('chiều required chỉ 1 case mà KHÔNG khai ngưỡng ⇒ CHẶN (phủ hình thức)', () => {
     const { env } = makeTask(
       tcRow('T_TC_001', 'Order / Grid', '[Positive][Display] Lưới đủ cột', '1. Cột: A, B'),

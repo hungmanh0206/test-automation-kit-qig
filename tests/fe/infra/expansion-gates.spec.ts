@@ -388,7 +388,7 @@ test.describe('@infra §23 db persistence — 3 mắt xích + nối pipeline', (
   test('file chiều có checklist thật + 4 ràng buộc chống bug ma', () => {
     const body = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/dimensions/23_db_persistence.md'), 'utf8');
     expect(body.split('\n').filter((l) => /^\| \d+ \|/.test(l)).length, 'cần ≥7 ca cụ thể').toBeGreaterThanOrEqual(7);
-    for (const must of ['tautology', 'fieldMap.anchored', 'RUN_ID', 'KHÔNG phải evidence']) expect(body, `thiếu "${must}"`).toContain(must);
+    for (const must of ['tautology', 'fieldMap.byScreen', 'valueMaps', 'RUN_ID', 'KHÔNG phải evidence']) expect(body, `thiếu "${must}"`).toContain(must);
     // Phải nói rõ giới hạn ĐÃ ĐO, không hứa thứ máy không làm được.
     expect(body).toMatch(/audit/i);
     expect(body).toContain('inconclusive');

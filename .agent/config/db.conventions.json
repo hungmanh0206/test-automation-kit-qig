@@ -96,7 +96,7 @@
     "_why": "BAN DO cot DB <-> nhan UI, KHOA THEO MAN (order_type). Vong 2 (27/08/2026) da BAC gia dinh 'mot ban do cho ca DB': man Service Fee va man Core hien CUNG mot cot duoi HAI nhan khac nhau — `original_price` la 'Gross Amount' o CORE nhung la 'Gross Price' o SERVICE_FEE. Neo toan cuc thi giao rong; bo luat giao thi neo sai man.",
     "_method": "Doc UI READ-ONLY 6 don thuc, trich cap nhan->gia tri, roi lay GIAO cac tap nhan khop qua moi don CUNG MAN. Chi neo khi gia tri DUY NHAT trong hang DB (chong 'hai cot cung so'). Cot o `unanchored` KHONG duoc dung de phan.",
     "_evidence": "requirements/ui_pairs_for_db_map.json (raw cap nhan-gia tri) + evidence/db-map/*.png (6 anh full-page). Don: f25ce82a, 9773d42b, 7869e2b1, 98863049, 6e8a01cd, 7c93f58b.",
-    "_how_to_reanchor": "Doi UI thi chay lai `node outputs/.../automation/_db_field_map.js` (chi doc), roi lay giao theo man. Them cot moi PHAI co don ma gia tri cot do khac moi cot khac.",
+    "_how_to_reanchor": "Neo lai gom HAI nua. (1) DOC UI read-only: script nam o TANG TASK nen KHONG track trong repo — outputs/<project>/tasks/<TASK>/automation/_db_field_map.js (tab Overview) va _status_label_map.js (man danh sach); chung chua selector dang nhap + route cua OPS nen thuoc lop PROJECT, khong dua vao scripts/ chung. (2) DOI CHIEU + neo: tests/support/setup/db/fieldmap.anchor.spec.ts (CO track, chay bang INFRA_VERIFY=1, doc thu muc khai o env DB_ANCHOR_DIR). Luat neo: cot chi duoc neo khi gia tri cua no PHAN BIET duoc voi moi cot cung loai o TOAN BO hang do (\"Net Amount\" khop final_price 48/48 va khong khop cot tien nao khac); enum chi duoc neo khi ban do la ham VA don anh.",
     "entity": "ic_payment_orders",
     "byScreen": {
       "SERVICE_FEE": {
@@ -115,20 +115,55 @@
         "original_price": "Gross Amount",
         "total_discount": "Order Discount",
         "province": "Tỉnh/ Thành phố"
+      },
+      "CORE_LIST": {
+        "_route": "/operations/sales/orders?page_index=1&page_size=50",
+        "_method": "Neo theo CHI SO COT lay tu <th> cua luoi (KHONG theo hinh dang chu), khoa noi = \"Ma don hang\" = ic_payment_orders.id (luoi render id voi dau _ thay -). Noi 48/48 hang. Nhan tien chi neo khi khop DUY NHAT 1 cot trong 7 cot tien: \"Net Amount\" khop final_price 48/48 va KHONG khop cot nao khac ⇒ phan biet duoc.",
+        "id": "Mã đơn hàng",
+        "deal_id": "Deal ID",
+        "status": "Status",
+        "original_price": "Gross Amount",
+        "final_price": "Net Amount"
+      },
+      "SERVICE_FEE_LIST": {
+        "_route": "/operations/sales/service-fee-orders?page_index=1&page_size=50",
+        "_method": "Nhu CORE_LIST, noi 50/50 hang. Man nay KHONG co cot tien tren luoi.",
+        "id": "Mã đơn hàng",
+        "deal_id": "Deal ID",
+        "status": "Status",
+        "service_fee_type": "Service Fee Type"
       }
     },
     "unanchored": {
       "deposit": "Gia tri 0 o MOI don do duoc (ke ca 4 don co deposit>0, o do deposit == automatic_price == final_price) ⇒ khong the phan biet. Can don co deposit khac ca hai cot kia.",
       "custom_price": "Chi xuat hien o don CORE va luon TRUNG final_price ⇒ khong phan biet duoc.",
-      "final_price@CORE": "Tren man CORE luon trung automatic_price hoac custom_price. Neo duoc o man SERVICE_FEE (nho gia tri AM), chua neo duoc o CORE.",
-      "status": "KHONG hien duoi dang chu tren tab Overview. Da thu phep so sanh 2 don khac status (TO_PURCHASE vs PURCHASED/PURCHASING): khong co chuoi nao dang nhan trang thai xuat hien/mat di. Nhan 'Status' tren man nay thuoc khoi Split bill, KHONG phai status don. Enum thuc te: PURCHASED/EXPIRED/TO_PURCHASE/CANCEL/PURCHASING/PARTIALLY_PAID. Neo o man DANH SACH (chua thu).",
-      "order_type": "khong hien thi tren Overview",
-      "fee_per_month": "NULL o moi don do duoc",
-      "fixed_discount": "NULL o moi don do duoc",
-      "service_fee_type": "khong hien thi dang chuoi enum",
-      "payment_method": "NULL/khong hien thi",
-      "sync_status": "khong hien thi",
-      "full_name": "NULL (ho ten tach o first_name/last_name)"
+      "order_type": "Khong hien thi o ca tab Overview lan man danh sach (luoi chi co Service Fee Type). Can man/API khac.",
+      "fee_per_month": "NULL o ca 98 don do duoc (98/98 hang tren 2 man danh sach). Can don TRA GOP co so tien/thang > 0 moi phan biet duoc voi cac cot tien khac.",
+      "fixed_discount": "NULL o ca 98 don do duoc. Can don ap giam gia CO DINH (khong phai giam theo %) de cot nay khac 0 va khac total_discount.",
+      "payment_method": "NULL / khong hien thi o ca tab Overview lan man danh sach. Can don da thanh toan qua mot cong cu the (VNPay/VietQR) roi doi chieu man chi tiet giao dich.",
+      "sync_status": "Khong hien thi o bat ky man nao da do. Can man dong bo HubSpot hoac API tra ve truong nay.",
+      "full_name": "NULL o moi ban ghi (ho ten tach o first_name/last_name). Chi neo duoc neu app bat dau ghi cot nay; hien tai dung first_name/last_name."
+    },
+    "valueMaps": {
+      "_why": "Ban do GIA TRI (enum DB -> nhan tieng Viet tren UI) — khac ban do COT. Do 28/08/2026 READ-ONLY tren man danh sach, noi 98 hang voi DB. Luat neo: enum -> nhan phai la HAM (1 enum chi 1 nhan) VA DON ANH (2 enum khong dung chung nhan); vi pham bat ky dieu nao thi ghi CHUA NEO, khong chon nhan pho bien nhat.",
+      "_evidence": "requirements/db_status_label_map.json + evidence/db-map/LIST_CORE.png, LIST_SERVICE_FEE.png. Sinh lai: xem fieldMap._how_to_reanchor.",
+      "_cross_screen": "status do doc lap o CA HAI man va cho ket qua TRUNG NHAU (CORE 6 enum, SERVICE_FEE 5 enum, khong xung dot) ⇒ ban do nay khong phu thuoc man. EXPIRED chi gap o man CORE.",
+      "ic_payment_orders.status": {
+        "PURCHASED": "Đã thanh toán",
+        "PURCHASING": "Đang thanh toán",
+        "PARTIALLY_PAID": "Đã thanh toán 1 phần",
+        "CANCEL": "Đã hủy",
+        "TO_PURCHASE": "Chờ thanh toán",
+        "EXPIRED": "Hết hạn"
+      },
+      "ic_payment_orders.service_fee_type": {
+        "GIA_HAN": "Gia hạn",
+        "CHUYEN_NHUONG": "Chuyển nhượng",
+        "KHONG_GHI_NHAN_PHI": "Không ghi nhận phí",
+        "CHUYEN_DOI": "Chuyển đổi",
+        "BAO_LUU": "Bảo lưu",
+        "TU_VAN_KHOA_HOC": "Tư vấn khóa học"
+      }
     }
   }
 }

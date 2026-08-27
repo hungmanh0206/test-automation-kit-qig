@@ -43,6 +43,15 @@ export interface DbConventions {
   audit?: { entity: string; entityCol: string; idCol: string; actionCol: string };
   idColumn: string;
   money?: { entities?: Record<string, string[]> };
+  fieldMap?: {
+    entity: string;
+    /** Khoá THEO MÀN: cùng một cột có nhãn khác nhau ở hai màn. */
+    byScreen: Record<string, Record<string, string>>;
+    /** enum DB → nhãn UI, khoá `"<bảng>.<cột>"`. */
+    valueMaps?: Record<string, Record<string, string>>;
+    /** Cột CHƯA phân biệt được — helper phải TỪ CHỐI, không được đoán. */
+    unanchored: Record<string, string>;
+  };
   safety: {
     requireReadonlyUser: boolean;
     allowedHosts?: string[];
@@ -70,6 +79,22 @@ export function loadConventions(repoRoot: string): DbConventions {
   let raw: unknown;
   try { raw = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { throw new DbGuardError(`${CONV_PATH.join('/')} không parse được: ${(e as Error).message}`); }
   const c = raw as Partial<DbConventions>;
+
+  /*
+   * KHỐI LẠ PHẢI BÁO, KHÔNG ĐƯỢC BỎ ÂM THẦM. Hàm này trả về một object DỰNG LẠI theo allowlist, nên khối nào
+   * chưa liệt kê ở đây thì code không bao giờ thấy — mà file JSON vẫn có, review vẫn thấy, nên không ai biết.
+   * Đã dính đúng một lần: `fieldMap` khai trong JSON, đo cẩn thận, viết cả test — nhưng loader không trả nó
+   * nên 9 test đọc `conv.fieldMap` đỏ vì `undefined`. Từ giờ thêm khối vào JSON mà quên nối vào đây thì CHẶN.
+   */
+  const KNOWN = ['softDelete', 'timestamps', 'audit', 'idColumn', 'money', 'relations', 'safety', 'fieldMap'];
+  const unknown = Object.keys(raw as object).filter((k) => !k.startsWith('_') && !KNOWN.includes(k));
+  if (unknown.length) {
+    throw new DbGuardError(
+      `${CONV_PATH.join('/')} có khối chưa được loader nối: ${unknown.join(', ')}. `
+      + `Thêm vào KNOWN + trả ra trong loadConventions, nếu không khối này vô hình với code (khai mà không dùng được).`,
+    );
+  }
+
   if (!c.softDelete || !c.softDelete.default) throw new DbGuardError('`softDelete.default` bắt buộc (mode: timestamp|boolean|status|none).');
   if (!c.idColumn) throw new DbGuardError('`idColumn` bắt buộc.');
   if (!c.safety) throw new DbGuardError('`safety` bắt buộc (requireReadonlyUser, statementTimeoutMs, maxRows).');
@@ -79,6 +104,7 @@ export function loadConventions(repoRoot: string): DbConventions {
     audit: c.audit,
     idColumn: c.idColumn,
     money: c.money,
+    fieldMap: c.fieldMap,
     safety: {
       requireReadonlyUser: c.safety.requireReadonlyUser !== false,   // mặc định BẬT — tắt phải khai tường minh
       allowedHosts: c.safety.allowedHosts,
@@ -122,4 +148,49 @@ export function loadConnection(prefix = 'LIB_MASTER_DB_RO', env: NodeJS.ProcessE
     password: String(env[`${prefix}_PASSWORD`]),
     ssl: String(env[`${prefix}_SSL`] || '').toLowerCase() === 'true',
   };
+}
+
+/*
+ * Hai helper dưới đây là chỗ luật "chỉ dùng cột ĐÃ NEO" có RĂNG. Trước đó luật nằm ở văn bản §23, nghĩa là
+ * chỉ cần một lượt chạy lỡ dùng `deposit` (đang treo) là phán sai mà không ai chặn. Giờ tra bản đồ phải đi
+ * qua hàm, và hàm NÉM khi cột/enum chưa neo — chưa neo thì không có đường nào ra được kết luận.
+ */
+
+/** Nhãn UI của một cột DB TRÊN MỘT MÀN. Chưa neo (hoặc neo ở màn khác) ⇒ ném, không trả nhãn màn khác. */
+export function uiLabelOfColumn(conv: DbConventions, screen: string, column: string): string {
+  const fm = conv.fieldMap;
+  if (!fm) throw new DbGuardError('conventions chưa khai `fieldMap` — không có bản đồ thì không phán được cột nào.');
+  const cols = fm.byScreen[screen];
+  if (!cols) {
+    throw new DbGuardError(
+      `màn "${screen}" chưa có trong fieldMap.byScreen. Đã neo: ${Object.keys(fm.byScreen).join(', ')}. `
+      + 'Dùng nhãn của màn khác là neo sai cột — neo màn này trước bằng fixture phân biệt.',
+    );
+  }
+  const label = cols[column];
+  if (label) return label;
+  const otherScreens = Object.entries(fm.byScreen).filter(([, c]) => c[column]).map(([s2]) => s2);
+  const why = fm.unanchored[`${column}@${screen}`] || fm.unanchored[column];
+  throw new DbGuardError(
+    `cột "${column}" CHƯA NEO ở màn "${screen}"`
+    + (otherScreens.length ? ` (chỉ neo ở: ${otherScreens.join(', ')} — nhãn ở đó KHÁC, không dùng thay được)` : '')
+    + (why ? `. Lý do đang treo: ${why}` : '')
+    + '. Không được phán bằng cột chưa neo: đoán sai cột thì kết luận vẫn ra, lại có số từ DB nên trông thuyết phục.',
+  );
+}
+
+/** Nhãn UI ứng với một giá trị enum trong DB, ví dụ `('ic_payment_orders.status', 'PURCHASED')`. */
+export function uiLabelOfValue(conv: DbConventions, entityColumn: string, dbValue: string): string {
+  const maps = conv.fieldMap?.valueMaps;
+  if (!maps || !maps[entityColumn]) {
+    throw new DbGuardError(
+      `chưa có bản đồ giá trị cho "${entityColumn}". Đã neo: ${Object.keys(maps || {}).filter((k) => !k.startsWith('_')).join(', ') || 'chưa có gì'}.`,
+    );
+  }
+  const label = maps[entityColumn][dbValue];
+  if (label) return label;
+  throw new DbGuardError(
+    `enum "${dbValue}" của "${entityColumn}" chưa neo nhãn UI. Đã neo: ${Object.keys(maps[entityColumn]).join(', ')}. `
+    + 'Gặp enum lạ nghĩa là app có trạng thái mà phép đo chưa thấy — đo lại, đừng dịch tay.',
+  );
 }
