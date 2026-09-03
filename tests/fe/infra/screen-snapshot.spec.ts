@@ -73,3 +73,76 @@ test.describe('screen_snapshot — thứ có trên màn mà tài liệu không n
     expect(diffWithDoc(snap, {}).notes).toEqual([]);
   });
 });
+
+/*
+ * Ba lỗ hổng ĐÃ ĐO của bộ đọc (28/08/2026) — mỗi cái kèm kiểm-âm.
+ *
+ * Vì sao đáng có test riêng: `snapshotScreen` là instrument, và instrument mù thì mọi kết luận dựa trên nó
+ * đều xanh mà sai. Cụ thể: tôi gần như kết luận "form không có payment_method" chỉ vì bộ đọc không thấy
+ * ant-select; và một artifact đã rò 100 email + 100 SĐT vì snapshot không mask gì.
+ */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { normNumber } = require(path.resolve(__dirname, '../../../scripts/utils/ui/screen_snapshot.js'));
+
+test.describe('screen_snapshot — instrument không được MÙ', () => {
+  test('① ant-select: đọc được giá trị (input.value của nó RỖNG)', async ({ page }) => {
+    await page.goto(FIXTURE);
+    const snap = await snapshotScreen(page, { scopeSelector: '#pay-form' });
+    const sel = snap.controls.filter((c: any) => c.kind === 'ant-select');
+    expect(sel.length, 'không thấy ant-select nào ⇒ instrument vẫn mù').toBe(2);
+    expect(sel.find((c: any) => c.label === 'Payment Method')?.value).toBe('Trả góp');
+    // Kiểm-âm: nếu chỉ đọc input.value thì giá trị này rỗng — chứng minh test có răng.
+    expect(await page.locator('#pay-form .ant-select input').first().inputValue()).toBe('');
+    expect(sel.find((c: any) => c.label === 'Recipient Bank Account')?.disabled, 'phải nhận ra ant-select bị disable').toBe(true);
+  });
+
+  test('② radio: lấy theo `checked`, KHÔNG theo `value`', async ({ page }) => {
+    await page.goto(FIXTURE);
+    const snap = await snapshotScreen(page, { scopeSelector: '#pay-form' });
+    const radios = snap.controls.filter((c: any) => c.kind === 'radio');
+    expect(radios.length).toBe(2);
+    const chosen = radios.filter((r: any) => r.value);
+    expect(chosen.length, 'chỉ một ô được chọn').toBe(1);
+    expect(chosen[0].value).toBe('CHỌN:INSTALLMENT');
+    // Kiểm-âm: ô chưa chọn phải RỖNG. Đọc `value` thô sẽ ra 'ONETIME' — đúng cái sai cần chặn.
+    expect(radios.find((r: any) => r.value === 'CHỌN:ONETIME'), 'ô chưa chọn không được có giá trị').toBeUndefined();
+  });
+
+  test('③ PII: che theo NHÃN và theo HEADER CỘT, nhưng KHÔNG che khoá nghiệp vụ', async ({ page }) => {
+    await page.goto(FIXTURE);
+    const form = await snapshotScreen(page, { scopeSelector: '#pay-form' });
+    const byLabel = (l: string) => form.controls.find((c: any) => c.label === l)?.value;
+    expect(byLabel('Full name'), 'họ tên phải bị che (không có mẫu nhận biết được)').toBe('<masked>');
+    expect(byLabel('Email')).toBe('<masked>');
+    expect(byLabel('Deal ID'), 'Deal ID là KHOÁ NGHIỆP VỤ — che nó là mất thứ cần đọc').toBe('64333601619');
+
+    const grid = await snapshotScreen(page, { scopeSelector: '#cust' });
+    const row = grid.tables[0].rows[0];
+    expect(row[0], 'cột Deal ID không phải PII').toBe('64333601619');
+    expect(row[2], 'cột Email phải bị che').toBe('<masked>');
+    expect(row[3], 'cột Phone phải bị che').toBe('<masked>');
+    expect(row[4], 'cột tiền giữ nguyên').toBe('60 000 000');
+    expect(JSON.stringify(grid), 'snapshot không được còn email nào').not.toMatch(/@example\.com/);
+    expect(JSON.stringify(grid), 'snapshot không được còn SĐT nào').not.toContain('0339299199');
+  });
+
+  test('③b tắt mask phải TƯỜNG MINH (kiểm-âm: chứng minh mask là thứ đang chạy)', async ({ page }) => {
+    await page.goto(FIXTURE);
+    const raw = await snapshotScreen(page, { scopeSelector: '#cust', maskPii: false });
+    expect(JSON.stringify(raw), 'maskPii:false thì dữ liệu thật phải hiện ra — nếu không, mask không hề chạy')
+      .toContain('a.that@example.com');
+  });
+
+  test('normNumber: so số không phụ thuộc ĐỊNH DẠNG nghìn của từng màn', () => {
+    /*
+     * Đo thật: màn CORE hiện "60 000 000" (dấu cách), màn Add-on hiện "5.000.000" (dấu chấm). Hàm so chỉ bỏ
+     * khoảng trắng thì trượt 129/133 hàng, và suýt bị ghi nhận thành phát hiện "UI hiện số khác hẳn DB".
+     */
+    expect(normNumber('60 000 000')).toBe('60000000');
+    expect(normNumber('5.000.000')).toBe('5000000');
+    expect(normNumber('-24,300,000đ')).toBe('-24300000');
+    expect(normNumber('0đ')).toBe('0');
+    expect(normNumber('')).toBe('');
+    expect(normNumber('N/A')).toBe('');
+  });
+});

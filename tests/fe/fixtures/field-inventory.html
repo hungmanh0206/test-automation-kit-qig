@@ -39,3 +39,43 @@
   <label>Extension Package</label><input value="6 tháng" /><!-- nhãn LỆCH so với màn Order Detail -->
   <label>Amount</label><input value="2.000.000" />
 </div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────────────────────────────
+     Bổ sung 28/08/2026 — ba lớp MÙ của snapshot, tái tạo đúng hình dạng DOM thật của OPS:
+       ① ant-select: dropdown là DIV, `input.value` bên trong RỖNG ⇒ đọc value là ra chuỗi trống
+       ② radio: giá trị nằm ở `checked`, đọc `value` là ra ô CHƯA chọn
+       ③ PII: cột Email/Phone trong bảng, và nhãn Full name/D.O.B trong form
+     Đây là fixture để test CHÍNH bộ đọc, không phải để test app.
+     ───────────────────────────────────────────────────────────────────────────────────────────── -->
+<h2>Payment Form</h2>
+<div id="pay-form">
+  <div style="position:absolute;left:20px;top:400px">Payment Method</div>
+  <div class="ant-select" style="position:absolute;left:200px;top:400px;width:220px;height:32px">
+    <div class="ant-select-selector"><input value="" /></div>
+    <span class="ant-select-selection-item">Trả góp</span>
+  </div>
+
+  <div style="position:absolute;left:20px;top:450px">Recipient Bank Account</div>
+  <div class="ant-select ant-select-disabled" style="position:absolute;left:200px;top:450px;width:220px;height:32px">
+    <span class="ant-select-selection-item">SAPP Academy - 0011</span>
+  </div>
+
+  <div style="position:absolute;left:20px;top:500px">Fee Type</div>
+  <label style="position:absolute;left:200px;top:500px"><input type="radio" name="fee" value="ONETIME" />Một lần</label>
+  <label style="position:absolute;left:300px;top:500px"><input type="radio" name="fee" value="INSTALLMENT" checked />Trả góp</label>
+
+  <div style="position:absolute;left:20px;top:550px">Full name</div>
+  <input style="position:absolute;left:200px;top:550px" value="Nguyễn Văn A" />
+  <div style="position:absolute;left:20px;top:600px">Email</div>
+  <input style="position:absolute;left:200px;top:600px" value="khach.that@example.com" />
+  <div style="position:absolute;left:20px;top:650px">Deal ID</div>
+  <input style="position:absolute;left:200px;top:650px" value="64333601619" />
+</div>
+
+<h2>Customer Grid</h2>
+<table id="cust">
+  <thead><tr><th>Deal ID</th><th>Customer</th><th>Email</th><th>Phone</th><th>Gross Amount</th></tr></thead>
+  <tbody>
+    <tr><td>64333601619</td><td>Nguyễn Văn A</td><td>a.that@example.com</td><td>0339299199</td><td>60 000 000</td></tr>
+  </tbody>
+</table>
