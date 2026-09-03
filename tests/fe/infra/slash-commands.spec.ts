@@ -96,6 +96,21 @@ test.describe('@infra slash commands — con trỏ phải trỏ đúng chỗ', (
     }
   });
 
+  test('mỗi NHÁNH khai trong branch_parity.json phải có command cùng tên', () => {
+    /*
+     * Vì sao kiểm ở ĐÂY chứ không nhét command vào `branch_parity.json`: file đó khai "MÁY nào phải chạy ở
+     * nhánh nào" kèm waiver có lý do. Command không phải máy — nó là ĐIỂM VÀO. Trộn hai khái niệm thì phải
+     * viết waiver cho những thứ không waive được. Ở đây chỉ cần một luật: có nhánh thì phải có đường vào.
+     * Hôm nay 4/4 có; mai ai thêm nhánh thứ 5 mà quên điểm vào thì đỏ ngay, kèm tên nhánh.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const parity = require(path.join(REPO, '.agent/config/branch_parity.json'));
+    const branches = Object.keys(parity.branches || {});
+    expect(branches.length, 'branch_parity không khai nhánh nào').toBeGreaterThan(0);
+    const missing = branches.filter((b) => !files.includes(`${b}.md`));
+    expect(missing, `nhánh không có slash command: ${missing.join(', ')} (thiếu .claude/commands/<nhánh>.md)`).toEqual([]);
+  });
+
   test('publish phải nhắc dry-run TRƯỚC `:apply`', () => {
     if (!files.includes('publish.md')) return;
     const b = body('publish.md');
