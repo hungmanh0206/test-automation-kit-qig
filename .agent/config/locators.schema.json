@@ -1,0 +1,51 @@
+{
+  "_why": "Schema cho `knowledge/locators/*.json` — TRI THỨC locator/quirk của màn, không phải secret, nên file schema này ĐƯỢC COMMIT (bản thân store `knowledge/**` thì gitignore vì là dữ liệu công ty). Schema KHÔNG thiết kế mới: nó chép đúng hình dạng của file đã có và đã dùng được (`ops-row-menu__flaky-3-cham.json`), vì file đó đã chứng minh mang lại giá trị thật.",
+  "_enforced_by": "tests/fe/infra/locator-knowledge.spec.ts. Lý do phải có máy: skill `ui_debug_agent` yêu cầu ghi vào store này; không chốt schema thì mỗi lượt ghi một kiểu, 5 file nữa là không query được — mà store đó chính là thứ chống 'sprint sau dò lại đúng màn đó'.",
+  "_naming": "Tên file: `<màn-hoặc-cụm>__<quirk>.json`, kebab-case, hai dấu gạch dưới ở giữa. Ví dụ: `ops-row-menu__flaky-3-cham.json`.",
+  "required": [
+    "id",
+    "target",
+    "symptom",
+    "technique",
+    "why",
+    "modules",
+    "source",
+    "version",
+    "status"
+  ],
+  "optional": [
+    "selector",
+    "pitfalls",
+    "confirmed_by",
+    "confirmed_at",
+    "tags",
+    "safe_target",
+    "sentinel"
+  ],
+  "fields": {
+    "id": "Mã ổn định, dạng `UI-<NHÓM>-<số>` (vd `UI-MENU-001`). Dùng để trích dẫn từ spec/report mà không phải dán cả đoạn.",
+    "target": "Element/khối đang nói tới, mô tả theo thứ NGƯỜI nhìn thấy (không phải selector).",
+    "symptom": "Biểu hiện khi làm sai — viết để người gặp lại nhận ra ngay. Chính chỗ này biến 'flaky không rõ nguyên nhân' thành có tên.",
+    "technique": "Cách làm ĐÚNG, cụ thể tới mức làm theo được (mở bằng bàn phím, chờ tín hiệu nào, chọn theo tên...).",
+    "why": "CƠ CHẾ vì sao cách sai lại sai. Bắt buộc, và bắt buộc phải nói cơ chế chứ không phải 'vì nó flaky' — không có `why` thì lần sau người ta lại thử cách cũ.",
+    "selector": "Selector neo nếu có. Không bắt buộc: nhiều quirk là về KỸ THUẬT thao tác, không phải về selector.",
+    "modules": "Các màn/module áp dụng, dạng mảng. Rỗng nghĩa là không ai biết dùng ở đâu ⇒ không được rỗng.",
+    "pitfalls": "Bẫy cụ thể đã dính, dạng mảng câu. Đây là phần đắt nhất khi đọc lại.",
+    "source": "Đúc kết từ đâu (task nào, chuỗi fail nào). Không có nguồn thì không đối chiếu lại được.",
+    "confirmed_by": "Ai xác nhận (QA/dev/BA). Chưa ai xác nhận thì để trống và đặt `status: draft`.",
+    "confirmed_at": "Ngày xác nhận, `YYYY-MM-DD`.",
+    "version": "Số nguyên ≥ 1. Tăng khi đổi `technique`.",
+    "status": "`active` | `draft` | `deprecated`. `deprecated` phải giữ lại (lịch sử), không xoá file.",
+    "safe_target": "Dạng `safe_target.*` tương ứng nếu quirk này gắn với một locator cụ thể — theo `.agent/rules/locator_strategy.md`.",
+    "sentinel": "Tín hiệu nghiệm thu sau hành động (thứ phải xuất hiện/biến mất). Chờ theo tín hiệu, không theo thời gian.",
+    "tags": "Nhãn tra cứu, dạng mảng."
+  },
+  "statusEnum": ["active", "draft", "deprecated"],
+  "minLength": {
+    "_why": "Ngưỡng độ dài chống 'điền cho có'. Đặt thấp — mục đích là chặn ô rỗng/một từ, không phải bắt lỗi văn phong.",
+    "symptom": 40,
+    "technique": 40,
+    "why": 60,
+    "source": 20
+  }
+}

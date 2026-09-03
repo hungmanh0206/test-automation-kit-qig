@@ -125,8 +125,9 @@ Trước chuỗi thao tác dài: `safe_target.assertScreen(page, { url | heading
 |---|---|---|---|
 
 **② Ghi vào `knowledge/locators/`** — không ghi thì sprint sau dò lại đúng màn đó, trái vòng learning.
-Một file JSON cho một màn/quirk, tên `<màn>__<quirk>.json`, theo mẫu file đang có
-(`ops-row-menu__flaky-3-cham.json`).
+Một file JSON cho một màn/quirk, tên `<màn>__<quirk>.json`. **Schema chốt ở `.agent/config/locators.schema.json`**
+(có máy kiểm: `tests/fe/infra/locator-knowledge.spec.ts`) — field bắt buộc, `why` phải nói CƠ CHẾ, và `status: active`
+thì phải có `confirmed_by`. Mẫu tham chiếu: `ops-row-menu__flaky-3-cham.json`.
 
 **③ `fieldMap` theo MÀN** nếu màn có kiểm DB. Giữ đúng luật tầng DB verify — **trỏ, không chép**:
 `.agent/config/db.conventions.json` (`fieldMap.byScreen`, `_method`, `_method_enum_by_groups`,
