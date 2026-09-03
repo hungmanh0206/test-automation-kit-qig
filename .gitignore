@@ -189,8 +189,13 @@ scripts/integrations/jira/unassign_tests_backup.json
 # Cleanup manifest (P1) — theo dõi test data đã tạo per RUN_ID để reconcile orphan; dữ liệu run, KHÔNG commit.
 .cleanup/
 
-# Claude Code local files
-.claude/
+# Claude Code local files — settings/hook là cấu hình MÁY CÁ NHÂN (có thể chứa env, đường dẫn riêng).
+# NGOẠI LỆ: .claude/commands/ ĐƯỢC COMMIT — slash command là ĐIỂM VÀO DÙNG CHUNG của cả nhóm; ignore nó thì
+# teammate clone về không có lệnh nào, và test hạ tầng kiểm command sẽ đỏ trên CI vì thư mục không tồn tại.
+# Phải dùng `.claude/*` (không phải `.claude/`): git KHÔNG đi vào thư mục đã bị ignore, nên negation cho
+# đường dẫn con bên trong một THƯ MỤC bị ignore sẽ không có tác dụng.
+.claude/*
+!.claude/commands/
 # CLAUDE.md: COMMIT (G3 round-3) — non-negotiables shared, context-resident cho mọi phiên/mọi người.
 # (Personal global instructions vẫn để ở ~/.claude/CLAUDE.md, không nằm repo.)
 

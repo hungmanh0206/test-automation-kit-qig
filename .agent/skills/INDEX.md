@@ -9,7 +9,7 @@
 | `git_impact_analyzer` | phase1 | `.agent/skills/phase1/git_impact_analyzer/SKILL.md` | Đọc git diff của branch/PR gắn TASK_KEY, liệt kê file/module thay đổi và phân loại vào 7 bề mặt dùng chung của mục 17 — cấp dữ liệu diff thật làm input cho Bước 1 mục 17 thay vì đọc code đoán. Suggest-only. |
 | `requirements_analyzer` | phase1 | `.agent/skills/phase1/requirements_analyzer/SKILL.md` | Phân tích requirement/UI/API artifact để tạo scope, business rule và coverage input cho Phase 1. |
 | `risk_scorer` | phase1 | `.agent/skills/phase1/risk_scorer/SKILL.md` | Risk-Based Testing có thực thi — chấm Risk = Likelihood × Impact per module từ knowledge/ + config, sinh risk-register (Suggest-only), và gate depth theo band (default cảnh báo, --enforce chặn). QA override band. |
-| `tc_validator` | phase1 | `.agent/skills/phase1/tc_validator/SKILL.md` | Validate testcase Phase 1 theo template 9 cột, coverage/risk gate và khả năng execute automation. |
+| `tc_validator` | phase1 | `.agent/skills/phase1/tc_validator/SKILL.md` | Validate testcase Phase 1 theo template 11 cột, coverage/risk gate và khả năng execute automation. |
 | `flaky_test_analyzer` | phase2 | `.agent/skills/phase2/flaky_test_analyzer/SKILL.md` | Phân tích testcase Playwright flaky và đề xuất/sửa root cause trong phạm vi an toàn. |
 | `lighthouse_check` | phase2 | `.agent/skills/phase2/lighthouse_check/SKILL.md` | Điểm Lighthouse thật (Performance/Accessibility/SEO/Best-practices) chạy qua CDP bằng playwright-lighthouse; verdict advisory theo dải điểm chuẩn. Opt-in nặng (skip nếu chưa cài), never-auto + non-prod, evidence PNG bảng điểm. |
 | `load_check` | phase2 | `.agent/skills/phase2/load_check/SKILL.md` | Chạy load/stress/soak (Loại B, nhiều VU) qua k6 — wrapper mỏng, parse summary → report. k6 là binary NGOÀI (không phải npm dep). Never-auto, chỉ non-prod, cap khiêm tốn. Loại A single-user dùng perf_check. |
@@ -17,6 +17,7 @@
 | `perf_check` | phase2 | `.agent/skills/phase2/perf_check/SKILL.md` | Đo performance thật (web vitals + API SLA + large-dataset + resource weight) qua Playwright, so ngưỡng catalog → verdict advisory. Median N lần chống flaky. Threshold-gated, không thêm dependency. |
 | `qa_automation_engineer` | phase2 | `.agent/skills/phase2/qa_automation_engineer/SKILL.md` | Generate, update và execute Playwright UI/API automation cho Phase 2. |
 | `security_check` | phase2 | `.agent/skills/phase2/security_check/SKILL.md` | Kiểm security BASIC non-destructive (headers/cookie, unauth, authz/IDOR 2 tài khoản, exposure) qua GET read-only trên UAT. Control → PASS/FAIL; exposure → finding (mask PII). Never-auto, cần xác nhận non-prod. |
+| `ui_debug_agent` | phase2 | `.agent/skills/phase2/ui_debug_agent/SKILL.md` | Khám phá DOM thật của một màn để tìm locator bền và neo nhãn UI ↔ cột DB — dùng khi màn mới, khi locator vỡ, hoặc khi debug script_error. |
 | `decision_recorder` | shared | `.agent/skills/shared/decision_recorder/SKILL.md` | Ghi LÝ DO của quyết định QA đã chốt vào knowledge/decisions/ (false positive, by design, override risk, PASS-kèm-note, cách test) và TRA CỨU nó trước khi log bug, để không kết luận lại từ đầu và không log lại bug đã bị Rejected. |
 | `domain_recorder` | shared | `.agent/skills/shared/domain_recorder/SKILL.md` | Ghi business rule ĐÃ ĐƯỢC XÁC NHẬN vào knowledge/domain/ (versioned, có source + examples cụ thể, trace covered_by) để oracle của testcase luôn trích được nguồn thay vì suy từ app. |
 | `jira_bug_reporter` | shared | `.agent/skills/shared/jira_bug_reporter/SKILL.md` | Log Jira sub-bug từ testcase FAIL đã xác nhận sau Phase 2. |
@@ -27,4 +28,4 @@
 | `system_mapper` | shared | `.agent/skills/shared/system_mapper/SKILL.md` | Ghi bản đồ HỆ THỐNG đã xác nhận vào knowledge/system/ (state machine · ma trận phân quyền · surface dùng chung) để trả lời được "hành vi này là bug hay đúng thiết kế" và "sửa chỗ này phải regression đâu" mà không suy từ app. |
 | `test_data_generator` | shared | `.agent/skills/shared/test_data_generator/SKILL.md` | Sinh test data cụ thể, unique, traceable và rollback được cho Phase 1/Phase 2. |
 
-> 21 skill. Thiếu description: 0.
+> 22 skill. Thiếu description: 0.
