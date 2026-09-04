@@ -214,7 +214,7 @@ async function seedBugs() {
 
 
 async function main() {
-  if (!BASE) { console.error('[seed] Thiếu JIRA_BASE_URL. Điền .env (xem scripts/integrations/jira/.env.example).'); process.exit(1); }
+  if (!BASE) { console.error('[seed] Thiếu JIRA_BASE_URL. Điền .env (xem .env.example o goc repo).'); process.exit(1); }
   if (!PROJECT && !CUSTOM_JQL) { console.error('[seed] Thiếu --project hoặc JIRA_PROJECT_KEY (hoặc dùng --jql).'); process.exit(1); }
   console.log(`[seed] MODE: ${APPLY ? 'APPLY (ghi thật)' : 'DRY-RUN (chỉ preview — thêm --apply để ghi)'} · project=${PROJECT || '(từ --jql)'}`);
 

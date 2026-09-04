@@ -103,7 +103,7 @@ if (credOnDisk.length) {
   console.error(`[secret-scan] ✗ ${credOnDisk.length} file credential nằm TRONG cây repo (dù có gitignore hay không):`);
   for (const f of credOnDisk) console.error('  - ' + f);
   console.error('  -> .gitignore KHONG bao ve khi zip/copy/artifact. Chuyen ra ngoai repo (vd ~/.sapp-keys/<ten>/)');
-  console.error('     roi tro bang bien env duong dan TUYET DOI (xem scripts/integrations/google_doc/.env.example).');
+  console.error('     roi tro bang bien env duong dan TUYET DOI (xem .env.example o goc repo).');
   process.exit(1);
 }
 

@@ -43,7 +43,7 @@ Google Sheets integration hỗ trợ project cần sync testcase/test data hoặ
 | Step | Command/Action |
 |---:|---|
 | 1 | `npm install` |
-| 2 | Copy `scripts/integrations/google_sheet/.env.example` to `.env.local` or `.env`. |
+| 2 | Copy `.env.example` (repo ROOT — the single template) to `.env`, or create `.env.local` in this folder to keep Google Sheet creds separate. |
 | 3 | Fill credentials in local env or CI secret store. |
 
 ## Environment

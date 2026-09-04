@@ -37,7 +37,7 @@ Google Docs integration hỗ trợ project cần đọc requirement/spec viết 
 | Step | Command/Action |
 |---:|---|
 | 1 | `npm install` (thư viện `googleapis` đã có sẵn trong kit). |
-| 2 | Copy `scripts/integrations/google_doc/.env.example` sang `.env` hoặc `.env.local`. |
+| 2 | Copy `.env.example` (ở GỐC repo — bản mẫu duy nhất) sang `.env`, hoặc tạo `.env.local` ngay trong thư mục này nếu muốn tách creds cho riêng tích hợp Google Doc. |
 | 3 | Tải Service Account JSON, đặt vào thư mục này (VD `service-account.json`). |
 | 4 | **Share Google Doc cho email service account** (Viewer là đủ). |
 | 5 | `node doc_auth.js --setup` để xem hướng dẫn chi tiết. |

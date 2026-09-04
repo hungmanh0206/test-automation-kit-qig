@@ -118,6 +118,44 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
     expect(keysOf(EXAMPLE).length).toBeGreaterThan(20);
   });
 
+  test('CHỈ ĐƯỢC CÓ MỘT `.env.example` trong repo', () => {
+    /*
+     * Trước 04/09/2026 có BỐN: gốc + `jira/` + `google_doc/` + `google_sheet/`. Bản Jira trùng 21/21 khoá
+     * với bản gốc, hai bản Google chỉ còn 3 khoá sống. Hai bản mẫu env là hai nguồn SẼ TRÔI khỏi nhau — và
+     * chúng đã làm hỏng một phép đo thật: `git grep "khoá nào được đọc"` đếm cả file example, nên 6 khoá
+     * CHẾT bị tưởng là sống và tôi đã thêm chúng vào `.env`.
+     *
+     * Cơ chế nạp env theo thư mục (`<script-dir>/.env.local`) VẪN CÒN — luật này chỉ chặn bản MẪU thứ hai,
+     * không chặn file env thật.
+     */
+    const found: string[] = [];
+    const walk = (dir: string) => {
+      let entries;
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { return; }
+      for (const e of entries) {
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) { if (!/^(node_modules|\.git|dist|outputs|test-results)$/.test(e.name)) walk(p); continue; }
+        if (e.name === '.env.example') found.push(path.relative(REPO, p).split(path.sep).join('/'));
+      }
+    };
+    walk(REPO);
+    expect(found, `có ${found.length} file .env.example — phải đúng MỘT ở gốc repo: ${found.join(', ')}`).toEqual(['.env.example']);
+  });
+
+  test('không tài liệu/script nào còn trỏ tới bản mẫu lồng đã xoá', () => {
+    /*
+     * Xoá file mà để nguyên con trỏ thì người đọc đi theo tài liệu vào chỗ trống — tệ hơn cả trước khi xoá.
+     * (Đường NẠP `<script-dir>/.env.local` và `.env` thì vẫn hợp lệ, luật này chỉ soi `.env.example`.)
+     */
+    const { execFileSync } = require('child_process');
+    let hits = '';
+    try {
+      hits = execFileSync('git', ['grep', '-l', '-e', 'integrations/[a-z_]*/\\.env\\.example', '--',
+        '*.md', '*.js', '*.ts', '*.yml'], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+    } catch (e) { hits = ''; }
+    expect(hits.trim(), `còn trỏ tới .env.example lồng đã xoá: ${hits.trim()}`).toBe('');
+  });
+
   test('① KHÔNG có khoá chết MỚI: mọi khoá trong bản mẫu phải được code/CI đọc', () => {
     const blob = sourceBlob();
     const sfx = dynamicSuffixes(blob);
