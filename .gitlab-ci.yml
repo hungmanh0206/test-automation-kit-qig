@@ -183,7 +183,7 @@ merge-report:
     # bình thường. Ngắn hạn: KPI nằm ở artifact dưới đây. Dài hạn: `npm run knowledge:backup` ra
     # `KNOWLEDGE_BACKUP_DIR` (preflight cảnh báo khi chưa khai). Muốn lịch sử ngay trong CI thì phải dựng
     # backend ngoài repo — quyết định của chủ repo, không phải mặc định im lặng.
-    - echo "(persistence) artifact-only: knowledge/ khong track => khong commit-back. Lich su dai han: npm run knowledge:backup"
+    - 'echo "(persistence) artifact-only: knowledge/ khong track => khong commit-back. Lich su dai han: npm run knowledge:backup"'
   artifacts:
     when: always
     paths: [playwright-report/, knowledge/metrics/]

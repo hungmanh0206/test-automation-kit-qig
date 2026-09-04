@@ -100,4 +100,61 @@ test.describe('@infra cấu hình CI — hỏng là KHÔNG phép kiểm nào ch�
     }
     expect(suspects, `lệnh sed/awk có nhóm bắt mà KHÔNG còn backslash — dấu hiệu escape đã bị ăn:\n  - ${suspects.join('\n  - ')}`).toEqual([]);
   });
+
+  test('lệnh shell trong script phải TRÍCH DẪN nếu chứa dấu hai chấm + khoảng trắng', () => {
+    /*
+     * Lỗi thứ HAI của cùng file này (04/09, sau khi vá 0x01): một dòng script dạng
+     * "- echo ... artifact-only: knowledge/ ... dai han: npm run knowledge:backup" KHÔNG trích dẫn. YAML gặp
+     * dấu hai chấm + khoảng trắng trong plain scalar thì hiểu là MAPPING ⇒ "mapping values are not allowed
+     * in this context" ⇒ lại 0 jobs. Gate lượt trước của tôi không bắt được vì nó chỉ soi ký tự điều
+     * khiển/tab/khoá gốc — KHÔNG đọc cấu trúc.
+     *
+     * Luật hẹp và chính xác: một item của sequence chỉ vỡ khi (a) nó KHÔNG phải mapping dạng key-hai-chấm,
+     * và (b) phần TRƯỚC comment YAML còn chứa dấu hai chấm + khoảng trắng. Nhờ (a) mà các item "if:" / "job:"
+     * trong khối rules không bị báo oan; nhờ (b) mà comment cuối dòng không bị tính.
+     */
+    const bad: string[] = [];
+    for (const f of ciFiles()) {
+      fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((l, i) => {
+        const m = l.match(/^(\s*)- (.*)$/);
+        if (!m) return;
+        const item = m[2].trim();
+        if (/^['"|>&*]/.test(item)) return;                    // đã trích dẫn / block scalar / anchor
+        if (/^[A-Za-z_][\w.-]*:(\s|$)/.test(item)) return;     // là mapping (if: · job: · when: …)
+        const beforeComment = item.split(' #')[0];
+        if (/: /.test(beforeComment)) bad.push(`${rel(f)}:${i + 1} — ${item.slice(0, 80)}`);
+      });
+    }
+    expect(bad, `plain scalar chứa dấu hai chấm + khoảng trắng ⇒ YAML hiểu là mapping ⇒ pipeline KHÔNG TẠO ĐƯỢC:\n  - ${bad.join('\n  - ')}`).toEqual([]);
+  });
+
+  test('mọi job phải khai stage, và stage đó phải có trong stages', () => {
+    /*
+     * Kiểm CẤU TRÚC, không chỉ cú pháp: file parse được mà job trỏ vào stage không tồn tại thì GitLab vẫn
+     * từ chối tạo pipeline. Đọc bằng dòng (không thêm dependency chỉ để test) — đủ chắc cho khuôn file này.
+     */
+    const f = path.join(REPO, '.gitlab-ci.yml');
+    if (!fs.existsSync(f)) return;
+    const lines = fs.readFileSync(f, 'utf8').split(/\r?\n/);
+    const iStages = lines.findIndex((l) => /^stages:/.test(l));
+    const stages: string[] = [];
+    for (let i = iStages + 1; i < lines.length && /^\s+- /.test(lines[i]); i += 1) {
+      stages.push(lines[i].replace(/^\s+- /, '').trim());
+    }
+    expect(stages.length, 'không đọc được danh sách stages').toBeGreaterThan(0);
+
+    const jobs: Record<string, string | null> = {};
+    let cur: string | null = null;
+    for (const l of lines) {
+      const j = l.match(/^([a-z][a-z0-9_-]*):\s*$/);
+      if (j) { cur = j[1] === 'stages' ? null : j[1]; if (cur) jobs[cur] = null; continue; }
+      const st = l.match(/^\s+stage:\s*(\S+)/);
+      if (st && cur) jobs[cur] = st[1];
+    }
+    expect(Object.keys(jobs).length, 'không đọc được job nào').toBeGreaterThan(0);
+    for (const [job, st] of Object.entries(jobs)) {
+      expect(st, `job "${job}" không khai stage`).toBeTruthy();
+      expect(stages, `job "${job}" khai stage "${st}" không có trong stages [${stages.join(', ')}]`).toContain(st);
+    }
+  });
 });
