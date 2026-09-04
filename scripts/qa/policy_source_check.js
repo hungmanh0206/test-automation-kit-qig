@@ -344,7 +344,15 @@ if (fs.existsSync(SKILLS_DIR)) {
     for (const en of fs.readdirSync(dir, { withFileTypes: true })) {
       const abs = path.join(dir, en.name);
       if (en.isDirectory()) { if (!/node_modules|\.git/.test(en.name)) walk(abs); continue; }
-      if (/\.(md|js|mjs|ts|json|yml|example)$/.test(en.name)) scanFile(abs);
+      /*
+       * PHỔ ĐUÔI FILE, đo 04/09/2026 trong các ROOTS này: .ts 138 · .js 125 · .md 104 · .json 18 · .yml 6 ·
+       * .mjs 1 — và BỎ SÓT .sh (1) + .html (2). Đúng chỗ đó có một vi phạm thật: script khai CI Variables in
+       * "[Jira / Xray / Confluence]" ra màn hình suốt, mà gate vẫn báo ✓ vì `.sh` không nằm trong bộ lọc.
+       * Thêm luôn `bash|ps1|yaml|sql` để đuôi mới không lại thành lỗ hổng lặng.
+       * KHÔNG quét `.env`: đó là file creds (gitignored), không phải bề mặt của kit, và soi vào chỉ tăng
+       * nguy cơ secret rơi vào thông báo lỗi.
+       */
+      if (/\.(md|js|mjs|ts|json|yml|yaml|example|sh|bash|ps1|sql|html)$/.test(en.name)) scanFile(abs);
     }
   };
   for (const r of ROOTS) walk(path.join(rc.REPO_ROOT, r));

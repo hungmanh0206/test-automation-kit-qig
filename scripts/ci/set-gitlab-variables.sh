@@ -88,13 +88,20 @@ echo "GitLab CI Variables — nguồn: ${ENV_FILES[*]}${OPS_FROM:+ + $OPS_FROM (
 echo "Repo: $(glab repo view 2>/dev/null | head -1 || echo '(auto từ git remote)')"
 echo
 
-echo "[Jira / Xray / Confluence — cho integration-check]"
+# Danh sách này phải PHỦ ĐỦ 6 mục `level: required` của scripts/integrations/jira/check_connection.js.
+# Thiếu một mục là job `integration-check` đỏ với "thiếu N cấu hình bắt buộc" — đã dính đúng vậy ngày
+# 04/09/2026: GitLab có 4/6, thiếu JIRA_PROJECT_KEY (nó phủ CẢ "Jira project key" lẫn "AIO project key"
+# nhờ fallback), nên job không thể xanh. FIGMA_API_KEY chỉ là `warning`, thêm cho phần live check đủ 4 service.
+echo "[Jira / AIO / Confluence — cho integration-check]"
 set_one JIRA_BASE_URL        0
 set_one JIRA_EMAIL           0
 set_one JIRA_API_TOKEN       1
+set_one JIRA_PROJECT_KEY     0
+set_one AIO_API_TOKEN        1
 set_one CONFLUENCE_URL       0
 set_one CONFLUENCE_USERNAME  0
 set_one CONFLUENCE_API_TOKEN 1
+set_one FIGMA_API_KEY        1
 
 echo
 echo "[OPS — cho task-execute / regression (nên là account test UAT riêng cho CI)]"
