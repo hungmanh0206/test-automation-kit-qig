@@ -216,4 +216,33 @@ test.describe('@infra cấu hình CI — hỏng là KHÔNG phép kiểm nào ch�
         `job "${b.name}" gọi :live mà rules không rào theo biến creds (vd if: '$JIRA_API_TOKEN') — thiếu biến thì job vẫn hiện và vẫn đỏ`).toBe(true);
     }
   });
+  test('workflow GitHub gọi hệ thống ngoài: chỉ dispatch tay + phải lấy creds từ secrets', () => {
+    /*
+     * Cùng lớp lỗi với job GitLab ở trên, nhưng cú pháp khác nên luật kia không với tới — đo 04/09/2026:
+     * `.github/workflows/integration-check.yml` cũng gọi `integration:check:live`.
+     *
+     * Hai điều kiện, vì thiếu một trong hai là ra một phép kiểm nói dối:
+     *   ① KHÔNG được chạy trên push/pull_request. Creds là secrets của repo; fork hoặc repo chưa khai secret
+     *      thì job đỏ mỗi lần push mà không ai sửa được — đúng cái nút luôn-đỏ.
+     *   ② Phải LẤY creds từ `secrets.` — nếu không, nó chạy với env rỗng và luôn báo "thiếu cấu hình".
+     */
+    const dir = path.join(REPO, '.github', 'workflows');
+    if (!fs.existsSync(dir)) return;
+    for (const name of fs.readdirSync(dir)) {
+      if (!/\.ya?ml$/i.test(name)) continue;
+      const text = fs.readFileSync(path.join(dir, name), 'utf8');
+      if (!/:live\b|--live\b/.test(text)) continue;
+
+      const head = text.split(/\njobs:/)[0];
+      expect(/workflow_dispatch/.test(head),
+        `workflow "${name}" gọi hệ thống ngoài (:live) nhưng không khai workflow_dispatch — phải bấm tay, không chạy tự động`).toBe(true);
+      for (const trigger of ['push', 'pull_request', 'schedule']) {
+        // Hai dấu cách gõ thẳng, KHÔNG dùng \s: trong string literal thì \s là ký tự 's', không phải regex.
+        expect(new RegExp('^  ' + trigger + ':', 'm').test(head),
+          `workflow "${name}" gọi :live mà lại chạy theo "${trigger}" — thiếu secrets thì nó đỏ mỗi lượt`).toBe(false);
+      }
+      expect(/secrets\./.test(text),
+        `workflow "${name}" gọi :live mà không lấy creds từ secrets. — nó sẽ chạy với env rỗng và luôn đỏ`).toBe(true);
+    }
+  });
 });
