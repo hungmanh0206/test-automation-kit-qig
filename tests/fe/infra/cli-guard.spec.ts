@@ -51,13 +51,20 @@ test('@infra script CLI nào gọi process.exit ở top-level thì phải có re
  * chúng là bề mặt ĐIỀU KHIỂN HÀNH VI, một escape hỏng ở đó làm luật im lặng không khớp y như trong code.
  * `outputs/`, `knowledge/`, `node_modules/` đứng ngoài: dữ liệu chạy thật, không phải nguồn kit.
  */
-test('@infra source không chứa ký tự điều khiển lạc (0x08/0x0B/0x0C/0x1B)', () => {
+test('@infra source không chứa ký tự điều khiển lạc (TOÀN BỘ dải C0, trừ tab/LF/CR)', () => {
   const REPO = path.resolve(__dirname, '../../../');
   const roots = ['scripts', 'tests', 'prompt_templates', '.agent', 'partial-rerun'].map((d) => path.join(REPO, d));
+  // File cấu hình CI nằm NGOÀI các thư mục trên ⇒ phải kể tên riêng, không thì lọt (đã lọt thật).
+  const extraFiles = ['.gitlab-ci.yml'].map((f) => path.join(REPO, f)).filter((f) => fs.existsSync(f));
   const bad: string[] = [];
   const check = (p: string) => {
     const src = fs.readFileSync(p, 'utf8');
-    const m = src.match(/[\x08\x0B\x0C\x1B]/);
+    /*
+     * QUÉT TOÀN BỘ dải C0, không phải danh sách chọn lọc. Bản cũ liệt đúng 4 ký tự (0x08/0x0B/0x0C/0x1B)
+     * nên một byte 0x01 nằm trong `.gitlab-ci.yml` đi qua êm — và nó làm GitLab KHÔNG TẠO NỔI pipeline
+     * (yaml invalid, 0 jobs) suốt 5 commit. Danh sách chọn lọc luôn thiếu đúng ký tự của lần sau.
+     */
+    const m = src.match(new RegExp('[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]'));
     if (m) bad.push(`${path.relative(REPO, p).split(path.sep).join('/')} (ký tự 0x${m[0].charCodeAt(0).toString(16)})`);
   };
   const walk = (dir: string) => {
@@ -69,6 +76,7 @@ test('@infra source không chứa ký tự điều khiển lạc (0x08/0x0B/0x0C
     }
   };
   roots.forEach(walk);
+  extraFiles.forEach(check);
   // Doc gốc ở thư mục repo — CHANGELOG là nơi đã dính, đừng để nó ngoài tầm lần nữa.
   for (const f of ['CHANGELOG.md', 'README.md', 'USER_GUIDE.md', 'QUICKSTART.md', 'RULE_GLOBAL.md', 'CLAUDE.md']) {
     const abs = path.join(REPO, f);

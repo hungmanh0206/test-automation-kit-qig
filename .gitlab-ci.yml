@@ -150,7 +150,7 @@ detection-proof:
     # Ngưỡng: score TỤT so với mốc đã ghi thì phải biết ngay (đọc bằng dòng máy trong báo cáo).
     - |
       if [ -f mutation-check.md ]; then
-        PROVEN=$(sed -n '1s/.*proven=\([0-9]*\).*//p' mutation-check.md)
+        PROVEN=$(sed -n '1s/.*proven=\([0-9]*\).*/\1/p' mutation-check.md)
         echo "mutation: proven=$PROVEN (moc 19/08: may kiem-ke-field 0, truc (2) 3/4)"
       fi
   artifacts:
