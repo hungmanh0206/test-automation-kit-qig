@@ -366,6 +366,7 @@ Nếu `TASK_KEY` không khớp yêu cầu hiện tại, phải dừng ngay.
 
 ```text
 test-automation-kit_v2/
+├── .claude/commands/     # slash command: /phase1 /phase2 /rerun … (xem Mục 9.0)
 ├── .agent/
 ├── prompt_templates/
 ├── partial-rerun/
@@ -381,12 +382,14 @@ test-automation-kit_v2/
 
 | Folder/File | Dùng để làm gì |
 |---|---|
-| `.agent/` | Workflow, skill, rule và config cho AI Agent. |
-| `prompt_templates/` | Prompt chạy Phase 1, Phase 2 và Re-run. Bên trong `phase1/dimensions/` là **15 chương chiều coverage** — mở đúng chiều task khai `required`, không nạp cả 15 (xem mục 5, bước sinh testcase). |
+| `.claude/commands/` | **Slash command** — điểm vào chuẩn hoá cho 9 luồng (xem Mục 9.0). Chỉ `commands/` được commit; `settings*.json` là cấu hình máy cá nhân. |
+| `.agent/` | Workflow, skill (22), rule và config cho AI Agent. `config/db.conventions.json` giữ quy ước DB + bản đồ cột↔nhãn khoá **theo màn**; `config/locators.schema.json` là schema cho `knowledge/locators/`. |
+| `prompt_templates/` | Prompt chạy Phase 1, Phase 2 và Re-run. Bên trong `phase1/dimensions/` là **20 chương chiều coverage** (§3–§23, gồm §22 inbound callback và §23 DB persistence) — mở đúng chiều task khai `required`, không nạp cả 20 (xem mục 5, bước sinh testcase). |
 | `partial-rerun/` | Nhánh phụ khi tài liệu requirement/design/API thay đổi. |
 | `scripts/` | Script export Excel, Jira integration, Playwright helper. |
 | `tests/` | Regression spec/shared automation; `tests/support/setup/` là setup layer dùng chung (factory/hook/fixture/mock/cleanup/contract). |
 | `profiles/` | Env động theo từng task (`profiles/<TASK_KEY>/task.env`, nạp qua `TASK_ENV`); tạo bằng `npm run profile:create -- <TASK_KEY>`. Giá trị tĩnh vẫn ở `.env` chung. |
+| `tests/support/setup/db/` | **DB Verification Layer (§23)** — đọc bản ghi dưới DB sau khi UI đổi dữ liệu để khoanh tầng lỗi (UI đúng + DB sai = bug BE; UI sai + DB đúng = bug FE). Read-only tuyệt đối, và `preflight` chặn ở cửa vào nếu task khai dùng §23 mà thiếu config/creds. |
 | `outputs/` | Toàn bộ artifact theo project/task. |
 | `README.md` | Tổng quan architecture. |
 | `QUICKSTART.md` | Setup nhanh. |
@@ -526,7 +529,7 @@ Ba việc phải làm, theo thứ tự:
 | # | Việc | Lệnh / nơi đọc |
 |---|---|---|
 | 1 | **Khai phạm vi chiều TRƯỚC khi gen** — `requirements/dimension_manifest.json`: mỗi chiều `"required"` hoặc `"n/a"` **kèm lý do**. Khai `n/a` cho chiều mà artifact chứng minh là có (vd có `requirements/figma/**` mà khai `design: n/a`) ⇒ **CHẶN** | `npm run dim:coverage` (chạy không `--enforce` để lấy khung manifest) |
-| 2 | **Mở đúng chương của các chiều `required`** — 15 chương, mỗi chương nói "chiều này phải sinh case gì". Không nạp cả 15 | [`prompt_templates/phase1/dimensions/`](prompt_templates/phase1/dimensions/) |
+| 2 | **Mở đúng chương của các chiều `required`** — 20 chương, mỗi chương nói "chiều này phải sinh case gì". Không nạp cả 15 | [`prompt_templates/phase1/dimensions/`](prompt_templates/phase1/dimensions/) |
 | 3 | **Gắn tag chiều trong tiêu đề case** + expected phải mang **bằng chứng** của chiều đó (`[Calc]` → giá trị số tự tính · `[Display]` → chuỗi trích nguyên văn/định dạng/danh sách cột · `[Guard]` → mã 4xx **kèm** "dữ liệu không đổi"…) | prompt gen §0b và §0b-bis |
 
 Ví dụ tiêu đề đúng: `[Positive][Calc][BR-RECIPBANK-001] TK nhận theo chương trình + mốc 01/01/2026`
@@ -978,6 +981,26 @@ Phase 1
 
 ![Sơ đồ chọn đúng prompt để chạy](docs/user-guide-images/phase-selection.png)
 
+### 9.0 Slash command — cách gọi gọn nhất
+
+Từ 04/09/2026 mỗi luồng có một **slash command** làm điểm vào. Gõ trong Claude Code:
+
+| Command | Làm gì | Dừng ở đâu |
+|---|---|---|
+| `/preflight <TASK_KEY>` | Kiểm input/config bắt buộc trước khi bắt đầu | exit ≠ 0 thì sửa nguyên nhân, đừng bỏ qua |
+| `/phase1 <TASK_KEY>` | Sinh testcase | **Ambiguity Gate**: còn mơ hồ thì hỏi, chờ trả lời, mới sinh |
+| `/phase2 <TASK_KEY>` | Execute automation | **Xác nhận với bạn** trước lượt chạm UAT đầu tiên |
+| `/rerun <TASK_KEY>` | Chạy lại case của bug đã fix | Xác nhận chạm UAT; xác nhận sát giờ comment |
+| `/partial-rerun <TASK_KEY>` | Requirement đổi | Bản review TRƯỚC, chỉ apply sau khi bạn duyệt |
+| `/explore <phạm vi>` | Phiên exploratory có charter | Chưa khai charter thì không chạy |
+| `/ui-debug <màn>` | Khám phá DOM tìm locator bền | **Never-auto** — mở browser vào UAT nên phải xác nhận |
+| `/gates <TASK_KEY>` | Bó gate trước khi finalize | Còn dòng CHẶN thì sửa nội dung, **không nới ngưỡng** |
+| `/publish <TASK_KEY>` | Đẩy AIO | Dry-run trước, `:apply` sau; `aio:verify-fields` phải sạch |
+
+Command là **con trỏ mỏng** — nó chỉ trỏ tới workflow/prompt thật và liệt kê gate, **không** chứa luật.
+Muốn biết chi tiết một luồng thì vẫn đọc prompt/workflow ở Mục 9.1. Và kit có 98 npm script: việc lẻ thì
+gọi trực tiếp `npm run <script>` nhanh hơn, command chỉ bọc **điểm vào của một luồng**.
+
 ### 9.1 Prompt chính
 
 | Prompt | Dùng khi nào |
@@ -989,6 +1012,7 @@ Phase 1
 | `partial-rerun/run_requirement_prepare_review.md` | Tài liệu nguồn đổi, cần diff/impact/testcase draft. |
 | `partial-rerun/run_requirement_apply_approved.md` | Sau Human Review approve change. |
 | `partial-rerun/run_testcase_cleanup.md` | Cleanup lifecycle testcase (Deprecate trên AIO) khi Excel thay đổi sau partial rerun approved. |
+| `.agent/skills/phase2/ui_debug_agent/SKILL.md` | Màn mới chưa có Page Object · locator vỡ mà healing trả confidence thấp · cần neo nhãn UI ↔ cột DB · debug `script_error`. Mức tự chủ **Never-auto**. |
 
 ### 9.2 Prompt mẫu
 

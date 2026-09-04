@@ -62,8 +62,13 @@ flowchart TD
 
 ```text
 test-automation-kit/
+├── .claude/
+│   └── commands/     # slash command = ĐIỂM VÀO chuẩn hoá (9 lệnh — xem Main Components)
+│                     #   CHỈ commands/ được commit; settings*.json là cấu hình máy cá nhân
 ├── .agent/
-│   ├── config/
+│   ├── config/       # verdict_taxonomy · risk_model · branch_parity · ci_scope · case_types
+│   │                 #   db.conventions.json  — quy ước DB + bản đồ cột↔nhãn khoá THEO MÀN
+│   │                 #   locators.schema.json — schema cho knowledge/locators/*.json
 │   ├── workflows/
 │   │   ├── phase1_generate_tc.md            # entry Phase 1
 │   │   ├── phase1_00_scope_planning.md      # optional: RBT scope + risk register
@@ -80,14 +85,15 @@ test-automation-kit/
 │   │   ├── rerun_01_map_bug_to_testcase.md
 │   │   ├── rerun_02_rerun_and_verify.md
 │   │   └── rerun_03_update_jira_and_report.md
-│   ├── skills/
+│   ├── skills/       # 22 skill theo vai trò; phase2/ui_debug_agent = khám phá DOM tìm locator bền
 │   └── rules/
 ├── prompt_templates/
 │   ├── run_phase1_template.md
 │   ├── run_phase2_template.md
 │   ├── run_phase_re-run_template.md
 │   ├── phase1/   # 01 setup → 02 gen testcase → 02b output format → 03 gen test data → 04 publish Jira
-│   │   └── dimensions/   # 15 chương CHIỀU coverage (§3–§17) — mở đúng chiều task cần, không nạp cả 15
+│   │   └── dimensions/   # 20 chương CHIỀU coverage (§3–§23) — mở đúng chiều task cần, không nạp cả 20
+│   │                     #   §22 inbound callback · §23 DB persistence (bản ghi sau CRUD)
 │   └── phase2/   # 04 execute FE → 05 execute API → 06 triage → 07 flaky → 08 log bug Jira
 ├── partial-rerun/
 │   ├── run_requirement_prepare_review.md
@@ -99,7 +105,10 @@ test-automation-kit/
 │   ├── integrations/
 │   └── qa/   # công cụ QA chạy thật: dashboard, accessibility, perf, security, load, risk_score/gate, ui_conformance
 ├── tests/
+│   ├── fe/infra/        # 38 spec KIỂM CHÍNH KIT (gate tự kiểm) — chạy offline, vào CI
 │   ├── support/setup/   # setup layer dùng chung (factory/hook/fixture/mock/cleanup/contract)
+│   ├── support/setup/db/  # DB Verification Layer (§23) — đọc bản ghi để KHOANH TẦNG lỗi UI vs BE
+│   │                      #   read-only tuyệt đối; so sánh theo NGHĨA (money/instant/text)
 │   ├── mobile-web/       # spec mobile-web (Playwright device emulation)
 │   └── load/             # k6 load script (Loại B, opt-in)
 ├── knowledge/            # bộ nhớ học: bugs/domain/system/decisions/locators/historical_execution — learning loop
@@ -126,9 +135,10 @@ test-automation-kit/
 | [QUICKSTART.md](QUICKSTART.md) | Onboarding nhanh cho project mới. |
 | [RULE_GLOBAL.md](RULE_GLOBAL.md) | Quy tắc chung về ngôn ngữ, bảo mật, output và cleanup. |
 | `.agent/workflows/` | Workflow chính dạng flat: mỗi flow gồm 1 file entry (`phase1_generate_tc.md`, `phase2_execute.md`, `rerun.md`) và các step file `*_NN_*.md` cùng thư mục. Step đánh số reset theo từng flow (phase1_01..04, phase2_01..04, rerun_01..03). |
-| `.agent/skills/` | Skill instructions cho agent theo vai trò chuyên biệt. |
+| `.claude/commands/` | **Slash command — điểm vào chuẩn hoá** cho 9 luồng: `/preflight` `/phase1` `/phase2` `/rerun` `/partial-rerun` `/explore` `/ui-debug` `/gates` `/publish`. Mỗi command là **con trỏ mỏng**: chỉ nói đọc workflow nào · chạy npm script nào · dừng ở gate nào — **không** chép policy (kit đã có `gate:policy` giữ `RULE_GLOBAL.md` là canonical). Máy giữ chúng khỏi mục rữa: `tests/fe/infra/slash-commands.spec.ts` kiểm mọi npm script/đường dẫn được nhắc phải tồn tại, và mọi nhánh trong `branch_parity.json` phải có command cùng tên. |
+| `.agent/skills/` | Skill instructions cho agent theo vai trò chuyên biệt (**22 skill**). Danh mục: `.agent/skills/INDEX.md` (sinh lại: `npm run skills:index`). |
 | `.agent/rules/` | Rule bắt buộc cho core behavior, locator, Playwright FE/API. |
-| `prompt_templates/` | Prompt dùng để chạy Phase 1, Phase 2 và rerun. Lưu ý đánh số: prompt con là sub-prompt theo hoạt động, số chạy liên tục theo trình tự pipeline (`phase1/01..04` chuẩn bị→sinh testcase→test data→publish Jira; `phase2/04..08` execute FE→execute API→triage review→flaky→log bug Jira) — KHÁC với workflow `.agent/workflows/` đánh số reset theo từng phase (phase2_01..04). Số prompt không ánh xạ 1:1 với số workflow; chạy từng prompt khi cần đúng hoạt động đó. **`phase1/dimensions/`** giữ 15 chương **chiều coverage** (§3–§17 tách khỏi `02_gen_testcases.md` ngày 14/08/2026) — mở đúng chiều task khai `required`, không nạp cả 15; **`phase1/02b_output_format.md`** giữ Summary Report + Export Excel, chỉ nạp ở cuối lượt. |
+| `prompt_templates/` | Prompt dùng để chạy Phase 1, Phase 2 và rerun. Lưu ý đánh số: prompt con là sub-prompt theo hoạt động, số chạy liên tục theo trình tự pipeline (`phase1/01..04` chuẩn bị→sinh testcase→test data→publish Jira; `phase2/04..08` execute FE→execute API→triage review→flaky→log bug Jira) — KHÁC với workflow `.agent/workflows/` đánh số reset theo từng phase (phase2_01..04). Số prompt không ánh xạ 1:1 với số workflow; chạy từng prompt khi cần đúng hoạt động đó. **`phase1/dimensions/`** giữ 20 chương **chiều coverage** (§3–§23; tách khỏi `02_gen_testcases.md` ngày 14/08/2026) — mở đúng chiều task khai `required`, không nạp cả 20; **`phase1/02b_output_format.md`** giữ Summary Report + Export Excel, chỉ nạp ở cuối lượt. |
 | `partial-rerun/` | Nhánh phụ độc lập; không là dependency của Main Flow và có thể xóa mà Main Flow vẫn chạy. |
 | `partial-rerun/run_requirement_prepare_review.md` | Phase 1 của nhánh phụ: tạo diff/impact/testcase draft và dừng chờ Human Review. |
 | `partial-rerun/run_requirement_apply_approved.md` | Phase 2 của nhánh phụ: merge testcase đã approve và partial execute. |
@@ -149,6 +159,7 @@ test-automation-kit/
 | `scripts/utils/ui/ensure_expanded.js` | Mở panel/accordion ổn định trên DOM "nhiều icon giống nhau": thử ứng viên + nghiệm thu bằng sentinel, tự Escape khi click nhầm modal/dropdown, idempotent. Thay cho click toạ độ chevron (nguồn flaky kinh điển). Regression: `tests/fe/infra/ensure-expanded.spec.ts`. |
 | `tests/fe/support/auth/tokenBroker.ts` | Token Broker: giữ 1 phiên SPA đã login sống → lấy token **tươi** mỗi lần gọi API, 401/403 tự refresh + retry ⇒ execute không đứt vì access token hết hạn giữa lượt chạy, `task.env` chỉ cần user/password. Áp cho mọi SPA gửi `Authorization: Bearer`. |
 | `exploratory/` | Nhánh phụ độc lập (never-auto, charter-based) — dò rủi ro ngoài testcase đã review; draft phải qua `tc_validator` mới tính coverage. |
+| `tests/support/setup/db/` | **DB Verification Layer (§23)** — đọc bản ghi dưới DB sau khi UI đổi dữ liệu để **khoanh tầng** lỗi: UI đúng + DB sai = bug BE persist; UI sai + DB đúng = bug FE render. **Read-only tuyệt đối** với 4 lớp chặn (đọc quyền từ catalog · session read-only · lint câu lệnh · allowlist host), và `preflight_gate` chặn **ở cửa vào** khi task khai dùng §23 mà thiếu config/creds hoặc user không read-only. So sánh theo **NGHĨA** (`money`/`instant`/`text`) và có trạng thái thứ ba `inconclusive` — "không đo được" KHÔNG thành PASS. Bản đồ cột↔nhãn khoá **theo màn** (`.agent/config/db.conventions.json`): cùng một cột có nhãn khác nhau giữa hai màn, và **cùng một nhãn có thể là hai cột khác nhau**. |
 | `tests/support/setup/` | Setup layer dùng chung: factory/hook/fixture/mock/cleanup/contract cho Precondition Resolution Pass (xem `tests/support/setup/README.md`). |
 | `profiles/` | Env động theo từng task (`profiles/<TASK_KEY>/task.env`, nạp qua `TASK_ENV`); giá trị tĩnh vẫn ở `.env` chung. Tạo bằng `npm run profile:create -- <TASK_KEY>`. |
 | `outputs/` | Artifact theo project/task, không hardcode theo một project cụ thể. |
@@ -193,6 +204,23 @@ flowchart TD
 - **Chín đặc tính của AIO đã đo** (không có API xoá · `PUT .../detail` ghi đè toàn phần · `tags` không lưu · `scriptType` bắt buộc · attachment cần MIME · rate limit trả body rỗng · `key` ≠ `ID` · `POST testcase` vào cycle đẻ run mới · `key` nằm ở `.testCase.key`): [scripts/integrations/aio/README.md](scripts/integrations/aio/README.md) — đọc trước khi tự phát hiện lại bằng cách mất dữ liệu.
 
 ## Common Commands
+
+### Slash command (điểm vào — gọn nhất)
+
+```text
+/preflight <TASK_KEY>       # kiểm input/config bắt buộc trước khi bắt đầu
+/phase1 <TASK_KEY>          # sinh testcase (dừng ở Ambiguity Gate khi spec còn mơ hồ)
+/phase2 <TASK_KEY>          # execute (xác nhận với user TRƯỚC lượt chạm UAT đầu tiên)
+/rerun <TASK_KEY>           # chạy lại case của bug đã fix
+/partial-rerun <TASK_KEY>   # requirement đổi: bản review trước, apply sau khi duyệt
+/explore <phạm vi>          # phiên exploratory có charter
+/ui-debug <màn>             # khám phá DOM tìm locator bền (Never-auto)
+/gates <TASK_KEY>           # bó gate trước khi finalize (self-review)
+/publish <TASK_KEY>         # đẩy AIO — dry-run trước, :apply sau
+```
+
+Command **không thay thế** npm script: kit có 98 script, gọi trực tiếp vẫn nhanh hơn cho việc lẻ.
+Chúng chỉ bọc **điểm vào của một luồng công việc**.
 
 | Task | Command |
 |---|---|

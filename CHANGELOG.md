@@ -7,6 +7,133 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-04 (b) — Tài liệu bắt kịp cấu trúc: slash command, tầng DB, và 5 con số đã cũ
+
+**Vấn đề.** README/USER_GUIDE/QUICKSTART không nhắc `.claude/commands/`, `tests/support/setup/db/`,
+`ui_debug_agent`, `db.conventions.json`, `locators.schema.json` — người mới đọc tài liệu sẽ không biết
+chúng tồn tại. Và tài liệu còn dạy **15 chương dimensions** trong khi thực tế đã **20** (§3–§23): người đọc
+mở đúng theo tài liệu sẽ **bỏ sót §22 inbound callback và §23 DB persistence**. CHANGELOG thì dừng ở 20/08.
+
+**Chữa.** README: cây thư mục thêm `.claude/commands/` + `tests/fe/infra/` + `tests/support/setup/db/`,
+thêm 2 dòng Main Components (slash command · DB Verification Layer), thêm khối "Slash command" đầu mục
+Common Commands. USER_GUIDE: **Mục 9.0** mới (bảng 9 command kèm **điểm dừng** của từng luồng), thêm 2 dòng
+vào bảng folder §4, thêm `ui_debug_agent` vào bảng prompt chính. QUICKSTART: mục "Slash Commands" đặt ngay
+trước "Run Phase 1" — chỗ người mới gặp đầu tiên. Sửa cả 5 chỗ ghi số cũ.
+
+**Ghi chú kỹ thuật cho lần sau:** file trong repo dùng **CRLF**, nên chuỗi tìm-thay **nhiều dòng** viết bằng
+`\n` sẽ **không khớp** (im lặng, không lỗi). Chuẩn hoá EOL trong bộ nhớ rồi ghi lại đúng định dạng gốc.
+
+## 2026-09-04 (a) — Slash command làm điểm vào + skill `ui_debug_agent` + 3 chỗ chồng chéo đã xử lý
+
+**Mới — `.claude/commands/` (9 lệnh).** `/preflight` `/phase1` `/phase2` `/rerun` `/partial-rerun`
+`/explore` `/ui-debug` `/gates` `/publish`. Mỗi command là **con trỏ mỏng**: đọc workflow nào · chạy npm
+script nào · dừng ở gate nào. Không chép policy (đã có `gate:policy` giữ `RULE_GLOBAL.md` là canonical).
+Bỏ `/proof` so với đề bài vì nó chỉ là một npm script lẻ (`mutation:check`) — vi phạm chính nguyên tắc
+"không tạo command cho từng script"; `/gates` trỏ `self-review` là bó gate THẬT thay vì dựng bó mới.
+
+**`.gitignore`: `.claude/` → `.claude/*` + `!.claude/commands/`.** Vấn đề: `.claude/` ignore toàn bộ nên
+command chỉ tồn tại trên máy người tạo, và test hạ tầng sẽ **đỏ trên CI** vì thư mục không có. Phải dùng
+dạng `.claude/*`: git **không đi vào** thư mục đã ignore nên negation cho đường dẫn con vô tác dụng. Đối
+chiếu `git add --dry-run`: đúng 9 file `.md`, `settings*.json` vẫn ignore, `secret:scan` sạch.
+
+**Mới — skill `ui_debug_agent` (phase2, Never-auto).** Kit đã có chuẩn locator, máy sửa (healing) và máy
+kiểm (`lint:locator`) nhưng **thiếu bước khám phá lúc đầu**, nên agent đoán locator từ tên tính năng — nguồn
+`script_error` lớn nhất ở lượt chạy đầu. Đo lại tiền đề: `getByTestId` **0 lần dùng thật** (2 hit duy nhất
+nằm trong comment giải thích chính chuyện này), `tests/**` không có `data-testid` nào ⇒ tầng testId của
+`locator_strategy.md` là **tầng chết**. Skill **không** viết bảng ưu tiên riêng (trỏ về rule canonical), chỉ
+nhắc 4 nguyên tắc kèm dạng `safe_target` bắt buộc, 7 playbook tình huống khó, anti-patterns, 3 output.
+
+**Sửa một điểm của đề bài:** đề mô tả chuỗi lệnh MCP browser. Đo: repo **không khai `mcpServers`** nào ⇒
+viết skill gọi tool không tồn tại là "hứa thứ máy không làm được". Giữ nguyên 6 bước và luật (snapshot để
+PHÂN TÍCH, screenshot chỉ làm EVIDENCE; resize ngay sau navigate; chờ theo tín hiệu) nhưng cột thực thi là
+Playwright chỉ-đọc, kèm **bảng ánh xạ** sang MCP để cài sau là dùng được ngay.
+
+**Máy giữ command khỏi mục rữa** (`slash-commands.spec.ts`, 14 test). `gate:policy` chỉ đo hai chặng
+(`workflows` + prompt entry); command là **điểm vào thứ ba** nó chưa biết tới. Kiểm: mọi `npm run X` được
+nhắc phải có thật · mọi đường dẫn phải tồn tại · mỗi command phải có `description` một câu và mục "Dừng
+khi" · không chép policy và không quá 60 dòng · 4 luồng chạm UAT phải nhắc xác nhận · publish phải dry-run
+trước `:apply` · **mọi nhánh trong `branch_parity.json` phải có command cùng tên**. Luật cuối cố ý **không**
+nhét command vào `branch_parity.json`: file đó khai "MÁY nào chạy ở nhánh nào" kèm waiver, còn command là
+ĐIỂM VÀO — trộn hai khái niệm thì phải viết waiver cho thứ không waive được.
+
+**Mới — `.agent/config/locators.schema.json` + `locator-knowledge.spec.ts`.** Skill mới yêu cầu ghi vào
+`knowledge/locators/` nhưng store đang có **đúng một file**; không chốt schema thì mỗi lượt ghi một kiểu.
+Schema **không thiết kế mới** — chép hình dạng file đã dùng được. Gate: field bắt buộc không rỗng · không
+field lạ · tên file `<màn>__<quirk>.json` · ngưỡng độ dài chống "điền cho có" (`why` cao nhất vì không có
+cơ chế thì lần sau người ta lại thử cách cũ) · `status: active` mà thiếu `confirmed_by` là **đỏ** · store
+rỗng thì **skip** (knowledge/** gitignore nên máy mới clone không có file — đỏ ở đó là đỏ oan).
+
+## 2026-09-04 — `snapshotScreen` đang MÙ ant-select + radio và không mask PII (lớp GENERIC)
+
+**Vì sao đáng chạm lớp GENERIC:** `scripts/utils/ui/screen_snapshot.js` **không** phải util nằm không —
+`scripts/qa/ui_conformance_check.js` dùng nó, nên các lượt UI-conformance đang chạy trên một instrument mù
+một phần. Ba lỗ đã đo:
+
+1. **ant-select** — OPS là ant-design, dropdown là `div` và `input.value` bên trong **rỗng** ⇒ **mọi** giá
+   trị dropdown vô hình. Đây chính là chỗ suýt làm kết luận "form không có `payment_method`".
+2. **radio/checkbox** — giá trị ở `checked`, không ở `value`; đọc `value` là ra giá trị ô **chưa chọn**.
+3. **PII** — snapshot ghi nhãn+giá trị ra JSON mà không che gì. Đã rò thật ở tầng task: **100 email + 100
+   SĐT** nằm trong một file requirements.
+
+**Chữa.** Thêm khối `controls` (3 loại ô, kèm `label`/`kind`/`disabled`). Mask **mặc định BẬT**: email theo
+MẪU, họ tên/ngày sinh/CCCD theo **NHÃN**, ô bảng theo **HEADER CỘT** (cột Email/Phone không có nhãn kề bên
+nên mask-theo-nhãn không tới được — đúng chỗ đã rò). **Cố ý không** mask theo hình dạng số chung: luật
+`\d{9,12}` từng che luôn **Deal ID** (11 chữ số) — khoá dùng để nối UI với DB. Xuất `normNumber()`: màn CORE
+hiện `"60 000 000"` còn màn Add-on hiện `"5.000.000"`, hàm so chỉ bỏ khoảng trắng thì **trượt 129/133 hàng**.
+
+**Hai lỗi do test mới bắt được** (không phải lỗi fixture): `labelFor` nhặt **chữ hiển thị của control khác**
+làm nhãn (ô "Recipient Bank Account" nhận nhãn "Trả góp"); và `labelsLoose` chưa mask nên **họ tên/email của
+khách lọt vào danh sách "nhãn"**.
+
+## 2026-08-27 → 09-04 — DB Verification Layer (§23): đọc bản ghi để KHOANH TẦNG lỗi
+
+**Vấn đề.** UI và API không đủ để nói bản ghi đã lưu đúng: response thường **echo lại request**, còn FE thì
+format lại giá trị. Bảy lớp lỗi (đổi kiểu số · lệch múi giờ · text bị cắt · xoá mềm hỏng · bảng liên quan
+không đổi · double-submit · rollback sai) đều **UI xem như đúng**.
+
+**Mới — `tests/support/setup/db/`.** Read-only tuyệt đối, 4 lớp chặn: đọc quyền từ catalog (chứ **không**
+probe-ghi — `CREATE TEMP TABLE` chứng minh sai vì Postgres cấp `TEMPORARY` cho PUBLIC) · session
+`default_transaction_read_only` · lint câu lệnh · allowlist host. So sánh theo **NGHĨA**: `money()` (cùng
+khái niệm tiền, hai kiểu lưu: `bigint` và `varchar`) · `instant()` · `text()`. Có **trạng thái thứ ba**
+`inconclusive` — "không đo được" KHÔNG thành PASS (39/39 cột thời gian là `timestamp WITHOUT time zone`,
+chưa khai `storedZone` thì so mốc là đoán).
+
+**Bản đồ cột↔nhãn khoá THEO MÀN** (`.agent/config/db.conventions.json`, 8 màn). Hai lý do, cả hai đo được:
+cùng một cột có nhãn khác nhau giữa hai màn (`original_price` = "Gross Amount" ở CORE nhưng "Gross Price" ở
+SERVICE_FEE); và **cùng một nhãn có thể là hai cột khác nhau** ("Paid Amount" ở tab Overview là tiền đã trả
+thật, ở form `/edit` là cột `deposit`). Cột **chưa neo thì KHÔNG được dùng để phán** — đoán sai cột vẫn ra
+kết luận, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường. Tra bản đồ **phải qua**
+`uiLabelOfColumn`/`uiLabelOfValue` — hai hàm **ném** khi cột/enum chưa neo hoặc khi hỏi nhãn của màn khác.
+
+**Neo được mà KHÔNG cần fixture:** `fieldmap.candidates.spec.ts` hỏi DB xem đơn nào **sẵn có** đã tự phân
+biệt — 6/8 cột treo có bản ghi thật, không phải tạo dữ liệu. Trước đó cả 8 cột bị ghi "cần fixture" chỉ vì
+kết luận dựa trên 6 đơn mở tay.
+
+**`preflight_gate` chặn ở cửa vào** (`scripts/qa/lib/db_verify_preflight.js`, 28 test). Trước đó
+`db.conventions.json` không được gate nào nhắc tới ⇒ thiếu config/creds chỉ lộ ra khi spec đã chạy, và
+thông điệp lúc đó là lỗi kỹ thuật chứ không phải "bạn thiếu input". **Chỉ kiểm khi task KHAI dùng** (manifest
+`db_persistence`, hoặc tag `[DbPersist]`) — kiểm vô điều kiện là chặn oan mọi task không đụng DB, và gate
+chặn oan thì bị tắt sau hai lần. Phần **sống** đọc quyền thật: có quyền ghi ⇒ chặn; **đọc được 0 dòng quyền
+cũng chặn** (phép đo hỏng, không phải "sạch").
+
+**Từ vựng quyền chuẩn hoá ở ADAPTER** (`types.ts`: `Privilege` + `normalizePrivilege`). `guard.ts` từng so
+bằng đúng chữ SQL; Postgres/MySQL dùng chữ đó nên "chạy tốt", nhưng Mongo gọi hành động ghi là
+`insert`/`update`/`remove`/`drop` ⇒ thêm adapter Mongo là guard **không thấy quyền ghi nào** và kết luận
+"read-only" cho một user ghi được. Kèm gate seam: `dbVerify.ts` không được chứa SQL · `guard.ts` không được
+import adapter · adapter phải chuẩn hoá ở **mọi** chỗ trả `GrantRow`.
+
+**Bốn lỗ hổng loại "vẫn xanh mà nghĩa đã sai" đã bịt:** `loadConventions()` dựng lại object theo allowlist
+nên khối `fieldMap` khai trong JSON mà code **không bao giờ thấy** (9 test đỏ vì `undefined`) — nay khối lạ
+⇒ **ném** kèm tên khối · gate §23 còn khoá theo tên khoá **cũ** không tồn tại · regex §23 bị escape ăn
+(`\bdeleted_at\b` thành `0x08`) làm luật nhận `deleted_at` **hỏng âm thầm**, và xoá ký tự lạ thì gate xanh
+lại mà **mất word-boundary** ⇒ thêm test chạy CLI thật đếm §23 · test cũ khoá `storedZone` phải **trống**
+trong khi đã đo được `UTC`.
+
+**Cột tỉ lệ tách khỏi tiền** (`rates`): `service_fee_rate` max 20 và `fixed_discount` 5/10/15 — biên độ 0..20
+không thể là VND. Để trong `money` thì `money()` vẫn "chạy" nhưng nói *"lệch 5 đồng"* cho một tỉ lệ.
+
+**Mới — `prompt_templates/phase1/dimensions/23_db_persistence.md`** (và §22 inbound callback). Tổng số chương
+dimensions: **15 → 20**.
 ## 2026-08-20 (d) — 9 Case Type có ĐỊNH NGHĨA: một nguồn, và publisher hết đường hạ ngầm
 
 **User mở rộng 6 → 9 loại** kèm định nghĩa đầy đủ từng loại (định nghĩa · tag đi kèm · "chọn khi" · **"KHÔNG chọn khi"**). Đối chiếu `GET /config`: AIO có đúng 9 — `UI(1) Integration(2) Functional(3) API(4) Performance(5) Security(6) Database(7) E2E(8) Accessibility(9)`; `Unit` là tên cũ của id 1, đã đổi thành `UI` nên **1.399 case đã publish giữ nguyên ID**, không phải migrate.

@@ -70,6 +70,29 @@
 | Jira dry check | `npm run integration:check` | Connection/config check completes. |
 | Task test wrapper | `npm run test:task -- --help` | Usage is printed without executing tests. |
 
+## Slash Commands (điểm vào)
+
+Mỗi luồng có một slash command trong `.claude/commands/`. Gõ trong Claude Code — nhanh hơn dán prompt:
+
+```text
+/preflight <TASK_KEY>       # kiểm input/config bắt buộc trước khi bắt đầu
+/phase1 <TASK_KEY>          # sinh testcase
+/phase2 <TASK_KEY>          # execute automation
+/rerun <TASK_KEY>           # chạy lại case của bug đã fix
+/partial-rerun <TASK_KEY>   # requirement đổi (review trước, apply sau)
+/explore <phạm vi>          # exploratory session có charter
+/ui-debug <màn>             # khám phá DOM tìm locator bền
+/gates <TASK_KEY>           # bó gate trước khi finalize
+/publish <TASK_KEY>         # đẩy AIO (dry-run trước)
+```
+
+Command chỉ là **con trỏ** tới workflow/prompt thật + danh sách gate; nội dung luồng vẫn ở
+`prompt_templates/` và `.agent/workflows/`. Ba điểm dừng bắt buộc mà command nào cũng nhắc:
+
+- **Ambiguity Gate** ở Phase 1 — còn mơ hồ thì hỏi trước, không đoán rồi sinh testcase.
+- **Xác nhận trước khi chạm UAT** ở Phase 2 / rerun / explore / ui-debug.
+- **Dry-run trước `:apply`** khi publish.
+
 ## Run Phase 1
 
 Use [prompt_templates/run_phase1_template.md](prompt_templates/run_phase1_template.md), fill placeholders, then ask the agent to run Phase 1 only.
@@ -105,7 +128,7 @@ npm run dim:coverage -- --enforce         # thiếu chiều khai required = CH�
 npm run domain:trace-back                 # case có oracle nghiệp vụ mà không trỏ [BR-…]/[SM-…]
 ```
 
-Bộ testcase có **hai trục**: *module* = test **ở đâu**, *chiều* = hỏi **loại câu hỏi nào** (validate · hiển thị · công thức · BE conformance · guard · bảo mật · perf · change-impact). Phủ kín module mà trống một chiều thì bộ vẫn *trông* đầy đủ. Mỗi case gắn **tag chiều** trong tiêu đề (`[Positive][Display] …`); 15 chương nội dung ở [`prompt_templates/phase1/dimensions/`](prompt_templates/phase1/dimensions/); luật đầy đủ ở [RULE_GLOBAL §Chiều coverage](RULE_GLOBAL.md).
+Bộ testcase có **hai trục**: *module* = test **ở đâu**, *chiều* = hỏi **loại câu hỏi nào** (validate · hiển thị · công thức · BE conformance · guard · bảo mật · perf · change-impact). Phủ kín module mà trống một chiều thì bộ vẫn *trông* đầy đủ. Mỗi case gắn **tag chiều** trong tiêu đề (`[Positive][Display] …`); 20 chương nội dung ở [`prompt_templates/phase1/dimensions/`](prompt_templates/phase1/dimensions/); luật đầy đủ ở [RULE_GLOBAL §Chiều coverage](RULE_GLOBAL.md).
 
 Auto Publish là step riêng trong phạm vi Phase 1. Excel là source of truth khi gen/publish. Khi chạy Phase 2, agent **mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`: kéo về canonical local `test-cases/from-aio/*.xlsx` rồi execute từ đó), `excel` là opt-out.
 
