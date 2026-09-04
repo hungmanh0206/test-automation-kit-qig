@@ -71,7 +71,9 @@ audit:
       when: manual
       allow_failure: false
   script:
-    - npm ci --prefer-offline --no-audit --no-fund
+    # KHÔNG cần `npm ci`: đo 04/09/2026 — `npm audit` chỉ đọc package-lock.json rồi hỏi registry,
+    # chạy đúng trong thư mục chỉ có package.json + package-lock.json (JSON hợp lệ, 3 moderate, 160s).
+    # Bỏ nó tiết kiệm 15s và gỡ luôn một kiểu đỏ oan: audit không còn phụ thuộc việc install thành công.
     - npm run audit:ci
 
 
