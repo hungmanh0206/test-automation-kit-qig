@@ -45,7 +45,7 @@ jobs:
 
       - name: npm audit (F7 — report advisory + CHẶN ở high/critical; đã vá 2 high, còn moderate uuid/exceljs)
         run: |
-          npm audit --omit=dev || echo "(audit: còn cảnh báo moderate — advisory; high/critical thì CHẶN ở bước dưới)"
+          # `npm audit` trần đã BỎ (04/09/2026): đo 74s, trùng dữ liệu với `audit:ci` (71s) ngay dưới.
           npm run audit:ci
 
       - name: Lint + typecheck (F7 — ENFORCED; baseline 0 error, CHẶN khi có lỗi mới)
