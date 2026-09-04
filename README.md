@@ -205,6 +205,18 @@ flowchart TD
 
 ## Common Commands
 
+### Phát hành kit (cho người MAINTAIN kit)
+
+```bash
+npm run version:check     # version hợp semver · khớp tag · CHANGELOG có mục cho version đó
+npm run package:kit       # đóng gói CHỈ lớp GENERIC ra dist/ + tự quét lại gói (bẩn ⇒ xoá gói + chặn)
+npm run release:verify    # THƯỚC ĐO CHÍNH: giải nén ra thư mục sạch (không .git) → npm ci → chạy gate
+```
+
+Tự động hoá ở [.github/workflows/release.yml](.github/workflows/release.yml): trigger bằng tag `v*` hoặc
+chạy tay với `dry_run` **mặc định true**. `release:verify` là **cổng** — không PASS thì không tạo Release.
+Dự án nhận kit đọc [docs/UPGRADE.md](docs/UPGRADE.md).
+
 ### Slash command (điểm vào — gọn nhất)
 
 ```text

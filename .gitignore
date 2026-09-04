@@ -189,6 +189,10 @@ scripts/integrations/jira/unassign_tests_backup.json
 # Cleanup manifest (P1) — theo dõi test data đã tạo per RUN_ID để reconcile orphan; dữ liệu run, KHÔNG commit.
 .cleanup/
 
+# Gói phát hành sinh ra bởi `npm run package:kit` — artifact, không commit.
+# (`*.zip` đã có, nhưng gói giờ là .tar.gz và cả thư mục nên khai rõ.)
+dist/
+
 # Claude Code local files — settings/hook là cấu hình MÁY CÁ NHÂN (có thể chứa env, đường dẫn riêng).
 # NGOẠI LỆ: .claude/commands/ ĐƯỢC COMMIT — slash command là ĐIỂM VÀO DÙNG CHUNG của cả nhóm; ignore nó thì
 # teammate clone về không có lệnh nào, và test hạ tầng kiểm command sẽ đỏ trên CI vì thư mục không tồn tại.

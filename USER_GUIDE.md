@@ -382,6 +382,7 @@ test-automation-kit_v2/
 
 | Folder/File | Dùng để làm gì |
 |---|---|
+| [docs/UPGRADE.md](docs/UPGRADE.md) | **Nâng bản kit** — đọc số version để biết có phải sửa lớp PROJECT không; ghi đè GENERIC, giữ PROJECT; sau khi nâng chạy `preflight` + `gate:policy`. |
 | `.claude/commands/` | **Slash command** — điểm vào chuẩn hoá cho 9 luồng (xem Mục 9.0). Chỉ `commands/` được commit; `settings*.json` là cấu hình máy cá nhân. |
 | `.agent/` | Workflow, skill (22), rule và config cho AI Agent. `config/db.conventions.json` giữ quy ước DB + bản đồ cột↔nhãn khoá **theo màn**; `config/locators.schema.json` là schema cho `knowledge/locators/`. |
 | `prompt_templates/` | Prompt chạy Phase 1, Phase 2 và Re-run. Bên trong `phase1/dimensions/` là **20 chương chiều coverage** (§3–§23, gồm §22 inbound callback và §23 DB persistence) — mở đúng chiều task khai `required`, không nạp cả 20 (xem mục 5, bước sinh testcase). |

@@ -1,0 +1,16 @@
+{
+  "_why": "Hai remote đều là nơi làm việc thật (GitHub + GitLab), nên một cơ chế chỉ nối MỘT bên là lệch âm thầm — người dùng bên kia tưởng mình đang được bảo vệ. File này khai TỪNG lệch kèm LÝ DO viết ra, để lệch là quyết định chứ không phải quên.",
+  "_enforced_by": "tests/fe/infra/release-pipeline.spec.ts — mọi cơ chế trong `both` phải có mặt ở CẢ hai nền; mọi mục trong `waivers` phải có `why` đủ dài và `revisit` (waiver không có đường quay lại thì nó là quên có giấy phép).",
+  "both": {
+    "_why": "Cơ chế BẮT BUỘC có ở cả hai nền. Thiếu một bên = đỏ.",
+    "static-check": [".github/workflows/static-check.yml", ".gitlab-ci.yml"]
+  },
+  "waivers": {
+    "release": {
+      "platform": "gitlab",
+      "why": "GitLab chưa nối stage `release`. Đo 04/09/2026: project chỉ có MỘT runner, đăng ký trên máy cá nhân của QA nên chỉ chạy khi máy đó bật; runner `#48` trước đó tồn tại suốt một tháng mà CHƯA TỪNG kết nối (Version/IP/Platform trống). Thêm stage release lúc này là đưa vào một cấu hình chưa từng chạy — đúng loại nợ ngầm mà kit chống. GitHub Actions đang là nền phát hành thật, và `release.yml` ở đó đã verify được gói.",
+      "revisit": "Khi hạ tầng dựng instance/group runner (không phải máy cá nhân), nối `release` sang GitLab bằng `release-cli` hoặc chỉ upload artifact, rồi XOÁ waiver này.",
+      "since": "2026-09-04"
+    }
+  }
+}

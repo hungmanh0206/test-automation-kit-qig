@@ -1,0 +1,99 @@
+# Release cho CHÍNH BỘ KIT — không phải deploy sản phẩm đang test.
+#
+# Ba việc, theo đúng thứ tự: kiểm version → đóng gói lớp GENERIC → CHỨNG MINH gói chạy được từ con số 0.
+# Bước thứ ba (`release:verify`) là cổng quyết định; nó bắt đúng loại lỗi mà các gate khác không thể thấy vì
+# chúng luôn chạy TRONG repo (có .git, có node_modules, có lớp PROJECT) còn người nhận kit thì không có gì
+# trong số đó.
+#
+# KHÔNG chạm UAT, KHÔNG cần secret của UAT/AIO/Jira. Nếu workflow này cần secret thì nó đã bị thiết kế sai:
+# nó chỉ đọc repo, đóng gói, và chạy gate offline. `GITHUB_TOKEN` mặc định là đủ để tạo Release.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Chỉ đóng gói + verify, KHÔNG tạo Release'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write          # cần để tạo Release; không xin thêm quyền nào khác
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # version:check cần lịch sử để so tag trước ↔ shared change
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - run: npm ci --prefer-offline --no-audit --no-fund
+
+      # 1) Không có version / lệch tag / CHANGELOG thiếu mục ⇒ dừng ngay, đừng đóng gói làm gì.
+      - name: Version + CHANGELOG
+        run: npm run version:check
+
+      # 2) Chất lượng và bảo mật của chính repo (không UAT, không secret).
+      - name: Gate repo
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run secret:scan
+          npm run audit:ci
+          npm run gate:policy
+          npm run json:check
+          npm run ci:scope
+
+      # 3) Đóng gói CHỈ lớp GENERIC; script tự quét lại gói và tự xoá nếu bẩn.
+      - name: Đóng gói
+        run: npm run package:kit
+
+      # 4) CỔNG QUYẾT ĐỊNH: giải nén ra thư mục sạch NGOÀI repo (không .git), npm ci, chạy gate.
+      - name: Verify bản phát hành
+        run: npm run release:verify
+
+      - name: Artifact (luôn upload — có gói để soi cả khi các bước sau bỏ qua)
+        uses: actions/upload-artifact@v4
+        with:
+          name: kit-package
+          path: dist/*.tar.gz
+          retention-days: 30
+
+      # 5) Release notes = ĐÚNG mục CHANGELOG của version này. Không tự sinh, không tự sửa CHANGELOG:
+      #    bump version và viết changelog là việc của người, làm xong rồi mới tag.
+      - name: Trích mục CHANGELOG
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          node -e '
+            const fs = require("fs");
+            const v = process.argv[1];
+            const lines = fs.readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/);
+            const start = lines.findIndex((l) => l.startsWith("## ") && l.includes("v" + v));
+            if (start < 0) { console.error("khong thay muc CHANGELOG cho v" + v); process.exit(1); }
+            let end = lines.length;
+            for (let i = start + 1; i < lines.length; i += 1) if (lines[i].startsWith("## ")) { end = i; break; }
+            fs.writeFileSync("RELEASE_NOTES.md", lines.slice(start, end).join("\n") + "\n");
+          ' "$VERSION"
+          echo "--- release notes ---"; head -5 RELEASE_NOTES.md
+
+      - name: Tạo GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.tar.gz
+          body_path: RELEASE_NOTES.md
+
+      # workflow_dispatch với dry_run=true (mặc định) dừng ở đây: đã có gói + đã verify, KHÔNG tạo Release.
+      # Đúng nếp `:apply` / `--qa-approved` của kit: mặc định an toàn, muốn ghi thật thì phải nói ra.
+      - name: Ghi rõ đây là dry-run
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+        run: 'echo "dry_run=true → đã đóng gói và verify, KHÔNG tạo Release. Muốn phát hành thì tag v<version> rồi push."'

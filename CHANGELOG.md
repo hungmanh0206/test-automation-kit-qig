@@ -7,6 +7,49 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## v2.0.0 — 2026-09-04 (c) — CD cho chính bộ kit: version · package · verify · release
+
+**Vấn đề.** Kit phát cho nhiều dự án và sửa rất thường xuyên, nhưng: không biết dự án nào đang ở bản nào
+(có bản vá quan trọng thì không có đường thông báo) · không có mốc để quay lui · và **bản phát ra chưa từng
+được chứng minh là chạy được từ con số 0**. Cái thứ ba không phải phòng xa: `ci_scope_check.js` và
+`secret_scan.js` từng crash vì gọi `git ls-files` vô điều kiện, và chỉ lộ ra khi giải nén vào thư mục sạch
+rồi `npm ci` — tức đúng trải nghiệm người nhận kit, mà không CI nào mô phỏng.
+
+**Quy ước version — semver, bump theo LẦN PHÁT HÀNH** (không theo commit; kit đang ~10 commit/ngày nên bump
+mỗi shared change sẽ làm số version vô nghĩa): **MAJOR** = dự án BUỘC phải sửa lớp PROJECT · **MINOR** = thêm
+năng lực, nâng lên chạy được ngay · **PATCH** = sửa lỗi, không đổi hợp đồng. CHANGELOG **giữ nguyên** định
+dạng cũ (ngày + nhóm chủ đề + "vấn đề → cách chữa"), chỉ thêm version vào tiêu đề. Bản đóng gói đầu tiên là
+`2.0.0` vì repo đang ở dòng v2.
+
+**Mới — 3 máy, đi cùng nhau:**
+
+- `version:check` — version hợp semver · khớp tag khi chạy từ tag · **CHANGELOG phải có mục cho version đó**.
+  Cảnh báo (không chặn) khi có shared change kể từ tag trước mà CHANGELOG chưa có mục mới.
+- `package:kit` — đóng gói **chỉ lớp GENERIC** ra `dist/`, rồi **quét lại chính gói** bằng logic secret-scan;
+  phát hiện secret/PII ⇒ **xoá gói + chặn**. Gói phát ra ngoài là đường lộ dữ liệu dễ bị bỏ qua nhất.
+- `release:verify` — **thước đo chính**: giải nén vào thư mục sạch NGOÀI repo (không `.git`), `npm ci`, rồi
+  chạy gate. Bắt đúng loại lỗi mà 15 vòng rà soát trước phải phát hiện bằng tay.
+
+**Hai chỗ sửa so với đề bài, vì đo ra là sai:**
+
+1. **`db.conventions.json` KHÔNG được đóng gói.** Đề bài xếp nó vào GENERIC, nhưng đo: `entity =
+   ic_payment_orders`, `allowedHosts = db-uat.sapp.edu.vn`, 8 màn với nhãn tiếng Việt của OPS — **lớp PROJECT
+   đặc**. Phát nó cho dự án khác là đưa họ **bản đồ cột sai** mà vẫn "có số từ DB", đúng hiểm hoạ file đó tự
+   cảnh báo. Nay đóng gói `db.conventions.example.json` (giữ khung + hướng dẫn đo), và `kit-layers.md` xếp bản
+   thật vào lớp PROJECT.
+2. **`preflight` PHẢI chặn ở gói sạch, không phải chỉ cảnh báo.** Đề bài yêu cầu ngược lại, nhưng gói không có
+   `project_context.md` (lớp PROJECT) và preflight khai file đó là `require` ⇒ nó chặn, và **chặn là đúng**:
+   kit vừa giải nén thì phải dừng cho tới khi dự án khai context của họ. Nên `release:verify` **đảo kỳ vọng**:
+   khẳng định preflight chặn ĐÚNG LÝ DO. Kèm cải thiện thông điệp: thiếu input bắt buộc mà có bản `.example`
+   thì gate in luôn lệnh `cp` để tạo — trước đó nó chỉ nói "THIẾU input bắt buộc: X" và người nhận phải đi
+   đọc code gate.
+
+**Không thêm dependency:** đóng gói bằng `tar` (có sẵn cả Windows lẫn Linux) thay vì `.zip`. `zip` không có
+trong git-bash ở máy Windows, còn `archiver` trong cây là 4.0.2 nên khai `^7` sẽ làm `npm ci` vỡ vì lock lệch.
+
+**Chưa nối GitLab release stage** — project vừa mới có runner (một runner trên máy QA, chỉ chạy khi máy bật),
+nên thêm stage release lúc này là đưa vào một cấu hình chưa từng chạy. Waiver ghi ở `.agent/config/ci_parity.json`.
+
 ## 2026-09-04 (b) — Tài liệu bắt kịp cấu trúc: slash command, tầng DB, và 5 con số đã cũ
 
 **Vấn đề.** README/USER_GUIDE/QUICKSTART không nhắc `.claude/commands/`, `tests/support/setup/db/`,

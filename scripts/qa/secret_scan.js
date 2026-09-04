@@ -14,14 +14,8 @@ const fs = require('fs');
 const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 
-const PATTERNS = [
-  { name: 'private-key', re: /-----BEGIN (?:RSA |EC |OPENSSH |PGP |DSA )?PRIVATE KEY-----/ },
-  { name: 'aws-access-key', re: /\bAKIA[0-9A-Z]{16}\b/ },
-  { name: 'github-token', re: /\bgh[pousr]_[0-9A-Za-z]{36,}\b/ },
-  { name: 'slack-token', re: /\bxox[baprs]-[0-9A-Za-z-]{10,}\b/ },
-  { name: 'google-service-account-key', re: /"private_key"\s*:\s*"-----BEGIN/ },
-  { name: 'generic-secret-assign', re: /(?:password|passwd|secret|api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*['"][^'"\s]{12,}['"]/i },
-];
+// Luật secret khai ở `lib/secret_patterns.js` — MỘT NGUỒN, dùng chung với `package_kit.js`.
+const { PATTERNS, CRED_FILE, CRED_CONTENT } = require(require('path').resolve(__dirname, 'lib', 'secret_patterns'));
 const SKIP = /(\.example($|\.)|example\.env|\.md$|\.png$|\.jpg$|\.jpeg$|\.webp$|\.gif$|\.pdf$|\.zip$|\.xlsx$|\.ico$|package-lock\.json$)/i;
 const PLACEHOLDER = /your[-_]?|<[^>]+>|xxx+|placeholder|example|changeme|process\.env|\$\{?[A-Z_]/i;
 const BINARY = /\x00/;
@@ -91,8 +85,6 @@ for (const rel of trackedFiles()) {
  * `knowledge/system/sap-sync__dealid-key.json` (một record nghiệp vụ) ⇒ báo oan ngay lần chạy đầu, mà gate
  * báo oan một lần là mất uy tín vĩnh viễn. Nội dung phải có dấu hiệu credential thật.
  */
-const CRED_FILE = /^(service_account.*\.json|.*oauth-credentials.*\.json|token\.json.*|credentials\.json|.*-key\.json)$/i;
-const CRED_CONTENT = /"private_key"\s*:|BEGIN (RSA |EC )?PRIVATE KEY|"client_secret"\s*:|"refresh_token"\s*:/;
 const credOnDisk = [];
 (function walkCred(dir, rel) {
   let entries;

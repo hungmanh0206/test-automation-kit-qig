@@ -335,10 +335,24 @@ test.describe('@infra secret:scan — credential không được nằm trong câ
   });
 
   test('luật kiểm TÊN + NỘI DUNG, không chỉ tên (chống báo oan)', () => {
+    /*
+     * Khoá vào TÍNH CHẤT, không vào VỊ TRÍ. Bản trước assert `CRED_FILE =` phải nằm trong `secret_scan.js`;
+     * khi luật được tách sang `lib/secret_patterns.js` để `package_kit.js` dùng chung (một nguồn), test đỏ
+     * dù tính chất nó bảo vệ vẫn nguyên. Nay: luật phải TỒN TẠI ở module chung, VÀ `secret_scan` phải dùng
+     * module đó — như vậy tách file bao nhiêu lần cũng không làm test đỏ oan, mà chép luật ra chỗ thứ hai
+     * thì vẫn bị bắt.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const P = require(path.join(REPO, 'scripts/qa/lib/secret_patterns.js'));
+    expect(P.CRED_FILE, 'thiếu luật khớp TÊN file credential').toBeInstanceOf(RegExp);
+    expect(P.CRED_CONTENT, 'chỉ khớp tên thì `sap-sync__dealid-key.json` (knowledge record) bị bắt oan').toBeInstanceOf(RegExp);
+    expect(P.CRED_CONTENT.source).toMatch(/private_key|PRIVATE KEY/);
+    expect(P.CRED_FILE.test('service_account.json'), 'phải bắt tên kiểu service account').toBe(true);
+    expect(P.CRED_CONTENT.test('{"note":"khong co gi"}'), 'nội dung vô hại không được khớp').toBe(false);
+
     const src = fs.readFileSync(SCAN, 'utf8');
-    expect(src).toMatch(/CRED_FILE\s*=/);
-    expect(src, 'chỉ khớp tên thì `sap-sync__dealid-key.json` (knowledge record) bị bắt oan').toMatch(/CRED_CONTENT\s*=/);
-    expect(src).toMatch(/private_key|PRIVATE KEY/);
+    expect(src, 'secret_scan phải DÙNG module chung, không khai lại luật').toMatch(/secret_patterns/);
+    expect(src, 'khai lại CRED_FILE ở đây là tạo bản thứ hai sẽ trôi khỏi bản gốc').not.toMatch(/^const CRED_FILE\s*=/m);
   });
 
   test('không phụ thuộc việc file có được track hay không (đó là lỗ mà .gitignore không bịt)', () => {

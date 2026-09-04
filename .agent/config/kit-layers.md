@@ -30,6 +30,8 @@ playwright.config.js · package.json · eslint/tsconfig · CI (.github/**, .gitl
 
 ```
 .agent/config/project_context.md      khai Sites + env key của dự án (bản generic: *.example.md)
+.agent/config/db.conventions.json      quy ước DB + bản đồ cột↔nhãn ĐO TỪ DB của dự án (bản generic: *.example.json).
+                                      KHÔNG đóng gói: bản đồ cột của dự án A dùng cho dự án B là oracle SAI mà vẫn "có số từ DB".
 .env · .env.local · profiles/**       giá trị động/creds
 outputs/**                            artifact theo task (gitignored)
 knowledge/{domain,bugs,root_causes,historical_execution,locators,metrics}/**   learning data của dự án

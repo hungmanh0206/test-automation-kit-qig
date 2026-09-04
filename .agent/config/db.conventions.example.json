@@ -1,0 +1,55 @@
+{
+  "_why": "BẢN MẪU (được đóng gói cùng kit). Bản THẬT `db.conventions.json` là LỚP PROJECT — nó chứa schema, host và bản đồ cột↔nhãn ĐO TỪ DB của một dự án cụ thể, KHÔNG được phát cho dự án khác: đưa bản đồ cột của dự án A cho dự án B là đưa họ một oracle sai mà vẫn \"có số từ DB\", đúng cách tạo bug ma thuyết phục nhất. Copy file này thành `db.conventions.json` rồi ĐO LẠI trên DB của bạn.",
+  "_how_to_fill": "1) softDelete: đo `information_schema.columns` xem cột xoá mềm có ở bảng nào — bảng KHÔNG có thì khai `mode: none` để helper TỪ CHỐI phán. 2) timestamps.storedZone: ĐO, đừng đoán (xem `_why` của bản thật để biết cách đo read-only). 3) money/rates: tách cột tiền khỏi cột tỉ lệ theo BIÊN ĐỘ giá trị. 4) fieldMap: neo theo MÀN bằng fixture phân biệt — xem `fieldMap._how_to_reanchor` và `tests/support/setup/db/fieldmap.candidates.spec.ts`.",
+  "idColumn": "id",
+  "softDelete": {
+    "_why": "ĐO trước khi khai. Mặc định + override theo bảng.",
+    "default": {
+      "mode": "timestamp",
+      "column": "deleted_at"
+    },
+    "byEntity": {}
+  },
+  "timestamps": {
+    "_why": "storedZone BỎ TRỐNG cho tới khi ĐO được — chưa khai thì `instant()` trả `inconclusive`, đó là câu trả lời đúng.",
+    "createdAt": "created_at",
+    "updatedAt": "updated_at"
+  },
+  "audit": {
+    "_why": "Không có bảng audit thì khai `supported: false` — hứa kiểm audit trong khi bảng không có cột audit là hứa thứ máy không làm được.",
+    "supported": false
+  },
+  "money": {
+    "_why": "Cột TIỀN. Cùng khái niệm tiền có thể lưu hai kiểu (bigint và varchar) ⇒ lớp so sánh phải type-aware.",
+    "entities": {}
+  },
+  "rates": {
+    "_why": "Cột TỈ LỆ/PHẦN TRĂM — TÁCH khỏi money. Gọi money() lên tỉ lệ thì thông điệp thành \"lệch 5 đồng\" cho một phần trăm.",
+    "entities": {},
+    "unitUnknown": []
+  },
+  "relations": {
+    "_why": "Bảng phải đổi theo khi sửa bản ghi chính — nguồn cho expectCount quan hệ cha–con."
+  },
+  "safety": {
+    "requireReadonlyUser": true,
+    "allowedHosts": [
+      "<host-DB-UAT-cua-du-an>"
+    ],
+    "denyHostPatterns": [
+      "prod",
+      "production",
+      "live"
+    ],
+    "statementTimeoutMs": 5000,
+    "maxRows": 500
+  },
+  "fieldMap": {
+    "_why": "BẢN ĐỒ cột DB ↔ nhãn UI, KHOÁ THEO MÀN. Cùng một cột có nhãn khác nhau giữa hai màn, VÀ cùng một nhãn có thể là hai cột khác nhau.",
+    "entity": "<bang-chinh>",
+    "byScreen": {},
+    "valueMaps": {},
+    "unanchored": {},
+    "notDisplayed": {}
+  }
+}

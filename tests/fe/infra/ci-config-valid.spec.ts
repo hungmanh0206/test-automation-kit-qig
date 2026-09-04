@@ -128,6 +128,29 @@ test.describe('@infra cấu hình CI — hỏng là KHÔNG phép kiểm nào ch�
     expect(bad, `plain scalar chứa dấu hai chấm + khoảng trắng ⇒ YAML hiểu là mapping ⇒ pipeline KHÔNG TẠO ĐƯỢC:\n  - ${bad.join('\n  - ')}`).toEqual([]);
   });
 
+  test('GIÁ TRỊ CỦA MAPPING cũng phải trích dẫn nếu chứa dấu hai chấm + khoảng trắng', () => {
+    /*
+     * LỖ HỔNG CỦA CHÍNH GATE NÀY, phát hiện 04/09 ngay khi tôi viết `release.yml`: luật ở test trên chỉ soi
+     * item dạng "- <lệnh>". Nhưng `run: echo "… Muốn phát hành: tag v<version>"` là **giá trị của mapping**,
+     * và YAML vỡ y như vậy. Parser thật (PyYAML) báo lỗi ở đúng dòng đó trong khi gate của tôi im lặng.
+     *
+     * Nói thẳng bài học: gate viết theo MỘT hình dạng đã gặp thì chỉ bắt được hình dạng đó. Ở đây hình dạng
+     * thứ hai xuất hiện chỉ vài phút sau hình dạng thứ nhất.
+     */
+    const bad: string[] = [];
+    for (const f of ciFiles()) {
+      fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((l, i) => {
+        const m = l.match(/^\s*([A-Za-z_][\w.-]*): (.+)$/);
+        if (!m) return;
+        const v = m[2].trim();
+        if (/^['"|>&*[{]/.test(v)) return;              // đã trích dẫn / block scalar / anchor / flow
+        const beforeComment = v.split(' #')[0];
+        if (/: /.test(beforeComment)) bad.push(`${rel(f)}:${i + 1} — ${m[1]}: ${v.slice(0, 70)}`);
+      });
+    }
+    expect(bad, `giá trị mapping chứa dấu hai chấm + khoảng trắng mà không trích dẫn:\n  - ${bad.join('\n  - ')}`).toEqual([]);
+  });
+
   test('mọi job phải khai stage, và stage đó phải có trong stages', () => {
     /*
      * Kiểm CẤU TRÚC, không chỉ cú pháp: file parse được mà job trỏ vào stage không tồn tại thì GitLab vẫn

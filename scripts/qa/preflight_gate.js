@@ -74,8 +74,16 @@ function runPreflight({ mode = 'generic', task = '', extraRequire = [], allowMis
   // 1) require exist
   for (const p of [...(cfg.require || []), ...extraRequire]) {
     if (!fs.existsSync(abs(p))) {
-      if (allow.has(p)) warnings.push(`(allow-missing) không thấy: ${p}`);
-      else problems.push(`THIẾU input bắt buộc: ${p}`);
+      if (allow.has(p)) { warnings.push(`(allow-missing) không thấy: ${p}`); continue; }
+      /*
+       * Nếu có bản `.example` bên cạnh thì NÓI CÁCH TẠO. Kit vừa giải nén từ ZIP luôn thiếu đúng những file
+       * này (chúng là lớp PROJECT, không được đóng gói), và một dòng "THIẾU input bắt buộc: X" trơ không cho
+       * người nhận biết bước tiếp theo — họ sẽ đi đọc code gate thay vì tạo file.
+       */
+      const ex = [p.replace(/(\.[^.]+)$/, '.example$1'), `${p}.example`].find((c) => fs.existsSync(abs(c)));
+      problems.push(ex
+        ? `THIẾU input bắt buộc: ${p} — tạo từ bản mẫu: cp ${ex} ${p} rồi điền theo dự án của bạn`
+        : `THIẾU input bắt buộc: ${p}`);
     }
   }
   // 2) parse JSON (tồn tại mà malformed = CHẶN)

@@ -1,5 +1,6 @@
 {
   "name": "test-automation-kit",
+  "version": "2.0.0",
   "private": true,
   "engines": {
     "node": ">=20"
@@ -102,7 +103,10 @@
     "aio:deprecate-stale:apply": "node scripts/integrations/aio/deprecate_stale_aio.js --apply",
     "self-review:enforce": "node scripts/qa/self_review.js --enforce",
     "bugs:checklist": "node scripts/qa/bugs_checklist.js",
-    "aio:verify-fields": "node scripts/integrations/aio/verify_fields_aio.js"
+    "aio:verify-fields": "node scripts/integrations/aio/verify_fields_aio.js",
+    "version:check": "node scripts/qa/version_check.js",
+    "package:kit": "node scripts/qa/package_kit.js",
+    "release:verify": "node scripts/qa/verify_release.js"
   },
   "dependencies": {
     "axe-core": "^4.12.1",

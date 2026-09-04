@@ -1,0 +1,45 @@
+'use strict';
+
+/*
+ * secret_patterns — MỘT NGUỒN cho luật nhận diện secret.
+ *
+ * Vì sao tách ra: `secret_scan.js` (quét repo) và `package_kit.js` (quét chính gói phát hành) hỏi cùng một
+ * câu hỏi. Chép luật sang chỗ thứ hai là tạo hai bản sẽ trôi khỏi nhau — và bản trôi chậm hơn sẽ là bản
+ * canh cái cửa nguy hiểm hơn (gói phát ra ngoài không thu hồi được).
+ *
+ * Ghi chú kèm luật (đừng bỏ khi sửa): `CRED_FILE` khớp TÊN rồi phải XÁC NHẬN `CRED_CONTENT`. Chỉ tên là
+ * không đủ — `.*-key.json` bắt luôn `knowledge/system/sap-sync__dealid-key.json` (một record nghiệp vụ) và
+ * báo oan ngay lần chạy đầu. Gate báo oan một lần là mất uy tín vĩnh viễn.
+ */
+
+/** Secret thật — mỗi mẫu phải là thứ KHÔNG thể xuất hiện hợp lệ trong source. */
+const PATTERNS = [
+  { name: 'private-key', re: /-----BEGIN (?:RSA |EC |OPENSSH |PGP |DSA )?PRIVATE KEY-----/ },
+  { name: 'aws-access-key', re: /\bAKIA[0-9A-Z]{16}\b/ },
+  { name: 'github-token', re: /\bgh[pousr]_[0-9A-Za-z]{36,}\b/ },
+  { name: 'gitlab-token', re: /\b(?:glpat|glrt)-[0-9A-Za-z_-]{20,}\b/ },
+  { name: 'slack-token', re: /\bxox[baprs]-[0-9A-Za-z-]{10,}\b/ },
+  { name: 'google-service-account-key', re: /"private_key"\s*:\s*"-----BEGIN/ },
+  { name: 'generic-secret-assign', re: /(?:password|passwd|secret|api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*['"][^'"\s]{12,}['"]/i },
+];
+
+const CRED_FILE = /^(service_account.*\.json|.*oauth-credentials.*\.json|token\.json.*|credentials\.json|.*-key\.json)$/i;
+const CRED_CONTENT = /"private_key"\s*:|BEGIN (RSA |EC )?PRIVATE KEY|"client_secret"\s*:|"refresh_token"\s*:/;
+
+/*
+ * DẤU HIỆU LỚP PROJECT — chỉ dùng khi quét GÓI PHÁT HÀNH, không dùng khi quét repo (repo ĐƯƠNG NHIÊN có
+ * những thứ này). Đây không phải secret; nó là **oracle của dự án khác**: phát bản đồ cột/host của dự án A
+ * cho dự án B là đưa họ kết luận sai mà vẫn "có số từ DB".
+ *
+ * CỐ Ý KHÔNG dùng regex email/SĐT khi quét source: source hợp lệ đầy email mẫu (`your-email@company.com`),
+ * email tác giả trong `package-lock.json`, URL SSH `git@host`, và chuỗi mẫu trong `sanitize.js`. Bản đầu của
+ * `package_kit` dùng regex email và báo oan đúng 4 chỗ đó — PII của khách nằm ở `outputs/**`, `knowledge/**`,
+ * `profiles/**`, mà những đường đó bị loại theo CẤU TRÚC rồi.
+ */
+const PROJECT_MARKERS = [
+  { name: 'host DB của dự án', re: /\bdb-uat\.[a-z0-9.-]+\b/i },
+  { name: 'bảng DB của dự án', re: /\bic_payment_[a-z_]+\b/ },
+  { name: 'base URL nội bộ của dự án', re: /https?:\/\/(?:uat-)?ops[a-z0-9.-]*\.[a-z]{2,}/i },
+];
+
+module.exports = { PATTERNS, CRED_FILE, CRED_CONTENT, PROJECT_MARKERS };
