@@ -180,4 +180,40 @@ test.describe('@infra cấu hình CI — hỏng là KHÔNG phép kiểm nào ch�
       expect(stages, `job "${job}" khai stage "${st}" không có trong stages [${stages.join(', ')}]`).toContain(st);
     }
   });
+  test('job gọi hệ thống ngoài phải được RÀO bằng biến creds — không để nút luôn-đỏ', () => {
+    /*
+     * ĐO 04/09/2026: job "integration-check" (when: manual, không rào) đỏ exit 1 sau 32s trên CI. Nó KHÔNG
+     * thể xanh: creds đọc từ scripts/integrations/jira/.env — file untracked, container CI clone về không có.
+     * Nghĩa là một nút bấm-là-đỏ, mãi mãi. Đó là cách nhanh nhất dạy người ta bỏ qua CI: gate hay báo oan
+     * thì bị tắt. Sửa đúng là job KHÔNG TỒN TẠI khi thiếu creds (rules + if trên biến token), chứ không phải
+     * lấy allow_failure biến đỏ thành vàng.
+     *
+     * Luật: job nào chạy script :live (hoặc --live) thì phải có khối rules nhắc một biến token/creds.
+     */
+    const f = path.join(REPO, '.gitlab-ci.yml');
+    if (!fs.existsSync(f)) return;
+    const lines = fs.readFileSync(f, 'utf8').split(/\r?\n/);
+
+    /** Cắt file thành khối job: từ dòng "ten-job:" ở cột 0 tới dòng cột-0 kế tiếp. */
+    const blocks: Array<{ name: string; text: string }> = [];
+    let name = '';
+    let buf: string[] = [];
+    const flush = () => { if (name) blocks.push({ name, text: buf.join('\n') }); };
+    for (const l of lines) {
+      const m = l.match(/^([a-z][a-z0-9_-]*):\s*$/);
+      if (m) { flush(); name = ['stages', 'variables', 'default', 'workflow'].includes(m[1]) ? '' : m[1]; buf = []; continue; }
+      if (name) buf.push(l);
+    }
+    flush();
+    expect(blocks.length, 'không cắt được khối job nào').toBeGreaterThan(0);
+
+    const CREDS = /\$[A-Z_]*(TOKEN|API_KEY|SECRET|PASSWORD|PAT)\b/;
+    const live = blocks.filter((b) => /:live\b|--live\b/.test(b.text));
+    for (const b of live) {
+      expect(b.text.includes('rules:'),
+        `job "${b.name}" gọi hệ thống ngoài (:live) nhưng KHÔNG có khối rules — trên CI nó đỏ mãi vì thiếu creds`).toBe(true);
+      expect(CREDS.test(b.text),
+        `job "${b.name}" gọi :live mà rules không rào theo biến creds (vd if: '$JIRA_API_TOKEN') — thiếu biến thì job vẫn hiện và vẫn đỏ`).toBe(true);
+    }
+  });
 });

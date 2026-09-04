@@ -45,7 +45,16 @@ static-check:
 integration-check:
   stage: integration
   image: node:20
-  when: manual
+  # Job gọi Jira/AIO/Confluence/Figma THẬT (chỉ GET, không ghi). Creds đọc từ
+  # scripts/integrations/jira/.env — file KHÔNG track, nên container CI KHÔNG có nó.
+  # ⇒ Không khai biến CI thì job đỏ CHẮC CHẮN ("thiếu cấu hình bắt buộc", exit 1 sau ~30s).
+  # Một nút luôn-đỏ dạy người ta bỏ qua CI, nên job chỉ HIỆN khi thật sự có creds.
+  # Muốn bật: GitLab > Settings > CI/CD > Variables (masked) — JIRA_BASE_URL, JIRA_EMAIL,
+  # JIRA_API_TOKEN, JIRA_PROJECT_KEY, AIO_API_TOKEN, CONFLUENCE_URL, CONFLUENCE_API_TOKEN, FIGMA_API_KEY.
+  rules:
+    - if: '$JIRA_API_TOKEN && $AIO_API_TOKEN'
+      when: manual
+      allow_failure: true          # THƯỚC ĐO kết nối, không phải cổng chặn merge
   script:
     - npm ci --prefer-offline --no-audit --no-fund
     - npm run integration:check:live
