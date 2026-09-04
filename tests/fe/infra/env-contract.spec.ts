@@ -102,23 +102,15 @@ const DOC_ONLY: Record<string, string> = {
 };
 
 /*
- * CHẾT THẬT, đang chờ chủ repo quyết xoá. Enumerate ra đây để luật ① vẫn bắt được khoá chết MỚI, đồng thời
- * món nợ này nằm ở MỘT chỗ nhìn thấy được thay vì tan trong file 85 dòng.
+ * CHẾT THẬT, chờ chủ repo quyết xoá — **hiện RỖNG**.
  *
- * Đo 04/09/2026 (chỉ quét .js/.ts + CI, có tính tên ghép động):
+ * Ngày 04/09/2026 danh sách này có 10 khoá; chủ repo quyết xoá hết (cùng `RELEASE_VERSION` và
+ * `JIRA_TESTCASE_ISSUE_TYPE` ở bản mẫu lồng của Jira), nên `.env.example` từ 85 → 75 khoá.
+ *
+ * Giữ lại cấu trúc RỖNG có chủ ý: lần sau phát hiện khoá chết thì có chỗ khai kèm lý do thay vì im lặng bỏ
+ * qua — nhưng test ③ chặn nó ở 0, nên muốn khai phải đồng thời quyết xoá. Nợ không có chỗ trú.
  */
-const DEAD_PENDING_DECISION: Record<string, string> = {
-  OPS_USERNAME_LOW: 'bộ creds theo VAI TRÒ cho test phân quyền — không code nào đọc; task.env.example dùng OPS_RESTRICTED_USER/PASS',
-  OPS_PASSWORD_LOW: 'cặp với OPS_USERNAME_LOW — bộ creds theo vai trò, không code nào đọc',
-  OPS_USERNAME_HIGH: 'bộ creds vai trò quyền cao cho test phân quyền — không code nào đọc',
-  OPS_PASSWORD_HIGH: 'cặp với OPS_USERNAME_HIGH — không code nào đọc',
-  PUSH_EXECUTION: 'cờ cũ của luồng đẩy kết quả; nay dùng `aio:push-exec` (dry-run) → `:apply`',
-  JIRA_TESTCASE_PARENT_MODE: 'thuộc đường PUBLISH TESTCASE LÊN JIRA — đã bỏ hẳn 20/08/2026, AIO là công cụ duy nhất',
-  JIRA_TESTCASE_DRY_RUN: 'cùng đường publish testcase lên Jira — đã bỏ hẳn 20/08/2026, AIO là công cụ duy nhất',
-  JIRA_TESTCASE_DEDUP: 'cùng đường publish testcase lên Jira — đã bỏ hẳn 20/08/2026, AIO là công cụ duy nhất',
-  JIRA_TESTCASE_LABELS: 'cùng đường publish testcase lên Jira — đã bỏ hẳn 20/08/2026, AIO là công cụ duy nhất',
-  JIRA_TESTCASE_EXTRA_FIELDS: 'cùng đường publish testcase lên Jira — đã bỏ hẳn 20/08/2026, AIO là công cụ duy nhất',
-};
+const DEAD_PENDING_DECISION: Record<string, string> = {};
 
 test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC ĐÓNG GÓI, không được dạy sai', () => {
   test('bản mẫu tồn tại và có khoá', () => {
@@ -144,11 +136,11 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
 
   test('③ danh sách chờ-quyết KHÔNG được phình: nó là nợ, không phải chỗ chứa', () => {
     /*
-     * Ngưỡng đặt sát con số đo được (10). Thêm khoá chết mới vào đây thì đỏ ngay — muốn thêm phải xoá bớt,
-     * tức phải thật sự quyết. Nếu không có ngưỡng, "chờ quyết" thành nơi mọi khoá chết đi vào rồi ở lại.
+     * Ngưỡng = 0 sau khi dọn xong ngày 04/09. Thêm khoá chết mới vào đây là đỏ ngay ⇒ buộc phải QUYẾT chứ
+     * không được hoãn. Nếu để ngưỡng > 0, "chờ quyết" thành nơi mọi khoá chết đi vào rồi ở lại vĩnh viễn.
      */
     const n = Object.keys(DEAD_PENDING_DECISION).length;
-    expect(n, `${n} khoá chờ quyết — vượt mốc 10 của ngày 04/09. Xoá khỏi .env.example rồi xoá khỏi đây.`).toBeLessThanOrEqual(10);
+    expect(n, `${n} khoá chờ quyết. Ngày 04/09 danh sách này đã được dọn về 0 — thêm khoá chết mới vào đây là dựng lại chỗ trú cho nợ. Xoá khỏi .env.example luôn.`).toBe(0);
   });
 
   test('④ khoá đã khai chờ-quyết thì PHẢI còn trong bản mẫu (dọn rồi thì xoá cả ở đây)', () => {
@@ -202,7 +194,12 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
     const { execFileSync } = require('child_process');
     let hits = '';
     try {
-      hits = execFileSync('git', ['grep', '-l', '-e', "readFileSync('.env'", '--', 'scripts', 'tests'],
+      /*
+       * Phạm vi CHỈ nơi tiêu thụ (`scripts/`, `tests/support/`) — KHÔNG gồm `tests/fe/infra/`. Lý do: chính
+       * file này chứa chuỗi mẫu để tìm, nên quét cả infra thì test tự bắt chính nó. Spec kiểm là NGƯỜI ĐO,
+       * không phải nơi tiêu thụ config.
+       */
+      hits = execFileSync('git', ['grep', '-l', '-e', "readFileSync('.env'", '--', 'scripts', 'tests/support'],
         { cwd: REPO, encoding: 'utf8', env: gateEnv() });
     } catch (e) { hits = ''; }   // git grep exit 1 = không khớp
     expect(hits.trim(), `script đọc thẳng .env chung: ${hits.trim()}`).toBe('');
