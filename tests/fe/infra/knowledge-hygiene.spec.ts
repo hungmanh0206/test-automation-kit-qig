@@ -3,6 +3,7 @@ import { spawnSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { gateEnv } from './_gate_env';
 
 /*
  * @infra — BẢO TRÌ TRI THỨC. Kit chống rất tốt loại sai do BỊA (thiếu `source` ⇒ cấm ghi; bug chưa qua gate
@@ -50,7 +51,7 @@ const store = (rules: Record<string, unknown>[]) => {
 };
 
 const run = (dir: string, args: string[] = []) => {
-  const r = spawnSync(process.execPath, [DOMAIN, '--dir', dir, ...args], { cwd: REPO, encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [DOMAIN, '--dir', dir, ...args], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
   return { code: r.status, out: `${r.stdout || ''}${r.stderr || ''}` };
 };
 

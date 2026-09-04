@@ -3,6 +3,7 @@ import { execFileSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { gateEnv } from './_gate_env';
 
 /**
  * @infra — hợp đồng của `scripts/qa/spec_extract.js` (FSD → screens.json → ui_catalog.json).
@@ -56,7 +57,7 @@ const FSD_B = `# (Untitled)
 function run(dir: string, extra: string[] = []) {
   const out = path.join(dir, 'screens.json');
   const args = [SCRIPT, '--docs', dir, '--out', out, ...extra];
-  const stdout = execFileSync(process.execPath, args, { encoding: 'utf8' });
+  const stdout = execFileSync(process.execPath, args, { encoding: 'utf8', env: gateEnv() });
   return { stdout, screens: JSON.parse(fs.readFileSync(out, 'utf8')).screens as any[] };
 }
 
@@ -113,7 +114,7 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
 | 3 | included | Included in Course Payment | O | Checkbox | User tick |  | Cờ |
 `);
     const out = path.join(d2, 's.json');
-    execFileSync(process.execPath, [SCRIPT, '--docs', d2, '--out', out], { encoding: 'utf8' });
+    execFileSync(process.execPath, [SCRIPT, '--docs', d2, '--out', out], { encoding: 'utf8', env: gateEnv() });
     const fields = (JSON.parse(fs.readFileSync(out, 'utf8')).screens as any[])[0].fields;
     for (const label of ['Service Fee', 'Calculation Method', 'Included in Course Payment']) {
       expect(fields.find((f: any) => f.label === label).control, `${label} phải KHÔNG bị loại`).toBeUndefined();

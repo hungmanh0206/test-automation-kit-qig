@@ -3,6 +3,7 @@ import { spawnSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { gateEnv } from './_gate_env';
 
 /*
  * @infra — BA GATE TỪNG KHÔNG CÓ MÁY KIỂM CHÍNH NÓ.
@@ -23,7 +24,7 @@ const GAP = path.join(REPO, 'scripts/qa/spec_gap_report.js');
 /** Chạy gate như pipeline chạy: node <script> <args>, env tự khai để không phụ thuộc máy chạy test. */
 const run = (script: string, args: string[] = [], env: Record<string, string | undefined> = {}) => {
   const r = spawnSync(process.execPath, [script, ...args], {
-    cwd: REPO, encoding: 'utf8', env: { ...process.env, ...env } as NodeJS.ProcessEnv,
+    cwd: REPO, encoding: 'utf8', env: gateEnv(env) as NodeJS.ProcessEnv,
   });
   return { code: r.status, out: `${r.stdout || ''}${r.stderr || ''}` };
 };
@@ -345,5 +346,51 @@ test.describe('@infra secret:scan — credential không được nằm trong câ
     // Vòng quét credential phải đi trên ĐĨA (readdirSync), không qua danh sách tracked.
     expect(src).toMatch(/walkCred/);
     expect(src).toMatch(/readdirSync/);
+  });
+});
+
+/*
+ * KẾT QUẢ TEST KHÔNG ĐƯỢC PHỤ THUỘC MÔI TRƯỜNG CHẠY.
+ *
+ * Đo 04/09/2026: cả 4 spec spawn gate đều dùng `env: { ...process.env, ...env }` ⇒ biến task-scoped của
+ * shell lọt vào tiến trình con. Fixture ghi `test-results/testcase-status.json`, nhưng CI đặt
+ * `RUN_ID=ci-<pipeline>-<shard>` nên gate đi tìm `test-results/runs/<RUN_ID>/…` ⇒ **xanh ở máy dev, ĐỎ ở
+ * CI**. `ci-regression` đỏ 5 lượt liên tiếp vì đúng chuyện này, trong khi máy vẫn 481/481.
+ *
+ * Luật này chặn tái phạm: spec nào spawn tiến trình con thì phải đi qua `gateEnv()`.
+ */
+test.describe('@infra test spawn gate không được kế thừa env task-scoped', () => {
+  const DIR = path.join(REPO, 'tests/fe/infra');
+
+  test('không spec nào trộn `...process.env` vào env của tiến trình con', () => {
+    const bad: string[] = [];
+    for (const f of fs.readdirSync(DIR).filter((x) => x.endsWith('.spec.ts'))) {
+      const body = fs.readFileSync(path.join(DIR, f), 'utf8');
+      if (/env:s*{s*...process.env/.test(body)) bad.push(f);
+    }
+    expect(bad, `spec trộn process.env vào env con ⇒ kết quả phụ thuộc shell: ${bad.join(', ')}. Dùng gateEnv() ở _gate_env.ts`).toEqual([]);
+  });
+
+  test('spec nào spawn tiến trình con thì phải import gateEnv', () => {
+    const miss: string[] = [];
+    for (const f of fs.readdirSync(DIR).filter((x) => x.endsWith('.spec.ts'))) {
+      const body = fs.readFileSync(path.join(DIR, f), 'utf8');
+      if (!/execFileSync|spawnSync/.test(body)) continue;
+      if (!body.includes("from './_gate_env'")) miss.push(f);
+    }
+    expect(miss, `spec spawn tiến trình con mà không dùng gateEnv: ${miss.join(', ')}`).toEqual([]);
+  });
+
+  test('gateEnv GỠ đúng các biến task-scoped, và `extra` vẫn thắng', async () => {
+    const { gateEnv, TASK_SCOPED_ENV } = await import('./_gate_env');
+    const saved = process.env.RUN_ID;
+    process.env.RUN_ID = 'ci-999';
+    try {
+      expect(gateEnv().RUN_ID, 'RUN_ID của shell phải bị gỡ').toBeUndefined();
+      expect(gateEnv({ RUN_ID: 'r1' }).RUN_ID, 'khai tường minh thì vẫn thắng').toBe('r1');
+      expect(gateEnv().PATH, 'PATH phải giữ, nếu không node con không chạy được').toBeTruthy();
+      for (const k of TASK_SCOPED_ENV) expect(TASK_SCOPED_ENV).toContain(k);
+      expect([...TASK_SCOPED_ENV]).toContain('PROJECT_OUTPUT_DIR');
+    } finally { if (saved === undefined) delete process.env.RUN_ID; else process.env.RUN_ID = saved; }
   });
 });

@@ -3,6 +3,7 @@ import { spawnSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { gateEnv } from './_gate_env';
 
 /*
  * @infra — MÁY GÁC PHẠM VI CI.
@@ -42,7 +43,7 @@ const sandbox = (files: Record<string, string>, opts: { git?: boolean } = {}) =>
   fs.copyFileSync(GATE, path.join(root, 'scripts', 'qa', 'ci_scope_check.js'));
   fs.copyFileSync(path.join(REPO, 'scripts/utils/tracked_files.js'), path.join(root, 'scripts', 'utils', 'tracked_files.js'));
   if (opts.git === false) return root;      // mô phỏng bản giải nén ZIP: KHÔNG có .git
-  const git = (...a: string[]) => spawnSync('git', a, { cwd: root, encoding: 'utf8' });
+  const git = (...a: string[]) => spawnSync('git', a, { cwd: root, encoding: 'utf8', env: gateEnv() });
   git('init', '-q');
   git('add', '-A');
   git('-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'x');
@@ -50,7 +51,7 @@ const sandbox = (files: Record<string, string>, opts: { git?: boolean } = {}) =>
 };
 
 const run = (root: string) => {
-  const r = spawnSync(process.execPath, [path.join(root, 'scripts', 'qa', 'ci_scope_check.js')], { cwd: root, encoding: 'utf8' });
+  const r = spawnSync(process.execPath, [path.join(root, 'scripts', 'qa', 'ci_scope_check.js')], { cwd: root, encoding: 'utf8', env: gateEnv() });
   return { code: r.status, out: `${r.stdout || ''}${r.stderr || ''}` };
 };
 
@@ -356,7 +357,7 @@ test.describe('@infra không có .git — gate phải chạy được, không cr
 
   test('--print-nightly vẫn in được phạm vi (CI lấy scope qua đây)', () => {
     const root = zipLike();
-    const r = spawnSync(process.execPath, [path.join(root, 'scripts', 'qa', 'ci_scope_check.js'), '--print-nightly'], { cwd: root, encoding: 'utf8' });
+    const r = spawnSync(process.execPath, [path.join(root, 'scripts', 'qa', 'ci_scope_check.js'), '--print-nightly'], { cwd: root, encoding: 'utf8', env: gateEnv() });
     expect(r.status).toBe(0);
     expect(String(r.stdout).trim()).toBe('tests/fe/infra');
   });

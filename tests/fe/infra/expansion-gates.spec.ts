@@ -3,6 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { execFileSync } from 'child_process';
+import { gateEnv } from './_gate_env';
 
 /*
  * Test cho nhóm gate MỞ RỘNG 5 TRỤC — tách khỏi `gates.spec.ts` có chủ đích.
@@ -20,7 +21,7 @@ const REPO = path.resolve(__dirname, '..', '..', '..');
 const node = process.execPath;
 const run = (args: string[], env: Record<string, string> = {}) => {
   try {
-    return { code: 0, out: execFileSync(node, args, { cwd: REPO, encoding: 'utf8', env: { ...process.env, ...env } }) };
+    return { code: 0, out: execFileSync(node, args, { cwd: REPO, encoding: 'utf8', env: gateEnv(env) }) };
   } catch (e: any) {
     return { code: e.status ?? 1, out: `${e.stdout || ''}${e.stderr || ''}` };
   }

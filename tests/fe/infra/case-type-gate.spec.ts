@@ -3,6 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { spawnSync } from 'child_process';
+import { gateEnv } from './_gate_env';
 
 /*
  * Test cho gate `Loại case` — case sinh mới phải TỰ XÁC ĐỊNH 1 trong 9 loại đã chốt.
@@ -26,7 +27,7 @@ const node = process.execPath;
 /* spawnSync chứ không execFileSync: cảnh báo của gate đi ra **stderr**, mà execFileSync chỉ trả stdout khi
  * exit 0 — dùng nó thì test "--lenient phải KÊU" đỏ oan vì không nhìn thấy tiếng kêu. */
 const run = (args: string[]) => {
-  const r = spawnSync(node, args, { cwd: REPO, encoding: 'utf8' });
+  const r = spawnSync(node, args, { cwd: REPO, encoding: 'utf8', env: gateEnv() });
   return { code: r.status ?? 1, out: `${r.stdout || ''}${r.stderr || ''}` };
 };
 

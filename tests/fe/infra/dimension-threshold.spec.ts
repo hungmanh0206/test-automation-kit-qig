@@ -3,6 +3,7 @@ import { spawnSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { gateEnv } from './_gate_env';
 
 /*
  * @infra — ĐO ĐỘ PHỦ PHẢI ĐỊNH LƯỢNG, KHÔNG NHỊ PHÂN.
@@ -40,7 +41,7 @@ const task = (opts: { a: number; b: number; band: string; manifest: unknown }) =
 
 const run = (base: string, args: string[] = []) => {
   const r = spawnSync(process.execPath, [DIM, ...args], {
-    cwd: REPO, encoding: 'utf8', env: { ...process.env, TASK_KEY: 'T1', PROJECT_OUTPUT_DIR: base } as NodeJS.ProcessEnv,
+    cwd: REPO, encoding: 'utf8', env: gateEnv({ TASK_KEY: 'T1', PROJECT_OUTPUT_DIR: base }),
   });
   return { code: r.status, out: `${r.stdout || ''}${r.stderr || ''}` };
 };

@@ -3,6 +3,7 @@ import { execFileSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { gateEnv } from './_gate_env';
 
 /**
  * @infra — hợp đồng ĐỊNH VỊ SECTION của `ui_conformance_check`.
@@ -125,7 +126,7 @@ test.describe('@infra spec_extract --suggest-aliases', () => {
     const out = execFileSync(process.execPath, [
       path.resolve(__dirname, '../../../scripts/qa/spec_extract.js'),
       '--docs', dir, '--bindings', bindings, '--suggest-aliases', surface,
-    ], { encoding: 'utf8' });
+    ], { encoding: 'utf8', env: gateEnv() });
     expect(out, 'phải đề xuất đúng cặp theo trùng nhãn').toContain('"Thông tin trên Deal" → "Deal Information"');
     expect(out, 'khối build không khớp tài liệu phải được nêu cho chiều ngược').toContain('Khối lạ');
     // Không được tự ghi vào bindings — người chốt.
