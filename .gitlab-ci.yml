@@ -73,9 +73,12 @@ audit:
       when: manual
       allow_failure: false
   script:
-    # KHÔNG cần `npm ci`: đo 04/09/2026 — `npm audit` chỉ đọc package-lock.json rồi hỏi registry,
-    # chạy đúng trong thư mục chỉ có package.json + package-lock.json (JSON hợp lệ, 3 moderate, 160s).
-    # Bỏ nó tiết kiệm 15s và gỡ luôn một kiểu đỏ oan: audit không còn phụ thuộc việc install thành công.
+    # KHÔNG cần `npm ci` — và đây KHÔNG chỉ là tiết kiệm 15s như tôi ghi lúc đầu. Đo trên CI 07/09/2026
+    # (job 14202): audit chạy 1,3 GIÂY và ra ĐÚNG cùng kết quả (low 0 · moderate 3 · high 0 · critical 0).
+    # Trong khi cũng lệnh đó nằm trong static-check — tức SAU `npm ci` — mất 421s (job 14185).
+    # Nguyên nhân: có `node_modules` thì `npm audit` duyệt cây ĐÃ CÀI; không có thì nó hỏi bulk advisory
+    # từ lockfile, một request. Nên thứ chậm chưa bao giờ là audit, mà là audit-sau-khi-đã-install.
+    # Phụ thêm: gỡ một kiểu đỏ oan — audit không còn phụ thuộc việc install thành công.
     - npm run audit:ci
 
 
