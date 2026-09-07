@@ -80,6 +80,7 @@
     "decisions:check": "node scripts/qa/decisions.js",
     "decisions:index": "node scripts/qa/decisions.js --index",
     "skills:index": "node scripts/qa/skills_index.js --write",
+    "skills:index:check": "node scripts/qa/skills_index.js --check",
     "gates:index": "node scripts/qa/gate_index.js --write",
     "gates:index:check": "node scripts/qa/gate_index.js --check",
     "rule": "node scripts/qa/rule_lookup.js",

@@ -93,6 +93,41 @@ if (alias.length) {
 }
 const md = `${L.join('\n')}\n`;
 
+/*
+ * `--check` — CHẶN khi INDEX.md trôi khỏi nguồn (`SKILL.md`).
+ *
+ * VÌ SAO THÊM (đo 07/09/2026): `policy_source_check` chỉ khoá TÊN skill, KHÔNG so description. Hậu quả
+ * thật đang tồn tại trên `main`: INDEX.md ghi `tc_validator` là "template 11 cột" trong khi
+ * `.agent/skills/phase1/tc_validator/SKILL.md` vẫn ghi "9 cột" — artifact SINH đã lên trước NGUỒN của
+ * nó và KHÔNG gate nào thấy. Đúng lớp lỗ hổng lặp lại của kit: có quy định, thiếu máy.
+ *
+ * So CHẶT cả file, cùng khuôn `gates:index:check`. Giá phải trả: sửa `SKILL.md` thì phải chạy lại
+ * `npm run skills:index` rồi commit CẢ HAI — và đó chính là hành vi muốn ép.
+ */
+if (process.argv.includes('--check')) {
+  if (!fs.existsSync(OUT)) {
+    console.error('[skills] CHẶN: thiếu .agent/skills/INDEX.md — chạy `npm run skills:index`.');
+    process.exit(1);
+  }
+  const cur = fs.readFileSync(OUT, 'utf8').replace(/\r\n/g, '\n');
+  if (cur.trim() !== md.trim()) {
+    /* Chỉ ra ĐÚNG skill nào lệch, không bắt người đọc tự diff 22 dòng bảng. */
+    const rowOf = (txt, name) => (txt.split('\n').find((l) => l.startsWith(`| \`${name}\``)) || '(không có dòng nào)').trim();
+    const drift = rows.filter((r) => rowOf(cur, r.name) !== rowOf(md, r.name)).map((r) => r.name);
+    const inIndexOnly = cur.split('\n')
+      .map((l) => (l.match(/^\| `([^`]+)`/) || [])[1])
+      .filter((n) => n && !rows.some((r) => r.name === n));
+    console.error('[skills] CHẶN: .agent/skills/INDEX.md LỆCH nguồn `SKILL.md`.');
+    if (drift.length) console.error(`  Skill có description/đường dẫn khác nguồn: ${drift.join(' · ')}`);
+    if (inIndexOnly.length) console.error(`  Có trong INDEX mà không còn thư mục skill: ${inIndexOnly.join(' · ')}`);
+    if (!drift.length && !inIndexOnly.length) console.error('  Khác ở phần đầu/chân bảng (số skill, cảnh báo alias).');
+    console.error('  Chạy `npm run skills:index` rồi commit CẢ `SKILL.md` lẫn `INDEX.md`.');
+    process.exit(1);
+  }
+  console.log(`[skills] OK — INDEX.md khớp ${rows.length} skill.`);
+  process.exit(0);
+}
+
 if (process.argv.includes('--write')) {
   fs.writeFileSync(OUT, md, 'utf8');
   console.log(`[skills] ${rows.length} skill → ${path.relative(rc.REPO_ROOT, OUT).replace(/\\/g, '/')}`);

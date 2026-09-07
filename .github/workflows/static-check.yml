@@ -43,6 +43,9 @@ jobs:
       - name: Danh mục gate khớp source (bảng lệch = một gate đã đổi mức CHẶN/CẢNH BÁO mà không ai ghi)
         run: npm run gates:index:check
 
+      - name: INDEX.md khớp nguồn SKILL.md (artifact sinh trôi khỏi nguồn = không ai thấy)
+        run: npm run skills:index:check
+
       - name: Mục lục RULE_GLOBAL khớp nội dung (bảng tra sai = agent đọc sai khối luật)
         run: npm run rule -- --check
 
