@@ -410,6 +410,17 @@ Kiểm: <N> case đã chạy, 0 thiếu evidence, 0 đường dẫn chết."
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/tests/support/
+├── evidence.js                   ← MỚI · chụp có KHOANH ĐỎ + che PII (cả input.value)
+└── video.js                      ← MỚI · quay có banner từng bước, cho case nhiều bước
+```
+
+Hai file này là **hạ tầng**, không phải máy chặn. Máy chặn đọc *kết quả* của chúng — đó là
+`evidence_gate.js` ở Bài 13.
+
 ## Tự kiểm
 
 - [ ] Tôi biết danh sách đuôi file được chấp nhận, và vì sao trace/log **không** phải bằng chứng.

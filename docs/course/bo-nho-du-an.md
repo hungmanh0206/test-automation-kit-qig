@@ -511,6 +511,21 @@ Store ghi tay không nạp lại được từ nguồn máy ⇒ bắt buộc sao
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── knowledge/                    ← MỚI · ⛔ KHÔNG commit (dữ liệu công ty)
+│   ├── domain/                   ·  luật nghiệp vụ đã xác nhận
+│   ├── decisions/                ·  quyết định đã chốt + lý do
+│   └── reliability/              ·  độ tin cậy từng test
+└── scripts/qa/
+    ├── kiem-domain.js            ← MỚI · rule không có `nguon` ⇒ chặn
+    ├── sao-luu-knowledge.js      ← MỚI · đích nằm TRONG repo ⇒ exit 2
+    ├── reporter-hoc.js           ← MỚI · khai CUỐI danh sách reporter, không bao giờ throw
+    └── do-tin-cay.js             ← MỚI · clean-pass ÷ tổng, dưới ngưỡng ⇒ quarantine
+```
+
 ## Tự kiểm
 
 - [ ] Tôi kể được năm store và câu hỏi mỗi store trả lời.

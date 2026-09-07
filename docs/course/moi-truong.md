@@ -183,6 +183,21 @@ git push
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── package.json                  ← MỚI · nơi khai mọi lệnh `npm run ...`
+├── playwright.config.js          ← MỚI · bản tối thiểu, sẽ mở rộng ở Bài 12
+├── .gitignore                    ← MỚI · chặn 3 thư mục không được commit
+├── profiles/
+│   └── DEMO-1/task.env           ← MỚI · URL + tài khoản. ⛔ KHÔNG commit
+├── scripts/qa/
+│   └── kiem-so-mong-doi.js       ·  từ Bài 1
+└── tests/api/
+    └── don-hang-bac.js           ·  từ Bài 1
+```
+
 ## Tự kiểm
 
 - [ ] Sáu lệnh kiểm phiên bản đều in ra kết quả.

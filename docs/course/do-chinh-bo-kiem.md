@@ -681,6 +681,24 @@ gate-mo-rong: phát hiện không có oracle_ref thì là OBSERVATION, không đ
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── .agent/config/
+│   └── mutants.json              ← MỚI · mutant khai bằng DỮ LIỆU, không hardcode
+├── scripts/qa/
+│   ├── tiem-loi.js               ← MỚI · nền đỏ ⇒ exit 2; không có cờ tiêm ⇒ KHÔNG ĐO ĐƯỢC
+│   └── gate-mo-rong.js           ← MỚI · phát hiện không có oracle_ref ⇒ OBSERVATION
+├── tests/support/fixtures/
+│   └── mutant.js                 ← MỚI · sửa response ở page.route(), ghi cờ đã tiêm
+└── outputs/mutation/
+    └── diem.json                 ← MỚI · mốc so sánh cho lần đo tháng sau
+```
+
+`outputs/mutation/diem.json` là **mốc so sánh**: tháng sau đo lại, điểm tụt nghĩa là có oracle vừa bị
+làm yếu đi. Đừng để nó trong `.gitignore` nếu bạn muốn so theo thời gian — hoặc lưu nó ra ngoài repo.
+
 ## Tự kiểm
 
 - [ ] Tôi giải thích được vì sao "toàn bộ PASS" gần như không mang thông tin.

@@ -387,6 +387,17 @@ Nghiệm thu: lệnh mồ côi → 1 · khối lạ → 1 · nới một gate �
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── .agent/config/
+│   └── policy.allow.json         ← MỚI · miễn trừ PHẢI có lý do + ngày; khối lạ ⇒ chặn
+└── scripts/qa/
+    ├── policy_check.js           ← MỚI · luật bị trôi khỏi bề mặt kit ⇒ chặn
+    └── gates_index.js            ← MỚI · danh mục gate TỰ SINH từ source, không viết tay
+```
+
 ## Tự kiểm
 
 - [ ] Tôi giải thích được vì sao **không** bắt bản tóm trùng từng chữ với canonical.

@@ -313,6 +313,11 @@ Chúng chỉ bọc **điểm vào của một luồng công việc**.
 | Traceability matrix REQ→TC→exec | `npm run trace:matrix -- --task <TASK_KEY>` |
 | Lint / typecheck | `npm run lint` · `npm run typecheck` |
 | Regenerate user-guide images | `npm run user-guide:images` |
+| **Thư viện thuật ngữ (trang tra cứu cho team)** — sinh lại `docs/library/index.html` từ `docs/library/src/` | `npm run library:build` |
+| **Chặn "thư viện thuật ngữ đã trôi khỏi repo"** — đối chiếu trang với source: số skill · số chiều coverage · cột canonical · verdict status · slash command · mọi `src:`/`npm run` được nhắc có tồn tại thật. Trang là lớp DẪN XUẤT, nguồn quyết là repo. Miễn trừ khai kèm lý do ở `.agent/config/library-drift.allow.json` | `npm run library:drift` |
+| Nghiệm thu trang bằng Playwright thật (gồm cả 2 gate trên) | `node docs/library/verify.js` |
+| **Khoá học tự dựng kit từ 0** — [docs/COURSE.md](docs/COURSE.md): giáo trình 20 bài / 44,5 giờ, thứ tự theo THỨ HỌC VIÊN CÓ TRONG TAY (không theo thứ tự lịch sử của kit). Mỗi bài ghi rõ mục tiêu ✅ và thời lượng | — (tài liệu) |
+| **Nhật ký dựng kit từ 0** — [docs/BUILD_JOURNAL.md](docs/BUILD_JOURNAL.md), nguồn canonical cho tab *Hành trình* của trang thư viện. Viết cho người muốn TỰ DỰNG kit tương tự: mỗi chặng ghi vấn đề · đã dựng · đo bằng · bẫy đã vấp · nếu bạn dựng lại | — (sửa markdown rồi `npm run library:build`) |
 | Check Jira connection | `npm run integration:check` |
 | Check Jira connection live | `npm run integration:check:live` |
 | Dry-run publish testcase lên AIO | `npm run aio:publish -- --file <x.xlsx> --story <JIRA_STORY_KEY>` |

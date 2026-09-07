@@ -475,6 +475,18 @@ Máy bắt bẫy lệch tên module (nghiệm thu: đổi 1 tên sang tiếng An
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── .agent/config/
+│   ├── risk_model.json           ← MỚI · trọng số + khối coldStart 5 tín hiệu
+│   └── cold-start-signals.json   ← MỚI · tín hiệu thay thế khi chưa có lịch sử bug
+└── scripts/qa/
+    ├── cham-rui-ro.js            ← MỚI · tính band; cold-start chỉ CẢNH BÁO
+    └── gate-do-sau.js            ← MỚI · từ chối chặn ở chế độ cold-start, kể cả --enforce
+```
+
 ## Tự kiểm
 
 - [ ] Tôi nói được vì sao **Impact phải khai tay** còn Likelihood thì suy được.

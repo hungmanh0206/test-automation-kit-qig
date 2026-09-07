@@ -169,6 +169,31 @@ const server = http.createServer(async (req, res) => {
       return traJson(res, 200, { data: d });
     }
 
+    /* Cửa nhìn TẦNG LƯU TRỮ — dùng cho Bài 15 (kiểm song song UI ↔ nơi lưu).
+     *
+     * Đây là bản ghi THẬT đang được lưu, không phải bản đã đi qua tầng hiển thị. Nó đóng vai
+     * "câu SELECT" trong dự án thật: cùng một bản ghi, nhìn từ tầng dưới.
+     *
+     * CHỈ ĐỌC. Không có đường nào ghi qua đây — vì tiền điều kiện KHÔNG được dựng bằng
+     * tầng lưu trữ, dù tầng đó đang mở (Bài 15).
+     */
+    if (cach === 'GET' && duong === '/api/_store/orders') {
+      return traJson(res, 200, {
+        data: donHang.map((d) => ({
+          id: d.id,
+          customer_id: d.customerId,
+          rank: d.hang,
+          subtotal_amount: d.tamTinh,
+          discount_amount: d.giamGia,       // giá trị THẬT, chưa qua làm tròn của giao diện
+          shipping_fee: d.phiGiaoHang,
+          total_amount: d.tongCong,
+          status: d.status,
+          item_count: d.items.reduce((s, i) => s + i.qty, 0),
+          created_at_utc: d.createdAt       // luôn là UTC — giao diện hiển thị theo giờ máy
+        }))
+      });
+    }
+
     // Đặt lại toàn bộ dữ liệu — dùng cho tiền điều kiện của test (Bài 10)
     if (cach === 'POST' && duong === '/api/reset') {
       donHang = []; demId = 0;

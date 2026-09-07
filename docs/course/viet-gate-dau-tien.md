@@ -321,6 +321,14 @@ Nghiệm thu bằng negative control: 3/3 mũi tiêm bắt đúng, phân biệt 
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/scripts/qa/
+├── kiem-so-mong-doi.js           ·  từ Bài 1 · bản thô, chỉ biết một case
+└── evidence_gate.js              ← MỚI · máy chặn ĐẦY ĐỦ đầu tiên, exit 0/1/2
+```
+
 ## Tự kiểm
 
 - [ ] Tôi giải thích được vì sao gate không thể viết ở Bài 4.

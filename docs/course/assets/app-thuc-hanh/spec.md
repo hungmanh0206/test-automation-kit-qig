@@ -74,7 +74,13 @@ Máy chủ chạy ở `http://localhost:4010`.
 | `POST` | `/api/orders` | Tạo đơn. Body như `/api/quote` |
 | `POST` | `/api/orders/:id/confirm` | Xác nhận đơn |
 | `PATCH` | `/api/orders/:id` | Sửa giỏ của đơn. Body `{items:[...]}` |
+| `GET` | `/api/_store/orders` | **Cửa nhìn tầng lưu trữ** (Bài 15). Bản ghi thật đang được lưu, tên trường theo kiểu cột bảng, chưa qua tầng hiển thị. **Chỉ đọc** |
 | `POST` | `/api/reset` | **Xoá sạch mọi đơn.** Dùng để dựng trạng thái sạch trước khi test |
+
+> `/api/_store/orders` đóng vai câu `SELECT` trong dự án thật: **cùng một bản ghi, nhìn từ tầng dưới**.
+> Nó cố tình dùng tên trường khác (`discount_amount`, `created_at_utc`…) để bạn phải **ánh xạ** thay vì
+> so tên cho khớp. Và nó **không có đường ghi** — vì tiền điều kiện không được dựng bằng tầng lưu trữ,
+> dù tầng đó đang mở.
 
 Mọi response thành công có dạng `{"data": ...}`. Mọi response lỗi có dạng `{"error": "..."}`.
 

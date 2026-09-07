@@ -284,6 +284,18 @@ Sửa 5 expected yếu thành có neo. Bộ hiện tại: <N> case, <X> dòng or
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── .agent/rules/
+│   └── oracle.md                 ← MỚI · khối luật: không neo được ⇒ OBSERVATION
+├── scripts/qa/
+│   └── oracle_gate.js            ← MỚI · giá trị tính toán không trỏ nguồn ⇒ chặn
+└── outputs/tasks/<MÃ>/analysis/
+    └── business-rules.md         ·  từ Bài 7 — giờ là NGUỒN của mọi expected
+```
+
 ## Tự kiểm
 
 - [ ] Tôi định nghĩa được oracle độc lập bằng hai điều kiện.

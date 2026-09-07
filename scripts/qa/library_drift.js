@@ -213,34 +213,6 @@ const pageVer = (ALL_TEXT.match(/\b(\d+\.\d+\.\d+)\b/g) || []);
 if (PKG.version && !pageVer.includes(PKG.version)) notes.push(`trang không nêu phiên bản hiện tại (${PKG.version}) — không chặn, nhưng nên cập nhật mục "Phiên bản kit"`);
 else if (PKG.version) ok.push(`phiên bản kit khớp: ${PKG.version}`);
 
-/* ── 5h. Nhật ký dựng kit: parse được, và trang render đủ số chặng ────────────────
- * Tab "Hành trình" DẪN XUẤT từ docs/BUILD_JOURNAL.md nên hai bên không thể lệch nội dung — nhưng bản
- * build có thể CŨ hơn nhật ký. Kiểm cả hai: parse được, và số chặng trong index.html khớp markdown. */
-const JOURNAL_MD = path.join(ROOT, 'docs', 'BUILD_JOURNAL.md');
-if (!exists(JOURNAL_MD)) {
-  problems.push('thiếu docs/BUILD_JOURNAL.md — tab "Hành trình" của trang dẫn xuất từ file này');
-} else {
-  let jr = null;
-  try { jr = require(path.join(SRC, 'journal_parse.js')).parseJournal(JOURNAL_MD); }
-  catch (e) { problems.push('BUILD_JOURNAL.md không parse được: ' + e.message); }
-  if (jr) {
-    const thin = jr.eras.filter((e) => !e.measured || !e.trap || !e.advice).map((e) => e.n);
-    if (thin.length) problems.push(`chặng ${thin.join(', ')} thiếu "Đo bằng" / "Bẫy đã vấp" / "Nếu bạn dựng lại" — mỗi chặng phải trả lời đủ ba câu đó, nếu không nó chỉ là mô tả việc đã làm`);
-    if (HTML) {
-      const built = HTML.match(/"eras":\s*\[/) ? (HTML.match(/"id":"[a-z-]+","from":"/g) || []).length : 0;
-      if (built !== jr.eras.length) problems.push(`index.html render ${built} chặng nhưng BUILD_JOURNAL.md có ${jr.eras.length} — chạy npm run library:build`);
-      else ok.push(`nhật ký khớp: ${jr.eras.length} chặng · ${jr.principles.length} nguyên tắc · ${jr.order.length} bước thứ tự`);
-    }
-    if (jr.meta.commits) {
-      const real = (() => {
-        try { return require('child_process').execSync('git rev-list --count HEAD', { cwd: ROOT, encoding: 'utf8' }).trim(); }
-        catch (e) { return null; }
-      })();
-      if (real && real !== jr.meta.commits) notes.push(`BUILD_JOURNAL.md ghi ${jr.meta.commits} commit, repo hiện có ${real} — không chặn, nhưng cập nhật thì số liệu mới đúng`);
-    }
-  }
-}
-
 /* ── 5i. Giáo trình: parse được, link bài giảng còn sống, trang render đủ số bài ─── */
 const COURSE_MD = path.join(ROOT, 'docs', 'COURSE.md');
 if (!exists(COURSE_MD)) {
@@ -291,6 +263,17 @@ if (!exists(COURSE_MD)) {
         catch (e) { badBlocks.push(`${nhan} khối json #${i + 1}: ${e.message}`); }
       }
     }
+    /* MỌI bài giảng phải có khối "Cây thư mục sau bài này".
+       Lý do: người học từ số 0 không hình dung được file mới nằm ở đâu và cạnh cái gì — thiếu khối này
+       thì bài giảng thành một chuỗi lệnh rời, không thành một bộ kit. */
+    const thieuCay = lessonFiles.filter((rel) => !rd(path.join(ROOT, 'docs', rel)).includes('Cây thư mục'));
+    if (thieuCay.length) {
+      problems.push(`${thieuCay.length} bài giảng KHÔNG có khối "Cây thư mục sau bài này": ` +
+        thieuCay.map((f) => path.basename(f)).join(', '));
+    } else if (lessonFiles.length) {
+      ok.push(`${lessonFiles.length} bài giảng đều có cây thư mục`);
+    }
+
     /* Ngưỡng sàn: nếu số khối kiểm được tụt dưới mức đã đạt thì gần như chắc là phép kiểm
        bị hẹp lại, không phải bài giảng bớt mã đi. */
     const SAN_KHOI_MA = 78;
@@ -313,9 +296,8 @@ if (!HTML) {
   problems.push('chưa có docs/library/index.html — chạy `node docs/library/build.js`');
 } else {
   const outAt = fs.statSync(path.join(LIB, 'index.html')).mtimeMs;
-  const stale = [...DATA_FILES, 'shell.html', 'style.css', 'style.extra.css', 'app.js', 'graph3d.js', 'journal_parse.js', 'course_parse.js']
+  const stale = [...DATA_FILES, 'shell.html', 'style.css', 'style.extra.css', 'app.js', 'graph3d.js', 'course_parse.js']
     .filter((f) => exists(path.join(SRC, f)) && fs.statSync(path.join(SRC, f)).mtimeMs > outAt);
-  if (fs.statSync(JOURNAL_MD).mtimeMs > outAt) stale.push('docs/BUILD_JOURNAL.md');
   if (fs.statSync(COURSE_MD).mtimeMs > outAt) stale.push('docs/COURSE.md');
   if (stale.length) problems.push(`index.html CŨ hơn nguồn (${stale.join(' ')}) — chạy \`node docs/library/build.js\``);
   else ok.push('index.html mới hơn mọi file nguồn');

@@ -273,6 +273,19 @@ git commit -m "docs(course): bài 6 — phân tích + sinh case qua Ambiguity Ga
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── prompt_templates/phase1/
+│   ├── 01_phan_tich.md           ·  từ Bài 6
+│   └── 02_sinh_testcase.md       ← MỚI · LƯỢT RIÊNG, không gộp với phân tích
+└── outputs/tasks/<MÃ>/
+    └── analysis/
+        ├── business-rules.md     ← MỚI · bảng BR- — đầu vào của oracle ở Bài 10
+        └── questions.md          ← MỚI · câu hỏi cho BA, đánh số, có assumption đề xuất
+```
+
 ## Tự kiểm
 
 - [ ] Tôi tách **hai lượt** phân tích và sinh case, không gộp.

@@ -194,6 +194,22 @@ git commit -m "docs(course): bài 4 — so sánh prompt sơ sài vs có ràng bu
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── .agent/
+│   ├── rules/
+│   │   └── core_rules.md         ·  từ Bài 2 · digest
+│   ├── skills/
+│   │   └── <vai>/SKILL.md        ← MỚI · năng lực theo vai, KHÔNG tự nạp
+│   └── workflows/
+│       └── phase1.md             ← MỚI · quy trình, gọi prompt theo thứ tự
+└── prompt_templates/
+    └── phase1/
+        └── 01_phan_tich.md       ← MỚI · 5 phần: vai · đầu vào · ràng buộc · định dạng · ĐIỀU KIỆN DỪNG
+```
+
 ## Tự kiểm
 
 - [ ] Tôi nêu được 5 phần của prompt việc dài, và phần nào hay bị quên nhất.

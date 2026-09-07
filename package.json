@@ -111,7 +111,9 @@
     "aio:verify-fields": "node scripts/integrations/aio/verify_fields_aio.js",
     "version:check": "node scripts/qa/version_check.js",
     "package:kit": "node scripts/qa/package_kit.js",
-    "release:verify": "node scripts/qa/verify_release.js"
+    "release:verify": "node scripts/qa/verify_release.js",
+    "library:build": "node docs/library/build.js",
+    "library:drift": "node scripts/qa/library_drift.js"
   },
   "dependencies": {
     "axe-core": "^4.12.1",

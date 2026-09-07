@@ -1,0 +1,21 @@
+{
+  "_note": "Miễn trừ cho `npm run library:drift`. Trang docs/library là lớp TRA CỨU, không phải spec — nên có thứ cố ý không đưa lên. Mỗi miễn trừ BẮT BUỘC ghi lý do; để trống là gate chặn. Khối lạ cũng bị chặn (khoá viết sai thì code không đọc, và nó thành vô hình). Miễn trừ trỏ tới thứ không còn tồn tại cũng bị chặn — allowlist phải được dọn.",
+
+  "scripts": {
+    "dashboard_generate": "sinh dashboard HTML cho một task — là output của kit, không phải khái niệm QA cần tra cứu"
+  },
+
+  "npmScripts": {
+    "test:fe": "biến thể phạm vi của npm test, không thêm khái niệm mới",
+    "test:api": "biến thể phạm vi của npm test",
+    "test:task:fe": "biến thể phạm vi của test:task",
+    "test:task:api": "biến thể phạm vi của test:task",
+    "typecheck": "lệnh dev chung của TypeScript, không thuộc từ vựng QA",
+    "lint": "lệnh dev chung, không thuộc từ vựng QA",
+    "report": "helper mở HTML report của Playwright",
+    "user-guide:images": "sinh lại ảnh minh hoạ cho USER_GUIDE — việc bảo trì tài liệu",
+    "gdoc:read": "tiện ích đọc Google Doc, đã nói qua mục docs:budget",
+    "sync:gitlab": "đồng bộ repo sang GitLab, thuộc hạ tầng chứ không phải quy trình QA",
+    "proof:nightly": "gom bằng chứng cho lượt nightly — đã nói qua mục mutation:check và leak:report"
+  }
+}

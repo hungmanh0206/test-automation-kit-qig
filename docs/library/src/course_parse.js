@@ -69,6 +69,22 @@ function parseCourse(mdPath) {
     .map((r) => ({ bug: stripMd(r[1]), layer: stripMd(r[2]), blind: stripMd(r[3]), where: stripMd(r[4]) }))
     .filter((r) => r.bug && !/^-+$/.test(r.layer) && !/^Bug$/i.test(r.bug));
 
+  /* Cây thư mục của kit — lấy NGUYÊN VĂN khối ``` để trang hiển thị đúng thụt lề.
+     Mỗi dòng có "← Bài N" là một mốc: file này do bài nào tạo ra. */
+  const treeBlock = (md.match(/## Cấu trúc thư mục của bộ kit[\s\S]*?```\n([\s\S]*?)```/) || [, ''])[1];
+  if (!treeBlock) throw new Error('COURSE.md: không thấy khối cây thư mục trong "## Cấu trúc thư mục của bộ kit"');
+  const kitTree = treeBlock.replace(/\s+$/, '');
+  const treeLessonRefs = [...kitTree.matchAll(/←\s*Bài\s+(\d+)/g)].map((x) => Number(x[1]));
+  if (treeLessonRefs.length < 10) {
+    throw new Error(`COURSE.md: cây thư mục chỉ chú thích ${treeLessonRefs.length} nhánh theo bài — ` +
+      'người học không biết nhánh nào do bài nào tạo');
+  }
+
+  // Ba chỗ hay xếp sai + ba thư mục không commit — hai bảng ngay sau cây
+  const afterTree = md.slice(md.indexOf('```', md.indexOf('## Cấu trúc thư mục của bộ kit') + 40));
+  const sortRules = [...afterTree.matchAll(/^\|\s*`([^`]+)`\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*$/gm)]
+    .map((r) => ({ dir: r[1], holds: stripMd(r[2]), question: stripMd(r[3]) }));
+
   // Bảng giờ theo phần
   const hoursBlock = (md.match(/## Tổng thời lượng:[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
   const partHours = {};
@@ -145,6 +161,14 @@ function parseCourse(mdPath) {
     }
   }
 
+  /* Cây thư mục chú thích "← Bài N" thì bài N phải TỒN TẠI. Không kiểm thì đổi giáo trình một lần
+     là cây trỏ vào bài đã biến mất, và người học đi tìm một bài không có. */
+  const soBaiCo = new Set(nums);
+  const treeSai = [...new Set(treeLessonRefs)].filter((n) => !soBaiCo.has(n));
+  if (treeSai.length) {
+    throw new Error('COURSE.md: cây thư mục trỏ tới bài KHÔNG tồn tại — Bài ' + treeSai.join(', '));
+  }
+
   // Mọi phần phải khai được số giờ — thiếu thì bảng tổng thời lượng nói dối.
   const noHours = parts.filter((p) => !p.hours).map((p) => p.n);
   if (noHours.length) throw new Error('COURSE.md: PHẦN ' + noHours.join(', ') + ' không có số giờ');
@@ -171,7 +195,7 @@ function parseCourse(mdPath) {
 
   return {
     total, positioning, coreQuestion, outcomes, required, notRequired, warning,
-    compare, practiceBugs, parts, deliverables, decisions, orphans,
+    compare, practiceBugs, kitTree, sortRules, parts, deliverables, decisions, orphans,
     lessonCount: totalLessons
   };
 }

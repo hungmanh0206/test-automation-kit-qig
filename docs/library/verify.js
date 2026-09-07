@@ -157,21 +157,6 @@ const ok = (name, cond, got) => {
   ok('bài giảng chưa xếp chỗ được nêu', await p.locator('#cOrphans .corphan').count() >= 1);
   await shot('05a-course.png');
 
-  console.log('\n[5b] Tab Hành trình (dẫn xuất từ docs/BUILD_JOURNAL.md)');
-  await p.locator('.mode[data-mode="journey"]').click(); await p.waitForTimeout(500);
-  const eras = await p.locator('#jEras .fstep').count();
-  ok('có các chặng', eras >= 5, eras);
-  ok('mỗi chặng đủ 4 khối Vấn đề / Đo bằng / Bẫy / Nếu dựng lại',
-     await p.locator('#jEras .jprob').count() === eras &&
-     await p.locator('#jEras .jmeas').count() === eras &&
-     await p.locator('#jEras .jtrap').count() === eras &&
-     await p.locator('#jEras .jadv').count() === eras);
-  ok('có bài học lớn nhất', (await p.locator('#jLesson p').innerText()).length > 80);
-  ok('có nguyên tắc rút ra', await p.locator('#jPrinciples .prbox').count() >= 5);
-  ok('có bảng thứ tự khuyên dùng', await p.locator('#jOrder .xrow').count() >= 5);
-  ok('có điểm mù của tài liệu', await p.locator('#jBlind .prbox').count() >= 3);
-  await shot('05b-journey.png');
-
   console.log('\n[6] Flashcard & Đề luyện');
   await p.locator('.mode[data-mode="flash"]').click(); await p.waitForTimeout(400);
   await p.locator('#flip').click(); await p.waitForTimeout(200);

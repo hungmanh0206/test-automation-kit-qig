@@ -432,6 +432,18 @@ tangLoi để null cho FAIL — máy không đoán, người chấm sau khi reru
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── .agent/config/
+│   └── verdict_taxonomy.json     ← MỚI · 7 phán quyết · 7 tầng lỗi · ngưỡng rerun 2–3
+├── scripts/lib/
+│   └── verdict.js                ← MỚI · MỘT nơi đọc taxonomy, không hardcode ở đâu khác
+└── scripts/qa/
+    └── sinh-status.js            ← MỚI · results.json → testcase-status.json
+```
+
 ## Tự kiểm
 
 - [ ] Chỉ có **một** file khai trạng thái; không hardcode chuỗi trạng thái ở đâu khác.

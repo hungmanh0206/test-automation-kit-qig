@@ -535,6 +535,22 @@ Gate chất lượng đứng ở CẢ hai cửa: lệnh tự soi và đường p
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── .agent/config/
+│   └── mcp_config.md             ← MỚI · một cửa vào cho dữ liệu ngoài, quyền tối thiểu
+├── .claude/commands/
+│   ├── phase1.md                 ← MỚI · gõ `/phase1 <MÃ>`
+│   └── phase2.md                 ← MỚI · nạp đúng file + đúng THỨ TỰ gate
+└── scripts/qa/
+    ├── publish-testcase.js       ← MỚI · mặc định DRY-RUN, cần 2 cờ mới ghi thật
+    ├── doi-soat-truong.js        ← MỚI · BẮT BUỘC sau publish (2xx không chứng minh gì)
+    ├── day-ket-qua.js            ← MỚI · một lượt chạy = một cycle có lịch sử
+    └── kiem-do-tuoi.js           ← MỚI · bản sao local cũ hơn công cụ ⇒ chặn
+```
+
 ## Tự kiểm
 
 - [ ] Tôi biết công cụ của mình **có API xoá hay không**, và điều đó đổi cách tôi làm thế nào.

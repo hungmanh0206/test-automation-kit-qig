@@ -36,7 +36,6 @@
     <button class="mode" data-mode="guide"  role="tab" aria-selected="false">📘 Hướng dẫn</button>
     <button class="mode" data-mode="readme" role="tab" aria-selected="false">📄 Readme</button>
     <button class="mode" data-mode="course"  role="tab" aria-selected="false">🎓 Khoá học</button>
-    <button class="mode" data-mode="journey" role="tab" aria-selected="false">🧭 Hành trình</button>
     <button class="mode" data-mode="flash"  role="tab" aria-selected="false">🃏 Flashcard</button>
     <button class="mode" data-mode="chal"   role="tab" aria-selected="false">🎲 Đề luyện QA</button>
     <button class="mode" data-mode="info"   role="tab" aria-selected="false">ℹ️ Về dự án</button>
@@ -152,39 +151,23 @@
       <b>lỗi ở bộ kiểm, không ở app</b>.</p>
     <div class="buggrid" id="cBugs"></div>
 
-    <h3 class="subhead"><span class="num">4</span>Giáo trình</h3>
+    <h3 class="subhead"><span class="num">4</span>Cấu trúc thư mục của bộ kit</h3>
+    <p class="sectip">Cây bạn có <b>sau khi học hết khoá</b>. Mỗi nhánh ghi <b>bài nào tạo ra nó</b> —
+      nên khi bài học nói “viết file này”, bạn biết nó nằm ở đâu và cạnh cái gì.</p>
+    <pre class="kittree" id="cTree"></pre>
+    <div class="sortgrid" id="cSort"></div>
+
+    <h3 class="subhead"><span class="num">5</span>Giáo trình</h3>
     <div id="cParts"></div>
 
-    <h3 class="subhead"><span class="num">5</span>Bài giảng chưa xếp chỗ</h3>
+    <h3 class="subhead"><span class="num">6</span>Bài giảng chưa xếp chỗ</h3>
     <div class="orphgrid" id="cOrphans"></div>
 
-    <h3 class="subhead"><span class="num">6</span>Học viên nhận được</h3>
+    <h3 class="subhead"><span class="num">7</span>Học viên nhận được</h3>
     <ul class="coutcomes" id="cDeliver"></ul>
 
-    <h3 class="subhead"><span class="num">7</span>Quyết định thiết kế khoá học</h3>
+    <h3 class="subhead"><span class="num">8</span>Quyết định thiết kế khoá học</h3>
     <div class="decgrid" id="cDecisions"></div>
-  </section>
-  <!-- HÀNH TRÌNH -->
-  <section class="panel" id="p-journey" hidden>
-    <h2 class="sechead">Dựng bộ kit này từ con số 0</h2>
-    <p class="sectip">Render từ <code>docs/BUILD_JOURNAL.md</code> — nguồn canonical là file markdown đó,
-      trang này chỉ hiển thị lại. Viết cho người muốn <b>tự dựng</b> một kit tương tự: làm theo thứ tự nào,
-      đo bằng gì, và đã vấp ở đâu.</p>
-    <div class="jstats" id="jStats"></div>
-    <div class="jlesson" id="jLesson"></div>
-
-    <h3 class="subhead"><span class="num">1</span>Bảy chặng</h3>
-    <div class="flowwrap" id="jEras"></div>
-
-    <h3 class="subhead"><span class="num">2</span>Nguyên tắc rút ra</h3>
-    <div class="pracgrid" id="jPrinciples"></div>
-
-    <h3 class="subhead"><span class="num">3</span>Nếu dựng lại từ 0 — thứ tự khuyên dùng</h3>
-    <div id="jOrder"></div>
-
-    <h3 class="subhead"><span class="num">4</span>Điểm mù của chính tài liệu này</h3>
-    <p class="sectip">Ghi ra để biết chỗ nào <b>không</b> nên tin.</p>
-    <div class="pracgrid" id="jBlind"></div>
   </section>
   <!-- FLASHCARD -->
   <section class="panel" id="p-flash" hidden>

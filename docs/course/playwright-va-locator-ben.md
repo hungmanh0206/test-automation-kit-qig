@@ -343,6 +343,22 @@ Khảo sát DOM: <N> element có testid, <M> element chưa có locator bền (đ
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── playwright.config.js          ← SỬA · forbidOnly · retries chỉ ở CI · reporter json
+├── scripts/utils/
+│   └── kham-pha-dom.js           ← MỚI · dò locator có sẵn trước khi đoán
+├── scripts/qa/
+│   └── locator_lint.js           ← MỚI · class động / xpath theo vị trí ⇒ chặn
+└── tests/
+    ├── support/
+    │   └── fixtures/index.js     ← MỚI · fixture chung
+    └── e2e/
+        └── tao-don.spec.js        ← MỚI · case đầu tiên qua giao diện
+```
+
 ## Tự kiểm
 
 - [ ] `npx playwright test --list` in ra đúng số test tôi đã viết.

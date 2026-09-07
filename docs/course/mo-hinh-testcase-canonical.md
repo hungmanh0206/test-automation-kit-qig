@@ -319,6 +319,19 @@ git commit -m "feat(testcase): model canonical 7 cột + MỘT parser (xử lý 
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── scripts/lib/testcase/
+│   └── index.js                  ← MỚI · MỘT bộ đọc/ghi dùng chung cho md và xlsx
+├── scripts/qa/
+│   └── tc_validate.js            ← MỚI · thiếu cột bắt buộc / ô rỗng ⇒ chặn
+└── outputs/tasks/<MÃ>/test-cases/
+    ├── testcases.md              ← MỚI · bản CANONICAL
+    └── testcases.xlsx            ← MỚI · bản SINH RA từ .md, không sửa tay
+```
+
 ## Tự kiểm
 
 - [ ] Template của tôi có 7 cột, và tôi giải thích được vì sao **từng** cột bắt buộc.

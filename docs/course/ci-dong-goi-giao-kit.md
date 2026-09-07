@@ -524,6 +524,27 @@ gates-voi-toi: máy đúng mà không điểm vào nào gọi thì bằng không
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── .agent/config/
+│   ├── ci_scope.json             ← MỚI · MỘT nguồn: lệnh nào chạy ở đâu
+│   ├── env-allow.json            ← MỚI · biến nào được đọc, AI dựng nó, ở ĐÂU
+│   ├── branch_parity.json        ← MỚI · nhánh nào phải có máy nào
+│   └── kit-layers.md             ← MỚI · ranh giới tầng CHUNG ↔ tầng DỰ ÁN
+├── .github/workflows/
+│   └── gates.yml                 ← MỚI · ĐỌC ci_scope.json, không tự liệt kê lệnh
+├── scripts/qa/
+│   ├── ci-scope.js               ← MỚI · npm script chưa xếp hạng ⇒ chặn
+│   ├── env-khong-thua-huong.js   ← MỚI · test đọc biến không ai dựng ⇒ chặn
+│   └── gates-voi-toi.js          ← MỚI · máy không điểm vào nào gọi ⇒ chặn
+└── README.md                     ← MỚI · nghiệm thu bằng clone sạch
+```
+
+Để ý `gates.yml` **không liệt kê lệnh**: nó đọc `ci_scope.json`. Thêm gate mới thì sửa JSON, không sửa
+YAML — và `ci-scope.js` đảm bảo không bỏ sót.
+
 ## Tự kiểm
 
 - [ ] Mọi npm script của tôi được xếp hạng, và cái nào không vào CI đều có **lý do**.

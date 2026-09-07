@@ -21,9 +21,8 @@ const DATA_FILES = ['terms/_cats.js','terms/rules.js','terms/gates.js','terms/ga
 const logo = 'data:image/png;base64,' +
   fs.readFileSync(path.join(ROOT, '..', 'brand', 'logo-sapp.png')).toString('base64');
 
-/* Tab "Hành trình" DẪN XUẤT từ docs/BUILD_JOURNAL.md — markdown là nguồn canonical, không chép tay sang
+/* Tab "Khoá học" DẪN XUẤT từ docs/COURSE.md — markdown là nguồn canonical, không chép tay sang
    file .js của trang (hai nguồn thì sẽ trôi). Parse lỗi thì build CHẾT, không sinh tab rỗng. */
-/* Tab "Khoá học" cũng DẪN XUẤT — từ docs/COURSE.md. Cùng lý do một-nguồn. */
 const { parseCourse } = require(path.join(SRC, 'course_parse.js'));
 const COURSE_MD = path.join(ROOT, '..', 'COURSE.md');
 let course;
@@ -32,18 +31,10 @@ catch (e) { console.error('LỖI đọc COURSE.md: ' + e.message); process.exit(
 const courseJs = '/* SINH TỰ ĐỘNG từ docs/COURSE.md — đừng sửa ở đây, sửa file markdown. */\n' +
   'const COURSE = ' + JSON.stringify(course) + ';\n';
 
-const { parseJournal } = require(path.join(SRC, 'journal_parse.js'));
-const JOURNAL_MD = path.join(ROOT, '..', 'BUILD_JOURNAL.md');
-let journal;
-try { journal = parseJournal(JOURNAL_MD); }
-catch (e) { console.error('LỖI đọc BUILD_JOURNAL.md: ' + e.message); process.exit(1); }
-const journalJs = '/* SINH TỰ ĐỘNG từ docs/BUILD_JOURNAL.md — đừng sửa ở đây, sửa file markdown. */\n' +
-  'const JOURNAL = ' + JSON.stringify(journal) + ';\n';
-
 let html = read('shell.html')
   .replace('/*__CSS__*/', () => read('style.css') + '\n' + read('style.extra.css'))
   .replace('__LOGO__', () => logo)
-  .replace('/*__DATA__*/', () => courseJs + journalJs + DATA_FILES.map(read).join('\n'))
+  .replace('/*__DATA__*/', () => courseJs + DATA_FILES.map(read).join('\n'))
   .replace('/*__APP__*/', () => read('graph3d.js') + '\n' + read('app.js'));
 
 // Kiểm cú pháp TỪNG file nguồn trước khi ghép. Ghép rồi mới lỗi thì thông báo trỏ vào file gộp,

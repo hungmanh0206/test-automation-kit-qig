@@ -379,6 +379,21 @@ Nghiệm thu: 6/6 tình huống làm sai đều đỏ đúng gate mong đợi."
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/scripts/
+├── lib/
+│   └── gate.js                   ← MỚI · khung chung: ketQua · khongDoDuoc · fileDangTrack
+└── qa/
+    ├── inventory_gate.js         ← MỚI · artifact bắt buộc thiếu ⇒ chặn
+    ├── secret_scan.js            ← MỚI · secret trên file đã track ⇒ chặn
+    └── self_review.js            ← SỬA · gộp mọi gate; KHÔNG ĐO ĐƯỢC thắng VI PHẠM
+```
+
+`lib/gate.js` ở `scripts/lib/` vì gõ `node scripts/lib/gate.js` không làm gì cả — nó là thư viện.
+Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát với mã khác 0 khi có vi phạm.
+
 ## Tự kiểm
 
 - [ ] Bốn gate dùng chung `lib/gate.js`, không chép logic in kết quả.

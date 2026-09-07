@@ -22,7 +22,7 @@
 
   /* ─────────── Điều hướng mode ─────────── */
   var panels = { graph: $('#p-graph'), az: $('#p-az'), guide: $('#p-guide'), readme: $('#p-readme'),
-                 course: $('#p-course'), journey: $('#p-journey'),
+                 course: $('#p-course'),
                  flash: $('#p-flash'), chal: $('#p-chal'), info: $('#p-info') };
   function show(mode) {
     Object.keys(panels).forEach(function (k) { panels[k].hidden = k !== mode; });
@@ -32,7 +32,6 @@
     if (mode === 'chal' && !$('#slots').children.length) renderChallenge(true);
     if (mode === 'guide' && !$('#guideFlow').children.length) renderGuide();
     if (mode === 'readme' && !$('#archList').children.length) renderReadme();
-    if (mode === 'journey' && !$('#jEras').children.length) renderJourney();
     if (mode === 'course' && !$('#cParts').children.length) renderCourse();
   }
   $$('.mode').forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.mode); }); });
@@ -465,6 +464,25 @@
       });
     }
 
+    /* Cây thư mục: in NGUYÊN VĂN trong <pre> để giữ thụt lề — dùng textContent, không innerHTML,
+       vì cây có ký tự │ ├ └ và chú thích do người viết, không được coi là markup. */
+    if (COURSE.kitTree) {
+      $('#cTree').textContent = COURSE.kitTree;
+    }
+    if (COURSE.sortRules.length) {
+      var sw = $('#cSort');
+      COURSE.sortRules.forEach(function (r) {
+        var box = el('div', 'csort');
+        box.appendChild(el('code', null, r.dir));
+        box.appendChild(el('p', null, r.holds));
+        var qq = el('p', 'csortq');
+        qq.appendChild(el('b', null, 'Câu hỏi phân loại: '));
+        qq.appendChild(document.createTextNode(r.question));
+        box.appendChild(qq);
+        sw.appendChild(box);
+      });
+    }
+
     /* Mục tiêu cấp khoá */
     if (COURSE.outcomes.length) {
       var ow = $('#cOutcomes');
@@ -549,88 +567,6 @@
       var vw = $('#cDeliver');
       COURSE.deliverables.forEach(function (d) { vw.appendChild(el('li', null, d)); });
     }
-  }
-
-  /* ─────────── Tab Hành trình (dữ liệu sinh từ docs/BUILD_JOURNAL.md) ─────────── */
-  function renderJourney() {
-    var st = $('#jStats');
-    [['chặng', JOURNAL.eras.length], ['commit', JOURNAL.meta.commits],
-     ['tuần', Math.round((new Date(JOURNAL.meta.to) - new Date(JOURNAL.meta.from)) / 6048e5)],
-     ['nguyên tắc', JOURNAL.principles.length]].forEach(function (p) {
-      var d = el('div');
-      d.appendChild(el('b', null, String(p[1])));
-      d.appendChild(el('span', null, p[0]));
-      st.appendChild(d);
-    });
-    var ls = $('#jLesson');
-    ls.appendChild(el('b', null, 'Bài học lớn nhất'));
-    ls.appendChild(el('p', null, JOURNAL.lesson));
-
-    var wrap = $('#jEras');
-    JOURNAL.eras.forEach(function (e) {
-      var row = el('div', 'fstep');
-      var rail = el('div', 'frail');
-      rail.appendChild(el('span', 'fnum', e.n));
-      row.appendChild(rail);
-      var card = el('div', 'fcard2');
-      var head = el('div', 'fhead');
-      head.appendChild(el('h4', null, e.title));
-      head.appendChild(el('span', 'who', e.from === e.to ? e.from : e.from + ' → ' + e.to));
-      card.appendChild(head);
-      /* Bốn nhãn dưới đây khớp đúng bốn trường trong markdown; thêm trường ở đó thì thêm ở đây. */
-      [['problem', 'Vấn đề', 'jprob'], ['measured', 'Đo bằng', 'jmeas'],
-       ['trap', 'Bẫy đã vấp', 'jtrap'], ['advice', 'Nếu bạn dựng lại', 'jadv']].forEach(function (f) {
-        var v = e[f[0]]; if (!v) return;
-        var b = el('div', 'jsec ' + f[2]);
-        b.appendChild(el('b', 'dlab', f[1]));
-        if (v.lead) b.appendChild(el('p', null, v.lead));
-        if (v.items && v.items.length) {
-          var ul = el('ul');
-          v.items.forEach(function (i) { ul.appendChild(el('li', null, i)); });
-          b.appendChild(ul);
-        }
-        card.appendChild(b);
-      });
-      if (e.built && (e.built.items.length || e.built.lead)) {
-        var bl = el('div', 'fouts');
-        bl.appendChild(el('b', null, 'Đã dựng'));
-        (e.built.items.length ? e.built.items : [e.built.lead]).forEach(function (i) {
-          // pill chỉ giữ vế đầu cho gọn; câu đầy đủ nằm trong file markdown
-          var short = i.split(/\s[—–]\s|:\s/)[0];
-          bl.appendChild(el('span', 'pill', short.length > 54 ? short.slice(0, 53) + '…' : short));
-        });
-        card.appendChild(bl);
-      }
-      row.appendChild(card);
-      wrap.appendChild(row);
-    });
-
-    var pr = $('#jPrinciples');
-    JOURNAL.principles.forEach(function (p, i) {
-      var box = el('div', 'prbox');
-      box.appendChild(el('b', 'prhead', (i + 1) + '. ' + p.t));
-      box.appendChild(el('p', 'snote', p.d));
-      pr.appendChild(box);
-    });
-
-    var od = $('#jOrder');
-    JOURNAL.order.forEach(function (o) {
-      var r = el('div', 'xrow');
-      r.appendChild(el('span', 'xn', o.n));
-      var mid = el('div', 'xmid');
-      mid.appendChild(el('b', null, o.what));
-      mid.appendChild(el('span', 'xd', o.why));
-      r.appendChild(mid);
-      od.appendChild(r);
-    });
-
-    var bl2 = $('#jBlind');
-    JOURNAL.blind.forEach(function (b) {
-      var box = el('div', 'prbox warn');
-      box.appendChild(el('b', 'prhead', b.t));
-      box.appendChild(el('p', 'snote', b.d));
-      bl2.appendChild(box);
-    });
   }
 
   /* ─────────── Số liệu ở header/info ─────────── */

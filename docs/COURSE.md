@@ -70,6 +70,108 @@ Nói "chỗ này sai" mà không chỉ được mã luật thì chưa chứng mi
 
 ---
 
+## Cấu trúc thư mục của bộ kit
+
+Đây là thư mục bạn có **sau khi học hết khoá**. Đọc trước một lượt, không cần hiểu hết — mục đích là khi bài
+học nói "viết file này", bạn biết nó nằm ở đâu và cạnh cái gì. Mỗi nhánh ghi **bài nào tạo ra nó**.
+
+```
+kit-cua-toi/
+├── CLAUDE.md                         ← Bài 2  · luật agent PHẢI đọc mỗi phiên (dưới 20 dòng)
+├── RULE_GLOBAL.md                    ← Bài 2  · bản luật đầy đủ; CLAUDE.md là bản rút gọn có pointer
+├── README.md                         ← Bài 26 · người mới đọc là chạy được
+├── CHANGELOG.md                      ← Bài 26 · kit cũng có phiên bản
+├── package.json                      ← Bài 4  · khai mọi lệnh `npm run ...`
+├── playwright.config.js              ← Bài 12 · 13 tuỳ chọn quyết định chất lượng
+├── .gitignore                        ← Bài 5  · ba thư mục không bao giờ commit
+│
+├── .agent/                           ← "bộ não": luật, cấu hình, năng lực
+│   ├── rules/
+│   │   └── core_rules.md             ← Bài 2  · digest, canonical là RULE_GLOBAL.md
+│   ├── skills/                       ← Bài 6  · năng lực theo vai (không tự nạp)
+│   ├── workflows/                    ← Bài 6  · quy trình từng phase
+│   └── config/
+│       ├── verdict_taxonomy.json     ← Bài 13 · 7 phán quyết + 7 tầng lỗi + ngưỡng rerun
+│       ├── dimension-manifest.json   ← Bài 11 · chiều nào áp cho dự án này, `n/a` phải kèm lý do
+│       ├── anh-xa-luu-tru.json       ← Bài 15 · một nguồn cho 3 tên gọi của cùng một trường
+│       ├── risk_model.json           ← Bài 19 · trọng số rủi ro + khối cold-start
+│       ├── mutants.json              ← Bài 21 · các lỗi cố tình tiêm để đo suite
+│       ├── ci_scope.json             ← Bài 24 · lệnh nào chạy ở đâu (một nguồn cho CI)
+│       ├── env-allow.json            ← Bài 24 · biến môi trường nào được đọc, ai dựng nó
+│       └── kit-layers.md             ← Bài 27 · ranh giới tầng CHUNG ↔ tầng DỰ ÁN
+│
+├── .claude/
+│   └── commands/                     ← Bài 16 · gõ `/phase2 <MÃ>` thay vì 6 lệnh
+│
+├── prompt_templates/                 ← Bài 6  · bản mẫu ra lệnh cho agent
+│   ├── phase1/                       ·  requirement → test case
+│   └── phase2/                       ·  execute → bằng chứng → bug
+│
+├── scripts/
+│   ├── lib/                          ← THƯ VIỆN — không tự chạy được
+│   │   ├── testcase/                 ·  Bài 9  · đọc/ghi bảng testcase, xuất Excel
+│   │   ├── verdict.js                ·  Bài 13 · đọc taxonomy, ánh xạ trạng thái
+│   │   └── gate.js                   ·  Bài 11 · khung chung cho mọi máy chặn
+│   └── qa/                           ← MÁY CHẶN — mỗi file tự chạy, thoát mã 0/1/2
+│       ├── kiem-so-mong-doi.js       ·  Bài 1  · máy chặn đầu tiên, 12 dòng
+│       ├── ambiguity_gate.js         ·  Bài 8  · chưa chốt mơ hồ thì không cho sinh case
+│       ├── oracle_gate.js            ·  Bài 10 · giá trị tính toán không trỏ nguồn ⇒ chặn
+│       ├── dem_chieu.js              ·  Bài 11 · chiều bắt buộc chưa đủ ngưỡng ⇒ chặn
+│       ├── evidence_gate.js          ·  Bài 13 · case đã chạy mà không có ảnh/video ⇒ chặn
+│       ├── doi-chieu-luu-tru.js      ·  Bài 15 · so UI với nơi lưu, khoanh tầng lỗi
+│       ├── gate-mo-rong.js           ·  Bài 14 · phát hiện không có oracle_ref ⇒ OBSERVATION
+│       ├── doi-soat-truong.js        ·  Bài 16 · 2xx không chứng minh mapping đúng
+│       ├── kiem-domain.js            ·  Bài 18 · rule không có `source` ⇒ cấm ghi
+│       ├── cham-rui-ro.js            ·  Bài 19 · tính điểm rủi ro, ép độ sâu theo band
+│       ├── tiem-loi.js               ·  Bài 21 · đo chính bộ kiểm bằng tiêm lỗi
+│       ├── gates-voi-toi.js          ·  Bài 24 · máy không ai gọi thì bằng không có
+│       ├── policy_check.js           ·  Bài 28 · chống luật bị trôi, allowlist chặn khối lạ
+│       └── self_review.js            ·  Bài 11 · gọi mọi máy chặn một lượt
+│
+├── tests/
+│   ├── support/                      ← HẠ TẦNG TEST — không phải test
+│   │   ├── fixtures/                 ·  Bài 12 · dựng/dọn dữ liệu, gắn mutant
+│   │   ├── factory.js                ·  Bài 12 · tạo dữ liệu qua API, prefix "IT test"
+│   │   ├── evidence.js               ·  Bài 13 · chụp có khoanh đỏ, che PII
+│   │   ├── video.js                  ·  Bài 13 · quay có banner từng bước
+│   │   └── setup/db/                 ·  Bài 15 · cửa DUY NHẤT tới database, 4 lớp an toàn
+│   ├── api/                          ← Bài 1  · test gọi thẳng API
+│   ├── e2e/                          ← Bài 12 · test qua giao diện
+│   └── smoke/                        ← Bài 24 · tập nhẹ chạy hàng đêm
+│
+├── .github/workflows/                ← Bài 24 · CI đọc ci_scope.json, KHÔNG tự liệt kê lệnh
+│
+├── knowledge/                        ← Bài 17-18 · bộ nhớ dự án. ⛔ KHÔNG commit
+├── profiles/
+│   └── <MÃ-TASK>/task.env            ← Bài 4  · URL + tài khoản theo task. ⛔ KHÔNG commit
+└── outputs/                          ← kết quả mỗi lượt chạy. ⛔ KHÔNG commit
+    └── tasks/<MÃ-TASK>/
+        ├── test-cases/               ·  bảng case canonical đã sinh
+        ├── test-results/             ·  phán quyết từng case + tầng lỗi
+        └── evidence/                 ·  ảnh và video
+```
+
+**Ba chỗ người mới hay xếp sai** — phân biệt bằng một câu hỏi, không bằng cảm giác:
+
+| Thư mục | Chứa gì | Câu hỏi phân loại |
+|---|---|---|
+| `scripts/lib/` | thư viện, code dùng chung | *"Gõ `node <file>` có chạy được không?"* **Không** ⇒ vào `lib/` |
+| `scripts/qa/` | máy chặn, tự chạy được | **Có**, và nó **báo lỗi rồi thoát khác 0** ⇒ vào `qa/` |
+| `tests/support/` | hạ tầng test, không phải test | Không có `test(...)` trong file ⇒ vào `support/` |
+
+**Ba thư mục ⛔ không bao giờ commit**, và lý do khác nhau:
+
+| Thư mục | Vì sao |
+|---|---|
+| `knowledge/` | dữ liệu nghiệp vụ của công ty — và **chính tên file** đã tiết lộ lỗi sản phẩm (Bài 5) |
+| `profiles/*/task.env` | tài khoản, mật khẩu, token |
+| `outputs/` | kết quả từng lượt chạy, đổi liên tục, và chứa ảnh có thể có dữ liệu khách |
+
+> Bạn **không phải tạo cây này ngay**. Mỗi bài tạo đúng phần của nó, và mỗi bài giảng đều kết thúc bằng khối
+> **"Cây thư mục sau bài này"** để bạn đối chiếu xem mình có đang đi đúng đường không.
+
+---
+
 ## PHẦN 1 — Nền tảng tư duy (5.5 giờ)
 
 ### [Bài 0 — Trước khi bắt đầu](course/truoc-khi-bat-dau.md) *(1h)*
@@ -249,7 +351,7 @@ Nói "chỗ này sai" mà không chỉ được mã luật thì chưa chứng mi
 - Chiều ngược `spec:gap`: thấy thứ **spec không nói gì** — không phải bug, là lỗ hổng đặc tả
 - **XÂY gate:** gate độ sâu theo mức rủi ro để không nổ thời gian chạy
 
-### Bài 15 — Kiểm song song UI ↔ Database *(2.5h)*
+### [Bài 15 — Kiểm song song UI ↔ Database](course/ui-va-tang-luu-tru.md) *(2.5h)*
 
 *Có gì trong tay: bộ case đã mở rộng 7 trục.*
 

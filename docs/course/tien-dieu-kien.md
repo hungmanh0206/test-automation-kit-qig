@@ -379,6 +379,19 @@ Kiểm dọn: số bản ghi test trước và sau khi chạy suite bằng nhau,
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/tests/support/
+├── factory.js                    ← MỚI · tạo dữ liệu qua API, prefix "IT test" + mã task
+├── fixtures/
+│   └── donHang.js                ← MỚI · dựng trước test, dọn sau test
+└── janitor.js                    ← MỚI · dọn rác còn sót, 3 lớp an toàn
+```
+
+Cả ba file nằm ở `tests/support/`, không ở `scripts/qa/`: chúng không tự chạy được và không chặn gì —
+chúng là hạ tầng test. Câu hỏi phân loại ở Bài 0 vẫn dùng được.
+
 ## Tự kiểm
 
 - [ ] 3 test của tôi **không còn** mã dữ liệu gán cứng; chúng dựng dữ liệu bằng fixture.

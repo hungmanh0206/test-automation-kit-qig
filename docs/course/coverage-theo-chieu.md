@@ -302,6 +302,17 @@ Trước: <N> chiều bắt buộc có 0 case. Sau: bổ sung case cho Guard và
 
 ---
 
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── .agent/config/
+│   └── dimension-manifest.json   ← MỚI · chiều nào áp, `n/a` PHẢI kèm lý do
+└── scripts/qa/
+    ├── dem_chieu.js              ← MỚI · chiều bắt buộc chưa đủ ngưỡng ⇒ chặn
+    └── self_review.js            ← MỚI · gọi mọi máy chặn một lượt
+```
+
 ## Tự kiểm
 
 - [ ] Tôi giải thích được hai trục, và vì sao trục chiều vô hình cho tới khi có tag.
