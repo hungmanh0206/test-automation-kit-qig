@@ -8,8 +8,8 @@
  * kit là "luật cần MÁY", mà máy không LIỆT KÊ ĐƯỢC thì không kiểm toán được — không ai biết một gate đã
  * âm thầm thành cảnh báo, hay đã mất nơi gọi.
  *
- * Thông tin MỚI mà bảng này ghi (chưa máy nào trong kit ghi): mức CHẶN vs CẢNH BÁO. Suy từ source —
- * có `process.exit(1)` / `exitCode = 1` là CHẶN, chỉ in cảnh báo là CẢNH BÁO. Đây đúng chỗ dễ trôi nhất:
+ * Thông tin MỚI mà bảng này ghi (chưa máy nào trong kit ghi): CHẶN vs SINH vs BÁO CÁO. Suy từ source —
+ * `exit 1` là CHẶN, ghi artifact là SINH, chỉ in là BÁO CÁO. Chỗ CHẶN đúng là chỗ dễ trôi nhất:
  * nới một gate thành cảnh báo là sửa một dòng, và không có gì ghi lại việc đó.
  *
  * Theo khuôn của kit: generator KHÁC enforcer. `skills_index.js` sinh bảng, `policy_source_check.js` mới
@@ -25,10 +25,27 @@ const REPO = path.resolve(__dirname, '..', '..');
 const OUT = path.join(REPO, '.agent', 'config', 'GATES.md');
 const QA = path.join(REPO, 'scripts', 'qa');
 
-/* Bề mặt có thể GỌI một gate. Thiếu bề mặt nào ở đây thì gate trông như mồ côi — nên danh sách này
- * phải khớp với chỗ `policy_source_check.js` đo reachability, đừng khai lệch. */
-const SURFACE_DIRS = ['.github/workflows', '.agent/workflows', 'prompt_templates', '.claude/commands', 'tests/fe/infra'];
-const SURFACE_FILES = ['.gitlab-ci.yml', '.claude/settings.json', 'README.md', 'USER_GUIDE.md', 'QUICKSTART.md'];
+/*
+ * Bề mặt có thể GỌI một gate. Danh sách này THIẾU thì bảng nói SAI theo hướng tệ nhất: máy đang được
+ * dùng bị in ra như thể mồ côi. Đã dính đúng vậy hai lần trong ngày đầu:
+ *   · `explore:check`    → có ở `exploratory/run_exploratory_session.md` (bỏ sót cả thư mục)
+ *   · `expansion:audit`  → có ở `RULE_GLOBAL.md` (bỏ sót chính file canonical)
+ * Nên: quét rộng, và mỗi lần thấy một máy "không bề mặt nào" thì NGHI BẢNG TRƯỚC, nghi kit sau.
+ *
+ * LOẠI TRỪ có chủ đích:
+ *   · `.agent/config/GATES.md` — chính file này sinh ra; tính nó là bề mặt thì MỌI máy đều trông như
+ *     được gọi, và cột "Gọi từ" mất hết ý nghĩa.
+ *   · `package.json` — nơi ĐỊNH NGHĨA npm script, không phải nơi gọi.
+ */
+const SURFACE_DIRS = [
+  '.github/workflows', '.agent/workflows', '.agent/rules', '.agent/skills',
+  'prompt_templates', 'exploratory', 'partial-rerun', '.claude/commands', 'tests/fe/infra',
+];
+const SURFACE_FILES = [
+  '.gitlab-ci.yml', '.claude/settings.json',
+  'RULE_GLOBAL.md', 'CLAUDE.md', 'README.md', 'USER_GUIDE.md', 'QUICKSTART.md', 'scripts/qa/README.md',
+];
+const SURFACE_EXCLUDE = /(^|\/)GATES\.md$/;
 
 const readSafe = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
 
@@ -44,6 +61,7 @@ function corpus() {
       for (const en of fs.readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, en.name);
         if (en.isDirectory()) { walk(p); continue; }
+        if (SURFACE_EXCLUDE.test(p.split(path.sep).join('/'))) continue;
         if (/\.(md|ya?ml|json|ts|js)$/.test(en.name)) push(p, d);
       }
     };
@@ -52,22 +70,42 @@ function corpus() {
   return out;
 }
 
-/** Một dòng mô tả: lấy từ header comment dạng `* ten — mo ta` (hoặc `* ten (F3) — mo ta`). */
+/**
+ * Một dòng mô tả, lấy từ header comment. Phải chịu được CẢ HAI kiểu header đang có trong kit:
+ *   `/* ten — mo ta`   (khối)   và   `// Nhãn Nhiều Chữ — mo ta`   (dòng)
+ * Bản đầu chỉ nhận một token chữ thường trước gạch ⇒ 9/58 gate bị in "(chưa có mô tả)" TRONG KHI
+ * chúng có mô tả đầy đủ. Đó là lỗi của bảng, không phải lỗ của kit — và loại lỗi tệ nhất ở một
+ * danh mục: nó tố oan.
+ */
 function purposeOf(text) {
-  for (const line of text.split(/\r?\n/).slice(0, 25)) {
-    const m = line.match(/^\s*\*\s*[a-z0-9_.]+(?:\s*\([^)]*\))?\s*[—-]\s*(.+)$/i);
-    if (m) return m[1].replace(/\s+/g, ' ').trim();
+  for (const raw of text.split(/\r?\n/).slice(0, 30)) {
+    const line = raw.replace(/^\s*(\/\*+|\*+\/?|\/\/)\s?/, '').trim();
+    if (!line || /^#!|^'use strict'/.test(line)) continue;
+    if (/^(VÌ SAO|Dùng|Exit|Input|Output|Ghi chú)\b/i.test(line)) continue;   // đoạn giải thích, không phải nhãn
+    const m = line.match(/^(.{2,60}?)\s+[—–-]\s+(.+)$/);
+    return (m ? m[2] : line).replace(/\s+/g, ' ').trim();
   }
   return '(chưa có mô tả ở header)';
 }
 
-/** CHẶN nếu có đường ra exit 1; CẢNH BÁO nếu chỉ in. Cờ --enforce ghi riêng vì nó là chặn CÓ ĐIỀU KIỆN. */
+/**
+ * BA loại, suy từ source — không phải hai.
+ *
+ * Bản đầu chỉ có CHẶN/CẢNH BÁO, và nó dán nhãn "CẢNH BÁO" cho `bugs:checklist`. Sai về BẢN CHẤT:
+ * script đó không phát hiện vi phạm gì cả, nó IN BRIEF bug lịch sử cho lúc sinh case; việc chặn nằm
+ * ở `dim:coverage` (chiều `bug_history` §20, minCasesPerDimension = 5). Gọi nó là "cảnh báo" khiến
+ * người đọc tưởng có một gate đang bị nới — trong khi vòng đó kín.
+ *
+ *   CHẶN    — có đường ra exit 1 (kèm ghi chú nếu chặn phụ thuộc cờ --enforce)
+ *   SINH    — không chặn, nhưng GHI artifact (index/dashboard/report)
+ *   BÁO CÁO — không chặn, không ghi; chỉ in cho người/agent đọc
+ */
 function levelOf(text) {
   const hardBlock = /process\.exit\(1\)|process\.exitCode\s*=\s*1|throw new /.test(text);
   const hasEnforceFlag = /--enforce|'enforce'|"enforce"/.test(text);
-  if (hardBlock && hasEnforceFlag) return 'CHẶN (có cờ --enforce)';
-  if (hardBlock) return 'CHẶN';
-  return 'CẢNH BÁO';
+  if (hardBlock) return hasEnforceFlag ? 'CHẶN (có cờ --enforce)' : 'CHẶN';
+  if (/writeFileSync|appendFileSync/.test(text)) return 'SINH';
+  return 'BÁO CÁO';
 }
 
 function build() {
@@ -108,7 +146,7 @@ function build() {
 }
 
 function render({ rows, orphanFiles }) {
-  const order = { 'CHẶN': 0, 'CHẶN (có cờ --enforce)': 1, 'CẢNH BÁO': 2 };
+  const order = { 'CHẶN': 0, 'CHẶN (có cờ --enforce)': 1, 'SINH': 2, 'BÁO CÁO': 3 };
   const sorted = rows.slice().sort((a, b) => (order[a.level] - order[b.level]) || a.file.localeCompare(b.file));
   const nBlock = rows.filter((r) => r.level.startsWith('CHẶN')).length;
 
@@ -119,9 +157,14 @@ function render({ rows, orphanFiles }) {
   L.push('# Danh mục GATE của kit');
   L.push('');
   L.push('> **SINH TỰ ĐỘNG** bởi `node scripts/qa/gate_index.js --write`. Đừng sửa tay — `--check` sẽ chặn khi');
-  L.push('> bảng lệch source. Cột **Mức** suy từ code: có đường ra `exit 1` là CHẶN, chỉ in là CẢNH BÁO.');
+  L.push('> bảng lệch source. Cột **Mức** suy từ code: `exit 1` = CHẶN · ghi artifact = SINH · chỉ in = BÁO CÁO.');
   L.push('');
-  L.push(`Tổng: **${rows.length} gate** — ${nBlock} chặn, ${rows.length - nBlock} cảnh báo.`);
+  const nGen = rows.filter((r) => r.level === 'SINH').length;
+  const nRep = rows.filter((r) => r.level === 'BÁO CÁO').length;
+  L.push(`Tổng **${rows.length}** máy — **${nBlock} CHẶN** · ${nGen} SINH (ghi artifact) · ${nRep} BÁO CÁO (chỉ in).`);
+  L.push('');
+  L.push('SINH/BÁO CÁO **không phải gate bị nới** — chúng không kiểm vi phạm. Ví dụ `bugs:checklist` in brief bug');
+  L.push('lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` §20).');
   L.push('');
   L.push('| Mức | npm script | Chặn/kiểm cái gì | File | Gọi từ |');
   L.push('|---|---|---|---|---|');
