@@ -151,7 +151,7 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
   border-radius:var(--radius); padding:13px 16px; box-shadow:var(--shadow)}
 .jstats b{display:block; font-size:26px; font-weight:800; line-height:1.2}
 .jstats span{font-size:12.5px; color:var(--t3)}
-.jlesson{background:var(--ink); color:#F5F1E8; border-radius:var(--radius); padding:18px 20px; position:relative; overflow:hidden}
+.jlesson{background:var(--t1); color:#F5F1E8; border-radius:var(--radius); padding:18px 20px; position:relative; overflow:hidden}
 .jlesson::after{content:''; position:absolute; right:-60px; top:-80px; width:240px; height:240px; border-radius:50%;
   background:radial-gradient(circle, rgba(255,183,0,.26) 0%, rgba(255,183,0,0) 68%); pointer-events:none}
 .jlesson b{display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.14em;
@@ -193,3 +193,48 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
 .cgoals li::before{content:'✓'; position:absolute; left:0; top:0; color:var(--success); font-weight:800}
 .cfile{display:block; margin-top:10px; padding-top:9px; border-top:1px solid var(--bSoft);
   font-family:Consolas,monospace; font-size:11px; color:var(--gold800)}
+
+/* ── Tab Khoá học: khối mới theo cấu trúc mẫu (so sánh · bug đối chứng · quyết định) ── */
+.cwarn{display:flex;gap:10px;align-items:flex-start;grid-column:1/-1;margin-top:8px;
+  padding:10px 12px;border-radius:10px;background:var(--failBg);color:var(--failFg)}
+.cwarn b{flex:0 0 auto;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.cwarn span{font-size:13.5px;line-height:1.5}
+
+.cmpgrid{display:grid;gap:8px;margin:14px 0 4px}
+.ccmp{display:grid;grid-template-columns:minmax(120px,1fr) 1.4fr 1.6fr;gap:10px;align-items:start;
+  padding:10px 12px;border:1px solid var(--bSubtle);border-radius:10px;background:var(--card)}
+.ccmp b{font-size:13px;color:var(--t2)}
+.ccmp .cother{font-size:13px;color:var(--t3)}
+.ccmp .cours{font-size:13.5px;font-weight:600;color:var(--t1)}
+@media (max-width:640px){.ccmp{grid-template-columns:1fr;gap:4px}
+  .ccmp .cother::before{content:"khoá khác: ";color:var(--t3)}
+  .ccmp .cours::before{content:"khoá này: ";font-weight:400;color:var(--t3)}}
+
+.coutcomes{margin:12px 0 4px;padding:0;list-style:none;display:grid;gap:7px}
+.coutcomes li{position:relative;padding-left:26px;font-size:14px;line-height:1.55}
+.coutcomes li::before{content:"✅";position:absolute;left:0;top:0;font-size:13px}
+
+.buggrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin:12px 0 4px}
+.cbug{border:1px solid var(--bSubtle);border-left:3px solid var(--failFg);border-radius:12px;
+  padding:14px;background:var(--card)}
+.cbhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.cbhead h4{margin:0;font-size:14px;flex:1 1 auto}
+.cbblind{margin:0 0 8px;font-size:13px;color:var(--t2);line-height:1.5}
+
+.cphours{margin-left:auto;font-size:12px;font-weight:500;color:var(--t3);
+  padding:2px 9px;border:1px solid var(--bSubtle);border-radius:20px}
+.clesson.star{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.cstar{margin-left:6px;color:var(--gold)}
+.cgoals li.cpractice{list-style:none;margin-left:-18px;padding:6px 10px;border-radius:8px;
+  background:var(--goldWash)}
+.cgoals li.cgate{list-style:none;margin-left:-18px;padding:6px 10px;border-radius:8px;
+  background:var(--passBg);color:var(--passFg)}
+.cgoals li.cpractice b,.cgoals li.cgate b{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+
+.orphgrid,.decgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  margin:12px 0 4px}
+.corphan,.cdec{border:1px solid var(--bSubtle);border-radius:12px;padding:14px;background:var(--card)}
+.corphan h4,.cdec h4{margin:0 0 8px;font-size:14px;display:flex;gap:8px;align-items:center}
+.corphan p,.cdec p{margin:0 0 8px;font-size:13px;color:var(--t2);line-height:1.55}
+.csuggest{color:var(--t1) !important}
+.corphan{border-left:3px solid var(--amber)}

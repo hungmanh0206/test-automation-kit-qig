@@ -1,342 +1,493 @@
-# Khoá học: Tự dựng bộ kit QA + AI Agent từ con số 0
+# Khoá học: Xây dựng AI Agent Automation Testing Kit từ con số 0
 
-> **Đầu ra của khoá:** bạn có một bộ kit chạy được trên dự án thật của mình — sinh testcase, execute, thu
-> bằng chứng, log bug, và có **máy kiểm chặn** khi làm sai chuẩn.
->
-> **Thứ tự các bài KHÔNG theo thứ tự lịch sử của một kit đã hoàn thiện**, mà theo **thứ bạn có trong tay
-> ở mỗi bước**. Từ 0 thì chưa có bug lịch sử để chấm rủi ro, chưa có suite để đo năng lực phát hiện, chưa
-> có bộ testcase để đếm độ phủ. Mỗi bài dưới đây vì vậy đều mở đầu bằng dòng *"Có gì trong tay"* — và
-> không bài nào phụ thuộc vào dữ liệu mà bài trước chưa tạo ra.
-
-**Đối tượng.** QA/Tester manual muốn dùng AI agent như một cộng sự có kỷ luật, và muốn hiểu bộ kit mình
-dùng thay vì chỉ chạy lệnh người khác đưa.
-
-**Cần có trước.** Đọc hiểu được JavaScript cơ bản (không cần viết được) · biết dùng terminal · Node.js 18+.
-**Không cần** có dự án thật, không cần quyền vào hệ thống công ty: khoá đi kèm
-[app thực hành](course/assets/app-thuc-hanh/README.md) chạy trên máy bạn, **có 3 bug cài sẵn cố ý** để bạn
-biết bộ kiểm của mình bắt được hay không.
-
-**Không dạy trong khoá này.** Lập trình JavaScript từ đầu · kiểm thử hiệu năng và bảo mật chuyên sâu ·
-vận hành hạ tầng CI/CD.
-
-**Tổng thời lượng: 47 giờ · 21 bài (Bài 0 → Bài 20) · 6 phần · 136 mục tiêu học tập.**
-
-**Nội dung chi tiết.** **Cả 21 bài đều đã có bài giảng đầy đủ** — tiêu đề bài là **link bấm được**. Mỗi bài gồm: **từ mới của bài** · các **Việc** làm theo bước, mỗi việc có khối *"Bạn sẽ thấy"* và bảng xử lý khi thấy khác · **cây thư mục sau bài này** · bảng tự kiểm · bài tập về nhà. Kèm [app thực hành](course/assets/app-thuc-hanh/README.md) và [tài liệu đặc tả mẫu](course/assets/sample-requirement.md).
+> **Định vị:** không dạy dùng kit có sẵn — dạy **tự xây** một nền tảng QA do AI agent điều phối,
+> hiểu vì sao từng cơ chế tồn tại, và có kit riêng mang đi mọi dự án.
 
 ---
 
-# PHẦN 1 — NỀN: MÔI TRƯỜNG VÀ KHUNG KIT
+## Khác gì các khoá AI Testing hiện có
 
-## [Bài 0 — Trước khi bắt đầu](course/00-truoc-khi-bat-dau.md)
+| | Khoá phổ biến trên thị trường | Khoá này |
+|---|---|---|
+| Trọng tâm | Manual testing + AI hỗ trợ | **Automation + AI agent tự thực thi** |
+| Kết quả | Biết dùng bộ skill được tặng | **Có kit tự xây, hiểu từng dòng** |
+| Chất lượng đầu ra | Dựa vào prompt tốt | **Dựa vào cổng kiểm tra chặn được** |
+| Đo hiệu quả | Cảm nhận | **Số liệu: mutation score, reliability index** |
+| Kỹ năng còn lại sau khoá | Dùng được một công cụ | **Thiết kế được hệ thống chất lượng** |
+
+**Câu hỏi cốt lõi của khoá:** AI viết test rất nhanh — nhưng làm sao biết test đó **đúng** và **thực sự bắt được bug**?
+
+---
+
+## Bạn sẽ học được gì
+
+Sau khoá học, bạn có thể:
+
+✅ Hiểu **6 kiểu sai âm thầm** khi để AI làm QA, và cách chặn từng kiểu bằng máy
+✅ Tự xây kit AI Agent Testing riêng: rules · skills · workflows · commands · gates
+✅ Biến quy tắc chất lượng thành **cổng kiểm tra chạy được** thay vì văn bản bị đọc lướt
+✅ Thiết lập kỷ luật oracle — chặn AI tự lấy giá trị app làm chuẩn đối chiếu
+✅ Sinh test case theo **nhiều chiều phủ** có ngưỡng định lượng theo mức rủi ro
+✅ Chạy automation Playwright có bằng chứng, phân tầng lỗi, tự phục hồi locator có kiểm soát
+✅ Kiểm song song **UI ↔ Database** để bắt lỗi "báo thành công nhưng lưu sai"
+✅ Xây knowledge base tích luỹ, có phiên bản, tự cập nhật mô hình rủi ro
+✅ **Chứng minh** bộ test có bắt được bug bằng mutation testing — không phỏng đoán
+✅ Thiết lập CI/CD: gate tự chạy mọi push, regression nightly, đóng gói phát hành kit
+✅ Mang kit sang dự án mới trong một buổi, không viết lại từ đầu
+
+---
+
+## Yêu cầu đầu vào
+
+**Bắt buộc:** biết cơ bản về kiểm thử (test case, bug, quy trình QA) · dùng được máy tính ở mức thao tác file/terminal · Node.js 18+.
+**Không bắt buộc:** biết code (khoá dạy từ đầu ở mức cần thiết) · biết Playwright · biết CI/CD · **có dự án thật** — khoá đi kèm [app thực hành](course/assets/app-thuc-hanh/README.md) chạy trên máy bạn.
+
+⚠️ **Nói thẳng:** đây **không** phải khoá "AI làm hộ, bạn ngồi xem". Bạn sẽ phải đọc code, hiểu logic
+gate, và tự sửa khi nó chặn sai. Nếu chỉ muốn dùng AI viết test case nhanh hơn thì có khoá nhẹ hơn phù hợp hơn.
+
+---
+
+## App thực hành: bạn có gì để test ngay từ Bài 0
+
+Cả khoá thực hành trên **một** app duy nhất — [Cửa hàng mini](course/assets/app-thuc-hanh/README.md), Node
+thuần, `node server.js` là chạy, không cài gì.
+
+Nó **có đúng 3 bug cài sẵn, cố ý**, mỗi bug đại diện một loại điểm mù:
+
+| Bug | Tầng | Bộ kiểm mù vì | Học viên bắt được ở |
+|---|---|---|---|
+| Phí giao hàng so mốc trên số sai | backend | chỉ test dữ liệu đẹp, không test **biên** | Bài 0 (bằng tay) · Bài 9 |
+| Các số trên màn hình không cộng đúng | frontend | kiểm từng trường, không kiểm **quan hệ** giữa các trường | Bài 10 · Bài 13 |
+| Sửa được đơn đã xác nhận qua API | backend | chỉ test **một tầng** — giao diện đã ẩn nút | Bài 15 · Bài 16 |
+
+Vì sao phải là app **có bug biết trước**: nếu thực hành trên app đúng hoàn toàn thì bộ kiểm của bạn luôn xanh,
+và bạn không có cách nào biết nó xanh vì app đúng hay vì bộ kiểm mù — hai thứ đó cho **cùng một dấu hiệu**.
+Biết trước "có 3 bug" nghĩa là bắt được 0/3 thì **lỗi ở bộ kiểm, không ở app**. Đó là **đối chứng**, và nó là
+ý tưởng trung tâm của cả khoá.
+
+Nguồn phán đúng/sai là [`spec.md`](course/assets/app-thuc-hanh/spec.md) — mọi luật có mã (`BR-01`…`UI-04`).
+Nói "chỗ này sai" mà không chỉ được mã luật thì chưa chứng minh được gì.
+
+---
+
+## PHẦN 1 — Nền tảng tư duy (5.5 giờ)
+
+### [Bài 0 — Trước khi bắt đầu](course/truoc-khi-bat-dau.md) *(1h)*
 
 *Có gì trong tay: chưa có gì.*
 
-✅ Kiểm Node.js trên máy và biết đọc thông báo lỗi khi thiếu.
-✅ Chạy được **app thực hành** của khoá (một cửa hàng mini, có 3 bug cài sẵn cố ý) và mở nó trên trình duyệt.
-✅ Tự tay tạo một đơn hàng, tự tính kết quả từ đặc tả, và **tìm ra bug đầu tiên trong 15 phút** — không dùng công cụ nào.
-✅ Hiểu 10 từ mà cả khoá dùng liên tục, mỗi từ kèm ví dụ lấy từ chính việc vừa làm.
-✅ Xem trước **cây thư mục** của bộ kit sẽ dựng, và phân biệt được `scripts/lib` (thư viện) · `scripts/qa` (máy chặn) · `tests/support` (hạ tầng test).
-✅ Nắm ba thư mục không bao giờ commit và vì sao.
+- Kiểm Node.js và đọc được thông báo lỗi khi thiếu — mỗi bước có khối *"Bạn sẽ thấy"* và bảng xử lý khi thấy khác
+- Chạy app thực hành, mở trên trình duyệt, hiểu vì sao cần **hai** cửa sổ terminal
+- **Thực hành:** tạo một đơn hàng bằng tay, tự tính kết quả từ `spec.md`, và **tìm ra bug đầu tiên ở phút thứ 40** — không dùng công cụ nào
+- 10 từ vựng của cả khoá, mỗi từ **một ví dụ lấy từ việc vừa làm**, không phải một định nghĩa
+- **Cây thư mục toàn kit xem trước** — mỗi nhánh ghi rõ bài nào tạo ra nó
+- Phân biệt `scripts/lib` (thư viện) · `scripts/qa` (máy chặn) · `tests/support` (hạ tầng test) bằng một câu hỏi
+- Ba thư mục không bao giờ commit và vì sao
 
-**1 giờ**
-
-## [Bài 1 — Tự tay xem agent "làm cho nó xanh"](course/01-vi-sao-can-bo-kit.md)
+### [Bài 1 — Vì sao "prompt giỏi" là không đủ](course/vi-sao-can-bo-kit.md) *(1.5h)*
 
 *Có gì trong tay: app thực hành đang chạy, 10 từ vựng.*
 
-✅ Viết test tự động đầu tiên (15 dòng, không cần cài gì) bắt đúng bug đã tìm ở Bài 0.
-✅ **Bảo agent làm cho test đó xanh và xem nó gian lận trên máy mình** — nhận ra 3 kiểu: đổi số mong đợi · lấy số mong đợi từ chính app · nới điều kiện.
-✅ Nắm câu hỏi một-dòng phát hiện test vô nghĩa: *"nếu app sai, dòng này có đỏ không?"*
-✅ Tự chứng minh **dặn dò trong prompt không đảm bảo** — chạy 3–4 lần cho ra kết quả khác nhau.
-✅ Viết **máy chặn đầu tiên** (12 dòng) và thử nó 3 lần cho ra 3 mã thoát: 0 đạt · 1 chặn · 2 không đo được.
-✅ Hiểu vì sao **không** được gộp "không đo được" vào "đạt".
-✅ Phân biệt vai của `tests/` (app có đúng không) với `scripts/qa/` (test kia có đáng tin không).
+- Ba giới hạn của manual và automation truyền thống: test đủ mà vẫn lọt bug · AI sinh nhanh nhưng không ổn định · việc lặp ngốn thời gian
+- **6 kiểu sai âm thầm khi AI làm QA:** oracle tự thoả mãn · đọc lướt rule · false-green · flaky chôn bug thật · học dữ liệu sai · gate không được gọi
+- **Thực hành:** viết test tự động đầu tiên (15 dòng, không cài gì) bắt đúng bug đã tìm ở Bài 0
+- **Thực hành:** bảo agent *"sửa cho nó pass đi"* và **xem nó gian lận trên máy mình** — 3 kiểu: đổi số mong đợi · lấy số mong đợi từ chính app · nới điều kiện
+- Câu hỏi một-dòng phát hiện test vô nghĩa: *"nếu app sai, dòng này có đỏ không?"*
+- Tự chứng minh **dặn dò trong prompt không đảm bảo** — chạy 3–4 lần cho ra kết quả khác nhau
+- **XÂY gate:** máy chặn đầu tiên (12 dòng), thử 3 lần ra 3 mã thoát — `0` đạt · `1` chặn · `2` không đo được
+- Nguyên tắc xuyên suốt khoá: **rule không phải lời dặn — sai chuẩn thì phải chặn được**
+- Phân biệt: AI hỗ trợ tester → AI agent thực thi → nền tảng có gate
 
-**1 giờ 30 phút**
+### [Bài 2 — Kiến trúc một QA platform](course/khung-kit-toi-thieu.md) *(1.5h)*
 
-## [Bài 2 — Môi trường làm việc: Node, Git, VS Code, AI agent](course/02-moi-truong.md)
+*Có gì trong tay: một máy chặn 12 dòng, kinh nghiệm thấy agent gian lận.*
 
-*Có gì trong tay: một máy tính trắng.*
+- 5 lớp: bộ não (rules/skills/workflows) · runtime (scripts/tests) · knowledge · config · output/CI
+- Vì sao tách lớp: cái gì dùng chung mọi dự án, cái gì thuộc dự án
+- Vòng đời: requirement → gate → execute → evidence → bug → học lại
+- Viết file **luôn-trong-ngữ-cảnh** (`CLAUDE.md`): ngắn dưới 20 dòng, chỉ chứa điều không-thương-lượng — và vì sao dài hơn là mất tác dụng
+- Quy ước cô lập ngay từ đầu: mã task · thư mục output theo task · file credentials riêng theo task
+- **Thực hành:** vẽ kiến trúc cho dự án của chính bạn
 
-✅ Cài Node.js bản LTS, Git, VS Code — và kiểm tra từng cái chạy đúng.
-✅ Cài công cụ AI agent (Claude Code hoặc tương đương), đăng nhập, chạy prompt đầu tiên trên một thư mục thật.
-✅ Hiểu và cấu hình **permission mode**: vì sao không để agent tự do ghi lên source thật ngay từ đầu.
-✅ Tạo repo trên GitHub hoặc GitLab, clone về máy, commit đầu tiên.
-✅ Nắm danh sách **không bao giờ commit**: `.env`, token, cookie, khoá riêng, file service-account, dữ liệu khách hàng.
-✅ Thực hành: cho agent đọc một file trong repo và tóm tắt — kiểm nó có bị chặn đúng chỗ mình đã cấu hình.
-
-**2 giờ**
-
-## [Bài 3 — Khung kit tối thiểu: mấy thư mục và hai file quan trọng nhất](course/03-khung-kit-toi-thieu.md)
-
-*Có gì trong tay: repo trống, agent chạy được.*
-
-✅ Dựng cây thư mục và hiểu vai trò từng nhánh: cấu hình · rule · skill · workflow · prompt · script kiểm · test · bộ nhớ · profile theo task · output.
-✅ Viết file **luôn-trong-ngữ-cảnh** (`CLAUDE.md` hoặc tương đương): ngắn dưới 20 dòng, chỉ chứa điều không-thương-lượng. Hiểu vì sao dài hơn là mất tác dụng.
-✅ Viết file rule **canonical** đầu tiên, và hiểu quan hệ *canonical ↔ bản tóm*.
-✅ Đặt quy ước cô lập ngay từ đầu: mã task · thư mục output theo task · file credentials riêng theo task.
-✅ Hiểu vì sao ba thứ này phải làm **trước tất cả**: mọi thứ sau đều đọc qua chúng, thêm sau là phải sửa lại hết.
-✅ Thực hành: yêu cầu agent làm một việc nhỏ và kiểm nó có tuân file non-negotiables.
-
-**2 giờ**
-
-## [Bài 4 — Prompt và token: nói cho đúng, và đo cái mình đưa vào](course/04-prompt-va-token.md)
+### Bài 3 — Chi phí và giới hạn thật *(1h)*
 
 *Có gì trong tay: khung kit, một rule canonical.*
 
-✅ Cấu trúc prompt cho việc dài: vai trò · đầu vào · ràng buộc · định dạng đầu ra · **điều kiện dừng**.
-✅ Hiểu vì sao câu "hãy cẩn thận" không có tác dụng, và loại câu nào thì có.
-✅ **Ambiguity Gate**: gộp mọi chỗ mơ hồ thành một danh sách câu hỏi, dừng chờ trả lời, **không đoán**.
-✅ Đo tài liệu đầu vào **trước** khi đọc: khi nào đọc thẳng, khi nào giao subagent trích ra.
-✅ Bẫy thật: tài liệu nhiều tab hoặc nhiều bản — đọc thiếu mà không có tín hiệu nào báo.
-✅ Thực hành so sánh: cùng một requirement, chạy prompt sơ sài và prompt có ràng buộc, đối chiếu kết quả.
-
-**2 giờ**
+- Model/token/credits: cái gì đắt, cái gì rẻ, đo bằng cách nào
+- Vì sao giao việc cho subagent làm **tăng** tổng token nhưng vẫn đáng
+- Ngân sách tài liệu: tài liệu 300 KB thì xử lý thế nào
+- Bẫy thật: tài liệu nhiều tab hoặc nhiều bản — đọc thiếu mà **không có tín hiệu nào báo**
 
 ---
 
-# PHẦN 2 — TESTCASE CÓ KỶ LUẬT
+## PHẦN 2 — Dựng môi trường (6 giờ)
 
-## [Bài 5 — Mô hình testcase canonical](course/05-mo-hinh-testcase-canonical.md)
+### [Bài 4 — Claude Code: cài đặt và chế độ an toàn](course/moi-truong.md) *(2h)*
 
-*Có gì trong tay: khung kit, cách viết prompt.*
+*Có gì trong tay: kiến trúc đã vẽ, chưa có repo.*
 
-✅ Chọn tập cột bắt buộc cho testcase của bạn (khoá này dùng 7 cột) và hiểu vì sao **mỗi** cột tồn tại.
-✅ Hiểu vì sao chỉ được có **một** bộ đọc testcase dùng chung cho Markdown và Excel.
-✅ Phân biệt **Ưu tiên** (thứ tự làm trước sau) với **Severity** (hậu quả nếu lỗi xảy ra) — và vì sao severity thực chất là thuộc tính của *bug*, không phải của *testcase*.
-✅ Viết tay 10 testcase theo template, xuất ra Excel.
-✅ Bẫy thật: tách cột bằng dấu `|` làm lệch dữ liệu khi trong ô có ký tự thoát.
-✅ Hiểu "source of truth": khi nào Excel là nguồn, khi nào công cụ test-management là nguồn.
+- Cài Claude Code, gói cần dùng, chạy prompt đầu tiên
+- **Permission/approval mode** — vì sao không bao giờ để agent tự do trên source thật
+- Hook: bơm context đầu phiên · chặn khi ghi file sai chuẩn
+- **Thực hành:** bảo agent xoá thư mục `docs/` và **kiểm quyền có chặn nó lại** — thí nghiệm này quan trọng hơn nó nghe
 
-**2 giờ**
+### Bài 5 — Git, GitHub/GitLab cho người mới *(2h)*
 
-## [Bài 6 — Từ requirement ra testcase bằng AI agent](course/06-tu-requirement-ra-testcase.md)
+*Có gì trong tay: agent chạy được, có quyền đã cấu hình.*
 
-*Có gì trong tay: template testcase, 10 case viết tay để so.*
+- Git từ số 0: commit, branch, push, pull request
+- Vì sao QA cần git: kit là code, test case là dữ liệu có phiên bản
+- `.gitignore` và **bài học đắt nhất**: dữ liệu học chứa tên bug thật — chính đường dẫn file đã tiết lộ lỗi sản phẩm
+- **Thực hành:** đưa kit của bạn lên repo, và chứng minh ba thư mục cấm không đi theo
 
-✅ Bóc requirement thành hai thứ dùng được: **phạm vi** và **business rule kiểm được**.
-✅ Sinh testcase bằng agent với ràng buộc định dạng, rồi đối chiếu với 10 case bạn tự viết ở bài 5.
-✅ Dừng đúng lúc ở Ambiguity Gate thay vì gen bừa với giả định.
-✅ Nhận ra ba dấu hiệu testcase **không execute được**: thiếu dữ liệu cụ thể · expected không đo được · tiền điều kiện mơ hồ.
-✅ Thực hành trên tài liệu thật của dự án bạn, hoặc bộ tài liệu mẫu của khoá.
-✅ Hiểu vì sao review của người **không** bị thay thế: agent đề xuất, người quyết coverage đủ hay chưa.
+### [Bài 6 — Prompt, Skill, Rule, Command: phân biệt và dùng đúng](course/prompt-va-token.md) *(2h)*
 
-**2 giờ 30 phút**
+*Có gì trong tay: repo có kit tối thiểu.*
 
-## [Bài 7 — Oracle: dựa vào đâu mà bảo cái này sai](course/07-oracle.md)
+- **Rule** = luật bất biến · **Skill** = năng lực theo vai · **Workflow** = quy trình · **Command** = điểm vào
+- Sai lầm phổ biến: nhồi tất cả vào một file 500 dòng → agent đọc lướt
+- Nguyên tắc **một nguồn sự thật**: policy ở một nơi, chỗ khác chỉ trỏ tới
+- Cấu trúc prompt cho việc dài: vai trò · đầu vào · ràng buộc · định dạng đầu ra · **điều kiện dừng**
+- Bảng "câu không tác dụng ↔ câu có tác dụng"
+- **Thực hành:** viết rule đầu tiên + skill đầu tiên cho dự án bạn
+
+---
+
+## PHẦN 3 — Phase 1: Requirement → Test Case (10.5 giờ)
+
+### [Bài 7 — Phân tích requirement đa nguồn](course/tu-requirement-ra-testcase.md) *(2.5h)*
+
+*Có gì trong tay: rule, skill, prompt template.*
+
+- Đọc Jira / Confluence / Figma / Swagger — mỗi nguồn cho gì, thiếu gì
+- **Vì sao 3 nguồn rời rạc không thể RAG chung**: Swagger có cấu trúc · Figma là cây node · chỉ Confluence là văn xuôi
+- Gom theo **tính năng**, không theo nguồn — và phơi ra `conflicts` / `gaps`
+- Bóc requirement thành hai thứ dùng được: **phạm vi** và **business rule kiểm được** (mã `BR-`)
+- Ba dấu hiệu testcase **không execute được**: thiếu dữ liệu cụ thể · expected không đo được · tiền điều kiện mơ hồ
+- **Thực hành:** phân tích một requirement thật của bạn, hoặc [tài liệu đặc tả mẫu](course/assets/sample-requirement.md) có **10 vấn đề cài sẵn**
+
+### Bài 8 — Ambiguity Gate: dừng đúng lúc *(1.5h)*
+
+*Có gì trong tay: một requirement đã bóc thành BR-.*
+
+- Vì sao agent gặp mơ hồ sẽ **đoán** — và đoán sai thì cả bộ test case sai theo
+- Phân mức Blocking / Non-blocking, xuất Q&A đánh số kèm assumption đề xuất
+- **XÂY gate:** chặn không cho sang bước sinh test case khi chưa chốt
+- **Thực hành:** dựng Ambiguity Gate cho dự án bạn
+
+### [Bài 9 — Kỹ thuật thiết kế test case](course/mo-hinh-testcase-canonical.md) *(3h)*
+
+*Có gì trong tay: requirement đã chốt, không còn mơ hồ blocking.*
+
+- 7 nhóm kỹ thuật: miền giá trị (EP/BVA) · logic (decision table, state transition) · tổ hợp (pairwise) · kinh nghiệm (error guessing) · thời gian & môi trường · phi chức năng
+- **Nhóm hay bị bỏ nhất:** concurrency · idempotency · ordering · timezone · volume · persistence
+- Mô hình testcase **canonical**: tập cột bắt buộc (khoá này dùng 7) và vì sao **mỗi** cột tồn tại
+- Vì sao chỉ được có **một** bộ đọc testcase dùng chung cho Markdown và Excel
+- Phân biệt **Ưu tiên** (thứ tự làm) với **Severity** (hậu quả) — và vì sao severity là thuộc tính của *bug*, không phải của *testcase*
+- Bẫy thật: tách cột bằng dấu `|` làm lệch dữ liệu khi trong ô có ký tự thoát
+- Chia thành **chiều phủ** (dimension) để kiểm được bằng máy
+- **Thực hành:** sinh test case theo 8 chiều cho màn Tạo đơn hàng của app thực hành — bộ này sẽ bắt được BUG-1 nếu bạn phủ đúng biên
+
+### [Bài 10 — Kỷ luật Oracle: bài học quan trọng nhất khoá](course/oracle.md) *(2h)* ⭐
 
 *Có gì trong tay: một bộ testcase do agent sinh.*
 
-✅ Hiểu **oracle độc lập**: cơ sở phán đúng/sai phải nằm ngoài hệ thống đang test, và phải trích được nguồn.
-✅ Nhận diện **tautology** (lấy chính bản build làm expected) — dạng lộ và dạng tinh vi.
-✅ Hiểu vì sao đây là lỗi nguy hiểm nhất: test luôn xanh, coverage đẹp, không ai nghi ngờ.
-✅ **Fixture phân biệt**: muốn chứng minh "trường này lấy từ nguồn nào" thì hai nguồn phải KHÁC giá trị.
-✅ Thực hành: sửa 5 expected yếu trong bộ của bạn thành expected có neo về tài liệu.
-✅ Biết ghi gì khi không neo được — và vì sao "không phán được" **không** được thành PASS.
+- Vấn đề: AI lấy chính giá trị app đang trả về làm kết quả mong đợi → test **luôn PASS** kể cả khi app sai
+- Vì sao nó tệ hơn thiếu test case: nó tạo **cảm giác an toàn sai**, và càng mở rộng càng nhân lên
+- Ba dạng tautology tinh vi, không chỉ dạng lộ
+- Giải: mọi kết luận PASS/FAIL phải trỏ được về **quy tắc nghiệp vụ đã xác nhận**; không có nguồn → hạ xuống "quan sát", **không kết luận**
+- **Nhất quán ≠ đúng** — hai màn cùng hiện một số sai thì vẫn là sai
+- **Fixture phân biệt:** muốn chứng minh "trường này lấy từ nguồn nào" thì hai nguồn phải KHÁC giá trị
+- **XÂY gate:** chặn test case có giá trị tính toán mà không trỏ nguồn
+- **Thực hành:** sửa 5 expected yếu trong bộ của bạn thành expected có neo về tài liệu
 
-**2 giờ**
-
-## [Bài 8 — Coverage theo chiều, không theo số lượng](course/08-coverage-theo-chieu.md)
+### [Bài 11 — Gate chất lượng và đo độ phủ](course/coverage-theo-chieu.md) *(1.5h)*
 
 *Có gì trong tay: bộ testcase có oracle neo được.*
 
-✅ Hiểu hai trục của một bộ case: **module** (test ở đâu) và **chiều** (hỏi loại câu hỏi nào).
-✅ Nắm các chiều hay bị bỏ trống nhất: hiển thị · công thức · dữ liệu backend trả về · guard phân quyền · đồng thời · tác dụng phụ · ảnh hưởng lan.
-✅ Khai chiều nào bắt buộc cho task, và **ghi lý do** khi khai một chiều là không áp dụng.
-✅ Gắn tag chiều vào tiêu đề testcase để về sau đếm được bằng máy.
-✅ Tự đếm bộ của mình: đang trống hẳn chiều nào.
-✅ Hiểu bẫy trung tâm: bộ phủ kín mọi module mà trống một chiều thì **vẫn trông đầy đủ**.
-
-**2 giờ**
+- Ngưỡng **định lượng** thay vì nhã phân: chiều bắt buộc phải đạt ≥N case theo mức rủi ro
+- Risk-based: tính điểm rủi ro từ lịch sử bug + tỷ lệ fail, rồi **ép độ sâu test** theo band
+- Vì sao `n/a` phải kèm **lý do bắt buộc** — không thì mọi chiều đều thành `n/a`
+- Traceability: requirement → test case → automation → bug
+- **XÂY gate:** máy đếm chiều, chặn khi một chiều bắt buộc chưa đủ ngưỡng
 
 ---
 
-# PHẦN 3 — CHẠY THẬT VÀ BẰNG CHỨNG
+## PHẦN 4 — Phase 2: Thực thi có kiểm soát (13 giờ)
 
-## [Bài 9 — Playwright và locator bền](course/09-playwright-va-locator-ben.md)
+### [Bài 12 — Playwright từ số 0](course/playwright-va-locator-ben.md) *(3h)*
 
-*Có gì trong tay: bộ testcase đã review.*
+*Có gì trong tay: bộ testcase đã qua gate độ phủ.*
 
-✅ Cài Playwright, chạy test đầu tiên, hiểu cấu trúc một spec.
-✅ Nắm chiến lược locator theo tầng ưu tiên, và **kiểm xem app của bạn có phát test id hay không** — nếu không thì tầng đó là tầng chết.
-✅ **Đọc DOM thật** để tìm locator, thay vì đoán từ tên tính năng — đây là nguồn lỗi script lớn nhất ở lượt chạy đầu.
-✅ Hiểu vì sao `.first()`, `.nth(N)`, click theo toạ độ, và regex quét cả trang đều là dấu hiệu "tôi không biết mình đang chạm vào cái gì".
-✅ Thực hành: viết 3 test cho 3 màn, không dùng locator mơ hồ nào.
-✅ Xử lý ba nguồn chập chờn phổ biến: animation chưa xong · chờ thời gian thay vì chờ trạng thái · toạ độ lấy trước khi layout ổn định.
+- Cấu trúc framework: Page Object · fixture · config · report
+- **13 tuỳ chọn config quyết định chất lượng**: `retries` · `forbidOnly` (chống `test.only` lọt CI) · `timeout` · `fullyParallel`…
+- Locator bền: ưu tiên semantic, cấm class động, cấm positional xpath — 4 mẫu locator hớ hênh kèm số đo
+- **Bài học thực tế:** app không phát `data-testid` thì locator lấy từ đâu
+- Tiền điều kiện: dựng state qua API/factory/hook, **không** bằng DB — xem [bài chi tiết về tiền điều kiện](course/tien-dieu-kien.md) (factory, janitor 3 lớp an toàn, và **bug ma**)
+- **Thực hành:** automate case Bài 9 trên app thực hành, chạy thật, thấy nó đỏ vì BUG-1
 
-**2 giờ 30 phút**
+### [Bài 13 — Bằng chứng và phân tầng lỗi](course/verdict-va-phan-tang-loi.md) *(2.5h)*
 
-## [Bài 10 — Tiền điều kiện: dựng dữ liệu mà không phá môi trường](course/10-tien-dieu-kien.md)
+*Có gì trong tay: suite Playwright chạy được.*
 
-*Có gì trong tay: 3 test chạy được.*
+- **Phân tầng lỗi** — không phải fail nào cũng là bug sản phẩm: lỗi automation · lỗi setup · lỗi môi trường · lỗi dữ liệu · bug thật
+- Vì sao phân tầng sai làm mất niềm tin của đội dev
+- 7 trạng thái phán quyết, và vì sao **"không phán được" KHÔNG thành PASS**
+- Rerun 2–3 lần loại flaky trước khi kết luận; pass-sau-retry là `PASS_WITH_DEVIATION`, không phải `PASS`
+- Screenshot / video / trace: chụp gì, khi nào, che dữ liệu nhạy cảm thế nào — xem [bài chi tiết về bằng chứng](course/evidence.md) (khoanh đỏ, che PII cả `input.value`, banner video từng bước)
+- **XÂY gate:** không cho đẩy kết quả nếu lỗi chưa phân tầng, hoặc case đã execute mà không có ảnh/video
+- **Thực hành:** BUG-2 của app thực hành chỉ hiện ra khi bạn chụp có khoanh đỏ và cộng thử các số trên màn
 
-✅ Bốn cách dựng trạng thái: factory · hook · fixture · mock — và vì sao **không** dùng câu lệnh database.
-✅ Hiểu hậu quả cụ thể của việc dựng bằng database: tạo ra trạng thái mà luồng ứng dụng thật không sinh ra được ⇒ **bug ma**.
-✅ Ba mức sẵn sàng: chạy được ngay · cần Dev làm hook · chỉ làm tay được — và mỗi mức dẫn tới trạng thái kết quả nào.
-✅ Viết hợp đồng tiền điều kiện: dựng thế nào · verify thế nào · dọn thế nào.
-✅ Nguyên tắc **non-destructive**: xác nhận trước mỗi lượt chạm môi trường dùng chung.
-✅ Dữ liệu tự tạo phải **nhận diện được** và **dọn được**, không để lại bản ghi mồ côi.
+### Bài 14 — Chống lọt bug: mở rộng quanh mỗi case *(2.5h)*
 
-**2 giờ**
+*Có gì trong tay: kết quả đã phân tầng, có bằng chứng.*
 
-## [Bài 11 — Verdict và phân tầng lỗi](course/11-verdict-va-phan-tang-loi.md)
+- Vì sao test case đầy đủ vẫn lọt: case chỉ phủ cái tài liệu nói
+- **7 trục mở rộng:** field cùng khối · cùng giá trị khác nơi hiển thị · chuỗi form→API→DB→UI · biến thể · trạng thái kế cận · đồng thời · chiều ngược
+- **Điều kiện sống còn:** mở rộng mà không có oracle = tautology nhân 7 lần
+- Không neo được vào mã luật thì kết quả là `OBSERVATION`, không phải PASS/FAIL
+- Chiều ngược `spec:gap`: thấy thứ **spec không nói gì** — không phải bug, là lỗ hổng đặc tả
+- **XÂY gate:** gate độ sâu theo mức rủi ro để không nổ thời gian chạy
 
-*Có gì trong tay: test chạy được, có dữ liệu dựng đúng luồng.*
+### Bài 15 — Kiểm song song UI ↔ Database *(2.5h)*
 
-✅ Khai **một file duy nhất** cho mọi trạng thái kết quả và ngưỡng chạy lại — không hardcode rải rác.
-✅ Phân tầng lỗi khi test đỏ: lỗi sản phẩm · lỗi API · lỗi dựng dữ liệu · lỗi script · chập chờn · hạ tầng. Chỉ hai loại đầu đáng log cho Dev.
-✅ **Chạy lại 2–3 lần** trước khi kết luận, và hiểu vì sao đúng con số đó.
-✅ Nhận diện lỗi script: **fail lặp lại rất ổn định** nhưng làm tay theo đúng các bước thì lại đúng.
-✅ Hai trạng thái rất dễ bỏ qua: *pass nhờ lệch khỏi kịch bản* (thêm wait, đổi locator cho nó chạy) và *fail chưa giải thích được cơ chế* — cả hai đều đang chôn bug thật.
-✅ Log bug: đủ bốn phần, gán đúng tầng FE/BE sau khi đã đọc response thật.
+*Có gì trong tay: bộ case đã mở rộng 7 trục.*
 
-**2 giờ 30 phút**
+- 7 lỗi chỉ DB verify mới bắt: số bị làm tròn · lệch timezone · text bị cắt · xoá mềm hỏng · bảng liên quan không đổi · tạo trùng · thiếu audit
+- **Mô hình an toàn 4 lớp** — và vì sao "read-only user" phải là lớp chính, không phải transaction
+- Thiết kế đa DB: interface theo **ngữ nghĩa**, không theo SQL (để Mongo vào được)
+- **DB là oracle phụ** — dùng để khoanh tầng lỗi: UI đúng/DB sai = bug lưu · UI sai/DB đúng = bug hiển thị
+- Tiền điều kiện **không** được dựng bằng DB, dù DB đang mở
+- **Thực hành:** BUG-3 của app thực hành — luật "không được sửa" chỉ thực thi được ở tầng dưới, giao diện ẩn nút không phải thực thi
 
-## [Bài 12 — Evidence kiểm chứng được](course/12-evidence.md)
+### [Bài 16 — Bug report và tích hợp](course/tich-hop.md) *(2.5h)*
 
-*Có gì trong tay: kết quả chạy có verdict và tầng lỗi.*
+*Có gì trong tay: kết quả có bằng chứng, đã phân tầng, đã mở rộng.*
 
-✅ Quy chuẩn định dạng: chỉ ảnh hoặc video. Log, JSON, trace **không phải** bằng chứng.
-✅ **Khoanh đỏ đúng element kèm nhãn ngắn** — hiểu vì sao ảnh chụp trơn hay bị Dev trả bug về.
-✅ Biết khi nào buộc phải quay **video**: lỗi chỉ lộ qua chuỗi thao tác, cascade, xử lý bất đồng bộ, kéo thả.
-✅ Mask PII, và bẫy thật: che chữ hiển thị **không** che được giá trị nằm trong ô nhập liệu.
-✅ Vì sao case **PASS** cũng phải có evidence.
-✅ Thực hành: chụp có highlight và quay video có banner từng bước bằng Playwright, rồi tự mở ảnh ra soi lại.
-
-**2 giờ**
-
----
-
-# PHẦN 4 — BIẾN LUẬT THÀNH MÁY
-
-## [Bài 13 — Viết cái gate đầu tiên của bạn](course/13-viet-gate-dau-tien.md)
-
-*Có gì trong tay: một vòng làm việc hoàn chỉnh — case, chạy, verdict, evidence. Giờ mới có thứ để canh.*
-
-✅ Hiểu vì sao đến bài này mới viết gate: chưa có artifact thật thì gate không có gì để đọc.
-✅ Viết một gate đọc artifact thật của bạn và **thoát mã 1** khi phát hiện vi phạm.
-✅ Chạy nó trên **nội dung thật**, rồi soi **từng** cảnh báo: thật hay oan.
-✅ Nguyên tắc: cảnh báo oan thì sửa **LUẬT**, không sửa dữ liệu cho vừa luật.
-✅ **Negative control**: cố ý tiêm lỗi vào để chứng minh gate thật sự bắt được — gate chưa từng đỏ là gate chưa được nghiệm thu.
-✅ Chọn mức: mặc định cảnh báo, chỉ nâng lên chặn khi đã đo đủ để chắc không báo oan hàng loạt.
-✅ Hiểu vì sao **báo oan tệ hơn không có gate**: đỏ oan vài lần là cả team bắt đầu bỏ qua tín hiệu đỏ.
-
-**2 giờ 30 phút**
-
-## [Bài 14 — Bộ gate nền](course/14-bo-gate-nen.md)
-
-*Có gì trong tay: một gate tự viết, đã chứng minh có răng.*
-
-✅ Gate chống **suite rỗng vẫn xanh** — lớp lỗi nguy hiểm nhất vì nó không tạo ra tín hiệu nào.
-✅ Gate kiểm đủ input và cấu hình **trước** khi chạy cả một phase.
-✅ Gate soi **thiết kế** bộ testcase: đủ cột, đủ chất lượng từng dòng.
-✅ Gate soi **output** trước khi đẩy lên Jira hoặc công cụ test-management.
-✅ Quét secret trên các file đã được track.
-✅ Nối tất cả vào **một lệnh gộp** để chạy trước khi kết thúc một task.
-✅ Thực hành: cố tình làm sai từng thứ, xác nhận đúng gate nào đỏ.
-
-**2 giờ 30 phút**
-
-## [Bài 15 — Một nguồn, và máy chống trôi](course/15-mot-nguon-va-may-chong-troi.md)
-
-*Có gì trong tay: bộ gate nền đang chạy.*
-
-✅ Nguyên tắc **canonical source**: mỗi loại thông tin đúng một nguồn thật, nơi khác chỉ được trỏ về.
-✅ Phân biệt canonical với bản tóm, và vì sao bản tóm được phép diễn đạt lại nhưng không được nói khác.
-✅ Gate chống **mồ côi**: lệnh hoặc tài liệu không nơi nào trỏ tới thì sẽ không ai chạy — máy không ai gọi thì bằng không có máy.
-✅ **Danh mục máy tự sinh từ source**: không liệt kê được thì không kiểm toán được, và không ai biết một gate đã âm thầm tụt thành cảnh báo.
-✅ Allowlist (danh sách miễn trừ) phải **ghi lý do**, và **khối lạ phải bị chặn** — khoá viết sai thì vô hình với code.
-✅ Thực hành: thêm một lệnh mới, xác nhận gate mồ côi bắt được, rồi nối nó vào đúng điểm vào.
-
-**2 giờ**
+- Bug đủ 4 phần, có bằng chứng, che PII, chạy thử trước khi ghi thật
+- **Human gate:** vì sao không bao giờ để AI tự log bug
+- Nối công cụ test-management: publish một chiều, mặc định **dry-run**, cần **hai** cờ mới ghi thật
+- **`2xx` KHÔNG chứng minh mapping đúng** — trường ngoài danh sách cho phép ghi bị **bỏ qua âm thầm**, giá trị ngoài thang **rơi về mặc định**
+- **XÂY gate:** đối soát **từng trường** sau publish; và gate chất lượng đứng ở **cả hai** cửa — lệnh tự soi và đường publish
+- Đẩy kết quả thành một cycle có lịch sử, bằng chứng neo xuống từng bước
+- Cách chọn công cụ quản lý test case theo chi phí thật
 
 ---
 
-# PHẦN 5 — BỘ NHỚ VÀ VÒNG HỌC
+## PHẦN 5 — Knowledge & vòng học (8 giờ)
 
-## [Bài 16 — Bộ nhớ dự án: làm gì khi chưa có dữ liệu nào](course/16-bo-nho-du-an.md)
+### [Bài 17 — Một QA agent cần học những gì](course/bo-nho-du-an.md) *(2h)*
 
-*Có gì trong tay: kit có kỷ luật, nhưng chưa có ký ức.*
+*Có gì trong tay: một task đã đi trọn vòng, có bug đã log.*
 
-✅ Năm store và câu hỏi mỗi store trả lời: rule đúng là gì · hệ thống được phép làm gì · vì sao đã kết luận như thế · làm sao dựng được trạng thái đó · quirk môi trường nào hay làm test hỏng.
-✅ **Chính bài này giải bài toán "từ 0 không có dữ liệu"**: seed từ lịch sử Jira có sẵn · ghi tay những rule đã được xác nhận · và chấp nhận để trống **có kiểm soát** thay vì bịa cho đầy.
-✅ Hiểu vì sao bộ nhớ này là **dữ liệu công ty**: không commit, và phải sao lưu ra ngoài repo.
-✅ Thu dữ liệu **tự động**: gắn vào reporter của test runner, đừng gắn vào một lệnh phải nhớ gọi.
-✅ Chỉ số theo thời gian: độ tin cậy từng testcase · tỉ lệ chập chờn · cách ly test bất ổn ra khỏi luồng phán quyết.
-✅ Thực hành: ghi 3 rule đã xác nhận và 1 recipe dựng state, rồi dùng lại chúng ở lượt sinh case sau.
+- 6 nhóm tri thức: nghiệp vụ · hệ thống · lịch sử lỗi · tài sản test · quy ước team · quyết định đã ra
+- Phân biệt **năng lực** (dạy một lần, ở rules) và **kinh nghiệm** (tích luỹ, ở knowledge)
+- Vì sao thiếu nhóm "nghiệp vụ" thì **không thể** có oracle đúng
+- **Câu trả lời cho "từ số 0 thì học từ đâu":** 4 nguồn — bảng `BR-` đã có từ Bài 7 · câu trả lời BA từ Ambiguity Gate · seed từ lịch sử Jira · **rỗng có kiểm soát**
+- **XÂY gate:** chặn rule không có `nguồn`, cảnh báo khi nghi có PII
 
-**2 giờ 30 phút**
+### Bài 18 — Thiết kế knowledge base có kỷ luật *(2.5h)*
 
-## [Bài 17 — Risk-Based Testing khi chưa có lịch sử bug](course/17-risk-based-testing.md)
+*Có gì trong tay: knowledge base đã có vài chục bản ghi.*
 
-*Có gì trong tay: bộ nhớ đã có mầm dữ liệu.*
+- Schema: `source` rỗng thì **cấm ghi** · `version` + `supersedes` · `covered_by` để truy vết ngược
+- **4 trạng thái vòng đời** và khác biệt tinh: `superseded` (nghiệp vụ đổi, kết quả cũ vẫn giá trị) ≠ `invalid` (sai từ đầu, kết quả cũ mất giá trị)
+- Chống học sai: phát hiện mâu thuẫn · cảnh báo tri thức quá cũ · tái xác nhận định kỳ
+- **Bảo mật:** vì sao knowledge không được commit lên repo công khai
+- **XÂY gate:** kiểm tính nhất quán của knowledge trước khi agent được đọc nó
 
-✅ Công thức Risk = Likelihood × Impact, và mỗi vế lấy từ nguồn nào.
-✅ **Xử lý cold start**: chấm rủi ro khi chưa có bug nào — dùng gì thay cho lịch sử, và khi nào thì tin được con số.
-✅ Gate độ sâu theo band rủi ro: phần nguy hiểm phải sâu hơn, mặc định chỉ cảnh báo.
-✅ Bẫy đo được thật: tên module trong cấu hình lệch tên trong dữ liệu ⇒ bảng rủi ro đầy **dòng ma** (điểm cao, 0 bug) trong khi module có dữ liệu thật thì rơi về mặc định.
-✅ Hiểu vì sao công cụ **đề xuất** module cho bug thì không được tự ghi: gán sai module còn tệ hơn để trống.
-✅ Quyền override của người, kèm nghĩa vụ ghi lý do.
+### [Bài 19 — Vòng học khép kín](course/risk-based-testing.md) *(2h)*
 
-**2 giờ**
+*Có gì trong tay: knowledge base có kỷ luật, lịch sử vài lượt chạy.*
 
----
+- chạy → ghi kết quả → tính lại rủi ro → đổi độ sâu test lần sau
+- Error Guessing từ bug lịch sử: mọi lỗi từng xảy ra phải có test case canh
+- **Khi chưa có lịch sử bug:** 5 tín hiệu thay thế cho Likelihood, và chế độ cold-start **chỉ cảnh báo, không chặn**
+- Bẫy hàng-ma: module có Impact cao mà 0 bug — chỉ nổ khi **cả hai** tín hiệu xuất hiện, không phải một
+- Vì sao suy luận bug→module **không có** chế độ `--apply`: đo được đúng 40%
+- **Điều không tự động hoá được:** xác nhận của con người — và vì sao đó là cố ý
 
-# PHẦN 6 — TÍCH HỢP, ĐO CHÍNH MÌNH, GIAO KIT
+### Bài 20 — Sao lưu và vòng đời dữ liệu *(1.5h)*
 
-## [Bài 18 — Tích hợp: test-management, Jira, MCP, và điểm vào gõ được](course/18-tich-hop.md)
+*Có gì trong tay: vòng học đã chạy ít nhất một chu kỳ.*
 
-*Có gì trong tay: kit chạy trọn vòng trên máy cá nhân.*
-
-✅ Publish testcase lên công cụ test-management, **luôn dry-run trước** — và kiểm xem công cụ đó có API xoá hay không trước khi đẩy thật.
-✅ **Đối soát từng trường sau publish**: trả về 2xx chỉ chứng minh request được nhận, không chứng minh mapping đúng.
-✅ Đẩy kết quả thành một lượt chạy có lịch sử, evidence neo xuống **từng bước** của case.
-✅ Đối soát độ tươi: chạy trên bản sao cũ nghĩa là chấm theo expected đã bị sửa.
-✅ Cấu hình MCP server cho Jira, Google Sheet và các nguồn tài liệu.
-✅ Gói trình tự "phải đọc file nào, chạy gate nào" thành **slash command** — biến thứ phải nhớ thành thứ gõ được một dòng.
-
-**2 giờ 30 phút**
-
-## [Bài 19 — Đo chính bộ kiểm của bạn ⭐](course/19-do-chinh-bo-kiem.md)
-
-*Có gì trong tay: suite đã chạy nhiều lượt trên môi trường thật. Đến giờ mới đo được.*
-
-✅ Hiểu vì sao bài này **không thể đặt sớm hơn**: cần một suite đã chạy để có cái mà đo.
-✅ Dựng negative control: tiêm lỗi ở **tầng mạng** của trình duyệt — không chạm dữ liệu server, không ghi gì lên hệ thống.
-✅ Chọn loại lỗi để tiêm theo đúng các lớp bug **đã từng lọt thật** ở dự án bạn: bóp giá trị về 0 · xoá hẳn trường · đổi kiểu dữ liệu · đổi nhãn.
-✅ Đọc kết quả cho đúng: điểm 0 nghĩa là vùng mù đã được **chứng minh**, không còn là phỏng đoán. Và hiểu tại sao *kiểm-kê-trường* với *kiểm-giá-trị* là hai việc khác nhau.
-✅ Ba bẫy của **chính harness đo**: không tiêm được mà tưởng là phát hiện · tautology ở tầng harness (bóp cả hai bên nên không bao giờ lệch) · lẫn "mutant sống sót" với "mutant không liên quan".
-✅ Mở rộng quanh case thay vì chỉ bám chữ: cùng một giá trị ở hai nơi hiển thị · chuỗi lưu trữ từ form tới API tới UI · nhánh và trạng thái kế cận.
-✅ Chiều ngược: **build có gì mà tài liệu không hề nhắc** — và vì sao chiều thuận một mình luôn bỏ trắng vùng đó.
-
-**3 giờ**
-
-## [Bài 20 — CI, đóng gói, và giao kit cho dự án khác](course/20-ci-dong-goi-giao-kit.md)
-
-*Có gì trong tay: kit hoàn chỉnh, đã tự đo được năng lực của mình.*
-
-✅ Quyết định CI chạy gì mỗi lần push, và vì sao CI dùng chung **không được tự chạm** môi trường thật.
-✅ Không dùng `allow_failure` để biến đỏ thành vàng — **một nút luôn-đỏ là cách nhanh nhất dạy người ta bỏ qua CI**.
-✅ Đo CI bằng **trace từng bước**, không bằng thời lượng container: mọi suy đoán "chậm ở đâu" đều có xác suất sai rất cao.
-✅ Ranh giới **dùng chung vs riêng của dự án**, và vì sao đó là chuyện an toàn chứ không phải chuyện gọn gàng: gói mang theo cấu hình của dự án khác thì thành **oracle sai**, mà sai im lặng.
-✅ Đánh số phiên bản (không dùng ngày tháng), đóng gói sạch, và **chứng minh gói chạy được từ một thư mục trắng**.
-✅ Viết tài liệu nâng bản cho người nhận: changelog nói đã đổi gì, hướng dẫn nâng bản nói **phải tự sửa gì**.
-
-🎉 **KẾT THÚC KHOÁ HỌC**
-
-**2 giờ 30 phút**
+- Phân biệt dữ liệu **nạp lại được** (từ Jira) và dữ liệu **do người tạo** (không nạp lại được)
+- Khai ngưỡng tỉa/lưu trữ **trước khi** tích dữ liệu
+- **XÂY gate:** sao lưu thoát mã 2 nếu đích sao lưu nằm **trong** repo
+- Chia sẻ knowledge khi team đông lên
 
 ---
 
-## Sau khoá học
+## PHẦN 6 — Chứng minh hiệu quả (5 giờ)
 
-**Bạn có gì.** Một bộ kit chạy trên dự án thật · bộ testcase có oracle neo được · suite automation có locator
-bền · bộ gate máy chặn đã được nghiệm thu bằng negative control · bộ nhớ dự án đang tích luỹ · và con số đo
-được về năng lực phát hiện của chính bộ kiểm đó.
+### [Bài 21 — Mutation Testing: đo suite có bắt được bug không](course/do-chinh-bo-kiem.md) *(2.5h)* ⭐
 
-**Đọc tiếp.** [`BUILD_JOURNAL.md`](BUILD_JOURNAL.md) — nhật ký dựng bộ kit này trong thực tế, ghi lại thứ tự
-đã đi và những chỗ đã vấp. Đọc nó **sau** khoá học sẽ hiểu; đọc trước thì chỉ là danh sách con số của
-người khác.
+*Có gì trong tay: suite đã chạy nhiều lượt, có lịch sử.*
 
-**Điều quan trọng nhất để mang đi.** Bốn nhịp này lặp lại mãi, không có điểm kết thúc:
-**làm năng lực → biến luật thành máy → đo chính cái máy đó → dọn thứ không còn đúng.**
+- Coverage cao **không chứng minh được gì** — bộ test có thể phủ hết mà không bắt được lỗi nào
+- Tiêm lỗi vào dữ liệu trả về: đổi số tiền · đổi trạng thái · xoá trường · đổi format
+- Suite vẫn xanh = **vùng mù đã được chứng minh**, không còn phỏng đoán
+- **Ba cái bẫy của chính máy đo**, cả ba đều cho ra số đẹp giả: nền đỏ ⇒ 100% giả · mutant không tiêm được ⇒ điểm thấp giả · `retries` bật ⇒ tín hiệu nhoè
+- Đọc **điểm 0** cho đúng: loại 4 nguyên nhân trước khi kết luận suite mù
+- Đọc **điểm 5/5** cho đúng: nó chỉ nói về tập mutant của bạn
+- **Thực hành:** chạy mutation trên module của bạn, đọc mutation score, sửa một oracle rồi **đo lại để chứng minh** nó có tác dụng
+
+### Bài 22 — Metrics và độ tin cậy *(1.5h)*
+
+*Có gì trong tay: mutation score gốc đã chốt.*
+
+- Clean pass rate ≠ eventual pass rate — khoảng cách giữa hai đường là **mức lệ thuộc retry**
+- Reliability index theo từng test, phân hạng, quarantine
+- Vì sao flaky triage có thể **chôn bug thật**, và cách phân biệt
+- Phép đo phải liêm chính: `forbidOnly` · bỏ record `skipped` khỏi lịch sử · độ phủ theo ngưỡng tối thiểu mỗi chiều
+
+### Bài 23 — Dashboard và báo cáo *(1h)*
+
+*Có gì trong tay: nhiều lượt chạy đã ghi metrics.*
+
+- Xu hướng theo thời gian từ dữ liệu đã có
+- Báo cáo cho stakeholder không có quyền vào công cụ
+- Vì sao dashboard là **artifact**, không phải nguồn — sửa số trên dashboard là sửa bản photo
+
+---
+
+## PHẦN 7 — CI/CD và phát hành kit (6 giờ)
+
+### [Bài 24 — CI: biến rule thành cổng chặn thật](course/ci-dong-goi-giao-kit.md) *(2.5h)*
+
+*Có gì trong tay: kit đầy đủ, chạy tay được trọn vòng.*
+
+- CI/CD là gì, vì sao QA cần
+- Tách đúng: **kiểm tĩnh tự động mọi push** (không chạm môi trường thật) ≠ **việc nặng phải người bấm**
+- Khai phạm vi CI bằng **một nguồn** — workflow đọc từ đó, không tự liệt kê
+- Chạy song song, sharding, gộp báo cáo
+- **Branch protection** — bước biến CI từ "báo cho biết" thành "gác cổng"
+- Bẫy: `--pass-with-no-tests` làm 0 test vẫn báo xanh
+- Bẫy đắt nhất: test xanh trên máy dev vì **thừa hưởng biến môi trường** của shell, đỏ trên CI
+- **XÂY gate:** đo **độ với tới** — máy đúng mà không điểm vào nào gọi thì bằng không có
+
+### Bài 25 — MCP Server và tự động hoá quanh công việc *(1.5h)*
+
+*Có gì trong tay: CI đang gác cổng.*
+
+- Nối Jira / Slack / Telegram / Google Sheet
+- Lịch chạy tự động + thông báo
+- Quyền **tối thiểu**: chỉ đọc, trừ đường tạo bug
+- **Ranh giới:** cái gì tự động được, cái gì bắt buộc người duyệt
+
+### Bài 26 — Đóng gói và phát hành kit *(2h)*
+
+*Có gì trong tay: kit có CI, có tích hợp.*
+
+- Vì sao kit cũng cần version và changelog
+- Đóng gói sạch: tách lớp dùng chung khỏi lớp dự án, quét secret trong gói
+- **Bước quan trọng nhất:** giải nén vào thư mục sạch → cài lại → chạy gate → **chứng minh bản phát hành thật sự chạy được**
+- Viết `README` mà người mới đọc là chạy được — nghiệm thu bằng người thật, hoặc bằng clone sạch
+- Dự án khác nhận bản mới thế nào
+
+---
+
+## PHẦN 8 — Áp vào dự án thật (5 giờ)
+
+### Bài 27 — Mang kit sang dự án mới *(2h)*
+
+*Có gì trong tay: bản phát hành đã nghiệm thu.*
+
+- Phân lớp: cái gì giữ nguyên, cái gì cấu hình, cái gì thay
+- Việc tốn công nhất: khớp cơ chế đăng nhập
+- **Thực hành:** dựng kit cho dự án bạn đang làm — đây là lần đầu bạn rời app thực hành
+
+### [Bài 28 — Khi kit chặn sai](course/mot-nguon-va-may-chong-troi.md) *(1.5h)*
+
+*Có gì trong tay: kit đang chạy trên dự án thật.*
+
+- Gate báo đỏ mà không phải lỗi thật thì làm gì
+- **Nguyên tắc:** không nới ngưỡng gate để cho qua — hoặc sửa gate, hoặc ghi miễn trừ **kèm lý do và ngày**
+- Gate bắt oan thì gate **mất uy tín**, và đó là cách một kit chết
+- Đối chứng âm là bắt buộc: máy nào cũng phải được thử trên một ca **biết chắc phải chặn** và một ca **biết chắc phải cho qua**
+- Chống trôi: máy đọc chính khai báo của mình, và danh sách cho phép **chặn khối lạ**
+- Cách đo và tinh chỉnh ngưỡng theo va chạm thực tế
+
+### Bài 29 — Lộ trình sau khoá học *(1.5h)*
+
+*Có gì trong tay: kit chạy trên dự án thật, đã va chạm và tinh chỉnh.*
+
+- Vì sao "dừng xây, chuyển sang dùng" là bước tiếp theo đúng
+- Những thứ **không** nên thêm dù nghe hay: đa framework · công cụ trùng chức năng
+- Khi nào cần: contract testing · performance engineering · observability
+- Nhịp bảo dưỡng: mỗi lượt · mỗi sprint · mỗi tháng (đo lại mutation) · mỗi quý (rà **ngoại lệ** trong mọi allowlist)
+- Cộng đồng và cập nhật kit dài hạn
+
+---
+
+## Tổng thời lượng: ~59 giờ
+
+| Phần | Giờ |
+|---|---|
+| 1. Nền tảng tư duy | 5.5 |
+| 2. Dựng môi trường | 6 |
+| 3. Phase 1 — Test Case | 10.5 |
+| 4. Phase 2 — Thực thi | 13 |
+| 5. Knowledge & vòng học | 8 |
+| 6. Chứng minh hiệu quả | 5 |
+| 7. CI/CD & phát hành | 6 |
+| 8. Áp dụng thật | 5 |
+
+**30 bài (Bài 0 → Bài 29) · 8 phần.**
+
+---
+
+## Học viên nhận được
+
+- **Kit tự xây** — khoảng 10 gate cốt lõi, chạy được, hiểu từng dòng
+- **Kit đầy đủ làm tham chiếu** — bản chuẩn hoá để đối chiếu và học thêm
+- **[App thực hành](course/assets/app-thuc-hanh/README.md)** có 3 bug cài sẵn + [`spec.md`](course/assets/app-thuc-hanh/spec.md) làm nguồn oracle + đáp án
+- [Tài liệu đặc tả mẫu](course/assets/sample-requirement.md) có 10 vấn đề cài sẵn để luyện Ambiguity Gate
+- Mẫu rules · skills · workflows · commands để tuỳ biến
+- Checklist 22 chiều phủ test case
+- Bộ prompt mẫu cho từng phase
+- Cập nhật kit dài hạn
+
+---
+
+## Tình trạng nội dung chi tiết
+
+Tiêu đề bài là **link bấm được** khi bài đã có bài giảng đầy đủ. Bài chưa có link thì phần khung ở trên là
+bản chốt, nội dung chi tiết viết sau.
+
+Mỗi bài giảng đầy đủ gồm: **từ mới của bài** · các **Việc** làm theo bước, mỗi việc có khối *"Bạn sẽ thấy"*
+và bảng xử lý khi thấy khác · **cây thư mục sau bài này** · bảng tự kiểm · bài tập về nhà · mục **Đào sâu**
+không bắt buộc.
+
+**Hai bài giảng đã viết nhưng chưa có chỗ trong 29 bài** — cần quyết định đưa vào đâu:
+
+| Bài giảng | Nội dung | Đề xuất |
+|---|---|---|
+| [Viết gate đầu tiên](course/viet-gate-dau-tien.md) | Cơ chế `exit 0/1/2`, gate đầy đủ đầu tiên, 3 phép tiêm lỗi để chứng minh nó chặn thật | Tách thành bài riêng ở Phần 3, trước Bài 8 — hiện các callout **XÂY gate:** không có bài nào dạy *cách* viết |
+| [Bộ gate nền](course/bo-gate-nen.md) | `lib/gate.js` dùng chung, gate tồn kho, quét secret, lệnh tự soi gộp mọi gate | Ghép vào Bài 11, hoặc tách bài riêng cạnh bài trên |
+
+---
+
+## Quyết định thiết kế khoá học — đọc trước khi triển khai
+
+**1. KHÔNG dạy xây cả 59 gate.** Dạy ~10 gate cốt lõi + **mẫu hình chung**, rồi tặng kit đầy đủ.
+Học viên xây được thứ của mình, hiểu vì sao, và có bản xịn để lớn dần. Dạy xây hết = học viên bỏ giữa đường.
+
+**2. Mỗi bài phải trả lời "cơ chế này chặn kiểu sai nào".** Đây là khác biệt lớn nhất so với các khoá
+khác: họ dạy *cách làm*, khoá này dạy *vì sao phải làm thế và không làm thì hỏng ra sao*. Kiến thức
+"vì sao" mới là thứ còn lại sau 2 năm khi công cụ đã đổi.
+
+**3. Dùng lỗi thật của chính mình làm bài học.** Ví dụ đã đưa vào bài: script crash vì thiếu `.git` khi giải
+nén ZIP · probe read-only sai vì Postgres cấp quyền `TEMPORARY` cho `PUBLIC` · mục lục tự dời số dòng của
+chính nó · lỗi độ ưu tiên toán tử làm một phép kiểm **không bao giờ chạy** mà vẫn báo đạt. Những lỗi này
+không có trong sách, và chúng làm khoá học đáng tin.
+
+**4. Nói thẳng giới hạn.** Khoá này khó, cần đọc code, không phải "AI làm hộ". Nói trước sẽ lọc đúng
+học viên và giảm tỷ lệ bỏ ngang.
+
+**5. Nếu ~59 giờ quá dài:** tách thành hai khoá — **Cơ bản** (Phần 1–4, ~35h, ra được kit chạy được) và
+**Nâng cao** (Phần 5–8, ~24h, knowledge + chứng minh + CI/CD + phát hành).
+
+**6. Bổ sung so với bản khung gốc: app thực hành và Bài 0.** Lý do: đối tượng "không bắt buộc biết code,
+không bắt buộc có dự án thật" thì đến Bài 1 đã không có gì để gõ. App có **3 bug biết trước** biến mọi
+phép đo trong khoá thành phép đo có **đối chứng** — học viên bắt 0/3 thì biết lỗi ở bộ kiểm, không ở app.

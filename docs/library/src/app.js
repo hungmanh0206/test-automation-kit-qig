@@ -398,24 +398,29 @@
 
   /* ─────────── Tab Khoá học (dữ liệu sinh từ docs/COURSE.md) ─────────── */
   function renderCourse() {
-    var withLesson = COURSE.parts.reduce(function (a, p) {
-      return a + p.lessons.filter(function (l) { return l.href; }).length;
+    var allLessons = COURSE.parts.reduce(function (a, p) { return a.concat(p.lessons); }, []);
+    var withLesson = allLessons.filter(function (l) { return l.href; }).length;
+    var practices = allLessons.reduce(function (a, l) {
+      return a + l.bullets.filter(function (b) { return b.kind === 'practice'; }).length;
     }, 0);
-    var goals = COURSE.parts.reduce(function (a, p) {
-      return a + p.lessons.reduce(function (b, l) { return b + l.goals.length; }, 0);
+    var gates = allLessons.reduce(function (a, l) {
+      return a + l.bullets.filter(function (b) { return b.kind === 'gate'; }).length;
     }, 0);
+
     var st = $('#cStats');
     [['bài', COURSE.lessonCount], ['phần', COURSE.parts.length],
-     ['mục tiêu', goals], ['bài đã có bài giảng', withLesson]].forEach(function (p) {
+     ['bài đã có bài giảng', withLesson], ['lượt thực hành', practices],
+     ['gate tự xây', gates]].forEach(function (p) {
       var d = el('div');
       d.appendChild(el('b', null, String(p[1])));
       d.appendChild(el('span', null, p[0]));
       st.appendChild(d);
     });
 
+    /* Định vị + câu hỏi cốt lõi: hai câu quyết định người đọc có phải đối tượng của khoá không. */
     var mt = $('#cMeta');
-    [['Đầu ra của khoá', COURSE.outcome], ['Đối tượng', COURSE.audience],
-     ['Cần có trước', COURSE.prereq], ['Không dạy trong khoá', COURSE.notCover],
+    [['Định vị', COURSE.positioning], ['Câu hỏi cốt lõi', COURSE.coreQuestion],
+     ['Bắt buộc biết trước', COURSE.required], ['Không bắt buộc', COURSE.notRequired],
      ['Thời lượng', COURSE.total]].forEach(function (r) {
       if (!r[1]) return;
       var row = el('div', 'cmrow');
@@ -423,36 +428,127 @@
       row.appendChild(el('span', null, r[1]));
       mt.appendChild(row);
     });
+    if (COURSE.warning) {
+      var w = el('div', 'cwarn');
+      w.appendChild(el('b', null, 'Nói thẳng'));
+      w.appendChild(el('span', null, COURSE.warning));
+      mt.appendChild(w);
+    }
+
+    /* Bảng so sánh với khoá khác — cột "khoá này" tô đậm để thấy ngay khác biệt. */
+    if (COURSE.compare.length) {
+      var cmpWrap = $('#cCompare');
+      COURSE.compare.forEach(function (r) {
+        var row = el('div', 'ccmp');
+        row.appendChild(el('b', null, r.aspect));
+        row.appendChild(el('span', 'cother', r.others));
+        row.appendChild(el('span', 'cours', r.ours));
+        cmpWrap.appendChild(row);
+      });
+    }
+
+    /* Ba bug cài sẵn của app thực hành — đây là ĐỐI CHỨNG của cả khoá, nên để nổi. */
+    if (COURSE.practiceBugs.length) {
+      var bw = $('#cBugs');
+      COURSE.practiceBugs.forEach(function (b) {
+        var box = el('div', 'cbug');
+        var h = el('div', 'cbhead');
+        h.appendChild(el('h4', null, b.bug));
+        h.appendChild(el('span', 'chip', b.layer));
+        box.appendChild(h);
+        var bl = el('p', 'cbblind');
+        bl.appendChild(el('b', null, 'Bộ kiểm mù vì: '));
+        bl.appendChild(document.createTextNode(b.blind));
+        box.appendChild(bl);
+        box.appendChild(el('span', 'cfile', 'bắt được ở ' + b.where));
+        bw.appendChild(box);
+      });
+    }
+
+    /* Mục tiêu cấp khoá */
+    if (COURSE.outcomes.length) {
+      var ow = $('#cOutcomes');
+      COURSE.outcomes.forEach(function (o) { ow.appendChild(el('li', null, o)); });
+    }
 
     var wrap = $('#cParts');
     COURSE.parts.forEach(function (part) {
       var h = el('h3', 'subhead');
       h.appendChild(el('span', 'num', part.n));
       h.appendChild(document.createTextNode(part.title));
+      if (part.hours) h.appendChild(el('span', 'cphours', part.hours));
       wrap.appendChild(h);
 
       var grid = el('div', 'clessons');
       part.lessons.forEach(function (l) {
         /* Bài đã có bài giảng chi tiết thì viền vàng — người học biết ngay chỗ nào đọc được ngay.
            KHÔNG đặt thẻ <a>: trang là một file rời, đường dẫn tương đối tới repo sẽ chết. */
-        var c = el('div', 'clesson' + (l.href ? ' ready' : ''));
+        var c = el('div', 'clesson' + (l.href ? ' ready' : '') + (l.star ? ' star' : ''));
         var head = el('div', 'chead');
         head.appendChild(el('span', 'cnum', l.n));
-        head.appendChild(el('h4', null, l.title));
+        var t = el('h4', null, l.title);
+        if (l.star) t.appendChild(el('span', 'cstar', '★'));
+        head.appendChild(t);
         head.appendChild(el('span', 'cdur', l.dur));
         c.appendChild(head);
+
         var have = el('p', 'chave');
         have.appendChild(el('b', null, 'Có gì trong tay: '));
         have.appendChild(document.createTextNode(l.have));
         c.appendChild(have);
+
+        /* Bullet Thực hành / XÂY gate được tô khác: người đọc phân biệt ngay
+           "bài này chỉ đọc" với "bài này phải gõ". */
         var ul = el('ul', 'cgoals');
-        l.goals.forEach(function (g) { ul.appendChild(el('li', null, g)); });
+        l.bullets.forEach(function (b) {
+          var li = el('li', b.kind === 'point' ? null : 'c' + b.kind);
+          if (b.kind === 'practice') li.appendChild(el('b', null, 'Thực hành: '));
+          if (b.kind === 'gate') li.appendChild(el('b', null, 'XÂY gate: '));
+          li.appendChild(document.createTextNode(b.text));
+          ul.appendChild(li);
+        });
         c.appendChild(ul);
+
         if (l.href) c.appendChild(el('span', 'cfile', 'docs/' + l.href));
         grid.appendChild(c);
       });
       wrap.appendChild(grid);
     });
+
+    /* Bài giảng đã viết mà chưa có chỗ trong giáo trình — nêu thẳng thay vì để lẫn. */
+    if (COURSE.orphans.length) {
+      var orw = $('#cOrphans');
+      COURSE.orphans.forEach(function (o) {
+        var box = el('div', 'corphan');
+        box.appendChild(el('h4', null, o.title));
+        box.appendChild(el('p', null, o.what));
+        var s = el('p', 'csuggest');
+        s.appendChild(el('b', null, 'Đề xuất: '));
+        s.appendChild(document.createTextNode(o.suggest));
+        box.appendChild(s);
+        box.appendChild(el('span', 'cfile', 'docs/' + o.href));
+        orw.appendChild(box);
+      });
+    }
+
+    /* Quyết định thiết kế: phần trả lời "vì sao khoá dựng thế này", không phải nội dung dạy. */
+    if (COURSE.decisions.length) {
+      var dw = $('#cDecisions');
+      COURSE.decisions.forEach(function (d) {
+        var box = el('div', 'cdec');
+        var hh = el('h4', null, null);
+        hh.appendChild(el('span', 'cnum', d.n));
+        hh.appendChild(document.createTextNode(d.title));
+        box.appendChild(hh);
+        box.appendChild(el('p', null, d.body));
+        dw.appendChild(box);
+      });
+    }
+
+    if (COURSE.deliverables.length) {
+      var vw = $('#cDeliver');
+      COURSE.deliverables.forEach(function (d) { vw.appendChild(el('li', null, d)); });
+    }
   }
 
   /* ─────────── Tab Hành trình (dữ liệu sinh từ docs/BUILD_JOURNAL.md) ─────────── */

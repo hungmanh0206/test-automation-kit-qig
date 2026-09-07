@@ -137,8 +137,24 @@ const ok = (name, cond, got) => {
   ok('có các phần', await p.locator('#cParts .subhead').count() >= 4);
   ok('mỗi bài có dòng "có gì trong tay"', await p.locator('.clesson .chave').count() === lessons);
   ok('mỗi bài có thời lượng', await p.locator('.clesson .cdur').count() === lessons);
-  ok('có mục tiêu học tập', await p.locator('.cgoals li').count() >= 80);
+  /* Mỗi PHẦN phải khai số giờ — thiếu thì bảng tổng thời lượng của khoá nói dối. */
+  ok('mỗi phần có số giờ', await p.locator('#cParts .subhead .cphours').count()
+    === await p.locator('#cParts .subhead').count());
+  ok('có nội dung từng bài', await p.locator('.cgoals li').count() >= 80);
   ok('bài đã có bài giảng được đánh dấu', await p.locator('.clesson.ready').count() >= 1);
+  /* Hai bài trọng tâm (Oracle, Mutation) phải nhận ra được bằng mắt, không phải đọc hết mới thấy. */
+  ok('bài trọng tâm được đánh dấu ⭐', await p.locator('.clesson.star').count() >= 2);
+  /* Bullet "phải gõ" khác bullet "chỉ đọc" — đây là thứ phân biệt khoá học với mục lục. */
+  ok('có callout Thực hành', await p.locator('.cgoals li.cpractice').count() >= 5);
+  ok('có callout XÂY gate', await p.locator('.cgoals li.cgate').count() >= 5);
+  ok('có bảng so sánh với khoá khác', await p.locator('#cCompare .ccmp').count() >= 4);
+  ok('có 3 bug đối chứng của app thực hành', await p.locator('#cBugs .cbug').count() === 3);
+  ok('có mục tiêu cấp khoá', await p.locator('#cOutcomes li').count() >= 8);
+  ok('có quyết định thiết kế khoá', await p.locator('#cDecisions .cdec').count() >= 5);
+  ok('có mục học viên nhận được', await p.locator('#cDeliver li').count() >= 5);
+  /* Bài giảng đã viết mà chưa có chỗ phải NÊU RA, không để lẫn — nếu hết orphan thì khối rỗng,
+     lúc đó sửa phép kiểm này thành === 0. */
+  ok('bài giảng chưa xếp chỗ được nêu', await p.locator('#cOrphans .corphan').count() >= 1);
   await shot('05a-course.png');
 
   console.log('\n[5b] Tab Hành trình (dẫn xuất từ docs/BUILD_JOURNAL.md)');
