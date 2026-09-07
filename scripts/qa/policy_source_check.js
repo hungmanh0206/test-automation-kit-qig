@@ -323,20 +323,36 @@ if (fs.existsSync(SKILLS_DIR)) {
 {
   const ROOTS = ['prompt_templates', '.agent', 'partial-rerun', 'docs/library/src', 'scripts', 'tests'];
   const FILES = ['README.md', 'QUICKSTART.md', 'USER_GUIDE.md', 'RULE_GLOBAL.md', 'CLAUDE.md', '.env.example'];
-  const BANNED = /xray/i;
+  /*
+   * HAI mẫu, vì tên đầy đủ KHÔNG đủ. Đo 07/09/2026: sơ đồ `phase-selection.png` mang badge `XR` cho
+   * bước publish — vết của công cụ đã bỏ, SỐNG SÓT qua đợt xoá 20/08 vì `/xray/i` không khớp hai chữ
+   * viết tắt, và ảnh là NHỊ PHÂN nên không gate nào đọc được nội dung. Người dùng nhìn badge của một
+   * công cụ không còn tồn tại suốt 2 tuần. Nên siết thêm NHÃN VIẾT TẮT ở chính source sinh ảnh.
+   * `\bXR\b` phân biệt hoa-thường và có biên từ: đo được 0 chỗ trùng trong toàn bộ ROOTS ⇒ không báo oan.
+   */
+  const BANNED = [/xray/i, /\bXR\b/];
   /*
    * HAI FILE ĐƯỢC MIỄN, và chỉ hai: chính LUẬT này và TEST khoá luật. Ở đó cái tên xuất hiện với vai trò
    * "thứ bị cấm", không phải "đường được dạy" — không miễn thì luật tự tố chính nó và không ai chạy nổi.
    * Miễn theo ĐƯỜNG DẪN CỤ THỂ (không phải theo pattern) để nó không thành lỗ hổng mở rộng dần.
    */
-  const SELF = new Set(['scripts/qa/policy_source_check.js', 'tests/fe/infra/gates.spec.ts']);
+  const SELF = new Set([
+    'scripts/qa/policy_source_check.js',
+    'tests/fe/infra/gates.spec.ts',
+    /*
+     * Thêm 07/09/2026: glossary của kit ĐỊNH NGHĨA chính khái niệm "NO-XRAY (cấm cả cái tên)".
+     * Ở đó cái tên cũng đứng ở vai trò "thứ bị cấm" — đúng lý do miễn trừ đã viết ở trên, không phải
+     * nới luật. Miễn theo ĐƯỜNG DẪN CỤ THỂ như hai file kia.
+     */
+    'docs/library/src/terms/concepts_expansion.js',
+  ]);
 
   const hits = [];
   const scanFile = (abs) => {
     const rel = path.relative(rc.REPO_ROOT, abs).replace(/\\/g, '/');
     if (SELF.has(rel)) return;
     fs.readFileSync(abs, 'utf8').split(/\r?\n/).forEach((line, i) => {
-      if (BANNED.test(line)) hits.push(`${rel}:${i + 1}`);
+      if (BANNED.some((re) => re.test(line))) hits.push(`${rel}:${i + 1}`);
     });
   };
   const walk = (dir) => {
