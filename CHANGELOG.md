@@ -7,6 +7,101 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-07 — CI nhanh hơn 19 lần, danh mục gate tự sinh, và điểm mù ẢNH đã có máy canh
+
+**Vấn đề 1 — CI chậm mà không ai biết chậm ở đâu.** Job `static-check` mất **527s** và mọi suy đoán về
+nguyên nhân đều sai vì đo bằng `duration_s` của container thay vì đọc **trace job**. Trace thật (job 14185)
+nói: `audit:ci` **421s** = 93% toàn job, `npm ci` 15s, 12 gate còn lại cộng lại **5s**, overhead ngoài các
+bước **~9s** — không có "4 phút overhead ẩn" như đã đoán.
+
+**Cách chữa.** Tách `audit` thành job riêng (`d386c5e`), chạy khi push CÓ đổi `package-lock.json`/
+`package.json`, khi scheduled, hoặc bấm tay; `timeout: 12m` vì runner đang `concurrent = 1` nên một lượt
+audit treo sẽ chặn mọi job khác. Rồi bỏ `npm ci` khỏi job đó (`c85db3a`, ghi chú sửa lại ở `51d48f8`) —
+và đây là chỗ đáng đọc: **thứ chậm chưa bao giờ là audit, mà là audit-SAU-KHI-install**. Cùng lockfile,
+cùng kết quả (`low 0 · moderate 3 · high 0 · critical 0`), nhưng có `node_modules` thì `npm audit` duyệt
+cây đã cài (**421s**), không có thì nó hỏi bulk advisory từ lockfile (**1,3s** — job 14202). Việc tách job
+mới là điều kiện để audit được phép không cần `node_modules`.
+
+**Đo sau cùng:** `static-check` **527s → 24–28s**, `audit` **11s** và chỉ chạy khi bề mặt dependency đổi.
+
+**Vấn đề 2 — một nút bấm-là-đỏ trên CI.** `integration-check` đọc creds từ `scripts/integrations/jira/.env`
+(file untracked) nên trên CI nó **không thể xanh**: chết ở bước kiểm cấu hình sau ~30s. Vì là `when: manual`,
+GitLab tự gán `allow_failure: true` ⇒ pipeline hiện ⚠ Warning và lỗi im lặng. **Cách chữa** (`744acf8`): job
+chỉ TỒN TẠI khi thật sự có creds (`rules` + `if` trên biến token) — không dùng `allow_failure` để biến đỏ
+thành vàng, vì một nút luôn-đỏ là cách nhanh nhất dạy người ta bỏ qua CI. Sau khi khai đủ 6 mục `required`
+trên GitLab CI Variables: job **xanh 42s**, Jira · AIO · Confluence kết nối bằng request thật.
+
+**Vấn đề 3 — kit có ~58 máy nhưng không chỗ nào liệt kê được chúng.** Có danh mục skill, rule, layer,
+nghĩa vụ theo nhánh, tài liệu, test — thiếu đúng danh mục **gate**. Luận đề của kit là "luật cần MÁY", mà
+máy không liệt kê được thì không kiểm toán được: không ai biết một gate đã âm thầm thành cảnh báo.
+
+**Cách chữa** (`5863151`, hiệu chuẩn ở `b6961c9`): `gate_index.js` sinh `.agent/config/GATES.md` từ chính
+source — **58 máy: 36 CHẶN · 16 SINH · 6 BÁO CÁO**. Cột **Mức** là thông tin chưa máy nào ghi, và đó là chỗ
+dễ trôi nhất (nới một gate là sửa MỘT dòng). `gates:index:check` chặn khi bảng lệch source, ở cả hai nền CI.
+
+**Bài học đắt hơn cả cái bảng:** 4 "phát hiện" đầu tiên của nó **đều là lỗi của bảng, không của kit** —
+`bugs:checklist` bị dán nhãn CẢNH BÁO trong khi nó chỉ IN BRIEF (việc chặn nằm ở `dim:coverage`, chiều
+`bug_history` §20, `minCasesPerDimension: 5`) · 9 gate bị tố "không có mô tả" vì regex quá chặt · và
+`SURFACE_*` mù `exploratory/` + `RULE_GLOBAL.md` nên 2 máy trông như mồ côi. Luật đã ghi vào header script:
+**thấy một máy "không bề mặt nào" thì NGHI BẢNG TRƯỚC, nghi kit sau.** Một danh mục chưa hiệu chuẩn thì
+cảnh báo của nó chưa đáng tin — đúng bệnh kit đang chống.
+
+**Vấn đề 4 — tra một luật phải đọc cả `RULE_GLOBAL.md`.** File = 465 dòng · 51.116 ký tự · ~12.800 token
+(SÀN; 12% ký tự có dấu nên thực tế cao hơn). Nó **không** auto-load — file luôn-trong-ngữ-cảnh là
+`CLAUDE.md` (13 dòng) — nên nó không ăn token mỗi phiên; vấn đề là lúc CẦN tra thì không có mục lục. Thước
+đo của chính kit (`doc_budget`: `READ_DIRECT = 8000`) nói đọc cả file đã vượt ngưỡng "đọc thẳng" 1,6 lần.
+
+**Cách chữa** (`1cf870f`): `rule_lookup.js` + mục lục NEO sinh tự động. `npm run rule -- security` = **287
+token** (rẻ hơn **45 lần**). **KHÔNG chia file** dù chia nghe hợp lý hơn: `policy_source_check` khoá
+"RULE_GLOBAL là canonical DUY NHẤT" có chủ đích, chia thành 4 file là tạo 4 chỗ để cùng một luật nói khác
+nhau — kit đã bị đúng lớp lỗi đó. Chỗ dễ sai nhất là **điểm bất động**: mục lục CHỨA số dòng mà chèn nó lại
+LÀM DỜI số dòng, nên bản đầu ghi "Purpose ở dòng 32" trong khi nó đã dời xuống 67; nay lặp tới khi ổn định
+và `--check` so CHẶT cả khối.
+
+**Kèm:** ngưỡng lưu trữ kho học khai bằng SỐ ở `.agent/config/retention.json`, và chính máy GHI dữ liệu
+(`metrics_collect`) nhắc khi tới mốc. Đo: `runs.jsonl` 35 dòng/12KB · `tc-history` 1.558 dòng · `knowledge/`
+1.3MB — còn rất xa ngưỡng nên **chưa viết code tỉa**: tỉa 35 dòng là giải bài toán chưa tồn tại. Policy khai
+rõ tỉa KHÔNG BAO GIỜ là xoá, vì rule `superseded`/`invalid` còn cần cho truy vết "TC này từng PASS theo
+oracle nào".
+
+**Vấn đề 5 — ẢNH TÀI LIỆU là điểm mù có hệ thống.** Mọi gate đọc VĂN BẢN, nên nội dung sai nằm trong PNG
+tồn tại vô hạn. Đo hậu quả thật: `phase-selection.png` mang badge nhãn-hai-chữ của công cụ test-management
+đã bỏ HẲN 20/08 — sống sót vì luật cũ khớp TÊN ĐẦY ĐỦ (không khớp nhãn viết tắt) và vì ảnh là nhị phân.
+Người dùng nhìn badge của một công cụ không còn tồn tại **suốt 2 tuần**. Kèm một glyph U+2387 mà font
+Be Vietnam Pro không có → render thành ô rỗng.
+
+**Cách chữa, HAI lớp — và phải nói rõ lớp nào bắt gì, không thì tưởng đã kín** (`b26cad7`, `11309e1`):
+① `policy_source_check` siết thêm **nhãn viết tắt** (phân biệt hoa-thường + biên từ; đo trước khi thêm: 0
+chỗ trùng ⇒ không báo oan) → bắt ĐÚNG lớp lỗi trên. ② `tests/fe/infra/user-guide-images.spec.ts` (4 test):
+bộ ảnh phải khớp generator và khớp tài liệu — generator khai mà thiếu file · ảnh mồ côi · USER_GUIDE nhúng
+link chết · ảnh CŨ HƠN generator trong lịch sử git → bắt lớp KHÁC, và **nó không bắt được vụ nhãn-viết-tắt**
+(hồi đó ảnh và generator khớp nhau). Sơ đồ Prompt Map nay có cả slash command của từng nhánh.
+
+**Vấn đề 6 — NO-XRAY bỏ sót đuôi file.** Bộ lọc là `md|js|mjs|ts|json|yml|example` nên `.sh` vô hình: script
+khai CI Variables IN chữ của công cụ cũ ra màn hình mỗi lần chạy mà gate vẫn báo sạch. **Cách chữa**
+(`a0ca759`): nới sang `sh|bash|ps1|sql|html|yaml`; đối chứng là **vi phạm THẬT**, không phải fixture. Cùng
+script đó còn thiếu `JIRA_PROJECT_KEY` và `AIO_API_TOKEN` nên không khai đủ 6 mục `required` — đúng lý do
+`integration-check` không thể xanh.
+
+### Đính chính về xuất xứ hai thay đổi — QUAN TRỌNG khi tra ngược
+
+Hai thay đổi dưới đây là **của chủ repo**, đang là WIP chưa commit, và bị gom vào commit của agent do agent
+stage theo tên file mà không đối chiếu `git diff --cached`:
+
+| Thay đổi | Nằm trong commit | Ghi chú |
+|---|---|---|
+| `RULE_GLOBAL.md`: bỏ cột `Severity`/`Mức độ rủi ro` khỏi bộ testcase; tiêu đề case = NỘI DUNG, tag sang cột `Tag` | `1cf870f` (commit về mục lục) | Nội dung không mất, nhưng commit message không nhắc — đây là chỗ tra ngược |
+| `.agent/skills/INDEX.md`: description `tc_validator` từ "template 9 cột" → "template 11 cột" | `6a5811f` (commit về slash command) | INDEX.md là artifact SINH; nó phản ánh bản `tc_validator/SKILL.md` đang sửa dở |
+
+**Lệch còn tồn tại và cách đóng:** trên `main` hiện `INDEX.md` ghi "template 11 cột" còn
+`.agent/skills/phase1/tc_validator/SKILL.md` vẫn ghi "9 cột" — vì artifact sinh đã lên trước nguồn của nó.
+Lệch tự hết khi chủ repo commit `tc_validator/SKILL.md`. Không viết lại lịch sử: hai commit đã ở cả hai
+remote, rewrite tệ hơn vấn đề.
+
+**Luật rút ra:** stage theo đường dẫn cụ thể là CHƯA đủ — phải đọc `git diff --cached` trước khi commit.
+Và `skills_index` chỉ khoá TÊN skill, không so description, nên artifact sinh có thể trôi khỏi nguồn mà
+không gate nào thấy.
+
 ## v2.0.0 — 2026-09-04 (c) — CD cho chính bộ kit: version · package · verify · release
 
 **Vấn đề.** Kit phát cho nhiều dự án và sửa rất thường xuyên, nhưng: không biết dự án nào đang ở bản nào
