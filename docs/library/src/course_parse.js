@@ -140,9 +140,20 @@ function parseCourse(mdPath) {
       const bullets = [...body.matchAll(/^-\s+(.+)$/gm)].map((x) => classifyBullet(x[1]));
       if (!bullets.length) throw new Error(`COURSE.md: Bài ${lm[1]} không có gạch đầu dòng nội dung nào`);
 
+      /* Liên kết PHỤ: bài này còn dạy qua bài chi tiết nào nữa (khai ở bullet, vd Bài 13 trỏ sang
+         evidence.md). Cần cho phép kiểm "cây thư mục khớp bài giảng" — một bài được dạy nội dung
+         nằm ở bài chi tiết mà nó chỉ tới. Mọi liên kết phải còn sống. */
+      const extraHrefs = [...new Set([...body.matchAll(/\]\((course\/[a-z0-9-]+\.md)\)/g)].map((x) => x[1]))]
+        .filter((h) => h !== href);
+      for (const h of extraHrefs) {
+        if (!fs.existsSync(path.join(root, h))) {
+          throw new Error(`COURSE.md: Bài ${lm[1]} có liên kết phụ trỏ tới file KHÔNG tồn tại — ${h}`);
+        }
+      }
+
       lessons.push({
         n: lm[1], title: stripMd(lm[2]), have: have, dur: dur,
-        href: href, star: star, bullets: bullets
+        href: href, extraHrefs: extraHrefs, star: star, bullets: bullets
       });
       totalLessons++;
     }
@@ -183,8 +194,9 @@ function parseCourse(mdPath) {
     .map((x) => ({ n: x[1], title: stripMd(x[2]), body: stripMd(x[3]) }));
   if (!decisions.length) throw new Error('COURSE.md: mục "Quyết định thiết kế khoá học" không đọc được mục nào');
 
-  // Bài giảng đã viết nhưng chưa có chỗ trong giáo trình
-  const orphanBlock = (md.match(/chưa có chỗ trong[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
+  /* Bài chi tiết bổ trợ: không đánh số, nhưng được một bài có số trỏ tới. Phải NÊU RA, vì bài giảng
+     tồn tại mà không ai dẫn tới thì bằng không tồn tại. */
+  const orphanBlock = (md.match(/Bài chi tiết bổ trợ[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
   const orphans = [...orphanBlock.matchAll(/^\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*$/gm)]
     .map((r) => ({ title: plain(r[1]), href: r[2], what: stripMd(r[3]), suggest: stripMd(r[4]) }));
   for (const o of orphans) {

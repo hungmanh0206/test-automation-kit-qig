@@ -541,7 +541,7 @@
         box.appendChild(el('h4', null, o.title));
         box.appendChild(el('p', null, o.what));
         var s = el('p', 'csuggest');
-        s.appendChild(el('b', null, 'Đề xuất: '));
+        s.appendChild(el('b', null, 'Được dạy ở: '));
         s.appendChild(document.createTextNode(o.suggest));
         box.appendChild(s);
         box.appendChild(el('span', 'cfile', 'docs/' + o.href));

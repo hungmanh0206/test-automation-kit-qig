@@ -316,6 +316,7 @@ kit-cua-toi/
 - Vì sao `n/a` phải kèm **lý do bắt buộc** — không thì mọi chiều đều thành `n/a`
 - Traceability: requirement → test case → automation → bug
 - **XÂY gate:** máy đếm chiều, chặn khi một chiều bắt buộc chưa đủ ngưỡng
+- Khung chung cho mọi máy chặn về sau: xem [bộ gate nền](course/bo-gate-nen.md) — `lib/gate.js`, gate tồn kho, quét secret, và lệnh tự soi gộp mọi gate một lượt
 
 ---
 
@@ -565,12 +566,15 @@ Mỗi bài giảng đầy đủ gồm: **từ mới của bài** · các **Việ
 và bảng xử lý khi thấy khác · **cây thư mục sau bài này** · bảng tự kiểm · bài tập về nhà · mục **Đào sâu**
 không bắt buộc.
 
-**Hai bài giảng đã viết nhưng chưa có chỗ trong 29 bài** — cần quyết định đưa vào đâu:
+**Bài chi tiết bổ trợ (không đánh số)** — không phải bài trong lộ trình, mà là phần đào sâu mà một bài
+có số trỏ tới. Tách ra để bài chính không phình, nhưng nội dung vẫn nằm trong khoá:
 
-| Bài giảng | Nội dung | Đề xuất |
+| Bài chi tiết | Nội dung | Được dạy ở |
 |---|---|---|
-| [Viết gate đầu tiên](course/viet-gate-dau-tien.md) | Cơ chế `exit 0/1/2`, gate đầy đủ đầu tiên, 3 phép tiêm lỗi để chứng minh nó chặn thật | Tách thành bài riêng ở Phần 3, trước Bài 8 — hiện các callout **XÂY gate:** không có bài nào dạy *cách* viết |
-| [Bộ gate nền](course/bo-gate-nen.md) | `lib/gate.js` dùng chung, gate tồn kho, quét secret, lệnh tự soi gộp mọi gate | Ghép vào Bài 11, hoặc tách bài riêng cạnh bài trên |
+| [Viết gate đầu tiên](course/viet-gate-dau-tien.md) | Cơ chế `exit 0/1/2`, gate đầy đủ đầu tiên, 3 phép tiêm lỗi để chứng minh nó chặn thật | **Bài 8** — cùng công thức 5 câu hỏi để viết mọi gate |
+| [Bộ gate nền](course/bo-gate-nen.md) | `lib/gate.js` dùng chung, gate tồn kho, quét secret, lệnh tự soi gộp mọi gate | **Bài 11** |
+| [Tiền điều kiện](course/tien-dieu-kien.md) | `factory.js` (prefix `IT test` + mã task), fixture, janitor 3 lớp an toàn, và **bug ma** | **Bài 12** |
+| [Bằng chứng](course/evidence.md) | Chụp có khoanh đỏ, che PII cả `input.value`, banner video từng bước | **Bài 13** |
 
 ---
 

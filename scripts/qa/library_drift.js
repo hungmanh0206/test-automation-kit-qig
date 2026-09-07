@@ -263,6 +263,58 @@ if (!exists(COURSE_MD)) {
         catch (e) { badBlocks.push(`${nhan} khối json #${i + 1}: ${e.message}`); }
       }
     }
+    /* Cây thư mục trong COURSE.md phải KHỚP TÊN FILE với bài giảng nó chú thích.
+     *
+     * VÌ SAO CÓ PHÉP KIỂM NÀY (đo được, không phải giả định): lượt thêm 4 bài gần nhất làm cây lệch
+     * ĐÚNG 4 chỗ — `gate-mo-rong.js` trong cây vs `gate_mo_rong.js` trong bài, và 3 file bài giảng dạy
+     * viết mà cây không có. Không gate nào bắt; phải soát bằng mắt mới thấy.
+     *
+     * ĐO CÁI GÌ: mỗi lá trong cây có chú thích "Bài N" và có đuôi .js/.json — nếu Bài N đã có bài giảng
+     * thì bài giảng đó PHẢI nhắc đúng tên file ấy. Cây nói "bài này tạo file X" mà bài không nhắc X
+     * nghĩa là một trong hai bên sai, và học viên là người phát hiện.
+     */
+    const treeLeaves = [...cs.kitTree.matchAll(/([A-Za-z0-9_.-]+\.(?:js|json))\s+[←·]\s*Bài\s+(\d+)/g)]
+      .map((x) => ({ file: x[1], n: Number(x[2]) }));
+    /* Mỗi bài có thể dạy qua NHIỀU file: href chính + liên kết phụ khai ở bullet của COURSE.md
+       (vd Bài 13 trỏ sang evidence.md cho phần chụp ảnh). */
+    const hrefTheoSo = {};
+    for (const p of cs.parts) for (const l of p.lessons) {
+      if (l.href) hrefTheoSo[Number(l.n)] = [l.href].concat(l.extraHrefs || []);
+    }
+
+    /* Một bài được phép dạy qua bài chi tiết mà nó LIÊN KẾT TỚI — vd Bài 13 trỏ sang evidence.md cho
+       phần chụp ảnh. Nên tìm cả trong các bài giảng mà bài chính link sang (1 chặng, không đệ quy sâu:
+       2 chặng thì "có nhắc ở đâu đó trong khoá" và phép kiểm mất nghĩa). */
+    /* Gom nội dung mọi file bài giảng của một bài, cộng các bài chi tiết mà chính file đó link sang
+       (1 chặng, không đệ quy sâu: 2 chặng thì thành "có nhắc ở đâu đó trong khoá" và phép kiểm mất nghĩa). */
+    const noiDungCoTheDay = (hrefs) => {
+      let gop = '';
+      for (const h of hrefs) {
+        const chinh = rd(path.join(ROOT, 'docs', h));
+        gop += '\n' + chinh;
+        for (const lk of chinh.matchAll(/\]\(([a-z0-9-]+\.md)\)/g)) {
+          const f = path.join(ROOT, 'docs', 'course', lk[1]);
+          if (fs.existsSync(f)) gop += '\n' + rd(f);
+        }
+      }
+      return gop;
+    };
+
+    const cayLech = [];
+    for (const leaf of treeLeaves) {
+      const hrefs = hrefTheoSo[leaf.n];
+      if (!hrefs) continue;                      // bài chưa có bài giảng thì chưa đối chiếu được
+      if (!noiDungCoTheDay(hrefs).includes(leaf.file)) {
+        cayLech.push(`cây ghi "${leaf.file} ← Bài ${leaf.n}" nhưng ${hrefs.map((h) => path.basename(h)).join(' / ')} ` +
+          '(và các bài chi tiết chúng link sang) KHÔNG nhắc tên file đó');
+      }
+    }
+    if (cayLech.length) {
+      problems.push(`cây thư mục lệch tên file với bài giảng:\n      ${cayLech.join('\n      ')}`);
+    } else if (treeLeaves.length) {
+      ok.push(`${treeLeaves.length} lá trong cây khớp tên file với bài giảng`);
+    }
+
     /* MỌI bài giảng phải có khối "Cây thư mục sau bài này".
        Lý do: người học từ số 0 không hình dung được file mới nằm ở đâu và cạnh cái gì — thiếu khối này
        thì bài giảng thành một chuỗi lệnh rời, không thành một bộ kit. */

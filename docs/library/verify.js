@@ -152,9 +152,9 @@ const ok = (name, cond, got) => {
   ok('có mục tiêu cấp khoá', await p.locator('#cOutcomes li').count() >= 8);
   ok('có quyết định thiết kế khoá', await p.locator('#cDecisions .cdec').count() >= 5);
   ok('có mục học viên nhận được', await p.locator('#cDeliver li').count() >= 5);
-  /* Bài giảng đã viết mà chưa có chỗ phải NÊU RA, không để lẫn — nếu hết orphan thì khối rỗng,
-     lúc đó sửa phép kiểm này thành === 0. */
-  ok('bài giảng chưa xếp chỗ được nêu', await p.locator('#cOrphans .corphan').count() >= 1);
+  /* Bài chi tiết bổ trợ (không đánh số) phải NÊU RA — bài giảng tồn tại mà không ai dẫn tới thì
+     bằng không tồn tại, và học viên không có đường nào tìm ra nó. */
+  ok('bài chi tiết bổ trợ được nêu', await p.locator('#cOrphans .corphan').count() >= 4);
   await shot('05a-course.png');
 
   console.log('\n[6] Flashcard & Đề luyện');
