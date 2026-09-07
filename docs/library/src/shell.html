@@ -1,0 +1,295 @@
+<title>Thư viện Test Automation Kit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>/*__CSS__*/</style>
+
+<header class="band">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brandline">
+        <img class="logo" src="__LOGO__" alt="SAPP Academy">
+        <span class="motto">Advance your career</span>
+      </div>
+      <nav class="toplinks">
+        <a class="toplink" href="#p-info">Về dự án</a>
+        <button class="themebtn" id="themeBtn">🌙 Tối</button>
+      </nav>
+    </div>
+
+    <div class="eyebrow">Test Automation Kit · v2</div>
+    <h1>Thư viện thuật ngữ<br>QA &amp; Test Automation</h1>
+    <p class="sub">Toàn bộ khái niệm, gate máy-kiểm, skill và trạng thái mà kit đang thực sự dùng — trích thẳng
+      từ mã nguồn và tài liệu trong repo, mỗi mục có đường dẫn file gốc để tra lại.</p>
+    <div class="accent"></div>
+    <div class="bandstats">
+      <div><b data-stat="terms">0</b> thuật ngữ</div>
+      <div><b data-stat="cat-gate">0</b> gate máy-kiểm</div>
+      <div><b data-stat="cat-skill">0</b> skill</div>
+      <div><b data-stat="links">0</b> liên kết khái niệm</div>
+    </div>
+  </div>
+</header>
+
+<div class="modes">
+  <div class="wrap" role="tablist">
+    <button class="mode" data-mode="graph"  role="tab" aria-selected="true">🗺 Bản đồ khái niệm</button>
+    <button class="mode" data-mode="az"     role="tab" aria-selected="false">🔤 Tra cứu A–Z</button>
+    <button class="mode" data-mode="guide"  role="tab" aria-selected="false">📘 Hướng dẫn</button>
+    <button class="mode" data-mode="readme" role="tab" aria-selected="false">📄 Readme</button>
+    <button class="mode" data-mode="course"  role="tab" aria-selected="false">🎓 Khoá học</button>
+    <button class="mode" data-mode="journey" role="tab" aria-selected="false">🧭 Hành trình</button>
+    <button class="mode" data-mode="flash"  role="tab" aria-selected="false">🃏 Flashcard</button>
+    <button class="mode" data-mode="chal"   role="tab" aria-selected="false">🎲 Đề luyện QA</button>
+    <button class="mode" data-mode="info"   role="tab" aria-selected="false">ℹ️ Về dự án</button>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- GRAPH -->
+  <section class="panel" id="p-graph">
+    <h2 class="sechead">Bản đồ khái niệm</h2>
+    <p class="sectip">Sáu cụm khái niệm dựng trong không gian ba chiều, nối nhau bằng quan hệ thật.
+      Bấm một nút để đọc chi tiết. Nút <b>3D / 2D</b> ở góc phải chuyển giữa khối cầu và bố cục phẳng.</p>
+    <div class="graphbox">
+      <canvas id="graph" aria-label="Bản đồ khái niệm ba chiều của kit" role="img"></canvas>
+      <div class="gtools">
+        <button id="z3d" class="wide" aria-pressed="true">3D</button>
+        <button id="zin"  title="Phóng to">＋</button>
+        <button id="zout" title="Thu nhỏ">－</button>
+        <button id="zfit" title="Vừa khung">⤢</button>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="ghint">
+        <span id="ghint3d"></span>
+        Nút lớn hơn là tâm cụm. Rê chuột lên một nút để làm nổi các khái niệm liên quan trực tiếp.
+      </div>
+    </div>
+  </section>
+
+  <!-- A-Z -->
+  <section class="panel" id="p-az" hidden>
+    <h2 class="sechead">Tra cứu A–Z</h2>
+    <p class="sectip">Tìm theo tên, mô tả hoặc đường dẫn file. Không dấu vẫn ra kết quả. Bấm một thẻ để mở giải thích đầy đủ.</p>
+    <div class="toolrow">
+      <label class="search"><span>🔍</span>
+        <input id="q" type="search" placeholder="oracle, flaky, gate, verdict, evidence, task.env…" autocomplete="off">
+      </label>
+      <select id="catSel" class="btn" style="padding:9px 12px"><option value="">Tất cả nhóm</option></select>
+      <span class="count" id="azCount"></span>
+    </div>
+    <div class="azbar" id="azBar"></div>
+    <div id="azList"></div>
+  </section>
+
+  <!-- HƯỚNG DẪN -->
+  <section class="panel" id="p-guide" hidden>
+    <h2 class="sechead">Hướng dẫn sử dụng</h2>
+    <p class="sectip">Rút gọn từ <code>USER_GUIDE.md</code> — đọc theo chiều dọc là đi hết một vòng đời story.
+      Mỗi chặng ghi rõ ai làm, ra được gì, và cổng chặn nằm ở đâu.</p>
+
+    <h3 class="subhead"><span class="num">1</span>Luồng chính — một story đi qua 10 chặng</h3>
+    <div class="flowwrap" id="guideFlow"></div>
+
+    <h3 class="subhead"><span class="num">2</span>Chuẩn bị trước khi chạy</h3>
+    <div class="cards" id="guideSetup"></div>
+
+    <h3 class="subhead"><span class="num">3</span>Lỗi thường gặp → cách xử lý</h3>
+    <p class="sectip">Dòng có viền vàng là loại tốn thời gian nhất khi chưa biết trước.</p>
+    <div id="guideTrouble"></div>
+
+    <h3 class="subhead"><span class="num">4</span>Checklist trước khi kết thúc</h3>
+    <div class="checkgrid" id="guideCheck"></div>
+  </section>
+
+  <!-- README -->
+  <section class="panel" id="p-readme" hidden>
+    <h2 class="sechead">Readme — kit có gì bên trong</h2>
+    <p class="sectip">Rút gọn từ <code>README.md</code> và <code>QUICKSTART.md</code>: kiến trúc theo tầng,
+      cấu trúc thư mục, mô hình AIO Tests, lệnh hay dùng và quy ước bắt buộc.</p>
+
+    <h3 class="subhead"><span class="num">1</span>Kiến trúc theo tầng</h3>
+    <div id="archList"></div>
+
+    <h3 class="subhead"><span class="num">2</span>Cấu trúc thư mục</h3>
+    <div class="treebox" id="treeBox"></div>
+
+    <h3 class="subhead"><span class="num">3</span>Output của một task</h3>
+    <p class="sectip">Mọi artifact nằm dưới <code>&lt;PROJECT_OUTPUT_DIR&gt;/tasks/&lt;TASK_KEY&gt;/</code></p>
+    <div class="cards" id="outList"></div>
+
+    <h3 class="subhead"><span class="num">4</span>Mô hình AIO Tests</h3>
+    <p class="sectip">AIO lưu test là <b>thực thể riêng của app</b>, không phải Jira issue — nên đây là một tầng
+      tích hợp riêng, không dùng lại được đường Jira. Đổi lại, evidence neo được xuống <b>từng bước</b> của case.</p>
+    <div id="tmsList"></div>
+
+    <h3 class="subhead"><span class="num">5</span>Lệnh hay dùng</h3>
+    <p class="sectip">Danh mục gate của kit là <b>tự sinh từ source</b>, không viết tay — bản hiện tại đếm được
+      <b>59 máy: 38 CHẶN · 15 SINH · 6 BÁO CÁO</b>. Sinh lại bằng <code>npm run gates:index</code>.</p>
+    <div id="cmdList"></div>
+
+    <h3 class="subhead"><span class="num">6</span>Quy ước bắt buộc</h3>
+    <div class="pracgrid" id="pracList"></div>
+  </section>
+
+  <!-- KHOÁ HỌC -->
+  <section class="panel" id="p-course" hidden>
+    <h2 class="sechead">Khoá học: tự dựng bộ kit từ con số 0</h2>
+    <p class="sectip">Render từ <code>docs/COURSE.md</code> — nguồn canonical là file markdown đó.
+      Thứ tự các bài theo <b>thứ bạn có trong tay ở mỗi bước</b>, không theo thứ tự lịch sử của kit:
+      từ 0 thì chưa có bug để chấm rủi ro, chưa có suite để đo năng lực phát hiện.</p>
+    <div class="jstats" id="cStats"></div>
+    <div class="cmeta" id="cMeta"></div>
+    <div id="cParts"></div>
+  </section>
+  <!-- HÀNH TRÌNH -->
+  <section class="panel" id="p-journey" hidden>
+    <h2 class="sechead">Dựng bộ kit này từ con số 0</h2>
+    <p class="sectip">Render từ <code>docs/BUILD_JOURNAL.md</code> — nguồn canonical là file markdown đó,
+      trang này chỉ hiển thị lại. Viết cho người muốn <b>tự dựng</b> một kit tương tự: làm theo thứ tự nào,
+      đo bằng gì, và đã vấp ở đâu.</p>
+    <div class="jstats" id="jStats"></div>
+    <div class="jlesson" id="jLesson"></div>
+
+    <h3 class="subhead"><span class="num">1</span>Bảy chặng</h3>
+    <div class="flowwrap" id="jEras"></div>
+
+    <h3 class="subhead"><span class="num">2</span>Nguyên tắc rút ra</h3>
+    <div class="pracgrid" id="jPrinciples"></div>
+
+    <h3 class="subhead"><span class="num">3</span>Nếu dựng lại từ 0 — thứ tự khuyên dùng</h3>
+    <div id="jOrder"></div>
+
+    <h3 class="subhead"><span class="num">4</span>Điểm mù của chính tài liệu này</h3>
+    <p class="sectip">Ghi ra để biết chỗ nào <b>không</b> nên tin.</p>
+    <div class="pracgrid" id="jBlind"></div>
+  </section>
+  <!-- FLASHCARD -->
+  <section class="panel" id="p-flash" hidden>
+    <h2 class="sechead">Flashcard</h2>
+    <p class="sectip">10 thẻ ngẫu nhiên. Đọc mô tả, đoán thuật ngữ, rồi lật thẻ để đối chiếu.</p>
+    <div class="fcwrap">
+      <div class="fcbar">
+        <span id="fcPos">Thẻ 1/10</span>
+        <span class="prog"><i id="fcProg" style="width:0%"></i></span>
+        <span id="fcScore">Điểm 0</span>
+      </div>
+      <div id="fcBox"></div>
+      <div class="fcbtns"><button class="btn" id="fcNew">Bộ 10 thẻ mới</button></div>
+    </div>
+  </section>
+
+  <!-- CHALLENGE -->
+  <section class="panel" id="p-chal" hidden>
+    <h2 class="sechead">Đề luyện QA</h2>
+    <p class="sectip">Sinh ngẫu nhiên một đề thiết kế testcase theo đúng các trục mà kit dùng thật.
+      Bấm ổ khoá để giữ nguyên tiêu chí bạn muốn, rồi random phần còn lại.</p>
+    <div class="slots" id="slots"></div>
+    <div class="fcbtns" style="justify-content:flex-start">
+      <button class="btn pri" id="roll">🎲 Sinh đề mới</button>
+    </div>
+    <div class="prose" style="margin-top:24px">
+      <h3>Cách dùng</h3>
+      <p>Với mỗi đề, hãy viết ra: <b>phạm vi</b> (màn hoặc API nào), <b>expected trích từ nguồn oracle</b> đã bốc,
+        <b>tiền điều kiện</b> và cách dựng, <b>evidence</b> sẽ chụp gì, và <b>cái bẫy</b> ở trên bạn né bằng cách nào.
+        Đó đúng là bộ khung mà <code>design_gate</code> sẽ soi.</p>
+    </div>
+  </section>
+
+  <!-- INFO -->
+  <section class="panel" id="p-info" hidden>
+    <h2 class="sechead">Về dự án</h2>
+    <div class="prose">
+      <p>Đây là thư viện thuật ngữ của <b>test-automation-kit_v2</b> — bộ kit QA automation đang dùng cho các
+        dự án SAPP. Toàn bộ nội dung được trích từ chính repo: <code>CLAUDE.md</code>, <code>RULE_GLOBAL.md</code>,
+        <code>.agent/rules/</code>, <code>.agent/config/</code>, <code>.agent/skills/</code>,
+        <code>scripts/qa/</code>, <code>README.md</code> và <code>USER_GUIDE.md</code>.
+        Mỗi thuật ngữ đều ghi kèm đường dẫn file gốc để tra lại khi cần bản đầy đủ.</p>
+
+      <div class="kpi">
+        <div><b data-stat="cat-rule">0</b><span>Nguyên tắc không-thương-lượng</span></div>
+        <div><b data-stat="cat-gate">0</b><span>Gate máy-kiểm</span></div>
+        <div><b data-stat="cat-skill">0</b><span>Skill theo phase</span></div>
+        <div><b data-stat="cat-concept">0</b><span>Khái niệm QA</span></div>
+        <div><b data-stat="cat-status">0</b><span>Trạng thái &amp; tầng lỗi</span></div>
+        <div><b data-stat="cat-flow">0</b><span>Quy trình &amp; artifact</span></div>
+      </div>
+
+      <h3>Có gì trong này</h3>
+      <ul>
+        <li><b>Bản đồ khái niệm</b> — nhìn được cụm nào nặng, khái niệm nào là nút thắt nối nhiều thứ khác.</li>
+        <li><b>Tra cứu A–Z</b> — mỗi thuật ngữ có tóm tắt, giải thích, lý do tồn tại, cách dùng, ví dụ cụ thể và
+          cái bẫy hay gặp; gõ không dấu vẫn ra.</li>
+        <li><b>Hướng dẫn</b> — bản trực quan của <code>USER_GUIDE.md</code>: 10 chặng của một story, khâu chuẩn bị,
+          lỗi thường gặp và checklist.</li>
+        <li><b>Readme</b> — bản trực quan của <code>README.md</code>: kiến trúc, cấu trúc thư mục, mô hình AIO Tests,
+          lệnh và quy ước.</li>
+        <li><b>Flashcard</b> — 10 thẻ ngẫu nhiên để tự kiểm tra, hợp cho người mới nhận kit.</li>
+        <li><b>Đề luyện QA</b> — sinh đề thiết kế testcase theo 6 trục thật.</li>
+      </ul>
+
+      <h3>Vì sao cần</h3>
+      <p>Kit có 22 skill, 59 máy kiểm (38 trong đó CHẶN thật) và một bộ từ vựng riêng (oracle độc lập, tautology, failureLayer,
+        readiness, TRI, chiều coverage…). Người mới vào phải đọc rải rác nhiều file mới ghép được bức tranh.
+        Trang này gom lại một chỗ, giữ nguyên nguồn, và cố tình <b>không</b> diễn giải thêm ngoài những gì repo đã ghi.</p>
+
+      <h3>Cập nhật nội dung</h3>
+      <p>Nội dung nằm ở <code>docs/library/src/terms/*.js</code> (thuật ngữ, tách theo nhóm) và
+        <code>docs/library/src/guide.js</code> (hai tab tài liệu). Sửa xong chạy
+        <code>node docs/library/build.js</code> để sinh lại <code>docs/library/index.html</code> —
+        một file duy nhất, không phụ thuộc mạng, mở trực tiếp bằng trình duyệt hoặc host tĩnh đều chạy.</p>
+
+      <h3>Góp ý</h3>
+      <p>Thấy mục nào mô tả lệch so với hành vi thật của kit thì sửa thẳng vào file dữ liệu — nguồn phải là
+        file trong repo, không phải trí nhớ. Đây cũng chính là nguyên tắc <b>canonical source</b> mà kit đang ép.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <b>Thư viện thuật ngữ Test Automation Kit v2</b> — sinh từ nội dung có sẵn trong repo
+    <code style="color:#EFE9DD">test-automation-kit_v2</code>. Không chứa secret, không chứa PII.
+    Bản dựng: <span data-stat="terms">0</span> thuật ngữ · SAPP Academy Design System.
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Chi tiết thuật ngữ">
+  <div class="dh">
+    <button class="closebtn" id="dClose" aria-label="Đóng">×</button>
+    <div class="dchips"><span class="chip" id="dChip"></span><span class="chip alt" id="dMeta" hidden></span></div>
+    <h2 id="dTitle"></h2>
+    <p class="dlead" id="dLead"></p>
+  </div>
+  <div class="dbody">
+    <section class="dsec">
+      <b class="dlab">Giải thích</b>
+      <p id="dDetail"></p>
+    </section>
+    <section class="dsec" id="secWhy" hidden>
+      <b class="dlab">Vì sao cần thứ này</b>
+      <p id="dWhy"></p>
+    </section>
+    <section class="dsec" id="secHow" hidden>
+      <b class="dlab">Dùng thế nào</b>
+      <ul id="dHow"></ul>
+    </section>
+    <section class="dsec" id="secCmd" hidden>
+      <b class="dlab">Lệnh</b>
+      <pre class="cmd"><code id="dCmd"></code></pre>
+    </section>
+    <section class="dsec note ex" id="secEx" hidden>
+      <b class="dlab">Ví dụ cụ thể</b>
+      <p id="dEx"></p>
+    </section>
+    <section class="dsec note trap" id="secTrap" hidden>
+      <b class="dlab">Bẫy hay gặp</b>
+      <p id="dTrap"></p>
+    </section>
+    <div class="srcbox"><b>Nguồn trong repo</b><code id="dSrc"></code></div>
+    <div class="relwrap" id="dRelWrap"><b>Khái niệm liên quan</b><div class="rel" id="dRel"></div></div>
+  </div>
+</aside>
+
+<script>/*__DATA__*/</script>
+<script>/*__APP__*/</script>

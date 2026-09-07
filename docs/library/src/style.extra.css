@@ -1,0 +1,195 @@
+/* ═══════ Nội dung dày hơn: thẻ A–Z + drawer có cấu trúc ═══════ */
+.tcard .why{margin:8px 0 0; font-size:13px; color:var(--t3); line-height:1.55}
+.tcard .cfoot{display:block; margin-top:10px; padding-top:9px; border-top:1px solid var(--bSoft);
+  font-family:Consolas,monospace; font-size:11px; color:var(--t3); word-break:break-all}
+
+.dchips{display:flex; gap:6px; flex-wrap:wrap; padding-right:34px}
+.chip.alt{background:var(--wash); color:var(--t3); border:1px solid var(--bSubtle)}
+.drawer .dh .dlead{margin:10px 0 0; font-size:15px; font-weight:600; color:var(--t1)}
+.dsec{margin-bottom:20px}
+.dlab{display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.12em;
+  color:var(--t3); font-weight:800; margin-bottom:6px}
+.dsec p{margin:0; font-size:14.5px; color:var(--t2)}
+.dsec ul{margin:0; padding-left:19px}
+.dsec li{font-size:14px; color:var(--t2); margin-bottom:5px}
+.dsec.note{border-radius:12px; padding:12px 14px; border:1px solid var(--bSubtle); background:var(--wash)}
+.dsec.note .dlab{margin-bottom:5px}
+.dsec.ex{border-color:var(--passFg); background:var(--passBg)}
+.dsec.ex .dlab, .dsec.ex p{color:var(--passFg)}
+.dsec.trap{border-color:var(--failFg); background:var(--failBg)}
+.dsec.trap .dlab, .dsec.trap p{color:var(--failFg)}
+pre.cmd{margin:0; background:#1A1916; border-radius:10px; padding:11px 13px; overflow-x:auto}
+pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; white-space:pre}
+
+/* ═══════ Tiêu đề mục có số ═══════ */
+.subhead{display:flex; align-items:center; gap:10px; margin:34px 0 14px; font-size:17px; font-weight:800}
+.subhead .num{flex:none; width:26px; height:26px; border-radius:8px; background:var(--gold); color:#1A1916;
+  display:grid; place-items:center; font-size:13px; font-weight:800}
+
+/* ═══════ Tab Hướng dẫn — stepper luồng chính ═══════ */
+.flowwrap{display:flex; flex-direction:column}
+.fstep{display:flex; gap:14px; align-items:stretch}
+.frail{flex:none; width:34px; display:flex; flex-direction:column; align-items:center}
+.fnum{flex:none; width:34px; height:34px; border-radius:50%; background:var(--gold); color:#1A1916;
+  display:grid; place-items:center; font-weight:800; font-size:14px}
+.frail::after{content:''; flex:1; width:2px; background:var(--bSubtle); margin:6px 0}
+.fstep:last-child .frail::after{display:none}
+.fcard2{flex:1; min-width:0; background:var(--card); border:1px solid var(--bSubtle); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:15px 17px; margin-bottom:14px}
+.fhead{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px}
+.fhead h4{margin:0; font-size:16px; font-weight:800}
+.who{font-size:11px; font-weight:700; color:var(--gold800); background:var(--goldWash);
+  border:1px solid var(--gold); border-radius:999px; padding:2px 9px}
+.fgoal{margin:0 0 10px; font-size:14px; color:var(--t2)}
+.fouts{display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px}
+.fouts b{font-size:10.5px; text-transform:uppercase; letter-spacing:.12em; color:var(--t3)}
+.pill{font-size:12px; background:var(--wash); border:1px solid var(--bSubtle); border-radius:999px;
+  padding:3px 10px; color:var(--t2)}
+.fgate{display:flex; gap:9px; margin-top:10px; padding:9px 11px; border-radius:10px;
+  background:var(--goldWash); border:1px solid var(--gold)}
+.fgate b{flex:none; font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--gold800); padding-top:2px}
+.fgate span:last-child{font-size:13.5px; color:var(--t1)}
+
+/* ═══════ Thẻ chuẩn bị / output ═══════ */
+.scard{background:var(--card); border:1px solid var(--bSubtle); border-radius:var(--radius);
+  padding:15px 17px; box-shadow:var(--shadow)}
+.sico{font-size:20px; line-height:1}
+.scard h4{margin:8px 0 8px; font-size:15px; font-weight:800}
+.scard ul{margin:0 0 8px; padding-left:17px}
+.scard li{font-size:13px; margin-bottom:4px; color:var(--t2)}
+.scard li code, .scard h4 code{font-family:Consolas,monospace; font-size:12px;
+  background:var(--goldWash); border:1px solid var(--bSoft); border-radius:5px; padding:1px 5px; color:var(--t1)}
+.snote{margin:0; font-size:12.5px; color:var(--t3); line-height:1.55}
+
+/* ═══════ Bảng lỗi thường gặp ═══════ */
+.trow{display:grid; grid-template-columns:1fr 1.3fr 1.3fr; gap:14px; padding:14px 16px;
+  background:var(--card); border:1px solid var(--bSubtle); border-radius:var(--radius); margin-bottom:9px}
+.trow.hot{border-color:var(--gold); background:var(--goldWash)}
+.trow .tp b{font-size:14px; font-weight:800; line-height:1.4}
+.tlab{display:block; font-size:10px; text-transform:uppercase; letter-spacing:.11em; color:var(--t3);
+  font-weight:800; margin-bottom:3px}
+.trow .tc span:last-child{font-size:13px; color:var(--t2); line-height:1.55}
+.trow .tf span:last-child{font-size:13px; color:var(--t1); line-height:1.55}
+
+/* ═══════ Checklist ═══════ */
+.checkgrid{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.ckbox{background:var(--card); border:1px solid var(--bSubtle); border-top:3px solid var(--gold);
+  border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+.ckhead{display:flex; align-items:center; gap:9px; padding:13px 16px; border-bottom:1px solid var(--bSoft)}
+.ckhead b{font-size:15px}
+.ckico{font-size:16px}
+.ckrow{display:grid; grid-template-columns:1fr 1.25fr; gap:12px; padding:10px 16px; border-bottom:1px solid var(--bSoft)}
+.ckrow:last-child{border-bottom:0}
+.ckk{font-size:13px; font-weight:700}
+.ckv{font-size:12.5px; color:var(--t2); line-height:1.55}
+
+/* ═══════ Tab Readme ═══════ */
+.arow{display:grid; grid-template-columns:200px 1fr; gap:16px; padding:13px 16px; margin-bottom:8px;
+  background:var(--card); border:1px solid var(--bSubtle); border-left:4px solid var(--gold);
+  border-radius:12px}
+.akey{font-size:14px; font-weight:800}
+.aval{font-size:13.5px; color:var(--t2); line-height:1.6}
+
+.treebox{background:var(--card); border:1px solid var(--bSubtle); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:10px 0; overflow-x:auto}
+.trow2{display:flex; gap:14px; align-items:baseline; padding:5px 16px 5px 0; white-space:nowrap}
+.trow2 code{font-family:Consolas,monospace; font-size:12.5px; font-weight:700; color:var(--t1)}
+.trow2.dir code{color:var(--gold800)}
+.trow2.warn code{color:var(--failFg)}
+.trow2 .tdesc{font-size:12.5px; color:var(--t3); white-space:normal}
+
+.xrow{display:flex; gap:13px; padding:13px 16px; margin-bottom:8px; background:var(--card);
+  border:1px solid var(--bSubtle); border-radius:12px}
+.xn{flex:none; width:24px; height:24px; border-radius:7px; background:var(--goldWash); border:1px solid var(--gold);
+  color:var(--gold800); display:grid; place-items:center; font-size:12px; font-weight:800}
+.xmid{min-width:0}
+.xmid b{display:block; font-size:14.5px; margin-bottom:3px}
+.xd{display:block; font-size:13.5px; color:var(--t2); line-height:1.55}
+.xnote{display:block; margin-top:5px; font-size:12.5px; color:var(--t3); font-style:italic}
+
+.cmdgrp{margin-bottom:20px}
+.cmdg{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--gold800);
+  font-weight:800; margin-bottom:9px}
+.cmdrow{display:grid; grid-template-columns:minmax(0,1.15fr) 1fr; gap:14px; align-items:center; margin-bottom:7px}
+.cmddesc{font-size:13px; color:var(--t2); line-height:1.5}
+
+.pracgrid{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.prbox{background:var(--card); border:1px solid var(--bSubtle); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:15px 17px; border-top:3px solid var(--bSubtle)}
+.prbox.do{border-top-color:var(--success)}
+.prbox.warn{border-top-color:var(--amber)}
+.prbox.never{border-top-color:var(--danger)}
+.prhead{display:block; font-size:14px; font-weight:800; margin-bottom:9px}
+.prbox.do .prhead{color:var(--success)}
+.prbox.warn .prhead{color:var(--amber)}
+.prbox.never .prhead{color:var(--danger)}
+.prbox ul{margin:0; padding-left:18px}
+.prbox li{font-size:13px; color:var(--t2); margin-bottom:6px; line-height:1.55}
+
+@media (max-width:760px){
+  .trow{grid-template-columns:1fr; gap:8px}
+  .arow{grid-template-columns:1fr; gap:5px}
+  .cmdrow{grid-template-columns:1fr; gap:5px}
+  .ckrow{grid-template-columns:1fr; gap:3px}
+  .subhead{margin-top:26px}
+}
+
+/* [hidden] mac dinh la display:none, nhung bat ky class nao khai display se thang no.
+   .chip khai inline-block nen chip rong van hien (Playwright + anh chup thay). */
+[hidden]{display:none !important}
+
+/* Canvas 3D: kich thuoc do CSS quyet dinh, JS set width/height theta devicePixelRatio. */
+#graph{display:block; width:100%; height:min(74vh,660px); touch-action:none; cursor:grab}
+#graph.dragging{cursor:grabbing}
+.gtools button.wide{width:auto; padding:0 11px; font-size:12px; font-weight:800; letter-spacing:.04em}
+.gtools button.wide[aria-pressed="true"]{background:var(--gold); border-color:var(--gold); color:#1A1916}
+.ghint #ghint3d{display:block; margin-bottom:2px; color:var(--t2)}
+
+/* ═══════ Tab Hành trình ═══════ */
+.jstats{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); margin-bottom:16px}
+.jstats div{background:var(--card); border:1px solid var(--bSubtle); border-top:3px solid var(--gold);
+  border-radius:var(--radius); padding:13px 16px; box-shadow:var(--shadow)}
+.jstats b{display:block; font-size:26px; font-weight:800; line-height:1.2}
+.jstats span{font-size:12.5px; color:var(--t3)}
+.jlesson{background:var(--ink); color:#F5F1E8; border-radius:var(--radius); padding:18px 20px; position:relative; overflow:hidden}
+.jlesson::after{content:''; position:absolute; right:-60px; top:-80px; width:240px; height:240px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,183,0,.26) 0%, rgba(255,183,0,0) 68%); pointer-events:none}
+.jlesson b{display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.14em;
+  color:var(--gold); font-weight:800; margin-bottom:7px; position:relative}
+.jlesson p{margin:0; font-size:15.5px; line-height:1.65; max-width:78ch; position:relative}
+.jsec{margin-top:12px}
+.jsec p{margin:0; font-size:13.5px; color:var(--t2); line-height:1.6}
+.jsec ul{margin:5px 0 0; padding-left:19px}
+.jsec li{font-size:13px; color:var(--t2); margin-bottom:4px; line-height:1.55}
+.jsec.jmeas{border-left:3px solid var(--info); padding-left:11px}
+.jsec.jmeas .dlab{color:var(--info)}
+.jsec.jtrap{border-left:3px solid var(--danger); padding-left:11px}
+.jsec.jtrap .dlab{color:var(--danger)}
+.jsec.jadv{border-left:3px solid var(--success); padding-left:11px}
+.jsec.jadv .dlab{color:var(--success)}
+
+/* ═══════ Tab Khoá học ═══════ */
+.cmeta{background:var(--card); border:1px solid var(--bSubtle); border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow:hidden; margin:14px 0 4px}
+.cmrow{display:grid; grid-template-columns:190px 1fr; gap:14px; padding:11px 16px; border-bottom:1px solid var(--bSoft)}
+.cmrow:last-child{border-bottom:0}
+.cmrow b{font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--t3); padding-top:2px}
+.cmrow span{font-size:13.5px; color:var(--t2); line-height:1.6}
+.clessons{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+.clesson{background:var(--card); border:1px solid var(--bSubtle); border-top:3px solid var(--bSubtle);
+  border-radius:var(--radius); box-shadow:var(--shadow); padding:15px 17px}
+.clesson.ready{border-top-color:var(--gold)}
+.chead{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; margin-bottom:8px}
+.cnum{flex:none; width:26px; height:26px; border-radius:8px; background:var(--wash); border:1px solid var(--bSubtle);
+  color:var(--t2); display:grid; place-items:center; font-size:12.5px; font-weight:800}
+.clesson.ready .cnum{background:var(--gold); border-color:var(--gold); color:#1A1916}
+.chead h4{margin:0; flex:1; min-width:0; font-size:15px; font-weight:800; line-height:1.35}
+.cdur{font-size:11px; font-weight:700; color:var(--t3); background:var(--wash);
+  border:1px solid var(--bSubtle); border-radius:999px; padding:2px 9px; white-space:nowrap}
+.chave{margin:0 0 9px; font-size:12.5px; color:var(--t3); line-height:1.5}
+.chave b{color:var(--t2); font-weight:700}
+.cgoals{margin:0; padding-left:0; list-style:none}
+.cgoals li{position:relative; padding-left:21px; font-size:13px; color:var(--t2); margin-bottom:5px; line-height:1.55}
+.cgoals li::before{content:'✓'; position:absolute; left:0; top:0; color:var(--success); font-weight:800}
+.cfile{display:block; margin-top:10px; padding-top:9px; border-top:1px solid var(--bSoft);
+  font-family:Consolas,monospace; font-size:11px; color:var(--gold800)}
