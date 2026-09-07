@@ -29,6 +29,41 @@
 > | DB, capability tự chạy | [§Executable QA capabilities](#executable-qa-capabilities-autonomy--safety) |
 > | Dọn file tạm | [§Cleanup Rules](#cleanup-rules) |
 
+<!-- MỤC-LỤC:BẮT-ĐẦU — sinh bởi `npm run rule:toc`. Đừng sửa tay. -->
+
+| # | Mục | Dòng | ~token | Tra nhanh |
+|---|---|---|---|---|
+| 1 | [Purpose](#purpose) | 67-70 | 30 | npm run rule -- 1 |
+| 2 | [When To Use](#when-to-use) | 71-82 | 60 | npm run rule -- 2 |
+| 3 | [Inputs](#inputs) | 83-95 | 339 | npm run rule -- 3 |
+| 4 | [Outputs](#outputs) | 96-106 | 262 | npm run rule -- 4 |
+| 5 | [Rules](#rules) | 107-443 | 10786 | npm run rule -- 5 |
+| 6 | &nbsp;&nbsp;[Language](#language) | 109-115 | 79 | npm run rule -- 6 |
+| 7 | &nbsp;&nbsp;[Security](#security) | 116-123 | 287 | npm run rule -- 7 |
+| 8 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 124-135 | 280 | npm run rule -- 8 |
+| 9 | &nbsp;&nbsp;[Parallel Story Safety](#parallel-story-safety) | 136-152 | 257 | npm run rule -- 9 |
+| 10 | &nbsp;&nbsp;[Phase-Separated Story Execution](#phase-separated-story-execution) | 153-179 | 1953 | npm run rule -- 10 |
+| 11 | &nbsp;&nbsp;[Task-Scoped Automation Code](#task-scoped-automation-code) | 180-190 | 312 | npm run rule -- 11 |
+| 12 | &nbsp;&nbsp;[Shared Change Gate](#shared-change-gate) | 191-202 | 394 | npm run rule -- 12 |
+| 13 | &nbsp;&nbsp;[Automation Promote Review](#automation-promote-review) | 203-211 | 159 | npm run rule -- 13 |
+| 14 | &nbsp;&nbsp;[Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)](#analysis-ambiguity-gate-phase-1-đọc-kỹ-hỏi-trước-khi-gen) | 212-217 | 492 | npm run rule -- 14 |
+| 15 | &nbsp;&nbsp;[Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)](#chiều-coverage-phase-1-khai-phạm-vi-gắn-tag-có-máy-đếm) | 218-227 | 516 | npm run rule -- 15 |
+| 16 | &nbsp;&nbsp;[Execution Discipline (Kỷ luật thực thi — chạy thông suốt)](#execution-discipline-kỷ-luật-thực-thi-chạy-thông-suốt) | 228-237 | 445 | npm run rule -- 16 |
+| 17 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 238-363 | 3549 | npm run rule -- 17 |
+| 18 | &nbsp;&nbsp;[Execute Results](#execute-results) | 364-383 | 223 | npm run rule -- 18 |
+| 19 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 384-398 | 302 | npm run rule -- 19 |
+| 20 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 399-410 | 614 | npm run rule -- 20 |
+| 21 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 411-422 | 393 | npm run rule -- 21 |
+| 22 | &nbsp;&nbsp;[Jira Bug Gate](#jira-bug-gate) | 423-432 | 144 | npm run rule -- 22 |
+| 23 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 433-443 | 382 | npm run rule -- 23 |
+| 24 | [Workflow](#workflow) | 444-457 | 43 | npm run rule -- 24 |
+| 25 | [Cleanup Rules](#cleanup-rules) | 458-483 | 383 | npm run rule -- 25 |
+| 26 | [Examples](#examples) | 484-491 | 82 | npm run rule -- 26 |
+| 27 | [References](#references) | 492-500 | 84 | npm run rule -- 27 |
+
+> Cả file ~13464 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
+<!-- MỤC-LỤC:KẾT-THÚC -->
+
 ## Purpose
 
 Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, prompt, skill, script và report trong kit.
@@ -124,6 +159,8 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 - Auto Publish testcase là step riêng trong phạm vi Phase 1, chạy bằng prompt riêng sau khi QA xác nhận Excel/testcase. Không publish thật khi chưa có QA confirmation rõ ràng (script đòi `--qa-approved`; AIO không có API xoá nên phải xem dry-run trước).
 - **Test management tool là AIO Tests** — công cụ DUY NHẤT của kit. Publish/pull/push kết quả/vòng đời case đi qua `scripts/integrations/aio/` (`aio:publish` · `aio:pull:write` · `aio:push-exec` · `aio:deprecate-stale`). Đặc tính đã đo (không có API xoá · `PUT .../detail` ghi đè toàn phần · `tags` không lưu · rate limit trả body RỖNG chứ không 429): `scripts/integrations/aio/README.md`. Gate `gate:policy` CHẶN mọi tài liệu nhắc lại công cụ cũ.
 - Publish testcase lên Jira phải đọc từ Excel canonical. Chạy dry-run trước nếu cần preview; publish thật chỉ khi QA/user approve. Ghi kết quả vào `<TASK_OUTPUT_DIR>/reports/jira-testcase-publish-summary.md`.
+- **KHÔNG có cột `Severity`/`Mức độ rủi ro` trong bộ testcase** (bỏ 21/08/2026). Severity là thuộc tính của **BUG**, không phải của testcase: chấm nó lúc viết case là đoán trước hậu quả của một lỗi chưa xảy ra, và chính vì thế nó luôn được chấm bằng cảm tính. Bug thật vẫn có Severity — lấy lúc log bug, không lấy từ testcase. Việc duy nhất cột này còn gánh trong kit là **risk band** (quyết định độ sâu mở rộng 5 trục), mà `bandOf()` lấy `max(risk, priority)`; sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột này làm đổi band 0 case**. `Ưu tiên` (`Critical|High|Medium|Low|Lowest`) một mình đủ quyết band. `COL.risk` vẫn giữ trong `model.js` để 17 bộ TC cũ còn cột đó parse không lỗi, và các cross-check ma trận §7b tự bỏ qua khi cột vắng.
+- **Tiêu đề case = NỘI DUNG, tag ở cột `Tag`** — template testcase là **10 cột**: `TC ID | Loại case | Tag | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên`. Khối `[<Loại>][<Chiều>][<Oracle-ref>]` (vd `[Positive][Calc][BR-SAPSYNC-004]`) ghi ở cột `Tag`, **KHÔNG** ghi vào `Trường hợp kiểm thử`. Tiêu đề phải **tự đủ nghĩa** khi không có tag: chở đủ **ba thông tin** — *đối tượng/màn · hành động hoặc điều kiện · kết quả cụ thể đo được* — thường gói trong **2 đoạn** nối ` - ` (đối tượng và hành động hay dính liền: `Tạo Business Partner - Sinh mã KH đúng cú pháp C + CCCD khi khách Cá nhân chưa có BP`). **KHÔNG** đòi đúng 3 đoạn: bản đầu của luật này viết "3 đoạn" trong khi đoạn thứ nhất của ví dụ chính là `Cross-app` — tức cái tiền tố hằng số mà cùng luật đó CẤM. Hai câu tự đá nhau; đếm đoạn không phải thước đo, **đủ ba thông tin** mới là. CẤM **tiền tố hằng số** (đo thật: `Cross-app - ` gắn cho 101/101 case của SAPP-26878 ⇒ không phân biệt được gì, thông tin đó đã nằm ở `Loại case` và tên folder), cấm đoạn kết quả chung chung kiểu "hoạt động đúng", cấm để nghĩa của case phụ thuộc vào tag. Giữ được `[...]` GIỮA câu khi đó là tên trường thật (`Kiểm [FBP] Ngày ghi nhận…`) — chỉ khối ngoặc **liền nhau ở đầu** mới bị coi là tag. Bộ TC cũ **không phải sửa**: `scripts/lib/testcase/model.js` lấy HỢP của cột `Tag` và tiêu đề nên cả hai đời đều đo được, còn `displayTitle()` ở `publish_testcases_aio.js` cắt khối tag đầu chuỗi trước khi đẩy AIO. Máy kiểm: `tests/fe/infra/publish-field-mapping.spec.ts`.
 - **Case sinh mới phải TỰ KHAI `Loại case`** — đúng một trong **9 loại** đã chốt: `Security` · `Accessibility` · `Performance` · `Database` · `API` · `UI` · `E2E` · `Integration` · `Functional`. Định nghĩa, tag đi kèm và bảng **"chọn khi / KHÔNG chọn khi"** của từng loại nằm ở [`.agent/config/case_types.json`](.agent/config/case_types.json) — **nguồn duy nhất**, mọi nơi khác đọc file đó. Xét CHUYÊN BIỆT trước, `Functional` là mặc định cuối; một case mang ĐÚNG MỘT loại, hợp 2 loại nghĩa là case đang gộp 2 mục đích ⇒ tách case. Đây là trục KHÁC `Nhóm chức năng` (nhóm = *"thuộc mảng nghiệp vụ nào"* → thư mục; loại = *"kiểm thử kiểu gì"* → Case Type, dùng để lọc/báo cáo). Bỏ trống thì máy phải ĐOÁN: đo trên 1.399 case đã publish, cách suy từ tên nhóm đẩy **96% về `Functional`**, `Integration` và `Performance` = **0** — lọc theo Case Type trên AIO thành vô dụng.
   - Chặn ở **biên sinh case** (`md_to_xlsx.js`), KHÔNG ở `REQUIRED_COLS`: bộ TC cũ đều 9 cột, siết ở bộ đọc dùng chung thì cả 9 bộ đỏ oan mà không ai sai. Bộ cũ giữ nguyên, chỉ khai khi có dịp sinh lại.
   - Giá trị ngoài 6 loại do `validate.js` chặn ở design gate. Lối thoát `--lenient` vẫn convert được nhưng **phải in cảnh báo** — bỏ qua trong im lặng thì lối thoát thành lối mòn.

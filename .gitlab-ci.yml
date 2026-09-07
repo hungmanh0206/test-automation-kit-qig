@@ -31,6 +31,7 @@ static-check:
       t "ci:scope" npm run ci:scope
       t "gate:policy" npm run gate:policy
       t "gates:index" npm run gates:index:check
+      t "rule:toc" npm run rule -- --check
       t "secret:scan" npm run secret:scan
       # KHÔNG có bước audit ở job này nữa (04/09/2026). Hai lần cắt, hai lý do khác nhau:
       #   ① `npm audit` trần bỏ trước đó: 74s để lấy CÙNG dữ liệu registry với `audit:ci`, mà chỉ IN advisory.

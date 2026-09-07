@@ -113,3 +113,34 @@ if (tcRecs.length) fs.appendFileSync(path.join(OUT, 'tc-history.jsonl'), tcRecs.
 if (skippedTc) console.log(`[metrics] bo ${skippedTc} record \`skipped\` khoi tc-history (skip khong noi gi ve do tin cay; van giu o muc run).`);
 console.log(`[metrics] run "${label}": ${testsFound} test · clean ${passedClean} · flaky ${passedFlaky} · fail ${failed} · skip ${skipped} · ${durationSec}s · cleanPassRate ${cleanPassRate ?? 'n/a'} · eventual ${eventualPassRate ?? 'n/a'}`);
 console.log(`[metrics] → knowledge/metrics/runs.jsonl (+${tcRecs.length} per-TC vào tc-history.jsonl)`);
+
+/*
+ * NGƯỠNG LƯU TRỮ — cảnh báo, KHÔNG chặn.
+ *
+ * Kho học là append-only và không có cơ chế tỉa. Đo 07/09/2026: runs.jsonl = 35 dòng / 12 KB, tức còn
+ * rất xa mọi ngưỡng — nên CHƯA viết code tỉa (tỉa 35 dòng là giải bài toán chưa tồn tại). Thay vào đó
+ * khai ngưỡng bằng SỐ ở `.agent/config/retention.json` và để chính cái máy GHI dữ liệu nhắc khi tới mốc.
+ * Khai trước thì lúc tới ngưỡng chỉ việc làm; khai sau thì vừa tỉa vừa đoán mốc.
+ */
+try {
+  const retFile = path.join(rc.REPO_ROOT, '.agent', 'config', 'retention.json');
+  if (fs.existsSync(retFile)) {
+    const ret = JSON.parse(fs.readFileSync(retFile, 'utf8'));
+    for (const [relPath, lim] of Object.entries(ret.files || {})) {
+      const abs = path.join(rc.REPO_ROOT, relPath);
+      if (!fs.existsSync(abs)) continue;
+      const st = fs.statSync(abs);
+      if (st.isDirectory()) continue;              // thư mục: chưa đo ở đây, tránh quét đệ quy mỗi run
+      const mb = st.size / (1024 * 1024);
+      const LF = String.fromCharCode(10);   // KHÔNG viết escape newline: tầng vận chuyển biến nó thành newline THẬT
+      const nLines = lim.warnLines ? fs.readFileSync(abs, 'utf8').split(LF).filter(Boolean).length : 0;
+      if (lim.warnMB && mb > lim.warnMB) {
+        console.warn(`[metrics] NGƯỠNG LƯU TRỮ: ${relPath} = ${mb.toFixed(1)} MB > ${lim.warnMB} MB. ${ret.policy || ''}`);
+      } else if (lim.warnLines && nLines > lim.warnLines) {
+        console.warn(`[metrics] NGƯỠNG LƯU TRỮ: ${relPath} = ${nLines} dòng > ${lim.warnLines}. ${ret.policy || ''}`);
+      }
+    }
+  }
+} catch (e) {
+  // Ngưỡng lưu trữ là tiện ích, KHÔNG được làm gãy việc thu metrics. Hỏng config thì im lặng bỏ qua.
+}

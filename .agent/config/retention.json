@@ -1,0 +1,26 @@
+{
+  "_why": "Kho học của kit là APPEND-ONLY (runs.jsonl · tc-history.jsonl · historical_execution). Không có cơ chế tỉa, nên câu hỏi đúng không phải 'có nên tỉa' mà là 'tỉa từ CON SỐ nào'. Khai ngưỡng trước khi tích dữ liệu thì lúc tới ngưỡng chỉ việc làm; khai sau thì phải vừa tỉa vừa đoán mốc.",
+  "_measured_at": "2026-09-07",
+  "_measured": {
+    "knowledge/ (tổng)": "1.3 MB",
+    "knowledge/metrics/runs.jsonl": "35 dòng · 12 KB",
+    "ghi_chú": "Còn RẤT xa mọi ngưỡng dưới đây. Đây là lý do CHƯA viết code tỉa: tỉa 35 dòng là giải bài toán chưa tồn tại."
+  },
+  "policy": "Vượt ngưỡng = CẢNH BÁO, KHÔNG chặn. Tỉa không bao giờ là XOÁ: nén phần cũ hơn 12 tháng thành tóm tắt theo tháng rồi chuyển bản chi tiết sang knowledge/archive/. Lý do không xoá: rule `superseded`/`invalid` vẫn cần cho truy vết 'TC này từng PASS theo oracle nào'.",
+  "files": {
+    "knowledge/metrics/runs.jsonl": {
+      "warnLines": 50000,
+      "warnMB": 20,
+      "why": "1 dòng/run. 50k dòng ≈ hơn 100 run/ngày trong 1 năm — quá mốc đó thì đọc cả file để tính chỉ số bắt đầu đáng kể."
+    },
+    "knowledge/metrics/tc-history.jsonl": {
+      "warnLines": 200000,
+      "warnMB": 50,
+      "why": "1 dòng/testcase/run nên nó phình nhanh hơn runs.jsonl khoảng 2 bậc; ngưỡng cao hơn tương ứng."
+    },
+    "knowledge/historical_execution": {
+      "warnMB": 200,
+      "why": "Thư mục, không phải file. Đo tổng; vượt thì nén theo tháng."
+    }
+  }
+}

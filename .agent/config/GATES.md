@@ -3,7 +3,7 @@
 > **SINH TỰ ĐỘNG** bởi `node scripts/qa/gate_index.js --write`. Đừng sửa tay — `--check` sẽ chặn khi
 > bảng lệch source. Cột **Mức** suy từ code: có đường ra `exit 1` là CHẶN, chỉ in là CẢNH BÁO.
 
-Tổng: **57 gate** — 35 chặn, 22 cảnh báo.
+Tổng: **58 gate** — 36 chặn, 22 cảnh báo.
 
 | Mức | npm script | Chặn/kiểm cái gì | File | Gọi từ |
 |---|---|---|---|---|
@@ -18,6 +18,7 @@ Tổng: **57 gate** — 35 chặn, 22 cảnh báo.
 | CHẶN | `package:kit` | đóng gói bản phát hành SẠCH của kit vào `dist/`. | `scripts/qa/package_kit.js` | README.md · .github/workflows · tests/fe/infra |
 | CHẶN | `gate:policy` | giữ 1 NGUỒN policy duy nhất: RULE_GLOBAL.md là canonical. | `scripts/qa/policy_source_check.js` | .gitlab-ci.yml · README.md · USER_GUIDE.md · .github/workflows · prompt_templates · .claude/commands · tests/fe/infra |
 | CHẶN | `preflight` | CHẶN "miss đọc file / input hỏng" TRƯỚC khi workflow chạy. | `scripts/qa/preflight_gate.js` | .gitlab-ci.yml · README.md · USER_GUIDE.md · QUICKSTART.md · .github/workflows · .agent/workflows · prompt_templates · .claude/commands · tests/fe/infra |
+| CHẶN | `rule`, `rule:toc` | tra RULE_GLOBAL.md THEO MỤC, thay vì đọc cả file. | `scripts/qa/rule_lookup.js` | .gitlab-ci.yml · README.md · USER_GUIDE.md · .github/workflows · .agent/workflows · prompt_templates · .claude/commands · tests/fe/infra |
 | CHẶN | `secret:scan` | quet secret bi commit nham tren cac file DA TRACK trong git. | `scripts/qa/secret_scan.js` | .gitlab-ci.yml · README.md · .github/workflows · tests/fe/infra |
 | CHẶN | `seed:knowledge`, `seed:knowledge:apply` | (chưa có mô tả ở header) | `scripts/qa/seed_knowledge_from_jira.js` | README.md |
 | CHẶN | `trace:matrix` | sinh ma trận REQ → TC → AUTO → EXEC → BUG dạng artifact. | `scripts/qa/traceability_matrix.js` | README.md · .agent/workflows · prompt_templates |
