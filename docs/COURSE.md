@@ -93,6 +93,7 @@ kit-cua-toi/
 │   └── config/
 │       ├── verdict_taxonomy.json     ← Bài 13 · 7 phán quyết + 7 tầng lỗi + ngưỡng rerun
 │       ├── dimension-manifest.json   ← Bài 11 · chiều nào áp cho dự án này, `n/a` phải kèm lý do
+│       ├── mo-rong-truc.json         ← Bài 14 · 7 trục + số trục tối thiểu theo mức rủi ro
 │       ├── anh-xa-luu-tru.json       ← Bài 15 · một nguồn cho 3 tên gọi của cùng một trường
 │       ├── risk_model.json           ← Bài 19 · trọng số rủi ro + khối cold-start
 │       ├── mutants.json              ← Bài 21 · các lỗi cố tình tiêm để đo suite
@@ -112,14 +113,17 @@ kit-cua-toi/
 │   │   ├── testcase/                 ·  Bài 9  · đọc/ghi bảng testcase, xuất Excel
 │   │   ├── verdict.js                ·  Bài 13 · đọc taxonomy, ánh xạ trạng thái
 │   │   └── gate.js                   ·  Bài 11 · khung chung cho mọi máy chặn
+│   ├── utils/                        ← MÁY TƯ VẤN — trả lời câu hỏi, KHÔNG chặn
+│   │   └── do-tai-lieu.js            ·  Bài 3  · đo tài liệu → khuyến nghị chiến lược
 │   └── qa/                           ← MÁY CHẶN — mỗi file tự chạy, thoát mã 0/1/2
 │       ├── kiem-so-mong-doi.js       ·  Bài 1  · máy chặn đầu tiên, 12 dòng
+│       ├── kiem-file-cam.js          ·  Bài 5  · tệp cấm bị git track ⇒ chặn
 │       ├── ambiguity_gate.js         ·  Bài 8  · chưa chốt mơ hồ thì không cho sinh case
 │       ├── oracle_gate.js            ·  Bài 10 · giá trị tính toán không trỏ nguồn ⇒ chặn
 │       ├── dem_chieu.js              ·  Bài 11 · chiều bắt buộc chưa đủ ngưỡng ⇒ chặn
 │       ├── evidence_gate.js          ·  Bài 13 · case đã chạy mà không có ảnh/video ⇒ chặn
 │       ├── doi-chieu-luu-tru.js      ·  Bài 15 · so UI với nơi lưu, khoanh tầng lỗi
-│       ├── gate-mo-rong.js           ·  Bài 14 · phát hiện không có oracle_ref ⇒ OBSERVATION
+│       ├── gate_mo_rong.js           ·  Bài 14 · không neo được vào mã luật ⇒ OBSERVATION
 │       ├── doi-soat-truong.js        ·  Bài 16 · 2xx không chứng minh mapping đúng
 │       ├── kiem-domain.js            ·  Bài 18 · rule không có `source` ⇒ cấm ghi
 │       ├── cham-rui-ro.js            ·  Bài 19 · tính điểm rủi ro, ép độ sâu theo band
@@ -211,7 +215,7 @@ kit-cua-toi/
 - Quy ước cô lập ngay từ đầu: mã task · thư mục output theo task · file credentials riêng theo task
 - **Thực hành:** vẽ kiến trúc cho dự án của chính bạn
 
-### Bài 3 — Chi phí và giới hạn thật *(1h)*
+### [Bài 3 — Chi phí và giới hạn thật](course/chi-phi-va-gioi-han.md) *(1h)*
 
 *Có gì trong tay: khung kit, một rule canonical.*
 
@@ -233,7 +237,7 @@ kit-cua-toi/
 - Hook: bơm context đầu phiên · chặn khi ghi file sai chuẩn
 - **Thực hành:** bảo agent xoá thư mục `docs/` và **kiểm quyền có chặn nó lại** — thí nghiệm này quan trọng hơn nó nghe
 
-### Bài 5 — Git, GitHub/GitLab cho người mới *(2h)*
+### [Bài 5 — Git, GitHub/GitLab cho người mới](course/git-tu-so-0.md) *(2h)*
 
 *Có gì trong tay: agent chạy được, có quyền đã cấu hình.*
 
@@ -268,7 +272,7 @@ kit-cua-toi/
 - Ba dấu hiệu testcase **không execute được**: thiếu dữ liệu cụ thể · expected không đo được · tiền điều kiện mơ hồ
 - **Thực hành:** phân tích một requirement thật của bạn, hoặc [tài liệu đặc tả mẫu](course/assets/sample-requirement.md) có **10 vấn đề cài sẵn**
 
-### Bài 8 — Ambiguity Gate: dừng đúng lúc *(1.5h)*
+### [Bài 8 — Ambiguity Gate: dừng đúng lúc](course/ambiguity-gate.md) *(1.5h)*
 
 *Có gì trong tay: một requirement đã bóc thành BR-.*
 
@@ -340,7 +344,7 @@ kit-cua-toi/
 - **XÂY gate:** không cho đẩy kết quả nếu lỗi chưa phân tầng, hoặc case đã execute mà không có ảnh/video
 - **Thực hành:** BUG-2 của app thực hành chỉ hiện ra khi bạn chụp có khoanh đỏ và cộng thử các số trên màn
 
-### Bài 14 — Chống lọt bug: mở rộng quanh mỗi case *(2.5h)*
+### [Bài 14 — Chống lọt bug: mở rộng quanh mỗi case](course/chong-lot-bug-7-truc.md) *(2.5h)*
 
 *Có gì trong tay: kết quả đã phân tầng, có bằng chứng.*
 
