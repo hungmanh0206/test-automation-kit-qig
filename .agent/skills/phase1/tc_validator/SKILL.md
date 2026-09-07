@@ -1,6 +1,6 @@
 ---
 name: tc_validator
-description: Validate testcase Phase 1 theo template 9 cột, coverage/risk gate và khả năng execute automation.
+description: Validate testcase Phase 1 theo template 10 cột, coverage/risk gate và khả năng execute automation.
 ---
 
 # TC Validator
@@ -13,7 +13,7 @@ Kiểm tra testcase sau khi sinh/cập nhật để đảm bảo đủ chi tiế
 
 | Trách nhiệm | Yêu cầu |
 |---|---|
-| Format | Bắt buộc đủ 9 cột testcase chuẩn. |
+| Format | Bắt buộc đủ **10 cột** canonical (gồm `Loại case` và `Tag`) — khớp `RULE_GLOBAL.md`. Đừng ghi 11: Excel SAU publish có 11 cột vì exporter thêm `Nhóm chức năng`, còn `.md` mà skill này kiểm thì có 10. |
 | Data | Test data cụ thể, traceable, không placeholder. |
 | Steps | Step rõ ràng, executable, không gom quá nhiều hành vi trong một dòng. |
 | Expected | Expected cụ thể, map đúng business rule/API/UI state. |
