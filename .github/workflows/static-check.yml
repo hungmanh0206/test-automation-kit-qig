@@ -40,6 +40,9 @@ jobs:
       - name: Policy 1-nguồn (F3 — RULE_GLOBAL canonical, core_rules là digest có pointer)
         run: npm run gate:policy
 
+      - name: Danh mục gate khớp source (bảng lệch = một gate đã đổi mức CHẶN/CẢNH BÁO mà không ai ghi)
+        run: npm run gates:index:check
+
       - name: Secret scan (F7 — chặn nếu có secret commit trên file đã track)
         run: npm run secret:scan
 
