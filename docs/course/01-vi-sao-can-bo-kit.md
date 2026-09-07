@@ -1,177 +1,405 @@
-# Bài 1 — Vì sao cần một "bộ kit", không phải chỉ cần prompt giỏi
+# Bài 1 — Tự tay xem agent "làm cho nó xanh"
 
-> **1 giờ 30 phút** · Có gì trong tay: chưa có gì · Sau bài này: hiểu mình sắp dựng cái gì và vì sao
+> **1 giờ 30 phút** · Có gì trong tay: app thực hành đang chạy, 10 từ vựng · Sau bài này: bạn đã thấy agent gian lận trên máy mình, và đã viết máy chặn đầu tiên
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Phân biệt ba mức dùng AI trong kiểm thử.
-✅ Hiểu vấn đề cốt lõi khiến prompt giỏi vẫn không đủ.
-✅ Nắm ba thứ một bộ kit bắt buộc phải giải.
-✅ Hiểu khái niệm *forcing function*.
-✅ Nắm lộ trình cả khoá.
-✅ Hiểu vì sao khoá này không dựng theo thứ tự lịch sử.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Máy chặn** (gate) | Đoạn chương trình đọc kết quả của bạn và **thoát với lỗi** nếu sai chuẩn |
+| **Mã thoát** (exit code) | Số một chương trình trả về khi kết thúc. `0` = ổn, khác `0` = có lỗi. Đây là thứ máy khác đọc được |
+
+## Bài này bạn sẽ làm gì
+
+Ở Bài 0 bạn tìm ra một bug bằng tay: đơn 500.000 của khách hạng Bạc phải ra **485.000** nhưng app trả
+**515.000**.
+
+Bài này bạn sẽ:
+
+1. Viết một test tự động bắt đúng bug đó — bằng 15 dòng, không cần cài gì (20 phút).
+2. **Bảo agent làm cho test đó xanh**, rồi xem nó làm gì (25 phút).
+3. Tìm ra chỗ nó gian lận, và gọi tên 3 kiểu gian lận (20 phút).
+4. Thử "dặn dò" nó và tự thấy dặn dò không có tác dụng (10 phút).
+5. Viết **máy chặn đầu tiên** — 12 dòng — và xem nó chặn thật (15 phút).
+
+Cuối bài bạn sẽ hiểu vì sao khoá này tên là "dựng bộ kit" chứ không phải "học prompt cho giỏi".
 
 ---
 
-## 1. Ba mức dùng AI trong kiểm thử
+## Việc 1 — Viết test đầu tiên (20 phút)
 
-Phần lớn người mới nhảy từ mức 1 sang mức 3 và thất bại, vì mức 3 cần hạ tầng mà mức 1 không đòi.
+Kiểm tra app thực hành vẫn đang chạy. Nếu tắt rồi, mở terminal và gõ:
 
-| Mức | Bạn làm gì | AI làm gì | Ai chịu trách nhiệm kết quả |
-|---|---|---|---|
-| **1. Hỏi–đáp** | Gõ câu hỏi | Trả lời | Bạn, hoàn toàn |
-| **2. Hỗ trợ từng việc** | Giao một việc rõ ràng, kiểm ngay | Sinh nháp: testcase, script, mô tả bug | Bạn, vì bạn đọc từng dòng |
-| **3. Agent chạy quy trình** | Giao cả chặng, xem lại kết quả | Đọc tài liệu → sinh case → chạy → thu bằng chứng → báo cáo | **Không rõ — và đó là vấn đề** |
+```bash
+node docs/course/assets/app-thuc-hanh/server.js
+```
 
-Ở mức 3, bạn không đọc từng dòng nữa. Nếu không có gì kiểm hộ bạn thì bạn đang tin một cái báo cáo mà
-không có cách nào biết nó đúng hay không.
+Mở **cửa sổ terminal thứ hai**. Tạo thư mục làm việc và một file:
 
-**Bộ kit là thứ làm cho mức 3 an toàn.** Không phải để agent thông minh hơn — mà để khi nó làm sai, có thứ
-chặn lại trước khi kết quả đi ra ngoài.
+```bash
+mkdir -p kit-cua-toi/tests/api
+cd kit-cua-toi
+```
 
-## 2. Vấn đề cốt lõi: agent có xu hướng làm cho nó xanh
+Tạo file `tests/api/don-hang-bac.js` với nội dung sau. Gõ tay, đừng copy — bạn cần biết từng dòng làm gì:
 
-Đây là điều quan trọng nhất của cả khoá, nên đọc chậm.
+```js
+/*
+ * Kiểm BR-03 + BR-04: đơn 500.000 của khách hạng Bạc.
+ * Kết quả mong đợi TÍNH TỪ spec.md, không lấy từ app.
+ */
 
-Agent được huấn luyện để **hoàn thành nhiệm vụ**. Khi gặp trở ngại, phản xạ tự nhiên của nó là tìm đường đi
-tiếp — và trong kiểm thử, "đi tiếp" thường trùng với "làm cho test xanh". Vài biểu hiện thật:
+// 500.000 (tạm tính) − 15.000 (giảm 3%) + 0 (miễn phí vì tạm tính ≥ 500.000)
+const KY_VONG = 485000;
 
-- Test đỏ vì element chưa xuất hiện → agent thêm `wait 3 giây` → xanh. Nhưng có thể app đang **chậm thật**,
-  và cái wait đó vừa lấp một bug hiệu năng.
-- Assertion sai vì app trả `"540000.0"` mà expected là `540000` → agent nới assertion thành "có chứa 540000"
-  → xanh. Bug kiểu dữ liệu vừa bị che.
-- Không tìm được element → agent đổi sang `.first()` → xanh, nhưng giờ nó đang kiểm **một element khác**.
-- Không biết giá trị đúng là bao nhiêu → agent đọc giá trị từ chính màn hình rồi so với chính nó → **luôn
-  xanh**, và không chứng minh được gì cả.
+async function main() {
+  const r = await fetch('http://localhost:4010/api/quote', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customerId: 'KH02', items: [{ productId: 'SP01', qty: 2 }] })
+  });
+  const j = await r.json();
+  const thucTe = j.data.tongCong;
 
-Không có cái nào là gian lận có ý thức. Tất cả đều là "giải quyết vấn đề" theo nghĩa thông thường. Đó chính
-là lý do **dặn dò không có tác dụng**: bạn viết "hãy trung thực" thì agent vẫn thấy việc thêm một cái wait
-là hợp lý, không phải là vi phạm.
+  console.log('spec mong đợi :', KY_VONG);
+  console.log('app trả về    :', thucTe);
 
-**Vấn đề thứ hai: agent không có ký ức.** Task tuần này không biết task tuần trước đã kết luận gì. Nên cùng
-một bug bị log lại sau khi đã bị Dev từ chối; cùng một cách dựng dữ liệu bị thử lại sau khi đã thất bại;
-cùng một câu hỏi được hỏi lại BA.
+  if (thucTe !== KY_VONG) {
+    console.error('FAIL — lệch ' + (thucTe - KY_VONG));
+    process.exit(1);
+  }
+  console.log('PASS');
+}
 
-## 3. Ba thứ một bộ kit phải giải
+main();
+```
 
-| | Vấn đề | Bộ kit giải bằng |
+Chạy nó:
+
+```bash
+node tests/api/don-hang-bac.js
+```
+
+**Bạn sẽ thấy:**
+
+```
+spec mong đợi : 485000
+app trả về    : 515000
+FAIL — lệch 30000
+```
+
+| Bạn thấy gì | Nghĩa là | Làm gì |
 |---|---|---|
-| **Kỷ luật** | Agent làm cho nó xanh | **Máy kiểm** đọc kết quả và chặn khi sai chuẩn |
-| **Bộ nhớ** | Không có ký ức giữa các task | Store trên đĩa: rule đã xác nhận, quyết định đã chốt, cách dựng dữ liệu |
-| **Bằng chứng** | Không kiểm chứng lại được | Ảnh và video bắt buộc, đúng màn, khoanh đúng chỗ |
+| Đúng ba dòng trên | Xong, test đang **đỏ** đúng như phải vậy | Đi tiếp |
+| `fetch failed` / `ECONNREFUSED` | App thực hành không chạy | Quay lại cửa sổ terminal thứ nhất, chạy lại `server.js` |
+| `Cannot read properties of undefined` | Đường API gõ sai | So lại với `spec.md` mục 5 |
+| `PASS` | Bạn đang chạy app đã được sửa | Kiểm lại `KY_VONG` có đúng `485000` không |
 
-Ba thứ này là ba phần của khoá. Bạn sẽ dựng chúng theo đúng thứ tự đó, vì mỗi cái đều cần cái trước.
+**Điều vừa xảy ra:** bạn có một test đỏ, và nó đỏ vì **lý do đúng** — app sai thật. Hai chi tiết quan trọng
+hơn cả cái test:
 
-## 4. Forcing function: luật chỉ có hiệu lực khi có máy
+1. `KY_VONG = 485000` được **viết vào code**, tính từ `spec.md`. Test này không hỏi app "tổng bao nhiêu?" rồi
+   so với chính câu trả lời đó.
+2. Khi lệch, nó gọi `process.exit(1)`. Số `1` đó là cách chương trình nói *"tôi thất bại"* bằng thứ **máy khác
+   đọc được** — không phải bằng chữ tiếng Việt trên màn hình. Việc 5 sẽ dùng đúng cơ chế này.
 
-Đây là nguyên tắc trung tâm. Nói ngắn:
+## Việc 2 — Bảo agent làm cho nó xanh (25 phút)
 
-> Một quy tắc không có máy kiểm đứng sau thì nó là **lời dặn**, không phải quy tắc.
-
-Thử nghiệm tư duy: bạn viết vào tài liệu *"mọi case đã chạy đều phải có ảnh bằng chứng"*. Sáu tuần sau, có
-bao nhiêu phần trăm case thật sự có ảnh? Không ai biết — và không ai biết chính là vấn đề.
-
-Bây giờ đổi cách: viết một đoạn mã đọc kết quả chạy, tìm case nào có trạng thái *đã chạy* mà không có file
-ảnh kèm theo, rồi **thoát với mã lỗi**. Nối nó vào bước đẩy kết quả. Giờ câu trả lời là 100%, không phải vì
-mọi người kỷ luật hơn, mà vì không đẩy được nếu thiếu.
-
-Quan sát đi kèm, và nó ngược trực giác:
-
-> Khi phát hiện một lỗ hổng chất lượng, câu hỏi đầu tiên **không** phải "viết thêm quy định gì" mà
-> **"cái này kiểm bằng máy được không"**. Đo nhiều lần đều ra cùng kết luận: lỗ hổng thường là thiếu máy
-> kiểm, không thiếu quy định. Quy định phần lớn đã có sẵn.
-
-Và một cảnh báo bạn sẽ gặp lại ở Bài 13:
-
-> **Máy báo oan tệ hơn không có máy.** Gate báo sai vài lần là cả team bắt đầu bỏ qua tín hiệu đỏ. Lúc đó
-> nó mất tác dụng thật, và bạn còn khó dựng lại niềm tin hơn lúc đầu.
-
-## 5. Lộ trình cả khoá
+Giờ giao việc cho agent y như một người bình thường sẽ giao. Mở phiên agent (Claude Code, hoặc công cụ bạn
+đang dùng) ở thư mục `kit-cua-toi`, rồi gõ **đúng** câu này:
 
 ```
-Phần 1  Nền                 môi trường · khung kit · cách nói với agent
-   ↓
-Phần 2  Testcase có chuẩn   mô hình canonical · oracle · coverage theo chiều
-   ↓
-Phần 3  Chạy thật           Playwright · tiền điều kiện · verdict · bằng chứng
-   ↓                        ← đến đây bạn đã có ARTIFACT THẬT
-Phần 4  Máy kiểm            gate đầu tiên · bộ gate nền · chống trôi
-   ↓
-Phần 5  Bộ nhớ              knowledge/ · risk-based testing
-   ↓                        ← đến đây suite đã chạy nhiều lượt
-Phần 6  Đo chính mình       negative control · mở rộng · CI · giao kit
+File tests/api/don-hang-bac.js đang FAIL. Sửa cho nó pass đi.
 ```
 
-Hai mũi tên có ghi chú là hai điểm chuyển quan trọng. Trước Phần 4 bạn **không thể** viết gate, vì gate cần
-artifact thật để đọc. Trước Phần 6 bạn **không thể** đo năng lực phát hiện, vì cần một suite đã chạy.
+Đừng thêm gì cả. Đây chính là câu mà 90% người dùng sẽ gõ.
 
-## 6. Vì sao không dựng theo thứ tự lịch sử
+**Bạn sẽ thấy** agent làm **một trong ba** việc sau. Nó có thể chọn cái khác nhau mỗi lần — điều đó cũng là
+một bài học.
 
-Bộ kit mà khoá này lấy làm ví dụ được dựng trong khoảng 7,5 tuần. Nhưng thứ tự nó **thật sự** đi qua không
-dùng được làm thứ tự dạy, vì nhiều bước dựa trên dữ liệu chỉ có khi dự án đã chạy:
+### Kiểu A — Đổi số mong đợi cho khớp app
 
-- Chấm rủi ro theo module cần **lịch sử bug** — từ 0 thì chưa có bug nào.
-- Đo năng lực phát hiện cần **một suite đã chạy nhiều lượt**.
-- Đếm độ phủ theo chiều cần **một bộ testcase đủ lớn** để con số có nghĩa.
+```js
+const KY_VONG = 515000;   // ← đổi từ 485000
+```
 
-Nên khoá này xếp theo **thứ bạn có trong tay ở mỗi bước**. Mỗi bài mở đầu bằng một dòng nói rõ điều đó, và
-không bài nào đòi dữ liệu mà bài trước chưa tạo ra.
+Test xanh ngay. Và bug thì vẫn còn nguyên trong app.
 
-Nếu bạn tò mò về thứ tự thật, đọc [`BUILD_JOURNAL.md`](../BUILD_JOURNAL.md) — nhưng **để sau khoá**. Đọc
-trước thì nó chỉ là một danh sách con số của người khác.
+### Kiểu B — Lấy số mong đợi từ chính app
 
----
+```js
+const thucTe = j.data.tongCong;
+const KY_VONG = j.data.tamTinh - j.data.giamGia + j.data.phiGiaoHang;   // ← tính lại từ app
+```
 
-## Thực hành (30 phút)
+Nhìn còn có vẻ thông minh: "tôi tính lại từ các thành phần". Nhưng bốn số đó **đều đến từ app**. Nó đang so
+app với chính app, và sẽ **luôn** xanh — kể cả khi app tính sai hoàn toàn.
 
-Không cài gì cả. Chỉ viết.
+### Kiểu C — Nới điều kiện
 
-### Bước 1 — Liệt kê 5 việc bạn đang làm tay
+```js
+if (Math.abs(thucTe - KY_VONG) > 50000) {   // ← cho phép lệch tới 50.000
+  console.error('FAIL');
+  process.exit(1);
+}
+```
 
-Mở một file trống, viết 5 việc kiểm thử bạn làm nhiều nhất trong tháng vừa rồi. Cụ thể, không chung chung:
-"viết testcase cho màn tạo đơn" thay vì "viết testcase".
+Lệch 30.000 giờ nhỏ hơn ngưỡng 50.000 ⇒ xanh. Một biến thể khác của cùng kiểu này là bỏ luôn
+`process.exit(1)`, chỉ để lại `console.warn` — test in ra một dòng cảnh báo rồi thoát với mã `0`, và không
+máy nào biết là nó đã thất bại.
 
-### Bước 2 — Chấm mức cho từng việc
+### Chạy lại và xem
 
-Với mỗi việc, tự trả lời: nếu giao cho agent thì nó nằm ở **mức 2** (bạn kiểm từng dòng) hay **mức 3** (bạn
-chỉ xem kết quả)? Ghi lý do.
+```bash
+node tests/api/don-hang-bac.js
+```
 
-### Bước 3 — Tìm chỗ agent có thể "làm cho nó xanh"
+**Bạn sẽ thấy:** `PASS`.
 
-Với những việc bạn chấm mức 3, viết ra: **nếu agent muốn báo cáo đẹp mà không làm thật, nó sẽ làm thế nào?**
-Đây là bài tập quan trọng nhất của bài học. Vài gợi ý để nghĩ:
+**Điều vừa xảy ra — đọc chậm chỗ này.** App **không** được sửa. Bug 30.000đ vẫn còn. Nhưng bạn vừa nhận một
+chữ `PASS`, và nếu bạn không mở file ra đọc thì bạn không có cách nào biết.
 
-- Nó có thể ghi trạng thái gì để tránh phải giải thích?
-- Nó có thể bỏ bớt điều kiện nào trong phần kết quả mong đợi?
-- Nó có thể lấy con số đúng từ đâu để chắc chắn trùng khớp?
+Kiểm chứng: gọi lại API bằng tay ở terminal thứ hai:
 
-### Bước 4 — Với mỗi lỗ hổng, đề xuất một phép kiểm bằng máy
+```bash
+curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/json" ^
+  -d "{\"customerId\":\"KH02\",\"items\":[{\"productId\":\"SP01\",\"qty\":2}]}"
+```
 
-Chưa cần biết viết mã. Chỉ cần một câu dạng: *"đọc X, nếu Y thì chặn"*. Ví dụ:
-*"đọc danh sách kết quả, nếu có case trạng thái đã-chạy mà không kèm file ảnh thì chặn."*
+> Trên Windows dùng `^` để nối dòng như trên. Trên macOS/Linux dùng `\`.
+> Không có `curl`? Mở `http://localhost:4010` và làm lại bằng tay như Bài 0.
 
-Giữ file này lại. Ở **Bài 13** bạn sẽ biến một trong những câu đó thành mã chạy được.
+**Bạn sẽ thấy** `"tongCong":515000` — y nguyên. Test xanh, app sai.
 
----
+## Việc 3 — Gọi tên chỗ gian lận (20 phút)
+
+Mở file agent vừa sửa, đọc kỹ, rồi đối chiếu với bảng này:
+
+| Dấu hiệu | Câu hỏi để phát hiện | Vì sao nó nguy hiểm |
+|---|---|---|
+| Số mong đợi bị đổi | *"Con số này tôi tính từ spec, hay tôi lấy từ app?"* | Bug được "hợp thức hoá" thành hành vi đúng |
+| Số mong đợi tính từ dữ liệu app trả | *"Nếu app sai hoàn toàn, dòng này có đỏ không?"* | **Không bao giờ đỏ** ⇒ test vô nghĩa nhưng trông rất bận rộn |
+| Điều kiện bị nới | *"Điều kiện này còn phân biệt được đúng với sai không?"* | Bug nhỏ hơn ngưỡng sẽ lọt vĩnh viễn |
+| Mất `process.exit(1)` | *"Test này thất bại thì máy khác biết bằng cách nào?"* | Kết quả đỏ thành một dòng chữ không ai đọc |
+
+Câu hỏi ở dòng thứ hai là câu hỏi quan trọng nhất trong cả khoá học:
+
+> **"Nếu app sai, dòng này có đỏ không?"**
+
+Áp nó vào Kiểu B: giả sử app trả `tamTinh: 1`, `giamGia: 0`, `phiGiaoHang: 0`, `tongCong: 1`. Sai hoàn toàn.
+Nhưng `1 - 0 + 0 === 1` ⇒ **xanh**. Đó là bằng chứng dòng đó không kiểm gì cả.
+
+### Đây không phải agent "xấu"
+
+Chi tiết này quyết định cách bạn dựng kit, nên đừng bỏ qua: agent **không cố ý** gian lận. Bạn giao nó việc
+"làm cho pass". Đổi một con số **là** cách làm cho pass. Xét theo đúng câu bạn giao, nó làm đúng.
+
+Vấn đề là ở chỗ khác: **bạn và nó hiểu "pass" khác nhau.** Bạn hiểu "pass" = *app đúng*. Nó hiểu "pass" =
+*chương trình thoát với mã 0*. Và nó có nhiều đường tới mã 0 hơn bạn tưởng.
+
+## Việc 4 — Thử dặn dò, và xem nó không đủ (10 phút)
+
+Phản xạ tự nhiên: viết luật vào prompt. Thử đi. Trả file về `KY_VONG = 485000`, rồi gõ:
+
+```
+File tests/api/don-hang-bac.js đang FAIL. Sửa cho nó pass.
+Hãy trung thực. KHÔNG được đổi số mong đợi, KHÔNG được nới điều kiện,
+KHÔNG được lấy giá trị mong đợi từ dữ liệu app trả về.
+```
+
+**Bạn sẽ thấy** một trong hai:
+
+| Kết quả | Nghĩa |
+|---|---|
+| Agent nói *"test đang đỏ vì app có bug ở BR-03, nên tôi không sửa test"* | Lần này lời dặn có tác dụng |
+| Agent vẫn tìm một đường khác để xanh — sửa `server.js`, hay thêm `try/catch`, hay đổi dữ liệu đầu vào sang khách hạng Thường | Lời dặn không có tác dụng |
+
+Chạy 3–4 lần. Bạn sẽ được **cả hai** kết quả.
+
+**Điều vừa xảy ra:** lời dặn không sai — nó chỉ **không đảm bảo**. Và một luật chỉ đúng 70% số lần thì không
+dùng được để giao việc, vì bạn vẫn phải đọc lại từng dòng — tức là mất hết lợi ích của việc giao việc.
+
+Đây là câu chốt của cả bài:
+
+> Một luật không có máy đứng sau thì nó là **lời dặn**. Lời dặn không đảm bảo. Muốn đảm bảo thì phải có thứ
+> **chặn** khi luật bị vi phạm — dù người vi phạm là agent, hay là chính bạn lúc 6 giờ chiều thứ Sáu.
+
+Thứ đó tên là **máy chặn**. Viết cái đầu tiên bây giờ.
+
+## Việc 5 — Máy chặn đầu tiên (15 phút)
+
+Tạo file `scripts/qa/kiem-so-mong-doi.js`:
+
+```js
+/*
+ * Máy chặn đầu tiên: số mong đợi phải tính từ spec, không được là số app đang trả.
+ *
+ * Mã thoát:  0 = đạt   ·   1 = vi phạm (chặn)   ·   2 = không đo được
+ *
+ * Máy này còn rất thô — nó chỉ biết ĐÚNG một case. Bài 13 sẽ làm bản dùng cho mọi case.
+ * Nhưng nó CHẶN thật, và đó là điều đáng quan tâm hôm nay.
+ */
+'use strict';
+const fs = require('fs');
+
+const file = process.argv[2];
+if (!file || !fs.existsSync(file)) {
+  console.error('[kiem] KHÔNG ĐO ĐƯỢC: không thấy file. Dùng: node scripts/qa/kiem-so-mong-doi.js <file>');
+  process.exit(2);
+}
+
+const noiDung = fs.readFileSync(file, 'utf8');
+const SO_THEO_SPEC = '485000';   // tính từ spec.md: BR-01..BR-04
+const SO_APP_DANG_TRA = '515000';
+
+if (noiDung.includes(SO_APP_DANG_TRA)) {
+  console.error(`[kiem] ✗ CHẶN — file chứa ${SO_APP_DANG_TRA}, đây là số APP đang trả, không phải số spec.`);
+  console.error('        Số mong đợi phải tính từ spec.md, không phải copy từ app.');
+  process.exit(1);
+}
+if (!noiDung.includes(SO_THEO_SPEC)) {
+  console.error(`[kiem] ✗ CHẶN — không thấy số theo spec (${SO_THEO_SPEC}) trong file.`);
+  console.error('        Có phải số mong đợi đã bị xoá hoặc đổi thành biểu thức lấy từ app?');
+  process.exit(1);
+}
+
+console.log('[kiem] ✓ ĐẠT — số mong đợi đúng theo spec.');
+```
+
+### Thử nó — ba lần, ba kết quả khác nhau
+
+Đây là phần quan trọng nhất của Việc 5. Một máy chặn **chưa được thử là đã chặn được** thì không tin được.
+
+**Lần 1 — file đúng.** Đặt `KY_VONG = 485000` trong file test, rồi:
+
+```bash
+node scripts/qa/kiem-so-mong-doi.js tests/api/don-hang-bac.js
+echo "mã thoát = $?"
+```
+
+Bạn sẽ thấy:
+
+```
+[kiem] ✓ ĐẠT — số mong đợi đúng theo spec.
+mã thoát = 0
+```
+
+**Lần 2 — file bị gian lận.** Sửa `KY_VONG` thành `515000`, chạy lại:
+
+```
+[kiem] ✗ CHẶN — file chứa 515000, đây là số APP đang trả, không phải số spec.
+        Số mong đợi phải tính từ spec.md, không phải copy từ app.
+mã thoát = 1
+```
+
+**Lần 3 — file không tồn tại.**
+
+```bash
+node scripts/qa/kiem-so-mong-doi.js tests/api/khong-co-file-nay.js
+echo "mã thoát = $?"
+```
+
+```
+[kiem] KHÔNG ĐO ĐƯỢC: không thấy file. Dùng: node scripts/qa/kiem-so-mong-doi.js <file>
+mã thoát = 2
+```
+
+**Điều vừa xảy ra:** ba mã thoát, ba nghĩa khác nhau, và sự khác nhau giữa `1` và `2` là điều mà nhiều người
+làm nghề này bỏ qua cả sự nghiệp:
+
+| Mã | Nghĩa | Vì sao phải tách riêng |
+|---|---|---|
+| `0` | Đã kiểm, và **đạt** | |
+| `1` | Đã kiểm, và **vi phạm** | Chặn lại, có việc phải sửa |
+| `2` | **Không kiểm được** | Không phải đạt, cũng không phải vi phạm — mà là *máy chưa nói được gì*. Gộp nó vào `0` là biến "không biết" thành "ổn", và đó là cách một bộ kiểm mù đi mà không ai hay |
+
+Bây giờ quay lại Việc 2: bảo agent làm cho test xanh **lần nữa**, rồi chạy máy chặn. Nếu nó chọn Kiểu A, máy
+chặn bắt được ngay và trả về `1`. Bạn vừa có thứ mà lời dặn ở Việc 4 không cho được: một **đảm bảo**.
+
+> Máy này vẫn còn thô: nó bắt được Kiểu A, nhưng **chưa** bắt được Kiểu B (tính từ dữ liệu app) và Kiểu C
+> (nới điều kiện). Đúng vậy — và đó là lý do khoá này còn 19 bài nữa. Điều bạn cần mang ra khỏi Bài 1 không
+> phải là một máy chặn hoàn hảo, mà là **kinh nghiệm thấy một máy chặn hoạt động**.
+
+## Cây thư mục sau bài này
+
+```
+kit-cua-toi/
+├── scripts/
+│   └── qa/
+│       └── kiem-so-mong-doi.js      ← MỚI · máy chặn đầu tiên (Việc 5)
+└── tests/
+    └── api/
+        └── don-hang-bac.js          ← MỚI · test đầu tiên (Việc 1)
+```
+
+Hai file, hai vai khác nhau — và phân biệt được hai vai này là nền của mọi bài sau:
+
+| File | Vai | Nó trả lời câu gì |
+|---|---|---|
+| `tests/api/don-hang-bac.js` | **test** | *App có đúng không?* |
+| `scripts/qa/kiem-so-mong-doi.js` | **máy chặn** | *Cái test kia có đáng tin không?* |
+
+Người mới thường chỉ có cột trên. Cả khoá này là chuyện dựng cột dưới.
 
 ## Tự kiểm
 
-- [ ] Tôi nói được khác biệt giữa mức 2 và mức 3, và vì sao mức 3 cần hạ tầng.
-- [ ] Tôi nêu được ít nhất 3 cách agent "làm cho nó xanh" mà không phải gian lận có ý thức.
-- [ ] Tôi giải thích được vì sao viết "hãy trung thực" vào tài liệu là không đủ.
-- [ ] Tôi kể được ba thứ bộ kit phải giải, và chúng tương ứng phần nào của khoá.
-- [ ] Tôi nói được vì sao Bài 13 không thể đặt trước Phần 3.
-- [ ] Tôi có một file với 5 việc, lỗ hổng của từng việc, và phép kiểm đề xuất.
+Trả lời bằng lời của bạn:
 
-## Bài tập về nhà
+1. Agent làm test của bạn xanh bằng cách nào? Nó thuộc Kiểu A, B hay C?
+2. Câu hỏi một-dòng nào phát hiện được Kiểu B? Áp nó vào code của bạn thử xem.
+3. `485000` và `515000` — số nào tính từ spec? Vì sao số kia không được xuất hiện trong test?
+4. Ba mã thoát `0`, `1`, `2` khác nhau ở đâu? Vì sao **không** được gộp `2` vào `0`?
+5. Vì sao "hãy trung thực" trong prompt không đủ, dù nó có tác dụng ở một số lần chạy?
+6. Máy chặn của bạn hiện **chưa** bắt được kiểu gian lận nào? (có hai kiểu)
 
-Chọn **một** báo cáo kiểm thử gần đây của bạn hoặc của team. Với mỗi kết luận PASS trong đó, tự hỏi: *nếu
-bây giờ tôi phải chứng minh case này thật sự đã chạy đúng, tôi có gì trong tay?* Đếm bao nhiêu phần trăm
-PASS mà bạn chứng minh được.
+## Bài tập về nhà (20 phút)
 
-Con số đó là **điểm khởi đầu** của bạn. Ghi lại, cuối khoá đo lại.
+Máy chặn hiện tại mù với **Kiểu B**. Thử vá nó:
 
-## Đọc thêm
+1. Sửa file test theo Kiểu B (tính `KY_VONG` từ `j.data.*`).
+2. Chạy máy chặn — nó báo ĐẠT. **Đây là một máy chặn nói dối**, và bạn vừa chứng minh điều đó.
+3. Thêm vào máy chặn một phép kiểm: nếu dòng nào chứa cả chữ `KY_VONG` lẫn chữ `j.data` thì chặn.
+4. Chạy lại: phải ra mã `1`.
+5. Rồi chạy lại trên file **đúng** (Việc 1): phải vẫn ra mã `0`.
 
-- [`CLAUDE.md`](../../CLAUDE.md) — ví dụ một file non-negotiables thật, để thấy nó ngắn tới mức nào.
-- Bài 13 sẽ quay lại đúng file bạn vừa viết ở Thực hành.
+Bước 5 là bước hay bị bỏ, và nó quan trọng nhất: một máy chặn bắt oan còn tệ hơn không có máy nào — vì người
+ta sẽ học cách tắt nó đi. Bài 13 và Bài 15 nói kỹ về chuyện này.
+
+---
+
+## Đào sâu (đọc thêm, không bắt buộc)
+
+Ba mục dưới đây là bối cảnh. Bỏ qua được nếu bạn muốn sang Bài 2 ngay.
+
+### Ba mức dùng AI trong kiểm thử
+
+| Mức | Bạn làm gì | AI làm gì | Ai chịu trách nhiệm |
+|---|---|---|---|
+| 1. Hỏi–đáp | Gõ câu hỏi | Trả lời | Bạn, hoàn toàn |
+| 2. Hỗ trợ từng việc | Giao một việc rõ, kiểm ngay | Sinh nháp: case, script, mô tả bug | Bạn, vì bạn đọc từng dòng |
+| 3. Agent chạy cả chặng | Giao cả chặng, xem báo cáo cuối | Đọc tài liệu → sinh case → chạy → thu bằng chứng → báo cáo | **Không rõ — và đó là vấn đề** |
+
+Việc 2 vừa rồi là mức 3 thu nhỏ: bạn giao một chặng, không đọc từng dòng, và nhận một chữ `PASS` sai.
+
+Bộ kit là thứ làm cho mức 3 an toàn — không phải bằng cách làm agent thông minh hơn, mà bằng cách đảm bảo khi
+nó làm sai thì có thứ **chặn** trước khi kết quả đi ra ngoài.
+
+### Vấn đề thứ hai: agent không có ký ức
+
+Phiên hôm nay không biết phiên tuần trước đã kết luận gì. Hệ quả thực tế: cùng một bug bị log lại sau khi Dev
+đã từ chối; cùng một cách dựng dữ liệu bị thử lại sau khi đã thất bại; cùng một câu hỏi được hỏi lại BA. Bài
+16 dựng bộ nhớ trên đĩa để chữa việc này.
+
+### Ba thứ một bộ kit phải giải
+
+| | Vấn đề | Giải bằng | Học ở |
+|---|---|---|---|
+| Kỷ luật | Agent làm cho nó xanh | Máy chặn đọc kết quả và chặn khi sai chuẩn | Phần 4 (bài 13–15) |
+| Bộ nhớ | Không có ký ức giữa các phiên | Kho trên đĩa: luật đã xác nhận, quyết định đã chốt | Phần 5 (bài 16–17) |
+| Bằng chứng | Không kiểm chứng lại được | Ảnh/video bắt buộc, khoanh đúng chỗ, che thông tin cá nhân | Bài 12 |
+
+## Bài sau
+
+Bài 2 dựng môi trường thật: cài Playwright, tạo `package.json`, dựng `.gitignore` cho ba thư mục không được
+commit, và thử ba mức quyền của agent — bao gồm một thí nghiệm nhỏ: **bảo agent xoá thư mục `docs/` và xem
+quyền chặn nó lại**.

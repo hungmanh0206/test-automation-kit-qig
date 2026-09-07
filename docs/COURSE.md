@@ -11,30 +11,46 @@
 **Đối tượng.** QA/Tester manual muốn dùng AI agent như một cộng sự có kỷ luật, và muốn hiểu bộ kit mình
 dùng thay vì chỉ chạy lệnh người khác đưa.
 
-**Cần có trước.** Đọc hiểu được JavaScript cơ bản (không cần viết được) · biết dùng terminal · có một dự án
-thật để thực hành, hoặc dùng bộ mẫu của khoá.
+**Cần có trước.** Đọc hiểu được JavaScript cơ bản (không cần viết được) · biết dùng terminal · Node.js 18+.
+**Không cần** có dự án thật, không cần quyền vào hệ thống công ty: khoá đi kèm
+[app thực hành](course/assets/app-thuc-hanh/README.md) chạy trên máy bạn, **có 3 bug cài sẵn cố ý** để bạn
+biết bộ kiểm của mình bắt được hay không.
 
 **Không dạy trong khoá này.** Lập trình JavaScript từ đầu · kiểm thử hiệu năng và bảo mật chuyên sâu ·
 vận hành hạ tầng CI/CD.
 
-**Tổng thời lượng: 44 giờ 30 phút · 20 bài · 6 phần · 123 mục tiêu học tập.**
+**Tổng thời lượng: 47 giờ · 21 bài (Bài 0 → Bài 20) · 6 phần · 136 mục tiêu học tập.**
 
-**Nội dung chi tiết.** **Cả 20 bài đều đã có bài giảng đầy đủ** — tiêu đề bài là **link bấm được**, kèm [tài liệu mẫu thực hành](course/assets/sample-requirement.md). Mỗi bài gồm: lý thuyết có ví dụ đo được · mã chạy được · phần thực hành theo bước · bảng tự kiểm · bài tập về nhà.
+**Nội dung chi tiết.** **Cả 21 bài đều đã có bài giảng đầy đủ** — tiêu đề bài là **link bấm được**. Mỗi bài gồm: **từ mới của bài** · các **Việc** làm theo bước, mỗi việc có khối *"Bạn sẽ thấy"* và bảng xử lý khi thấy khác · **cây thư mục sau bài này** · bảng tự kiểm · bài tập về nhà. Kèm [app thực hành](course/assets/app-thuc-hanh/README.md) và [tài liệu đặc tả mẫu](course/assets/sample-requirement.md).
 
 ---
 
 # PHẦN 1 — NỀN: MÔI TRƯỜNG VÀ KHUNG KIT
 
-## [Bài 1 — Vì sao cần một "bộ kit", không phải chỉ cần prompt giỏi](course/01-vi-sao-can-bo-kit.md)
+## [Bài 0 — Trước khi bắt đầu](course/00-truoc-khi-bat-dau.md)
 
 *Có gì trong tay: chưa có gì.*
 
-✅ Phân biệt ba mức dùng AI trong kiểm thử: hỏi–đáp · AI hỗ trợ từng việc · AI agent chạy cả quy trình.
-✅ Hiểu vấn đề cốt lõi khiến prompt giỏi vẫn không đủ: agent làm rất nhanh, nhưng **có xu hướng làm cho nó xanh**, và không có ký ức giữa các task.
-✅ Nắm ba thứ một bộ kit bắt buộc phải giải: **kỷ luật** (không gian lận để PASS) · **bộ nhớ** (học được, dùng lại được) · **bằng chứng** (kiểm chứng lại được sau nhiều tuần).
-✅ Hiểu khái niệm *forcing function*: luật chỉ có hiệu lực khi có máy chặn được, viết thành văn thì sẽ bị lướt.
-✅ Nắm lộ trình cả khoá: chạy tay → testcase có chuẩn → gate máy chặn → bộ nhớ → đo được chính bộ kiểm của mình.
-✅ Hiểu vì sao khoá này **không** dựng theo thứ tự lịch sử của một kit đã hoàn thiện.
+✅ Kiểm Node.js trên máy và biết đọc thông báo lỗi khi thiếu.
+✅ Chạy được **app thực hành** của khoá (một cửa hàng mini, có 3 bug cài sẵn cố ý) và mở nó trên trình duyệt.
+✅ Tự tay tạo một đơn hàng, tự tính kết quả từ đặc tả, và **tìm ra bug đầu tiên trong 15 phút** — không dùng công cụ nào.
+✅ Hiểu 10 từ mà cả khoá dùng liên tục, mỗi từ kèm ví dụ lấy từ chính việc vừa làm.
+✅ Xem trước **cây thư mục** của bộ kit sẽ dựng, và phân biệt được `scripts/lib` (thư viện) · `scripts/qa` (máy chặn) · `tests/support` (hạ tầng test).
+✅ Nắm ba thư mục không bao giờ commit và vì sao.
+
+**1 giờ**
+
+## [Bài 1 — Tự tay xem agent "làm cho nó xanh"](course/01-vi-sao-can-bo-kit.md)
+
+*Có gì trong tay: app thực hành đang chạy, 10 từ vựng.*
+
+✅ Viết test tự động đầu tiên (15 dòng, không cần cài gì) bắt đúng bug đã tìm ở Bài 0.
+✅ **Bảo agent làm cho test đó xanh và xem nó gian lận trên máy mình** — nhận ra 3 kiểu: đổi số mong đợi · lấy số mong đợi từ chính app · nới điều kiện.
+✅ Nắm câu hỏi một-dòng phát hiện test vô nghĩa: *"nếu app sai, dòng này có đỏ không?"*
+✅ Tự chứng minh **dặn dò trong prompt không đảm bảo** — chạy 3–4 lần cho ra kết quả khác nhau.
+✅ Viết **máy chặn đầu tiên** (12 dòng) và thử nó 3 lần cho ra 3 mã thoát: 0 đạt · 1 chặn · 2 không đo được.
+✅ Hiểu vì sao **không** được gộp "không đo được" vào "đạt".
+✅ Phân biệt vai của `tests/` (app có đúng không) với `scripts/qa/` (test kia có đáng tin không).
 
 **1 giờ 30 phút**
 

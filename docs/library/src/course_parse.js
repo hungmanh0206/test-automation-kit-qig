@@ -83,9 +83,15 @@ function parseCourse(mdPath) {
     parts.push({ n: hm[1], title: hm[2].trim(), lessons: lessons });
   }
 
+  // Số bài phải LIÊN TỤC. Được bắt đầu ở 0 (bài chuẩn bị) hoặc ở 1 — không được ở số khác,
+  // vì bắt đầu ở 3 nghĩa là hai bài đầu đã rơi đâu mất mà không ai biết.
   const nums = parts.flatMap((p) => p.lessons.map((l) => Number(l.n)));
+  const goc = nums[0];
+  if (goc !== 0 && goc !== 1) throw new Error(`COURSE.md: bài đầu tiên phải là 0 hoặc 1, đang là ${goc}`);
   for (let i = 0; i < nums.length; i++) {
-    if (nums[i] !== i + 1) throw new Error(`COURSE.md: số bài không liên tục — tới bài ${nums[i]} ở vị trí ${i + 1}`);
+    if (nums[i] !== goc + i) {
+      throw new Error(`COURSE.md: số bài không liên tục — tới bài ${nums[i]} ở vị trí thứ ${i + 1} (chờ ${goc + i})`);
+    }
   }
 
   return { total, audience, prereq, notCover, outcome, parts, lessonCount: totalLessons };

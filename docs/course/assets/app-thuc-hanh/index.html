@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cửa hàng mini</title>
+<style>
+  :root { --ink:#1A1916; --wash:#FAF8F3; --line:#E6E0D5; --gold:#FFB700; --mo:#79736A; }
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+         color:var(--ink); background:var(--wash) }
+  header { background:var(--ink); color:#fff; padding:14px 20px; font-weight:600 }
+  main { max-width:900px; margin:0 auto; padding:20px; display:grid; gap:20px }
+  .the { background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px }
+  h2 { margin:0 0 14px; font-size:16px }
+  label { display:block; font-size:13px; color:var(--mo); margin:10px 0 4px }
+  select, input { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px;
+                  font:inherit; background:#fff }
+  button { padding:9px 16px; border:0; border-radius:8px; background:var(--gold);
+           color:var(--ink); font:inherit; font-weight:600; cursor:pointer }
+  button:disabled { opacity:.45; cursor:not-allowed }
+  button.phu { background:#fff; border:1px solid var(--line); font-weight:500 }
+  .hang { display:flex; gap:10px; align-items:flex-end }
+  .hang > * { flex:1 }
+  .hang > button { flex:0 0 auto }
+  table { width:100%; border-collapse:collapse; font-size:14px }
+  th, td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--line) }
+  th { font-size:12px; color:var(--mo); font-weight:600 }
+  td.so, th.so { text-align:right; font-variant-numeric:tabular-nums }
+  .tien { display:grid; gap:6px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line) }
+  .tien div { display:flex; justify-content:space-between }
+  .tien .tong { font-weight:700; font-size:17px; padding-top:6px; border-top:1px solid var(--line) }
+  .loi { background:#FBEAEA; color:#9E2C2C; padding:9px 12px; border-radius:8px; margin-top:12px;
+         font-size:14px }
+  .loi[hidden] { display:none }
+  .nhan { display:inline-block; padding:2px 8px; border-radius:20px; font-size:12px; font-weight:600 }
+  .nhan.cho { background:#FFF9EC; color:#946800 }
+  .nhan.xong { background:#E9F6EF; color:#14613F }
+  .trong { color:var(--mo); font-size:14px }
+</style>
+</head>
+<body>
+<header>Cửa hàng mini · app thực hành</header>
+<main>
+
+  <section class="the">
+    <h2>Tạo đơn hàng</h2>
+
+    <label for="khach">Khách hàng</label>
+    <select id="khach" data-testid="khach"></select>
+
+    <div class="hang">
+      <div>
+        <label for="sanpham">Sản phẩm</label>
+        <select id="sanpham" data-testid="sanpham"></select>
+      </div>
+      <div style="max-width:110px">
+        <label for="soluong">Số lượng</label>
+        <input id="soluong" data-testid="soluong" type="number" value="1" min="1" max="99">
+      </div>
+      <button id="them" class="phu" data-testid="them">Thêm</button>
+    </div>
+
+    <table style="margin-top:16px">
+      <thead>
+        <tr><th>Sản phẩm</th><th class="so">Đơn giá</th><th class="so">SL</th><th class="so">Thành tiền</th><th></th></tr>
+      </thead>
+      <tbody id="gio" data-testid="gio"></tbody>
+    </table>
+    <p id="gioTrong" class="trong">Chưa có sản phẩm nào.</p>
+
+    <div class="tien">
+      <div><span>Tạm tính</span><span data-testid="tam-tinh">—</span></div>
+      <div><span>Giảm giá</span><span data-testid="giam-gia">—</span></div>
+      <div><span>Phí giao hàng</span><span data-testid="phi-giao-hang">—</span></div>
+      <div class="tong"><span>Tổng cộng</span><span data-testid="tong-cong">—</span></div>
+    </div>
+
+    <div id="loi" class="loi" data-testid="loi" hidden></div>
+
+    <p style="margin:16px 0 0"><button id="taoDon" data-testid="tao-don" disabled>Tạo đơn</button></p>
+  </section>
+
+  <section class="the">
+    <h2>Danh sách đơn hàng</h2>
+    <table>
+      <thead>
+        <tr><th>Mã đơn</th><th>Khách</th><th class="so">Tổng cộng</th><th>Trạng thái</th><th></th></tr>
+      </thead>
+      <tbody id="dsDon" data-testid="ds-don"></tbody>
+    </table>
+    <p id="donTrong" class="trong">Chưa có đơn nào.</p>
+  </section>
+
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
