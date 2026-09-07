@@ -1085,6 +1085,14 @@ Mode = DRY_RUN hoặc APPLY.
 
 Bảng command canonical nằm ở [README.md](README.md) mục **Common Commands** (install, `npm test`, `test:task*`, Jira bug reporter...). Danh sách đầy đủ lệnh AIO Tests (publish, pull, push execution, cleanup) ở [scripts/integrations/jira/README.md](scripts/integrations/jira/README.md).
 
+Tra luật mà **không** phải đọc cả `RULE_GLOBAL.md` (465 dòng ~ 12.800 token):
+
+```text
+npm run rule -- --list        # mục lục 27 mục + chi phí token từng mục
+npm run rule -- security      # in đúng mục Security (~287 token)
+npm run rule -- 10            # hoặc theo số thứ tự trong --list
+```
+
 Hai lệnh của flow execute-trên-AIO:
 
 ```text

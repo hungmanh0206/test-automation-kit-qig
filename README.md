@@ -217,6 +217,21 @@ Tự động hoá ở [.github/workflows/release.yml](.github/workflows/release.
 chạy tay với `dry_run` **mặc định true**. `release:verify` là **cổng** — không PASS thì không tạo Release.
 Dự án nhận kit đọc [docs/UPGRADE.md](docs/UPGRADE.md).
 
+### Tra luật · soi bộ gate (cho người MAINTAIN kit)
+
+```bash
+npm run rule -- --list       # mục lục RULE_GLOBAL.md + chi phí token từng mục
+npm run rule -- security     # in ĐÚNG một mục — đo 287 token, thay vì 12.800 khi đọc cả file
+npm run rule:toc             # sinh lại mục lục neo trong RULE_GLOBAL.md
+npm run gates:index          # sinh .agent/config/GATES.md — CHẶN / SINH / BÁO CÁO cho từng máy
+npm run gates:index:check    # CI chặn khi bảng lệch source (một gate bị nới thành cảnh báo = bắt được)
+```
+
+`RULE_GLOBAL.md` **không** được auto-load (file luôn-trong-ngữ-cảnh là `CLAUDE.md`, 13 dòng) — nên tra
+theo mục là cách đọc luật đúng, không phải đọc cả file. Danh mục máy: [.agent/config/GATES.md](.agent/config/GATES.md).
+Ngưỡng lưu trữ kho học khai bằng số ở [.agent/config/retention.json](.agent/config/retention.json) —
+vượt ngưỡng thì `metrics_collect` **cảnh báo**, không chặn.
+
 ### Slash command (điểm vào — gọn nhất)
 
 ```text
