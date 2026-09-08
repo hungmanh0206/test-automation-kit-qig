@@ -95,7 +95,10 @@ kit-cua-toi/
 │       ├── dimension-manifest.json   ← Bài 11 · chiều nào áp cho dự án này, `n/a` phải kèm lý do
 │       ├── mo-rong-truc.json         ← Bài 14 · 7 trục + số trục tối thiểu theo mức rủi ro
 │       ├── anh-xa-luu-tru.json       ← Bài 15 · một nguồn cho 3 tên gọi của cùng một trường
+│       ├── knowledge-schema.json    ← Bài 18 · trường bắt buộc · 4 trạng thái · hạn tái xác nhận
 │       ├── risk_model.json           ← Bài 19 · trọng số rủi ro + khối cold-start
+│       ├── vong-doi-du-lieu.json    ← Bài 20 · giữ bao lâu, tỉa thế nào, kèm LÝ DO
+│       ├── nguong-metrics.json      ← Bài 22 · ngưỡng khoảng cách + mốc xếp hạng độ tin cậy
 │       ├── mutants.json              ← Bài 21 · các lỗi cố tình tiêm để đo suite
 │       ├── ci_scope.json             ← Bài 24 · lệnh nào chạy ở đâu (một nguồn cho CI)
 │       ├── env-allow.json            ← Bài 24 · biến môi trường nào được đọc, ai dựng nó
@@ -125,7 +128,11 @@ kit-cua-toi/
 │       ├── doi-chieu-luu-tru.js      ·  Bài 15 · so UI với nơi lưu, khoanh tầng lỗi
 │       ├── gate_mo_rong.js           ·  Bài 14 · không neo được vào mã luật ⇒ OBSERVATION
 │       ├── doi-soat-truong.js        ·  Bài 16 · 2xx không chứng minh mapping đúng
-│       ├── kiem-domain.js            ·  Bài 18 · rule không có `source` ⇒ cấm ghi
+│       ├── kiem-domain.js            ·  Bài 17 · rule không có `nguon` ⇒ cấm ghi
+│       ├── kiem_knowledge.js         ·  Bài 18 · chặn ở cửa ĐỌC: thiếu source · mâu thuẫn · quá hạn
+│       ├── sao-luu-knowledge.js      ·  Bài 20 · đích sao lưu nằm TRONG repo ⇒ từ chối
+│       ├── do-metrics.js             ·  Bài 22 · clean vs eventual + KHOẢNG CÁCH lệ thuộc retry
+│       ├── sinh-dashboard.js         ·  Bài 23 · 1 tệp .html tự chứa, tự kiểm 0 host ngoài
 │       ├── cham-rui-ro.js            ·  Bài 19 · tính điểm rủi ro, ép độ sâu theo band
 │       ├── tiem-loi.js               ·  Bài 21 · đo chính bộ kiểm bằng tiêm lỗi
 │       ├── gates-voi-toi.js          ·  Bài 24 · máy không ai gọi thì bằng không có
@@ -393,7 +400,7 @@ kit-cua-toi/
 - **Câu trả lời cho "từ số 0 thì học từ đâu":** 4 nguồn — bảng `BR-` đã có từ Bài 7 · câu trả lời BA từ Ambiguity Gate · seed từ lịch sử Jira · **rỗng có kiểm soát**
 - **XÂY gate:** chặn rule không có `nguồn`, cảnh báo khi nghi có PII
 
-### Bài 18 — Thiết kế knowledge base có kỷ luật *(2.5h)*
+### [Bài 18 — Thiết kế knowledge base có kỷ luật](course/knowledge-base-co-ky-luat.md) *(2.5h)*
 
 *Có gì trong tay: knowledge base đã có vài chục bản ghi.*
 
@@ -414,7 +421,7 @@ kit-cua-toi/
 - Vì sao suy luận bug→module **không có** chế độ `--apply`: đo được đúng 40%
 - **Điều không tự động hoá được:** xác nhận của con người — và vì sao đó là cố ý
 
-### Bài 20 — Sao lưu và vòng đời dữ liệu *(1.5h)*
+### [Bài 20 — Sao lưu và vòng đời dữ liệu](course/sao-luu-va-vong-doi-du-lieu.md) *(1.5h)*
 
 *Có gì trong tay: vòng học đã chạy ít nhất một chu kỳ.*
 
@@ -439,7 +446,7 @@ kit-cua-toi/
 - Đọc **điểm 5/5** cho đúng: nó chỉ nói về tập mutant của bạn
 - **Thực hành:** chạy mutation trên module của bạn, đọc mutation score, sửa một oracle rồi **đo lại để chứng minh** nó có tác dụng
 
-### Bài 22 — Metrics và độ tin cậy *(1.5h)*
+### [Bài 22 — Metrics và độ tin cậy](course/metrics-va-do-tin-cay.md) *(1.5h)*
 
 *Có gì trong tay: mutation score gốc đã chốt.*
 
@@ -448,7 +455,7 @@ kit-cua-toi/
 - Vì sao flaky triage có thể **chôn bug thật**, và cách phân biệt
 - Phép đo phải liêm chính: `forbidOnly` · bỏ record `skipped` khỏi lịch sử · độ phủ theo ngưỡng tối thiểu mỗi chiều
 
-### Bài 23 — Dashboard và báo cáo *(1h)*
+### [Bài 23 — Dashboard và báo cáo](course/dashboard-va-bao-cao.md) *(1h)*
 
 *Có gì trong tay: nhiều lượt chạy đã ghi metrics.*
 
