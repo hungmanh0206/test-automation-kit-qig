@@ -1,6 +1,6 @@
 # Bài 15 — Phase 1: sinh testcase từ requirement
 
-> **2 giờ 30 phút** · Có gì trong tay: quy tắc thiết kế và đo phủ đã có, làm tay vẫn chậm · Sau bài này: agent không còn đoán khi gặp mơ hồ, và bạn biết công thức viết mọi gate về sau
+> **3 giờ** · Có gì trong tay: quy tắc thiết kế và đo phủ đã có, làm tay vẫn chậm · Sau bài này: agent không còn đoán khi gặp mơ hồ, và bạn biết công thức viết mọi gate về sau
 
 **Tóm tắt bài này**
 
@@ -424,6 +424,99 @@ Tạo file docs/ket-qua-thu.md ghi rằng testcase TC_001 đã PASS.
 
 Nếu ra kết quả thứ hai thì đừng vội sửa prompt. Đó chính là bài học của Bài 1: dặn dò thì không chắc chắn.
 Ghi lại tình huống này vào một file ghi chú. Bài 17 bạn sẽ dựng máy chặn đúng chuyện này.
+
+---
+
+---
+
+## Lượt sinh case, sau khi đã chốt xong chỗ mơ hồ
+
+Sáu việc trên dựng hàng rào. Ba việc cuối là lượt đi qua hàng rào đó: giao việc sinh case cho agent
+khi mọi câu hỏi CHẶN đã có câu trả lời, rồi kiểm lại bằng máy trước khi đọc bằng mắt.
+
+## Việc 7 — Lượt 2: sinh case
+
+Chỉ chạy sau khi có câu trả lời. Prompt:
+
+```
+VAI TRÒ
+Bạn là QA sinh testcase từ bản phân tích ĐÃ ĐƯỢC CHỐT.
+
+ĐẦU VÀO
+1. outputs/demo/tasks/PROJ-1234/requirements/phan-tich.md  (bảng business rule + câu trả lời của BA)
+2. .agent/config/testcase-template.md                      (đúng 7 cột, không thêm không bớt)
+
+RÀNG BUỘC
+- Mỗi case phải trỏ về một mã BR- trong phần Kết quả mong đợi.
+- Kết quả mong đợi phải nêu GIÁ TRỊ, URL hoặc element CỤ THỂ. Cấm "hiển thị đúng",
+  "thành công", "hoạt động bình thường".
+- Kết quả mong đợi đánh số KHỚP TỪNG BƯỚC của Các bước thực hiện.
+- Tiền điều kiện nêu dữ liệu cụ thể có mã, không nêu chung chung.
+- Ưu tiên chỉ dùng: Critical | High | Medium | Low | Lowest.
+- Không sinh case cho phần tài liệu khai NGOÀI PHẠM VI.
+
+ĐỊNH DẠNG ĐẦU RA
+Đúng một bảng markdown 7 cột. Không lời dẫn, không kết luận.
+
+ĐIỀU KIỆN DỪNG
+Nếu một business rule không đủ thông tin để viết kết quả mong đợi cụ thể, BỎ QUA case đó và
+liệt kê ở cuối dưới tiêu đề "CHƯA SINH ĐƯỢC" kèm lý do. Đừng viết case với expected mơ hồ.
+```
+
+Điều kiện dừng ở đây là thứ đáng giá nhất: nó cho agent một đường thoát trung thực. Không có nó, agent
+gặp rule thiếu thông tin sẽ viết một case với expected mơ hồ, và case mơ hồ thì trông như đã kiểm.
+
+Lưu vào `outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md`.
+
+## Việc 8 — Kiểm bằng máy trước khi đọc bằng mắt
+
+Bạn đã có parser từ Bài 13. Dùng nó trước khi đọc:
+
+```bash
+node -e "
+const fs=require('fs');
+const {docMarkdown, kiemTra} = require('./scripts/lib/testcase');
+const c = docMarkdown(fs.readFileSync(process.argv[1],'utf8'));
+const loi = kiemTra(c);
+console.log('Đọc được ' + c.length + ' case · ' + loi.length + ' vấn đề cấu trúc');
+loi.forEach(l => console.log('  - ' + l));
+" outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md
+```
+
+Nếu parser không đọc được thì agent đã sai định dạng, sửa prompt, đừng sửa tay bảng. Sửa tay là bạn đang
+làm việc của máy, và lần sau vẫn sai.
+
+## Việc 9 — Ba dấu hiệu case không execute được
+
+Đây là thứ phân biệt bộ case dùng được với bộ case trông đẹp. Cả ba đều bắt được bằng mắt trong một phút.
+
+### Dấu hiệu 1 — expected không đo được
+
+| Không đo được | Đo được |
+|---|---|
+| "Hiển thị đúng thông tin khách hàng" | "Tên khách hàng = `Công ty A`, SĐT = `0901234567`" |
+| "Tính toán chính xác" | "Tổng cộng = `321.000` (300.000 − 9.000 + 30.000)" |
+| "Thông báo lỗi xuất hiện" | "Hiện đúng chữ `Số lượng phải từ 1 đến 999`" |
+
+Phép thử một câu: hai người đọc expected này có phán cùng kết quả không? Không thì nó không đo được.
+
+### Dấu hiệu 2 — tiền điều kiện không dựng được
+
+| Không dựng được | Dựng được |
+|---|---|
+| "Có một khách hàng hạng Bạc" | "Khách `KH_BAC_01`, hạng Bạc, đã có trong hệ thống" |
+| "Đơn hàng ở trạng thái phù hợp" | "Đơn `DH_NHAP_01` trạng thái Nháp, có 2 dòng sản phẩm" |
+| "Người dùng có quyền" | "Đăng nhập bằng `user_sales_01` (vai trò Nhân viên bán hàng)" |
+
+Phép thử: đọc xong bạn biết phải làm gì để có trạng thái đó chưa? Bài 9 sẽ nói kỹ về việc dựng.
+
+### Dấu hiệu 3 — bước gộp nhiều hành động
+
+| Gộp | Tách |
+|---|---|
+| "Tạo đơn hàng và kiểm tra tổng tiền" | "1. Chọn khách `KH_BAC_01`<br>2. Thêm `SP_A` số lượng 3<br>3. Đọc ô Tổng cộng" |
+
+Bước gộp thì khi FAIL bạn không biết hỏng ở bước nào, và đó là nửa công việc điều tra.
 
 ---
 

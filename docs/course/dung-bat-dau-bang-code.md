@@ -20,12 +20,24 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Một trong những lỗi phổ biến khi mới học automation là bắt đầu bằng việc tìm locator và viết script
+ngay khi nhận requirement.
 
-1. Đọc requirement nằm rải ở nhiều nơi, và biết mỗi nơi cho gì (30 phút).
-2. Bóc nó thành bảng luật `BR-` kèm danh sách chỗ chưa rõ (45 phút).
-3. Sinh testcase ở một lượt RIÊNG, rồi so với 10 case bạn tự viết (45 phút).
-4. Nhận ra ba dấu hiệu một case không chạy được (30 phút).
+Nhưng trước khi automation một testcase, có ba câu phải trả lời được:
+
+| # | Câu hỏi | Không trả lời được thì |
+|---|---|---|
+| 1 | Chúng ta đang kiểm thử điều gì? | Bạn viết script cho một thứ không ai yêu cầu |
+| 2 | Rủi ro nào cần được phủ? | Công sức rải đều, chỗ nguy hiểm bị test hời hợt |
+| 3 | Kết quả nào được xem là đúng? | Không viết được assertion, hoặc viết bừa rồi tự tin |
+
+Bài này lo cả ba, và không viết một dòng test nào. Năm việc:
+
+1. Vì sao phải tách làm hai lượt, không gộp một (15 phút).
+2. Lượt 1: bóc requirement thành bảng luật có mã `BR-` (40 phút).
+3. Đo tài liệu trước khi đọc nó (20 phút).
+4. Đối chiếu với 10 case bạn tự viết tay (25 phút).
+5. Vì sao review của người không bị thay thế (20 phút).
 
 ---
 
@@ -103,119 +115,24 @@ Và bảng chỗ chưa rõ phải bắt được **cả ba** thứ này:
 > mục 2: câu ràng buộc phải kiểm được. Ở đây câu hiệu quả là *"đọc TOÀN BỘ, gồm phần Ghi chú của BA ở cuối"*
 > — vì chỗ mơ hồ trong tài liệu thật gần như luôn nằm ở phần ghi chú, không nằm ở phần đặc tả.
 
-## Việc 3 — Ambiguity Gate — điểm dừng thật
+## Việc 3 — Đo tài liệu trước khi đọc nó (20 phút)
 
-Ba mức, và chỉ mức đầu được dừng cả lượt:
+Một việc rẻ làm trước khi ngồi đọc: đo xem tài liệu này có đủ để sinh testcase không.
 
-| Mức | Nghĩa | Làm gì |
-|---|---|---|
-| **chặn** | Không trả lời thì không sinh case đúng được | **Dừng**, hỏi BA |
-| cần xác nhận | Sinh được với giả định, nhưng phải ghi giả định ra | Sinh, kèm mục `Assumptions` |
-| ghi nhận | Không ảnh hưởng lượt này | Ghi vào để sau |
+`scripts/utils/do-tai-lieu.js` đếm bốn thứ và khuyến nghị chiến lược:
 
-Không phân mức thì mọi chỗ hơi mơ hồ đều thành chặn, và bạn sẽ tắt cơ chế này trong tuần.
-
-**Cách hỏi BA cho hiệu quả.** Đừng gửi cả bảng thô. Gửi dạng này:
-
-```
-Chào anh/chị, em chuẩn bị viết testcase cho màn Tạo đơn hàng, có 3 chỗ cần chốt:
-
-1. Mốc phí giao hàng: FSD mục 2 ghi 500.000, ghi chú cuối file ghi 700.000. Lấy mốc nào?
-2. Ghi chú 1 nói đơn hạng Vàng trên 10 triệu cần trưởng nhóm duyệt ngay ở bước lưu nháp —
-   luồng chính mục 4 chưa có bước này. Xác nhận giúp em rule này còn hiệu lực không?
-3. Khách chưa được phân hạng thì trường Hạng khách hàng hiển thị gì, và giảm giá tính 0%?
-
-Ba câu này chặn việc viết case tính tiền, nên em chờ trả lời rồi làm tiếp.
-```
-
-Ba đặc điểm khiến nó được trả lời nhanh: trích vị trí cụ thể · nói rõ nó chặn cái gì · **đề xuất một
-cách hiểu** để BA chỉ cần xác nhận thay vì tự nghĩ.
-
-## Việc 4 — Lượt 2 — sinh case
-
-Chỉ chạy sau khi có câu trả lời. Prompt:
-
-```
-VAI TRÒ
-Bạn là QA sinh testcase từ bản phân tích ĐÃ ĐƯỢC CHỐT.
-
-ĐẦU VÀO
-1. outputs/demo/tasks/PROJ-1234/requirements/phan-tich.md  (bảng business rule + câu trả lời của BA)
-2. .agent/config/testcase-template.md                      (đúng 7 cột, không thêm không bớt)
-
-RÀNG BUỘC
-- Mỗi case phải trỏ về một mã BR- trong phần Kết quả mong đợi.
-- Kết quả mong đợi phải nêu GIÁ TRỊ, URL hoặc element CỤ THỂ. Cấm "hiển thị đúng",
-  "thành công", "hoạt động bình thường".
-- Kết quả mong đợi đánh số KHỚP TỪNG BƯỚC của Các bước thực hiện.
-- Tiền điều kiện nêu dữ liệu cụ thể có mã, không nêu chung chung.
-- Ưu tiên chỉ dùng: Critical | High | Medium | Low | Lowest.
-- Không sinh case cho phần tài liệu khai NGOÀI PHẠM VI.
-
-ĐỊNH DẠNG ĐẦU RA
-Đúng một bảng markdown 7 cột. Không lời dẫn, không kết luận.
-
-ĐIỀU KIỆN DỪNG
-Nếu một business rule không đủ thông tin để viết kết quả mong đợi cụ thể, BỎ QUA case đó và
-liệt kê ở cuối dưới tiêu đề "CHƯA SINH ĐƯỢC" kèm lý do. Đừng viết case với expected mơ hồ.
-```
-
-Điều kiện dừng ở đây là thứ đáng giá nhất: nó cho agent một đường thoát trung thực. Không có nó, agent
-gặp rule thiếu thông tin sẽ viết một case với expected mơ hồ, và case mơ hồ thì trông như đã kiểm.
-
-Lưu vào `outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md`.
-
-## Việc 5 — Kiểm bằng máy trước khi đọc bằng mắt
-
-Bạn đã có parser từ Bài 13. Dùng nó trước khi đọc:
-
-```bash
-node -e "
-const fs=require('fs');
-const {docMarkdown, kiemTra} = require('./scripts/lib/testcase');
-const c = docMarkdown(fs.readFileSync(process.argv[1],'utf8'));
-const loi = kiemTra(c);
-console.log('Đọc được ' + c.length + ' case · ' + loi.length + ' vấn đề cấu trúc');
-loi.forEach(l => console.log('  - ' + l));
-" outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md
-```
-
-Nếu parser không đọc được thì agent đã sai định dạng, sửa prompt, đừng sửa tay bảng. Sửa tay là bạn đang
-làm việc của máy, và lần sau vẫn sai.
-
-## Việc 6 — Ba dấu hiệu case không execute được
-
-Đây là thứ phân biệt bộ case dùng được với bộ case trông đẹp. Cả ba đều bắt được bằng mắt trong một phút.
-
-### Dấu hiệu 1 — expected không đo được
-
-| Không đo được | Đo được |
+| Đếm gì | Thấp thì nghĩa là |
 |---|---|
-| "Hiển thị đúng thông tin khách hàng" | "Tên khách hàng = `Công ty A`, SĐT = `0901234567`" |
-| "Tính toán chính xác" | "Tổng cộng = `321.000` (300.000 − 9.000 + 30.000)" |
-| "Thông báo lỗi xuất hiện" | "Hiện đúng chữ `Số lượng phải từ 1 đến 999`" |
+| Số luật có mã (`BR-`, `UI-`) | Chưa bóc xong, hoặc tài liệu viết dạng văn xuôi |
+| Số giá trị cụ thể (con số, chuỗi) | Kết quả mong đợi sẽ phải đoán |
+| Số nhánh điều kiện ("nếu", "khi") | Ít nhánh quá thì thường là tài liệu chỉ tả luồng thuận |
+| Số chỗ mâu thuẫn giữa các nguồn | Cao thì phải hỏi trước khi viết dòng nào |
 
-Phép thử một câu: hai người đọc expected này có phán cùng kết quả không? Không thì nó không đo được.
+Nó **cảnh báo chứ không chặn**, và đó là cố ý. Tài liệu sơ sài không phải lỗi của bạn, và có những task
+vẫn phải làm với tài liệu sơ sài. Cái bạn cần là biết trước mình đang đứng ở đâu, để nói được với
+quản lý rằng độ phủ sẽ bị giới hạn bởi nguồn, không bởi công sức.
 
-### Dấu hiệu 2 — tiền điều kiện không dựng được
-
-| Không dựng được | Dựng được |
-|---|---|
-| "Có một khách hàng hạng Bạc" | "Khách `KH_BAC_01`, hạng Bạc, đã có trong hệ thống" |
-| "Đơn hàng ở trạng thái phù hợp" | "Đơn `DH_NHAP_01` trạng thái Nháp, có 2 dòng sản phẩm" |
-| "Người dùng có quyền" | "Đăng nhập bằng `user_sales_01` (vai trò Nhân viên bán hàng)" |
-
-Phép thử: đọc xong bạn biết phải làm gì để có trạng thái đó chưa? Bài 9 sẽ nói kỹ về việc dựng.
-
-### Dấu hiệu 3 — bước gộp nhiều hành động
-
-| Gộp | Tách |
-|---|---|
-| "Tạo đơn hàng và kiểm tra tổng tiền" | "1. Chọn khách `KH_BAC_01`<br>2. Thêm `SP_A` số lượng 3<br>3. Đọc ô Tổng cộng" |
-
-Bước gộp thì khi FAIL bạn không biết hỏng ở bước nào, và đó là nửa công việc điều tra.
-
-## Việc 7 — Đối chiếu với 10 case bạn viết tay
+## Việc 4 — Đối chiếu với 10 case bạn viết tay
 
 Đây là bước quan trọng nhất của bài, vì nó nói cho bạn biết agent mạnh và yếu ở đâu trên chính dự án bạn.
 
@@ -230,7 +147,7 @@ Nhóm thứ hai là chỗ học được nhiều nhất. Nếu bạn có case m�
 mà tài liệu không nói?** Câu trả lời thường là một business rule chưa được ghi ở đâu — và đó chính là thứ
 phải ghi vào bộ nhớ dự án ở Bài 26.
 
-## Việc 8 — Vì sao review của người không bị thay thế
+## Việc 5 — Vì sao review của người không bị thay thế
 
 Agent làm tốt: đọc hết tài liệu · phủ rộng và đều · giữ đúng định dạng · không mỏi.
 
@@ -322,23 +239,6 @@ Chạy đúng hai lượt này trên một tài liệu thật của dự án b�
 2. Bao nhiêu câu BA cũng chưa biết? (⇒ khoảng trống thật của sản phẩm, và đó là phát hiện có giá trị)
 
 Con số thứ hai thường làm BA ngạc nhiên. Và nó là cách nhanh nhất để họ thấy giá trị của cách làm này.
-
-## Việc phụ — đo tài liệu trước khi đọc nó
-
-Một việc rẻ làm trước khi ngồi đọc: đo xem tài liệu này có đủ để sinh testcase không.
-
-`scripts/utils/do-tai-lieu.js` đếm bốn thứ và khuyến nghị chiến lược:
-
-| Đếm gì | Thấp thì nghĩa là |
-|---|---|
-| Số luật có mã (`BR-`, `UI-`) | Chưa bóc xong, hoặc tài liệu viết dạng văn xuôi |
-| Số giá trị cụ thể (con số, chuỗi) | Kết quả mong đợi sẽ phải đoán |
-| Số nhánh điều kiện ("nếu", "khi") | Ít nhánh quá thì thường là tài liệu chỉ tả luồng thuận |
-| Số chỗ mâu thuẫn giữa các nguồn | Cao thì phải hỏi trước khi viết dòng nào |
-
-Nó **cảnh báo chứ không chặn**, và đó là cố ý. Tài liệu sơ sài không phải lỗi của bạn, và có những task
-vẫn phải làm với tài liệu sơ sài. Cái bạn cần là biết trước mình đang đứng ở đâu, để nói được với
-quản lý rằng độ phủ sẽ bị giới hạn bởi nguồn, không bởi công sức.
 
 ## Đọc thêm
 

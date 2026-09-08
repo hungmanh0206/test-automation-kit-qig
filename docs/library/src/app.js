@@ -412,7 +412,7 @@
     });
   }
 
-  /* Bốn mốc dừng được: thứ giữ người mới khỏi nản khi thấy 59 giờ.
+  /* Bốn mốc dừng được: thứ giữ người mới khỏi nản khi thấy tổng thời lượng.
      Mốc trọng tâm (⭐) tô nổi — đó là điểm dừng mà nhiều người sẽ dùng cả năm. */
   function renderMilestones() {
     var wrap = $('#cMoc');

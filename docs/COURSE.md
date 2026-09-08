@@ -47,14 +47,14 @@ environment, chạy. Mất một buổi, không phải viết lại từ đầu.
 
 ## Bốn mốc dừng được
 
-Đừng nhìn 62 giờ rồi nản. Tài liệu chia thành bốn mốc, dừng ở mốc nào cũng đã có thứ dùng được.
+Đừng nhìn 63 giờ rồi nản. Tài liệu chia thành bốn mốc, dừng ở mốc nào cũng đã có thứ dùng được.
 
 | Mốc | Tới bài | Cộng dồn | Dừng ở đây bạn đã có |
 |---|---|---|---|
 | ① Chạy được | hết Bài 4 | ~7.5 giờ | Một testcase automation chạy thật trên app thực hành, và bạn đọc được vì sao nó xanh hay đỏ |
 | ② Thành bộ kit ⭐ | hết Bài 11 | ~22.5 giờ | Config tách khỏi testcase · dữ liệu test dựng bằng factory · FE và API cùng một khung · có ảnh, video và report. Đây là điểm áp được vào dự án thật |
-| ③ Thành quy trình QA | hết Bài 17 | ~36.5 giờ | Bắt đầu từ requirement chứ không từ locator · testcase có nguồn · fail được phân loại trước khi thành bug |
-| ④ Mang đi được | hết Bài 29 | ~62 giờ | CI gác cổng · knowledge tích luỹ qua từng sprint · kit chạy trên dự án thứ hai |
+| ③ Thành quy trình QA | hết Bài 17 | ~37 giờ | Bắt đầu từ requirement chứ không từ locator · testcase có nguồn · fail được phân loại trước khi thành bug |
+| ④ Mang đi được | hết Bài 29 | ~63 giờ | CI gác cổng · knowledge tích luỹ qua từng sprint · kit chạy trên dự án thứ hai |
 
 Mốc ② là mốc quan trọng nhất. Nhiều người dừng ở đó và dùng cả năm. Hoàn toàn hợp lý. Mốc ③ và ④
 là khi bạn muốn cả team dùng chung, và muốn bộ kit tốt lên sau mỗi sprint thay vì chỉ chạy lại.
@@ -380,7 +380,7 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 3 — Quy trình QA (14 giờ)
+## PHẦN 3 — Quy trình QA (14.5 giờ)
 
 > **Xong phần này bạn có:** một quy trình bắt đầu từ requirement, testcase truy được nguồn, và fail được phân loại trước khi thành bug
 
@@ -412,7 +412,7 @@ kit-cua-toi/
 - Chấm rủi ro theo module, rồi ép độ sâu testcase theo band
 - **Xây gate:** `dem_chieu.js` chặn khi chiều bắt buộc chưa đủ ngưỡng
 
-### [Bài 15 — Phase 1: sinh testcase từ requirement](course/phase1-sinh-testcase.md) *(2.5h · khó)*
+### [Bài 15 — Phase 1: sinh testcase từ requirement](course/phase1-sinh-testcase.md) *(3h · khó)*
 
 *Có gì trong tay: quy tắc thiết kế và đo phủ đã có, làm tay vẫn chậm.*
 
@@ -443,7 +443,7 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 4 — Làm việc nhóm và bàn giao (6.5 giờ)
+## PHẦN 4 — Làm việc nhóm và bàn giao (6 giờ)
 
 > **Xong phần này bạn có:** testcase và kết quả nằm ở nơi cả team đọc được, bug đi đúng đường, và CI gác cổng mỗi lần push
 
@@ -465,7 +465,7 @@ kit-cua-toi/
 - Gán đúng người theo tầng lỗi, vì bug giao diện và bug backend đi hai đường khác nhau
 - Rerun sau khi Dev fix, và một cái bẫy: kết quả rerun hết hạn sau lần deploy kế tiếp
 
-### [Bài 20 — CI/CD](course/ci-cd.md) *(2.5h · vừa)*
+### [Bài 20 — CI/CD](course/ci-cd.md) *(2h · vừa)*
 
 *Có gì trong tay: mọi gate chạy được trên máy bạn, và chỉ khi bạn nhớ chạy.*
 
@@ -477,7 +477,7 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 5 — Nâng cao và đóng gói (19 giờ)
+## PHẦN 5 — Nâng cao và đóng gói (20 giờ)
 
 > **Xong phần này bạn có:** kit phủ thêm mobile, khả năng tiếp cận và hiệu năng, tự đo được chính mình, và đóng gói mang đi được
 
@@ -518,7 +518,7 @@ kit-cua-toi/
 - **Xây gate:** `tu-soi.js` gọi mọi máy một lượt · `chong-troi.js` chặn luật bị trôi
 - Đào sâu: [viết gate đầu tiên](course/viet-gate-dau-tien.md) · [một nguồn và máy chống trôi](course/mot-nguon-va-may-chong-troi.md)
 
-### [Bài 25 — Flaky và độ tin cậy](course/flaky-va-do-tin-cay.md) *(2.5h · khó)*
+### [Bài 25 — Flaky và độ tin cậy](course/flaky-va-do-tin-cay.md) *(3.5h · khó)*
 
 *Có gì trong tay: bộ test khá lớn, thỉnh thoảng đỏ không rõ lý do.*
 
@@ -567,15 +567,15 @@ kit-cua-toi/
 
 ---
 
-## Tổng thời lượng: ~62 giờ
+## Tổng thời lượng: ~63 giờ
 
 | Phần | Giờ |
 |---|---|
 | 1. Nền tảng | 7.5 |
 | 2. Dựng bộ kit | 15 |
-| 3. Quy trình QA | 14 |
-| 4. Làm việc nhóm và bàn giao | 6.5 |
-| 5. Nâng cao và đóng gói | 19 |
+| 3. Quy trình QA | 14.5 |
+| 4. Làm việc nhóm và bàn giao | 6 |
+| 5. Nâng cao và đóng gói | 20 |
 
 ---
 
@@ -645,5 +645,5 @@ Kiến thức "vì sao" mới là thứ còn lại sau 2 năm khi công cụ đ�
 giải nén ZIP · probe read-only sai vì Postgres cấp quyền `TEMPORARY` cho `PUBLIC` · mục lục tự dời số
 dòng của chính nó · lỗi độ ưu tiên toán tử làm một phép kiểm không bao giờ chạy mà vẫn báo đạt.
 
-**7. Nếu ~62 giờ quá dài:** dừng ở Mốc ② (hết Bài 11, ~22.5 giờ) là đã có bộ kit chạy được trong dự
+**7. Nếu ~63 giờ quá dài:** dừng ở Mốc ② (hết Bài 11, ~22.5 giờ) là đã có bộ kit chạy được trong dự
 án thật. Phần còn lại là khi bạn muốn cả team dùng chung và muốn kit tốt lên sau mỗi sprint.

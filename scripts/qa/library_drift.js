@@ -343,6 +343,22 @@ if (!exists(COURSE_MD)) {
       ok.push(`${Object.keys(cs.parts).length ? cs.lessonCount + boTroFile.size : 0} file bài giảng khớp số + tiêu đề giáo trình`);
     }
 
+    /* Không tệp nguồn nào được chứa byte điều khiển.
+     *
+     * VÌ SAO: một bài giảng có ví dụ code kiểm tệp nhị phân, và ký tự NUL trong ví dụ đó được gõ
+     * THẲNG vào markdown thay vì viết dạng escape. Hệ quả không phải hiển thị xấu — cả tệp bị mọi
+     * công cụ text coi là nhị phân: `grep` trả về "Binary file matches" thay vì dòng khớp, diff
+     * không đọc được, và mọi phép soát chạy bằng grep đều lặng lẽ bỏ qua tệp đó. Nó nằm ở đấy suốt
+     * và không có gì báo. Escape (\x00) hiển thị y hệt mà tệp vẫn là text. */
+    const byteLa = [];
+    for (const rel of lessonFiles) {
+      const raw = fs.readFileSync(path.join(ROOT, 'docs', rel));
+      const n = raw.filter((b) => b < 9 || (b > 13 && b < 32) || b === 11 || b === 12).length;
+      if (n) byteLa.push(`${path.basename(rel)}: ${n} byte điều khiển — viết dạng escape (\\x00) thay vì gõ thẳng`);
+    }
+    if (byteLa.length) problems.push(`${byteLa.length} tệp bài giảng bị công cụ text coi là NHỊ PHÂN:\n      ` + byteLa.join('\n      '));
+    else ok.push(`${lessonFiles.length} tệp bài giảng đều là text sạch (0 byte điều khiển)`);
+
     /* ── Bài giảng khớp giáo trình ở BA mệnh đề nữa, ngoài số + tiêu đề ────────────────
      *
      * VÌ SAO: lượt tái cấu trúc vừa rồi đổi số 29 bài và đổi tiêu đề 18 bài. Số + tiêu đề thì

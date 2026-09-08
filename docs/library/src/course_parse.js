@@ -85,7 +85,7 @@ function parseCourse(mdPath) {
       'chặng không có cổng là chặng đi qua được mà không ai kiểm');
   }
 
-  /* Bốn mốc dừng được — thứ giúp người mới không nản khi thấy 59 giờ.
+  /* Bốn mốc dừng được — thứ giúp người mới không nản khi thấy tổng thời lượng.
      Mỗi mốc phải nói DỪNG Ở ĐÂY CÓ GÌ, không chỉ nói tới bài mấy. */
   const mocBlock = (md.match(/## Bốn mốc dừng được[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
   const milestones = [...mocBlock.matchAll(

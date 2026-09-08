@@ -1,8 +1,6 @@
 # Bài 24 — Quality Gates
 
-> **2 giờ 30 phút** · Có gì trong tay: khoảng mười gate rời rạc, viết theo từng bài · Sau bài này: 4 gate + một lệnh gộp
->
-> *Bài này không đánh số, nó là phần đào sâu của **Bài 14**. Đọc kèm **Bài 14**.*
+> **2 giờ 30 phút** · Có gì trong tay: khoảng mười gate rời rạc, viết theo từng bài · Sau bài này: một khung chung, một lệnh gộp, và cách chứng minh gate có răng
 
 **Tóm tắt bài này**
 
@@ -200,7 +198,7 @@ for (const f of files) {
   if (BINARY.test(f) || BO_QUA.some((re) => re.test(f))) continue;
   let noiDung;
   try { noiDung = fs.readFileSync(f, 'utf8'); } catch (e) { continue; }
-  if (noiDung.includes(' ')) continue;                 // binary lọt lưới đuôi file
+  if (noiDung.includes('\x00')) continue;                 // binary lọt lưới đuôi file
   noiDung.split('\n').forEach((dong, i) => {
     for (const [re, ten] of MAU) {
       if (re.test(dong)) kq.viPham.push(`${f}:${i + 1} — nghi là ${ten}`);

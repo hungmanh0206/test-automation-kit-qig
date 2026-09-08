@@ -1,6 +1,6 @@
 # Bài 20 — CI/CD
 
-> **2 giờ 30 phút** · Có gì trong tay: mọi gate chạy được trên máy bạn, và chỉ khi bạn nhớ chạy · Sau bài này: kit chạy không cần bạn, và người khác dùng được nó
+> **2 giờ** · Có gì trong tay: mọi gate chạy được trên máy bạn, và chỉ khi bạn nhớ chạy · Sau bài này: kit chạy không cần bạn, và người khác dùng được nó
 
 **Tóm tắt bài này**
 
@@ -22,11 +22,14 @@
 
 Năm việc:
 
-1. Khai phạm vi CI ở một nguồn, và biết máy nào không nên vào CI (30 phút).
+1. Khai phạm vi CI ở một nguồn, và biết máy nào KHÔNG nên vào CI (35 phút).
 2. Chặn lỗi kinh điển: test xanh ở máy bạn vì ăn theo biến môi trường (35 phút).
-3. Đo độ với tới của từng máy (30 phút).
-4. Phân tầng chung và tầng dự án để mang kit đi được (25 phút).
-5. Viết README mà người mới đọc là chạy được (30 phút).
+3. Đo độ với tới: máy không ai gọi thì bằng không có (30 phút).
+4. Kiểm ngang nhánh, để một nhánh không âm thầm chạy ít gate hơn nhánh khác (25 phút).
+5. Nhịp bảo dưỡng, vì CI cũng mục theo thời gian (25 phút).
+
+> Phần đóng gói và README đã dời sang **Bài 28**. Bài này chỉ lo một việc: biến những gate bạn đã
+> viết thành thứ chạy mà không cần ai nhớ.
 
 ---
 
@@ -314,123 +317,7 @@ Máy kiểm đọc file workflow của từng nhánh và đối chiếu. Cùng k
 lại mã. Điểm cần nhớ: khai bằng dữ liệu, kiểm bằng máy. Viết trong tài liệu "nhánh rerun phải chạy
 self-review" là dặn dò; file JSON + máy đọc nó là forcing function.
 
-## Việc 5 — Đóng gói: tầng chung vs tầng theo dự án
-
-Khi giao kit cho người khác, câu hỏi đầu tiên của họ là *"cái nào tôi phải sửa?"*. Trả lời bằng một ranh giới
-rõ ràng:
-
-`.agent/config/kit-layers.md`:
-
-```markdown
-# Hai tầng của kit
-
-## Tầng CHUNG — dùng lại được ở mọi dự án. SỬA CÓ CÂN NHẮC.
-
-| Đường dẫn | Là gì |
-|---|---|
-| `scripts/lib/**` | Thư viện: đọc/ghi testcase, verdict, gate helper |
-| `scripts/qa/*_gate.js` `scripts/qa/tiem-loi.js` | Máy kiểm không phụ thuộc dự án |
-| `.agent/config/phan-quyet.json` | Danh mục verdict |
-| `.agent/rules/core_rules.md` `CLAUDE.md` `LUAT-DAY-DU.md` | Luật |
-| `tests/support/**` | Fixture, factory, evidence, video |
-
-Sửa tầng này thì ảnh hưởng MỌI task đang chạy. Quy tắc: chỉ sửa khi không có task nào đang mở, hoặc sửa
-theo hướng chỉ thêm, không đổi hành vi cũ.
-
-## Tầng THEO DỰ ÁN — mỗi dự án tự viết. SỬA THOẢI MÁI.
-
-| Đường dẫn | Là gì |
-|---|---|
-| `.agent/config/chieu-phu.json` | Chiều nào áp cho dự án này |
-| `.agent/config/risk_model.json` | Trọng số rủi ro của dự án này |
-| `.agent/config/mutants.json` | Mutant theo API của dự án này |
-| `tests/e2e/**` `tests/smoke/**` | Test của dự án này |
-| `knowledge/**` | Tri thức nghiệp vụ. KHÔNG commit (dữ liệu công ty) |
-| `profiles/<TASK>/task.env` | Cấu hình từng task. KHÔNG commit |
-
-## Kiểm tra: một task "sửa chung" chỉ được chạm tầng CHUNG
-
-`npm run layers:check -- --diff` đọc `git diff --name-only` và cảnh báo khi một thay đổi cắt qua cả hai tầng.
-```
-
-Và ba thứ không bao giờ vào repo:
-
-```gitignore
-# Dữ liệu công ty
-knowledge/
-# Cấu hình + creds theo task
-profiles/*/task.env
-.env
-# Output của lượt chạy
-outputs/
-test-results/
-playwright-report/
-```
-
-## Việc 6 — README mà người mới đọc là chạy được
-
-Đây là thứ quyết định kit của bạn có được ai dùng hay không. Cấu trúc đã chứng minh hiệu quả:
-
-```markdown
-# <Tên kit>
-
-Bộ kiểm thử có máy-chặn cho <dự án>. Agent AI sinh testcase và chạy test; **máy** quyết định
-kết quả có được chấp nhận không.
-
-## Chạy trong 5 phút
-
-```bash
-git clone <repo> && cd <repo>
-npm ci
-npx playwright install chromium
-cp profiles/task.env.example profiles/DEMO-1/task.env   # điền URL + tài khoản
-npm run gates                                            # phải ĐẠT hết trước khi làm gì
-```
-
-## Ba điều phải biết trước khi sửa gì
-
-1. **Excel/testcase canonical là nguồn duy nhất.** Mọi tầng khác PARSE từ nó, không copy.
-2. **Output của bạn bị máy kiểm.** Sai chuẩn = chặn. Xem `npm run gates:list`.
-3. **"Không phán được" KHÔNG thành PASS.** Xem `.agent/config/phan-quyet.json`.
-
-## Vòng làm việc
-
-| Giai đoạn | Lệnh | Ra gì |
-|---|---|---|
-| Sinh testcase | `/phase1 <KEY>` | Excel canonical + kiểm cấu trúc |
-| Publish | `npm run tms:publish -- --apply --qa-approved` | case trên công cụ + đối soát trường |
-| Execute | `/phase2 <KEY>` | kết quả + bằng chứng + verdict |
-| Đẩy kết quả | `npm run tms:push-exec -- --apply` | cycle có lịch sử |
-| Log bug | `npm run bug:report -- --task <KEY>` | bug có tầng lỗi + bằng chứng |
-
-## Danh mục máy
-
-`npm run gates:list` — sinh tự động, KHÔNG viết tay. Nó nói mỗi máy CHẶN gì.
-
-## Khi gate chặn bạn
-
-Đọc thông báo. Nó nói **luật nào** và **sửa ở đâu**. Nếu bạn tin gate sai:
-
-1. Tái hiện bằng một trường hợp nhỏ nhất.
-2. **Sửa luật**, đừng thêm ngoại lệ cho riêng mình.
-3. Thêm đối chứng âm để lần sau không tái phạm.
-
-Gate bắt oan thì gate mất uy tín, và đó là cách một kit chết.
-
-## Đo bộ kiểm
-
-`npm run mutation` — tiêm lỗi có kiểm soát và đếm suite có bắt được không.
-Chạy hàng tháng. Điểm tụt = có oracle vừa bị làm yếu đi.
-```
-
-Ba đặc điểm của README này đáng chép lại:
-
-1. Lệnh chạy được ở dòng đầu, không phải triết lý.
-2. Ba điều phải biết, không phải ba mươi.
-3. Mục "khi gate chặn bạn", vì đó là trải nghiệm đầu tiên của người mới, và nếu nó khó chịu thì họ sẽ đi
-   tìm cách vô hiệu gate.
-
-## Việc 7 — Nhịp bảo dưỡng
+## Việc 5 — Nhịp bảo dưỡng
 
 Kit không tự đứng vững. Bốn nhịp:
 

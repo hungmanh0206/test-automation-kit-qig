@@ -1,6 +1,6 @@
 # Bài 25 — Flaky và độ tin cậy
 
-> **2 giờ 30 phút** · Có gì trong tay: bộ test khá lớn, thỉnh thoảng đỏ không rõ lý do · Sau bài này: đo được suite của bạn lệ thuộc retry bao nhiêu, và biết vì sao dọn flaky có thể chôn bug thật
+> **3 giờ 30 phút** · Có gì trong tay: bộ test khá lớn, thỉnh thoảng đỏ không rõ lý do · Sau bài này: đo được suite của bạn lệ thuộc retry bao nhiêu, và biết vì sao dọn flaky có thể chôn bug thật
 
 **Tóm tắt bài này**
 
@@ -21,12 +21,13 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Năm việc:
 
 1. Tính hai đường tỉ lệ, và đọc **khoảng cách** giữa chúng (25 phút).
 2. Tính độ tin cậy từng test, xếp hạng, quyết định quarantine (25 phút).
 3. Hiểu vì sao dọn flaky có thể chôn bug thật, và cách phân biệt (20 phút).
 4. Ba luật liêm chính của phép đo. Không có chúng thì mọi con số trên là trang trí (20 phút).
+5. **Thực hành:** tiêm lỗi vào phản hồi API, rồi đếm xem suite có đỏ không (60 phút).
 
 ---
 
@@ -279,6 +280,110 @@ Nên số nào không đổi được hành động thì đừng đo. Ba số đ
 | Mutation score (Bài 25) | có oracle vừa bị làm yếu đi |
 | Khoảng cách clean ↔ eventual | suite đang lệ thuộc retry hơn |
 | Số test hạng `chap-chon` trở xuống | nợ kỹ thuật đang tích |
+
+## Việc 5 — Tiêm lỗi: đo chính bộ kiểm của bạn (60 phút)
+
+Bốn việc trên đo **độ ổn định** của suite. Còn một câu chưa ai trả lời, và nó quan trọng hơn:
+
+> Bộ test của bạn có thật sự bắt được bug không, hay nó chỉ đang chạy?
+
+Một suite 500 case, xanh hết, chạy 40 phút mỗi đêm. Nghe rất tốt. Nhưng nếu sản phẩm hỏng thì nó có
+đỏ không? Không ai biết, vì sản phẩm đang đúng nên chưa có cơ hội thử.
+
+Cách trả lời là **cố tình làm hỏng, rồi đếm**.
+
+### Cách làm: chặn phản hồi và đổi nó đi
+
+Bạn không sửa source của sản phẩm. Bạn chặn ở giữa và đổi phản hồi trước khi test nhìn thấy nó.
+
+```js
+// tests/support/tiem-loi.js
+'use strict';
+
+/*
+ * Mỗi "mutant" là MỘT lỗi cụ thể được tiêm vào phản hồi. Khai tường minh, không sinh ngẫu nhiên:
+ * ngẫu nhiên thì lượt sau ra kết quả khác, và một phép đo không lặp lại được thì không so được
+ * giữa hai sprint.
+ */
+const MUTANTS = {
+  'giam-gia-bang-0':    (d) => ({ ...d, giamGia: 0 }),
+  'phi-giao-hang-mien': (d) => ({ ...d, phiGiaoHang: 0 }),
+  'tong-lech-1000':     (d) => ({ ...d, tongTien: d.tongTien + 1000 }),
+  'thieu-truong':       (d) => { const x = { ...d }; delete x.giamGia; return x; },
+  'trang-thai-sai':     (d) => ({ ...d, trangThai: 'CONFIRMED' }),
+};
+
+async function gan(page, tenMutant, duongDan) {
+  const doi = MUTANTS[tenMutant];
+  if (!doi) throw new Error('Không có mutant tên "' + tenMutant + '"');
+
+  await page.route(duongDan, async (route) => {
+    const res = await route.fetch();
+    const goc = await res.json();
+    await route.fulfill({ response: res, json: doi(goc) });
+  });
+}
+
+module.exports = { MUTANTS, gan };
+```
+
+Rồi chạy cả suite một lần cho **mỗi** mutant:
+
+```bash
+for m in giam-gia-bang-0 phi-giao-hang-mien tong-lech-1000 thieu-truong trang-thai-sai; do
+  MUTANT=$m npx playwright test --reporter=json > "outputs/mutant-$m.json" || true
+done
+```
+
+**Bạn sẽ thấy** mỗi lượt mất đúng bằng một lượt chạy bình thường, nên năm mutant là năm lần thời
+gian. Đó là lý do phép đo này chạy hằng tuần chứ không chạy mỗi lần push.
+
+### Đọc kết quả
+
+| Mutant | Suite có đỏ không | Nghĩa là |
+|---|---|---|
+| `giam-gia-bang-0` | ✓ đỏ | Có case kiểm giảm giá thật |
+| `phi-giao-hang-mien` | ✓ đỏ | Có case kiểm phí giao hàng |
+| `tong-lech-1000` | ✓ đỏ | Có case kiểm tổng |
+| `thieu-truong` | ✗ **xanh** | Không case nào kiểm trường này có tồn tại hay không |
+| `trang-thai-sai` | ✗ **xanh** | Không case nào kiểm trạng thái đơn |
+
+Điểm số: **3/5**.
+
+Con số đó là thứ bạn mang đi họp được. Nó khác hẳn câu *"tôi thấy bộ test khá đầy đủ"*, và nó chỉ
+thẳng vào hai chỗ cần viết thêm case.
+
+> Mutant nào cũng xanh thì đó là tin **xấu**, không phải tin tốt. Nó nghĩa là suite của bạn đang
+> chạy qua chứ không đang kiểm.
+
+### Ba cái bẫy
+
+**Bẫy 1: mutant quá dễ.** Đổi phản hồi thành `null` thì mọi test đều đỏ, và điểm 5/5 không nói lên
+gì. Mutant tốt là mutant **giống một bug thật**: lệch một chút, thiếu một trường, sai một trạng thái.
+
+**Bẫy 2: đếm test đỏ thay vì đếm mutant bị bắt.** Một mutant làm đỏ 40 test cũng chỉ tính là **một**
+mutant bị bắt. Đếm số test đỏ thì con số phồng lên theo kích thước suite chứ không theo chất lượng.
+
+**Bẫy 3: chạy mutant trên môi trường có người khác dùng.** `page.route` chỉ chặn trong trình duyệt
+của lượt chạy đó nên an toàn. Nhưng nếu bạn tiêm bằng cách sửa dữ liệu thật thì bạn vừa phá môi
+trường của cả team.
+
+### Dùng con số này thế nào
+
+Đừng đặt ngưỡng ngay lần đầu. Đo, ghi lại, rồi lần sau so với chính nó:
+
+```
+Sprint 12: 3/5 mutant bị bắt
+Sprint 13: 5/5 — đã thêm case cho trường thiếu và trạng thái đơn
+```
+
+Đây cùng một kỷ luật với Bài 23: chưa có ngưỡng thì so với lần đo trước của chính mình. Một con số
+đi kèm lịch sử thì hành động được, còn một con số đứng một mình thì chỉ để ngắm.
+
+Chi tiết đầy đủ, kèm cách khai `mutants.json` và cách gộp kết quả năm lượt chạy, nằm ở bài
+[Đo chính bộ kiểm](do-chinh-bo-kiem.md).
+
+---
 
 ## Cây thư mục sau bài này
 
