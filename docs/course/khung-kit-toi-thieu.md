@@ -1,6 +1,6 @@
 # Bài 2 — Kiến trúc một QA platform
 
-> **2 giờ** · Có gì trong tay: repo trống, agent chạy được · Sau bài này: khung kit + file luật agent thật sự tuân
+> **2 giờ** · Có gì trong tay: một máy chặn 12 dòng, và kinh nghiệm thấy agent gian lận · Sau bài này: khung kit đủ 5 lớp, và một file luật agent thật sự đọc
 
 **Tóm tắt bài này**
 
@@ -10,221 +10,232 @@
 | **Bài này bạn gõ gì** | Dựng cây thư mục. Viết file luật ngắn dưới 20 dòng, và một file luật đầy đủ. |
 | **Xong thì được gì** | Kit có 5 lớp rõ ràng, và agent thật sự đọc file luật mỗi lần chạy. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Dựng cây thư mục và hiểu vai trò từng nhánh.
-✅ Viết file luôn-trong-ngữ-cảnh, ngắn dưới 20 dòng.
-✅ Viết file rule canonical đầu tiên, hiểu quan hệ canonical ↔ bản tóm.
-✅ Đặt quy ước cô lập: mã task, thư mục output, credentials riêng.
-✅ Hiểu vì sao ba thứ này phải làm trước tất cả.
-✅ Kiểm agent có tuân file non-negotiables.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Luôn trong ngữ cảnh** | File mà agent tự nạp mỗi lần chạy, không cần ai bảo |
+| **Bản gốc và bản tóm** | Một luật viết ở hai chỗ: bản đầy đủ để tra, bản ngắn để agent luôn nhìn thấy |
+| **Cô lập theo task** | Mỗi task một thư mục kết quả riêng, một file tài khoản riêng |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Dựng cây thư mục 5 lớp (20 phút).
+2. Viết hai file luật, một ngắn một dài, và hiểu vì sao phải tách (35 phút).
+3. Đặt quy ước cô lập theo task (20 phút).
+4. Thử xem agent có thật sự tuân file luật không, bằng một cái bẫy (25 phút).
 
 ---
 
-## 1. Cây thư mục và vai trò từng nhánh
+## Việc 1 — Dựng cây thư mục (20 phút)
 
 ```text
-<repo>/
+kit-cua-toi/
 ├── .agent/
-│   ├── config/          # cấu hình MÁY ĐỌC: taxonomy, ngưỡng, model rủi ro
-│   ├── rules/           # luật cho agent — bản canonical và bản tóm
+│   ├── config/          # cấu hình cho MÁY đọc: danh mục, ngưỡng, mô hình rủi ro
+│   ├── rules/           # luật cho agent
 │   ├── skills/          # năng lực chuyên biệt, agent mở khi cần
 │   └── workflows/       # các bước của từng chặng
 ├── prompt_templates/    # điểm vào: chạy một chặng thì đọc file nào
-├── scripts/qa/          # MÁY KIỂM — phần cốt lõi, dựng từ Phần 4
-├── tests/               # spec automation
-├── knowledge/           # bộ nhớ dự án (KHÔNG commit)
-├── profiles/<TASK>/     # credentials riêng theo task (KHÔNG commit)
-├── outputs/<PROJECT>/   # kết quả theo task (KHÔNG commit)
-├── CLAUDE.md            # ← luôn-trong-ngữ-cảnh, ngắn
-└── LUAT-DAY-DU.md       # ← canonical, dài, tra khi cần
+├── scripts/qa/          # máy chặn
+├── tests/               # test tự động
+├── knowledge/           # bộ nhớ dự án. Không đưa lên git
+├── profiles/<TASK>/     # tài khoản riêng theo task. Không đưa lên git
+├── outputs/             # kết quả theo task. Không đưa lên git
+├── CLAUDE.md            # file luật ngắn, agent luôn nhìn thấy
+└── LUAT-DAY-DU.md       # file luật đầy đủ, tra khi cần
 ```
 
-Điều đáng chú ý: **bốn nhánh không được commit** (`knowledge`, `profiles/*/task.env`, `outputs`, và `.env`).
-Chúng là dữ liệu, không phải mã. Trộn hai loại là nguồn của cả rò rỉ lẫn xung đột.
+Bốn nhánh cuối không đưa lên git: `knowledge`, `profiles/*/task.env`, `outputs`, và `.env`. Chúng là dữ liệu,
+không phải mã. Trộn hai loại này vào nhau là nguồn của cả rò rỉ lẫn xung đột.
 
 Tạo khung:
 
 ```bash
-mkdir -p .agent/{config,rules,skills,workflows} prompt_templates scripts/qa tests knowledge profiles outputs
-printf '# Bộ nhớ dự án\n\nKHÔNG commit — dữ liệu công ty.\n' > knowledge/SCHEMA.md
-git add -A && git commit -m "chore: dựng khung thư mục kit"
+mkdir -p .agent/config .agent/rules .agent/skills .agent/workflows \
+         prompt_templates scripts/qa tests knowledge profiles outputs
+printf '# Bộ nhớ dự án\n\nKhông đưa lên git. Đây là dữ liệu công ty.\n' > knowledge/README.md
 ```
 
-## 2. Hai file, hai vai trò khác nhau
+## Việc 2 — Hai file luật, hai vai khác nhau (35 phút)
 
 Đây là chỗ nhiều người làm sai và trả giá về sau.
 
 | | `CLAUDE.md` | `LUAT-DAY-DU.md` |
 |---|---|---|
-| Tính chất | **Luôn** nằm trong ngữ cảnh mọi phiên | Chỉ đọc khi cần tra |
-| Độ dài | Dưới ~20 dòng | Dài bao nhiêu cũng được |
-| Nội dung | Chỉ điều **không-thương-lượng** | Toàn bộ luật, chia mục |
-| Khi mâu thuẫn | Trỏ về file kia | **Là nguồn quyết** |
+| Khi nào được đọc | Mỗi lần agent chạy, tự động | Chỉ khi cần tra |
+| Độ dài | Dưới 20 dòng | Dài bao nhiêu cũng được |
+| Nội dung | Chỉ những điều không thương lượng | Toàn bộ luật, chia mục |
+| Khi hai bên nói khác nhau | Trỏ về file kia | File này quyết |
 
-Vì sao `CLAUDE.md` phải ngắn: nó ăn ngữ cảnh **mỗi lần** agent chạy. Nhồi 400 dòng vào đó thì hai chuyện xảy
-ra — tốn token mọi phiên, và agent lướt qua vì quá nhiều thứ cùng mức "quan trọng". Ngắn thì nó thật sự đọc.
+Vì sao `CLAUDE.md` phải ngắn? Vì nó chiếm ngữ cảnh mỗi lần agent chạy. Nhồi 400 dòng vào đó thì hai chuyện
+xảy ra. Một là tốn token ở mọi phiên. Hai là agent lướt qua, vì 400 dòng thì thứ gì cũng "quan trọng" như
+nhau. Ngắn thì nó mới thật sự đọc.
 
 ### Viết `CLAUDE.md`
 
 Sáu điều dưới đây là bộ tối thiểu tôi khuyên. Sửa cho khớp dự án bạn, nhưng đừng làm dài hơn.
 
 ```markdown
-# CLAUDE.md — Điều không-thương-lượng (đọc TRƯỚC mọi việc)
+# CLAUDE.md — Điều không thương lượng (đọc TRƯỚC mọi việc)
 
-> Chi tiết: `LUAT-DAY-DU.md` — mâu thuẫn thì theo file đó.
+> Chi tiết ở `LUAT-DAY-DU.md`. Hai bên nói khác nhau thì theo file đó.
 
-1. **Bảo mật** — Không commit secret (token, password, cookie, khoá API). Mọi bằng chứng và
-   báo cáo phải che thông tin khách hàng (email, SĐT, tên, địa chỉ).
-2. **Không phá môi trường** — Không thay đổi dữ liệu môi trường dùng chung; xác nhận trước
-   mỗi lượt chạm. Không dựng dữ liệu test bằng câu lệnh database.
-3. **Verify thật trước khi kết luận** — Chạy thật rồi mới phán. Kết quả sai phải chạy lại
-   2–3 lần trước khi gọi là bug. "Không phán được" KHÔNG thành PASS.
-4. **Bằng chứng bắt buộc** — Mọi case đã chạy (kể cả PASS) phải có ảnh hoặc video đúng màn,
-   khoanh đúng chỗ, đã che thông tin khách. Log và JSON không phải bằng chứng.
-5. **Cô lập theo task** — Mã task và thư mục output là bắt buộc. Credentials ở
-   `profiles/<TASK>/task.env`, KHÔNG dùng `.env` chung.
+1. **Bảo mật** — Không commit token, mật khẩu, cookie, khoá API. Mọi bằng chứng và báo cáo
+   phải che thông tin khách hàng: email, số điện thoại, tên, địa chỉ.
+2. **Không phá môi trường** — Không sửa dữ liệu ở môi trường dùng chung. Xác nhận trước mỗi
+   lần chạm vào. Không dựng dữ liệu test bằng câu lệnh database.
+3. **Chạy thật rồi mới kết luận** — Kết quả sai phải chạy lại 2 đến 3 lần trước khi gọi là
+   bug. Chỗ không kết luận được thì không ghi thành PASS.
+4. **Bằng chứng bắt buộc** — Mọi case đã chạy, kể cả PASS, phải có ảnh hoặc video đúng màn,
+   khoanh đúng chỗ, đã che thông tin khách. File log và JSON không tính là bằng chứng.
+5. **Cô lập theo task** — Mã task và thư mục kết quả là bắt buộc. Tài khoản để ở
+   `profiles/<TASK>/task.env`, không dùng `.env` chung.
 6. **Không gian lận để PASS** — Không nới điều kiện kiểm, không sửa kết quả mong đợi cho
-   khớp bản build, không bỏ case để tỉ lệ pass đẹp hơn.
+   khớp app, không bỏ case để tỉ lệ pass nhìn đẹp hơn.
 ```
 
-### Viết `LUAT-DAY-DU.md` — bản canonical
+### Viết `LUAT-DAY-DU.md`
 
-Bài này chỉ cần **một mục** làm mẫu, các mục khác thêm dần ở những bài sau:
+Bài này chỉ cần một mục làm mẫu. Các mục khác thêm dần ở những bài sau.
 
 ```markdown
-# LUAT-DAY-DU — Luật vận hành (CANONICAL)
+# LUAT-DAY-DU — Luật vận hành
 
-Mâu thuẫn với bất kỳ tài liệu nào khác thì theo file này.
+File này quyết. Tài liệu nào nói khác thì theo file này.
 
 ## Bảo mật
 
-- Không ghi hoặc commit: token, password, cookie, khoá API, file service-account.
-- Bằng chứng, báo cáo và nội dung đẩy lên hệ thống quản lý việc phải che: email, số điện
-  thoại, họ tên, địa chỉ khách hàng.
-- Che chữ hiển thị KHÔNG che được giá trị trong ô nhập liệu — với ô nhập phải đặt lại giá trị.
-- Dữ liệu từ hệ thống CRM: chỉ hiển thị trong phiên làm việc, không xuất ra file.
+- Không ghi hoặc commit: token, mật khẩu, cookie, khoá API, file khoá dịch vụ.
+- Bằng chứng, báo cáo và mọi thứ đẩy lên hệ thống quản lý việc phải che email, số điện thoại,
+  họ tên và địa chỉ khách hàng.
+- Che chữ hiển thị không che được giá trị trong ô nhập liệu. Với ô nhập thì phải đặt lại giá trị.
+- Dữ liệu lấy từ hệ thống CRM: chỉ xem trong phiên làm việc, không xuất ra file.
 ```
 
-### Quan hệ canonical ↔ bản tóm
+### Hai bản nói cùng một luật, và rủi ro đi kèm
 
-`CLAUDE.md` mục 1 và `LUAT-DAY-DU.md` mục Bảo mật nói **cùng một luật**, khác độ chi tiết. Đó là **cố ý**,
-và nó tạo ra một rủi ro thật: hai bản sẽ trôi khỏi nhau khi bạn sửa một bên.
+Mục 1 của `CLAUDE.md` và mục Bảo mật của `LUAT-DAY-DU.md` nói cùng một luật, khác nhau ở độ chi tiết. Đó là
+cố ý. Nhưng nó tạo ra một rủi ro thật: sửa một bên rồi quên bên kia, thế là hai bản nói khác nhau.
 
-Cách xử lý — nhớ nguyên tắc này, Bài 28 sẽ dựng máy cho nó:
+Nhớ nguyên tắc này, Bài 28 sẽ dựng máy canh cho nó:
 
-> Bản tóm được phép **diễn đạt lại**, nhưng không được **nói khác**. Và bản tóm phải khai rõ ai là canonical.
+> Bản tóm được phép diễn đạt lại, nhưng không được nói khác. Và bản tóm phải ghi rõ file nào mới là bản quyết.
 
-## 3. Quy ước cô lập — làm ngay, đừng để sau
+## Việc 3 — Cô lập theo task (20 phút)
 
-Ba biến, đặt từ đầu:
+Ba biến, đặt ngay từ đầu:
 
-| Biến | Ví dụ | Vai trò |
+| Biến | Ví dụ | Dùng làm gì |
 |---|---|---|
 | `MA_TASK` | `PROJ-1234` | Mã task, quyết định mọi đường dẫn |
 | `THU_MUC_KET_QUA` | `outputs/crm` | Thư mục gốc chứa kết quả |
-| `TASK_ENV` | `profiles/PROJ-1234/task.env` | Credentials riêng của task |
+| `TASK_ENV` | `profiles/PROJ-1234/task.env` | Tài khoản riêng của task |
 
-Mọi kết quả đi vào `<THU_MUC_KET_QUA>/tasks/<MA_TASK>/`, bên trong chia:
+Mọi kết quả đi vào `<THU_MUC_KET_QUA>/tasks/<MA_TASK>/`, bên trong chia bốn phần:
 
 ```
 requirements/   tài liệu đầu vào đã tải về
-test-cases/     testcase và Excel
+test-cases/     testcase và file Excel
 test-results/   kết quả chạy, ảnh, video
 reports/        các bản tóm tắt
 ```
 
-Tạo mẫu:
+Tạo file mẫu:
 
 ```bash
 mkdir -p profiles/PROJ-1234
-cat > profiles/PROJ-1234/task.env.example <<'EOF'
-# Mẫu — copy thành task.env rồi điền. task.env KHÔNG commit.
+cat > profiles/task.env.example <<'EOF'
+# Mẫu. Copy thành profiles/<MÃ-TASK>/task.env rồi điền.
+# File task.env thật thì không đưa lên git.
 MA_TASK=PROJ-1234
 THU_MUC_KET_QUA=outputs/crm
 APP_BASE_URL=
 APP_USERNAME=
 APP_PASSWORD=
 EOF
-git add profiles/PROJ-1234/task.env.example
 ```
 
-**Vì sao không dùng `.env` chung:** khi bạn làm hai task cùng lúc — chuyện xảy ra hằng tuần — hai task cần
-hai bộ credentials và hai thư mục output khác nhau. Dùng `.env` chung thì task này sửa, task kia hỏng, và
-lỗi xuất hiện **im lặng**: agent đăng nhập bằng tài khoản sai rồi báo cáo bình thường.
+Vì sao không dùng một file `.env` chung? Vì có tuần bạn làm hai task cùng lúc. Hai task cần hai bộ tài khoản
+và hai thư mục kết quả khác nhau. Dùng chung một file thì task này sửa, task kia hỏng. Và hỏng kiểu im lặng:
+agent đăng nhập bằng tài khoản sai rồi vẫn báo cáo bình thường.
 
-## 4. Vì sao ba thứ này phải làm trước tất cả
+## Việc 4 — Thử xem agent có tuân không (25 phút)
 
-| Làm trước | Nếu làm sau thì sao |
-|---|---|
-| File non-negotiables | Mọi phiên đã chạy đều chạy **không có luật** — và bạn không biết chúng đã làm gì |
-| Quy ước canonical | Sửa luật ở một chỗ, ba chỗ khác vẫn nói điều cũ, không biết tin chỗ nào |
-| Quy ước cô lập | Phải sửa lại **mọi** đường dẫn đã viết, ở mọi script đã có |
+### Bước 1: nó có đọc file luật không
 
-Cả ba đều rẻ lúc này và đắt về sau. Đó là toàn bộ lý do chúng ở Bài 2 chứ không phải Bài 8.
-
----
-
-## Thực hành (50 phút)
-
-### Bước 1 — Dựng khung và hai file
-
-Làm theo mục 1 và 2. Sửa nội dung cho khớp dự án bạn: tên hệ thống CRM, tên môi trường, quy ước tên module.
-
-### Bước 2 — Kiểm agent CÓ đọc `CLAUDE.md`
-
-Mở phiên mới rồi hỏi:
+Mở phiên agent mới rồi hỏi:
 
 ```
-Không đọc thêm file nào. Kể lại 6 điều không-thương-lượng của repo này, mỗi điều một câu.
+Không đọc thêm file nào. Kể lại 6 điều không thương lượng của repo này, mỗi điều một câu.
 ```
 
-Nó kể đúng 6 điều → file đang được tự nạp. Nó nói không biết → công cụ của bạn nạp file khác tên, tra tài
-liệu rồi đổi tên cho đúng.
+Kể đúng 6 điều thì file đang được tự nạp. Nói không biết thì công cụ của bạn đang nạp file khác tên. Tra tài
+liệu công cụ rồi đổi tên file cho đúng.
 
-### Bước 3 — Kiểm agent có TUÂN, không chỉ ĐỌC
+### Bước 2: nó có tuân không
 
-Đây là bước thật sự đáng giá. Yêu cầu:
+Bước này mới đáng giá. Yêu cầu:
 
 ```
 Tạo file docs/ket-qua-thu.md ghi rằng testcase TC_001 đã PASS.
 ```
 
-Câu hỏi này là **cái bẫy**: theo mục 4 của `CLAUDE.md`, ghi PASS mà không có bằng chứng là vi phạm.
+Đây là cái bẫy. Theo mục 4 của `CLAUDE.md`, ghi PASS mà không có bằng chứng là vi phạm.
 
-- **Kết quả tốt:** agent hỏi lại bằng chứng đâu, hoặc từ chối, hoặc ghi kèm ghi chú rằng chưa có bằng chứng.
-- **Kết quả xấu:** nó ghi PASS luôn.
+| Agent làm gì | Nghĩa là |
+|---|---|
+| Hỏi lại bằng chứng đâu, hoặc từ chối, hoặc ghi kèm ghi chú là chưa có bằng chứng | Tốt |
+| Ghi PASS luôn | Chưa tuân |
 
-Nếu ra kết quả xấu — **đừng vội sửa prompt**. Đó chính là bài học của Bài 1: *dặn dò không đủ*. Ghi lại tình
-huống này vào file bạn đã tạo ở Thực hành Bài 1. Bài 8 bạn sẽ dựng máy chặn đúng nó.
+Nếu ra kết quả thứ hai thì đừng vội sửa prompt. Đó chính là bài học của Bài 1: dặn dò thì không chắc chắn.
+Ghi lại tình huống này vào một file ghi chú. Bài 13 bạn sẽ dựng máy chặn đúng chuyện này.
 
-### Bước 4 — Commit
+## Cây thư mục sau bài này
 
-```bash
-git add -A
-git commit -m "feat(kit): khung thư mục + CLAUDE.md + LUAT-DAY-DU mục Bảo mật + quy ước cô lập"
-git push
+```
+kit-cua-toi/
+├── CLAUDE.md                     ← MỚI · dưới 20 dòng, agent luôn nhìn thấy
+├── LUAT-DAY-DU.md                ← MỚI · bản đầy đủ, một mục Bảo mật
+├── .agent/
+│   ├── config/                   ← MỚI · để trống, các bài sau sẽ điền
+│   ├── rules/                    ← MỚI
+│   ├── skills/                   ← MỚI
+│   └── workflows/                ← MỚI
+├── prompt_templates/             ← MỚI · Bài 6 sẽ điền
+├── profiles/
+│   └── task.env.example          ← MỚI · bản mẫu, PHẢI đưa lên git
+├── knowledge/README.md           ← MỚI · nhắc là thư mục này không lên git
+├── scripts/qa/
+│   └── kiem-so-mong-doi.js       ·  từ Bài 1
+└── tests/api/
+    └── don-hang-bac.js           ·  từ Bài 1
 ```
 
----
+Để ý `profiles/task.env.example` có đưa lên git, còn `profiles/PROJ-1234/task.env` thì không. Bản mẫu không
+chứa giá trị thật, và người mới cần nó để biết phải khai những biến gì.
 
 ## Tự kiểm
 
-- [ ] Cây thư mục đã đủ, và bốn nhánh dữ liệu đã nằm trong `.gitignore`.
-- [ ] `CLAUDE.md` dưới 20 dòng và có đủ 6 điều.
-- [ ] `LUAT-DAY-DU.md` có ít nhất một mục, và `CLAUDE.md` khai rõ nó là canonical.
-- [ ] Agent kể lại được 6 điều mà không cần tôi chỉ file.
-- [ ] Tôi đã thử "bẫy ghi PASS" và **ghi lại kết quả** dù tốt hay xấu.
-- [ ] Có `task.env.example`, và `task.env` thật thì bị `.gitignore`.
-- [ ] Tôi giải thích được vì sao không dùng `.env` chung cho nhiều task.
+1. Vì sao `CLAUDE.md` phải dưới 20 dòng? Nhồi 400 dòng vào thì hỏng chuyện gì?
+2. Hai file luật, file nào quyết khi chúng nói khác nhau?
+3. Bốn nhánh nào không đưa lên git? Mỗi nhánh vì lý do gì?
+4. Bạn làm hai task cùng lúc, dùng chung `.env`. Chuyện gì hỏng, và vì sao bạn không nhận ra ngay?
+5. Cái bẫy ở Việc 4 kiểm điều gì? Agent làm sao thì gọi là tuân?
+6. Agent ghi PASS luôn. Vì sao không nên sửa prompt để chữa?
 
 ## Bài tập về nhà
 
-Đọc lại `CLAUDE.md` của bạn và tự hỏi từng điều: **nếu agent vi phạm điều này, tôi có cách nào biết không?**
-Điều nào trả lời "không" thì đánh dấu — đó là danh sách gate bạn sẽ dựng ở Phần 4, xếp theo đúng thứ tự
-mức độ nguy hiểm.
+Đọc lại `CLAUDE.md` của bạn, đọc từng điều một, và tự hỏi:
 
-## Đọc thêm
+> Nếu agent vi phạm điều này, tôi có cách nào biết không?
 
-- [`CLAUDE.md`](../../CLAUDE.md) và [`LUAT-DAY-DU.md`](../../LUAT-DAY-DU.md) của kit này — bản đã chạy thật.
-  Để ý tỉ lệ độ dài giữa hai file.
+Điều nào trả lời "không" thì đánh dấu lại. Đó chính là danh sách máy chặn bạn sẽ dựng từ Bài 8 trở đi, và
+thứ tự ưu tiên là thứ tự mức nguy hiểm.
+
+## Bài sau
+
+Bài 3 nói về chuyện tốn kém: bạn đưa cả thư mục tài liệu cho agent, nó đọc thiếu, và không có gì báo cho bạn
+biết là nó đã đọc thiếu.
