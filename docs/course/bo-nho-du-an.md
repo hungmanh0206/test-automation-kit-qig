@@ -36,7 +36,7 @@ Bạn đã có kit khá đầy đủ. Nhưng thử tình huống này:
 > Tuần 1: bạn phát hiện màn Chi tiết đơn hiển thị sai định dạng ngày. Log bug. Dev điều tra, kết luận
 > đúng thiết kế. Hai tab cố ý dùng hai định dạng vì hai đối tượng người dùng khác nhau. Bug bị từ chối.
 >
-> Tuần 4: task khác, cùng màn đó. Agent thấy đúng hiện tượng ấy, và **log lại đúng bug đó**.
+> Tuần 4: task khác, cùng màn đó. Agent thấy đúng hiện tượng ấy, và log lại đúng bug đó.
 
 Không ai làm sai. Chỉ là kết luận tuần 1 nằm trong hội thoại của tuần 1, và hội thoại đó đã mất.
 
@@ -83,15 +83,15 @@ Bốn nguồn, xếp theo thứ tự nên làm:
 ### Nguồn 1 — Bạn đã có sẵn từ Bài 7 mà chưa nhận ra
 
 Bảng `BR-` bạn sinh ở lượt phân tích **chính là** nội dung của `domain/`. Nó đã có: phát biểu kiểm được ·
-trích từ mục nào · và ví dụ input→expected. Chỉ cần **chuyển nó vào store**.
+trích từ mục nào · và ví dụ input→expected. Chỉ cần chuyển nó vào store.
 
 Đây là lý do Bài 7 bắt đặt mã `BR-`: để hôm nay có thứ mà lưu.
 
 ### Nguồn 2 — Câu trả lời của BA ở Ambiguity Gate
 
-Mỗi câu BA trả lời là **một business rule đã được xác nhận**. Ở Bài 7 bạn đã có ba câu. Ghi cả ba.
+Mỗi câu BA trả lời là một business rule đã được xác nhận. Ở Bài 7 bạn đã có ba câu. Ghi cả ba.
 
-Và ghi luôn **nguồn xác nhận**: ai chốt, ngày nào. Sáu tuần sau bạn cần điều đó.
+Và ghi luôn nguồn xác nhận: ai chốt, ngày nào. Sáu tuần sau bạn cần điều đó.
 
 ### Nguồn 3 — Lịch sử hệ thống quản lý việc
 
@@ -100,7 +100,7 @@ Bài 19 (chấm rủi ro) và của việc đối chiếu "lỗi từng xảy ra
 
 Nhưng **suggest-only**: nạp dữ liệu, không tự kết luận. Lý do ở Bài 19 mục 5.
 
-### Nguồn 4 — Chấp nhận trống, nhưng trống **có kiểm soát**
+### Nguồn 4 — Chấp nhận trống, nhưng trống có kiểm soát
 
 Đây là phần khó nhất về tâm lý.
 
@@ -112,7 +112,7 @@ Hai lựa chọn:
 | Bịa cho đầy | Store có nội dung sai. Mọi oracle trích từ nó về sau đều sai, **im lặng** |
 | **Trống có kiểm soát** | ✅ Ghi rõ *"chưa khảo sát"*, và mỗi lần cần thì khảo sát đúng một phần |
 
-Trống mà **khai rõ là trống** thì an toàn. Store có nội dung không ai xác nhận thì nguy hiểm hơn store rỗng —
+Trống mà khai rõ là trống thì an toàn. Store có nội dung không ai xác nhận thì nguy hiểm hơn store rỗng —
 vì nó trông như đã có nguồn.
 
 ```json
@@ -211,7 +211,7 @@ console.log('[domain] ✓ ĐẠT');
 
 ## 5. Không commit — và phải sao lưu ngoài repo
 
-`knowledge/` là **dữ liệu công ty**, đối xử như `.env`:
+`knowledge/` là dữ liệu công ty, đối xử như `.env`:
 
 ```gitignore
 knowledge/*
@@ -222,10 +222,10 @@ knowledge/*
 Nhưng đây là chỗ có một rủi ro thật, và nó khác với `.env`:
 
 > `.env` nạp lại được, bạn có credentials ở chỗ khác. `knowledge/` thì **một phần không nạp lại được từ
-> nguồn máy nào**: mọi thứ **ghi tay** (rule đã xác nhận, quyết định đã chốt, recipe kèm cạm bẫy) chỉ tồn tại
+> nguồn máy nào: mọi thứ ghi tay** (rule đã xác nhận, quyết định đã chốt, recipe kèm cạm bẫy) chỉ tồn tại
 > ở đó. Mất là mất hẳn.
 
-Nên phải sao lưu **ra ngoài repo**:
+Nên phải sao lưu ra ngoài repo:
 
 ```js
 #!/usr/bin/env node
@@ -356,7 +356,7 @@ module.exports = {
 };
 ```
 
-> Vì sao phải ở cuối, và vì sao không dùng `globalTeardown`. Đo thật: `globalTeardown` chạy **trước** khi
+> Vì sao phải ở cuối, và vì sao không dùng `globalTeardown`. Đo thật: `globalTeardown` chạy trước khi
 > reporter `json` ghi xong `results.json`. Nên nếu bạn đọc file đó ở teardown thì đọc bản cũ hoặc không có
 > file. Reporter khai cuối thì chạy sau các reporter trước nó.
 
@@ -439,7 +439,7 @@ Viết `scripts/qa/kiem-domain.js`, chạy, sửa cho tới khi ĐẠT.
 
 ### Bước 2 — Ghi quyết định đầu tiên (10 phút)
 
-Lấy **một** kết luận QA thật của bạn (bug bị từ chối, case PASS kèm ghi chú, một cách test đã thử và thất bại)
+Lấy một kết luận QA thật của bạn (bug bị từ chối, case PASS kèm ghi chú, một cách test đã thử và thất bại)
 và ghi vào `knowledge/decisions/`:
 
 ```json
@@ -453,7 +453,7 @@ và ghi vào `knowledge/decisions/`:
 }
 ```
 
-Trường `lyDo` **để trống là vô dụng** — chính nó là thứ khiến task sau không kết luận lại từ đầu.
+Trường `lyDo` để trống là vô dụng. Chính nó là thứ khiến task sau không kết luận lại từ đầu.
 
 ### Bước 3 — Ghi một recipe kèm cạm bẫy (10 phút)
 
@@ -503,7 +503,7 @@ Có case nào dưới ngưỡng thì đó là danh sách cần truy nguyên nhâ
 
 ### Bước 6 — Dùng lại store ở lượt sinh case (5 phút)
 
-Đây là bước chứng minh bộ nhớ **có tác dụng**. Chạy lại lượt sinh case ở Bài 7, nhưng thêm vào đầu vào:
+Đây là bước chứng minh bộ nhớ có tác dụng. Chạy lại lượt sinh case ở Bài 7, nhưng thêm vào đầu vào:
 
 ```
 ĐẦU VÀO
@@ -551,21 +551,21 @@ kit-cua-toi/
 - [ ] Quyết định tôi ghi có trường `lyDo` **không rỗng**, và có ai chốt + ngày.
 - [ ] Recipe của tôi có phần `camBay`, thứ chỉ biết sau khi vấp.
 - [ ] Reporter khai ở **cuối**, và tôi biết vì sao không dùng `globalTeardown`.
-- [ ] Reporter **không bao giờ throw**, và bỏ qua khi thiếu ngữ cảnh task.
+- [ ] Reporter không bao giờ throw, và bỏ qua khi thiếu ngữ cảnh task.
 - [ ] Sao lưu ra `exit 2` khi đích nằm trong repo.
-- [ ] Tôi phân biệt được **pass sạch** với **pass nhờ retry** trong công thức độ tin cậy.
-- [ ] Ở Bước 6, agent **không hỏi lại** những câu đã có trong `domain/`.
+- [ ] Tôi phân biệt được **pass sạch** với pass nhờ retry trong công thức độ tin cậy.
+- [ ] Ở Bước 6, agent không hỏi lại những câu đã có trong `domain/`.
 
 ## Bài tập về nhà
 
 Chọn ba kết luận QA gần nhất của bạn. Bug bị từ chối, case PASS kèm ghi chú, cách test đã thử và thất bại —
 và ghi cả ba vào `decisions/`.
 
-Rồi tự trả lời: **trong sáu tháng qua, bao nhiêu lần team bạn kết luận lại một thứ đã kết luận rồi?** Con số
+Rồi tự trả lời: trong sáu tháng qua, bao nhiêu lần team bạn kết luận lại một thứ đã kết luận rồi? Con số
 đó nhân với thời gian mỗi lần là chi phí của việc không có store này.
 
 ## Đọc thêm
 
-- Bài 19 sẽ dùng `bugs/` và `metrics/` để chấm rủi ro. Và giải bài toán cold start của **chính việc chấm**.
+- Bài 19 sẽ dùng `bugs/` và `metrics/` để chấm rủi ro. Và giải bài toán cold start của chính việc chấm.
 - [`knowledge/SCHEMA.md`](../../knowledge/SCHEMA.md) của kit này (nếu repo bạn có) — hình dạng đầy đủ của
   bảy store.

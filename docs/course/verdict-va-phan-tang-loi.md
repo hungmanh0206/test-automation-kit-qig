@@ -41,10 +41,10 @@ Nếu mỗi chỗ tự khai thì:
 báo cáo ghi "Passed"  ·  script ghi "PASS"  ·  gate kiểm "pass"  ·  công cụ TMS hiểu "Passed"
 ```
 
-Bốn cách viết cho cùng một thứ. Gate so chuỗi rồi trượt. Không ai biết vì nó **trượt im lặng** — coi như không
+Bốn cách viết cho cùng một thứ. Gate so chuỗi rồi trượt. Không ai biết vì nó trượt im lặng. Coi như không
 có case nào đã chạy, và báo ✓.
 
-Nên: **một file, mọi nơi trỏ về.**
+Nên: một file, mọi nơi trỏ về.
 
 `.agent/config/phan-quyet.json`:
 
@@ -128,14 +128,14 @@ module.exports = { TAXONOMY, DA_CHAY, LOG_JIRA };
 
 ## 2. Bảy tầng lỗi, và chỉ hai đáng log
 
-Khi test đỏ, câu hỏi **không** phải "bug gì" mà là **"lỗi ở tầng nào"**.
+Khi test đỏ, câu hỏi không phải "bug gì" mà là "lỗi ở tầng nào".
 
 | Tầng | Log Jira? | Nhận ra bằng |
 |---|---|---|
 | `product_bug` | ✅ | Dữ liệu BE đúng, màn hiện sai |
 | `api_bug` | ✅ | Đọc response thật: BE trả sai hoặc thiếu |
 | `setup_failure` | ❌ | Lỗi ném ra từ factory (chữ `SETUP:` ở Bài 12) |
-| `script_error` | ❌ | Fail **lặp lại ổn định**, nhưng làm tay thì đúng |
+| `script_error` | ❌ | Fail lặp lại ổn định, nhưng làm tay thì đúng |
 | `infra` | ❌ | API không phản hồi, timeout mạng, CI hết bộ nhớ |
 | `flaky` | ❌ | Pass sau retry, **và** nêu được cơ chế |
 | `dependency` | ❌ | Hệ thống ngoài chưa sẵn |
@@ -147,10 +147,10 @@ Khi test đỏ, câu hỏi **không** phải "bug gì" mà là **"lỗi ở tầ
 
 Với `product_bug`, phải nói rõ FE hay BE — nếu không bug đi lòng vòng qua hai đội trước khi tới người sửa được.
 
-Quy trình bốn bước, và **không được bỏ bước 2**:
+Quy trình bốn bước, và không được bỏ bước 2:
 
 1. Thấy sai trên màn.
-2. **Mở request tương ứng, đọc dữ liệu BE trả về.**
+2. Mở request tương ứng, đọc dữ liệu BE trả về.
 3. BE trả đúng mà màn hiện sai → **FE**. BE trả sai → **BE**.
 4. Dính cả hai tầng → giao **BE trước**, xong họ chuyển lại FE.
 
@@ -176,29 +176,29 @@ test('bắt response để khoanh tầng lỗi', async ({ page }) => {
 
 ## 3. Chạy lại 2–3 lần
 
-Case đỏ thì **chạy lại tối thiểu 2 lần, tối đa 3** trước khi kết luận.
+Case đỏ thì chạy lại tối thiểu 2 lần, tối đa 3 trước khi kết luận.
 
 | Kết quả rerun | Kết luận |
 |---|---|
-| Lần 2 xanh | Chập chờn hoặc lỗi dựng — **không** phải bug. Nhưng xem mục 5 trước khi dán nhãn `flaky` |
+| Lần 2 xanh | Chập chờn hoặc lỗi dựng — không phải bug. Nhưng xem mục 5 trước khi dán nhãn `flaky` |
 | Cả 3 lần đỏ, cùng lỗi | Ổn định → có thể là bug **hoặc** `script_error` (mục 4) |
 | Đỏ với lỗi **khác nhau** mỗi lần | Gần như luôn là môi trường hoặc dữ liệu |
 
 Vì sao 2–3 chứ không phải 1 hay 10: một lần chạy lại đủ loại phần lớn chập chờn; hơn ba lần thì tốn thời gian
-mà không thêm thông tin. Con số này khai trong taxonomy để **đổi ở một chỗ**.
+mà không thêm thông tin. Con số này khai trong taxonomy để đổi ở một chỗ.
 
 > Kết quả chạy lại có hạn dùng. Nếu môi trường được triển khai bản mới giữa lúc bạn rerun hoặc giữa lúc
 > viết báo cáo thì kết luận cũ không còn nói gì về bản hiện tại. Chuyện thật: kết quả **lật ngược sau khoảng
-> 30 phút** vì có bản triển khai chen vào. Cách phòng: xác nhận lại **sát giờ** viết báo cáo, và giữ một case
+> 30 phút vì có bản triển khai chen vào. Cách phòng: xác nhận lại sát giờ** viết báo cáo, và giữ một case
 > đối chứng đã biết kết quả để phát hiện môi trường vừa đổi.
 
 ## 4. `script_error`: loại dễ log nhầm nhất
 
-Đây là tầng lỗi tốn kém nhất vì nó **trông giống bug thật**: fail ổn định, tái hiện được 100%.
+Đây là tầng lỗi tốn kém nhất vì nó trông giống bug thật: fail ổn định, tái hiện được 100%.
 
 **Triệu chứng nhận dạng:**
 
-> FAIL lặp lại **rất ổn định** — rerun không cứu được. Nhưng **làm tay theo đúng các bước đó thì kết quả lại
+> FAIL lặp lại rất ổn định. Rerun không cứu được. Nhưng **làm tay theo đúng các bước đó thì kết quả lại
 > đúng**.
 
 Phép thử: **làm tay**. Mất năm phút và tiết kiệm một buổi của Dev.
@@ -219,7 +219,7 @@ Hai trạng thái này không có trong sách giáo khoa, nhưng chúng chặn h
 
 Case chỉ pass **sau khi** bạn (hoặc agent) thêm wait, thêm retry, đổi locator, refresh, hoặc đi đường khác.
 
-> Đây là rủi ro **đặc thù của agent**: gặp trở ngại thì có xu hướng **làm cho nó chạy**, và mỗi lần như vậy là
+> Đây là rủi ro đặc thù của agent: gặp trở ngại thì có xu hướng làm cho nó chạy, và mỗi lần như vậy là
 > một bug tiềm năng bị lấp. Deviation là **tín hiệu**, không phải tiện lợi.
 
 | Deviation | Có thể đang che gì |
@@ -229,16 +229,16 @@ Case chỉ pass **sau khi** bạn (hoặc agent) thêm wait, thêm retry, đổi
 | Đổi locator sang element khác | Element đúng có thể đang hỏng |
 | Retry mới ăn click | Có thể có race condition |
 
-Luật: **liệt kê từng deviation trong phần Actual**, xếp case vào diện cần review, **không ghi PASS trơn**.
+Luật: liệt kê từng deviation trong phần Actual, xếp case vào diện cần review, không ghi PASS trơn.
 
 ### `SUSPECT_REAL_BUG` — fail chưa giải thích được cơ chế
 
 Fail 1/5 lần. Phản xạ thông thường: dán nhãn `flaky`, bỏ qua.
 
-> Nhưng cơ chế triage flaky có thể đang **chôn bug thật**. Race condition, cache, lệch múi giờ lúc chuyển ngày
-> — cả ba đều **trông y hệt flaky**: retry ba lần có một lần xanh.
+> Nhưng cơ chế triage flaky có thể đang chôn bug thật. Race condition, cache, lệch múi giờ lúc chuyển ngày
+> — cả ba đều trông y hệt flaky: retry ba lần có một lần xanh.
 
-Luật: chỉ được đổi sang `flaky` khi **nêu được cơ chế cụ thể và cách chứng minh**. Không nêu được thì giữ
+Luật: chỉ được đổi sang `flaky` khi nêu được cơ chế cụ thể và cách chứng minh. Không nêu được thì giữ
 `SUSPECT_REAL_BUG`.
 
 | Không phải lời giải thích | Là lời giải thích |
@@ -249,7 +249,7 @@ Luật: chỉ được đổi sang `flaky` khi **nêu được cơ chế cụ th
 
 ## 6. Sinh `testcase-status.json`
 
-Đây là file **Phần 4 sẽ đọc**. Sinh nó từ kết quả Playwright, không viết tay.
+Đây là file Phần 4 sẽ đọc. Sinh nó từ kết quả Playwright, không viết tay.
 
 `scripts/qa/sinh-status.js`:
 
@@ -356,7 +356,7 @@ Hai quyết định thiết kế đáng để ý:
 | Quyết định | Vì sao |
 |---|---|
 | Pass sau retry → `PASS_WITH_DEVIATION`, không phải `PASS` | Retry **là** một deviation. Ghi PASS trơn là mất tín hiệu |
-| `tangLoi = null` cho FAIL, không suy tự động | Máy không biết lỗi ở tầng nào. Để `null` thì nó **hiện ra là việc chưa làm**, thay vì đoán bừa |
+| `tangLoi = null` cho FAIL, không suy tự động | Máy không biết lỗi ở tầng nào. Để `null` thì nó hiện ra là việc chưa làm, thay vì đoán bừa |
 
 ## 7. Log bug: bốn phần, không hơn không kém
 
@@ -382,8 +382,8 @@ Rerun 3/3 lần cùng kết quả.
 **Bằng chứng:** `evidence/TC_012-tong-cong-sai.png` (đã khoanh ô Tổng cộng và ô Giảm giá)
 ```
 
-Bốn đặc điểm khiến bug này được nhận ngay: **bước tái hiện khớp fixture thật** (mã dữ liệu cụ thể, không
-"một khách hạng Bạc") · **mong đợi trích nguồn** · **thực tế nêu cả dữ liệu API** nên tầng đã được khoanh ·
+Bốn đặc điểm khiến bug này được nhận ngay: bước tái hiện khớp fixture thật (mã dữ liệu cụ thể, không
+"một khách hạng Bạc") · mong đợi trích nguồn · thực tế nêu cả dữ liệu API nên tầng đã được khoanh ·
 **đã rerun**.
 
 ---
@@ -392,7 +392,7 @@ Bốn đặc điểm khiến bug này được nhận ngay: **bước tái hiệ
 
 ### Bước 1 — Khai taxonomy (15 phút)
 
-Viết `.agent/config/phan-quyet.json` và `scripts/lib/verdict.js`. Rồi **sửa `gate-bang-chung.js` ở Bài 8**
+Viết `.agent/config/phan-quyet.json` và `scripts/lib/verdict.js`. Rồi sửa `gate-bang-chung.js` ở Bài 8
 để đọc `DA_CHAY` từ file thay vì hằng số viết tay.
 
 *(Nếu bạn học theo thứ tự bài thì Bài 8 chưa tới, ghi việc này vào danh sách để làm lúc đó.)*
@@ -420,21 +420,21 @@ Cố ý làm một test đỏ theo **hai** cách khác nhau, rồi phân tầng:
 | Đổi giá trị kỳ vọng thành số sai | `script_error` | Fail ổn định, làm tay thì đúng |
 | Chặn API trả lỗi 500 (`page.route`) | `infra` hoặc `api_bug` | Đọc response |
 
-Với mỗi cái: rerun 2 lần · làm tay · đọc response · rồi điền `tangLoi`. Ghi lại **bạn dùng bằng chứng gì** để
+Với mỗi cái: rerun 2 lần · làm tay · đọc response · rồi điền `tangLoi`. Ghi lại bạn dùng bằng chứng gì để
 chấm tầng.
 
 ### Bước 4 — Thử `PASS_WITH_DEVIATION` (10 phút)
 
-Làm một test **chỉ pass sau retry**: thêm một điều kiện chập chờn (ví dụ chờ một element xuất hiện muộn).
+Làm một test chỉ pass sau retry: thêm một điều kiện chập chờn (ví dụ chờ một element xuất hiện muộn).
 Chạy với `retries: 1`.
 
 Kiểm `sinh-status.js` có ghi `PASS_WITH_DEVIATION` không, và có ghi mảng `deviation` không.
 
-Rồi trả lời câu quan trọng: **cái deviation đó có đang che gì?**
+Rồi trả lời câu quan trọng: cái deviation đó có đang che gì?
 
 ### Bước 5 — Viết một bug đủ bốn phần (5 phút)
 
-Lấy case FAIL ở Bước 3, viết mô tả bug theo mẫu mục 7. Tự kiểm: người khác đọc xong **tái hiện được** không?
+Lấy case FAIL ở Bước 3, viết mô tả bug theo mẫu mục 7. Tự kiểm: người khác đọc xong tái hiện được không?
 
 ### Bước 6 — Commit
 
@@ -462,15 +462,15 @@ kit-cua-toi/
 
 ## Tự kiểm
 
-- [ ] Chỉ có **một** file khai trạng thái; không hardcode chuỗi trạng thái ở đâu khác.
+- [ ] Chỉ có một file khai trạng thái; không hardcode chuỗi trạng thái ở đâu khác.
 - [ ] Tôi phân biệt được cả bảy tầng lỗi, và biết chỉ hai tầng được log Jira.
-- [ ] Tôi biết quy trình bốn bước khoanh tầng FE/BE, và **không bỏ bước đọc response**.
+- [ ] Tôi biết quy trình bốn bước khoanh tầng FE/BE, và không bỏ bước đọc response.
 - [ ] Tôi nhận ra `script_error` bằng triệu chứng "fail ổn định nhưng làm tay đúng".
 - [ ] `sinh-status.js` của tôi map pass-sau-retry thành `PASS_WITH_DEVIATION`.
 - [ ] `tangLoi` để `null` cho FAIL — máy không đoán tầng.
-- [ ] Tôi nêu được cho `SUSPECT_REAL_BUG` một lời giải thích **là cơ chế**, không phải "rerun thấy xanh".
+- [ ] Tôi nêu được cho `SUSPECT_REAL_BUG` một lời giải thích là cơ chế, không phải "rerun thấy xanh".
 - [ ] Tôi đã phân tầng **hai** ca FAIL thật, và ghi lại bằng chứng dùng để chấm.
-- [ ] Bug tôi viết có bước tái hiện **khớp fixture thật**, không viết chung chung.
+- [ ] Bug tôi viết có bước tái hiện khớp fixture thật, không viết chung chung.
 
 ## Bài tập về nhà
 

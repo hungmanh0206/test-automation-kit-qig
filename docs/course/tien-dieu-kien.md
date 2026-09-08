@@ -42,10 +42,10 @@ test('TC_015 …', async ({ page }) => {
 });
 ```
 
-Test này chỉ chạy được nếu `KH_BAC_01` **tồn tại** và **đang hạng Bạc**. Ai làm điều đó? Hiện tại: không ai.
+Test này chỉ chạy được nếu `KH_BAC_01` **tồn tại** và đang hạng Bạc. Ai làm điều đó? Hiện tại: không ai.
 Nó chạy được vì tình cờ dữ liệu đó có trên môi trường. Và nó sẽ đỏ vào ngày ai đó xoá hoặc đổi hạng khách đó.
 
-Test phụ thuộc dữ liệu tình cờ **không phải test**. Nó là một quan sát may mắn.
+Test phụ thuộc dữ liệu tình cờ không phải test. Nó là một quan sát may mắn.
 
 ## 2. Bốn cách dựng, và cách thứ năm bị cấm
 
@@ -57,7 +57,7 @@ Test phụ thuộc dữ liệu tình cờ **không phải test**. Nó là một 
 | **Mock** | Chặn và trả dữ liệu giả ở tầng mạng | Kiểm FE độc lập, hoặc mô phỏng lỗi | Thấp, nhưng không kiểm được BE |
 | ~~**DB**~~ | ~~`INSERT`/`UPDATE` thẳng vào bảng~~ | **KHÔNG BAO GIỜ** | Rất cao — xem mục 3 |
 
-Thứ tự ưu tiên: **Factory → Fixture → Hook → Mock**. Xuống tầng nào thì mất một phần độ thật của test, nên
+Thứ tự ưu tiên: Factory → Fixture → Hook → Mock. Xuống tầng nào thì mất một phần độ thật của test, nên
 chỉ xuống khi tầng trên không làm được.
 
 ## 3. Vì sao database bị cấm: bug ma
@@ -65,7 +65,7 @@ chỉ xuống khi tầng trên không làm được.
 Đây là mục quan trọng nhất của bài.
 
 Dựng dữ liệu bằng `UPDATE` thẳng vào bảng tạo ra trạng thái mà **luồng ứng dụng thật không bao giờ sinh ra
-được**. Ứng dụng xử lý sai với trạng thái đó là chuyện dễ hiểu — nhưng **nó không phải bug**, vì trạng thái
+được. Ứng dụng xử lý sai với trạng thái đó là chuyện dễ hiểu, nhưng nó không phải bug**, vì trạng thái
 đó không xảy ra trong thực tế.
 
 Ví dụ cụ thể trên tài liệu mẫu:
@@ -76,7 +76,7 @@ UPDATE orders SET status = 'CANCELLED' WHERE id = 123;
 ```
 
 Nhưng luồng thật khi hủy đơn còn làm bốn việc nữa: ghi bản ghi hoàn tiền · cập nhật tồn kho · sinh thông báo ·
-ghi log audit. Câu `UPDATE` trên bỏ hết. Giờ bạn có một đơn `CANCELLED` mà **không có bản ghi hoàn tiền** —
+ghi log audit. Câu `UPDATE` trên bỏ hết. Giờ bạn có một đơn `CANCELLED` mà không có bản ghi hoàn tiền —
 trạng thái không tồn tại trong sản phẩm thật.
 
 Test trên đó rồi thấy màn Chi tiết hiển thị sai → bạn log bug → Dev điều tra → phát hiện dữ liệu không hợp lệ
@@ -92,7 +92,7 @@ Test trên đó rồi thấy màn Chi tiết hiển thị sai → bạn log bug 
 - Trường có trong DB nhưng màn không render?
 - Có ghi trùng hai bản ghi không?
 
-Và kể cả khi đọc: **kết quả truy vấn DB không phải bằng chứng** (Bài 13). Nó là công cụ điều tra.
+Và kể cả khi đọc: kết quả truy vấn DB không phải bằng chứng (Bài 13). Nó là công cụ điều tra.
 
 ## 4. Factory: cách mặc định
 
@@ -159,7 +159,7 @@ Bốn quyết định trong đoạn trên, mỗi cái chặn một vấn đề:
 |---|---|
 | Tiền tố `IT test` + `MA_TASK` | Người khác nhìn bản ghi biết là dữ liệu test của task nào — không xoá nhầm, không tưởng là dữ liệu thật |
 | `Date.now()` trong tên | Chạy song song không đụng nhau |
-| Ném lỗi có chữ `SETUP:` | Bài 13 phân loại được đây là lỗi dựng, **không** log Jira |
+| Ném lỗi có chữ `SETUP:` | Bài 13 phân loại được đây là lỗi dựng, không log Jira |
 | `don()` không throw | Dọn thất bại làm test đỏ thì bạn mất kết quả thật của lượt chạy |
 
 ## 5. Fixture của Playwright: dựng và dọn tự động
@@ -201,7 +201,7 @@ const test = base.test.extend({
 module.exports = { test, expect: base.expect };
 ```
 
-Test giờ đọc rất gọn, và **không còn phụ thuộc dữ liệu tình cờ**:
+Test giờ đọc rất gọn, và không còn phụ thuộc dữ liệu tình cờ:
 
 ```js
 const { test, expect } = require('../support/fixtures');
@@ -224,16 +224,16 @@ Không phải tiền điều kiện nào cũng dựng được. Phân **ba mức
 | Mức | Nghĩa | Trạng thái ở Bài 13 nếu chưa chạy được |
 |---|---|---|
 | **Ready** | Dựng được ngay bằng factory hoặc fixture | — (chạy bình thường) |
-| **Cần hook** | Cần Dev làm endpoint riêng; **nêu rõ thiếu cái gì** | `BLOCKED_SETUP` |
+| **Cần hook** | Cần Dev làm endpoint riêng; nêu rõ thiếu cái gì | `BLOCKED_SETUP` |
 | **Chỉ làm tay** | Bản chất không tự động được | `SKIP_SETUP` |
 
-Vì sao phải tách hai mức cuối: chúng là **hai việc khác nhau**.
+Vì sao phải tách hai mức cuối: chúng là hai việc khác nhau.
 
-- `Cần hook` là một **yêu cầu gửi tới Dev** — có đường xử lý.
-- `Chỉ làm tay` là một **quyết định về phạm vi** — không ai phải làm gì thêm.
+- `Cần hook` là một yêu cầu gửi tới Dev — có đường xử lý.
+- `Chỉ làm tay` là một quyết định về phạm vi — không ai phải làm gì thêm.
 
 Gộp cả hai vào `SKIP` thì không ai biết cái nào cần đòi Dev, cái nào chấp nhận làm tay. Và ghi *"thiếu
-capability"* chung chung cũng vô dụng, phải ghi **thiếu hook nào, thiếu quyền gì**.
+capability"* chung chung cũng vô dụng, phải ghi thiếu hook nào, thiếu quyền gì.
 
 ## 7. Hợp đồng tiền điều kiện
 
@@ -263,7 +263,7 @@ Với mỗi tiền điều kiện, ghi bốn thứ. Đặt trong `requirements/s
 
 Ba lý do hợp đồng này đáng viết:
 
-1. **Case chết giữa chừng lộ ra ở Phase 1**, không phải giữa lúc execute.
+1. Case chết giữa chừng lộ ra ở Phase 1, không phải giữa lúc execute.
 2. **Phần verify** là thứ hay bị bỏ. Dựng xong mà không kiểm thì bạn không biết nó đã dựng đúng.
 3. **Phần dọn** viết ra thì mới có người làm.
 
@@ -277,9 +277,9 @@ Môi trường test là môi trường **dùng chung**: BA đang demo, Dev đang
 
 Ba luật:
 
-1. **Chỉ chạm dữ liệu mình tạo.** Không sửa, không xoá bản ghi có sẵn, kể cả khi trông như rác.
-2. **Xác nhận trước mỗi lượt chạm có khả năng thay đổi dữ liệu**, khi làm thủ công.
-3. **Dọn thứ mình tạo**, và có một janitor dọn định kỳ cho phần rơi lại.
+1. Chỉ chạm dữ liệu mình tạo. Không sửa, không xoá bản ghi có sẵn, kể cả khi trông như rác.
+2. Xác nhận trước mỗi lượt chạm có khả năng thay đổi dữ liệu, khi làm thủ công.
+3. Dọn thứ mình tạo, và có một janitor dọn định kỳ cho phần rơi lại.
 
 `scripts/qa/don-du-lieu-test.js`:
 
@@ -337,7 +337,7 @@ async function main() {
 main().catch((e) => { console.error('[janitor] lỗi: ' + e.message); process.exit(1); });
 ```
 
-Ba lớp an toàn: **chỉ tiền tố của factory** · **chỉ bản ghi cũ hơn N giờ** (không xoá thứ đang chạy) ·
+Ba lớp an toàn: chỉ tiền tố của factory · chỉ bản ghi cũ hơn N giờ (không xoá thứ đang chạy) ·
 **mặc định xem trước**.
 
 ---
@@ -416,7 +416,7 @@ chúng là hạ tầng test. Câu hỏi phân loại ở Bài 0 vẫn dùng đư
 - [ ] Mọi dữ liệu factory tạo ra mang tiền tố nhận diện được và có `MA_TASK`.
 - [ ] Lỗi dựng ném ra có chữ `SETUP:` để Bài 13 phân loại được.
 - [ ] Hàm `don()` **không throw** — dọn lỗi không làm test đỏ.
-- [ ] Tôi đã **đếm bản ghi trước và sau** khi chạy suite, và hai số bằng nhau.
+- [ ] Tôi đã đếm bản ghi trước và sau khi chạy suite, và hai số bằng nhau.
 - [ ] Tôi đã thử ca test đỏ, và phần dọn **vẫn chạy**.
 - [ ] Hợp đồng tiền điều kiện của tôi có đủ bốn phần, gồm cả **verify**.
 - [ ] Tôi phân biệt được `Cần hook` với `Chỉ làm tay`, và mỗi `Cần hook` ghi rõ endpoint cần.
@@ -425,17 +425,17 @@ chúng là hạ tầng test. Câu hỏi phân loại ở Bài 0 vẫn dùng đư
 
 ## Bài tập về nhà
 
-Tìm trong suite hoặc trong bộ testcase của dự án bạn **một** chỗ đang dựng dữ liệu bằng câu lệnh database
+Tìm trong suite hoặc trong bộ testcase của dự án bạn một chỗ đang dựng dữ liệu bằng câu lệnh database
 (hoặc bằng cách sửa tay trong công cụ quản trị). Với chỗ đó, trả lời:
 
-1. Trạng thái đó có thể xảy ra qua **luồng ứng dụng thật** không?
+1. Trạng thái đó có thể xảy ra qua luồng ứng dụng thật không?
 2. Nếu có, dựng qua API cần những bước nào?
-3. Nếu không, thì test đó đang kiểm một trạng thái **không tồn tại** — nó còn nghĩa gì?
+3. Nếu không, thì test đó đang kiểm một trạng thái không tồn tại. Nó còn nghĩa gì?
 
 Câu 3 là câu khó và cũng là câu đáng giá nhất.
 
 ## Đọc thêm
 
-- Bài 13 sẽ dùng chữ `SETUP:` trong lỗi factory để phân loại `setup_failure`, loại **không** log Jira.
+- Bài 13 sẽ dùng chữ `SETUP:` trong lỗi factory để phân loại `setup_failure`, loại không log Jira.
 - [`tests/support/setup/`](../../tests/support/setup/) của kit này, setup layer đầy đủ, gồm cả guarded client
   chỉ-đọc cho database.

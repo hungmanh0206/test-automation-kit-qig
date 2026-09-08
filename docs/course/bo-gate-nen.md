@@ -213,7 +213,7 @@ if (kq.viPham.length) {
 ketThuc(kq);
 ```
 
-Hai danh sách `BO_QUA` và `BINARY` **không phải để làm gate dễ dãi** — chúng là phần chống báo oan. Không có
+Hai danh sách `BO_QUA` và `BINARY` không phải để làm gate dễ dãi. Chúng là phần chống báo oan. Không có
 chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ token đều đỏ, và bạn sẽ tắt gate trong tuần.
 
 ## 5. Gate 3 — kiem-dau-vao: bạn tự viết
@@ -223,7 +223,7 @@ chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ t
 **Tên:** `scripts/qa/kiem-dau-vao.js` · **Chạy:** `npm run kiem-dau-vao -- --task PROJ-1234`
 
 **Phải kiểm:**
-1. Biến `MA_TASK` và `THU_MUC_KET_QUA` **có giá trị** (không rỗng).
+1. Biến `MA_TASK` và `THU_MUC_KET_QUA` có giá trị (không rỗng).
 2. Thư mục `<THU_MUC_KET_QUA>/tasks/<MA_TASK>/` **tồn tại**.
 3. File `profiles/<MA_TASK>/task.env` **tồn tại** — nếu không thì credentials sẽ rơi về `.env` chung.
 4. **Mọi** file `.json` trong thư mục task **parse được**.
@@ -232,7 +232,7 @@ chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ t
 **Mã thoát:** thiếu biến hoặc thiếu thư mục → `2` (không đo được). JSON hỏng hoặc thiếu testcase → `1`.
 
 > Vì sao mục 3 quan trọng đến thế. Quên truyền file env riêng của task là lỗi kinh điển: env rơi về file
-> chung, thiếu credentials, công cụ đứng ở màn đăng nhập, và **mọi màn đọc ra 0 cột** — báo cáo trông y hệt
+> chung, thiếu credentials, công cụ đứng ở màn đăng nhập, và mọi màn đọc ra 0 cột. Báo cáo trông y hệt
 > như ứng dụng hỏng thật. Đó chính là câu chuyện ở Bài 8 mục 2, và kiem-dau-vao là nơi chặn nó sớm nhất.
 
 **Tự kiểm sau khi viết:** thiếu `MA_TASK` → `2` · JSON hỏng → `1` kèm tên file và số dòng · đủ mọi thứ → `0`.
@@ -370,7 +370,7 @@ Viết `tu-soi.js`, chạy `npm run tu-soi -- --task PROJ-1234 --status <đườ
 
 ### Bước 5 — Cố tình làm sai từng thứ (15 phút)
 
-Bảng này là nghiệm thu của cả bài. **Mỗi dòng chỉ được làm đúng một gate đỏ** — nếu hai gate cùng đỏ thì
+Bảng này là nghiệm thu của cả bài. Mỗi dòng chỉ được làm đúng một gate đỏ. Nếu hai gate cùng đỏ thì
 phạm vi của chúng đang chồng nhau, cần tách lại.
 
 | Làm sai gì | Gate nào phải đỏ | Mã | Thật ra đỏ gate nào | Đạt? |
@@ -418,19 +418,19 @@ Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát v�
 - [ ] `kiem-ton-kho` hỏi runner, không tự đếm file.
 - [ ] `quet-secret` bỏ qua file `.example` và tài liệu, và tôi hiểu vì sao đó không phải nới lỏng.
 - [ ] `kiem-dau-vao` phân biệt đúng `exit 2` với `exit 1`.
-- [ ] `tu-soi` chỉ điều phối, và **mỗi gate vẫn chạy được riêng**.
+- [ ] `tu-soi` chỉ điều phối, và mỗi gate vẫn chạy được riêng.
 - [ ] Trong `tu-soi`, `KHÔNG ĐO ĐƯỢC` thắng `VI PHẠM`.
 - [ ] **6/6 dòng** ở bảng Bước 5 đỏ đúng gate mong đợi, không gate nào chồng phạm vi.
 
 ## Bài tập về nhà
 
-1. **Tầng chất lượng dòng cho `design_gate`** — bắt oracle rỗng theo mẫu ở mục 6. Chạy trên bộ testcase thật
+1. Tầng chất lượng dòng cho `design_gate`. Bắt oracle rỗng theo mẫu ở mục 6. Chạy trên bộ testcase thật
    của bạn rồi **đếm**: bao nhiêu phần trăm case có oracle không phán được gì? Con số đó thường gây bất ngờ.
-2. **Cờ `--warn-only` cho gate mới.** Tầng chất lượng dòng nên bắt đầu ở mức cảnh báo, theo đúng ba bước ở
+2. Cờ `--warn-only` cho gate mới. Tầng chất lượng dòng nên bắt đầu ở mức cảnh báo, theo đúng ba bước ở
    Bài 8 mục 7.
 
 ## Đọc thêm
 
 - [`scripts/qa/`](../../scripts/qa/) của kit này, bộ máy, cùng một khuôn bạn vừa dựng.
-- Bài 28: khi số gate tăng lên, làm sao biết **gate nào đã mất nơi gọi** và **gate nào đã âm thầm tụt thành
+- Bài 28: khi số gate tăng lên, làm sao biết gate nào đã mất nơi gọi và **gate nào đã âm thầm tụt thành
   cảnh báo**.

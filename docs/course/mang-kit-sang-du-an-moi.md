@@ -14,7 +14,7 @@
 
 | Từ | Nghĩa gọn |
 |---|---|
-| **Tầng CHUNG** | Mang đi được mọi dự án. Sửa nó ảnh hưởng **mọi** task đang chạy |
+| **Tầng CHUNG** | Mang đi được mọi dự án. Sửa nó ảnh hưởng mọi task đang chạy |
 | **Tầng DỰ ÁN** | Chỉ đúng với dự án này. Sửa thoải mái |
 | **Chuyển giao** | Đưa kit vào một dự án tới lúc nó chạy trọn một vòng thật |
 
@@ -22,7 +22,7 @@
 
 Bốn việc:
 
-1. Phân ba loại: **giữ nguyên · cấu hình · thay** (25 phút).
+1. Phân ba loại: giữ nguyên · cấu hình · thay (25 phút).
 2. **Xây gate** canh ranh giới hai tầng (25 phút).
 3. Khớp cơ chế đăng nhập, việc tốn công nhất, luôn luôn (40 phút).
 4. Chạy trọn một vòng thật trên dự án bạn (30 phút).
@@ -36,7 +36,7 @@ Người ta hay chia hai: "dùng lại được" và "phải viết mới". Th�
 | Loại | Là gì | Ví dụ | Công sức |
 |---|---|---|---|
 | **Giữ nguyên** | mang sang không sửa một chữ | `scripts/lib/**`, mọi máy chặn, `phan-quyet.json`, `tests/support/evidence.js` | 0 |
-| **Cấu hình** | giữ mã, **đổi dữ liệu khai báo** | `chieu-phu.json`, `risk_model.json`, `mutants.json`, `anh-xa-luu-tru.json`, `ci_scope.json` | thấp |
+| **Cấu hình** | giữ mã, đổi dữ liệu khai báo | `chieu-phu.json`, `risk_model.json`, `mutants.json`, `anh-xa-luu-tru.json`, `ci_scope.json` | thấp |
 | **Thay** | phải viết mới cho dự án này | đăng nhập, `factory.js`, page object, `tests/e2e/**` | **cao** |
 
 Nhìn theo tỉ lệ thì kit đã trả công: **giữ nguyên** chiếm phần lớn số dòng, **thay** chiếm phần lớn thời gian.
@@ -83,7 +83,7 @@ cắt qua cả hai tầng.
 
 ## Việc 2 — Gate canh ranh giới (25 phút)
 
-Vì sao cần máy: một commit sửa cả hai tầng là commit **không mang đi được**. Dự án khác muốn lấy phần chung
+Vì sao cần máy: một commit sửa cả hai tầng là commit không mang đi được. Dự án khác muốn lấy phần chung
 thì phải tách tay, và họ sẽ tách sai.
 
 Áp công thức 5 câu hỏi (Bài 8):
@@ -178,7 +178,7 @@ không phải mã 0. Máy im lặng cho qua thứ nó không hiểu là máy đa
 
 ## Việc 3 — Khớp đăng nhập: việc tốn công nhất (40 phút)
 
-Chuyển kit sang dự án mới, **80% thời gian nằm ở đăng nhập**. Luôn luôn. App thực hành không có đăng nhập
+Chuyển kit sang dự án mới, 80% thời gian nằm ở đăng nhập. Luôn luôn. App thực hành không có đăng nhập
 nên tới giờ bạn chưa gặp.
 
 ### Bốn cơ chế hay gặp
@@ -190,7 +190,7 @@ nên tới giờ bạn chưa gặp.
 | OAuth / SSO qua nhà cung cấp ngoài | chuyển hướng sang miền khác | xin tài khoản **dịch vụ** dùng ROPC/client-credentials; đừng automate màn SSO |
 | Có OTP / captcha | có bước xác thực hai lớp | **không** automate — xin tài khoản test được miễn OTP |
 
-Hai dòng cuối là chỗ người mới mất nhiều ngày nhất, và cả hai đều **không giải bằng code**: giải bằng cách
+Hai dòng cuối là chỗ người mới mất nhiều ngày nhất, và cả hai đều không giải bằng code: giải bằng cách
 **xin đúng loại tài khoản**. Hỏi sớm, đừng thử tự vượt.
 
 ### Ba ràng buộc phải hỏi trước khi viết dòng nào
@@ -199,7 +199,7 @@ Hai dòng cuối là chỗ người mới mất nhiều ngày nhất, và cả h
 |---|---|
 | Token sống bao lâu? | hết hạn giữa lượt chạy ⇒ đỏ rải rác, trông hệt flaky (Bài 22) |
 | Sai mật khẩu mấy lần thì **khoá**? | test chạy song song có thể tự khoá tài khoản của chính mình |
-| Một tài khoản đăng nhập được mấy nơi cùng lúc? | có hệ thống giới hạn 3 phiên — profile trình duyệt mới ăn một suất, hết suất là `setup_failure`, **không phải bug** |
+| Một tài khoản đăng nhập được mấy nơi cùng lúc? | có hệ thống giới hạn 3 phiên — profile trình duyệt mới ăn một suất, hết suất là `setup_failure`, không phải bug |
 
 Ba câu này lấy mất 5 phút hỏi, và tiết kiệm hàng ngày điều tra "flaky".
 
@@ -253,13 +253,13 @@ Ba điều trong đoạn trên là kinh nghiệm, không phải phong cách:
 
 | Điều | Vì sao |
 |---|---|
-| `addInitScript` **trước** `goto` | vào trang rồi mới bơm thì app đã kịp đá về màn đăng nhập |
+| `addInitScript` trước `goto` | vào trang rồi mới bơm thì app đã kịp đá về màn đăng nhập |
 | **Xác nhận đã vào** bằng một element | không xác nhận thì mọi case sau đỏ vì cùng một lý do, và bạn debug nhầm chỗ |
-| Mọi lỗi có tiền tố `SETUP:` | xếp vào `SETUP_FAILURE`, không phải `FAIL`, và **không log bug** |
+| Mọi lỗi có tiền tố `SETUP:` | xếp vào `SETUP_FAILURE`, không phải `FAIL`, và không log bug |
 
 ## Việc 4 — Chạy trọn một vòng thật (30 phút)
 
-Kit chỉ được coi là đã chuyển giao khi nó đi hết **một** vòng trên dự án thật. Danh sách chuyển giao:
+Kit chỉ được coi là đã chuyển giao khi nó đi hết một vòng trên dự án thật. Danh sách chuyển giao:
 
 ```markdown
 ## Chuyển giao kit → <Dự án>
@@ -287,9 +287,9 @@ Kit chỉ được coi là đã chuyển giao khi nó đi hết **một** vòng 
 - [ ] Suite của tôi bắt được **≥1** bug thật của dự án này. Không bắt được cái nào ⇒ chưa xong.
 ```
 
-Dòng cuối là điều kiện nghiệm thu thật. Kit chạy xanh trên dự án mới **không** chứng minh gì, đúng nguyên
-tắc từ Bài 0: app đúng và bộ kiểm mù cho **cùng một dấu hiệu**. Trên app thực hành bạn có 3 bug biết trước
-làm đối chứng; trên dự án thật, đối chứng là **một bug thật**.
+Dòng cuối là điều kiện nghiệm thu thật. Kit chạy xanh trên dự án mới không chứng minh gì, đúng nguyên
+tắc từ Bài 0: app đúng và bộ kiểm mù cho cùng một dấu hiệu. Trên app thực hành bạn có 3 bug biết trước
+làm đối chứng; trên dự án thật, đối chứng là một bug thật.
 
 Chưa có bug nào để bắt? Có hai đường:
 
@@ -321,20 +321,20 @@ Chưa có bug nào để bắt? Có hai đường:
 
 1. Ba loại khi chuyển kit là gì? Loại nào đông nhất về số dòng, loại nào tốn nhiều thời gian nhất?
 2. Vì sao commit trộn hai tầng là commit "không mang đi được"?
-3. Gate gặp tệp chưa phân loại thì trả mã mấy? Vì sao **không** đoán theo tên?
-4. Bốn cơ chế đăng nhập. Cái nào **không** nên automate, và giải bằng gì?
+3. Gate gặp tệp chưa phân loại thì trả mã mấy? Vì sao không đoán theo tên?
+4. Bốn cơ chế đăng nhập. Cái nào không nên automate, và giải bằng gì?
 5. Ba câu hỏi ràng buộc phải hỏi trước khi viết đăng nhập. Câu nào liên quan tới "trông giống flaky"?
-6. Vì sao `addInitScript` phải **trước** `goto`?
+6. Vì sao `addInitScript` phải trước `goto`?
 7. Vì sao lỗi đăng nhập phải có tiền tố `SETUP:`?
 8. Điều kiện nghiệm thu thật của chuyển giao là gì? Vì sao "chạy xanh" chưa đủ?
 
 ## Bài tập về nhà (30 phút)
 
 1. Điền `kit-layers.md` cho dự án bạn. Chạy `layers-check.js` lên thay đổi gần nhất. Có tệp chưa phân loại
-   thì khai. Đó chính là những chỗ bạn **chưa quyết được** nó thuộc tầng nào, và cần quyết.
-2. Trả lời **ba câu ràng buộc đăng nhập** bằng cách hỏi dev/BA, không đoán. Ghi vào
+   thì khai. Đó chính là những chỗ bạn chưa quyết được nó thuộc tầng nào, và cần quyết.
+2. Trả lời ba câu ràng buộc đăng nhập bằng cách hỏi dev/BA, không đoán. Ghi vào
    `knowledge/system/dang-nhap.json` kèm `source` (Bài 18).
-3. Chạy trọn danh sách chuyển giao. Tới dòng cuối: **suite của bạn bắt được bug thật nào chưa?**
+3. Chạy trọn danh sách chuyển giao. Tới dòng cuối: suite của bạn bắt được bug thật nào chưa?
    Chưa thì chạy `npm run mutation` và đọc điểm, bạn sẽ biết mình đang mù ở đâu.
 
 ## Đọc thêm

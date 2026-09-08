@@ -42,7 +42,7 @@ Ba hệ quả:
 | Không có lịch sử | Lượt chạy tuần trước bị ghi đè bởi lượt tuần này |
 | Bug không nối về case | Dev nhận bug, không biết case nào phủ nó |
 
-Tích hợp là để **cả team đọc cùng một nguồn** — và để lịch sử không mất.
+Tích hợp là để cả team đọc cùng một nguồn, và để lịch sử không mất.
 
 ## 2. Nguyên tắc trước khi nối bất cứ hệ thống nào
 
@@ -51,11 +51,11 @@ Bốn nguyên tắc, và mỗi cái đến từ một lần mất mát:
 | Nguyên tắc | Vì sao |
 |---|---|
 | **Luôn dry-run trước** | Đẩy nhầm 500 case lên công cụ dùng chung thì rất khó rút lại |
-| **Kiểm công cụ có API xoá không** | Nếu **không** thì mọi lần đẩy là vĩnh viễn — dry-run thành bắt buộc, không phải cẩn thận thừa |
+| **Kiểm công cụ có API xoá không** | Nếu không thì mọi lần đẩy là vĩnh viễn — dry-run thành bắt buộc, không phải cẩn thận thừa |
 | **2xx không chứng minh mapping đúng** | Xem mục 4 |
 | **Một chiều rõ ràng** | Chốt rõ chiều nào là nguồn ở giai đoạn nào (Bài 9 mục 5) |
 
-> Kinh nghiệm cụ thể: công cụ test-management mà kit này dùng **không có API xoá**. Nên "dọn dẹp" nghĩa là
+> Kinh nghiệm cụ thể: công cụ test-management mà kit này dùng không có API xoá. Nên "dọn dẹp" nghĩa là
 > chuyển trạng thái sang `Deprecated`, không phải xoá. Hoá ra điều đó **tốt hơn**: giữ case nghĩa là giữ nguyên
 > lịch sử các lượt chạy đã gắn vào nó. Nhưng nó cũng nghĩa là đẩy nhầm thì sống với nó mãi.
 
@@ -171,14 +171,14 @@ main().catch((e) => { console.error('[publish] lỗi: ' + e.message); process.ex
 
 Đây là mục quan trọng nhất của bài.
 
-`201 Created` chỉ chứng minh **request được nhận**. Nó **không** chứng minh:
+`201 Created` chỉ chứng minh request được nhận. Nó không chứng minh:
 
-- Trường của bạn vào **đúng** trường của công cụ.
-- Giá trị **không bị biến đổi** (thang giá trị khác, cắt độ dài, chuẩn hoá).
-- Trường **không nằm trong danh sách cho phép ghi** — bị **bỏ qua âm thầm**.
+- Trường của bạn vào đúng trường của công cụ.
+- Giá trị không bị biến đổi (thang giá trị khác, cắt độ dài, chuẩn hoá).
+- Trường không nằm trong danh sách cho phép ghi — bị bỏ qua âm thầm.
 
 > Chuyện thật: bộ case dùng `Highest` cho Ưu tiên (thang Jira), nhưng công cụ map theo **tên** và thang của nó
-> là `Critical`. Kết quả: **14 case rơi về `Medium`** — mặc định. API trả `201` cho cả 14 case. Log trông hoàn
+> là `Critical`. Kết quả: 14 case rơi về `Medium`. Mặc định. API trả `201` cho cả 14 case. Log trông hoàn
 > hảo. Không ai biết cho tới khi có người mở công cụ ra xem.
 
 ```js
@@ -255,12 +255,12 @@ async function main() {
 main().catch((e) => { console.error('[doi-soat] lỗi: ' + e.message); process.exit(1); });
 ```
 
-Câu cuối trong thông báo lỗi là câu đáng nhớ: **sửa mapping, đừng sửa nguồn cho vừa công cụ.** Nguồn là
+Câu cuối trong thông báo lỗi là câu đáng nhớ: sửa mapping, đừng sửa nguồn cho vừa công cụ. Nguồn là
 canonical; nếu bạn đổi `Critical` thành `Highest` cho công cụ nhận thì bạn vừa làm hỏng canonical.
 
 ## 5. Đẩy kết quả: một lượt chạy = một cycle
 
-Kết quả cần **giữ lịch sử**. Mỗi lượt chạy tạo một cycle mới; chạy lại cùng tên thì **dùng lại** cycle cũ và
+Kết quả cần giữ lịch sử. Mỗi lượt chạy tạo một cycle mới; chạy lại cùng tên thì **dùng lại** cycle cũ và
 bỏ qua evidence đã có, thay vì đẻ cycle trùng.
 
 ```js
@@ -360,13 +360,13 @@ async function main() {
 main().catch((e) => { console.error('[day-ket-qua] lỗi: ' + e.message); process.exit(1); });
 ```
 
-> Để ý: gate chất lượng đứng **ngay trong đường publish**, không chỉ ở lệnh tự soi. Lý do thực dụng: người ta
-> bỏ qua lệnh tự soi rồi đẩy thẳng, và nếu gate chỉ ở một cửa thì không gì cản. **Cùng một luật, hai cửa**,
+> Để ý: gate chất lượng đứng ngay trong đường publish, không chỉ ở lệnh tự soi. Lý do thực dụng: người ta
+> bỏ qua lệnh tự soi rồi đẩy thẳng, và nếu gate chỉ ở một cửa thì không gì cản. Cùng một luật, hai cửa,
 > và luật dùng chung một module để không trôi.
 
 ## 6. Đối soát độ tươi trước khi execute
 
-Bài 9 mục 5 đã chốt: khi execute thì **công cụ test-management** là canonical. Nên trước khi chạy, kéo bản mới
+Bài 9 mục 5 đã chốt: khi execute thì công cụ test-management là canonical. Nên trước khi chạy, kéo bản mới
 nhất về, và **kiểm** bản sao đang có có cũ không.
 
 ```js
@@ -411,7 +411,7 @@ main().catch((e) => { console.error('[do-tuoi] lỗi: ' + e.message); process.ex
 
 ## 7. MCP server: cửa vào cho dữ liệu ngoài
 
-Agent cần đọc Jira, tài liệu, thiết kế. Đừng để mỗi chỗ tự gọi API — gom vào **một cửa vào**.
+Agent cần đọc Jira, tài liệu, thiết kế. Đừng để mỗi chỗ tự gọi API — gom vào một cửa vào.
 
 `.agent/config/mcp_config.md`:
 
@@ -487,7 +487,7 @@ Chín lệnh nên có: `/phase1` `/phase2` `/rerun` `/publish` `/kiem-dau-vao` `
 
 ### Bước 1 — Khảo sát công cụ của bạn (10 phút)
 
-Trước khi viết mã, trả lời bằng cách **đọc tài liệu API** của công cụ test-management đang dùng:
+Trước khi viết mã, trả lời bằng cách đọc tài liệu API của công cụ test-management đang dùng:
 
 | Câu hỏi | Trả lời |
 |---|---|
@@ -501,7 +501,7 @@ Câu 3 là câu hay gây mất mát nhất, xem mục 4.
 
 ### Bước 2 — Publish dry-run (15 phút)
 
-Viết `publish-testcase.js`. Chạy **dry-run** trên bộ case của bạn và **đọc payload xem trước**:
+Viết `publish-testcase.js`. Chạy **dry-run** trên bộ case của bạn và đọc payload xem trước:
 
 - `automationKey` có đúng `TC ID`?
 - `steps` ghép đúng cặp action ↔ expected? (đây là chỗ hay lệch một dòng)
@@ -518,7 +518,7 @@ npm run tms:publish -- --file <tc.md> --story <KEY> --apply --qa-approved
 npm run tms:verify-fields -- --file <tc.md>
 ```
 
-Nếu đối soát báo lệch — **đây là thu hoạch chính của bài**. Ghi lại:
+Nếu đối soát báo lệch. Đây là thu hoạch chính của bài. Ghi lại:
 
 | Trường | Nguồn | Công cụ | Nguyên nhân |
 |---|---|---|---|
@@ -570,14 +570,14 @@ kit-cua-toi/
 
 ## Tự kiểm
 
-- [ ] Tôi biết công cụ của mình **có API xoá hay không**, và điều đó đổi cách tôi làm thế nào.
+- [ ] Tôi biết công cụ của mình có API xoá hay không, và điều đó đổi cách tôi làm thế nào.
 - [ ] Publish của tôi mặc định **dry-run**, và cần **hai** cờ mới ghi thật.
-- [ ] Publish **kiểm cấu trúc bộ case trước** khi đẩy.
-- [ ] Tôi đã chạy đối soát từng trường và **đọc kết quả**, không chỉ tin `2xx`.
+- [ ] Publish kiểm cấu trúc bộ case trước khi đẩy.
+- [ ] Tôi đã chạy đối soát từng trường và đọc kết quả, không chỉ tin `2xx`.
 - [ ] Khi lệch, tôi sửa **mapping**, không sửa nguồn cho vừa công cụ.
 - [ ] Ánh xạ trạng thái đọc từ **taxonomy**, không hardcode trong script đẩy.
 - [ ] Gate chất lượng đứng ở **cả hai** cửa, và dùng chung một module.
-- [ ] Tôi đã mở công cụ ra kiểm **bằng chứng có mở được** từ giao diện.
+- [ ] Tôi đã mở công cụ ra kiểm bằng chứng có mở được từ giao diện.
 - [ ] Kiểm độ tươi chặn được ca bản sao local cũ hơn công cụ.
 - [ ] Slash command của tôi nạp đúng file và đúng thứ tự gate.
 

@@ -1,6 +1,6 @@
 # Bài 26 — Đóng gói và phát hành kit
 
-> **2 giờ** · Có gì trong tay: kit có CI, có tích hợp · Sau bài này: một bản phát hành **đã được chứng minh là chạy được**, không phải một tệp zip hy vọng
+> **2 giờ** · Có gì trong tay: kit có CI, có tích hợp · Sau bài này: một bản phát hành đã được chứng minh là chạy được, không phải một tệp zip hy vọng
 
 **Tóm tắt bài này**
 
@@ -14,7 +14,7 @@
 
 | Từ | Nghĩa gọn |
 |---|---|
-| **Bản phát hành** | Một gói có số phiên bản, có ghi chú đổi gì, và **đã được nghiệm thu** |
+| **Bản phát hành** | Một gói có số phiên bản, có ghi chú đổi gì, và đã được nghiệm thu |
 | **Nghiệm thu gói** | Giải nén ra thư mục sạch → cài lại → chạy gate. Đạt mới gọi là phát hành được |
 | **Tầng chung / tầng dự án** | Cái mang đi được mọi nơi / cái chỉ đúng với dự án này |
 
@@ -24,7 +24,7 @@ Bốn việc:
 
 1. Đánh số phiên bản và viết ghi chú đổi gì (20 phút).
 2. Đóng gói **sạch**: loại tầng dự án, quét secret trong gói (35 phút).
-3. **Nghiệm thu gói** — bước quan trọng nhất, và bước hay bị bỏ nhất (40 phút).
+3. Nghiệm thu gói. Bước quan trọng nhất, và bước hay bị bỏ nhất (40 phút).
 4. Đưa bản mới sang dự án khác thế nào (25 phút).
 
 ---
@@ -43,7 +43,7 @@ Quy ước đơn giản, đủ dùng:
 
 | Đổi gì | Tăng | Ví dụ |
 |---|---|---|
-| Gate **mới chặn thêm** thứ trước đây cho qua | **major** | thêm `gate-mo-rong` ⇒ mọi task đang chạy có thể đỏ |
+| Gate mới chặn thêm thứ trước đây cho qua | **major** | thêm `gate-mo-rong` ⇒ mọi task đang chạy có thể đỏ |
 | Thêm máy/lệnh mà không đổi hành vi cũ | minor | thêm `sinh-dashboard.js` |
 | Sửa lỗi, sửa chữ, chỉnh ngưỡng nhỏ | patch | sửa regex bắt oan |
 
@@ -74,13 +74,13 @@ Quy ước đơn giản, đủ dùng:
 
 Ba điều làm changelog này dùng được, và cả ba thường thiếu:
 
-1. Khối **PHÁ đứng đầu** — người đọc cần biết cái này trước khi quyết nâng cấp.
-2. Mỗi mục phá có **Ảnh hưởng** + **Cách xử lý**. Không có cách xử lý thì đó là thông báo, không phải hướng dẫn.
-3. Viết cho **người nâng cấp**, không phải cho người viết code.
+1. Khối PHÁ đứng đầu. Người đọc cần biết cái này trước khi quyết nâng cấp.
+2. Mỗi mục phá có **Ảnh hưởng** + Cách xử lý. Không có cách xử lý thì đó là thông báo, không phải hướng dẫn.
+3. Viết cho người nâng cấp, không phải cho người viết code.
 
 ## Việc 2 — Đóng gói sạch (35 phút)
 
-Gói phát hành phải chứa **tầng chung**, và tuyệt đối không chứa **tầng dự án**.
+Gói phát hành phải chứa **tầng chung**, và tuyệt đối không chứa tầng dự án.
 
 ```js
 #!/usr/bin/env node
@@ -196,7 +196,7 @@ Hai chi tiết đáng chú ý:
 > Bước quan trọng nhất của bài này, và là bước gần như ai cũng bỏ.
 
 Gói chưa từng được giải nén và chạy thử thì bạn **không biết** nó chạy được. Và cách duy nhất để biết là làm
-đúng những gì người nhận sẽ làm: **thư mục sạch, cài lại, chạy gate**.
+đúng những gì người nhận sẽ làm: thư mục sạch, cài lại, chạy gate.
 
 ```js
 #!/usr/bin/env node
@@ -296,7 +296,7 @@ Bẫy này đã cắn thật, và nó là lý do bước nghiệm thu tồn tạ
 Điều tệ nhất không phải là crash. Là **nơi** nó crash: trên máy người nhận, trong ngày đầu tiên họ thử kit —
 đúng lúc họ đang quyết định có tin kit này không.
 
-Bản `kiem-file-cam.js` ở Bài 5 đã xử đúng: nó bắt lỗi và trả **mã 2 — KHÔNG ĐO ĐƯỢC**, không crash. Đây là
+Bản `kiem-file-cam.js` ở Bài 5 đã xử đúng: nó bắt lỗi và trả mã 2 — KHÔNG ĐO ĐƯỢC, không crash. Đây là
 ví dụ rõ nhất trong cả tài liệu này cho luật *KHÔNG ĐO ĐƯỢC ≠ VI PHẠM* (Bài 11): "không phải repo git" là *chưa đo
 được*, không phải *có tệp cấm*.
 
@@ -324,7 +324,7 @@ npm run nghiem-thu-goi -- dist/kit-3.1.0
 [nghiem-thu] ✓ gói chạy được ở thư mục sạch. ĐƯỢC phát hành.
 ```
 
-Nếu có `✗`, sân kiểm **được giữ lại** để bạn vào đó tìm nguyên nhân, đó là cố ý.
+Nếu có `✗`, sân kiểm được giữ lại để bạn vào đó tìm nguyên nhân, đó là cố ý.
 
 ## Việc 4 — Đưa bản mới sang dự án khác (25 phút)
 
@@ -334,7 +334,7 @@ Dự án B đang dùng kit `2.4.0`, bạn phát hành `3.0.0`. Quy trình:
 |---|---|---|
 | 1 | Đọc khối **PHÁ** trong changelog | biết cái gì sẽ đỏ trước khi nó đỏ |
 | 2 | Nâng cấp trên **một nhánh**, không phải `main` | task đang chạy không bị ảnh hưởng |
-| 3 | Chép đè **chỉ tầng chung** | tầng dự án của B là của B |
+| 3 | Chép đè chỉ tầng chung | tầng dự án của B là của B |
 | 4 | Chạy `npm run gates` | đỏ ở đây là **kỳ vọng** nếu changelog đã báo |
 | 5 | Xử lý từng mục PHÁ theo *Cách xử lý* | |
 | 6 | Chạy lại một task **đã xong** trên kit mới | đối chứng: kết quả cũ có tái hiện được không |
@@ -373,13 +373,13 @@ Nhớ thêm `dist/` vào `.gitignore`, nó là artifact, sinh lại được t�
 
 ## Bài tập về nhà (30 phút)
 
-1. Đóng gói kit của bạn. Nghiệm thu. Nếu đỏ — **đây là thu hoạch chính**: ghi lại lỗi, nó sẽ cắn người nhận
+1. Đóng gói kit của bạn. Nghiệm thu. Nếu đỏ. Đây là thu hoạch chính: ghi lại lỗi, nó sẽ cắn người nhận
    đầu tiên nếu bạn không sửa.
 2. Cố tình làm gói hỏng theo hai cách, và kiểm máy bắt được:
    - thêm một dòng `TEST_PASS: "mat-khau-that-gia"` vào một tệp trong tầng chung ⇒ `dong-goi` phải **chặn và
      xoá gói**;
    - thêm một máy có `execSync('git rev-parse')` không bọc try/catch ⇒ `nghiem-thu-goi` phải **đỏ**.
-3. Viết mục `CHANGELOG.md` cho bản hiện tại. Nếu có mục PHÁ, viết đủ **Ảnh hưởng** và **Cách xử lý** — không
+3. Viết mục `CHANGELOG.md` cho bản hiện tại. Nếu có mục PHÁ, viết đủ **Ảnh hưởng** và Cách xử lý. Không
    viết nổi cách xử lý thì bạn chưa nên phát hành thay đổi đó.
 
 ## Đọc thêm

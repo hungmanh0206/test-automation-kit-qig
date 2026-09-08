@@ -1,6 +1,6 @@
 # Bài 22 — Metrics và độ tin cậy
 
-> **1 giờ 30 phút** · Có gì trong tay: mutation score gốc đã chốt, vài chục lượt chạy đã ghi · Sau bài này: đo được suite của bạn **lệ thuộc retry bao nhiêu**, và biết vì sao dọn flaky có thể chôn bug thật
+> **1 giờ 30 phút** · Có gì trong tay: mutation score gốc đã chốt, vài chục lượt chạy đã ghi · Sau bài này: đo được suite của bạn lệ thuộc retry bao nhiêu, và biết vì sao dọn flaky có thể chôn bug thật
 
 **Tóm tắt bài này**
 
@@ -14,8 +14,8 @@
 
 | Từ | Nghĩa gọn |
 |---|---|
-| **Clean pass rate** | Tỉ lệ case xanh **ngay lượt đầu**, không cần chạy lại |
-| **Eventual pass rate** | Tỉ lệ case xanh **sau khi đã chạy lại** vài lần |
+| **Clean pass rate** | Tỉ lệ case xanh ngay lượt đầu, không cần chạy lại |
+| **Eventual pass rate** | Tỉ lệ case xanh sau khi đã chạy lại vài lần |
 | **Reliability index** | Điểm tin cậy của **từng test**: nó xanh-ngay bao nhiêu phần trăm số lần |
 | **Quarantine** | Tách một test ra khỏi luồng chính vì nó quá chập chờn — nhưng **không xoá** |
 
@@ -25,19 +25,19 @@ Bốn việc:
 
 1. Tính hai đường tỉ lệ, và đọc **khoảng cách** giữa chúng (25 phút).
 2. Tính độ tin cậy từng test, xếp hạng, quyết định quarantine (25 phút).
-3. Hiểu vì sao dọn flaky có thể **chôn bug thật**, và cách phân biệt (20 phút).
+3. Hiểu vì sao dọn flaky có thể chôn bug thật, và cách phân biệt (20 phút).
 4. Ba luật liêm chính của phép đo. Không có chúng thì mọi con số trên là trang trí (20 phút).
 
 ---
 
 ## Việc 1 — Hai đường, và khoảng cách giữa chúng (25 phút)
 
-Báo cáo của bạn nói *"98% pass"*. Câu đó **thiếu một nửa thông tin**: 98% đó là ngay lượt đầu, hay sau khi
+Báo cáo của bạn nói *"98% pass"*. Câu đó thiếu một nửa thông tin: 98% đó là ngay lượt đầu, hay sau khi
 chạy lại ba lần?
 
 | Chỉ số | Đo gì | Nói lên điều gì |
 |---|---|---|
-| **Clean pass rate** | xanh **ngay lượt đầu** | chất lượng thật của app + suite |
+| **Clean pass rate** | xanh ngay lượt đầu | chất lượng thật của app + suite |
 | **Eventual pass rate** | xanh **sau retry** | thứ báo cáo hay khoe |
 | **Khoảng cách** | eventual − clean | **mức lệ thuộc retry** |
 
@@ -49,7 +49,7 @@ Khoảng cách là số quan trọng nhất, và không ai báo cáo nó:
 | 5–10% | có mấy test chập chờn. Còn kiểm soát được |
 | **>15%** | **retry đang che một thứ gì đó** — hoặc suite hỏng, hoặc app thật sự không ổn định |
 
-Trường hợp cuối nguy hiểm vì nó **trông giống trường hợp tốt**: cả hai đều cho báo cáo xanh.
+Trường hợp cuối nguy hiểm vì nó trông giống trường hợp tốt: cả hai đều cho báo cáo xanh.
 
 ```js
 #!/usr/bin/env node
@@ -138,11 +138,11 @@ Chạy trên lượt chạy gần nhất:
 node scripts/qa/do-metrics.js test-results/results.json
 ```
 
-**Bạn sẽ thấy** ba con số và danh sách test phải chạy lại, kèm **chuỗi kết quả** của từng test, `✗✓` nghĩa
+**Bạn sẽ thấy** ba con số và danh sách test phải chạy lại, kèm chuỗi kết quả của từng test, `✗✓` nghĩa
 là đỏ rồi xanh, `✗✗✓` là đỏ hai lần mới xanh.
 
 Chuỗi đó là dữ liệu, không phải trang trí: `✗✓` lặp lại ở cùng một test qua nhiều lượt là dấu hiệu rất khác
-với `✗✓` xuất hiện **một** lần.
+với `✗✓` xuất hiện một lần.
 
 ## Việc 2 — Độ tin cậy từng test và quarantine (25 phút)
 
@@ -181,7 +181,7 @@ Tỉ lệ toàn bộ suite không nói test **nào** yếu. Cần điểm theo t
 | Còn thấy nó không | **có** — nằm trong báo cáo, có nhãn | không |
 | Ai đó sẽ quay lại sửa không | có, vì nó còn hiện | **không** |
 
-> Xoá một test chập chờn là cách rẻ nhất để mất luôn phần phủ mà nó đang giữ, và **không ai biết** phần đó
+> Xoá một test chập chờn là cách rẻ nhất để mất luôn phần phủ mà nó đang giữ, và không ai biết phần đó
 > đã mất. Quarantine giữ lại tín hiệu "chỗ này chưa được canh".
 
 Và một luật đi kèm:
@@ -215,7 +215,7 @@ thường là bug hiệu năng hoặc race condition, tức loại bug đắt nh
 
 Dòng cuối là phép thử rẻ nhất và ít ai làm:
 
-> Chạy lại **một mình, tuần tự, không song song**. Vẫn đỏ ⇒ không phải flaky. Đó là bug, hoặc dữ liệu.
+> Chạy lại một mình, tuần tự, không song song. Vẫn đỏ ⇒ không phải flaky. Đó là bug, hoặc dữ liệu.
 
 ### Đưa vào quy trình, không để thành lời dặn
 
@@ -235,7 +235,7 @@ Trước khi gắn nhãn `flaky` cho bất cứ test nào, bắt buộc ghi:
 }
 ```
 
-Không điền được `daThu` thì **chưa được gắn nhãn flaky**. Đây là cách biến một phản xạ thành một bước có
+Không điền được `daThu` thì chưa được gắn nhãn flaky. Đây là cách biến một phản xạ thành một bước có
 bằng chứng, cùng cơ chế với `tangLoi` ở Bài 13.
 
 ## Việc 4 — Ba luật liêm chính của phép đo (20 phút)
@@ -244,7 +244,7 @@ Mọi con số trên chỉ có nghĩa nếu ba luật sau đúng. Thiếu một 
 
 ### Luật 1 — `forbidOnly` phải bật ở CI
 
-`test.only` lọt vào nhánh chính thì runner chỉ chạy **một** test và báo **xanh**. Clean pass rate `100%` với
+`test.only` lọt vào nhánh chính thì runner chỉ chạy một test và báo **xanh**. Clean pass rate `100%` với
 mẫu số bằng 1.
 
 ```js
@@ -261,11 +261,11 @@ module.exports = {
 ### Luật 2 — bỏ `skipped` khỏi mẫu số
 
 Test bị skip không nói gì về độ ổn định. Tính nó vào là làm loãng cả hai đường, và tệ hơn: skip thêm test là
-cách **làm đẹp số** mà không sửa gì. `do-metrics.js` ở trên đã lọc.
+cách làm đẹp số mà không sửa gì. `do-metrics.js` ở trên đã lọc.
 
 ### Luật 3 — độ phủ phải có ngưỡng tối thiểu cho **mỗi** chiều
 
-"Phủ 20/danh mục chiều" nghe rất tốt cho tới khi bạn thấy 12 chiều có đúng **một** case. Ngưỡng phải theo từng
+"Phủ 20/danh mục chiều" nghe rất tốt cho tới khi bạn thấy 12 chiều có đúng một case. Ngưỡng phải theo từng
 chiều, không phải tổng (Bài 11).
 
 ### Và một câu chốt
@@ -298,7 +298,7 @@ kit-cua-toi/
 1. Báo cáo nói "98% pass". Bạn cần hỏi thêm câu gì trước khi tin?
 2. Khoảng cách clean ↔ eventual nói lên điều gì? Bao nhiêu là đáng lo?
 3. Một test `✗✓`. Hai nguyên nhân có thể là gì? Phép thử **rẻ nhất** để phân biệt?
-4. Vì sao quarantine **không** phải là xoá? Xoá thì mất gì mà không ai biết?
+4. Vì sao quarantine không phải là xoá? Xoá thì mất gì mà không ai biết?
 5. Vì sao quarantine phải có **hạn**?
 6. `forbidOnly` không bật thì clean pass rate sai thế nào?
 7. Vì sao bỏ `skipped` khỏi mẫu số? Không bỏ thì có cách "làm đẹp số" nào?
@@ -306,12 +306,12 @@ kit-cua-toi/
 
 ## Bài tập về nhà (25 phút)
 
-1. Chạy `do-metrics.js` trên **5 lượt chạy** gần nhất của bạn. Ghi khoảng cách từng lượt. Nó ổn định hay
+1. Chạy `do-metrics.js` trên 5 lượt chạy gần nhất của bạn. Ghi khoảng cách từng lượt. Nó ổn định hay
    đang giãn ra?
-2. Lấy test có chuỗi `✗✓` gần nhất. Chạy nó **một mình, tuần tự** 5 lần. Vẫn đỏ lần nào không?
+2. Lấy test có chuỗi `✗✓` gần nhất. Chạy nó một mình, tuần tự 5 lần. Vẫn đỏ lần nào không?
    - Không đỏ lần nào ⇒ nhiều khả năng lỗi test. Sửa cách chờ.
    - **Có đỏ** ⇒ đừng gắn nhãn flaky. Đi tìm nguyên nhân ở app, bạn có thể đang cầm một bug thật.
-3. Điền `daThu` cho **mọi** test đang mang nhãn flaky trong dự án bạn. Cái nào không điền nổi thì gỡ nhãn —
+3. Điền `daThu` cho mọi test đang mang nhãn flaky trong dự án bạn. Cái nào không điền nổi thì gỡ nhãn —
    nó chưa được chứng minh là flaky.
 
 Bước 3 thường lộ ra vài test bị dán nhãn theo phản xạ, và trong số đó đôi khi có một bug thật đã nằm im
@@ -322,4 +322,4 @@ nhiều tháng.
 - Bài 21 — [mutation testing](do-chinh-bo-kiem.md): mutation run phải chạy `retries=0`, đúng lý do bài này.
 - Bài 13 — [phân tầng lỗi](verdict-va-phan-tang-loi.md): pass-sau-retry là `PASS_WITH_DEVIATION`, không phải
   `PASS`.
-- Bài 23 — dashboard: ba số ở cuối Việc 4 là ba đường cần vẽ, và **chỉ** ba đường đó.
+- Bài 23 — dashboard: ba số ở cuối Việc 4 là ba đường cần vẽ, và chỉ ba đường đó.

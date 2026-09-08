@@ -54,7 +54,7 @@ v20.11.1
 | `v20.x` trở lên | Đủ dùng | Đi tiếp |
 | `v18.x` | Vẫn chạy được | Đi tiếp |
 | `v16.x` trở xuống | Quá cũ, sẽ gặp lỗi khó hiểu ở Bài 12 | Cài lại bản mới ở nodejs.org |
-| `node: command not found` hoặc `'node' is not recognized` | Máy chưa có Node | Vào nodejs.org, tải bản LTS, cài xong thì **mở terminal mới** rồi gõ lại |
+| `node: command not found` hoặc `'node' is not recognized` | Máy chưa có Node | Vào nodejs.org, tải bản LTS, cài xong thì mở terminal mới rồi gõ lại |
 
 Chỗ hay vấp: cài xong mà gõ vẫn báo không tìm thấy. Lý do là cửa sổ terminal đang mở không biết bạn vừa cài
 gì. Đóng nó, mở cái mới.
@@ -82,7 +82,7 @@ Cửa hàng mini đang chạy: http://localhost:4010
 Dừng: Ctrl + C
 ```
 
-Mở trình duyệt vào `http://localhost:4010`. Trang có chữ **Cửa hàng mini** ở trên. Bên dưới là khung
+Mở trình duyệt vào `http://localhost:4010`. Trang có chữ Cửa hàng mini ở trên. Bên dưới là khung
 **Tạo đơn hàng** với ô chọn khách, ô chọn sản phẩm, ô số lượng và nút **Thêm**.
 
 | Bạn thấy gì | Nghĩa là | Làm gì |

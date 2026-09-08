@@ -53,7 +53,7 @@ Chọn canonical nghĩa là chọn một bản duy nhất để mọi công cụ
 | 1 | `TC ID` | Truy vết: case nào | Không nối được kết quả về case, không nối được bug về case |
 | 2 | `Module` | Test **ở đâu** | Không chấm rủi ro theo module được (Bài 19) |
 | 3 | `Trường hợp kiểm thử` | Kiểm **điều gì** | Đọc case mà không biết nó nhằm gì |
-| 4 | `Tiền điều kiện` | Cần **trạng thái nào** trước | Case chết giữa chừng lúc execute (Bài 12) |
+| 4 | `Tiền điều kiện` | Cần trạng thái nào trước | Case chết giữa chừng lúc execute (Bài 12) |
 | 5 | `Các bước thực hiện` | Làm **thế nào** | Không automate được, không tái hiện được |
 | 6 | `Kết quả mong đợi` | **Đúng là gì** | Không phán được PASS/FAIL — case vô nghĩa (Bài 10) |
 | 7 | `Ưu tiên` | Làm **trước sau** | Không xếp được thứ tự, và mất cả đầu vào cho độ sâu mở rộng |
@@ -75,22 +75,22 @@ sẽ có một công cụ phía sau vỡ.
 
 Ba quy ước trong ví dụ trên, và mỗi cái có lý do:
 
-1. **Kết quả mong đợi đánh số khớp từng bước.** `1.` ứng với bước `1.` Không gộp kiểu "các giá trị hiển thị
+1. Kết quả mong đợi đánh số khớp từng bước. `1.` ứng với bước `1.` Không gộp kiểu "các giá trị hiển thị
    đúng", đó là oracle rỗng, Bài 10 sẽ nói kỹ.
-2. **Tiền điều kiện nêu dữ liệu cụ thể**, có mã. Không viết "có một khách hàng hạng Bạc", lúc execute thì
+2. Tiền điều kiện nêu dữ liệu cụ thể, có mã. Không viết "có một khách hàng hạng Bạc", lúc execute thì
    *khách nào*?
-3. **Giá trị cụ thể trong kết quả mong đợi**, kèm cách tính. `321.000` chứ không "tổng đúng".
+3. Giá trị cụ thể trong kết quả mong đợi, kèm cách tính. `321.000` chứ không "tổng đúng".
 
 ## 3. Một parser, không phải bốn
 
 Bạn sẽ phải đọc testcase từ nhiều chỗ. Markdown khi agent sinh ra. Excel khi BA sửa. Sau này còn từ công
 cụ quản lý testcase nữa. Phản xạ tự nhiên là viết một hàm đọc cho mỗi nơi. Đừng làm thế.
 
-> Chuyện thật ở kit này: có **4 parser trùng nhau**, và một trong số đó tách cột bằng `split('|')` thô nên
+> Chuyện thật ở kit này: có 4 parser trùng nhau, và một trong số đó tách cột bằng `split('|')` thô nên
 > lệch cột khi ô chứa `\|`. Ba parser kia đúng. Nghĩa là cùng một file testcase đọc ra hai kết quả khác
 > nhau tuỳ công cụ nào đọc, và không có gì báo.
 
-Cách đúng: **một** model canonical, một hàm đọc cho mỗi định dạng, cùng trả về **cùng một hình dạng**.
+Cách đúng: một model canonical, một hàm đọc cho mỗi định dạng, cùng trả về cùng một hình dạng.
 
 `scripts/lib/testcase/index.js`:
 
@@ -205,7 +205,7 @@ XLSX.writeFile(wb, outFile);
 console.log(`Đã xuất ${cases.length} case → ${outFile}`);
 ```
 
-Để ý: file này **không tự parse markdown**. Nó gọi `docMarkdown` từ thư viện chung. Đó chính là "một parser".
+Để ý: file này không tự parse markdown. Nó gọi `docMarkdown` từ thư viện chung. Đó chính là "một parser".
 
 ## 4. Ưu tiên và Severity: hai trục, và một cái không thuộc testcase
 
@@ -213,7 +213,7 @@ Hai khái niệm này bị lẫn ở gần như mọi dự án.
 
 | | `Ưu tiên` | `Severity` |
 |---|---|---|
-| Trả lời | Làm **trước hay sau** | **Hậu quả** nếu lỗi xảy ra |
+| Trả lời | Làm trước hay sau | **Hậu quả** nếu lỗi xảy ra |
 | Thang | `Critical` `High` `Medium` `Low` `Lowest` | `Blocker` `Critical` `Major` `Minor` `Trivial` |
 | Thuộc về | **Testcase** | **Bug** |
 
@@ -221,15 +221,15 @@ Hai thứ này độc lập với nhau. Một lỗi hậu quả rất lớn như
 
 **Nhưng Severity không nên là cột bắt buộc của testcase.** Lý do rất thẳng:
 
-> Chấm severity lúc **viết case** là đoán trước hậu quả của một **lỗi chưa xảy ra**. Bạn chưa biết nó sẽ hỏng
+> Chấm severity lúc **viết case** là đoán trước hậu quả của một lỗi chưa xảy ra. Bạn chưa biết nó sẽ hỏng
 > kiểu gì. Severity là thuộc tính của bug, chấm nó khi bug xuất hiện thì mới có căn cứ.
 >
 > Kit này từng có cột đó và đã **bỏ** (đo trên 1977 case: bỏ hẳn cột này làm đổi độ sâu mở rộng đúng **0
 > case** — nó dư thật, chỉ đang che một lỗi khác của thang ưu tiên).
 
-**Một cảnh báo về thang giá trị.** Chọn thang **khớp với công cụ** bạn sẽ publish lên, không phải thang bạn
+**Một cảnh báo về thang giá trị.** Chọn thang khớp với công cụ bạn sẽ publish lên, không phải thang bạn
 thích. Chuyện thật: bộ case dùng `Highest` (thang Jira) trong khi công cụ test-management map theo **tên** và
-thang của nó là `Critical`. Nên **14 case bị tụt về `Medium`** khi publish, mà không ai biết.
+thang của nó là `Critical`. Nên 14 case bị tụt về `Medium` khi publish, mà không ai biết.
 
 Thêm phép kiểm này vào parser:
 
@@ -257,12 +257,12 @@ function kiemTra(cases) {
 
 ## 5. Nguồn nào là canonical, khi nào
 
-Câu trả lời **đổi theo giai đoạn** — và đây là chỗ dễ nhầm:
+Câu trả lời đổi theo giai đoạn, và đây là chỗ dễ nhầm:
 
 | Giai đoạn | Canonical | Vì sao |
 |---|---|---|
 | Sinh và sửa case (Phần 2) | **Excel / markdown trong repo** | Đang biên soạn, cần diff và review được |
-| Publish lên công cụ test-management | Excel là **nguồn đẩy đi** | Một chiều: repo → công cụ |
+| Publish lên công cụ test-management | Excel là nguồn đẩy đi | Một chiều: repo → công cụ |
 | Execute (Phần 3) | **Công cụ test-management** | Cả team đã thấy và đã sửa ở đó |
 
 Nên khi chạy test, phải kéo bản mới nhất về trước. Chạy trên bản sao cũ nghĩa là bạn đang chấm theo kết quả
@@ -275,7 +275,7 @@ kiểm chuyện này.
 
 ### Bước 1 — Chốt template (10 phút)
 
-Tạo `.agent/config/testcase-template.md` với bảng 7 cột và **một** dòng ví dụ đầy đủ. Nếu dự án bạn cần thêm
+Tạo `.agent/config/testcase-template.md` với bảng 7 cột và một dòng ví dụ đầy đủ. Nếu dự án bạn cần thêm
 cột, thêm. Nhưng viết luôn một câu vì sao cột đó bắt buộc.
 
 ### Bước 2 — Viết parser (20 phút)
@@ -353,10 +353,10 @@ kit-cua-toi/
 ## Tự kiểm
 
 - [ ] Template của tôi có 7 cột, và tôi giải thích được vì sao **từng** cột bắt buộc.
-- [ ] `tachO` xử lý đúng ô chứa `\|`. Tôi đã **thử và thấy** `split('|')` thô lệch cột.
-- [ ] Chỉ có **một** chỗ đọc markdown; công cụ xuất Excel gọi lại nó, không tự parse.
+- [ ] `tachO` xử lý đúng ô chứa `\|`. Tôi đã thử và thấy `split('|')` thô lệch cột.
+- [ ] Chỉ có một chỗ đọc markdown; công cụ xuất Excel gọi lại nó, không tự parse.
 - [ ] Tôi phân biệt được Ưu tiên với Severity, và nói được vì sao severity không thuộc testcase.
-- [ ] Thang Ưu tiên của tôi **khớp công cụ** sẽ publish lên, không phải thang tôi thích.
+- [ ] Thang Ưu tiên của tôi khớp công cụ sẽ publish lên, không phải thang tôi thích.
 - [ ] Tôi có 10 case viết tay, và biết chúng dùng làm gì ở Bài 7.
 - [ ] `kiemTra` bắt được: TC ID trùng, ô lõi rỗng, Ưu tiên ngoài thang.
 - [ ] Tôi nói được canonical đổi thế nào giữa giai đoạn biên soạn và giai đoạn execute.

@@ -33,7 +33,7 @@ Bốn việc:
 
 ## 1. Vì sao là Bài 8, không phải Bài 6
 
-Gate là một đoạn mã **đọc artifact rồi phán**. Nên nó cần ba thứ, và cả ba chỉ có sau Phần 3:
+Gate là một đoạn mã đọc artifact rồi phán. Nên nó cần ba thứ, và cả ba chỉ có sau Phần 3:
 
 | Cần | Có từ bài |
 |---|---|
@@ -43,7 +43,7 @@ Gate là một đoạn mã **đọc artifact rồi phán**. Nên nó cần ba th
 
 Viết gate ở Bài 6 thì bạn đang đoán chỗ nào sẽ sai. Viết ở Bài 8 thì bạn **đã thấy** nó sai.
 
-Mở lại file bạn viết ở **Thực hành Bài 1** — danh sách "nếu agent muốn báo cáo đẹp mà không làm thật, nó sẽ
+Mở lại file bạn viết ở Thực hành Bài 1. Danh sách "nếu agent muốn báo cáo đẹp mà không làm thật, nó sẽ
 làm thế nào" cùng những câu dạng *"đọc X, nếu Y thì chặn"*. Hôm nay bạn biến một câu trong đó thành mã.
 
 ## 2. Gate là gì, chính xác
@@ -52,19 +52,19 @@ Ba thứ, không hơn:
 
 1. **Đọc** một hoặc vài file artifact.
 2. **So** với một chuẩn.
-3. **Thoát với mã** báo cho thứ gọi nó biết kết quả.
+3. Thoát với mã báo cho thứ gọi nó biết kết quả.
 
 Mã thoát là phần dễ bị làm sai nhất. Ba mã, ba nghĩa **khác nhau**:
 
 | Mã | Nghĩa | Người gọi nên làm gì |
 |---|---|---|
 | `0` | Đo được, và **khớp** | Đi tiếp |
-| `1` | Đo được, và **có vi phạm** | Dừng, sửa vi phạm |
-| `2` | **KHÔNG đo được** (thiếu file, thiếu quyền, file hỏng) | Dừng, sửa hạ tầng — **đừng đọc báo cáo của lượt này** |
+| `1` | Đo được, và có vi phạm | Dừng, sửa vi phạm |
+| `2` | **KHÔNG đo được** (thiếu file, thiếu quyền, file hỏng) | Dừng, sửa hạ tầng — đừng đọc báo cáo của lượt này |
 
 > Vì sao phải tách mã 2. Gộp "không đo được" vào mã 1 là sai lầm tốn kém nhất khi viết gate. Một lần
 > thật ở kit này: công cụ kiểm giao diện thiếu credentials nên đứng ở màn đăng nhập, đọc ra **0 cột ở mọi
-> màn**, rồi báo cáo *"thiếu toàn bộ cột"*. Báo cáo đó trông **y hệt như ứng dụng hỏng nặng**. Người đọc mất
+> màn**, rồi báo cáo *"thiếu toàn bộ cột"*. Báo cáo đó trông y hệt như ứng dụng hỏng nặng. Người đọc mất
 > nửa ngày điều tra một thứ không xảy ra.
 >
 > Nguyên tắc: *"không biết"* và *"biết là xấu"* là hai câu trả lời khác nhau. Đừng làm tròn cái trước thành cái sau.
@@ -72,13 +72,13 @@ Mã thoát là phần dễ bị làm sai nhất. Ba mã, ba nghĩa **khác nhau*
 ## 3. Chọn gate đầu tiên: evidence
 
 Gate đầu tiên nên thoả bốn điều: đọc artifact bạn **đã có** · bắt một lỗi **thật** · viết xong trong một
-buổi · và **tiêm lỗi vào được** để nghiệm thu.
+buổi · và tiêm lỗi vào được để nghiệm thu.
 
 Luật cần canh nằm ở `CLAUDE.md` mục 4 bạn viết từ Bài 2:
 
 > Mọi case đã chạy (kể cả PASS) phải có ảnh hoặc video đúng màn.
 
-Nó lý tưởng để làm gate đầu tiên vì **phán được bằng máy tuyệt đối**: hoặc có file, hoặc không.
+Nó lý tưởng để làm gate đầu tiên vì phán được bằng máy tuyệt đối: hoặc có file, hoặc không.
 
 ### Đầu vào: file trạng thái
 
@@ -95,7 +95,7 @@ Bài 13 bạn đã có file kết quả. Nếu chưa đúng dạng này thì t�
 ]
 ```
 
-Chú ý `TC_003`: trạng thái `SKIP` là **chưa chạy**, nên **không** đòi evidence. Gate phải biết phân biệt —
+Chú ý `TC_003`: trạng thái `SKIP` là **chưa chạy**, nên không đòi evidence. Gate phải biết phân biệt —
 đây chính là chỗ dễ báo oan đầu tiên.
 
 ## 4. Viết gate
@@ -192,7 +192,7 @@ Thêm vào `package.json`:
 }
 ```
 
-Ba chi tiết trong đoạn mã trên **không phải trang trí**, và mỗi cái đến từ một lần vấp thật:
+Ba chi tiết trong đoạn mã trên không phải trang trí, và mỗi cái đến từ một lần vấp thật:
 
 | Dòng | Vì sao có |
 |---|---|
@@ -208,22 +208,22 @@ Ba chi tiết trong đoạn mã trên **không phải trang trí**, và mỗi c�
 npm run gate:evidence -- outputs/demo/tasks/PROJ-1234/test-results/testcase-status.json
 ```
 
-Với **mỗi** dòng vi phạm, tự trả lời: **thật hay oan?**
+Với **mỗi** dòng vi phạm, tự trả lời: thật hay oan?
 
 | Nếu | Thì |
 |---|---|
 | Thật | Sửa dữ liệu — bổ sung bằng chứng thiếu |
-| **Oan** | Sửa **LUẬT** trong gate, **không** sửa dữ liệu cho vừa luật |
+| **Oan** | Sửa **LUẬT** trong gate, không sửa dữ liệu cho vừa luật |
 
 > Từ kinh nghiệm của kit này: khi dựng một danh mục gate mới, **bốn "phát hiện" đầu tiên đều là lỗi của
 > BẢNG, không của kit**. Con số đầu tiên một máy mới đưa ra rất hay sai — và nó sai theo hướng làm bạn tin.
 
 Ba kiểu báo oan bạn sẽ gặp ngay:
 
-1. **Trạng thái ngoài danh sách.** Bài 13 có thêm `PASS_WITH_DEVIATION` chẳng hạn, nó *đã chạy* nên phải
+1. Trạng thái ngoài danh sách. Bài 13 có thêm `PASS_WITH_DEVIATION` chẳng hạn, nó *đã chạy* nên phải
    đòi bằng chứng, nhưng `DA_CHAY` của bạn chưa có nó ⇒ gate **bỏ sót**, không phải báo oan. Cũng nguy hiểm.
 2. **Đường dẫn tương đối.** Gate chạy ở gốc repo, đường dẫn trong file lại tính từ thư mục task ⇒ báo "không
-   tồn tại" oan hàng loạt. Chốt **một** quy ước rồi ghi vào luật.
+   tồn tại" oan hàng loạt. Chốt một quy ước rồi ghi vào luật.
 3. **Ngưỡng 1024 byte.** Ảnh chụp một vùng nhỏ có thể dưới 1KB thật. Đo vài ảnh thật của bạn rồi mới chốt số.
 
 ## 6. Negative control: chứng minh gate có răng
@@ -256,7 +256,7 @@ Mũi ③ là mũi quan trọng nhất: nếu nó ra `1` thay vì `2` thì gate c
 
 ## 7. Chọn mức: cảnh báo trước, chặn sau
 
-Gate mới **không** nên chặn ngay. Lý do là con số, không phải sự thận trọng:
+Gate mới không nên chặn ngay. Lý do là con số, không phải sự thận trọng:
 
 > Đo trên 9 task thật khi định siết một luật khác: chấm theo "có artifact hay không" làm **đỏ 7/9 task**, mà
 > task xanh duy nhất cũng chỉ có 2 trong 5 mục thật sự chứng minh được gì. Ép kiểu đó chỉ đẻ ra artifact rỗng
@@ -265,7 +265,7 @@ Gate mới **không** nên chặn ngay. Lý do là con số, không phải sự 
 Đường đi an toàn, ba bước:
 
 1. **Cảnh báo** — in vi phạm, luôn `exit 0`. Chạy vài tuần, xem tỉ lệ oan.
-2. **Chặn có cờ mở** — `exit 1`, nhưng cho phép `--qa-approved` kèm **lý do ghi vào báo cáo**.
+2. Chặn có cờ mở: `exit 1`, nhưng cho phép `--qa-approved` kèm lý do ghi vào báo cáo.
 3. **Chặn hẳn** — khi tỉ lệ oan đã về gần 0.
 
 Thêm cờ vào gate:
@@ -283,12 +283,12 @@ if (viPham.length) {
 
 Không có gate: mọi người biết là không có gì canh, nên tự cẩn thận.
 
-Gate báo oan: đỏ vài lần không do lỗi thật → người ta học được rằng **đỏ không có nghĩa gì** → khi có lỗi
+Gate báo oan: đỏ vài lần không do lỗi thật → người ta học được rằng đỏ không có nghĩa gì → khi có lỗi
 thật, họ cũng bỏ qua. Bạn vừa mất cả cơ chế canh **và** sự cẩn thận tự nhiên.
 
 Có một biến thể tệ hơn, gặp thật ở kit này: một job CI đọc credentials từ file không có trên CI nên **không
 thể xanh**. Vì là job thủ công, hệ thống tự đánh dấu "được phép thất bại" ⇒ pipeline hiện vàng và lỗi im
-lặng mãi. Cách chữa **không** phải biến đỏ thành vàng, mà là để job chỉ **tồn tại** khi có credentials.
+lặng mãi. Cách chữa không phải biến đỏ thành vàng, mà là để job chỉ **tồn tại** khi có credentials.
 
 > Một nút luôn-đỏ là cách nhanh nhất dạy người ta bỏ qua CI.
 
@@ -302,7 +302,7 @@ Dùng kết quả thật từ Bài 13–12. Không có thì tạo file mẫu ở
 
 ### Bước 2 — Viết gate (25 phút)
 
-Gõ lại đoạn mã ở mục 4. **Gõ, đừng copy** — bạn cần hiểu từng dòng để sửa được ở Bước 4.
+Gõ lại đoạn mã ở mục 4. Gõ, đừng copy. Bạn cần hiểu từng dòng để sửa được ở Bước 4.
 
 ### Bước 3 — Chạy trên nội dung thật (10 phút)
 
@@ -359,14 +359,14 @@ kit-cua-toi/scripts/qa/
 
 ## Bài tập về nhà
 
-Mở lại danh sách "phép kiểm đề xuất" từ **Thực hành Bài 1**. Chọn **một** câu nữa và viết thành gate thứ hai
+Mở lại danh sách "phép kiểm đề xuất" từ Thực hành Bài 1. Chọn một câu nữa và viết thành gate thứ hai
 — tự làm, không cần khuôn. Gợi ý những cái vừa sức và bắt lỗi thật:
 
 - Mọi case `FAIL` phải có `failureLayer`, và giá trị đó phải thuộc danh sách ở file taxonomy Bài 13.
 - Case `SKIP` phải có `reason` không rỗng.
 - Mọi `id` trong file trạng thái phải tồn tại trong bộ testcase canonical (bắt case "mọc thêm từ đâu").
 
-Với gate mới, **vẫn phải làm negative control**. Không có ngoại lệ cho quy tắc này.
+Với gate mới, vẫn phải làm negative control. Không có ngoại lệ cho quy tắc này.
 
 ## Đọc thêm
 

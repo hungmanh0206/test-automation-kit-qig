@@ -31,7 +31,7 @@ Bốn việc:
 
 ## 1. Vấn đề: thời gian test luôn ít hơn thứ cần test
 
-Bài 11 cho bạn biết bộ case đang trống **loại câu hỏi** nào. Nhưng còn một câu khác chưa trả lời được:
+Bài 11 cho bạn biết bộ case đang trống loại câu hỏi nào. Nhưng còn một câu khác chưa trả lời được:
 
 > Trong 20 module, module nào đáng test **sâu**, module nào smoke là đủ?
 
@@ -51,7 +51,7 @@ Risk = Likelihood × Impact
 | **Likelihood** | Module này **hay vỡ** cỡ nào | Lịch sử: bug đã có · tỉ lệ fail của test · tần suất sửa mã |
 | **Impact** | Vỡ thì **hậu quả** ra sao | **Khai tay** — máy không suy được điều này |
 
-Impact phải khai tay vì nó là **quyết định kinh doanh**, không phải dữ liệu. "Sai tiền" nặng hơn "lệch màu"
+Impact phải khai tay vì nó là quyết định kinh doanh, không phải dữ liệu. "Sai tiền" nặng hơn "lệch màu"
 không phải vì mã nói thế.
 
 `.agent/config/risk_model.json`:
@@ -96,10 +96,10 @@ không phải vì mã nói thế.
 
 ## 3. Cold start: chấm khi chưa có bug nào
 
-Đây là mục quan trọng nhất, và là chỗ mà công thức trên **không dùng được** ở tuần đầu: `bugs/` rỗng nên
+Đây là mục quan trọng nhất, và là chỗ mà công thức trên không dùng được ở tuần đầu: `bugs/` rỗng nên
 Likelihood = 0 cho mọi module, và mọi module cùng band. Vô dụng.
 
-Năm tín hiệu thay thế, tất cả **lấy được mà không cần lịch sử bug**:
+Năm tín hiệu thay thế, tất cả lấy được mà không cần lịch sử bug:
 
 | Tín hiệu | Lấy ở đâu | Vì sao liên quan |
 |---|---|---|
@@ -268,24 +268,24 @@ process.exit(0);
 }
 ```
 
-> Vì sao cold start chỉ cảnh báo, không chặn. Tín hiệu thay thế là **phỏng đoán có cơ sở**, không phải dữ
+> Vì sao cold start chỉ cảnh báo, không chặn. Tín hiệu thay thế là phỏng đoán có cơ sở, không phải dữ
 > liệu. Chặn dựa trên phỏng đoán thì sẽ chặn oan, và Bài 8 mục 8 đã nói hậu quả: gate báo oan là gate bị bỏ
 > qua. Khi `bugs/` đã có dữ liệu thật thì mới bàn tới chuyện chặn.
 
 ## 4. Bẫy dòng ma: tên module lệch
 
-Đây là bẫy đo được thật, và nó làm cả bảng rủi ro **vô dụng mà vẫn trông đúng**.
+Đây là bẫy đo được thật, và nó làm cả bảng rủi ro vô dụng mà vẫn trông đúng.
 
-> Chuyện thật ở kit này: cấu hình khai **18 tên module bằng tiếng Anh** (Payment, Order…) trong khi bug và
-> snapshot dùng tên module canonical **bằng tiếng Việt**. Kết quả: **17/18 dòng đầu bảng có Impact cao với
-> 0 bug** — toàn dòng ma. Còn **23 module có dữ liệu thật** thì rơi về Impact mặc định, nên band bị chặn trần
+> Chuyện thật ở kit này: cấu hình khai 18 tên module bằng tiếng Anh (Payment, Order…) trong khi bug và
+> snapshot dùng tên module canonical bằng tiếng Việt. Kết quả: **17/18 dòng đầu bảng có Impact cao với
+> 0 bug. Toàn dòng ma. Còn 23 module có dữ liệu thật** thì rơi về Impact mặc định, nên band bị chặn trần
 > ở Medium.
 >
-> Quy định *đã có* trong ghi chú của file cấu hình. Nhưng **không có máy kiểm**.
+> Quy định *đã có* trong ghi chú của file cấu hình. Nhưng không có máy kiểm.
 
 Nhận ra bằng hai dấu hiệu xuất hiện **cùng lúc**:
 
-1. Module khai Impact mà **0 dữ liệu**.
+1. Module khai Impact mà 0 dữ liệu.
 2. Module **có** dữ liệu mà rơi về Impact mặc định.
 
 Chỉ có dấu hiệu 1 thì có thể module đó thật sự chưa được test, không phải lệch tên. Có **cả hai** thì gần như
@@ -302,14 +302,14 @@ Hai cách đã thử và **bị loại**, ghi lại để bạn không làm lạ
 
 | Cách | Kết quả đo | Vì sao loại |
 |---|---|---|
-| Suy module từ tiêu đề bug | 9 ca "trông chắc", soi ra **≥4 sai rõ ràng** | Gán sai bơm Likelihood cho module **vô can**, và vẫn để module thật mỏng |
+| Suy module từ tiêu đề bug | 9 ca "trông chắc", soi ra ≥4 sai rõ ràng | Gán sai bơm Likelihood cho module **vô can**, và vẫn để module thật mỏng |
 | Bảng tra `nhãn → module` | **5/17 nhãn đa nghĩa**, và toàn là loại phổ biến nhất | Nhãn thực tế là nhãn **quy trình**, không phải nhãn chức năng |
 
 > Module SAI tệ hơn module TRỐNG. Trống thì bạn biết là thiếu. Sai thì bạn có một con số tin được, mà nó
 > sai.
 
 Nên công cụ chỉ **đề xuất**, người chốt. Đo được: đoán theo module xác suất cao nhất chỉ đúng **40%**, nhưng
-module thật nằm trong top-12 tới **73%** — đủ để làm **danh sách ứng viên** cho người đọc, không đủ để tự ghi.
+module thật nằm trong top-12 tới **73%** — đủ để làm danh sách ứng viên cho người đọc, không đủ để tự ghi.
 
 Vì vậy: không có chế độ `--apply`. Người đọc danh sách rồi ghi tay vào một file bản đồ, và bản đồ đó là
 **nguồn thứ ba** (sau nhãn và mô tả) khi nạp bug.
@@ -443,8 +443,8 @@ node scripts/qa/cham-rui-ro.js
 
 Kiểm ba thứ:
 - Chế độ có đúng là `cold-start` không (vì bạn chưa có bug lịch sử)?
-- Có module nào **khai Impact mà 0 dữ liệu** không?
-- Thứ tự band có **hợp trực giác** của bạn không? Không hợp thì hoặc Impact khai sai, hoặc trực giác bạn sai —
+- Có module nào khai Impact mà 0 dữ liệu không?
+- Thứ tự band có hợp trực giác của bạn không? Không hợp thì hoặc Impact khai sai, hoặc trực giác bạn sai —
   và cả hai đều đáng xem lại.
 
 ### Bước 4 — Dựng bẫy dòng ma rồi xác nhận máy bắt được (10 phút)
@@ -477,7 +477,7 @@ node scripts/qa/gate-do-sau.js outputs/demo/tasks/PROJ-1234/test-cases/agent-sin
 | Module | Band | Tag đang có | Tag còn thiếu |
 |---|---|---|---|
 
-Rồi thử `--enforce` và xác nhận nó **vẫn không chặn** ở chế độ cold-start.
+Rồi thử `--enforce` và xác nhận nó vẫn không chặn ở chế độ cold-start.
 
 ### Bước 6 — Commit
 
@@ -505,19 +505,19 @@ kit-cua-toi/
 
 ## Tự kiểm
 
-- [ ] Tôi nói được vì sao **Impact phải khai tay** còn Likelihood thì suy được.
+- [ ] Tôi nói được vì sao Impact phải khai tay còn Likelihood thì suy được.
 - [ ] Tên module trong cấu hình **copy đúng** từ cột `Module`, không gõ lại.
-- [ ] Tôi chọn tín hiệu cold start dựa trên **bằng chứng git**, không cảm giác.
+- [ ] Tôi chọn tín hiệu cold start dựa trên bằng chứng git, không cảm giác.
 - [ ] Máy của tôi bỏ qua khoá bắt đầu bằng `_`.
 - [ ] Máy chỉ nổ "nghi lệch tên" khi có **cả hai** dấu hiệu, không phải một.
-- [ ] Tôi đã dựng bẫy lệch tên và **xác nhận máy bắt được**.
+- [ ] Tôi đã dựng bẫy lệch tên và xác nhận máy bắt được.
 - [ ] Chế độ cold-start **không chặn**, kể cả khi có `--enforce`.
-- [ ] Tôi giải thích được vì sao **module sai tệ hơn module trống**.
+- [ ] Tôi giải thích được vì sao module sai tệ hơn module trống.
 - [ ] Override của tôi có `lyDo` và `hetHan`.
 
 ## Bài tập về nhà
 
-Nếu dự án bạn **đã có** bug lịch sử: nạp về `knowledge/bugs/` và đếm bao nhiêu bug **không gắn module**.
+Nếu dự án bạn **đã có** bug lịch sử: nạp về `knowledge/bugs/` và đếm bao nhiêu bug không gắn module.
 
 Con số đó là phần lịch sử đang **vô hình** với việc chấm rủi ro. Ở kit này lần đầu đo được **26/57** — gần một
 nửa. Nghĩa là gần một nửa số bug đã log rồi vẫn không làm bộ case lượt sau sâu hơn ở đúng chỗ.
@@ -527,6 +527,6 @@ từng cái.
 
 ## Đọc thêm
 
-- Bài 21 sẽ dùng band rủi ro để quyết **độ sâu mở rộng** — mở 5 trục cho mọi case thì evidence nhân lên tới
+- Bài 21 sẽ dùng band rủi ro để quyết độ sâu mở rộng — mở 5 trục cho mọi case thì evidence nhân lên tới
   mức không ai đọc báo cáo nữa.
 - [`scripts/qa/risk_score.js`](../../scripts/qa/risk_score.js) của kit này, bản đầy đủ, dựa trên lịch sử thật.

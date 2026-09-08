@@ -15,7 +15,7 @@
 | Từ | Nghĩa gọn |
 |---|---|
 | **Tầng lưu trữ** | Nơi dữ liệu thật sự nằm sau khi bấm Lưu — database, hoặc bất cứ chỗ nào ứng dụng đọc lại lần sau |
-| **Oracle phụ** | Nguồn thứ hai để đối chiếu, **không** thay thế oracle chính là đặc tả |
+| **Oracle phụ** | Nguồn thứ hai để đối chiếu, không thay thế oracle chính là đặc tả |
 | **Xoá mềm** | Không xoá bản ghi, chỉ đánh dấu `deleted_at`. Đọc sai cờ này là bản ghi "đã xoá" vẫn hiện |
 
 ## Bài này bạn sẽ làm gì
@@ -25,9 +25,9 @@ thật sự được lưu xuống.
 
 Năm việc:
 
-1. Nhìn cùng một đơn hàng từ hai tầng, và thấy chúng **không giống nhau** (20 phút).
+1. Nhìn cùng một đơn hàng từ hai tầng, và thấy chúng không giống nhau (20 phút).
 2. Hiểu 7 lớp bug mà chỉ đối chiếu tầng lưu trữ mới bắt được (25 phút).
-3. Dùng hai nguồn để **khoanh tầng lỗi** — bug hiển thị hay bug lưu (20 phút).
+3. Dùng hai nguồn để khoanh tầng lỗi. Bug hiển thị hay bug lưu (20 phút).
 4. Viết máy đối chiếu UI ↔ tầng lưu trữ, có ánh xạ tên trường (35 phút).
 5. Mô hình an toàn 4 lớp để nối database thật mà không phá dữ liệu ai (30 phút).
 
@@ -46,7 +46,7 @@ curl -s -X POST http://localhost:4010/api/orders -H "Content-Type: application/j
   -d "{\"customerId\":\"KH03\",\"items\":[{\"productId\":\"SP03\",\"qty\":1}]}"
 ```
 
-Giờ mở `http://localhost:4010`, tạo **đúng** đơn đó bằng tay (khách `Lê Văn C — hạng Vàng`, `Đèn bàn`, số
+Giờ mở `http://localhost:4010`, tạo đúng đơn đó bằng tay (khách `Lê Văn C — hạng Vàng`, `Đèn bàn`, số
 lượng `1`) và ghi lại bốn số trên màn hình. Rồi gọi cửa tầng lưu trữ:
 
 ```bash
@@ -84,25 +84,25 @@ Ba chi tiết trong cửa tầng lưu trữ, mỗi cái có lý do:
 
 ## Việc 2 — Bảy lớp bug chỉ tầng lưu trữ mới bắt (25 phút)
 
-Đây là lý do bài này tồn tại. Bảy lớp dưới đây **không** hiện ra khi bạn chỉ xem màn hình.
+Đây là lý do bài này tồn tại. Bảy lớp dưới đây không hiện ra khi bạn chỉ xem màn hình.
 
 | # | Lớp bug | Biểu hiện trên UI | Sự thật ở tầng lưu trữ |
 |---|---|---|---|
 | 1 | **Làm tròn** | Số trông đẹp | Lưu `8750` mà hiện `8.000`, hoặc lưu `196249.999999` |
 | 2 | **Lệch múi giờ** | "Ngày tạo: 07/09/2026" | Lưu `2026-09-06T17:12Z` — sang ngày khác ở UTC. Đơn cuối tháng bị đếm sai tháng |
-| 3 | **Text bị cắt** | Hiện đủ tên khách | Cột `varchar(50)`, tên 60 ký tự bị cắt còn 50 — và **UI đang hiện từ bộ nhớ tạm**, chưa đọc lại |
+| 3 | **Text bị cắt** | Hiện đủ tên khách | Cột `varchar(50)`, tên 60 ký tự bị cắt còn 50 — và UI đang hiện từ bộ nhớ tạm, chưa đọc lại |
 | 4 | **Xoá mềm hỏng** | Bản ghi biến khỏi danh sách | `deleted_at` chưa được set, hoặc set rồi mà báo cáo không lọc — số liệu tháng vẫn đếm nó |
 | 5 | **Bảng liên quan không đổi** | Đơn tạo thành công | `orders` có bản ghi mới nhưng `order_items` rỗng — đơn không có dòng hàng nào |
 | 6 | **Tạo trùng** | Một đơn hiện ra | Hai bản ghi. Người dùng bấm hai lần, hoặc callback về hai lần, và không có chốt chống trùng |
 | 7 | **Thiếu vết** | Sửa thành công | `updated_by` / `updated_at` không đổi — sau này không truy được ai sửa |
 
-Ba lớp đắt nhất trong thực tế là **2, 5 và 6**:
+Ba lớp đắt nhất trong thực tế là 2, 5 và 6:
 
 - **Lớp 2** không lộ ra ngay. Nó lộ vào cuối tháng, khi báo cáo lệch một ngày, và lúc đó không ai nối được
   về đơn nào.
 - **Lớp 5** làm đơn "tồn tại mà rỗng". Giao diện chi tiết đơn thường tự tính lại từ dữ liệu đang có trong
   màn, nên nó vẫn hiện đúng, cho tới khi ai đó tải lại trang.
-- **Lớp 6** cho ra **đúng** một dòng trên danh sách nếu danh sách gom nhóm, và hai dòng nếu không. Bug
+- **Lớp 6** cho ra đúng một dòng trên danh sách nếu danh sách gom nhóm, và hai dòng nếu không. Bug
   cùng gốc, biểu hiện khác nhau tuỳ màn.
 
 > Test qua giao diện không bắt được bảy loại này. Không phải vì bạn viết case dở, mà vì thông tin cần thiết
@@ -114,20 +114,20 @@ Ba lớp đắt nhất trong thực tế là **2, 5 và 6**:
 
 Khi một case FAIL, Bài 13 bắt bạn điền `tangLoi`. Trước đây bạn đoán. Giờ bạn **đo** được, bằng một bảng bốn ô:
 
-| | Tầng lưu trữ **đúng** | Tầng lưu trữ **sai** |
+| | Tầng lưu trữ đúng | Tầng lưu trữ sai |
 |---|---|---|
 | **UI đúng** | ✓ Không có lỗi | **Bug hiển thị đảo ngược** — UI đang tự tính lại, che mất dữ liệu lưu sai. Nguy hiểm nhất |
 | **UI sai** | **Bug hiển thị** — tầng dưới làm đúng, tầng trên vẽ sai | **Bug lưu** — sai từ tầng tính toán, cả hai tầng cùng sai |
 
 Áp vào BUG-2 vừa rồi: UI hiện `8.000`, lưu trữ ghi `8750`, spec nói `8750`. ⇒ ô góc dưới-trái ⇒ **bug hiển
-thị**, tầng `frontend`. Bạn khoanh được tầng mà **không** cần đọc một dòng code nào.
+thị, tầng `frontend`. Bạn khoanh được tầng mà không** cần đọc một dòng code nào.
 
 Ô góc trên bên phải là ô đáng sợ nhất:
 
 > Màn hình hiện đúng nhưng dữ liệu lưu sai. Lý do là màn hình đang vẽ lại chính giá trị bạn vừa nhập, chứ
 > không phải giá trị nó đọc về từ nơi lưu.
 
-Cách phát hiện: sau khi lưu, **tải lại trang** rồi mới đọc. Nếu số đổi sau khi tải lại, bạn vừa gặp ô đó.
+Cách phát hiện: sau khi lưu, tải lại trang rồi mới đọc. Nếu số đổi sau khi tải lại, bạn vừa gặp ô đó.
 Đây là một dòng thêm vào mọi case tạo/sửa, và nó rẻ:
 
 ```js
@@ -416,9 +416,9 @@ Ba lý do, xếp theo mức đau:
 |---|---|
 | Bỏ qua chính luồng cần test | `INSERT` một đơn "đã xác nhận" là bỏ qua toàn bộ đường tạo + xác nhận, và bạn không biết đường đó có chạy |
 | Thiếu tác dụng phụ | Ứng dụng còn ghi bảng liên quan, đẩy hàng đợi, sinh mã tham chiếu. `INSERT` tay thiếu hết |
-| Sinh trạng thái **không tồn tại được** | Bạn dựng ra tổ hợp mà ứng dụng không bao giờ tạo ra, rồi log một bug không có thật — **bug ma** (Bài 12) |
+| Sinh trạng thái không tồn tại được | Bạn dựng ra tổ hợp mà ứng dụng không bao giờ tạo ra, rồi log một bug không có thật — **bug ma** (Bài 12) |
 
-Dựng state qua giao diện, API, factory hoặc hook. Tầng lưu trữ chỉ để **đọc và đối chiếu**.
+Dựng state qua giao diện, API, factory hoặc hook. Tầng lưu trữ chỉ để đọc và đối chiếu.
 
 Và một câu nữa:
 
@@ -450,18 +450,18 @@ không chặn gì, nên nó là hạ tầng test. Câu hỏi phân loại ở B�
 4. Vì sao tài khoản chỉ đọc phải là lớp **chính**, không phải transaction + rollback?
 5. Vì sao `uiCoTheLaChu` tồn tại trong file ánh xạ? Không có nó thì gate hỏng kiểu gì?
 6. Hai tầng khớp nhau, kết luận được app đúng chưa? Vì sao?
-7. Bạn có kết nối database đang mở và cần một đơn "đã xác nhận". Vì sao **không** `INSERT`?
+7. Bạn có kết nối database đang mở và cần một đơn "đã xác nhận". Vì sao không `INSERT`?
 
 ## Bài tập về nhà (30 phút)
 
 Ba việc trên app thực hành:
 
-1. Viết một test Playwright tạo đơn qua giao diện, **tải lại trang**, rồi đọc cả UI và `/api/_store/orders`,
+1. Viết một test Playwright tạo đơn qua giao diện, tải lại trang, rồi đọc cả UI và `/api/_store/orders`,
    ghi ra `cap.json`, và chạy máy đối chiếu. Nó phải bắt được BUG-2 **mà không** cần bạn nói trước lệch ở đâu.
-2. Với dự án thật của bạn: viết ra ba hàm đầu tiên cho giao diện ngữ nghĩa, đi từ **lớp bug muốn bắt**, không
+2. Với dự án thật của bạn: viết ra ba hàm đầu tiên cho giao diện ngữ nghĩa, đi từ lớp bug muốn bắt, không
    từ bảng có sẵn. Ghi rõ mỗi hàm nhắm lớp nào trong bảy lớp.
 3. Kiểm lớp 1 của bạn có thật: dùng tài khoản đọc của bạn chạy `UPDATE ... WHERE 1=0` (không sửa dòng nào).
-   Database phải **từ chối vì thiếu quyền**. Nếu nó chạy được thì bạn đang không có lớp 1, chỉ có lớp 2, và
+   Database phải từ chối vì thiếu quyền. Nếu nó chạy được thì bạn đang không có lớp 1, chỉ có lớp 2, và
    lớp 2 thì một lỗi chính tả trong regex là xuyên qua.
 
 Việc 3 là việc quan trọng nhất, và hầu như không ai làm. Đó là cách duy nhất để biết lớp an toàn của bạn có

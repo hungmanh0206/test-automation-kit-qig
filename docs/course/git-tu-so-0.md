@@ -17,7 +17,7 @@
 | **Commit** | Một lần chốt: *"tới đây là một mốc"*. Kèm lời giải thích vì sao |
 | **Branch** (nhánh) | Bản làm việc song song. Bạn thử một hướng mà không phá bản đang chạy |
 | **Được track** | Tệp git đang quản. Tệp **chưa** track thì git chưa biết nó tồn tại |
-| **`.gitignore`** | Danh sách tệp git **cố tình bỏ qua** |
+| **`.gitignore`** | Danh sách tệp git cố tình bỏ qua |
 
 ## Bài này bạn sẽ làm gì
 
@@ -26,7 +26,7 @@ Năm việc:
 1. Đưa kit của bạn thành một repo, commit lần đầu (25 phút).
 2. Làm một nhánh, sửa, gộp lại, và hiểu vì sao QA cần việc này (20 phút).
 3. Viết `.gitignore` cho ba thư mục cấm (15 phút).
-4. **Xây máy chặn**: tệp cấm bị track ⇒ chặn. Rồi tự tay thử phá nó (30 phút).
+4. Xây máy chặn: tệp cấm bị track ⇒ chặn. Rồi tự tay thử phá nó (30 phút).
 5. Đẩy lên GitHub/GitLab (20 phút).
 
 ---
@@ -50,7 +50,7 @@ Initialized empty Git repository in .../kit-cua-toi/.git/
 |---|---|---|
 | Dòng `Initialized empty…` | Xong | Đi tiếp |
 | `Reinitialized existing…` | Ở đây đã là repo rồi | Không sao, đi tiếp |
-| `git: command not found` | Chưa có Git | Tải ở git-scm.com, cài, **mở terminal mới** |
+| `git: command not found` | Chưa có Git | Tải ở git-scm.com, cài, mở terminal mới |
 
 Khai tên bạn, git ghi nó vào mỗi commit:
 
@@ -157,15 +157,15 @@ node_modules/
 .DS_Store
 ```
 
-Ba khối đầu có **ba lý do khác nhau**, và trộn chúng lại là hiểu sai:
+Ba khối đầu có ba lý do khác nhau, và trộn chúng lại là hiểu sai:
 
 | Thư mục | Lý do cấm | Nếu lỡ commit thì sao |
 |---|---|---|
-| `knowledge/` | dữ liệu nghiệp vụ + **tên file tiết lộ lỗi** | rò rỉ thông tin nội bộ |
+| `knowledge/` | dữ liệu nghiệp vụ + tên file tiết lộ lỗi | rò rỉ thông tin nội bộ |
 | `profiles/*/task.env` | tài khoản, token | **phải đổi ngay mọi credential**, không chỉ xoá commit |
 | `outputs/` | đổi liên tục, có thể chứa dữ liệu khách | repo phình, và có thể rò rỉ PII |
 
-Dòng `!profiles/task.env.example` là ngoại lệ có chủ ý: bản **mẫu** (không có giá trị thật) thì **phải** vào
+Dòng `!profiles/task.env.example` là ngoại lệ có chủ ý: bản **mẫu** (không có giá trị thật) thì phải vào
 repo, để người mới biết cần khai những biến gì.
 
 ```bash
@@ -271,7 +271,7 @@ npm run kiem:file-cam; echo "mã thoát = $?"
 mã thoát = 0
 ```
 
-**Lần 2 — đối chứng dương: tự tay phá.** Tạo một tệp giả (⚠ **giá trị giả, đừng dùng token thật**):
+**Lần 2 — đối chứng dương: tự tay phá.** Tạo một tệp giả (⚠ giá trị giả, đừng dùng token thật):
 
 ```bash
 mkdir -p profiles/DEMO-1
@@ -299,7 +299,7 @@ git rm --cached profiles/DEMO-1/task.env
 npm run kiem:file-cam; echo "mã thoát = $?"      # phải về 0
 ```
 
-**Lần 3 — đối chứng âm cho ngoại lệ.** Bản mẫu **phải** đi qua được:
+**Lần 3 — đối chứng âm cho ngoại lệ.** Bản mẫu phải đi qua được:
 
 ```bash
 printf 'APP_BASE_URL=\nTEST_USER=\nTEST_PASS=\n' > profiles/task.env.example
@@ -322,7 +322,7 @@ knowledge/decisions/khong-chan-thanh-toan-trung-vi-chua-kip-sprint.md
 ```
 
 Chỉ cần chạy `git ls-files` trên một repo công khai là người ngoài biết sản phẩm của bạn có lỗi gì và bạn cố
-ý bỏ qua điều gì — **mà không cần mở một tệp nào.**
+ý bỏ qua điều gì, mà không cần mở một tệp nào.
 
 Đó là lý do `kiem-file-cam.js` đo danh sách file đang được git quản, chứ không đọc nội dung. Máy quét mật
 khẩu ở Bài 11 mới là cái đọc nội dung. Hai lớp khác nhau, và lớp tên file là lớp hay bị bỏ quên.
@@ -371,11 +371,11 @@ kit-cua-toi/
 ## Tự kiểm
 
 1. `.gitignore` có `outputs/` rồi, nhưng `outputs/x.json` vẫn bị git theo dõi. Vì sao? Sửa thế nào?
-2. Vì sao máy chặn đo **danh sách tệp đang track** thay vì đọc `.gitignore`?
-3. Ba thư mục cấm. Nêu **ba lý do khác nhau**, không gộp thành "vì nhạy cảm".
-4. Vì sao `profiles/task.env.example` **phải** vào repo?
+2. Vì sao máy chặn đo danh sách tệp đang track thay vì đọc `.gitignore`?
+3. Ba thư mục cấm. Nêu ba lý do khác nhau, không gộp thành "vì nhạy cảm".
+4. Vì sao `profiles/task.env.example` phải vào repo?
 5. Lỡ push một tệp chứa token thật lên repo, xoá commit là đủ chưa? Vì sao?
-6. `git ls-files` trên repo công khai tiết lộ được gì **mà không cần mở tệp nào**?
+6. `git ls-files` trên repo công khai tiết lộ được gì mà không cần mở tệp nào?
 7. Lệnh nào xuyên qua `.gitignore`? Máy chặn của bạn có bắt được nó không? Bạn đã **thử** chưa?
 
 ## Bài tập về nhà (25 phút)

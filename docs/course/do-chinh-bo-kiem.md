@@ -1,6 +1,6 @@
 # Bài 21 — Mutation Testing: đo suite có bắt được bug không ⭐
 
-> **3 giờ** · Có gì trong tay: suite đã chạy nhiều lượt, có evidence, có lịch sử · Sau bài này: bạn biết bộ kiểm của mình **bắt được bao nhiêu phần trăm** lỗi thật — bằng số, không bằng cảm giác
+> **3 giờ** · Có gì trong tay: suite đã chạy nhiều lượt, có evidence, có lịch sử · Sau bài này: bạn biết bộ kiểm của mình bắt được bao nhiêu phần trăm lỗi thật — bằng số, không bằng cảm giác
 
 Đây là bài trọng tâm. Hai mươi bài trước dựng ra một bộ kiểm. Bài này hỏi một câu mà ít ai hỏi cho tới khi
 đã muộn: bộ kiểm đó có bắt được lỗi không?
@@ -125,8 +125,8 @@ Khai mutant bằng dữ liệu, đừng viết cứng trong mã. `.agent/config/
 }
 ```
 
-> `caseKyVong` là **dự đoán của bạn** về case nào phải đỏ. Nó có giá trị riêng: khi máy chạy xong, so dự đoán
-> với thực tế cho bạn biết bạn **hiểu sai suite của mình ở đâu**.
+> `caseKyVong` là dự đoán của bạn về case nào phải đỏ. Nó có giá trị riêng: khi máy chạy xong, so dự đoán
+> với thực tế cho bạn biết bạn hiểu sai suite của mình ở đâu.
 
 `scripts/qa/tiem-loi.js`:
 
@@ -412,9 +412,9 @@ tập mutant của bạn, không hơn. Tập mutant nghèo thì cho điểm đ�
 
 Nên đạt điểm cao thì việc tiếp theo là thêm mutant khó hơn:
 
-- Mutant chỉ sai ở **một** trong nhiều bản ghi (không phải cả danh sách).
+- Mutant chỉ sai ở một trong nhiều bản ghi (không phải cả danh sách).
 - Mutant sai ở **nhánh** ít đi (đơn huỷ, đơn hết hạn, khách không có CCCD).
-- Mutant sai **chữ hiển thị** thay vì sai số.
+- Mutant sai chữ hiển thị thay vì sai số.
 - Mutant sai **thứ tự** phần tử.
 
 ### Mutant sống sót là việc cần làm, không phải điểm trừ
@@ -459,7 +459,7 @@ mà lượt cuối lại xanh do một lý do khác (dữ liệu đổi giữa c
 
 Máy ở trên đặt `PW_RETRIES: '0'` cho mọi lượt tiêm lỗi. Lượt đo không cần chống nhoè, nó cần tín hiệu sạch.
 
-> Ba bẫy này là ví dụ hoàn hảo cho luật ở Bài 28: **máy nào cũng phải có đối chứng âm**. Trước khi tin điểm
+> Ba bẫy này là ví dụ hoàn hảo cho luật ở Bài 28: máy nào cũng phải có đối chứng âm. Trước khi tin điểm
 > mutation, hãy tiêm một mutant mà bạn **biết chắc** suite bắt được, và xem máy có báo BỊ DIỆT không. Nếu
 > không, máy sai, không phải suite sai.
 
@@ -482,7 +482,7 @@ Máy này báo **0 dòng**.
 
 Hai máy, hai số, chênh nhau 151. Một trong hai sai, và không có cách nào biết cái nào nếu chỉ nhìn con số.
 
-Nguyên nhân nằm ở `[^*]`. Lớp ký tự này loại trừ dấu sao, nhưng **không loại trừ ký tự xuống dòng**. Nên một
+Nguyên nhân nằm ở `[^*]`. Lớp ký tự này loại trừ dấu sao, nhưng không loại trừ ký tự xuống dòng. Nên một
 cụm `**A**` ở dòng 1 và một cụm `**B**` ở dòng 5 bị ghép thành một cụm in đậm kéo qua bốn dòng. Regex đếm
 phồng lên. Bản đúng phải là `[^*\n]`.
 
@@ -491,10 +491,10 @@ Ba điều rút ra, và cả ba đều áp cho mọi phép đo bạn viết:
 | Điều | Cụ thể |
 |---|---|
 | Đối chứng một dòng không bắt được lỗi nhiều dòng | Năm ca thử của tôi đều là một dòng. Lỗi chỉ hiện khi chạy trên văn bản thật |
-| Hai phép đo lệch nhau thì **đừng chọn một cái** | Phải tìm cho ra vì sao lệch. Chọn bừa là 50% khả năng tin vào số sai |
-| Máy đo sai kiểu này **không bao giờ tự lộ** | Nó không chết, không báo lỗi. Nó chỉ đưa bạn một con số, và bạn hành động theo con số đó |
+| Hai phép đo lệch nhau thì đừng chọn một cái | Phải tìm cho ra vì sao lệch. Chọn bừa là 50% khả năng tin vào số sai |
+| Máy đo sai kiểu này không bao giờ tự lộ | Nó không chết, không báo lỗi. Nó chỉ đưa bạn một con số, và bạn hành động theo con số đó |
 
-Cách rẻ nhất để tránh: với mọi phép đếm quan trọng, **viết máy thứ hai theo cách khác hẳn** rồi so hai số.
+Cách rẻ nhất để tránh: với mọi phép đếm quan trọng, viết máy thứ hai theo cách khác hẳn rồi so hai số.
 Khớp thì yên tâm. Lệch thì bạn vừa tìm ra một lỗi mà không phép thử đơn lẻ nào bắt được.
 
 ### Đối chứng âm cho chính máy đo
@@ -599,7 +599,7 @@ vì đó chính là chỗ bug sẽ sinh ra ở sprint sau.
 }
 ```
 
-Đưa `spec:gap` vào cùng đường ra với bug (Bài 13), nhưng **không** log thành bug. Nó là câu hỏi cho BA.
+Đưa `spec:gap` vào cùng đường ra với bug (Bài 13), nhưng không log thành bug. Nó là câu hỏi cho BA.
 
 ## Việc 6 — Bug do người ngoài tìm ra là lỗi của máy (30 phút)
 
@@ -615,8 +615,8 @@ Ba câu trả lời hợp lệ, mỗi câu ứng một hành động:
 | Câu trả lời | Hành động |
 |---|---|
 | Có case phủ, nhưng oracle yếu ⇒ nó xanh dù sai | Thêm mutant tái hiện bug này · sửa oracle · đo lại tới khi mutant bị diệt |
-| Không có case phủ, và có chiều lẽ ra phải sinh ra case đó | Sửa **máy đếm chiều** (Bài 11) để chiều đó không còn báo đủ |
-| Không có case phủ, và không chiều nào chỉ tới nó | Thêm **một chiều mới** vào danh mục chiều |
+| Không có case phủ, và có chiều lẽ ra phải sinh ra case đó | Sửa máy đếm chiều (Bài 11) để chiều đó không còn báo đủ |
+| Không có case phủ, và không chiều nào chỉ tới nó | Thêm một chiều mới vào danh mục chiều |
 
 Một câu trả lời không hợp lệ: "lần sau tôi sẽ để ý hơn". Đó là lời dặn, không phải máy chặn.
 
@@ -652,10 +652,10 @@ trên nền đỏ.**
 
 ### Bước 2 — Khai 5 mutant cho ứng dụng của bạn (20 phút)
 
-Mở DevTools Network trên luồng chính, chọn **một** API response, rồi khai 5 mutant — **một mutant mỗi họ**, cộng
+Mở DevTools Network trên luồng chính, chọn một API response, rồi khai 5 mutant. Một mutant mỗi họ, cộng
 thêm một cái bạn nghĩ suite sẽ mù.
 
-Với mỗi mutant, ghi `caseKyVong` **trước khi chạy**. Đây là dự đoán, và nó sẽ được kiểm.
+Với mỗi mutant, ghi `caseKyVong` trước khi chạy. Đây là dự đoán, và nó sẽ được kiểm.
 
 ### Bước 3 — Đối chứng âm cho máy đo (15 phút)
 
@@ -694,11 +694,11 @@ node scripts/qa/tiem-loi.js
 Hai câu hỏi quan trọng hơn con số:
 
 1. Mutant nào **sống sót**? Oracle nào yếu?
-2. Mutant nào **bị diệt bởi case khác dự đoán**? Case bạn tưởng phủ nó thì phủ gì?
+2. Mutant nào bị diệt bởi case khác dự đoán? Case bạn tưởng phủ nó thì phủ gì?
 
 ### Bước 5 — Sửa một oracle rồi đo lại (15 phút)
 
-Chọn **một** mutant sống sót. Sửa oracle của case tương ứng theo Bài 10 (tính độc lập, không app==app). Đo lại
+Chọn một mutant sống sót. Sửa oracle của case tương ứng theo Bài 10 (tính độc lập, không app==app). Đo lại
 đúng mutant đó:
 
 ```bash
@@ -747,18 +747,18 @@ kit-cua-toi/
     └── diem.json                 ← MỚI · mốc so sánh cho lần đo tháng sau
 ```
 
-`outputs/mutation/diem.json` là **mốc so sánh**: tháng sau đo lại, điểm tụt nghĩa là có oracle vừa bị
+`outputs/mutation/diem.json` là mốc so sánh: tháng sau đo lại, điểm tụt nghĩa là có oracle vừa bị
 làm yếu đi. Đừng để nó trong `.gitignore` nếu bạn muốn so theo thời gian, hoặc lưu nó ra ngoài repo.
 
 ## Tự kiểm
 
 - [ ] Tôi giải thích được vì sao "toàn bộ PASS" gần như không mang thông tin.
-- [ ] Tôi đã chạy **đối chứng âm cho máy đo** trước khi tin điểm của nó.
+- [ ] Tôi đã chạy đối chứng âm cho máy đo trước khi tin điểm của nó.
 - [ ] Máy đo của tôi **exit 2** khi nền đỏ, không cho ra 100% giả.
-- [ ] Máy đo phân biệt được **SỐNG SÓT** với **KHÔNG ĐO ĐƯỢC**, bằng dấu vết chứ không bằng suy đoán.
+- [ ] Máy đo phân biệt được **SỐNG SÓT** với KHÔNG ĐO ĐƯỢC, bằng dấu vết chứ không bằng suy đoán.
 - [ ] Mọi lượt mutation chạy với `retries = 0`.
 - [ ] Tôi đọc điểm 0 đúng cách: loại 4 nguyên nhân trước khi kết luận suite mù.
-- [ ] Tôi hiểu điểm 5/5 chỉ nói về **tập mutant của tôi**, và biết cách thêm mutant khó hơn.
+- [ ] Tôi hiểu điểm 5/5 chỉ nói về tập mutant của tôi, và biết cách thêm mutant khó hơn.
 - [ ] Tôi đã sửa một oracle và **đo lại** để chứng minh nó có tác dụng.
 - [ ] Tôi mở được 5 trục quanh một case, và biết trục nào tôi hay bỏ.
 - [ ] Tôi phân biệt được `FAIL` với `OBSERVATION` với `spec:gap`.
@@ -766,10 +766,10 @@ làm yếu đi. Đừng để nó trong `.gitignore` nếu bạn muốn so theo 
 
 ## Bài tập về nhà
 
-Lấy **một bug thật** đã lọt ra ngoài trong dự án bạn (có thì tốt; không có thì lấy một bug bất kỳ dev đã fix).
+Lấy một bug thật đã lọt ra ngoài trong dự án bạn (có thì tốt; không có thì lấy một bug bất kỳ dev đã fix).
 Rồi:
 
-1. Viết một mutant tái hiện **đúng** lỗi đó ở tầng response.
+1. Viết một mutant tái hiện đúng lỗi đó ở tầng response.
 2. Chạy nó trên suite **hiện tại**. Nó sống sót hay bị diệt?
 3. Nếu sống sót, sửa oracle tới khi bị diệt.
 4. Ghi một dòng `LEAK-*` vào `knowledge/` với `mutantXacNhan`.

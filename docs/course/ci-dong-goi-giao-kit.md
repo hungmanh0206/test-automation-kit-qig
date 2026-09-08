@@ -40,7 +40,7 @@ Phản xạ đầu tiên là nhét mọi thứ vào CI. Sai, vì ba lý do:
 | Test E2E cần môi trường UAT + tài khoản | Chạy mỗi commit thì khoá tài khoản (Bài 12) và mutate dữ liệu |
 | CI đỏ vì lý do không phải lỗi mã | Người ta học cách bỏ qua CI đỏ — và đó là lúc CI chết |
 
-Nên **khai phạm vi CI bằng một nguồn**, không để mỗi workflow tự chọn:
+Nên khai phạm vi CI bằng một nguồn, không để mỗi workflow tự chọn:
 
 `.agent/config/ci_scope.json`:
 
@@ -199,7 +199,7 @@ console.log('[env-thua-huong] ✓ ĐẠT');
 
 Đây là luật đi kèm:
 
-> Một máy chỉ được coi là xong khi nó cho **cùng một kết quả** ở máy cá nhân và ở CI.
+> Một máy chỉ được coi là xong khi nó cho cùng một kết quả ở máy cá nhân và ở CI.
 
 Cách thử nhanh mà không cần đợi CI: chạy với môi trường sạch.
 
@@ -218,9 +218,9 @@ npx playwright test tests/smoke
 
 ## 3. Độ với tới: máy không ai gọi thì bằng không có
 
-Bạn có hơn ba mươi máy. Câu hỏi: **bao nhiêu cái thật sự chạy?**
+Bạn có hơn ba mươi máy. Câu hỏi: bao nhiêu cái thật sự chạy?
 
-Một máy chỉ có tác dụng nếu **với tới được từ một điểm vào**: một npm script được gọi bởi CI, hoặc bởi
+Một máy chỉ có tác dụng nếu với tới được từ một điểm vào: một npm script được gọi bởi CI, hoặc bởi
 workflow/prompt mà agent đọc, hoặc bởi slash command.
 
 ```js
@@ -288,7 +288,7 @@ if (coLap.length) {
 console.log('[voi-toi] ✓ ĐẠT — mọi máy đều với tới được');
 ```
 
-> Lần đầu chạy máy này trên kit thật, nó tìm ra **bốn** gate viết xong, đúng, có test, và **chưa bao giờ chạy**
+> Lần đầu chạy máy này trên kit thật, nó tìm ra **bốn** gate viết xong, đúng, có test, và chưa bao giờ chạy
 > vì không ai thêm chúng vào workflow.
 
 ## 4. Kiểm ngang nhánh
@@ -311,7 +311,7 @@ Kit sống ở nhiều nhánh, và mỗi nhánh có vòng đời riêng. Nhánh 
 ```
 
 Máy kiểm đọc file workflow của từng nhánh và đối chiếu. Cùng kiểu như `gates-voi-toi.js`, nên tôi không lặp
-lại mã. Điểm cần nhớ: **khai bằng dữ liệu, kiểm bằng máy**. Viết trong tài liệu "nhánh rerun phải chạy
+lại mã. Điểm cần nhớ: khai bằng dữ liệu, kiểm bằng máy. Viết trong tài liệu "nhánh rerun phải chạy
 self-review" là dặn dò; file JSON + máy đọc nó là forcing function.
 
 ## 5. Đóng gói: tầng chung vs tầng theo dự án
@@ -353,7 +353,7 @@ theo hướng chỉ thêm, không đổi hành vi cũ.
 `npm run layers:check -- --diff` đọc `git diff --name-only` và cảnh báo khi một thay đổi cắt qua cả hai tầng.
 ```
 
-Và ba thứ **không bao giờ** vào repo:
+Và ba thứ không bao giờ vào repo:
 
 ```gitignore
 # Dữ liệu công ty
@@ -425,9 +425,9 @@ Chạy hàng tháng. Điểm tụt = có oracle vừa bị làm yếu đi.
 
 Ba đặc điểm của README này đáng chép lại:
 
-1. **Lệnh chạy được ở dòng đầu**, không phải triết lý.
-2. **Ba điều phải biết** — không phải ba mươi.
-3. **Mục "khi gate chặn bạn"** — vì đó là trải nghiệm đầu tiên của người mới, và nếu nó khó chịu thì họ sẽ đi
+1. Lệnh chạy được ở dòng đầu, không phải triết lý.
+2. Ba điều phải biết, không phải ba mươi.
+3. Mục "khi gate chặn bạn", vì đó là trải nghiệm đầu tiên của người mới, và nếu nó khó chịu thì họ sẽ đi
    tìm cách vô hiệu gate.
 
 ## 7. Nhịp bảo dưỡng
@@ -444,33 +444,13 @@ Kit không tự đứng vững. Bốn nhịp:
 Nhịp cuối là nhịp hay bị bỏ nhất và tốn nhất. Cách làm nó rẻ đi: bắt mọi ngoại lệ phải có **lý do** và **ngày**
 (Bài 28), rồi một máy cảnh báo khi ngoại lệ già hơn 90 ngày.
 
-## 8. Nhìn lại toàn bộ tài liệu
-
-Bạn bắt đầu từ con số không. Giờ bạn có:
-
-| Phần | Bạn có gì |
-|---|---|
-| 1 (bài 1–4) | Môi trường + luật + cách ra lệnh cho agent |
-| 2 (bài 5–8) | Testcase canonical + oracle độc lập + độ phủ đo được |
-| 3 (bài 9–12) | Automation có locator bền + tiền điều kiện + verdict + bằng chứng |
-| 4 (bài 13–15) | Máy kiểm chặn thật + một nguồn + chống trôi |
-| 5 (bài 16–17) | Bộ nhớ dự án + ưu tiên theo rủi ro |
-| 6 (bài 18–20) | Tích hợp + **phép đo chính bộ kiểm** + CI và đóng gói |
-
-Nếu phải chọn **một** điều mang theo, chọn điều này:
-
-> Một luật không có máy chặn thì không phải luật, nó là lời dặn.
-> Và **một máy không có đối chứng âm thì không phải máy — nó là niềm tin.**
-
-Mọi thứ trong tài liệu này là hai câu đó áp vào từng chỗ cụ thể.
-
 ---
 
 ## Thực hành (75 phút)
 
 ### Bước 1 — Xếp hạng phạm vi CI (15 phút)
 
-Viết `ci_scope.json` cho kit của bạn. Xếp **mọi** npm script vào một trong bốn hạng. Với mỗi cái ở
+Viết `ci_scope.json` cho kit của bạn. Xếp mọi npm script vào một trong bốn hạng. Với mỗi cái ở
 `khongVaoCi`, viết `lyDo` cụ thể.
 
 Rồi chạy `ci-scope.js`. Nếu nó liệt kê script chưa xếp, xếp chúng. Đừng thêm vào `MIEN` cho nhanh.
@@ -497,7 +477,7 @@ Viết `gates-voi-toi.js`, chạy nó. Với mỗi máy cô lập, quyết một
 
 Viết `README.md` theo cấu trúc mục 6. Rồi nghiệm thu nó bằng cách khắt khe nhất:
 
-> Đưa cho một người **chưa từng** thấy kit. Bảo họ làm theo mục "Chạy trong 5 phút", **không hỏi bạn gì**.
+> Đưa cho một người **chưa từng** thấy kit. Bảo họ làm theo mục "Chạy trong 5 phút", không hỏi bạn gì.
 
 Mỗi lần họ phải hỏi, đó là một dòng thiếu trong README. Ghi lại, sửa.
 
@@ -523,7 +503,7 @@ jobs:
       - run: node scripts/qa/chay-hang.js moiCommit
 ```
 
-Điểm quan trọng: workflow **không liệt kê lệnh**. Nó gọi một script đọc `ci_scope.json`. Thêm gate mới thì sửa
+Điểm quan trọng: workflow không liệt kê lệnh. Nó gọi một script đọc `ci_scope.json`. Thêm gate mới thì sửa
 JSON, không sửa YAML — và `ci-scope.js` đảm bảo không bỏ sót.
 
 ### Bước 6 — Commit cuối
@@ -558,21 +538,21 @@ kit-cua-toi/
 └── README.md                     ← MỚI · nghiệm thu bằng clone sạch
 ```
 
-Để ý `gates.yml` **không liệt kê lệnh**: nó đọc `ci_scope.json`. Thêm gate mới thì sửa JSON, không sửa
+Để ý `gates.yml` không liệt kê lệnh: nó đọc `ci_scope.json`. Thêm gate mới thì sửa JSON, không sửa
 YAML — và `ci-scope.js` đảm bảo không bỏ sót.
 
 ## Tự kiểm
 
 - [ ] Mọi npm script của tôi được xếp hạng, và cái nào không vào CI đều có **lý do**.
-- [ ] Workflow CI của tôi **không liệt kê lệnh** — nó đọc từ một nguồn.
+- [ ] Workflow CI của tôi không liệt kê lệnh — nó đọc từ một nguồn.
 - [ ] Suite của tôi chạy được trong môi trường **trống trơn**.
 - [ ] Mọi biến môi trường test đọc đều khai được **ai dựng** và **ở đâu**.
-- [ ] Mọi máy của tôi **với tới được** từ một điểm vào trong 2 chặng.
-- [ ] Tôi phân biệt được tầng **chung** với tầng **theo dự án**, và biết rủi ro khi sửa tầng chung.
-- [ ] `knowledge/`, `profiles/*/task.env`, `.env`, `outputs/` đều **không** vào repo.
-- [ ] README của tôi đã được thử bởi người (hoặc bằng clone sạch) mà **không cần hỏi tôi**.
+- [ ] Mọi máy của tôi với tới được từ một điểm vào trong 2 chặng.
+- [ ] Tôi phân biệt được tầng **chung** với tầng theo dự án, và biết rủi ro khi sửa tầng chung.
+- [ ] `knowledge/`, `profiles/*/task.env`, `.env`, `outputs/` đều không vào repo.
+- [ ] README của tôi đã được thử bởi người (hoặc bằng clone sạch) mà không cần hỏi tôi.
 - [ ] README có mục "khi gate chặn bạn", và nó dẫn tới sửa luật, không tới thêm ngoại lệ.
-- [ ] Tôi có nhịp bảo dưỡng, và **nhịp tháng có đo mutation**.
+- [ ] Tôi có nhịp bảo dưỡng, và nhịp tháng có đo mutation.
 
 ## Bài tập khép lại
 
@@ -584,7 +564,7 @@ Ba việc, làm được cả ba là kit của bạn đứng vững:
 2. **Chốt điểm mutation gốc.** Chạy `npm run mutation` toàn bộ, lưu `diem.json`, ghi ngày. Đây là mốc so
    sánh. Tháng sau đo lại, tụt thì tìm oracle nào bị làm yếu.
 
-3. **Đóng vòng lặp bug lọt.** Lấy bug gần nhất lọt ra ngoài. Trả lời: **máy nào lẽ ra phải bắt?** Rồi sửa
+3. Đóng vòng lặp bug lọt. Lấy bug gần nhất lọt ra ngoài. Trả lời: máy nào lẽ ra phải bắt? Rồi sửa
    đúng máy đó, và chứng minh bằng một mutant chuyển từ SỐNG SÓT sang BỊ DIỆT.
 
 Việc thứ ba là việc quan trọng nhất trong cả tài liệu này, vì nó là vòng lặp duy nhất khiến bộ kiểm **tốt lên** thay vì
@@ -593,5 +573,5 @@ chỉ **chạy**.
 ## Đọc thêm
 
 - [`docs/BUILD_JOURNAL.md`](../BUILD_JOURNAL.md) — hồi ký dựng bộ kit thật này: bảy thời kỳ, sáu nguyên tắc,
-  và bốn điểm mù đã trả giá để biết. Đọc **sau khi làm hết**, vì giờ bạn đã có ngữ cảnh để nó có nghĩa.
+  và bốn điểm mù đã trả giá để biết. Đọc sau khi làm hết, vì giờ bạn đã có ngữ cảnh để nó có nghĩa.
 - Thư viện thuật ngữ ở [`docs/library/`](../library/) — tra nhanh mọi luật, máy, verdict, kỹ năng.

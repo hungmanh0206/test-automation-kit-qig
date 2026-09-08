@@ -3,7 +3,7 @@
 
 const CATS = {
   rule:    { label: 'Nguyên tắc',            color: '#FFB700', desc: '6 điều không-thương-lượng, đọc trước mọi việc.' },
-  gate:    { label: 'Gate máy-kiểm',         color: '#D64545', desc: 'Script chặn thật — sai chuẩn là không push được.' },
+  gate:    { label: 'Gate máy-kiểm',         color: '#D64545', desc: 'Script chặn thật, sai chuẩn là không push được.' },
   skill:   { label: 'Skill',                 color: '#2A6FDB', desc: '21 năng lực agent gọi theo phase.' },
   concept: { label: 'Khái niệm QA',          color: '#1F8A5B', desc: 'Tư duy nền: oracle, flaky, evidence, risk…' },
   status:  { label: 'Trạng thái & phân tầng',color: '#7C5CD6', desc: 'Verdict, tầng lỗi, quyết định phát hành.' },
@@ -21,12 +21,12 @@ const CHALLENGE = [
     'Display/field conformance','Business logic & công thức','BE response mapping','Security (IDOR, session)',
     'Performance & SLA','Change impact / regression'] },
   { key:'risk', label:'Band rủi ro', icon:'🔥', values:[
-    'High — phải sâu, có negative + boundary','Medium — phủ luồng chính + 1 nhánh lỗi','Low — smoke là đủ'] },
+    'High, phải sâu, có negative + boundary','Medium, phủ luồng chính + 1 nhánh lỗi','Low, smoke là đủ'] },
   { key:'oracle', label:'Nguồn oracle', icon:'📐', values:[
     'FSD (Google Doc, nhiều tab)','Figma (design token, layout)','Swagger / API docs',
     'Business rule đã confirm trong knowledge/domain/','Bảng mapping field ↔ property','Spec bổ sung tô màu / suggested trong GDoc'] },
   { key:'constraint', label:'Ràng buộc bắt buộc', icon:'⛓️', values:[
-    'UAT non-destructive — xác nhận trước mỗi lượt chạm','DB read-only, precondition dựng qua UI/API',
+    'UAT non-destructive, xác nhận trước mỗi lượt chạm','DB read-only, precondition dựng qua UI/API',
     'Evidence phải là video (chuỗi thao tác)','Mask PII toàn bộ evidence','Chỉ chạy non-prod, never-auto',
     'Không sửa file dùng chung (story khác đang chạy)','Mobile-web viewport'] },
   { key:'trap', label:'Bẫy phải né', icon:'🕳️', values:[

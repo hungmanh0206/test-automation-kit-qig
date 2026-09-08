@@ -1,6 +1,6 @@
 # Hướng dẫn: Tự dựng bộ kit QA + AI Agent từ con số 0
 
-> **Định vị:** không dạy dùng kit có sẵn — dạy **tự xây** một nền tảng QA do AI agent điều phối,
+> **Định vị:** không dạy dùng kit có sẵn. Dạy **tự xây** một nền tảng QA do AI agent điều phối,
 > hiểu vì sao từng cơ chế tồn tại, và có kit riêng mang đi mọi dự án.
 
 ---
@@ -9,7 +9,7 @@
 
 Một **bộ kit** — tập hợp luật + máy kiểm để bạn giao việc kiểm thử cho AI mà vẫn tin được kết quả.
 
-Cụ thể là thế này. Bạn bảo agent sửa cho test pass; nó sửa xong; và **máy của bạn chặn lại**:
+Cụ thể là thế này. Bạn bảo agent sửa cho test pass; nó sửa xong; và máy của bạn chặn lại:
 
 ```console
 $ node scripts/qa/kiem-so-mong-doi.js tests/api/don-hang-bac.js
@@ -19,7 +19,7 @@ $ echo "mã thoát = $?"
 mã thoát = 1
 ```
 
-Ba dòng đó là toàn bộ ý tưởng: **agent không cố ý gian lận**, nó chỉ đang làm cho test xanh theo cách nhanh
+Ba dòng đó là toàn bộ ý tưởng: agent không cố ý gian lận, nó chỉ đang làm cho test xanh theo cách nhanh
 nhất. Máy chặn là thứ đứng giữa.
 
 Hết tài liệu này bạn có ba thứ:
@@ -38,16 +38,16 @@ mất một buổi, không phải viết lại từ đầu.
 
 ## Bốn mốc dừng được
 
-Đừng nhìn 59 giờ rồi nản. Tài liệu chia thành **bốn mốc**, và **dừng ở mốc nào cũng đã có thứ dùng được**.
+Đừng nhìn 59 giờ rồi nản. Tài liệu chia thành **bốn mốc**, và dừng ở mốc nào cũng đã có thứ dùng được.
 
 | Mốc | Tới bài | Cộng dồn | Dừng ở đây bạn đã có |
 |---|---|---|---|
 | **① Biết nghi ngờ** | hết Bài 5 | ~9.5 giờ | Repo có máy canh · một test đỏ **đúng chỗ** · và bạn đã tận mắt thấy agent làm cho test xanh sai |
-| **② Dùng được thật** ⭐ | hết Bài 13 | ~27.5 giờ | Bộ case có kết quả mong đợi truy về tài liệu · chạy tự động · có ảnh/video · mỗi lỗi biết thuộc tầng nào. **Đây là điểm áp được vào dự án thật** |
-| **③ Đo được chính mình** | hết Bài 21 | ~45.5 giờ | Kit nhớ được việc đã làm, tự chấm rủi ro, và **chứng minh bằng số** rằng bộ kiểm bắt được bug |
+| **② Dùng được thật** ⭐ | hết Bài 13 | ~27.5 giờ | Bộ case có kết quả mong đợi truy về tài liệu · chạy tự động · có ảnh/video · mỗi lỗi biết thuộc tầng nào. Đây là điểm áp được vào dự án thật |
+| **③ Đo được chính mình** | hết Bài 21 | ~45.5 giờ | Kit nhớ được việc đã làm, tự chấm rủi ro, và chứng minh bằng số rằng bộ kiểm bắt được bug |
 | **④ Mang đi được** | hết Bài 29 | ~59 giờ | CI gác cổng · bản phát hành nghiệm thu được · kit chạy trên dự án thứ hai |
 
-**Mốc ② là mốc quan trọng nhất.** Nhiều người dừng ở đó và dùng cả năm — hoàn toàn hợp lý. Mốc ③ và ④ là
+**Mốc ② là mốc quan trọng nhất.** Nhiều người dừng ở đó và dùng cả năm. Hoàn toàn hợp lý. Mốc ③ và ④ là
 khi bạn muốn *chứng minh* kit tốt lên, và muốn người khác dùng được nó.
 
 ---
@@ -62,7 +62,7 @@ khi bạn muốn *chứng minh* kit tốt lên, và muốn người khác dùng 
 | Đo hiệu quả | Cảm nhận | **Số liệu: mutation score, reliability index** |
 | Còn lại được gì sau đó | Dùng được một công cụ | **Thiết kế được hệ thống chất lượng** |
 
-**Câu hỏi cốt lõi:** AI viết test rất nhanh — nhưng làm sao biết test đó **đúng** và **thực sự bắt được bug**?
+**Câu hỏi cốt lõi:** AI viết test rất nhanh, nhưng làm sao biết test đó đúng và thực sự bắt được bug?
 
 ---
 
@@ -70,15 +70,15 @@ khi bạn muốn *chứng minh* kit tốt lên, và muốn người khác dùng 
 
 Làm hết tài liệu này, bạn có thể:
 
-✅ Hiểu **6 kiểu sai âm thầm** khi để AI làm QA, và cách chặn từng kiểu bằng máy
+✅ Hiểu 6 kiểu sai âm thầm khi để AI làm QA, và cách chặn từng kiểu bằng máy
 ✅ Tự xây kit AI Agent Testing riêng: rules · skills · workflows · commands · gates
-✅ Biến quy tắc chất lượng thành **cổng kiểm tra chạy được** thay vì văn bản bị đọc lướt
-✅ Thiết lập kỷ luật oracle — chặn AI tự lấy giá trị app làm chuẩn đối chiếu
-✅ Sinh test case theo **nhiều chiều phủ** có ngưỡng định lượng theo mức rủi ro
+✅ Biến quy tắc chất lượng thành cổng kiểm tra chạy được thay vì văn bản bị đọc lướt
+✅ Thiết lập kỷ luật oracle. Chặn AI tự lấy giá trị app làm chuẩn đối chiếu
+✅ Sinh test case theo nhiều chiều phủ có ngưỡng định lượng theo mức rủi ro
 ✅ Chạy automation Playwright có bằng chứng, phân tầng lỗi, tự phục hồi locator có kiểm soát
-✅ Kiểm song song **UI ↔ Database** để bắt lỗi "báo thành công nhưng lưu sai"
+✅ Kiểm song song UI ↔ Database để bắt lỗi "báo thành công nhưng lưu sai"
 ✅ Xây knowledge base tích luỹ, có phiên bản, tự cập nhật mô hình rủi ro
-✅ **Chứng minh** bộ test có bắt được bug bằng mutation testing — không phỏng đoán
+✅ **Chứng minh** bộ test có bắt được bug bằng mutation testing. Không phỏng đoán
 ✅ Thiết lập CI/CD: gate tự chạy mọi push, regression nightly, đóng gói phát hành kit
 ✅ Mang kit sang dự án mới trong một buổi, không viết lại từ đầu
 
@@ -87,19 +87,19 @@ Làm hết tài liệu này, bạn có thể:
 ## Yêu cầu đầu vào
 
 **Bắt buộc:** biết cơ bản về kiểm thử (test case, bug, quy trình QA) · dùng được máy tính ở mức thao tác file/terminal · Node.js 18+.
-**Không bắt buộc:** biết code (tài liệu này dạy từ đầu ở mức cần thiết) · biết Playwright · biết CI/CD · **có dự án thật** — tài liệu này đi kèm [app thực hành](course/assets/app-thuc-hanh/README.md) chạy trên máy bạn.
+**Không bắt buộc:** biết code (tài liệu này dạy từ đầu ở mức cần thiết) · biết Playwright · biết CI/CD · có dự án thật. Tài liệu này đi kèm [app thực hành](course/assets/app-thuc-hanh/README.md) chạy trên máy bạn.
 
-⚠️ **Nói thẳng:** đây **không** phải kiểu "AI làm hộ, bạn ngồi xem". Bạn sẽ phải đọc code, hiểu logic
+⚠️ **Nói thẳng:** đây không phải kiểu "AI làm hộ, bạn ngồi xem". Bạn sẽ phải đọc code, hiểu logic
 gate, và tự sửa khi nó chặn sai. Nếu chỉ muốn dùng AI viết test case nhanh hơn thì có khoá nhẹ hơn phù hợp hơn.
 
 ---
 
 ## App thực hành: bạn có gì để test ngay từ Bài 0
 
-Cả tài liệu thực hành trên **một** app duy nhất — [Cửa hàng mini](course/assets/app-thuc-hanh/README.md), Node
+Cả tài liệu thực hành trên một app duy nhất. [Cửa hàng mini](course/assets/app-thuc-hanh/README.md), Node
 thuần, `node server.js` là chạy, không cài gì.
 
-Nó **có đúng 3 bug cài sẵn, cố ý**, mỗi bug đại diện một loại điểm mù:
+Nó có đúng 3 bug cài sẵn, cố ý, mỗi bug đại diện một loại điểm mù:
 
 | Bug | Tầng | Bộ kiểm mù vì | Bạn bắt được ở |
 |---|---|---|---|
@@ -107,19 +107,19 @@ Nó **có đúng 3 bug cài sẵn, cố ý**, mỗi bug đại diện một lo�
 | Các số trên màn hình không cộng đúng | frontend | kiểm từng trường, không kiểm **quan hệ** giữa các trường | Bài 10 · Bài 13 |
 | Sửa được đơn đã xác nhận qua API | backend | chỉ test **một tầng** — giao diện đã ẩn nút | Bài 15 · Bài 16 |
 
-Vì sao phải là app **có bug biết trước**: nếu thực hành trên app đúng hoàn toàn thì bộ kiểm của bạn luôn xanh,
-và bạn không có cách nào biết nó xanh vì app đúng hay vì bộ kiểm mù — hai thứ đó cho **cùng một dấu hiệu**.
-Biết trước "có 3 bug" nghĩa là bắt được 0/3 thì **lỗi ở bộ kiểm, không ở app**. Đó là **đối chứng**, và nó là
+Vì sao phải là app có bug biết trước: nếu thực hành trên app đúng hoàn toàn thì bộ kiểm của bạn luôn xanh,
+và bạn không có cách nào biết nó xanh vì app đúng hay vì bộ kiểm mù. Hai thứ đó cho cùng một dấu hiệu.
+Biết trước "có 3 bug" nghĩa là bắt được 0/3 thì lỗi ở bộ kiểm, không ở app. Đó là **đối chứng**, và nó là
 ý tưởng trung tâm của cả tài liệu này.
 
-Nguồn phán đúng/sai là [`spec.md`](course/assets/app-thuc-hanh/spec.md) — mọi luật có mã (`BR-01`…`UI-04`).
+Nguồn phán đúng/sai là [`spec.md`](course/assets/app-thuc-hanh/spec.md). Mọi luật có mã (`BR-01`…`UI-04`).
 Nói "chỗ này sai" mà không chỉ được mã luật thì chưa chứng minh được gì.
 
 ---
 
 ## Một vòng làm việc trông thế nào
 
-Sáu chặng, đi một chiều, và **mỗi chặng có một cổng chặn**. Không qua cổng thì không sang chặng sau —
+Sáu chặng, đi một chiều, và mỗi chặng có một cổng chặn. Không qua cổng thì không sang chặng sau —
 đó là toàn bộ khác biệt giữa một bộ kit và một đống script.
 
 | # | Chặng | Bạn đưa vào | Ra được gì | Cổng chặn ở cuối chặng | Học ở |
@@ -131,14 +131,14 @@ Sáu chặng, đi một chiều, và **mỗi chặng có một cổng chặn**. 
 | 5 | Báo lỗi | phát hiện có bằng chứng | bug có tầng lỗi | **Human gate** — người bấm, không phải máy | Bài 16 |
 | 6 | Học lại | bug + kết quả lượt chạy | tri thức + điểm rủi ro mới | **Gate tri thức** — bản ghi không nguồn thì cấm ghi | Bài 17–19 |
 
-Chặng 6 quay về chặng 1 của task sau — đó là chỗ kit **tốt lên** thay vì chỉ chạy.
+Chặng 6 quay về chặng 1 của task sau. Đó là chỗ kit **tốt lên** thay vì chỉ chạy.
 
 ---
 
 ## Cấu trúc thư mục của bộ kit
 
-Đây là thư mục bạn có **sau khi làm hết**. Đọc trước một lượt, không cần hiểu hết — mục đích là khi bài
-học nói "viết file này", bạn biết nó nằm ở đâu và cạnh cái gì. Mỗi nhánh ghi **bài nào tạo ra nó**.
+Đây là thư mục bạn có sau khi làm hết. Đọc trước một lượt, không cần hiểu hết. Mục đích là khi bài
+học nói "viết file này", bạn biết nó nằm ở đâu và cạnh cái gì. Mỗi nhánh ghi bài nào tạo ra nó.
 
 ```
 kit-cua-toi/
@@ -232,25 +232,25 @@ kit-cua-toi/
 | Thư mục | Chứa gì | Câu hỏi phân loại |
 |---|---|---|
 | `scripts/lib/` | thư viện, code dùng chung | *"Gõ `node <file>` có chạy được không?"* **Không** ⇒ vào `lib/` |
-| `scripts/qa/` | máy chặn, tự chạy được | **Có**, và nó **báo lỗi rồi thoát khác 0** ⇒ vào `qa/` |
+| `scripts/qa/` | máy chặn, tự chạy được | **Có**, và nó báo lỗi rồi thoát khác 0 ⇒ vào `qa/` |
 | `tests/support/` | hạ tầng test, không phải test | Không có `test(...)` trong file ⇒ vào `support/` |
 
 **Ba thư mục ⛔ không bao giờ commit**, và lý do khác nhau:
 
 | Thư mục | Vì sao |
 |---|---|
-| `knowledge/` | dữ liệu nghiệp vụ của công ty — và **chính tên file** đã tiết lộ lỗi sản phẩm (Bài 5) |
+| `knowledge/` | dữ liệu nghiệp vụ của công ty — và chính tên file đã tiết lộ lỗi sản phẩm (Bài 5) |
 | `profiles/*/task.env` | tài khoản, mật khẩu, token |
 | `outputs/` | kết quả từng lượt chạy, đổi liên tục, và chứa ảnh có thể có dữ liệu khách |
 
-> Bạn **không phải tạo cây này ngay**. Mỗi bài tạo đúng phần của nó, và mỗi bài giảng đều kết thúc bằng khối
+> Bạn không phải tạo cây này ngay. Mỗi bài tạo đúng phần của nó, và mỗi bài giảng đều kết thúc bằng khối
 > **"Cây thư mục sau bài này"** để bạn đối chiếu xem mình có đang đi đúng đường không.
 
 ---
 
 ## PHẦN 1 — Nền tảng tư duy (5.5 giờ)
 
-> **Xong phần này bạn có:** một máy chặn 12 dòng chạy được — và bạn đã tận mắt thấy agent làm cho test xanh trong khi app vẫn sai
+> **Xong phần này bạn có:** một máy chặn 12 dòng chạy được, và bạn đã tận mắt thấy agent làm cho test xanh trong khi app vẫn sai
 
 ### [Bài 0 — Trước khi bắt đầu](course/truoc-khi-bat-dau.md) *(1h · dễ)*
 
@@ -258,8 +258,8 @@ kit-cua-toi/
 
 - Kiểm Node.js và đọc được thông báo lỗi khi thiếu — mỗi bước có khối *"Bạn sẽ thấy"* và bảng xử lý khi thấy khác
 - Chạy app thực hành, mở trên trình duyệt, hiểu vì sao cần **hai** cửa sổ terminal
-- **Thực hành:** tạo một đơn hàng bằng tay, tự tính kết quả từ `spec.md`, và **tìm ra bug đầu tiên ở phút thứ 40** — không dùng công cụ nào
-- 10 từ vựng của cả tài liệu này, mỗi từ **một ví dụ lấy từ việc vừa làm**, không phải một định nghĩa
+- **Thực hành:** tạo một đơn hàng bằng tay, tự tính kết quả từ `spec.md`, và tìm ra bug đầu tiên ở phút thứ 40 — không dùng công cụ nào
+- 10 từ vựng của cả tài liệu này, mỗi từ một ví dụ lấy từ việc vừa làm, không phải một định nghĩa
 - **Cây thư mục toàn kit xem trước** — mỗi nhánh ghi rõ bài nào tạo ra nó
 - Phân biệt `scripts/lib` (thư viện) · `scripts/qa` (máy chặn) · `tests/support` (hạ tầng test) bằng một câu hỏi
 - Ba thư mục không bao giờ commit và vì sao
@@ -271,11 +271,11 @@ kit-cua-toi/
 - Ba giới hạn của manual và automation truyền thống: test đủ mà vẫn lọt bug · AI sinh nhanh nhưng không ổn định · việc lặp ngốn thời gian
 - **6 kiểu sai âm thầm khi AI làm QA:** oracle tự thoả mãn · đọc lướt rule · false-green · flaky chôn bug thật · học dữ liệu sai · gate không được gọi
 - **Thực hành:** viết test tự động đầu tiên (15 dòng, không cài gì) bắt đúng bug đã tìm ở Bài 0
-- **Thực hành:** bảo agent *"sửa cho nó pass đi"* và **xem nó gian lận trên máy mình** — 3 kiểu: đổi số mong đợi · lấy số mong đợi từ chính app · nới điều kiện
+- **Thực hành:** bảo agent *"sửa cho nó pass đi"* và xem nó gian lận trên máy mình — 3 kiểu: đổi số mong đợi · lấy số mong đợi từ chính app · nới điều kiện
 - Câu hỏi một-dòng phát hiện test vô nghĩa: *"nếu app sai, dòng này có đỏ không?"*
-- Tự chứng minh **dặn dò trong prompt không đảm bảo** — chạy 3–4 lần cho ra kết quả khác nhau
+- Tự chứng minh dặn dò trong prompt không đảm bảo — chạy 3–4 lần cho ra kết quả khác nhau
 - **XÂY gate:** máy chặn đầu tiên (12 dòng), thử 3 lần ra 3 mã thoát — `0` đạt · `1` chặn · `2` không đo được
-- Nguyên tắc xuyên suốt tài liệu: **rule không phải lời dặn — sai chuẩn thì phải chặn được**
+- Nguyên tắc xuyên suốt tài liệu: rule không phải lời dặn — sai chuẩn thì phải chặn được
 - Phân biệt: AI hỗ trợ tester → AI agent thực thi → nền tảng có gate
 
 ### [Bài 2 — Kiến trúc một QA platform](course/khung-kit-toi-thieu.md) *(1.5h · dễ)*
@@ -296,7 +296,7 @@ kit-cua-toi/
 - Model/token/credits: cái gì đắt, cái gì rẻ, đo bằng cách nào
 - Vì sao giao việc cho subagent làm **tăng** tổng token nhưng vẫn đáng
 - Ngân sách tài liệu: tài liệu 300 KB thì xử lý thế nào
-- Bẫy thật: tài liệu nhiều tab hoặc nhiều bản — đọc thiếu mà **không có tín hiệu nào báo**
+- Bẫy thật: tài liệu nhiều tab hoặc nhiều bản — đọc thiếu mà không có tín hiệu nào báo
 
 ---
 
@@ -311,7 +311,7 @@ kit-cua-toi/
 - Cài Claude Code, gói cần dùng, chạy prompt đầu tiên
 - **Permission/approval mode** — vì sao không bao giờ để agent tự do trên source thật
 - Hook: bơm context đầu phiên · chặn khi ghi file sai chuẩn
-- **Thực hành:** bảo agent xoá thư mục `docs/` và **kiểm quyền có chặn nó lại** — thí nghiệm này quan trọng hơn nó nghe
+- **Thực hành:** bảo agent xoá thư mục `docs/` và kiểm quyền có chặn nó lại — thí nghiệm này quan trọng hơn nó nghe
 
 ### [Bài 5 — Git, GitHub/GitLab cho người mới](course/git-tu-so-0.md) *(2h · dễ)*
 
@@ -319,7 +319,7 @@ kit-cua-toi/
 
 - Git từ số 0: commit, branch, push, pull request
 - Vì sao QA cần git: kit là code, test case là dữ liệu có phiên bản
-- `.gitignore` và **bài học đắt nhất**: dữ liệu học chứa tên bug thật — chính đường dẫn file đã tiết lộ lỗi sản phẩm
+- `.gitignore` và bài học đắt nhất: dữ liệu học chứa tên bug thật — chính đường dẫn file đã tiết lộ lỗi sản phẩm
 - **Thực hành:** đưa kit của bạn lên repo, và chứng minh ba thư mục cấm không đi theo
 
 ### [Bài 6 — Prompt, Skill, Rule, Command: phân biệt và dùng đúng](course/prompt-va-token.md) *(2h · dễ)*
@@ -328,8 +328,8 @@ kit-cua-toi/
 
 - **Rule** = luật bất biến · **Skill** = năng lực theo vai · **Workflow** = quy trình · **Command** = điểm vào
 - Sai lầm phổ biến: nhồi tất cả vào một file 500 dòng → agent đọc lướt
-- Nguyên tắc **một nguồn sự thật**: policy ở một nơi, chỗ khác chỉ trỏ tới
-- Cấu trúc prompt cho việc dài: vai trò · đầu vào · ràng buộc · định dạng đầu ra · **điều kiện dừng**
+- Nguyên tắc một nguồn sự thật: policy ở một nơi, chỗ khác chỉ trỏ tới
+- Cấu trúc prompt cho việc dài: vai trò · đầu vào · ràng buộc · định dạng đầu ra · điều kiện dừng
 - Bảng "câu không tác dụng ↔ câu có tác dụng"
 - **Thực hành:** viết rule đầu tiên + skill đầu tiên cho dự án bạn
 
@@ -337,7 +337,7 @@ kit-cua-toi/
 
 ## PHẦN 3 — Phase 1: Requirement → Test Case (10.5 giờ)
 
-> **Xong phần này bạn có:** bộ testcase mà kết quả mong đợi **truy được về tài liệu**, không phải lấy từ chính app
+> **Xong phần này bạn có:** bộ testcase mà kết quả mong đợi truy được về tài liệu, không phải lấy từ chính app
 
 ### [Bài 7 — Phân tích requirement đa nguồn](course/tu-requirement-ra-testcase.md) *(2.5h · vừa)*
 
@@ -346,9 +346,9 @@ kit-cua-toi/
 - Đọc Jira / Confluence / Figma / Swagger — mỗi nguồn cho gì, thiếu gì
 - **Vì sao 3 nguồn rời rạc không thể RAG chung**: Swagger có cấu trúc · Figma là cây node · chỉ Confluence là văn xuôi
 - Gom theo **tính năng**, không theo nguồn — và phơi ra `conflicts` / `gaps`
-- Bóc requirement thành hai thứ dùng được: **phạm vi** và **business rule kiểm được** (mã `BR-`)
-- Ba dấu hiệu testcase **không execute được**: thiếu dữ liệu cụ thể · expected không đo được · tiền điều kiện mơ hồ
-- **Thực hành:** phân tích một requirement thật của bạn, hoặc [tài liệu đặc tả mẫu](course/assets/sample-requirement.md) có **10 vấn đề cài sẵn**
+- Bóc requirement thành hai thứ dùng được: **phạm vi** và business rule kiểm được (mã `BR-`)
+- Ba dấu hiệu testcase không execute được: thiếu dữ liệu cụ thể · expected không đo được · tiền điều kiện mơ hồ
+- **Thực hành:** phân tích một requirement thật của bạn, hoặc [tài liệu đặc tả mẫu](course/assets/sample-requirement.md) có 10 vấn đề cài sẵn
 
 ### [Bài 8 — Ambiguity Gate: dừng đúng lúc](course/ambiguity-gate.md) *(1.5h · vừa)*
 
@@ -366,7 +366,7 @@ kit-cua-toi/
 - 7 nhóm kỹ thuật: miền giá trị (EP/BVA) · logic (decision table, state transition) · tổ hợp (pairwise) · kinh nghiệm (error guessing) · thời gian & môi trường · phi chức năng
 - **Nhóm hay bị bỏ nhất:** concurrency · idempotency · ordering · timezone · volume · persistence
 - Mô hình testcase **canonical**: tập cột bắt buộc (tài liệu này dùng 7) và vì sao **mỗi** cột tồn tại
-- Vì sao chỉ được có **một** bộ đọc testcase dùng chung cho Markdown và Excel
+- Vì sao chỉ được có một bộ đọc testcase dùng chung cho Markdown và Excel
 - Phân biệt **Ưu tiên** (thứ tự làm) với **Severity** (hậu quả) — và vì sao severity là thuộc tính của *bug*, không phải của *testcase*
 - Bẫy thật: tách cột bằng dấu `|` làm lệch dữ liệu khi trong ô có ký tự thoát
 - Chia thành **chiều phủ** (dimension) để kiểm được bằng máy
@@ -377,9 +377,9 @@ kit-cua-toi/
 *Có gì trong tay: một bộ testcase do agent sinh.*
 
 - Vấn đề: AI lấy chính giá trị app đang trả về làm kết quả mong đợi → test **luôn PASS** kể cả khi app sai
-- Vì sao nó tệ hơn thiếu test case: nó tạo **cảm giác an toàn sai**, và càng mở rộng càng nhân lên
+- Vì sao nó tệ hơn thiếu test case: nó tạo cảm giác an toàn sai, và càng mở rộng càng nhân lên
 - Ba dạng tautology tinh vi, không chỉ dạng lộ
-- Giải: mọi kết luận PASS/FAIL phải trỏ được về **quy tắc nghiệp vụ đã xác nhận**; không có nguồn → hạ xuống "quan sát", **không kết luận**
+- Giải: mọi kết luận PASS/FAIL phải trỏ được về quy tắc nghiệp vụ đã xác nhận; không có nguồn → hạ xuống "quan sát", không kết luận
 - **Nhất quán ≠ đúng** — hai màn cùng hiện một số sai thì vẫn là sai
 - **Fixture phân biệt:** muốn chứng minh "trường này lấy từ nguồn nào" thì hai nguồn phải KHÁC giá trị
 - **XÂY gate:** chặn test case có giá trị tính toán mà không trỏ nguồn
@@ -390,8 +390,8 @@ kit-cua-toi/
 *Có gì trong tay: bộ testcase có oracle neo được.*
 
 - Ngưỡng **định lượng** thay vì nhã phân: chiều bắt buộc phải đạt ≥N case theo mức rủi ro
-- Risk-based: tính điểm rủi ro từ lịch sử bug + tỷ lệ fail, rồi **ép độ sâu test** theo band
-- Vì sao `n/a` phải kèm **lý do bắt buộc** — không thì mọi chiều đều thành `n/a`
+- Risk-based: tính điểm rủi ro từ lịch sử bug + tỷ lệ fail, rồi ép độ sâu test theo band
+- Vì sao `n/a` phải kèm lý do bắt buộc — không thì mọi chiều đều thành `n/a`
 - Traceability: requirement → test case → automation → bug
 - **XÂY gate:** máy đếm chiều, chặn khi một chiều bắt buộc chưa đủ ngưỡng
 - Khung chung cho mọi máy chặn về sau: xem [bộ gate nền](course/bo-gate-nen.md) — `lib/gate.js`, gate tồn kho, quét secret, và lệnh tự soi gộp mọi gate một lượt
@@ -410,7 +410,7 @@ kit-cua-toi/
 - **13 tuỳ chọn config quyết định chất lượng**: `retries` · `forbidOnly` (chống `test.only` lọt CI) · `timeout` · `fullyParallel`…
 - Locator bền: ưu tiên semantic, cấm class động, cấm positional xpath — 4 mẫu locator hớ hênh kèm số đo
 - **Bài học thực tế:** app không phát `data-testid` thì locator lấy từ đâu
-- Tiền điều kiện: dựng state qua API/factory/hook, **không** bằng DB — xem [bài chi tiết về tiền điều kiện](course/tien-dieu-kien.md) (factory, janitor 3 lớp an toàn, và **bug ma**)
+- Tiền điều kiện: dựng state qua API/factory/hook, không bằng DB — xem [bài chi tiết về tiền điều kiện](course/tien-dieu-kien.md) (factory, janitor 3 lớp an toàn, và **bug ma**)
 - **Thực hành:** automate case Bài 9 trên app thực hành, chạy thật, thấy nó đỏ vì BUG-1
 
 ### [Bài 13 — Bằng chứng và phân tầng lỗi](course/verdict-va-phan-tang-loi.md) *(2.5h · vừa)*
@@ -419,7 +419,7 @@ kit-cua-toi/
 
 - **Phân tầng lỗi** — không phải fail nào cũng là bug sản phẩm: lỗi automation · lỗi setup · lỗi môi trường · lỗi dữ liệu · bug thật
 - Vì sao phân tầng sai làm mất niềm tin của đội dev
-- 7 trạng thái phán quyết, và vì sao **"không phán được" KHÔNG thành PASS**
+- 7 trạng thái phán quyết, và vì sao "không phán được" KHÔNG thành PASS
 - Rerun 2–3 lần loại flaky trước khi kết luận; pass-sau-retry là `PASS_WITH_DEVIATION`, không phải `PASS`
 - Screenshot / video / trace: chụp gì, khi nào, che dữ liệu nhạy cảm thế nào — xem [bài chi tiết về bằng chứng](course/evidence.md) (khoanh đỏ, che PII cả `input.value`, banner video từng bước)
 - **XÂY gate:** không cho đẩy kết quả nếu lỗi chưa phân tầng, hoặc case đã execute mà không có ảnh/video
@@ -433,7 +433,7 @@ kit-cua-toi/
 - **7 trục mở rộng:** field cùng khối · cùng giá trị khác nơi hiển thị · chuỗi form→API→DB→UI · biến thể · trạng thái kế cận · đồng thời · chiều ngược
 - **Điều kiện sống còn:** mở rộng mà không có oracle = tautology nhân 7 lần
 - Không neo được vào mã luật thì kết quả là `OBSERVATION`, không phải PASS/FAIL
-- Chiều ngược `spec:gap`: thấy thứ **spec không nói gì** — không phải bug, là lỗ hổng đặc tả
+- Chiều ngược `spec:gap`: thấy thứ spec không nói gì — không phải bug, là lỗ hổng đặc tả
 - **XÂY gate:** gate độ sâu theo mức rủi ro để không nổ thời gian chạy
 
 ### [Bài 15 — Kiểm song song UI ↔ Database](course/ui-va-tang-luu-tru.md) *(2.5h · khó)*
@@ -444,7 +444,7 @@ kit-cua-toi/
 - **Mô hình an toàn 4 lớp** — và vì sao "read-only user" phải là lớp chính, không phải transaction
 - Thiết kế đa DB: interface theo **ngữ nghĩa**, không theo SQL (để Mongo vào được)
 - **DB là oracle phụ** — dùng để khoanh tầng lỗi: UI đúng/DB sai = bug lưu · UI sai/DB đúng = bug hiển thị
-- Tiền điều kiện **không** được dựng bằng DB, dù DB đang mở
+- Tiền điều kiện không được dựng bằng DB, dù DB đang mở
 - **Thực hành:** BUG-3 của app thực hành — luật "không được sửa" chỉ thực thi được ở tầng dưới, giao diện ẩn nút không phải thực thi
 
 ### [Bài 16 — Bug report và tích hợp](course/tich-hop.md) *(2.5h · vừa)*
@@ -454,7 +454,7 @@ kit-cua-toi/
 - Bug đủ 4 phần, có bằng chứng, che PII, chạy thử trước khi ghi thật
 - **Human gate:** vì sao không bao giờ để AI tự log bug
 - Nối công cụ test-management: publish một chiều, mặc định **dry-run**, cần **hai** cờ mới ghi thật
-- **`2xx` KHÔNG chứng minh mapping đúng** — trường ngoài danh sách cho phép ghi bị **bỏ qua âm thầm**, giá trị ngoài thang **rơi về mặc định**
+- **`2xx` KHÔNG chứng minh mapping đúng** — trường ngoài danh sách cho phép ghi bị bỏ qua âm thầm, giá trị ngoài thang rơi về mặc định
 - **XÂY gate:** đối soát **từng trường** sau publish; và gate chất lượng đứng ở **cả hai** cửa — lệnh tự soi và đường publish
 - Đẩy kết quả thành một cycle có lịch sử, bằng chứng neo xuống từng bước
 - Cách chọn công cụ quản lý test case theo chi phí thật
@@ -472,7 +472,7 @@ kit-cua-toi/
 - 6 nhóm tri thức: nghiệp vụ · hệ thống · lịch sử lỗi · tài sản test · quy ước team · quyết định đã ra
 - Phân biệt **năng lực** (dạy một lần, ở rules) và **kinh nghiệm** (tích luỹ, ở knowledge)
 - Vì sao thiếu nhóm "nghiệp vụ" thì **không thể** có oracle đúng
-- **Câu trả lời cho "từ số 0 thì học từ đâu":** 4 nguồn — bảng `BR-` đã có từ Bài 7 · câu trả lời BA từ Ambiguity Gate · seed từ lịch sử Jira · **rỗng có kiểm soát**
+- **Câu trả lời cho "từ số 0 thì học từ đâu":** 4 nguồn — bảng `BR-` đã có từ Bài 7 · câu trả lời BA từ Ambiguity Gate · seed từ lịch sử Jira · rỗng có kiểm soát
 - **XÂY gate:** chặn rule không có `nguồn`, cảnh báo khi nghi có PII
 
 ### [Bài 18 — Thiết kế knowledge base có kỷ luật](course/knowledge-base-co-ky-luat.md) *(2.5h · vừa)*
@@ -491,7 +491,7 @@ kit-cua-toi/
 
 - chạy → ghi kết quả → tính lại rủi ro → đổi độ sâu test lần sau
 - Error Guessing từ bug lịch sử: mọi lỗi từng xảy ra phải có test case canh
-- **Khi chưa có lịch sử bug:** 5 tín hiệu thay thế cho Likelihood, và chế độ cold-start **chỉ cảnh báo, không chặn**
+- **Khi chưa có lịch sử bug:** 5 tín hiệu thay thế cho Likelihood, và chế độ cold-start chỉ cảnh báo, không chặn
 - Bẫy hàng-ma: module có Impact cao mà 0 bug — chỉ nổ khi **cả hai** tín hiệu xuất hiện, không phải một
 - Vì sao suy luận bug→module **không có** chế độ `--apply`: đo được đúng 40%
 - **Điều không tự động hoá được:** xác nhận của con người — và vì sao đó là cố ý
@@ -500,7 +500,7 @@ kit-cua-toi/
 
 *Có gì trong tay: vòng học đã chạy ít nhất một chu kỳ.*
 
-- Phân biệt dữ liệu **nạp lại được** (từ Jira) và dữ liệu **do người tạo** (không nạp lại được)
+- Phân biệt dữ liệu nạp lại được (từ Jira) và dữ liệu do người tạo (không nạp lại được)
 - Khai ngưỡng tỉa/lưu trữ **trước khi** tích dữ liệu
 - **XÂY gate:** sao lưu thoát mã 2 nếu đích sao lưu nằm **trong** repo
 - Chia sẻ knowledge khi team đông lên
@@ -509,27 +509,27 @@ kit-cua-toi/
 
 ## PHẦN 6 — Chứng minh hiệu quả (5 giờ)
 
-> **Xong phần này bạn có:** con số chứng minh bộ kiểm của bạn bắt được bug — thay cho câu "tôi thấy ổn"
+> **Xong phần này bạn có:** con số chứng minh bộ kiểm của bạn bắt được bug. Thay cho câu "tôi thấy ổn"
 
 ### [Bài 21 — Mutation Testing: đo suite có bắt được bug không](course/do-chinh-bo-kiem.md) *(2.5h · khó)* ⭐
 
 *Có gì trong tay: suite đã chạy nhiều lượt, có lịch sử.*
 
-- Coverage cao **không chứng minh được gì** — bộ test có thể phủ hết mà không bắt được lỗi nào
+- Coverage cao không chứng minh được gì — bộ test có thể phủ hết mà không bắt được lỗi nào
 - Tiêm lỗi vào dữ liệu trả về: đổi số tiền · đổi trạng thái · xoá trường · đổi format
-- Suite vẫn xanh = **vùng mù đã được chứng minh**, không còn phỏng đoán
+- Suite vẫn xanh = vùng mù đã được chứng minh, không còn phỏng đoán
 - **Ba cái bẫy của chính máy đo**, cả ba đều cho ra số đẹp giả: nền đỏ ⇒ 100% giả · mutant không tiêm được ⇒ điểm thấp giả · `retries` bật ⇒ tín hiệu nhoè
 - Đọc **điểm 0** cho đúng: loại 4 nguyên nhân trước khi kết luận suite mù
 - Đọc **điểm 5/5** cho đúng: nó chỉ nói về tập mutant của bạn
-- **Thực hành:** chạy mutation trên module của bạn, đọc mutation score, sửa một oracle rồi **đo lại để chứng minh** nó có tác dụng
+- **Thực hành:** chạy mutation trên module của bạn, đọc mutation score, sửa một oracle rồi đo lại để chứng minh nó có tác dụng
 
 ### [Bài 22 — Metrics và độ tin cậy](course/metrics-va-do-tin-cay.md) *(1.5h · vừa)*
 
 *Có gì trong tay: mutation score gốc đã chốt.*
 
-- Clean pass rate ≠ eventual pass rate — khoảng cách giữa hai đường là **mức lệ thuộc retry**
+- Clean pass rate ≠ eventual pass rate — khoảng cách giữa hai đường là mức lệ thuộc retry
 - Reliability index theo từng test, phân hạng, quarantine
-- Vì sao flaky triage có thể **chôn bug thật**, và cách phân biệt
+- Vì sao flaky triage có thể chôn bug thật, và cách phân biệt
 - Phép đo phải liêm chính: `forbidOnly` · bỏ record `skipped` khỏi lịch sử · độ phủ theo ngưỡng tối thiểu mỗi chiều
 
 ### [Bài 23 — Dashboard và báo cáo](course/dashboard-va-bao-cao.md) *(1h · dễ)*
@@ -551,13 +551,13 @@ kit-cua-toi/
 *Có gì trong tay: kit đầy đủ, chạy tay được trọn vòng.*
 
 - CI/CD là gì, vì sao QA cần
-- Tách đúng: **kiểm tĩnh tự động mọi push** (không chạm môi trường thật) ≠ **việc nặng phải người bấm**
+- Tách đúng: kiểm tĩnh tự động mọi push (không chạm môi trường thật) ≠ việc nặng phải người bấm
 - Khai phạm vi CI bằng **một nguồn** — workflow đọc từ đó, không tự liệt kê
 - Chạy song song, sharding, gộp báo cáo
 - **Branch protection** — bước biến CI từ "báo cho biết" thành "gác cổng"
 - Bẫy: `--pass-with-no-tests` làm 0 test vẫn báo xanh
-- Bẫy đắt nhất: test xanh trên máy dev vì **thừa hưởng biến môi trường** của shell, đỏ trên CI
-- **XÂY gate:** đo **độ với tới** — máy đúng mà không điểm vào nào gọi thì bằng không có
+- Bẫy đắt nhất: test xanh trên máy dev vì thừa hưởng biến môi trường của shell, đỏ trên CI
+- **XÂY gate:** đo độ với tới — máy đúng mà không điểm vào nào gọi thì bằng không có
 
 ### [Bài 25 — MCP Server và tự động hoá quanh công việc](course/mcp-va-tu-dong-hoa.md) *(1.5h · vừa)*
 
@@ -574,7 +574,7 @@ kit-cua-toi/
 
 - Vì sao kit cũng cần version và changelog
 - Đóng gói sạch: tách lớp dùng chung khỏi lớp dự án, quét secret trong gói
-- **Bước quan trọng nhất:** giải nén vào thư mục sạch → cài lại → chạy gate → **chứng minh bản phát hành thật sự chạy được**
+- **Bước quan trọng nhất:** giải nén vào thư mục sạch → cài lại → chạy gate → chứng minh bản phát hành thật sự chạy được
 - Viết `README` mà người mới đọc là chạy được — nghiệm thu bằng người thật, hoặc bằng clone sạch
 - Dự án khác nhận bản mới thế nào
 
@@ -597,10 +597,10 @@ kit-cua-toi/
 *Có gì trong tay: kit đang chạy trên dự án thật.*
 
 - Gate báo đỏ mà không phải lỗi thật thì làm gì
-- **Nguyên tắc:** không nới ngưỡng gate để cho qua — hoặc sửa gate, hoặc ghi miễn trừ **kèm lý do và ngày**
-- Gate bắt oan thì gate **mất uy tín**, và đó là cách một kit chết
-- Đối chứng âm là bắt buộc: máy nào cũng phải được thử trên một ca **biết chắc phải chặn** và một ca **biết chắc phải cho qua**
-- Chống trôi: máy đọc chính khai báo của mình, và danh sách cho phép **chặn khối lạ**
+- **Nguyên tắc:** không nới ngưỡng gate để cho qua — hoặc sửa gate, hoặc ghi miễn trừ kèm lý do và ngày
+- Gate bắt oan thì gate mất uy tín, và đó là cách một kit chết
+- Đối chứng âm là bắt buộc: máy nào cũng phải được thử trên một ca biết chắc phải chặn và một ca biết chắc phải cho qua
+- Chống trôi: máy đọc chính khai báo của mình, và danh sách cho phép chặn khối lạ
 - Cách đo và tinh chỉnh ngưỡng theo va chạm thực tế
 
 ### [Bài 29 — Đi tiếp sau khi làm hết](course/lo-trinh-sau-khoa.md) *(1.5h · dễ)*
@@ -608,7 +608,7 @@ kit-cua-toi/
 *Có gì trong tay: kit chạy trên dự án thật, đã va chạm và tinh chỉnh.*
 
 - Vì sao "dừng xây, chuyển sang dùng" là bước tiếp theo đúng
-- Những thứ **không** nên thêm dù nghe hay: đa framework · công cụ trùng chức năng
+- Những thứ không nên thêm dù nghe hay: đa framework · công cụ trùng chức năng
 - Khi nào cần: contract testing · performance engineering · observability
 - Nhịp bảo dưỡng: mỗi lượt · mỗi sprint · mỗi tháng (đo lại mutation) · mỗi quý (rà **ngoại lệ** trong mọi allowlist)
 - Cộng đồng và cập nhật kit dài hạn
@@ -647,11 +647,11 @@ kit-cua-toi/
 
 ## Tình trạng nội dung chi tiết
 
-**Cả 30 bài (Bài 0 → Bài 29) đều đã có bài giảng đầy đủ** — tiêu đề bài là **link bấm được**. Cộng
-4 bài chi tiết bổ trợ không đánh số ở bảng dưới, tổng cộng **34 bài giảng**.
+**Cả 30 bài (Bài 0 → Bài 29) đều đã có bài giảng đầy đủ** — tiêu đề bài là link bấm được. Cộng
+4 bài chi tiết bổ trợ không đánh số ở bảng dưới, tổng cộng 34 bài giảng.
 
-Mỗi bài giảng đầy đủ gồm: **từ mới của bài** · các **Việc** làm theo bước, mỗi việc có khối *"Bạn sẽ thấy"*
-và bảng xử lý khi thấy khác · **cây thư mục sau bài này** · bảng tự kiểm · bài tập về nhà · mục **Đào sâu**
+Mỗi bài giảng đầy đủ gồm: từ mới của bài · các **Việc** làm theo bước, mỗi việc có khối *"Bạn sẽ thấy"*
+và bảng xử lý khi thấy khác · cây thư mục sau bài này · bảng tự kiểm · bài tập về nhà · mục **Đào sâu**
 không bắt buộc.
 
 **Bài chi tiết bổ trợ (không đánh số)** — không phải bài trong lộ trình, mà là phần đào sâu mà một bài
@@ -668,7 +668,7 @@ có số trỏ tới. Tách ra để bài chính không phình, nhưng nội dun
 
 ## Quyết định thiết kế tài liệu này — đọc trước khi triển khai
 
-**1. KHÔNG dạy xây cả bộ gate.** Dạy ~10 gate cốt lõi + **mẫu hình chung**, rồi tặng kit đầy đủ.
+**1. KHÔNG dạy xây cả bộ gate.** Dạy ~10 gate cốt lõi + mẫu hình chung, rồi tặng kit đầy đủ.
 Bạn xây được thứ của mình, hiểu vì sao, và có bản xịn để lớn dần. Dạy xây hết thì bỏ dở giữa chừng.
 
 **2. Mỗi bài phải trả lời "cơ chế này chặn kiểu sai nào".** Đây là khác biệt lớn nhất so với các khoá
@@ -677,7 +677,7 @@ khác: họ dạy *cách làm*, tài liệu này dạy *vì sao phải làm th�
 
 **3. Dùng lỗi thật của chính mình làm bài học.** Ví dụ đã đưa vào bài: script crash vì thiếu `.git` khi giải
 nén ZIP · probe read-only sai vì Postgres cấp quyền `TEMPORARY` cho `PUBLIC` · mục lục tự dời số dòng của
-chính nó · lỗi độ ưu tiên toán tử làm một phép kiểm **không bao giờ chạy** mà vẫn báo đạt. Những lỗi này
+chính nó · lỗi độ ưu tiên toán tử làm một phép kiểm không bao giờ chạy mà vẫn báo đạt. Những lỗi này
 không có trong sách, và chúng làm tài liệu này đáng tin.
 
 **4. Nói thẳng giới hạn.** Tài liệu này khó, cần đọc code, không phải "AI làm hộ". Nói trước sẽ lọc đúng
@@ -687,5 +687,5 @@ không có trong sách, và chúng làm tài liệu này đáng tin.
 **Nâng cao** (Phần 5–8, ~24h, knowledge + chứng minh + CI/CD + phát hành).
 
 **6. Bổ sung so với bản khung gốc: app thực hành và Bài 0.** Lý do: đối tượng "không bắt buộc biết code,
-không bắt buộc có dự án thật" thì đến Bài 1 đã không có gì để gõ. App có **3 bug biết trước** biến mọi
+không bắt buộc có dự án thật" thì đến Bài 1 đã không có gì để gõ. App có 3 bug biết trước biến mọi
 phép đo trong tài liệu này thành phép đo có **đối chứng** — bắt 0/3 thì biết lỗi ở bộ kiểm, không ở app.

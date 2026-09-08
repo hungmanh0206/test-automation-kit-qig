@@ -1,6 +1,6 @@
 # Bài 25 — MCP Server và tự động hoá quanh công việc
 
-> **1 giờ 30 phút** · Có gì trong tay: CI đang gác cổng · Sau bài này: agent đọc được dữ liệu ngoài qua **một** cửa, với quyền tối thiểu, và bạn biết ranh giới nào không được tự động hoá
+> **1 giờ 30 phút** · Có gì trong tay: CI đang gác cổng · Sau bài này: agent đọc được dữ liệu ngoài qua một cửa, với quyền tối thiểu, và bạn biết ranh giới nào không được tự động hoá
 
 **Tóm tắt bài này**
 
@@ -22,7 +22,7 @@
 
 Ba việc:
 
-1. Gom mọi cửa vào dữ liệu ngoài về **một** nơi khai (25 phút).
+1. Gom mọi cửa vào dữ liệu ngoài về một nơi khai (25 phút).
 2. **Xây gate**: server có quyền ghi phải khai lý do + ai duyệt (30 phút).
 3. Vạch ranh giới tự động hoá, và đặt lịch chạy + thông báo (25 phút).
 
@@ -36,11 +36,11 @@ gọi Figma. Bốn hệ quả, đều đắt:
 | Hệ quả | Cụ thể |
 |---|---|
 | Mỗi chỗ tự xử lý token | token rải rác, và đó là đường rò rỉ |
-| Mỗi chỗ tự xử lý phân trang | chỗ nhớ, chỗ quên — đọc thiếu **không có tín hiệu** (Bài 3) |
+| Mỗi chỗ tự xử lý phân trang | chỗ nhớ, chỗ quên — đọc thiếu không có tín hiệu (Bài 3) |
 | API đổi thì sửa mười chỗ | và bạn chỉ tìm ra chín |
 | Không ai biết agent đang được phép làm gì | câu hỏi *"nó có xoá được issue không?"* không trả lời được |
 
-`.agent/config/mcp_config.md` — **một** bảng, và nó là canonical:
+`.agent/config/mcp_config.md`. Một bảng, và nó là canonical:
 
 ```markdown
 # MCP server của dự án
@@ -63,8 +63,8 @@ gọi Figma. Bốn hệ quả, đều đắt:
 5. Đo cỡ tài liệu trước khi đọc (Bài 3). Vượt ngưỡng thì giao subagent trích.
 ```
 
-Quy tắc 3 đáng nhấn: **không cấp quyền xoá cho bất cứ server nào.** Không phải vì agent hay xoá bừa, mà vì
-xoá là hành động **không hoàn tác được**, và không có lợi ích nào đủ để đánh đổi. Dọn dẹp thì đổi trạng thái
+Quy tắc 3 đáng nhấn: không cấp quyền xoá cho bất cứ server nào. Không phải vì agent hay xoá bừa, mà vì
+xoá là hành động không hoàn tác được, và không có lợi ích nào đủ để đánh đổi. Dọn dẹp thì đổi trạng thái
 (`Deprecated`, `Closed`), đừng xoá.
 
 ## Việc 2 — Gate: quyền ghi phải có người duyệt (30 phút)
@@ -76,7 +76,7 @@ Bảng trên là văn bản. Văn bản thì trôi. Ai đó thêm một server, 
 | # | | |
 |---|---|---|
 | 1 | Chặn kiểu sai nào | quyền ghi/xoá được cấp mà không ai duyệt, và không ai biết |
-| 2 | Đo cái gì | bảng trong `mcp_config.md`: mọi dòng có quyền ghi phải có **ai duyệt + ngày**; không dòng nào có quyền xoá |
+| 2 | Đo cái gì | bảng trong `mcp_config.md`: mọi dòng có quyền ghi phải có ai duyệt + ngày; không dòng nào có quyền xoá |
 | 3 | Cửa nào | mọi commit (rẻ, tất định, không chạm mạng) |
 | 4 | Không đo được | thiếu tệp, hoặc bảng không parse được ⇒ mã 2 |
 | 5 | Đối chứng | thêm dòng ghi không người duyệt ⇒ chặn · dòng chỉ đọc ⇒ **qua** · dòng có "xoá" ⇒ chặn |
@@ -164,18 +164,18 @@ console.log('\n[mcp-quyen] ✓ ĐẠT — mọi quyền ghi đều có người 
 | 3 | đổi quyền dòng Jira thành `đọc + tạo bug + xoá issue` | **`1`** — có quyền xoá |
 | 4 | bảng chỉ toàn dòng **chỉ đọc** | **`0`** |
 
-Lần 4 là đối chứng âm: server chỉ đọc **không** cần người duyệt, và gate phải cho qua ngay. Bắt duyệt cả dòng
+Lần 4 là đối chứng âm: server chỉ đọc không cần người duyệt, và gate phải cho qua ngay. Bắt duyệt cả dòng
 chỉ đọc thì mọi lần thêm server là một vòng thủ tục, và người ta sẽ bỏ file khai báo.
 
 > Máy này đo KHAI BÁO, không đo cấu hình thật. Nó không với tới được cấu hình MCP trên máy bạn. Nên nó
-> chặn được *"cấp quyền mà không ai duyệt"*, **không** chặn được *"khai một đằng cấu hình một nẻo"*. Ghi giới
+> chặn được *"cấp quyền mà không ai duyệt"*, không chặn được *"khai một đằng cấu hình một nẻo"*. Ghi giới
 > hạn này vào chú thích của máy. Gate mà người dùng tưởng nó đo nhiều hơn thực tế là gate nguy hiểm.
 
 ## Việc 3 — Ranh giới, lịch chạy, và thông báo (25 phút)
 
 ### Cái gì tự động được, cái gì bắt buộc người bấm
 
-Ranh giới không nằm ở *"máy làm nổi không"* — nó nằm ở **hậu quả khi máy làm sai**:
+Ranh giới không nằm ở *"máy làm nổi không"* — nó nằm ở hậu quả khi máy làm sai:
 
 | Việc | Tự động? | Vì sao |
 |---|---|---|
@@ -183,13 +183,13 @@ Ranh giới không nằm ở *"máy làm nổi không"* — nó nằm ở **hậ
 | Sinh testcase nháp | ✅ | còn qua review của người |
 | Chạy suite theo lịch | ✅ | không đổi dữ liệu ai (nếu tiền điều kiện đúng — Bài 12) |
 | Sinh báo cáo, dashboard | ✅ | artifact, sinh lại được |
-| Gửi thông báo vào **một** kênh | ✅ | ồn thì tắt |
-| **Publish testcase lên công cụ dùng chung** | ❌ | công cụ **không có API xoá**; đẩy nhầm là sống với nó (Bài 16) |
+| Gửi thông báo vào một kênh | ✅ | ồn thì tắt |
+| **Publish testcase lên công cụ dùng chung** | ❌ | công cụ không có API xoá; đẩy nhầm là sống với nó (Bài 16) |
 | **Log bug lên Jira** | ❌ | bug sai làm mất niềm tin của đội dev, và mất rất lâu để lấy lại |
 | **Đổi trạng thái case sang Deprecated** | ❌ | ảnh hưởng lịch sử chạy của người khác |
 | **Sửa `knowledge/`** ở mức đổi `active` → `invalid` | ❌ | quyết định "kết quả cũ mất giá trị" (Bài 18) |
 
-Bốn dòng ❌ có chung một tính chất: **hậu quả đổ lên người khác**, và **khó hoàn tác**. Đó là định nghĩa dùng
+Bốn dòng ❌ có chung một tính chất: hậu quả đổ lên người khác, và khó hoàn tác. Đó là định nghĩa dùng
 được của human gate, không phải "việc khó".
 
 > Human gate **không phải** là không tin agent. Nó là chỗ đặt trách nhiệm. Bug sai gửi cho Dev thì người chịu
@@ -226,11 +226,11 @@ Bốn điều về thông báo, học từ chỗ mọi kênh thông báo đều 
 | Điều | Vì sao |
 |---|---|
 | **Chỉ báo khi ĐỎ**, không báo khi xanh | báo mỗi ngày thì sau hai tuần không ai đọc nữa |
-| Kèm **link tới bản chạy**, không dán log | log dài làm trôi kênh; link thì mở khi cần |
-| Nói **cái gì hỏng**, không chỉ "build failed" | *"3 case Tạo đơn đỏ ở bước tính tiền"* mới hành động được |
+| Kèm link tới bản chạy, không dán log | log dài làm trôi kênh; link thì mở khi cần |
+| Nói cái gì hỏng, không chỉ "build failed" | *"3 case Tạo đơn đỏ ở bước tính tiền"* mới hành động được |
 | Có `workflow_dispatch` | lịch hỏng lúc nào cũng bấm tay chạy lại được |
 
-Dòng đầu là dòng quan trọng nhất: **thông báo bị bỏ qua còn tệ hơn không có thông báo**, vì nó tạo cảm giác
+Dòng đầu là dòng quan trọng nhất: thông báo bị bỏ qua còn tệ hơn không có thông báo, vì nó tạo cảm giác
 đang được canh.
 
 ## Cây thư mục sau bài này
@@ -250,9 +250,9 @@ kit-cua-toi/
 ## Tự kiểm
 
 1. Bốn hệ quả của việc mỗi chỗ tự gọi API — kể ra.
-2. Vì sao **không** server nào được cấp quyền xoá? Dọn dẹp thì làm gì?
+2. Vì sao không server nào được cấp quyền xoá? Dọn dẹp thì làm gì?
 3. Vì sao server **chỉ đọc** không cần người duyệt, và gate phải cho qua ngay?
-4. Máy `kiem-mcp-quyen.js` **không** đo được cái gì? Vì sao phải ghi giới hạn đó vào chú thích?
+4. Máy `kiem-mcp-quyen.js` không đo được cái gì? Vì sao phải ghi giới hạn đó vào chú thích?
 5. Ranh giới human gate nằm ở đâu, "việc khó" hay "hậu quả"? Kể 2 việc bắt buộc người bấm.
 6. Vì sao chỉ báo khi đỏ? Báo cả khi xanh thì hỏng thế nào?
 7. Vì sao workflow theo lịch vẫn phải có `workflow_dispatch`?
@@ -262,7 +262,7 @@ kit-cua-toi/
 1. Khai `mcp_config.md` cho dự án bạn. Với **mỗi** server, trả lời thật: *nó đang được cấp quyền gì?*
    Nếu bạn không biết, đó là phát hiện của bài này, đi tìm cho ra.
 2. Chạy `kiem-mcp-quyen.js`. Sửa tới khi đạt. Đừng nới gate; hoặc bỏ quyền thừa, hoặc xin duyệt thật.
-3. Liệt kê **mọi** việc kit bạn đang tự động hoá. Với mỗi việc hỏi: *máy làm sai thì hậu quả đổ lên ai, và
+3. Liệt kê mọi việc kit bạn đang tự động hoá. Với mỗi việc hỏi: *máy làm sai thì hậu quả đổ lên ai, và
    hoàn tác được không?* Việc nào "đổ lên người khác + khó hoàn tác" mà đang tự động ⇒ thêm human gate.
 
 Bước 3 hay lộ ra một hoặc hai chỗ đã tự động hoá vượt ranh giới từ lâu mà không ai nhận ra, thường là đường

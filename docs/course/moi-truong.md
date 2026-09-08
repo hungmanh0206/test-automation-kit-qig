@@ -57,7 +57,7 @@ ai sửa gì.
 
 ### VS Code
 
-Cài xong thì mở thư mục làm việc bằng **File → Open Folder**.
+Cài xong thì mở thư mục làm việc bằng File → Open Folder.
 
 Nghe hiển nhiên, nhưng đây là nguyên nhân số một của lỗi "AI không tìm thấy file". Mở sai cấp thư mục thì
 agent không nhìn thấy repo.

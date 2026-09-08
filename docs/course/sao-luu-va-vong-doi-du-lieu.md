@@ -16,13 +16,13 @@
 |---|---|
 | **Nạp lại được** | Mất thì kéo lại từ nguồn gốc (Jira, công cụ test-management, git) |
 | **Do người tạo** | Không có nguồn nào khác. Mất là **mất hẳn** |
-| **Tỉa** (prune) | Xoá bớt dữ liệu cũ theo luật đã khai **trước** |
+| **Tỉa** (prune) | Xoá bớt dữ liệu cũ theo luật đã khai trước |
 
 ## Bài này bạn sẽ làm gì
 
 Ba việc:
 
-1. Phân loại dữ liệu kit của bạn thành **nạp lại được** / **mất hẳn** (25 phút).
+1. Phân loại dữ liệu kit của bạn thành nạp lại được / **mất hẳn** (25 phút).
 2. **Xây gate** sao lưu: đích nằm trong repo ⇒ từ chối (25 phút).
 3. Khai ngưỡng tỉa **trước khi** dữ liệu tích lại, và chia sẻ kho khi team đông lên (25 phút).
 
@@ -30,7 +30,7 @@ Ba việc:
 
 ## Việc 1 — Hai loại dữ liệu, hai mức lo (25 phút)
 
-Liệt kê mọi thứ kit của bạn sinh ra, rồi hỏi **một** câu: *mất tệp này thì tôi dựng lại bằng cách nào?*
+Liệt kê mọi thứ kit của bạn sinh ra, rồi hỏi một câu: *mất tệp này thì tôi dựng lại bằng cách nào?*
 
 | Dữ liệu | Mất thì dựng lại thế nào | Loại |
 |---|---|---|
@@ -41,7 +41,7 @@ Liệt kê mọi thứ kit của bạn sinh ra, rồi hỏi **một** câu: *m�
 | **`knowledge/domain/`** — luật đã xác nhận + nguồn | **không có nguồn nào khác** | ⛔ **mất hẳn** |
 | **`knowledge/decisions/`** — quyết định + **lý do** | lý do không ở đâu khác | ⛔ **mất hẳn** |
 | **`knowledge/fixture/`** — cách dựng dữ liệu | phải mò lại từ đầu | ⛔ **mất hẳn** |
-| **`knowledge/leak/`** — bug đã lọt + máy nào lẽ ra bắt | Jira có bug, **không có phần "máy nào lẽ ra bắt"** | ⛔ **mất hẳn** |
+| **`knowledge/leak/`** — bug đã lọt + máy nào lẽ ra bắt | Jira có bug, không có phần "máy nào lẽ ra bắt" | ⛔ **mất hẳn** |
 | `outputs/` — ảnh, video, status từng lượt | chạy lại được (nhưng tốn) | tuỳ |
 
 Bốn dòng ⛔ là toàn bộ lý do bài này tồn tại. Chúng có ba điểm chung, và cả ba đều nguy hiểm:
@@ -49,11 +49,11 @@ Bốn dòng ⛔ là toàn bộ lý do bài này tồn tại. Chúng có ba đi�
 | Điểm chung | Hệ quả |
 |---|---|
 | Không có bản sao ở hệ thống nào khác | mất là hết |
-| **Không được commit lên git** (Bài 5) | lớp bảo vệ mặc định của mọi thứ khác **không áp dụng** |
+| **Không được commit lên git** (Bài 5) | lớp bảo vệ mặc định của mọi thứ khác không áp dụng |
 | Tích dần, mỗi ngày một ít | không có lúc nào là "lúc quan trọng" để nhớ sao lưu |
 
 Điểm thứ hai là cái bẫy: bạn quen "code an toàn vì có git", rồi vô thức nghĩ mọi thứ trong thư mục cũng an
-toàn. `knowledge/` nằm trong `.gitignore` — **git không giữ nó**.
+toàn. `knowledge/` nằm trong `.gitignore`. Git không giữ nó.
 
 > Ổ cứng hỏng · `git clean -xdf` gõ nhầm · máy mới. Ba chuyện này không hiếm, và mỗi chuyện xoá sạch bốn dòng ⛔.
 
@@ -67,7 +67,7 @@ trên. Nhưng đây là chỗ người ta hay làm, vì nó tiện.
 | # | | |
 |---|---|---|
 | 1 | Chặn kiểu sai nào | sao lưu vào chỗ chết cùng bản gốc ⇒ tưởng có sao lưu mà không có |
-| 2 | Đo cái gì | đường dẫn đích **sau khi resolve tuyệt đối** có nằm trong thư mục repo không |
+| 2 | Đo cái gì | đường dẫn đích sau khi resolve tuyệt đối có nằm trong thư mục repo không |
 | 3 | Cửa nào | ngay trong lệnh sao lưu, trước khi ghi byte nào |
 | 4 | Không đo được | chưa khai `KNOWLEDGE_BACKUP_DIR` ⇒ mã 2 |
 | 5 | Đối chứng | đích trong repo ⇒ chặn · đích ngoài repo ⇒ qua · đích là symlink trỏ ngược vào repo ⇒ **chặn** |
@@ -184,7 +184,7 @@ Ra `0` và có thư mục `knowledge-<ngày>` kèm `_ban-ke.json`.
 
 ### Khôi phục — thử **một lần**, ngay bây giờ
 
-Sao lưu chưa từng khôi phục là **sao lưu chưa được nghiệm thu**. Làm ngay:
+Sao lưu chưa từng khôi phục là sao lưu chưa được nghiệm thu. Làm ngay:
 
 ```bash
 mv knowledge knowledge-cu                                # giấu bản gốc
@@ -195,11 +195,11 @@ npm run kiem:knowledge                                   # gate Bài 18 phải �
 
 Đạt thì bản sao lưu dùng được thật. Xong thì trả lại: `rm -rf knowledge && mv knowledge-cu knowledge`.
 
-## Việc 3 — Khai ngưỡng tỉa **trước**, và chia sẻ kho (25 phút)
+## Việc 3 — Khai ngưỡng tỉa trước, và chia sẻ kho (25 phút)
 
 ### Vì sao phải khai trước
 
-Ngưỡng tỉa khai **sau** khi dữ liệu đã tích thì bạn quyết định trong tình huống tệ nhất: đĩa đầy, cần dọn
+Ngưỡng tỉa khai sau khi dữ liệu đã tích thì bạn quyết định trong tình huống tệ nhất: đĩa đầy, cần dọn
 gấp, và mọi tệp đều "có vẻ cần". Lúc đó người ta xoá theo ngày, và ngày không liên quan gì tới giá trị.
 
 `.agent/config/vong-doi-du-lieu.json`:
@@ -222,7 +222,7 @@ gấp, và mọi tệp đều "có vẻ cần". Lúc đó người ta xoá theo 
 }
 ```
 
-Hai dòng `"tia": "không bao giờ"` là hai dòng đáng nhìn kỹ: chúng nhỏ, và chúng là thứ **không mua lại được**.
+Hai dòng `"tia": "không bao giờ"` là hai dòng đáng nhìn kỹ: chúng nhỏ, và chúng là thứ không mua lại được.
 Tỉa thứ nhẹ mà quý là lỗi kinh điển của dọn dẹp gấp.
 
 ### Chia sẻ kho khi team đông lên
@@ -257,7 +257,7 @@ kit-cua-toi/
         └── _ban-ke.json              ·  bản kê để lần khôi phục biết bản này có gì
 ```
 
-Đây là bài duy nhất trong tài liệu này có nhánh **nằm ngoài repo** — và đó chính là nội dung của bài.
+Đây là bài duy nhất trong tài liệu này có nhánh nằm ngoài repo, và đó chính là nội dung của bài.
 
 ## Tự kiểm
 
@@ -265,14 +265,14 @@ kit-cua-toi/
 2. Vì sao để bản sao lưu trong thư mục repo lại *"nguy hiểm hơn không sao lưu"*?
 3. Vì sao gate dùng `realpath` chứ không chỉ so chuỗi đường dẫn?
 4. Sao lưu chưa từng khôi phục thì gọi là gì? Bạn đã thử chưa?
-5. Vì sao ngưỡng tỉa phải khai **trước** khi dữ liệu tích lại?
+5. Vì sao ngưỡng tỉa phải khai trước khi dữ liệu tích lại?
 6. Hai loại nào `"tia": "không bao giờ"`? Chúng có điểm gì chung?
-7. Vì sao **không** nên để `knowledge/` thành submodule của repo kit?
+7. Vì sao không nên để `knowledge/` thành submodule của repo kit?
 
 ## Bài tập về nhà (25 phút)
 
 1. Khai `KNOWLEDGE_BACKUP_DIR` trỏ ra ngoài repo. Chạy sao lưu. Kiểm bằng mắt là tệp có ở đó thật.
-2. **Khôi phục thật** theo Việc 2, và chạy `kiem-tri-thuc.js` trên bản khôi phục. Đạt mới tính là xong.
+2. Khôi phục thật theo Việc 2, và chạy `kiem-tri-thuc.js` trên bản khôi phục. Đạt mới tính là xong.
 3. Điền `vong-doi-du-lieu.json` cho dự án bạn. Với **mỗi** loại, viết `lyDo`, nếu không viết nổi lý do thì
    bạn chưa biết dữ liệu đó dùng làm gì, và đó là thứ cần biết trước khi quyết giữ hay xoá.
 4. Đặt một nhắc lịch **hàng tuần** chạy sao lưu. Không tự động hoá được thì nhắc tay còn hơn không có gì —

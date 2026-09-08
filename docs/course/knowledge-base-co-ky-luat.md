@@ -17,7 +17,7 @@
 | **`source`** | Ai/cái gì khẳng định điều này. Không có thì đây là **phỏng đoán**, không phải tri thức |
 | **`supersedes`** | Bản ghi này **thay thế** bản ghi cũ nào |
 | **`covered_by`** | Testcase nào đang canh luật này. Dùng để truy **ngược** |
-| **`superseded` ≠ `invalid`** | Nghiệp vụ **đổi** (kết quả cũ vẫn đúng lúc đó) ≠ ghi **sai từ đầu** (kết quả cũ mất giá trị) |
+| **`superseded` ≠ `invalid`** | Nghiệp vụ **đổi** (kết quả cũ vẫn đúng lúc đó) ≠ ghi sai từ đầu (kết quả cũ mất giá trị) |
 
 ## Bài này bạn sẽ làm gì
 
@@ -25,7 +25,7 @@ Bốn việc:
 
 1. Thấy tri thức không có nguồn dạy sai agent thế nào (20 phút).
 2. Thiết kế schema: `source` rỗng thì **cấm ghi** (30 phút).
-3. Hiểu **4 trạng thái vòng đời**, và khác biệt tinh giữa `superseded` và `invalid` (30 phút).
+3. Hiểu 4 trạng thái vòng đời, và khác biệt tinh giữa `superseded` và `invalid` (30 phút).
 4. **Xây gate** chống học sai: mâu thuẫn · quá cũ · thiếu nguồn, chạy **trước khi** agent được đọc (40 phút).
 
 ---
@@ -38,7 +38,7 @@ Bài 17 dựng kho tri thức. Giờ nó có vài chục bản ghi, và một b�
 { "id": "R-014", "luat": "Phí giao hàng miễn khi tạm tính từ 450.000" }
 ```
 
-Ai nói `450.000`? Không biết. Nhưng agent sẽ **đọc và tin**. Rồi:
+Ai nói `450.000`? Không biết. Nhưng agent sẽ đọc và tin. Rồi:
 
 | Hệ quả | Cụ thể |
 |---|---|
@@ -46,10 +46,10 @@ Ai nói `450.000`? Không biết. Nhưng agent sẽ **đọc và tin**. Rồi:
 | Case **cũ** đúng bị coi là sai | Agent thấy case ghi `500.000` và "sửa cho khớp tri thức" |
 | Không ai truy được | Sáu tháng sau không biết con số đó từ đâu ra để mà bác |
 
-Đây là lớp lỗi tệ nhất của bộ nhớ dự án: **sai một lần, dạy sai mãi mãi**, và mỗi lần dùng lại làm nó có vẻ
+Đây là lớp lỗi tệ nhất của bộ nhớ dự án: sai một lần, dạy sai mãi mãi, và mỗi lần dùng lại làm nó có vẻ
 đúng thêm.
 
-> Bài 10 dạy: kết luận phải neo được vào tài liệu. Bài này là **cùng luật đó áp cho tri thức**: một bản ghi
+> Bài 10 dạy: kết luận phải neo được vào tài liệu. Bài này là cùng luật đó áp cho tri thức: một bản ghi
 > không neo được thì nó là phỏng đoán được cất giữ trang trọng.
 
 ## Việc 2 — Schema: `source` rỗng thì cấm ghi (30 phút)
@@ -101,9 +101,9 @@ Ba trường đáng nói:
 
 | Trường | Vì sao bắt buộc |
 |---|---|
-| `source` | Không có thì đây là phỏng đoán. **Đây là trường quan trọng nhất của cả schema** |
+| `source` | Không có thì đây là phỏng đoán. Đây là trường quan trọng nhất của cả schema |
 | `covered_by` | Truy **ngược**: luật này có case nào canh không? Không có ⇒ luật đang không được kiểm |
-| `version` | Đổi nội dung thì tăng version + ghi `supersedes`, **không sửa đè** |
+| `version` | Đổi nội dung thì tăng version + ghi `supersedes`, không sửa đè |
 
 > Không sửa đè. Sửa đè thì bạn mất lịch sử, và mất luôn khả năng trả lời câu *"lượt chạy tháng trước
 > dùng luật nào?"* — câu này quyết định kết quả cũ còn giá trị hay không (Việc 3).
@@ -118,7 +118,7 @@ Ba kiểu nguồn, mỗi kiểu đòi một thứ khác nhau, và đòi đúng c
 | `nguoi` | `"BA Hương, 07/09/2026"` | `"BA xác nhận"` |
 | `do-duoc` | `"curl POST /api/quote KH02×2 ⇒ phiGiaoHang=30000"` | `"đã test thấy vậy"` |
 
-Cột phải là những câu **không truy được**, và chúng chiếm phần lớn tri thức viết vội.
+Cột phải là những câu không truy được, và chúng chiếm phần lớn tri thức viết vội.
 
 ## Việc 3 — Bốn trạng thái, và khác biệt tinh (30 phút)
 
@@ -136,9 +136,9 @@ active ──(nghiệp vụ đổi)──▶ superseded      kết quả cũ V�
 
 | | `superseded` | `invalid` |
 |---|---|---|
-| Chuyện gì xảy ra | Nghiệp vụ **đổi** từ ngày X | Bản ghi **sai từ đầu** |
+| Chuyện gì xảy ra | Nghiệp vụ **đổi** từ ngày X | Bản ghi sai từ đầu |
 | Ví dụ | Mốc miễn phí đổi từ `500.000` thành `450.000` từ 01/10 | Ai đó ghi `450.000` trong khi spec luôn là `500.000` |
-| Kết quả chạy **trước** đó | **vẫn đúng** — lúc đó luật là thế | **mất giá trị** — chạy trên luật sai |
+| Kết quả chạy trước đó | **vẫn đúng** — lúc đó luật là thế | **mất giá trị** — chạy trên luật sai |
 | Phải làm gì | không phải chạy lại | **chạy lại** mọi case liên quan |
 | Bug đã log theo nó | vẫn hợp lệ | phải rà lại, có thể phải rút |
 
@@ -181,8 +181,8 @@ Tri thức không sai, nó **cũ đi**. `hanTaiXacNhan` trong schema nói mỗi 
 | `decision` | 365 ngày | quyết định + lý do sống lâu |
 | `leak` | 0 (không hết hạn) | bug đã lọt là sự thật lịch sử, không cũ đi |
 
-Quá hạn thì chuyển `cho-xac-nhan` — **không** tự chuyển `invalid`. Quá hạn nghĩa là *"chưa ai kiểm lại"*,
-không phải *"đã sai"*. Đây lại đúng luật **KHÔNG ĐO ĐƯỢC ≠ VI PHẠM** của Bài 11.
+Quá hạn thì chuyển `cho-xac-nhan`. Không tự chuyển `invalid`. Quá hạn nghĩa là *"chưa ai kiểm lại"*,
+không phải *"đã sai"*. Đây lại đúng luật KHÔNG ĐO ĐƯỢC ≠ VI PHẠM của Bài 11.
 
 ## Việc 4 — Gate chống học sai (40 phút)
 
@@ -337,10 +337,10 @@ console.log('[knowledge] ✓ ĐẠT — kho sạch, agent được đọc.');
 |---|---|---|
 | 1 | kho đúng chuẩn | **`0`** |
 | 2 | đổi `source.tro` thành `"theo tài liệu"` | **`1`** — không truy được |
-| 3 | thêm `R-014@v2` `active` mà **không** đổi `v1` thành `superseded` | **`1`** — hai bản cùng đúng |
+| 3 | thêm `R-014@v2` `active` mà không đổi `v1` thành `superseded` | **`1`** — hai bản cùng đúng |
 | 4 | đổi `v1` thành `superseded`, `ngayGhi` từ 2 năm trước | **`0`** — bản đã `superseded` thì không tính hạn |
 
-Lần 4 là đối chứng âm quan trọng: **bản ghi cũ đã nghỉ hưu phải đi qua**. Chặn cả nó thì người ta sẽ xoá bản
+Lần 4 là đối chứng âm quan trọng: bản ghi cũ đã nghỉ hưu phải đi qua. Chặn cả nó thì người ta sẽ xoá bản
 cũ cho gọn, và mất luôn lịch sử.
 
 ## Bảo mật: vì sao `knowledge/` không lên repo công khai
@@ -356,7 +356,7 @@ knowledge/leak/khach-bao-loi-tru-tien-hai-lan.json
 ```
 
 `git ls-files` trên một repo công khai là đủ để người ngoài biết sản phẩm có lỗi gì và bạn cố ý bỏ qua điều
-gì — **không cần mở tệp nào**. `kiem-file-cam.js` (Bài 5) là máy canh chuyện đó; bài này chỉ nhắc rằng kho
+gì. Không cần mở tệp nào. `kiem-file-cam.js` (Bài 5) là máy canh chuyện đó; bài này chỉ nhắc rằng kho
 càng lớn thì rủi ro càng cao.
 
 ## Cây thư mục sau bài này
@@ -380,7 +380,7 @@ kit-cua-toi/
 1. Vì sao `source` là trường quan trọng nhất của schema?
 2. `"theo tài liệu"`, đủ làm `source` chưa? Vì sao?
 3. `superseded` và `invalid` khác nhau ở chỗ nào? Kết quả chạy cũ trong mỗi trường hợp?
-4. Quá hạn tái xác nhận thì chuyển trạng thái gì? Vì sao **không** phải `invalid`?
+4. Quá hạn tái xác nhận thì chuyển trạng thái gì? Vì sao không phải `invalid`?
 5. Vì sao gate chặn ở cửa **đọc** chứ không ở cửa **ghi**?
 6. Hai bản ghi cùng `id` đều `active`, nguy hiểm ra sao?
 7. Vì sao "luật active mà `covered_by` rỗng" chỉ là **cảnh báo**, không phải chặn?
@@ -388,7 +388,7 @@ kit-cua-toi/
 
 ## Bài tập về nhà (30 phút)
 
-1. Lấy **5 bản ghi** trong kho tri thức thật của bạn. Với mỗi bản, trả lời: *ai nói điều này, và tôi truy lại
+1. Lấy 5 bản ghi trong kho tri thức thật của bạn. Với mỗi bản, trả lời: *ai nói điều này, và tôi truy lại
    bằng cách nào?* Bản nào không trả lời được → sửa `source`, hoặc chuyển `cho-xac-nhan`.
 2. Tìm một luật nghiệp vụ **đã đổi** trong dự án bạn. Ghi đủ cặp `v1` (`superseded`, có `hieuLucDen`) và
    `v2` (`active`, có `hieuLucTu`). Rồi trả lời: *kết quả chạy tháng trước còn giá trị không?*

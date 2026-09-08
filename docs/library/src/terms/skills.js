@@ -3,16 +3,16 @@ const TERMS_SKILL = [
 
 /* ── Phase 1 ── */
 { id:'sk-combinatorial_matrix', t:'combinatorial_matrix', cat:'skill', phase:'Phase 1',
-  def:'Sinh ma trận tổ hợp từ các chiều, giá trị và ràng buộc — mặc định Pairwise chứ không phải Cartesian đầy đủ.',
+  def:'Sinh ma trận tổ hợp từ các chiều, giá trị và ràng buộc. Mặc định Pairwise chứ không phải Cartesian đầy đủ.',
   detail:'Nhận vào danh sách dimensions kèm values, cộng thêm constraints để loại các tổ hợp bất khả thi, rồi map expected cho từng bộ. Dùng cho case cross-module hoặc bất cứ khi nào kết quả phụ thuộc nhiều biến cùng lúc.',
-  why:'Ba biến mỗi biến bốn giá trị đã là 64 tổ hợp; bốn biến là 256. Liệt kê hết thì bộ case phình tới mức không ai chạy nổi, còn chọn tay thì bỏ sót không kiểm soát được. Pairwise phủ mọi CẶP giá trị với số case nhỏ hơn nhiều, và phần lớn lỗi tổ hợp thực tế chỉ cần hai biến là lộ ra.',
+  why:'Ba biến mỗi biến bốn giá trị đã là 64 tổ hợp. Bốn biến là 256. Liệt kê hết thì bộ case phình tới mức không ai chạy nổi, còn chọn tay thì bỏ sót không kiểm soát được. Pairwise phủ mọi CẶP giá trị với số case nhỏ hơn nhiều, và phần lớn lỗi tổ hợp thực tế chỉ cần hai biến là lộ ra.',
   ex:'Loại đơn × phương thức thanh toán × trạng thái deal × chương trình: Cartesian ra hàng trăm case, pairwise ra vài chục mà vẫn phủ mọi cặp.',
   trap:'Vẫn phải map expected cho TỪNG bộ. Sinh ra tổ hợp mà để expected chung chung thì case không phán được gì.',
   src:'.agent/skills/phase1/combinatorial_matrix/SKILL.md', rel:['c-pairwise','c-chieu-coverage','f-phase1'] },
 
 { id:'sk-git_impact_analyzer', t:'git_impact_analyzer', cat:'skill', phase:'Phase 1',
   def:'Đọc git diff của branch/PR gắn TASK_KEY và phân loại file thay đổi vào 7 bề mặt dùng chung.',
-  detail:'Cấp dữ liệu diff THẬT làm đầu vào cho phân tích change-impact, thay vì đọc code rồi đoán xem thay đổi này ảnh hưởng tới đâu. Suggest-only — nó liệt kê, người đọc kết luận.',
+  detail:'Cấp dữ liệu diff THẬT làm đầu vào cho phân tích change-impact, thay vì đọc code rồi đoán xem thay đổi này ảnh hưởng tới đâu. Suggest-only, nó liệt kê, người đọc kết luận.',
   why:'Phần "regression cần chạy lại ở đâu" thường được trả lời bằng trí nhớ, mà trí nhớ thì bỏ sót đúng những chỗ ít ai nghĩ tới. Diff không bỏ sót.',
   ex:'PR sửa một helper format tiền tệ → analyzer chỉ ra nó nằm ở bề mặt dùng chung, kéo theo mọi màn có hiển thị tiền phải nằm trong phạm vi regression.',
   src:'.agent/skills/phase1/git_impact_analyzer/SKILL.md', rel:['c-change-impact','g-select_tests','c-suggest-only','sk-system_mapper'] },
@@ -21,20 +21,20 @@ const TERMS_SKILL = [
   def:'Bóc requirement, tài liệu UI và tài liệu API thành scope, business rule và đầu vào coverage cho Phase 1.',
   detail:'Đứng trước bước sinh testcase. Nhiệm vụ là biến văn xuôi trong spec thành những mệnh đề kiểm được, kèm nguồn trích cụ thể để oracle sau này dẫn được về tài liệu chứ không suy từ ứng dụng.',
   why:'Nếu nhảy thẳng từ đọc spec sang viết case thì phần "quy tắc nghiệp vụ chính xác là gì" nằm trong đầu người viết và không ai kiểm chứng được. Tách ra một bước riêng khiến chỗ mơ hồ lộ diện trước khi tốn công sinh case.',
-  trap:'Chỗ nào tài liệu mơ hồ thì phải gộp thành câu hỏi hỏi người ra yêu cầu TRƯỚC khi gen — đó chính là Ambiguity Gate, không được tự đoán.',
+  trap:'Chỗ nào tài liệu mơ hồ thì phải gộp thành câu hỏi hỏi người ra yêu cầu TRƯỚC khi gen. Đó chính là Ambiguity Gate, không được tự đoán.',
   src:'.agent/skills/phase1/requirements_analyzer/SKILL.md', rel:['f-phase1','g-doc_budget','sk-domain_recorder','c-oracle'] },
 
 { id:'sk-risk_scorer', t:'risk_scorer', cat:'skill', phase:'Phase 1',
-  def:'Risk-Based Testing có thực thi — chấm Risk bằng Likelihood nhân Impact cho từng module.',
-  detail:'Sinh risk-register ở dạng suggest-only, rồi gate độ sâu test theo band. Mặc định chỉ cảnh báo; bật --enforce mới chặn. QA có quyền override band nhưng phải ghi lý do.',
-  why:'Thời gian test luôn ít hơn thứ cần test. Câu hỏi thật không phải "test hết chưa" mà "chỗ nguy hiểm nhất đã test đủ sâu chưa" — và câu đó cần một con số để trả lời nhất quán giữa các người, các sprint.',
+  def:'Risk-Based Testing có thực thi. Chấm Risk bằng Likelihood nhân Impact cho từng module.',
+  detail:'Sinh risk-register ở dạng suggest-only, rồi gate độ sâu test theo band. Mặc định chỉ cảnh báo. Bật --enforce mới chặn. QA có quyền override band nhưng phải ghi lý do.',
+  why:'Thời gian test luôn ít hơn thứ cần test. Câu hỏi thật không phải "test hết chưa" mà "chỗ nguy hiểm nhất đã test đủ sâu chưa", và câu đó cần một con số để trả lời nhất quán giữa các người, các sprint.',
   src:'.agent/skills/phase1/risk_scorer/SKILL.md', rel:['c-rbt','g-risk_gate','g-risk_score','f-risk-model'] },
 
 { id:'sk-tc_validator', t:'tc_validator', cat:'skill', phase:'Phase 1',
   def:'Validate bộ testcase theo 7 cột canonical bắt buộc, kiểm coverage/risk và khả năng automate được.',
   detail:'Soi ba mặt: cấu trúc bảng có đúng template không, độ phủ có tương xứng với rủi ro không, và case viết ra có execute bằng automation được không hay chỉ là mô tả chung chung.',
   why:'Case viết xong trông đều đẹp, nhưng nhiều case không thể chạy được vì thiếu dữ liệu cụ thể hoặc expected không đo được. Phát hiện ở Phase 1 rẻ hơn phát hiện giữa lúc execute rất nhiều.',
-  trap:'Phần cấu trúc của skill này ĐÃ được cứng hoá thành design_gate — vì skill thì agent có thể quên gọi, gate thì không bỏ qua được.',
+  trap:'Phần cấu trúc của skill này ĐÃ được cứng hoá thành design_gate, vì skill thì agent có thể quên gọi, gate thì không bỏ qua được.',
   src:'.agent/skills/phase1/tc_validator/SKILL.md', rel:['g-design_gate','f-excel-canonical','c-forcing-function'] },
 
 /* ── Phase 2 ── */
@@ -53,8 +53,8 @@ const TERMS_SKILL = [
 
 { id:'sk-load_check', t:'load_check', cat:'skill', phase:'Phase 2',
   def:'Chạy load, stress và soak nhiều người dùng ảo qua k6 rồi chuyển summary thành report.',
-  detail:'Chỉ là lớp bọc mỏng quanh k6 — k6 là binary NGOÀI, không phải npm dependency, phải cài riêng. Never-auto, chỉ non-prod, và cấu hình tải đặt ở mức khiêm tốn.',
-  why:'Đo đồng thời nhiều người dùng cần công cụ chuyên biệt; viết lại bằng Playwright vừa sai vừa tốn. Giữ wrapper mỏng nghĩa là khi cần chỉnh sâu thì đọc tài liệu k6, không phải đọc code kit.',
+  detail:'Chỉ là lớp bọc mỏng quanh k6. K6 là binary NGOÀI, không phải npm dependency, phải cài riêng. Never-auto, chỉ non-prod, và cấu hình tải đặt ở mức khiêm tốn.',
+  why:'Đo đồng thời nhiều người dùng cần công cụ chuyên biệt. Viết lại bằng Playwright vừa sai vừa tốn. Giữ wrapper mỏng nghĩa là khi cần chỉnh sâu thì đọc tài liệu k6, không phải đọc code kit.',
   trap:'Đo một người dùng đơn lẻ thì dùng perf_check, không phải cái này. Hai loại đo trả lời hai câu hỏi khác nhau.',
   src:'.agent/skills/phase2/load_check/SKILL.md', rel:['sk-perf_check','c-never-auto','c-non-destructive'] },
 
@@ -62,15 +62,15 @@ const TERMS_SKILL = [
   def:'Khi locator THAO TÁC hỏng giữa lượt chạy thì thử chuỗi dự phòng và tự áp dụng nếu đủ chắc.',
   detail:'Đủ chắc nghĩa là accessible name khớp chính xác, đúng role, và nằm đúng vùng DOM. Bật bằng LOCATOR_HEAL=1, có ngưỡng chặn, và ghi lịch sử vào knowledge/locators/ để lần sau biết locator nào hay đổi.',
   why:'UI đổi liên tục, và một locator hỏng làm gãy cả chuỗi trong khi lỗi thật ra chỉ là tên class đổi. Tự chữa phần thao tác giúp lượt chạy đi tiếp thay vì đứng lại.',
-  trap:'TUYỆT ĐỐI không chữa locator của assertion. Chữa locator assertion chính là nới assertion cho pass — tức gian lận, chỉ đội lốt kỹ thuật.',
+  trap:'TUYỆT ĐỐI không chữa locator của assertion. Chữa locator assertion chính là nới assertion cho pass, tức gian lận, chỉ đội lốt kỹ thuật.',
   src:'.agent/skills/phase2/locator_healing_agent/SKILL.md', rel:['c-locator-healing','g-locator_lint','r-nocheat'] },
 
 { id:'sk-perf_check', t:'perf_check', cat:'skill', phase:'Phase 2',
   def:'Đo web vitals, SLA của API, hành vi với tập dữ liệu lớn và khối lượng tài nguyên tải về.',
   detail:'Chạy qua Playwright, so với ngưỡng khai trong catalog, verdict ở mức tham khảo. Lấy trung vị của N lần đo để chống nhiễu. Có chế độ --deep dùng CDP thô: coverage JS/CSS, ScriptDuration, layout thrash, heap snapshot.',
-  why:'Cảm giác "trang này chậm" không sửa được gì. Con số kèm ngưỡng thì so được trước/sau và chỉ ra được chậm ở đâu — main thread nghẽn, layout thrash, hay tải về quá nhiều code không dùng.',
+  why:'Cảm giác "trang này chậm" không sửa được gì. Con số kèm ngưỡng thì so được trước/sau và chỉ ra được chậm ở đâu. Main thread nghẽn, layout thrash, hay tải về quá nhiều code không dùng.',
   how:['Chế độ --deep phải chạy ở LƯỢT RIÊNG vì bật coverage/profiler gây overhead làm sai số đo thời gian.'],
-  ex:'Coverage động cho biết bao nhiêu phần trăm JS tải về mà luồng test không hề chạm tới — đó là ứng viên để code-split hoặc lazy-load.',
+  ex:'Coverage động cho biết bao nhiêu phần trăm JS tải về mà luồng test không hề chạm tới, đó là ứng viên để code-split hoặc lazy-load.',
   trap:'Không có ngưỡng trong catalog thì verdict là N/A. Không bịa SLA.',
   src:'.agent/skills/phase2/perf_check/SKILL.md', rel:['c-advisory','f-perf-catalog','sk-load_check','sk-lighthouse_check'] },
 
@@ -83,7 +83,7 @@ const TERMS_SKILL = [
 
 { id:'sk-security_check', t:'security_check', cat:'skill', phase:'Phase 2',
   def:'Kiểm bảo mật mức cơ bản, không phá hoại: headers, cookie, truy cập khi chưa đăng nhập, phân quyền và rò rỉ dữ liệu.',
-  detail:'Chỉ dùng GET, chỉ đọc, chỉ trên UAT. Phần control cho ra verdict PASS/FAIL rõ ràng; phần rò rỉ dữ liệu cho ra finding và phải mask PII. Kiểm phân quyền/IDOR bằng cách so hai tài khoản khác quyền.',
+  detail:'Chỉ dùng GET, chỉ đọc, chỉ trên UAT. Phần control cho ra verdict PASS/FAIL rõ ràng. Phần rò rỉ dữ liệu cho ra finding và phải mask PII. Kiểm phân quyền/IDOR bằng cách so hai tài khoản khác quyền.',
   why:'Những lỗi bảo mật tốn kém nhất lại thường là loại đơn giản nhất: một endpoint quên kiểm quyền, một cookie thiếu cờ. Quét cơ bản mà đều đặn bắt được phần lớn nhóm này mà không cần chuyên gia pentest.',
   trap:'Never-auto và phải xác nhận đang ở non-prod trước khi chạy.',
   src:'.agent/skills/phase2/security_check/SKILL.md', rel:['c-non-destructive','c-never-auto','c-mask-pii','c-chieu-coverage'] },
@@ -100,7 +100,7 @@ const TERMS_SKILL = [
 { id:'sk-domain_recorder', t:'domain_recorder', cat:'skill', phase:'Dùng chung',
   def:'Ghi business rule ĐÃ ĐƯỢC XÁC NHẬN vào knowledge/domain/, có version, nguồn và ví dụ cụ thể.',
   detail:'Mỗi rule bắt buộc có source và examples dạng {input, expected} cụ thể, cộng thêm covered_by trỏ tới testcase đang phủ nó. Điểm bắt tự nhiên là câu trả lời nhận được sau Ambiguity Gate.',
-  why:'Đây là nền của mọi oracle. Có nó thì expected trích được về một dòng rule có nguồn; không có nó thì expected sớm muộn quay về "giống cái app đang trả" — tức tautology mà kit cấm. Trường covered_by còn cho biết ngay: BA đổi rule này thì những case nào phải cập nhật.',
+  why:'Đây là nền của mọi oracle. Có nó thì expected trích được về một dòng rule có nguồn. Không có nó thì expected sớm muộn quay về "giống cái app đang trả", tức tautology mà kit cấm. Trường covered_by còn cho biết ngay: BA đổi rule này thì những case nào phải cập nhật.',
   cmd:'npm run domain:check   ·   npm run domain:index',
   src:'.agent/skills/shared/domain_recorder/SKILL.md', rel:['c-oracle','c-tautology','f-knowledge','sk-requirements_analyzer'] },
 
@@ -119,7 +119,7 @@ const TERMS_SKILL = [
 { id:'sk-jira_integration', t:'jira_integration', cat:'skill', phase:'Dùng chung',
   def:'Cửa vào duy nhất để đọc Jira, Confluence và các nguồn liên quan.',
   detail:'Gom mọi thao tác fetch/read từ Atlassian và Figma vào một chỗ, để phần còn lại của kit không tự gọi API rải rác.',
-  why:'Mỗi chỗ tự gọi API thì mỗi chỗ tự xử lý token, phân trang và lỗi theo một kiểu — và khi API đổi thì phải sửa mười chỗ. Một cửa vào nghĩa là sửa một chỗ.',
+  why:'Mỗi chỗ tự gọi API thì mỗi chỗ tự xử lý token, phân trang và lỗi theo một kiểu, và khi API đổi thì phải sửa mười chỗ. Một cửa vào nghĩa là sửa một chỗ.',
   cmd:'npm run integration:check   ·   npm run integration:check:live',
   src:'.agent/skills/shared/jira_integration/SKILL.md', rel:['sk-jira_testcase_publisher','f-phase1'] },
 
@@ -141,15 +141,15 @@ const TERMS_SKILL = [
 
 { id:'sk-precondition_setup_planner', t:'precondition_setup_planner', cat:'skill', phase:'Dùng chung',
   def:'Phân loại tiền điều kiện, chọn cách dựng, ghi cách verify và cách dọn, rồi đánh dấu mức sẵn sàng.',
-  detail:'Cách dựng chọn trong factory, hook, fixture hoặc mock — không có lựa chọn DB. Mức sẵn sàng nhận một trong ba giá trị Ready, Needs hook, Manual-only, kèm capability còn thiếu cụ thể. Kết quả đi vào Setup Strategy contract dạng PRE-NN và Precondition Execution Matrix.',
-  why:'Phần lớn case chết giữa chừng ở Phase 2 không phải vì sản phẩm lỗi mà vì không dựng nổi trạng thái cần thiết. Xác định trước, ở Phase 1, thì biết case nào chạy được ngay, case nào cần Dev làm hook, case nào đành làm tay — thay vì phát hiện lúc đang chạy.',
+  detail:'Cách dựng chọn trong factory, hook, fixture hoặc mock, không có lựa chọn DB. Mức sẵn sàng nhận một trong ba giá trị Ready, Needs hook, Manual-only, kèm capability còn thiếu cụ thể. Kết quả đi vào Setup Strategy contract dạng PRE-NN và Precondition Execution Matrix.',
+  why:'Phần lớn case chết giữa chừng ở Phase 2 không phải vì sản phẩm lỗi mà vì không dựng nổi trạng thái cần thiết. Xác định trước, ở Phase 1, thì biết case nào chạy được ngay, case nào cần Dev làm hook, case nào đành làm tay, thay vì phát hiện lúc đang chạy.',
   ex:'Readiness = Needs hook mà hook chưa có → Phase 2 ghi BLOCKED_SETUP kèm tên capability thiếu, không ghi FAIL.',
   src:'.agent/skills/shared/precondition_setup_planner/SKILL.md', rel:['c-precondition','c-readiness','c-dor','s-BLOCKED_SETUP'] },
 
 { id:'sk-system_mapper', t:'system_mapper', cat:'skill', phase:'Dùng chung',
   def:'Ghi bản đồ hệ thống đã xác nhận: máy trạng thái, ma trận phân quyền và các bề mặt dùng chung.',
-  detail:'Ba thứ được lưu: state_machine cho biết chuyển trạng thái nào là hợp lệ; permission_matrix là bảng role nhân action; shared_surface là API hoặc component được từ hai module trở lên dùng chung.',
-  why:'Khác knowledge/domain ở chỗ nó SINH RA nghĩa vụ test. Cặp trạng thái không khai trong máy trạng thái nghĩa là phải có case chứng minh nó bị chặn; ô nằm ngoài vùng allow nghĩa là phải trả về 403. Nhờ đó câu hỏi "hệ thống cho phép làm X, đây là bug hay đúng thiết kế" trả lời được bằng trích dẫn thay vì suy từ ứng dụng.',
+  detail:'Ba thứ được lưu: state_machine cho biết chuyển trạng thái nào là hợp lệ. Permission_matrix là bảng role nhân action. Shared_surface là API hoặc component được từ hai module trở lên dùng chung.',
+  why:'Khác knowledge/domain ở chỗ nó SINH RA nghĩa vụ test. Cặp trạng thái không khai trong máy trạng thái nghĩa là phải có case chứng minh nó bị chặn. Ô nằm ngoài vùng allow nghĩa là phải trả về 403. Nhờ đó câu hỏi "hệ thống cho phép làm X, đây là bug hay đúng thiết kế" trả lời được bằng trích dẫn thay vì suy từ ứng dụng.',
   cmd:'npm run system:check   ·   node scripts/qa/system_map.js --impact "<surface>"',
   ex:'--impact cho một API dùng chung sẽ liệt kê những module phải regression khi sửa API đó.',
   src:'.agent/skills/shared/system_mapper/SKILL.md', rel:['c-change-impact','f-knowledge','c-oracle','sk-git_impact_analyzer'] },
@@ -163,10 +163,10 @@ const TERMS_SKILL = [
 
 { id:'sk-ui_debug_agent', t:'ui_debug_agent', cat:'skill', phase:'Phase 2',
   def:'Khám phá DOM thật của một màn để tìm locator bền và neo nhãn UI ↔ cột DB.',
-  detail:'Dùng khi màn còn mới, khi locator vỡ, hoặc khi đang truy một script_error. Never-auto — chỉ chạy khi được gọi.',
-  why:'Kit đã có CHUẨN locator, MÁY SỬA khi vỡ và MÁY KIỂM chất lượng, nhưng thiếu đúng bước khám phá lúc đầu. Không có nó thì agent đoán locator từ tên tính năng — và đó là nguồn script_error lớn nhất ở lượt chạy đầu.',
+  detail:'Dùng khi màn còn mới, khi locator vỡ, hoặc khi đang truy một script_error. Never-auto, chỉ chạy khi được gọi.',
+  why:'Kit đã có CHUẨN locator, MÁY SỬA khi vỡ và MÁY KIỂM chất lượng, nhưng thiếu đúng bước khám phá lúc đầu. Không có nó thì agent đoán locator từ tên tính năng, và đó là nguồn script_error lớn nhất ở lượt chạy đầu.',
   ex:'Đo trên repo: getByTestId xuất hiện 0 lần dùng thật (2 chỗ khớp đều nằm trong comment giải thích chính chuyện này), và tests/** không có data-testid nào.',
-  trap:'App là ant-design cộng Metronic nên KHÔNG phát test id — tầng 5 của chiến lược locator là tầng chết. Locator bền chỉ lấy được bằng cách đọc DOM thật.',
+  trap:'App là ant-design cộng Metronic nên KHÔNG phát test id, tầng 5 của chiến lược locator là tầng chết. Locator bền chỉ lấy được bằng cách đọc DOM thật.',
   src:'.agent/skills/phase2/ui_debug_agent/SKILL.md', rel:['s-script_error','g-locator_lint','c-locator-healing','sk-locator_healing_agent','f-slash-commands'] }
 
 ];

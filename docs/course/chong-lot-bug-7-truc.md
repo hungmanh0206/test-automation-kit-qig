@@ -15,8 +15,8 @@
 | Từ | Nghĩa gọn |
 |---|---|
 | **Mở rộng** | Trong lúc execute một case, cố tình nhìn ra **quanh** nó, không chỉ làm đúng chữ trong case |
-| **`OBSERVATION`** | Thấy một điều lạ nhưng **không neo được** vào mã luật nào. Không phải PASS, không phải FAIL |
-| **`spec:gap`** | Ứng dụng làm một việc mà **đặc tả không nói gì**. Không phải bug — là lỗ hổng đặc tả |
+| **`OBSERVATION`** | Thấy một điều lạ nhưng không neo được vào mã luật nào. Không phải PASS, không phải FAIL |
+| **`spec:gap`** | Ứng dụng làm một việc mà đặc tả không nói gì. Không phải bug — là lỗ hổng đặc tả |
 
 ## Bài này bạn sẽ làm gì
 
@@ -24,14 +24,14 @@ Bốn việc:
 
 1. Tự thấy vì sao bộ case "đầy đủ" vẫn lọt bug (15 phút).
 2. Mở **7 trục** quanh một case trên app thực hành, và tìm ra một thứ thật (50 phút).
-3. Học luật sống-còn: **không neo thì là `OBSERVATION`** — và vì sao "nhất quán" không cứu được bạn (20 phút).
+3. Học luật sống-còn: không neo thì là `OBSERVATION`, và vì sao "nhất quán" không cứu được bạn (20 phút).
 4. **Xây gate**: mở rộng không có neo ⇒ chặn; và gate độ sâu theo mức rủi ro để không nổ thời gian (35 phút).
 
 ---
 
 ## Việc 1 — Vì sao bộ case đầy đủ vẫn lọt (15 phút)
 
-Bộ testcase của bạn phủ hết những gì **tài liệu nói**. Bug thì sống ở những chỗ **tài liệu không nói**:
+Bộ testcase của bạn phủ hết những gì tài liệu nói. Bug thì sống ở những chỗ tài liệu không nói:
 
 | Bug sống ở đâu | Vì sao case không phủ |
 |---|---|
@@ -45,7 +45,7 @@ Bộ testcase của bạn phủ hết những gì **tài liệu nói**. Bug thì
 
 Bảy dòng trên chính là 7 trục. Chúng không phải danh sách đẹp, mỗi dòng là một lớp bug đã lọt thật.
 
-> Và có một luật đi kèm, khắt khe: **bug do người ngoài tìm ra = lỗi của máy.** Khi có bug lọt, câu hỏi không
+> Và có một luật đi kèm, khắt khe: bug do người ngoài tìm ra = lỗi của máy. Khi có bug lọt, câu hỏi không
 > phải *"case của tôi không phủ chỗ đó"* mà là *"máy nào lẽ ra phải bắt được, và vì sao nó không bắt?"*
 > Bài 21 đưa câu hỏi này thành phép đo.
 
@@ -86,7 +86,7 @@ ghi `8750`. Neo: `UI-04`. ⇒ **FAIL**, tầng `frontend`.
 curl -s http://localhost:4010/api/_store/orders
 ```
 
-Đây là Bài 15 làm kỹ. Ở đây chỉ cần thấy: **có bốn tầng, và mỗi ranh giới là một chỗ giá trị đổi được.**
+Đây là Bài 15 làm kỹ. Ở đây chỉ cần thấy: có bốn tầng, và mỗi ranh giới là một chỗ giá trị đổi được.
 
 ### Trục 4 — Biến thể
 
@@ -103,7 +103,7 @@ curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/js
 **BUG-1**. Neo: `BR-03`. ⇒ **FAIL**, tầng `backend`.
 
 Để ý: với hạng **Thường** (giảm 0%) hai công thức cho **cùng** kết quả, nên nếu chỉ mở trục 4 theo hạng mà
-không đi tới mốc biên, bạn vẫn không thấy. Trục 4 phải giao với **giá trị biên**.
+không đi tới mốc biên, bạn vẫn không thấy. Trục 4 phải giao với giá trị biên.
 
 ### Trục 5 — Trạng thái kế cận
 
@@ -116,7 +116,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -X PATCH http://localhost:4010/api/orde
   -H "Content-Type: application/json" -d "{\"items\":[{\"productId\":\"SP01\",\"qty\":9}]}"
 ```
 
-Với đơn đã xác nhận, **bạn sẽ thấy** `200` trong khi `BR-08` nói phải chặn **bằng mọi đường**. Đây là
+Với đơn đã xác nhận, bạn sẽ thấy `200` trong khi `BR-08` nói phải chặn bằng mọi đường. Đây là
 **BUG-3**. Neo: `BR-08`. ⇒ **FAIL**, tầng `backend`.
 
 ### Trục 6 — Đồng thời
@@ -143,7 +143,7 @@ ra hai đơn.
 
 > *Ứng dụng làm gì mà đặc tả không nói?*
 
-Sáu trục trên đi từ **case ra ứng dụng**. Trục 7 đi ngược: từ **ứng dụng ra đặc tả**.
+Sáu trục trên đi từ case ra ứng dụng. Trục 7 đi ngược: từ ứng dụng ra đặc tả.
 
 ```json
 {
@@ -158,7 +158,7 @@ Sáu trục trên đi từ **case ra ứng dụng**. Trục 7 đi ngược: từ
 }
 ```
 
-**Điều vừa xảy ra:** bạn tìm ra một chỗ **có thật**, quan trọng, và đúng đắn khi không kết luận. Nếu bạn
+**Điều vừa xảy ra:** bạn tìm ra một chỗ có thật, quan trọng, và đúng đắn khi không kết luận. Nếu bạn
 log nó thành bug, Dev sẽ hỏi *"spec nào nói vậy?"* và bạn không trả lời được, bug bị Rejected, và lần sau
 người ta tin bạn ít hơn.
 
@@ -176,7 +176,7 @@ người ta tin bạn ít hơn.
 | 6 · đồng thời | 2 request ⇒ 2 đơn | **không có** | `OBSERVATION` |
 | 7 · chiều ngược | spec không nói gì về chống trùng | — | **`spec:gap`** |
 
-Bảy trục quanh **một** case đã PASS tìm ra **cả ba bug cài sẵn** cộng một lỗ hổng đặc tả. Đó là toàn bộ lập
+Bảy trục quanh một case đã PASS tìm ra cả ba bug cài sẵn cộng một lỗ hổng đặc tả. Đó là toàn bộ lập
 luận của bài này.
 
 ## Việc 3 — Luật sống còn: không neo thì là `OBSERVATION` (20 phút)
@@ -185,7 +185,7 @@ Mở rộng có một mặt tối, và nó nguy hiểm đúng bằng mức nó h
 
 > Mở rộng mà không có oracle = tautology nhân 7 lần.
 
-Bài 10 dạy: lấy giá trị app làm kết quả mong đợi thì test luôn xanh. Mở rộng làm việc đó **rộng ra bảy lần**,
+Bài 10 dạy: lấy giá trị app làm kết quả mong đợi thì test luôn xanh. Mở rộng làm việc đó rộng ra bảy lần,
 vì mỗi trục là một cơ hội mới để so app với chính app.
 
 ### Cái bẫy cụ thể của trục 2
@@ -196,7 +196,7 @@ Trục 2 hỏi *"giá trị này ở màn khác có khớp không?"*. Rất dễ
 Màn A hiện 1.000.000. Màn B hiện 1.000.000. ⇒ khớp ⇒ PASS
 ```
 
-Nhưng nếu `BR` nói cả hai phải là `1.100.000` (có phí), thì **hai màn cùng sai** và bạn vừa ghi PASS cho một
+Nhưng nếu `BR` nói cả hai phải là `1.100.000` (có phí), thì hai màn cùng sai và bạn vừa ghi PASS cho một
 bug.
 
 > Nhất quán không phải bằng chứng của đúng. Nó chỉ là bằng chứng của **cùng-một-nguồn**.
@@ -208,12 +208,12 @@ Nên luật là:
 | **Có** (`BR-`, `UI-`, `SM-`, `FSD-`…) | `PASS` hoặc `FAIL` |
 | **Không** | **chỉ** `OBSERVATION` — hoặc nâng thành `spec:gap` nếu đáng hỏi BA |
 
-Và `OBSERVATION` **không** được đếm vào độ phủ, **không** log bug, không làm case đỏ. Nó là một dòng ghi
+Và `OBSERVATION` không được đếm vào độ phủ, không log bug, không làm case đỏ. Nó là một dòng ghi
 chú có bằng chứng, chờ có neo.
 
 ## Việc 4 — Xây gate (35 phút)
 
-Luật ở Việc 3 bị vi phạm **theo phản xạ** — thấy hai màn giống nhau là ghi PASS. Nên cần máy.
+Luật ở Việc 3 bị vi phạm theo phản xạ. Thấy hai màn giống nhau là ghi PASS. Nên cần máy.
 
 ### Định dạng phát hiện mở rộng
 
@@ -352,12 +352,12 @@ console.log('[mo-rong] ✓ ĐẠT');
 | 3 | chạy mức `high` (cần ≥6 trục, đang có 3) | **`1`** — thiếu độ phủ |
 | 4 | xoá tệp | **`2`** — không đo được |
 
-Lần 1 là đối chứng âm quan trọng nhất: **`OBSERVATION` không có neo phải ĐI QUA.** Nếu gate chặn cả nó thì
+Lần 1 là đối chứng âm quan trọng nhất: `OBSERVATION` không có neo phải ĐI QUA. Nếu gate chặn cả nó thì
 bạn vừa cấm luôn việc ghi lại quan sát. Và người ta sẽ đối phó bằng cách gán một `oracleRef` bừa.
 
 ### Gate độ sâu: không nổ thời gian chạy
 
-Bảy trục cho **mọi** case là bất khả thi. Nên độ sâu bám mức rủi ro, chính bảng `TOI_THIEU` ở trên:
+Bảy trục cho mọi case là bất khả thi. Nên độ sâu bám mức rủi ro, chính bảng `TOI_THIEU` ở trên:
 
 | Mức rủi ro | Trục tối thiểu | Lý do |
 |---|---|---|
@@ -393,25 +393,25 @@ bug. Trộn hai đường là cách sinh ra bug bị Rejected.
 
 1. Kể 7 trục. Trục nào đi **ngược** chiều với sáu trục kia?
 2. Trên app thực hành, trục nào tìm ra BUG-1? BUG-2? BUG-3?
-3. Vì sao mở trục 4 theo hạng khách mà **không** đi tới mốc biên thì vẫn không thấy BUG-1?
+3. Vì sao mở trục 4 theo hạng khách mà không đi tới mốc biên thì vẫn không thấy BUG-1?
 4. Hai màn cùng hiện `1.000.000` ⇒ kết luận được PASS chưa? Nêu bằng một câu.
-5. Trục 6 tìm ra 2 đơn trùng. Vì sao đó **không** phải FAIL? Nó là gì?
-6. Vì sao `OBSERVATION` không neo **phải đi qua** gate? Chặn nó thì hậu quả gì?
+5. Trục 6 tìm ra 2 đơn trùng. Vì sao đó không phải FAIL? Nó là gì?
+6. Vì sao `OBSERVATION` không neo phải đi qua gate? Chặn nó thì hậu quả gì?
 7. Case mức `low` cần mở mấy trục? Mức rủi ro đó lấy từ đâu, và vì sao không để người chạy tự chọn?
 
 ## Bài tập về nhà (30 phút)
 
-Chọn **một** case đã PASS trên dự án thật của bạn. Mở đủ 7 trục, ghi ra `mo-rong.json`, rồi đếm:
+Chọn một case đã PASS trên dự án thật của bạn. Mở đủ 7 trục, ghi ra `mo-rong.json`, rồi đếm:
 
 | | Số |
 |---|---|
 | Phát hiện **neo được** (có mã luật) | ___ |
-| Phát hiện **không neo được** (`OBSERVATION`) | ___ |
+| Phát hiện không neo được (`OBSERVATION`) | ___ |
 | `spec:gap` (spec không nói gì) | ___ |
 
 Rồi trả lời hai câu:
 
-1. Trục nào bạn **bỏ** đầu tiên khi hết thời gian? Đó thường là trục **đồng thời** và chiều ngược — và
+1. Trục nào bạn **bỏ** đầu tiên khi hết thời gian? Đó thường là trục **đồng thời** và chiều ngược, và
    đó cũng là hai trục bug hay lọt nhất.
 2. Trong các `OBSERVATION`, có cái nào bạn **muốn** ghi thành FAIL không? Nếu có, đi tìm mã luật. Không tìm
    được thì đó chính là một `spec:gap`, và nó có giá trị cao hơn một bug bị Rejected.

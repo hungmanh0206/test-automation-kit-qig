@@ -64,9 +64,9 @@ Ba dòng đáng để ý, mỗi dòng chặn một lớp lỗi:
 
 | Dòng | Chặn gì |
 |---|---|
-| `forbidOnly` khi CI | Một `.only` sót lại làm cả suite chỉ chạy **một** test mà vẫn xanh. Cùng lớp lỗi "suite rỗng vẫn xanh" ở Bài 11 |
+| `forbidOnly` khi CI | Một `.only` sót lại làm cả suite chỉ chạy một test mà vẫn xanh. Cùng lớp lỗi "suite rỗng vẫn xanh" ở Bài 11 |
 | `reporter: json` | Sinh `results.json` — Bài 13 và Bài 11 đều đọc file này |
-| `retries: 2` chỉ ở CI | Local thì **không** retry: bạn cần thấy nó đỏ để sửa, không phải để nó tự xanh |
+| `retries: 2` chỉ ở CI | Local thì không retry: bạn cần thấy nó đỏ để sửa, không phải để nó tự xanh |
 
 ## 2. Chiến lược locator theo tầng
 
@@ -78,7 +78,7 @@ Xếp theo độ bền giảm dần:
 | 2 | **Nhãn của ô nhập** | Nhãn là hợp đồng với người dùng | `getByLabel('Số lượng')` |
 | 3 | **Chữ hiển thị** | Chữ đổi thì test **nên** đỏ | `getByText('Đã lưu đơn nháp', { exact: true })` |
 | 4 | **Selector có ngữ nghĩa** | Ổn nếu neo vào cấu trúc, không vào class trang trí | `locator('table thead th')` |
-| 5 | **Test id** | Bền nhất — **nếu app có phát** | `getByTestId('tong-cong')` |
+| 5 | **Test id** | Bền nhất — nếu app có phát | `getByTestId('tong-cong')` |
 
 ### Kiểm ngay: app của bạn có test id không
 
@@ -96,16 +96,16 @@ test('khảo sát: app có phát test id không', async ({ page }) => {
 });
 ```
 
-`soTestId = 0` nghĩa là **tầng 5 là tầng chết** với app của bạn. Đừng viết hướng dẫn "ưu tiên test id" rồi
+`soTestId = 0` nghĩa là tầng 5 là tầng chết với app của bạn. Đừng viết hướng dẫn "ưu tiên test id" rồi
 để đó. Nó sẽ khiến người sau đi tìm thứ không tồn tại.
 
-> Chuyện thật ở kit này: `getByTestId` xuất hiện **0 lần dùng thật** trong repo (2 chỗ khớp đều nằm trong
+> Chuyện thật ở kit này: `getByTestId` xuất hiện 0 lần dùng thật trong repo (2 chỗ khớp đều nằm trong
 > comment giải thích đúng chuyện này), và `tests/**` không có `data-testid` nào. App dựng bằng ant-design cộng
-> Metronic nên **không phát test id**. Kết luận: tầng 5 chết, và locator bền chỉ lấy được bằng cách **đọc DOM**.
+> Metronic nên không phát test id. Kết luận: tầng 5 chết, và locator bền chỉ lấy được bằng cách **đọc DOM**.
 
 ## 3. Đọc DOM thật, đừng đoán
 
-Đây là bước bị bỏ nhiều nhất, và là **nguồn lỗi script lớn nhất ở lượt chạy đầu**: agent (và người) đoán
+Đây là bước bị bỏ nhiều nhất, và là nguồn lỗi script lớn nhất ở lượt chạy đầu: agent (và người) đoán
 locator từ tên tính năng. `#btn-save`, `.total-amount`, rồi test đỏ vì element không tồn tại.
 
 `tests/support/kham-pha-dom.js`:
@@ -169,7 +169,7 @@ test('khám phá màn Tạo đơn hàng', async ({ page }) => {
 });
 ```
 
-Danh sách **"không có locator bền"** là danh sách bạn mang đi nhờ Dev thêm `aria-label`. Đó là việc rẻ với họ
+Danh sách "không có locator bền" là danh sách bạn mang đi nhờ Dev thêm `aria-label`. Đó là việc rẻ với họ
 và tiết kiệm rất nhiều cho bạn.
 
 ## 4. Bốn mẫu locator ẩu, và vì sao chúng nguy hiểm
@@ -179,13 +179,13 @@ và tiết kiệm rất nhiều cho bạn.
 | `.first()` | "Có nhiều element khớp, tôi lấy cái đầu" | Thứ tự DOM đổi → chạm element khác, **không lỗi**, chỉ sai |
 | `.nth(3)` | "Tôi đếm được vị trí" | Thêm một dòng vào bảng là lệch hết |
 | `mouse.click(x, y)` | "Tôi không tìm được element" | Đổi layout hoặc zoom là click vào chỗ trống |
-| Regex trên `body.innerText` | "Tôi tìm con số ở đâu đó trên trang" | Bắt trúng con số **ở khu vực khác** |
+| Regex trên `body.innerText` | "Tôi tìm con số ở đâu đó trên trang" | Bắt trúng con số ở khu vực khác |
 
 Đo thật trên một task lớn ở kit này: `.first()` **2052 lần** · `force: true` **1011** · regex trên
 `body.innerText` **204** · `querySelectorAll('*')` **166** · `.nth(N)` 141 · click theo toạ độ 31.
 
-> Điểm chung của cả bốn: **chúng không làm test đỏ.** Chúng làm test đọc nhầm giá trị, click nhầm nút, rồi
-> báo một lỗi **không tồn tại**. Dev điều tra xong trả về *"log sai"* — mất thời gian hai phía và mất uy tín
+> Điểm chung của cả bốn: chúng không làm test đỏ. Chúng làm test đọc nhầm giá trị, click nhầm nút, rồi
+> báo một lỗi không tồn tại. Dev điều tra xong trả về *"log sai"* — mất thời gian hai phía và mất uy tín
 > của báo cáo.
 
 ### Cách chữa: thu hẹp vùng, đừng chọn thứ tự
@@ -209,7 +209,7 @@ test('thu hẹp vùng thay vì chọn theo thứ tự', async ({ page }) => {
 });
 ```
 
-Nguyên tắc: **thu hẹp bằng ngữ cảnh** (`filter({ hasText })`, lồng trong vùng cha) chứ không **chọn theo vị trí**.
+Nguyên tắc: thu hẹp bằng ngữ cảnh (`filter({ hasText })`, lồng trong vùng cha) chứ không chọn theo vị trí.
 
 ## 5. Ba nguồn chập chờn, và cách chữa từng cái
 
@@ -236,7 +236,7 @@ test('chờ trạng thái, không chờ thời gian', async ({ page }) => {
 
 > `waitForTimeout` trong mã production của suite là **mùi**. Nó nói: *tôi không biết chờ điều kiện gì, nên
 > tôi chờ bừa.* Và ở Bài 13 bạn sẽ thấy nó còn tệ hơn thế. Một cái `wait` thêm vào để cho test xanh có thể
-> đang **lấp một bug hiệu năng thật**.
+> đang lấp một bug hiệu năng thật.
 
 ## 6. Một spec đầy đủ
 
@@ -293,9 +293,9 @@ test.describe('Tạo đơn hàng', () => {
 
 Ba điều làm spec này khác spec thông thường:
 
-1. **Tên test mang `TC ID` và tag chiều** — nối được kết quả về testcase canonical (Bài 13 cần điều này).
-2. **Comment ghi mã oracle** — người review biết kiểm đối chiếu ở đâu.
-3. **Giá trị kỳ vọng là hằng số từ tài liệu**, không tính từ màn hình.
+1. Tên test mang `TC ID` và tag chiều. Nối được kết quả về testcase canonical (Bài 13 cần điều này).
+2. Comment ghi mã oracle. Người review biết kiểm đối chiếu ở đâu.
+3. Giá trị kỳ vọng là hằng số từ tài liệu, không tính từ màn hình.
 
 ## 7. Chạy và đọc kết quả
 
@@ -307,7 +307,7 @@ npx playwright test --headed --debug      # xem tận mắt khi đỏ
 npx playwright show-report                # báo cáo HTML
 ```
 
-`--list` là lệnh bạn nên chạy **mỗi lần sửa cấu trúc thư mục**. Nó trả lời: *runner có còn thấy test của tôi
+`--list` là lệnh bạn nên chạy mỗi lần sửa cấu trúc thư mục. Nó trả lời: *runner có còn thấy test của tôi
 không?* Bài 11 sẽ biến nó thành gate.
 
 ---
@@ -327,16 +327,16 @@ Viết `tests/support/kham-pha-dom.js` và một spec khảo sát. Chạy rồi 
 |---|---|---|
 | Element có `data-testid` | | 0 ⇒ tầng 5 là tầng chết |
 | Element có `aria-label` | | càng nhiều càng dễ |
-| Element **không có locator bền** | | danh sách mang đi nhờ Dev |
+| Element không có locator bền | | danh sách mang đi nhờ Dev |
 
 ### Bước 3 — Viết 3 test (30 phút)
 
 Chọn 3 case từ bộ Bài 11, ưu tiên khác chiều nhau: một `[Calc]`, một `[Display]`, một `[E2E]`.
 
-Ràng buộc **không được vi phạm**:
+Ràng buộc không được vi phạm:
 - Không `.first()`, không `.nth(N)`, không `mouse.click(x, y)`, không regex trên `body.innerText`.
 - Không `waitForTimeout`.
-- Giá trị kỳ vọng là **hằng số từ tài liệu**.
+- Giá trị kỳ vọng là hằng số từ tài liệu.
 - Tên test mang `TC ID` và tag chiều.
 
 ### Bước 4 — Tự soi bằng máy (10 phút)
@@ -346,7 +346,7 @@ grep -rn "\.first()\|\.nth(\|mouse\.click\|waitForTimeout\|body\.innerText" test
   echo "^ CÒN MẪU ẨU — sửa trước khi commit" || echo "sạch"
 ```
 
-Còn dòng nào thì sửa. **Đừng thêm vào danh sách bỏ qua** — ở Bài 11 bạn sẽ biến chính lệnh này thành gate,
+Còn dòng nào thì sửa. Đừng thêm vào danh sách bỏ qua. Ở Bài 11 bạn sẽ biến chính lệnh này thành gate,
 và lúc đó nó sẽ đỏ.
 
 ### Bước 5 — Commit
@@ -380,7 +380,7 @@ kit-cua-toi/
 
 - [ ] `npx playwright test --list` in ra đúng số test tôi đã viết.
 - [ ] Tôi **đo được** app của mình có bao nhiêu `data-testid`, không đoán.
-- [ ] Tôi đã khảo sát DOM **trước** khi viết test, và có danh sách element chưa có locator bền.
+- [ ] Tôi đã khảo sát DOM trước khi viết test, và có danh sách element chưa có locator bền.
 - [ ] 3 test của tôi không có `.first()`, `.nth(N)`, click toạ độ, hay regex toàn trang.
 - [ ] 3 test của tôi không có `waitForTimeout` nào.
 - [ ] Giá trị kỳ vọng lấy từ **tài liệu**, không đọc từ màn hình rồi tự tính.
@@ -392,7 +392,7 @@ kit-cua-toi/
 
 Chạy lệnh grep ở Bước 4 lên **suite thật** của dự án bạn (nếu có). Đếm từng mẫu.
 
-Đừng sửa hàng loạt. Thay vào đó chọn **một** test có `.first()` và làm phép thử này: đổi thứ tự dữ liệu trên
+Đừng sửa hàng loạt. Thay vào đó chọn một test có `.first()` và làm phép thử này: đổi thứ tự dữ liệu trên
 màn (thêm một dòng vào đầu bảng chẳng hạn) rồi chạy lại. Test vẫn **xanh** không? Nếu xanh thì nó đang kiểm
 một element khác với cái bạn định chạm. Đó chính là cách sinh ra một bug log sai địa chỉ.
 

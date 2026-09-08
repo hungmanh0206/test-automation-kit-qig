@@ -31,15 +31,15 @@ Bốn việc:
 
 ## 1. Vấn đề mới xuất hiện ở Bài 11
 
-Bạn vừa có 5 gate. Bây giờ có ba câu hỏi mà **không cách nào trả lời**:
+Bạn vừa có 5 gate. Bây giờ có ba câu hỏi mà không cách nào trả lời:
 
 1. Kit của tôi có bao nhiêu gate, và mỗi cái **chặn** gì?
-2. Gate nào **đã mất nơi gọi** — tồn tại nhưng không ai chạy?
-3. Gate nào **đã âm thầm tụt** từ chặn xuống cảnh báo?
+2. Gate nào đã mất nơi gọi. Tồn tại nhưng không ai chạy?
+3. Gate nào đã âm thầm tụt từ chặn xuống cảnh báo?
 
 Ba câu này nghe như chuyện tiện lợi. Không phải:
 
-> Luận đề của cả bộ kit là **"luật cần máy"**. Nhưng máy mà **không liệt kê được** thì không kiểm toán được
+> Luận đề của cả bộ kit là "luật cần máy". Nhưng máy mà không liệt kê được thì không kiểm toán được
 > — và một cơ chế không kiểm toán được thì bạn không biết nó còn hoạt động hay không.
 
 Nới một gate là sửa **một dòng**: `process.exit(1)` thành `process.exit(0)`. Không có ai để ý. Sáu tháng sau
@@ -47,7 +47,7 @@ bạn vẫn tin mình có 5 gate chặn, thực tế còn 2.
 
 ## 2. Canonical và bản tóm
 
-Bài 2 bạn tạo hai file nói **cùng một luật** ở hai độ chi tiết: `CLAUDE.md` (ngắn, luôn trong ngữ cảnh) và
+Bài 2 bạn tạo hai file nói cùng một luật ở hai độ chi tiết: `CLAUDE.md` (ngắn, luôn trong ngữ cảnh) và
 `LUAT-DAY-DU.md` (dài, tra khi cần). Đó là **cố ý** — và nó tạo rủi ro thật.
 
 | | Canonical | Bản tóm |
@@ -59,27 +59,27 @@ Bài 2 bạn tạo hai file nói **cùng một luật** ở hai độ chi tiết
 
 Điểm mấu chốt, và nó ngược với phản xạ thông thường:
 
-> Đừng bắt bản tóm **trùng từng chữ** với canonical. Nếu trùng từng chữ thì nó mất lý do tồn tại, người ta
-> đã có thể đọc canonical rồi. Bản tóm được phép diễn đạt lại; điều phải ép là **quy ước chống trôi**.
+> Đừng bắt bản tóm trùng từng chữ với canonical. Nếu trùng từng chữ thì nó mất lý do tồn tại, người ta
+> đã có thể đọc canonical rồi. Bản tóm được phép diễn đạt lại; điều phải ép là quy ước chống trôi.
 
 Nên gate không so văn bản. Nó kiểm ba quy ước:
 
 1. Bản tóm **khai rõ** ai là canonical.
-2. Mọi tài liệu luật **có đường vào** từ một điểm vào nào đó.
-3. Mọi lệnh gate **có nơi nhắc tới**.
+2. Mọi tài liệu luật có đường vào từ một điểm vào nào đó.
+3. Mọi lệnh gate có nơi nhắc tới.
 
 ## 3. Gate chống mồ côi
 
-Đây là gate quan trọng nhất của bài, vì nó bắt một lớp lỗi mà bạn **không thể tự phát hiện bằng mắt**.
+Đây là gate quan trọng nhất của bài, vì nó bắt một lớp lỗi mà bạn không thể tự phát hiện bằng mắt.
 
 Chuyện thật ở kit này, và con số đủ để giật mình:
 
 > Quét mọi lệnh xuất hiện trong tầng workflow rồi đối chiếu với các điểm vào: **11 lệnh gate chỉ tồn tại ở
-> tầng workflow**, mà điểm vào không trỏ tới workflow nào. Nghĩa là ai làm **đúng** theo điểm vào thì
+> tầng workflow, mà điểm vào không trỏ tới workflow nào. Nghĩa là ai làm đúng** theo điểm vào thì
 > không bao giờ chạy chúng. Trong đó có cả lệnh tự soi trước khi kết thúc và lệnh kiểm input trước khi
 > chạy phase.
 
-Chúng không hỏng. Chúng chỉ **không được gọi**. Và không có cách nào biết bằng cách đọc.
+Chúng không hỏng. Chúng chỉ không được gọi. Và không có cách nào biết bằng cách đọc.
 
 `scripts/qa/chong-troi.js`:
 
@@ -190,9 +190,9 @@ Ba chi tiết đắt giá trong đoạn trên:
 
 | Chi tiết | Vì sao |
 |---|---|
-| Phân giải **bí danh** qua `package.json` | `npm run trace:matrix` và `node scripts/qa/traceability_matrix.js` là **một** thứ. Không phân giải thì cùng một gate viết hai kiểu sẽ báo thiếu oan — đo thật: **2/4 "thiếu"** ban đầu chỉ là bí danh |
-| Allowlist **chặn khối lạ** | Viết `npmScript` thiếu chữ `s` thì code không đọc, miễn trừ **vô hình**, và bạn tưởng đã khai |
-| Miễn trừ trỏ tới thứ **không còn tồn tại** cũng bị chặn | Không dọn thì allowlist phình thành rác, rồi thành chỗ giấu nợ thật |
+| Phân giải **bí danh** qua `package.json` | `npm run trace:matrix` và `node scripts/qa/traceability_matrix.js` là một thứ. Không phân giải thì cùng một gate viết hai kiểu sẽ báo thiếu oan — đo thật: **2/4 "thiếu"** ban đầu chỉ là bí danh |
+| Allowlist chặn khối lạ | Viết `npmScript` thiếu chữ `s` thì code không đọc, miễn trừ **vô hình**, và bạn tưởng đã khai |
+| Miễn trừ trỏ tới thứ không còn tồn tại cũng bị chặn | Không dọn thì allowlist phình thành rác, rồi thành chỗ giấu nợ thật |
 
 `.agent/config/policy-check.allow.json`:
 
@@ -209,10 +209,10 @@ Ba chi tiết đắt giá trong đoạn trên:
 
 ## 4. Danh mục máy tự sinh
 
-Câu 1 và câu 3 ở mục 1 cần một danh mục. Và danh mục đó phải **sinh từ source**, không viết tay. Viết tay
+Câu 1 và câu 3 ở mục 1 cần một danh mục. Và danh mục đó phải sinh từ source, không viết tay. Viết tay
 thì nó mục ngay tuần sau.
 
-Mẹo hay: **suy mức chặn từ chính mã**. Gate có `process.exit(1)` là **CHẶN**; chỉ ghi file là SINH; chỉ
+Mẹo hay: suy mức chặn từ chính mã. Gate có `process.exit(1)` là CHẶN; chỉ ghi file là SINH; chỉ
 in ra là **BÁO CÁO**.
 
 `scripts/qa/danh-muc-gate.js`:
@@ -312,7 +312,7 @@ Thêm vào `package.json`:
 
 > Cảnh báo từ kinh nghiệm. Khi mới dựng danh mục ở kit này, **bốn "phát hiện" đầu tiên đều là lỗi của
 > BẢNG, không của kit** — mô tả trích sai dòng, bí danh không phân giải, mức suy sai vì gate gọi hàm khác
-> để thoát. Phải **hiệu chuẩn danh mục trước khi tin số nó đưa ra**. Đây đúng là nguyên tắc *"máy phải chạy
+> để thoát. Phải hiệu chuẩn danh mục trước khi tin số nó đưa ra. Đây đúng là nguyên tắc *"máy phải chạy
 > trên nội dung thật mới tính là nghiệm thu"* ở Bài 8.
 
 ## 5. Allowlist: hai luật không được bỏ
@@ -320,7 +320,7 @@ Thêm vào `package.json`:
 Mọi gate rồi sẽ cần miễn trừ. Hai luật, và cả hai đều đến từ vấp thật:
 
 **Luật 1 — miễn trừ phải ghi lý do.** Không có lý do thì sáu tuần sau không ai biết vì sao nó ở đó, và không
-ai dám xoá. Allowlist biến thành **chỗ giấu nợ**: gate vẫn xanh, nợ vẫn còn, không ai thấy.
+ai dám xoá. Allowlist biến thành chỗ giấu nợ: gate vẫn xanh, nợ vẫn còn, không ai thấy.
 
 **Luật 2 — khối lạ phải bị chặn.** Đây là lớp lỗi im lặng riêng:
 
@@ -330,11 +330,11 @@ ai dám xoá. Allowlist biến thành **chỗ giấu nợ**: gate vẫn xanh, n�
 }
 ```
 
-Thiếu chữ `s`. Code đọc `npmScripts` nên **không thấy gì**. Bạn tưởng đã khai miễn trừ; gate vẫn đỏ hoặc —
+Thiếu chữ `s`. Code đọc `npmScripts` nên không thấy gì. Bạn tưởng đã khai miễn trừ; gate vẫn đỏ hoặc —
 tệ hơn. Bạn thêm miễn trừ khác cho tới khi nó xanh vì lý do khác. Cách chữa duy nhất là **chặn khối không
 nằm trong danh sách hợp lệ**.
 
-Thêm luật thứ ba nếu bạn muốn đi xa hơn: **miễn trừ trỏ tới thứ không còn tồn tại cũng bị chặn**. Không có
+Thêm luật thứ ba nếu bạn muốn đi xa hơn: miễn trừ trỏ tới thứ không còn tồn tại cũng bị chặn. Không có
 nó thì allowlist chỉ phình lên, không bao giờ co lại.
 
 ---
@@ -345,15 +345,15 @@ nó thì allowlist chỉ phình lên, không bao giờ co lại.
 
 Viết `chong-troi.js` và file allowlist. Chạy `npm run gate:policy`.
 
-Rất có thể nó **đỏ ngay lần đầu** — đó là bình thường, và là dấu hiệu tốt. Với mỗi lệnh bị báo mồ côi, quyết
-định: nối vào một điểm vào, hay khai miễn trừ **kèm lý do**? Đừng khai miễn trừ chỉ để cho nó xanh.
+Rất có thể nó đỏ ngay lần đầu. Đó là bình thường, và là dấu hiệu tốt. Với mỗi lệnh bị báo mồ côi, quyết
+định: nối vào một điểm vào, hay khai miễn trừ kèm lý do? Đừng khai miễn trừ chỉ để cho nó xanh.
 
 > Một lỗi thật trong chính bài học này, để lại vì nó dạy đúng thứ cần dạy. Bản đầu của phép kiểm rule
 > mồ côi viết là `if (!chuTatCa.split(rel).length > 1 && …)`. Cú pháp hợp lệ, `node --check` xanh, nhìn qua
 > rất hợp lý. Nhưng `!` bám chặt hơn `>` nên nó thành `(!length) > 1` — **luôn `false`**, và phép kiểm đó
 > không bao giờ chạy. Một gate xanh vĩnh viễn vì nó không kiểm gì cả.
 >
-> Bài học: **cú pháp đúng không có nghĩa logic đúng**, và đây chính là lý do mỗi gate phải có negative
+> Bài học: cú pháp đúng không có nghĩa logic đúng, và đây chính là lý do mỗi gate phải có negative
 > control ở Bước 2. Không tiêm lỗi thì loại lỗi này sống mãi.
 
 ### Bước 2 — Nghiệm thu bằng cách tiêm (10 phút)
@@ -388,7 +388,7 @@ npm run gates:kiem; echo "exit=$?"  # → 1, vì mức đổi từ CHẶN sang B
 # hoàn nguyên, chạy lại → 0
 ```
 
-Mũi tiêm này chính là câu 3 ở mục 1: **gate nào đã âm thầm tụt xuống cảnh báo**. Giờ bạn có máy trả lời.
+Mũi tiêm này chính là câu 3 ở mục 1: gate nào đã âm thầm tụt xuống cảnh báo. Giờ bạn có máy trả lời.
 
 ### Bước 5 — Commit
 
@@ -416,11 +416,11 @@ kit-cua-toi/
 
 ## Tự kiểm
 
-- [ ] Tôi giải thích được vì sao **không** bắt bản tóm trùng từng chữ với canonical.
+- [ ] Tôi giải thích được vì sao không bắt bản tóm trùng từng chữ với canonical.
 - [ ] `chong-troi` phân giải được **bí danh** qua `package.json`.
-- [ ] Allowlist của tôi **chặn khối lạ** và **đòi lý do**.
+- [ ] Allowlist của tôi chặn khối lạ và đòi lý do.
 - [ ] Miễn trừ trỏ tới thứ không còn tồn tại cũng bị chặn.
-- [ ] `GATES.md` sinh tự động, và cột Mức **suy từ mã** chứ không khai tay.
+- [ ] `GATES.md` sinh tự động, và cột Mức suy từ mã chứ không khai tay.
 - [ ] Tôi đã **hiệu chuẩn** danh mục: soi từng dòng, sửa `danh-muc-gate` cho phần sai.
 - [ ] `gates:index:check` đỏ khi tôi nới một gate từ `exit 1` sang `exit 0`.
 - [ ] Ba mũi tiêm ở Bước 2 và Bước 4 đều cho mã mong đợi.
@@ -428,7 +428,7 @@ kit-cua-toi/
 ## Bài tập về nhà
 
 Nối hai gate mới vào **CI**: `gate:policy` và `gates:index:check` đều chỉ đọc file, không cần môi trường thật,
-không cần credentials. Nên chúng thuộc diện chạy được ở **mọi lần push**. Bài 24 sẽ nói kỹ về ranh giới
+không cần credentials. Nên chúng thuộc diện chạy được ở mọi lần push. Bài 24 sẽ nói kỹ về ranh giới
 "CI dùng chung không được tự chạm môi trường thật", nhưng hai gate này thì an toàn tuyệt đối.
 
 Sau khi nối, thử push một commit cố tình thêm lệnh mồ côi và xác nhận CI đỏ.
@@ -437,5 +437,5 @@ Sau khi nối, thử push một commit cố tình thêm lệnh mồ côi và xá
 
 - [`.agent/config/GATES.md`](../../.agent/config/GATES.md) của kit này, bảng thật, sinh từ source.
 - [`scripts/qa/policy_source_check.js`](../../scripts/qa/policy_source_check.js) — bản đầy đủ, kiểm 5 quy ước
-  thay vì 3. Để ý cách nó **không** bắt trùng văn bản.
+  thay vì 3. Để ý cách nó không bắt trùng văn bản.
 - Phần 5 (Bài 17–17) chuyển sang bộ nhớ dự án: làm gì khi chưa có dữ liệu nào.

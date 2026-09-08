@@ -38,13 +38,13 @@ Bốn việc:
 | `.png` `.jpg` `.jpeg` `.webp` | `.json` `.md` `.txt` `.log` `.csv` |
 | `.mp4` `.webm` | `trace.zip` · kết quả truy vấn database |
 
-Vì sao trace và log **không** phải bằng chứng dù chúng chứa nhiều thông tin hơn ảnh:
+Vì sao trace và log không phải bằng chứng dù chúng chứa nhiều thông tin hơn ảnh:
 
-> Bằng chứng phải **kiểm chứng được bởi người không chạy test**. Dev mở ảnh trong ba giây. Mở trace cần cài
-> công cụ, cần biết cách đọc, và cần chính bản build đó. Log thì chỉ là chữ do **chính script bạn** in ra —
+> Bằng chứng phải kiểm chứng được bởi người không chạy test. Dev mở ảnh trong ba giây. Mở trace cần cài
+> công cụ, cần biết cách đọc, và cần chính bản build đó. Log thì chỉ là chữ do chính script bạn in ra —
 > nó chứng minh script đã in gì, không chứng minh màn hình trông thế nào.
 
-Trace và log vẫn hữu ích. Chúng là **công cụ điều tra tại chỗ**, không phải bằng chứng để nộp.
+Trace và log vẫn hữu ích. Chúng là công cụ điều tra tại chỗ, không phải bằng chứng để nộp.
 
 ## 2. Vì sao case PASS cũng phải có evidence
 
@@ -53,18 +53,18 @@ Trace và log vẫn hữu ích. Chúng là **công cụ điều tra tại chỗ*
 Trả lời bằng một tình huống. Sáu tuần sau, production có bug ở đúng màn đó. Ai đó hỏi: *"case TC_015 báo PASS,
 lúc đó màn hình trông thế nào?"*
 
-Không có ảnh thì mọi PASS của bạn là **lời khai không kiểm chứng được**. Có ảnh thì bạn trả lời được trong một
-phút. Hoặc phát hiện ra rằng lúc đó nó **đã sai rồi** mà oracle của bạn không bắt (và đó là thông tin cực
+Không có ảnh thì mọi PASS của bạn là lời khai không kiểm chứng được. Có ảnh thì bạn trả lời được trong một
+phút. Hoặc phát hiện ra rằng lúc đó nó đã sai rồi mà oracle của bạn không bắt (và đó là thông tin cực
 giá trị cho Bài 21).
 
 Đây là mục 4 trong `CLAUDE.md` bạn viết ở Bài 2, và là luật mà `gate-bang-chung.js` ở Bài 8 canh.
 
 ## 3. Khoanh đỏ: vì sao ảnh chụp trơn bị trả bug
 
-Ảnh chụp trơn của một màn dày đặc dữ liệu thì Dev **không biết nhìn vào đâu**. Kết quả thực tế: bug bị trả về
+Ảnh chụp trơn của một màn dày đặc dữ liệu thì Dev không biết nhìn vào đâu. Kết quả thực tế: bug bị trả về
 với lý do *"không thấy lỗi"* — trong khi lỗi có ở đó thật.
 
-Cách chữa: **khoanh đỏ đúng element kèm nhãn ngắn**, trước khi chụp.
+Cách chữa: khoanh đỏ đúng element kèm nhãn ngắn, trước khi chụp.
 
 `tests/support/evidence.js`:
 
@@ -203,15 +203,15 @@ test('TC_020 [Display] ngày sinh lệch định dạng giữa hai tab', async (
 
 ## 4. Bẫy PII: che chữ không che được ô nhập
 
-Đây là bẫy đã gặp thật, và nó **im lặng hoàn toàn**.
+Đây là bẫy đã gặp thật, và nó im lặng hoàn toàn.
 
 ```js
 // ✗ SAI — chỉ che chữ hiển thị
 el.textContent = '••••';
 ```
 
-Với `<input value="nguyen.van.a@congty.com">` thì `textContent` **là chuỗi rỗng** — gán vào nó không đổi gì
-cả. Giá trị thật vẫn nằm ở `input.value` và **hiện nguyên trên ảnh**.
+Với `<input value="nguyen.van.a@congty.com">` thì `textContent` là chuỗi rỗng. Gán vào nó không đổi gì
+cả. Giá trị thật vẫn nằm ở `input.value` và hiện nguyên trên ảnh.
 
 ```js
 // ✓ ĐÚNG — ô nhập phải set .value (và cả attribute, vì có framework render lại từ đó)
@@ -219,13 +219,13 @@ el.value = '••••';
 el.setAttribute('value', '••••');
 ```
 
-**Và luật cuối, không được bỏ:** sau khi chụp, **mở ảnh ra xem bằng mắt** trước khi đính vào báo cáo. Đây là
+**Và luật cuối, không được bỏ:** sau khi chụp, mở ảnh ra xem bằng mắt trước khi đính vào báo cáo. Đây là
 việc năm giây, và nó là lớp bảo vệ cuối cùng. Bạn không thể tự động hoá việc *nhìn thấy* một thông tin chưa
 che nằm ở chỗ bạn không nghĩ tới.
 
 ## 5. Khi nào buộc phải quay video
 
-Ảnh tĩnh chỉ hợp bug về **trạng thái**. Với bug thể hiện qua **chuỗi tương tác**, ảnh cuối không nói được gì.
+Ảnh tĩnh chỉ hợp bug về **trạng thái**. Với bug thể hiện qua chuỗi tương tác, ảnh cuối không nói được gì.
 
 | Loại bug | Bằng chứng |
 |---|---|
@@ -234,7 +234,7 @@ che nằm ở chỗ bạn không nghĩ tới.
 | Xử lý bất đồng bộ, cascade, kéo thả | **Video** |
 | Nhiều bước, mỗi bước một trạng thái | **Video** |
 
-Vì sao: với bug *"tick chọn → thu gọn → mở lại → mất tick"*, ảnh cuối chỉ cho thấy một ô **không được tick** —
+Vì sao: với bug *"tick chọn → thu gọn → mở lại → mất tick"*, ảnh cuối chỉ cho thấy một ô không được tick —
 và điều đó có thể hoàn toàn bình thường. Người xem không biết bạn đã làm gì để tới đó.
 
 `tests/support/video.js`:
@@ -272,7 +272,7 @@ async function buoc(page, moTa, giay = 2.5) {
 module.exports = { buoc };
 ```
 
-> `waitForTimeout` ở đây là **ngoại lệ hợp lệ** duy nhất của luật ở Bài 12. Nó không chờ ứng dụng, nó chờ
+> `waitForTimeout` ở đây là ngoại lệ hợp lệ duy nhất của luật ở Bài 12. Nó không chờ ứng dụng, nó chờ
 > người xem video kịp đọc banner. Ghi comment rõ để người sau không tưởng là mã ẩu.
 
 Bật quay video cho một test cụ thể:
@@ -311,7 +311,7 @@ test('TC_030 [E2E] tick sản phẩm → thu gọn → mở lại: tick còn ngu
 
 Bẫy thật, và nó làm mất bằng chứng **im lặng**:
 
-> `outputDir` của Playwright (mặc định `test-results/`) bị **XOÁ SẠCH mỗi lần chạy**. Ghi ảnh bằng chứng vào
+> `outputDir` của Playwright (mặc định `test-results/`) bị XOÁ SẠCH mỗi lần chạy. Ghi ảnh bằng chứng vào
 > đó thì lượt chạy sau xoá hết bằng chứng của lượt trước.
 
 Nên ghi vào thư mục của **task**:
@@ -320,7 +320,7 @@ Nên ghi vào thư mục của **task**:
 outputs/<PROJECT>/tasks/<MA_TASK>/evidence/TC_012.png
 ```
 
-Và trong file trạng thái, ghi đường dẫn **tính từ gốc repo** — không phải đường dẫn tuyệt đối của máy bạn
+Và trong file trạng thái, ghi đường dẫn tính từ gốc repo, không phải đường dẫn tuyệt đối của máy bạn
 (người khác mở sẽ không thấy), cũng không phải đường dẫn tương đối từ thư mục task (gate chạy ở gốc repo sẽ
 báo không tồn tại).
 
@@ -347,7 +347,7 @@ báo không tồn tại).
 | Vấn đề | Cách phát hiện | Cách chữa |
 |---|---|---|
 | **Ảnh trắng** | Kích thước file dưới ~1KB | Chụp sau khi trang ổn định — chờ **điều kiện**, không chờ thời gian |
-| **Sai màn** | Mở ra không thấy element cần nhìn | Khẳng định element tồn tại **trước** khi chụp |
+| **Sai màn** | Mở ra không thấy element cần nhìn | Khẳng định element tồn tại trước khi chụp |
 | **Không khoanh** | Người đọc phải tự dò | Luôn dùng `chupCoHighlight` |
 | **Còn PII** | Mở ra và **đọc** | Che, rồi mở ảnh ra soi |
 
@@ -371,7 +371,7 @@ Mở từng ảnh vừa chụp và tự chấm:
 | Ảnh | Đúng màn? | Có khoanh? | Nhãn đọc được? | Còn PII? | Kích thước |
 |---|---|---|---|---|---|
 
-Đây là bước **không tự động hoá được** và cũng là bước hay bị bỏ nhất.
+Đây là bước không tự động hoá được và cũng là bước hay bị bỏ nhất.
 
 ### Bước 3 — Kiểm bẫy PII (10 phút)
 
@@ -384,7 +384,7 @@ el.textContent = '••••';
 el.value = '••••'; el.setAttribute('value', '••••');
 ```
 
-Chụp cả hai, **mở cả hai ảnh ra so**. Bạn phải **thấy** rằng cách sai không che được gì, thấy một lần thì
+Chụp cả hai, mở cả hai ảnh ra so. Bạn phải **thấy** rằng cách sai không che được gì, thấy một lần thì
 không quên.
 
 ### Bước 4 — Quay một video (10 phút)
@@ -441,16 +441,16 @@ Hai file này là **hạ tầng**, không phải máy chặn. Máy chặn đọc
 
 ## Tự kiểm
 
-- [ ] Tôi biết danh sách đuôi file được chấp nhận, và vì sao trace/log **không** phải bằng chứng.
+- [ ] Tôi biết danh sách đuôi file được chấp nhận, và vì sao trace/log không phải bằng chứng.
 - [ ] Tôi giải thích được vì sao case **PASS** cũng cần bằng chứng.
-- [ ] Mọi ảnh của tôi có **khoanh đỏ và nhãn**, không có ảnh chụp trơn.
+- [ ] Mọi ảnh của tôi có khoanh đỏ và nhãn, không có ảnh chụp trơn.
 - [ ] Nhãn của tôi có `pointerEvents: 'none'`, nó **không chặn** thao tác của bước sau.
-- [ ] Tôi đã **thấy tận mắt** rằng `textContent` không che được ô nhập.
-- [ ] Tôi đã **mở từng ảnh ra soi** trước khi đính vào báo cáo.
+- [ ] Tôi đã thấy tận mắt rằng `textContent` không che được ô nhập.
+- [ ] Tôi đã mở từng ảnh ra soi trước khi đính vào báo cáo.
 - [ ] Video của tôi có banner từng bước và người ngoài hiểu được.
 - [ ] Bằng chứng ghi vào thư mục **task**, không vào `outputDir` của Playwright.
-- [ ] Đường dẫn trong file trạng thái tính **từ gốc repo**.
-- [ ] Lệnh kiểm ở Bước 5 ra **0 thiếu · 0 mất file**.
+- [ ] Đường dẫn trong file trạng thái tính từ gốc repo.
+- [ ] Lệnh kiểm ở Bước 5 ra 0 thiếu · 0 mất file.
 
 ## Bài tập về nhà
 
@@ -467,4 +467,4 @@ nó. Rất thường là ảnh chụp trơn.
 ## Đọc thêm
 
 - Phần 4 (Bài 8–15) sẽ biến chính luật của bài này thành **máy chặn**: `gate-bang-chung.js` đọc file trạng thái
-  bạn vừa sinh, tìm case đã chạy mà thiếu bằng chứng, và **thoát mã 1**.
+  bạn vừa sinh, tìm case đã chạy mà thiếu bằng chứng, và thoát mã 1.

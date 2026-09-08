@@ -24,21 +24,21 @@ Bốn việc:
 
 1. Tự thấy agent **đoán** khi gặp mơ hồ. Trên một tài liệu có 10 vấn đề cài sẵn (25 phút).
 2. Phân mức chặn / không chặn, và viết bộ câu hỏi có giả định đề xuất (20 phút).
-3. **Xây gate** chặn không cho sinh testcase khi chưa chốt, và học **công thức viết mọi gate** (30 phút).
+3. **Xây gate** chặn không cho sinh testcase khi chưa chốt, và học công thức viết mọi gate (30 phút).
 4. Chạy lại toàn luồng, thấy gate chặn thật rồi mở ra thật (15 phút).
 
-> Bài này cũng là bài dạy **cách viết một gate**. Từ đây trở đi tài liệu này sẽ nói *"xây gate chặn X"* rất nhiều
+> Bài này cũng là bài dạy cách viết một gate. Từ đây trở đi tài liệu này sẽ nói *"xây gate chặn X"* rất nhiều
 > lần; công thức 5 câu hỏi ở Việc 3 dùng cho tất cả.
 
 ---
 
 ## Việc 1 — Xem agent đoán (25 phút)
 
-Kèm theo đây có một bản đặc tả **cố tình viết mơ hồ**: [`sample-requirement.md`](assets/sample-requirement.md).
+Kèm theo đây có một bản đặc tả cố tình viết mơ hồ: [`sample-requirement.md`](assets/sample-requirement.md).
 Nó là một FSD giả cho màn "Tạo đơn hàng", có 3 ghi chú của BA chứa mâu thuẫn và lỗ hổng. Tổng cộng **10 vấn
 đề cài sẵn**.
 
-Mở phiên agent và gõ **đúng** câu này, câu mà 90% người sẽ gõ:
+Mở phiên agent và gõ đúng câu này, câu mà 90% người sẽ gõ:
 
 ```
 Đọc docs/course/assets/sample-requirement.md rồi sinh testcase cho màn Tạo đơn hàng.
@@ -50,7 +50,7 @@ Mở phiên agent và gõ **đúng** câu này, câu mà 90% người sẽ gõ:
 |---|---|
 | **Số cụ thể xuất hiện từ đâu không rõ** | Case ghi *"Giảm giá = 5%"* trong khi tài liệu có hai chỗ nói hai số khác nhau |
 | **Case cho nhánh tài liệu không nói** | Có case cho "khách hạng Kim cương" — tài liệu chưa từng nhắc hạng này |
-| **Mâu thuẫn bị làm phẳng** | Tài liệu nói mốc `500.000`, ghi chú BA nói `450.000`. Bộ case chọn **một** số và không nói gì |
+| **Mâu thuẫn bị làm phẳng** | Tài liệu nói mốc `500.000`, ghi chú BA nói `450.000`. Bộ case chọn một số và không nói gì |
 
 Để ý là agent không hỏi bạn câu nào. Nó tự đoán, mà đoán khá hợp lý. Nhưng nếu đoán sai thì cả bộ testcase
 sai theo, và sai theo kiểu khó thấy nhất: từng case đọc lên đều thấy ổn.
@@ -60,12 +60,12 @@ bạn giao việc "sinh testcase", và đoán là một cách hoàn thành việ
 
 ### Đếm xem nó bỏ qua mấy vấn đề
 
-Cuối `sample-requirement.md` có bảng **10 vấn đề** giảng viên đã cài. Đối chiếu:
+Cuối `sample-requirement.md` có bảng 10 vấn đề giảng viên đã cài. Đối chiếu:
 
 | | Số |
 |---|---|
 | Vấn đề agent **nêu ra** | ___ |
-| Vấn đề agent **im lặng đoán qua** | ___ |
+| Vấn đề agent im lặng đoán qua | ___ |
 
 Con số thứ hai là thứ bài này nhắm tới.
 
@@ -73,7 +73,7 @@ Con số thứ hai là thứ bài này nhắm tới.
 
 Không phải mơ hồ nào cũng phải dừng. Dừng hết thì bạn không làm được gì; đoán hết thì bộ case sai. Ranh giới:
 
-> Chặn khi không trả lời được thì **kết quả mong đợi không viết được**.
+> Chặn khi không trả lời được thì kết quả mong đợi không viết được.
 > Không chặn khi bạn đoán được và ghi rõ mình đã đoán gì.
 
 | Mơ hồ | Mức | Vì sao |
@@ -88,7 +88,7 @@ Không phải mơ hồ nào cũng phải dừng. Dừng hết thì bạn không 
 ### Bộ câu hỏi viết thế nào để BA trả lời trong 2 phút
 
 Sai: *"Anh cho em hỏi về phần giảm giá ạ, em thấy hơi mơ hồ."*
-Đúng: **đánh số · nêu hai chỗ mâu thuẫn · kèm giả định đề xuất · nói rõ nếu không trả lời thì hậu quả gì.**
+Đúng: đánh số · nêu hai chỗ mâu thuẫn · kèm giả định đề xuất · nói rõ nếu không trả lời thì hậu quả gì.
 
 `outputs/tasks/<MÃ>/analysis/questions.md`:
 
@@ -122,9 +122,9 @@ Sai: *"Anh cho em hỏi về phần giảm giá ạ, em thấy hơi mơ hồ."*
 
 Ba thứ làm bộ câu hỏi này khác:
 
-1. **Trích được nguồn của mâu thuẫn** — "FSD 2.3 vs ghi chú 12/08". BA không phải đi tìm.
-2. **Có giả định đề xuất** — BA chỉ cần trả lời *"đúng"* / *"không, là 450.000"*.
-3. **Nói hậu quả** — BA biết vì sao phải trả lời câu này trước.
+1. Trích được nguồn của mâu thuẫn: "FSD 2.3 vs ghi chú 12/08". BA không phải đi tìm.
+2. Có giả định đề xuất — BA chỉ cần trả lời *"đúng"* / *"không, là 450.000"*.
+3. Nói hậu quả — BA biết vì sao phải trả lời câu này trước.
 
 ## Việc 3 — Xây gate, và công thức viết mọi gate (30 phút)
 
@@ -140,7 +140,7 @@ Trước khi viết một dòng code cho bất cứ gate nào, trả lời năm 
 | 4 | **KHÔNG ĐO ĐƯỢC là khi nào?** | không có tệp `questions.md` ⇒ mã `2`, không phải "đạt" |
 | 5 | **Đối chứng: ca nào phải chặn, ca nào phải cho qua?** | thiếu 1 câu trả lời ⇒ chặn · trả lời đủ ⇒ qua · chỉ thiếu câu KHÔNG CHẶN ⇒ **qua** |
 
-Câu 2 là câu quan trọng nhất. Gate phải đo **thứ có thật trên đĩa**, không đo ý định. Câu 5 là câu hay bị bỏ,
+Câu 2 là câu quan trọng nhất. Gate phải đo thứ có thật trên đĩa, không đo ý định. Câu 5 là câu hay bị bỏ,
 và bỏ nó thì bạn không biết gate đang **so** hay đang **luôn chê**.
 
 ### Định dạng để máy đọc được
@@ -252,7 +252,7 @@ console.error('KHÔNG được điền giả định vào traLoi để cho qua �
 process.exit(1);
 ```
 
-Câu cuối là câu đáng dán lên tường: **đừng điền giả định vào chỗ câu trả lời.** Nó làm gate xanh và biến một
+Câu cuối là câu đáng dán lên tường: đừng điền giả định vào chỗ câu trả lời. Nó làm gate xanh và biến một
 phỏng đoán thành "đã chốt". Đúng loại gian lận mà Bài 1 dạy nhận ra, chỉ ở một chỗ khác.
 
 ## Việc 4 — Thử gate: chặn thật rồi mở ra thật (15 phút)
@@ -292,11 +292,11 @@ mâu thuẫn.
   "traLoi": "500.000 — ghi chú 12/08 là bản nháp, bỏ", "aiTraLoi": "BA Hương, 07/09" }
 ```
 
-Điền cả ba câu CHẶN → **mã `0`**, và nó **vẫn liệt kê** câu không chặn đang dùng giả định. Đó là cố ý: gate
+Điền cả ba câu CHẶN → **mã `0`**, và nó vẫn liệt kê câu không chặn đang dùng giả định. Đó là cố ý: gate
 cho qua, nhưng không để bạn quên là mình đã đoán.
 
 **Lần 4 — đối chứng âm quan trọng nhất:** để câu `A1` (không chặn) **trống** và trả lời đủ 3 câu chặn.
-Gate phải ra **`0`**. Nếu ra `1` thì gate của bạn đang chặn cả mơ hồ không chặn, tức nó sẽ chặn **mọi** task,
+Gate phải ra **`0`**. Nếu ra `1` thì gate của bạn đang chặn cả mơ hồ không chặn, tức nó sẽ chặn mọi task,
 và người ta sẽ bỏ nó sau ba lần.
 
 ### Giờ làm lại Việc 1
@@ -348,17 +348,17 @@ luật một-nguồn của Bài 6.
 4. Vì sao gate bắt buộc có `giaDinh` và `nguon`, không chỉ `hoi`?
 5. Vì sao gate bắt buộc có `aiTraLoi`, không chỉ `traLoi`?
 6. Điền giả định vào `traLoi` để gate xanh, sai ở đâu? Nó giống kiểu gian lận nào ở Bài 1?
-7. Năm câu hỏi của **công thức viết gate** — kể lại. Câu nào hay bị bỏ nhất?
+7. Năm câu hỏi của công thức viết gate. Kể lại. Câu nào hay bị bỏ nhất?
 
 ## Bài tập về nhà (25 phút)
 
-Áp công thức 5 câu hỏi để viết **một gate mới** cho dự án bạn, tự chọn thứ cần chặn. Ví dụ: *"không cho
+Áp công thức 5 câu hỏi để viết một gate mới cho dự án bạn, tự chọn thứ cần chặn. Ví dụ: *"không cho
 publish testcase nếu chưa có ai review"*, hoặc *"không cho execute nếu chưa khai môi trường"*.
 
-Viết ra giấy **cả năm câu trả lời trước khi viết code**. Rồi:
+Viết ra giấy cả năm câu trả lời trước khi viết code. Rồi:
 
 1. Viết gate, đúng ba mã thoát.
-2. Làm đủ hai đối chứng: một ca **phải chặn**, một ca **phải cho qua**.
+2. Làm đủ hai đối chứng: một ca **phải chặn**, một ca phải cho qua.
 3. Chạy nó trên một task **thật** đã xong. Nếu nó báo đỏ trên task đã xong đúng, thì gate của bạn sai, không
    phải task sai. Sửa gate.
 
