@@ -2,6 +2,15 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: bộ test chạy trên desktop · Sau bài này: cùng suite chạy trên viewport điện thoại, và bạn biết chọn cái gì đáng chạy
 
+**Vấn đề**
+
+Bộ test desktop của bạn xanh hết.
+
+PM mở sản phẩm trên điện thoại để duyệt, rồi gửi cho bạn một ảnh: nút Thanh toán bị bàn phím ảo che
+mất. Không bấm được.
+
+Bộ test của bạn không hề thấy chuyện này, vì nó chưa từng chạy ở kích thước đó.
+
 **Tóm tắt bài này**
 
 | | |

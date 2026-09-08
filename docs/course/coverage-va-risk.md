@@ -2,6 +2,19 @@
 
 > **3 giờ** · Có gì trong tay: bộ testcase có oracle, chưa biết đủ hay thiếu · Sau bài này: biết bộ của mình trống hẳn loại câu hỏi nào
 
+**Vấn đề**
+
+Requirement nói miễn phí giao hàng từ 500.000. Bạn viết mười testcase:
+
+```
+600k · 700k · 800k · 900k · 1tr · 1,2tr · 1,5tr · 2tr · 3tr · 5tr
+```
+
+Mười case, tất cả xanh. Trông rất phủ.
+
+Nhưng không case nào chạm `499.999`, `500.000` hay `500.001`. Mười case, và bỏ sót đúng chỗ hay
+hỏng nhất.
+
 **Tóm tắt bài này**
 
 | | |

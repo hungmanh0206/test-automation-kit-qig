@@ -2,6 +2,15 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: bộ test FE chạy được, mọi kiểm tra đều đi qua giao diện · Sau bài này: bắt được lỗi mà giao diện không thể lộ ra
 
+**Vấn đề**
+
+Bạn cần kiểm một luật: đơn đã xác nhận thì không được sửa.
+
+Bạn mở màn chi tiết đơn, thấy nút Sửa đã bị ẩn. Test viết xong, chạy xanh, đánh dấu luật này đã phủ.
+
+Nhưng bạn vừa chứng minh được điều gì? Rằng giao diện đã ẩn nút. Không phải rằng hệ thống từ chối
+việc sửa.
+
 **Tóm tắt bài này**
 
 | | |

@@ -2,6 +2,15 @@
 
 > **2 giờ** · Có gì trong tay: mọi gate chạy được trên máy bạn, và chỉ khi bạn nhớ chạy · Sau bài này: kit chạy không cần bạn, và người khác dùng được nó
 
+**Vấn đề**
+
+Bạn có tám gate. Thứ Hai bạn nhớ chạy. Thứ Ba cũng nhớ.
+
+Thứ Sáu có bản phát hành gấp. Không ai chạy gate nào. Code vẫn merge.
+
+Nếu chất lượng phụ thuộc vào việc một người có nhớ gõ lệnh hay không, thì nó có phải một cơ chế
+kiểm soát đáng tin?
+
 **Tóm tắt bài này**
 
 | | |

@@ -2,6 +2,15 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: một bản phát hành đã nghiệm thu · Sau bài này: kit chạy trên dự án thật của bạn — lần đầu rời app thực hành
 
+**Vấn đề**
+
+Bạn có một bản phát hành đã nghiệm thu. Trên giấy, nó là một bộ kit dùng lại được.
+
+Nhưng nó chưa từng chạy ở đâu khác ngoài sản phẩm bạn đã dùng suốt hai mươi tám bài.
+
+Bài này đưa bạn một sản phẩm khác: khác nghiệp vụ, khác giao diện, khác API, khác cách đăng nhập. Và
+một câu hỏi: bạn phải sửa bao nhiêu file trong tầng chung để nó chạy?
+
 **Tóm tắt bài này**
 
 | | |

@@ -2,6 +2,14 @@
 
 > **3 giờ 30 phút** · Có gì trong tay: bộ test khá lớn, thỉnh thoảng đỏ không rõ lý do · Sau bài này: đo được suite của bạn lệ thuộc retry bao nhiêu, và biết vì sao dọn flaky có thể chôn bug thật
 
+**Vấn đề**
+
+Báo cáo tuần ghi: **98% pass**.
+
+Con số đó nghĩa là sản phẩm tốt, hay nghĩa là bộ test đã chạy lại nhiều lần?
+
+Bạn không biết, vì báo cáo gộp "xanh ngay lần đầu" và "xanh ở lần thứ ba" thành cùng một chữ Pass.
+
 **Tóm tắt bài này**
 
 | | |

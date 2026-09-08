@@ -2,6 +2,15 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: fixture dựng được state, test vẫn hay đỏ vì không tìm thấy element · Sau bài này: locator không gãy khi giao diện đổi, và test hết chập chờn
 
+**Vấn đề**
+
+Sáng nay bộ test đỏ mười hai case. Bạn mở ra xem.
+
+Không case nào đỏ vì sản phẩm sai. Cả mười hai đều đỏ vì không tìm thấy element.
+
+Dev vừa đổi một thẻ `div` thành `section` ở phần bố cục, không đụng gì tới logic. Hành vi của sản
+phẩm y nguyên, mà bộ test của bạn thì gãy.
+
 **Tóm tắt bài này**
 
 | | |

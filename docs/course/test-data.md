@@ -2,6 +2,17 @@
 
 > **2 giờ** · Có gì trong tay: config đã tách, dữ liệu test vẫn gõ tay trong từng test · Sau bài này: mỗi test tự dựng dữ liệu của nó và tự dọn sau khi chạy
 
+**Vấn đề**
+
+Test của bạn đang dùng khách `KH02` có sẵn trên môi trường.
+
+Sáng nay nó đỏ. Bạn không sửa dòng nào từ hôm qua.
+
+Hoá ra một người khác đổi hạng của `KH02` từ Bạc sang Vàng để thử một việc khác. Test đỏ, và đỏ
+không phải vì sản phẩm sai.
+
+Đó là loại đỏ tệ nhất, vì nó dạy cả team thói quen bỏ qua màu đỏ.
+
 **Tóm tắt bài này**
 
 | | |

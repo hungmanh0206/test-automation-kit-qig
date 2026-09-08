@@ -4,6 +4,15 @@
 >
 > *Bài này không đánh số, nó là phần đào sâu của **Bài 15**. Đọc kèm **Bài 15**.*
 
+**Vấn đề**
+
+Bạn đã viết ra một luật: *"kết quả mong đợi phải trích được nguồn."*
+
+Luật đó nằm trong tài liệu của đội. Ai cũng đồng ý nó hợp lý.
+
+Ba tuần sau, có một bản phát hành gấp. Không ai kiểm luật đó, và không có gì báo. Không phải vì ai
+cẩu thả, mà vì lúc gấp thì người ta quên.
+
 **Tóm tắt bài này**
 
 | | |

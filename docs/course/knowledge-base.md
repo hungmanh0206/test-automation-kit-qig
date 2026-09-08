@@ -2,6 +2,17 @@
 
 > **3 giờ** · Có gì trong tay: đã chạy hàng trăm testcase qua nhiều sprint · Sau bài này: tri thức có phiên bản, truy được nguồn, và không âm thầm dạy sai cho agent
 
+**Vấn đề**
+
+Sprint 4, đội tìm ra một bug làm tròn số ở màn thanh toán. Fix, đóng, đi tiếp.
+
+Sprint 11, màn thanh toán được viết lại. Không ai còn nhớ bug cũ. Bộ regression mới không có case
+nào cho việc làm tròn.
+
+Bug quay lại.
+
+Đội đã từng học được điều này. Nhưng bộ kit thì không nhớ gì.
+
 **Tóm tắt bài này**
 
 | | |

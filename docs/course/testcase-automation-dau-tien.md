@@ -2,6 +2,15 @@
 
 > **2 giờ** · Có gì trong tay: Playwright đã cài, `playwright.config.js` đã cấu hình · Sau bài này: một test chạy thật trên app thực hành, và bạn biết nó đang kiểm cái gì
 
+**Vấn đề**
+
+Bạn có một test mẫu chạy xanh. Nó kiểm một trang trên internet, không kiểm sản phẩm của bạn.
+
+Giờ bạn viết test đầu tiên cho luồng tạo đơn. Nó xanh ngay lần chạy đầu.
+
+Nhưng bạn vừa thấy ở Bài 1 là sản phẩm này **có bug** ở đúng luồng đó. Test xanh mà bug vẫn còn,
+nghĩa là test của bạn chưa kiểm cái nó tưởng đang kiểm.
+
 **Tóm tắt bài này**
 
 | | |

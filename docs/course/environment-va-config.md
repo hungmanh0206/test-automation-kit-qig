@@ -2,6 +2,20 @@
 
 > **2 giờ** · Có gì trong tay: cấu trúc thư mục đã dựng, URL và tài khoản vẫn nằm trong code · Sau bài này: testcase không cần biết nó đang chạy ở dự án nào
 
+**Vấn đề**
+
+Bộ test của bạn đang chạy trên một sản phẩm.
+
+Tuần sau bạn được giao thêm một sản phẩm nữa. Cùng công ty, khác đội, khác địa chỉ:
+
+```
+Sản phẩm A:  https://staging-a.congty.com
+Sản phẩm B:  https://staging-b.congty.com
+```
+
+Nếu để chuyển sang B bạn phải sửa `page.goto('https://...')` trong tám mươi testcase, thì thứ bạn
+đang có không phải một bộ kit.
+
 **Tóm tắt bài này**
 
 | | |

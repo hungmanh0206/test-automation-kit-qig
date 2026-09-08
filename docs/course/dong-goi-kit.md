@@ -2,6 +2,15 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: kit đầy đủ, chạy tốt trên máy bạn · Sau bài này: một bản phát hành đã được chứng minh là chạy được, không phải một tệp zip hy vọng
 
+**Vấn đề**
+
+Một QA khác trong công ty hỏi xin bộ kit của bạn để dùng cho sản phẩm của họ.
+
+Trước khi gửi, bạn tự hỏi: họ cần xoá những gì trước khi bắt đầu?
+
+Nếu câu trả lời là *"khá nhiều"*, thì thứ bạn đang có là automation của một sản phẩm, không phải một
+bộ kit.
+
 **Tóm tắt bài này**
 
 | | |

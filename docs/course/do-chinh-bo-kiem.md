@@ -5,6 +5,16 @@
 Đây là bài trọng tâm. Hai mươi bài trước dựng ra một bộ kiểm. Bài này hỏi một câu mà ít ai hỏi cho tới khi
 đã muộn: bộ kiểm đó có bắt được lỗi không?
 
+**Vấn đề**
+
+Bộ test của bạn có 500 case. Chạy hết bốn mươi phút mỗi đêm. Xanh hết.
+
+Nghe rất tốt.
+
+Nhưng nếu mai sản phẩm hỏng một chỗ, nó có đỏ không?
+
+Không ai biết. Vì sản phẩm đang đúng, nên bộ test chưa có cơ hội chứng minh nó bắt được gì.
+
 **Tóm tắt bài này**
 
 | | |

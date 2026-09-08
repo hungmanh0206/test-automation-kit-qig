@@ -2,6 +2,16 @@
 
 > **2 giờ** · Có gì trong tay: testcase và kết quả vẫn đang nằm local · Sau bài này: cả team đọc chung một nguồn, và giữ được đường truy ngược về requirement
 
+**Vấn đề**
+
+Bạn vừa có 120 testcase, tất cả nằm trong repo của bạn.
+
+Một QA khác trong đội hỏi: *"case nào đang cover BR-017?"*
+
+Bạn trả lời: *"để tôi mở file ra tìm."*
+
+Đó là lúc bạn nhận ra bộ testcase của bạn chỉ tồn tại với người biết mở đúng file.
+
 **Tóm tắt bài này**
 
 | | |

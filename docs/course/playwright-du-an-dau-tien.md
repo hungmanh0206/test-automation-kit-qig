@@ -2,6 +2,15 @@
 
 > **2 giờ** · Có gì trong tay: repo rỗng có `.gitignore` và `package.json` · Sau bài này: Playwright chạy được, và bạn hiểu từng dòng trong file cấu hình
 
+**Vấn đề**
+
+Bạn cài xong công cụ, chạy được test mẫu, và mở file cấu hình ra xem.
+
+Bốn mươi dòng. Bạn không biết dòng nào làm gì.
+
+Cách nhanh nhất là copy một cấu hình từ blog nào đó rồi đi tiếp. Nhiều người làm thế, và nó chạy.
+Vấn đề chỉ lộ ra sáu tháng sau, khi CI báo xanh trong khi không có gì được kiểm thật.
+
 **Tóm tắt bài này**
 
 | | |
@@ -18,8 +27,8 @@
 Bốn việc:
 
 1. Cài Playwright và chạy test mẫu (25 phút).
-2. Đi qua từng tuỳ chọn trong file cấu hình (45 phút).
-3. Ba tuỳ chọn đặt sai gây xanh giả, thử từng cái (30 phút).
+2. Năm tuỳ chọn phải hiểu ngay, và tám cái hoãn lại (30 phút).
+3. Ba tuỳ chọn đặt sai gây xanh giả, thử từng cái (35 phút).
 4. Chạy có giao diện và không giao diện, khi nào dùng cái nào (20 phút).
 
 ---
@@ -65,16 +74,44 @@ Running 6 tests using 6 workers
 Test mẫu này kiểm trang `playwright.dev`, không kiểm app của bạn. Nó chỉ chứng minh một điều: công cụ
 chạy được trên máy này. Xoá nó đi sau khi xem xong.
 
-## Việc 2 — Đi qua từng tuỳ chọn (45 phút)
+## Việc 2 — Năm tuỳ chọn phải hiểu ngay (30 phút)
 
-Mở `playwright.config.js`. Đây là file quyết định chất lượng cả bộ test, nên đáng ngồi 45 phút.
+Mở `playwright.config.js`. File này có khoảng mười ba tuỳ chọn.
+
+Bạn **không** cần hiểu hết hôm nay. Đọc hết mười ba cái trước khi viết testcase đầu tiên là cách
+nhanh nhất để mất động lực, và tám cái trong đó chỉ có nghĩa khi bạn đã gặp vấn đề mà chúng giải
+quyết.
+
+Nên bài này chia làm hai:
+
+| | Tuỳ chọn | Vì sao cần ngay |
+|---|---|---|
+| **Hiểu ngay** | `testDir` | Không đúng thì không test nào được tìm thấy |
+| | `use.baseURL` | Không có thì mọi test phải viết địa chỉ đầy đủ |
+| | `trace` | Đây là thứ bạn xem khi một test đỏ mà không hiểu vì sao |
+| | `screenshot` | Bằng chứng tối thiểu khi đỏ |
+| | `forbidOnly` | Chặn kiểu xanh giả nguy hiểm nhất, xem Việc 3 |
+
+Tám cái còn lại **đặt đúng từ đầu, nhưng chưa cần nhớ**. Mỗi cái sẽ được giải thích ở đúng bài mà
+bạn gặp vấn đề của nó:
+
+| Tuỳ chọn | Giải thích ở |
+|---|---|
+| `retries` | Bài 25, khi bạn đo tỉ lệ chập chờn |
+| `workers`, `fullyParallel` | Bài 20, khi bạn dựng CI |
+| `projects` | Bài 21, khi bạn chạy trên viewport điện thoại |
+| `reporter` | Bài 11, khi kết quả cần người khác đọc được |
+| `timeout`, `actionTimeout`, `expect.timeout` | cuối Việc 2, ba cái này hay bị nhầm nhau |
+| `video` | Bài 11, khi ảnh tĩnh không đủ |
+
+Dán nguyên cấu hình dưới đây vào. Đọc năm dòng có dấu `←`, bỏ qua phần còn lại.
 
 ```js
 // @ts-check
 const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
-  testDir: './tests',
+  testDir: './tests',                    // ← HIỂU NGAY
 
   /* Chạy song song. Nhanh hơn nhiều, nhưng chỉ đúng khi các test ĐỘC LẬP với nhau.
      Bài 7 đã lo phần đó bằng cách cho mỗi test tự dựng dữ liệu của nó. */
@@ -82,7 +119,7 @@ module.exports = defineConfig({
 
   /* CẤM .only lọt lên CI. Người ta hay để .only lại sau khi debug một test,
      và khi đó CI chỉ chạy đúng test đó rồi báo xanh. Xem Việc 3. */
-  forbidOnly: !!process.env.CI,
+  forbidOnly: !!process.env.CI,         // ← HIỂU NGAY
 
   /* Chạy lại test đỏ. Trên CI thì 1 lần để lọc chập chờn thật. Trên máy bạn thì 0,
      vì bạn cần thấy nó đỏ để sửa, không cần nó tự khỏi. */
@@ -95,14 +132,14 @@ module.exports = defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
 
   use: {
-    baseURL: 'http://localhost:4010',
+    baseURL: 'http://localhost:4010',   // ← HIỂU NGAY
 
     /* Bản ghi lại lượt chạy. 'on-first-retry' nghĩa là chỉ ghi khi test đỏ rồi chạy lại,
        nên không tốn dung lượng cho hàng trăm lượt xanh. */
-    trace: 'on-first-retry',
+    trace: 'on-first-retry',            // ← HIỂU NGAY
 
     /* Ảnh khi đỏ. Bài 11 sẽ thay bằng cách chụp có khoanh đỏ và che dữ liệu khách. */
-    screenshot: 'only-on-failure',
+    screenshot: 'only-on-failure',      // ← HIỂU NGAY
 
     /* Thời gian chờ tối đa cho MỘT thao tác. Không phải cho cả test. */
     actionTimeout: 10_000,
@@ -117,7 +154,22 @@ module.exports = defineConfig({
 });
 ```
 
-Mười ba tuỳ chọn, nhưng chỉ ba cái quyết định bộ test của bạn có đáng tin không. Việc 3 nói về chúng.
+Năm dòng bạn vừa đọc là đủ để đi tiếp. Việc 3 nói về ba tuỳ chọn mà đặt sai thì pipeline báo xanh
+trong khi không có gì được kiểm.
+
+### Và một lời khuyên nghe nhàm mà đắt: đừng copy cấu hình mù
+
+Cấu hình chạy được chưa chắc là cấu hình tốt.
+
+Ví dụ cụ thể nhất là `retries`. Trên mạng có rất nhiều bài viết đặt `retries: 3` và không giải thích
+gì. Nó chạy, và bộ test trông ổn định hơn hẳn.
+
+Cái nó đổi lại là bạn mất khả năng nhìn thấy bộ test đang mục dần. Một test xanh ở lần thử thứ ba
+không giống một test xanh ngay lần đầu, nhưng báo cáo gộp cả hai thành chữ Pass.
+
+Nên quy tắc ở đây không phải "đừng dùng retries". Nó là: mỗi giá trị bạn đặt phải trả lời được câu
+*"đặt sai giá trị này thì bộ test của tôi hỏng kiểu gì"*. Tuỳ chọn nào bạn không trả lời được thì
+để mặc định, đừng chép.
 
 Ba tuỳ chọn thời gian hay bị nhầm lẫn, tách rõ ở đây:
 

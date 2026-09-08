@@ -2,6 +2,15 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: khoảng mười gate rời rạc, viết theo từng bài · Sau bài này: một khung chung, một lệnh gộp, và cách chứng minh gate có răng
 
+**Vấn đề**
+
+Bạn có mười gate, viết rải theo từng bài.
+
+Gate thứ nhất in ra văn bản. Gate thứ hai trả về JSON. Gate thứ ba thoát mã 1 mà không in gì. Gate
+thứ tư crash khi thiếu file. Và một script gọi chúng thì coi mã thoát 2 là thành công.
+
+Mười gate đang nói mười thứ tiếng khác nhau.
+
 **Tóm tắt bài này**
 
 | | |

@@ -2,6 +2,15 @@
 
 > **2 giờ** · Có gì trong tay: một bộ testcase do agent sinh · Sau bài này: mọi kết quả mong đợi đều chỉ được ra nguồn, và bạn nhận ra kiểu test tự khen mình từ xa
 
+**Vấn đề**
+
+Testcase của bạn ghi: kết quả mong đợi là `515.000`.
+
+Ai đó hỏi con số đó ở đâu ra.
+
+Nếu câu trả lời là *"vì sản phẩm đang trả về thế"* thì testcase đó không kiểm gì cả. Nó chỉ ghi lại
+hiện trạng, rồi báo đỏ mỗi khi hiện trạng đổi, kể cả khi đổi theo hướng đúng.
+
 **Tóm tắt bài này**
 
 | | |

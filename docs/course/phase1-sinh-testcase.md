@@ -2,6 +2,17 @@
 
 > **3 giờ** · Có gì trong tay: quy tắc thiết kế và đo phủ đã có, làm tay vẫn chậm · Sau bài này: agent không còn đoán khi gặp mơ hồ, và bạn biết công thức viết mọi gate về sau
 
+**Vấn đề**
+
+Requirement nói: *"Khách VIP được giảm phí."*
+
+Nó không nói VIP là hạng nào, giảm bao nhiêu, và giảm trước hay sau khi áp mã giảm giá.
+
+Bạn giao việc sinh testcase cho agent. Nó trả về mười hai testcase, trình bày rất gọn, đọc lên đều
+thấy hợp lý.
+
+Mười hai testcase đó dựa trên luật nào?
+
 **Tóm tắt bài này**
 
 | | |
@@ -15,12 +26,26 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Mười việc, chia làm ba chặng.
+
+**Chặng 1 — dựng hàng rào (90 phút)**
 
 1. Tự thấy agent **đoán** khi gặp mơ hồ. Trên một tài liệu có 10 vấn đề cài sẵn (25 phút).
 2. Phân mức chặn / không chặn, và viết bộ câu hỏi có giả định đề xuất (20 phút).
 3. **Xây gate** chặn không cho sinh testcase khi chưa chốt, và học công thức viết mọi gate (30 phút).
 4. Chạy lại toàn luồng, thấy gate chặn thật rồi mở ra thật (15 phút).
+
+**Chặng 2 — agent đọc luật ở đâu (55 phút)**
+
+5. Ba thứ để ra lệnh cho agent, và vì sao chưa cần cái thứ tư (10 phút).
+6. Hai file luật, hai vai khác nhau (25 phút).
+7. Thử xem agent có thật sự tuân không, bằng một cái bẫy (20 phút).
+
+**Chặng 3 — lượt sinh case thật (35 phút)**
+
+8. Giao việc sinh case khi mọi câu hỏi CHẶN đã có câu trả lời (15 phút).
+9. Kiểm bằng máy trước khi đọc bằng mắt (10 phút).
+10. Ba dấu hiệu một case không execute được (10 phút).
 
 > Bài này cũng là bài dạy cách viết một gate. Từ đây trở đi tài liệu này sẽ nói *"xây gate chặn X"* rất nhiều
 > lần; công thức 5 câu hỏi ở Việc 3 dùng cho tất cả.
@@ -324,7 +349,30 @@ khác, ví dụ không commit secret hay evidence phải che PII, thì agent bi�
 
 Hai việc cuối bài trả lời câu đó, và việc thứ hai quan trọng hơn: **kiểm xem nó có thật sự đọc không.**
 
-## Việc 5 — Hai file luật, hai vai khác nhau (25 phút)
+## Việc 5 — Ba thứ để ra lệnh cho agent, không phải bốn (10 phút)
+
+Tài liệu của công cụ agent nào cũng giới thiệu bốn chữ: **prompt**, **rule**, **command**, và
+**skill**. Cả bốn đều được gọi là *"cách bạn ra lệnh cho agent"*, nên rất dễ tưởng chúng thay thế
+nhau được.
+
+Bài này chỉ cần **ba** cái. Phân biệt bằng câu hỏi mà mỗi cái trả lời:
+
+| | Trả lời câu hỏi | Vòng đời |
+|---|---|---|
+| **Rule** | Agent **luôn** phải tuân gì? | Viết một lần, áp cho mọi lượt |
+| **Prompt** | **Lần này** giao việc gì? | Mỗi lượt một cái |
+| **Command** | Gọi cả một trình tự bằng một dòng | Viết khi trình tự đã ổn định |
+
+Ba cái đó đủ để đi hết tài liệu này. Việc 6 và 7 dựng Rule; Prompt bạn đã dùng từ Việc 1; Command
+xuất hiện ở Bài 16, sau khi trình tự sáu bước đã rõ.
+
+> **Còn skill thì sao.** Nó là một năng lực đóng gói mà agent nạp khi cần, và nó chỉ có ích khi bạn
+> đã có nhiều quy trình lặp lại đủ để đóng gói. Ở bài này bạn chưa có cái nào như thế, nên học nó
+> bây giờ là học một giải pháp cho vấn đề chưa xuất hiện. Bài
+> [prompt, skill, rule, command](prompt-va-token.md) nói kỹ cả bốn, đọc khi bạn thật sự cần cái thứ
+> tư.
+
+## Việc 6 — Hai file luật, hai vai khác nhau (25 phút)
 
 Đây là chỗ nhiều người làm sai và trả giá về sau.
 
@@ -389,7 +437,7 @@ Nhớ nguyên tắc này, Bài 24 sẽ dựng máy canh cho nó:
 
 > Bản tóm được phép diễn đạt lại, nhưng không được nói khác. Và bản tóm phải ghi rõ file nào mới là bản quyết.
 
-## Việc 6 — Thử xem agent có tuân không (20 phút)
+## Việc 7 — Thử xem agent có tuân không (20 phút)
 
 ### Bước 1: nó có đọc file luật không
 
@@ -429,7 +477,7 @@ Ghi lại tình huống này vào một file ghi chú. Bài 17 bạn sẽ dựng
 Sáu việc trên dựng hàng rào. Ba việc cuối là lượt đi qua hàng rào đó: giao việc sinh case cho agent
 khi mọi câu hỏi CHẶN đã có câu trả lời, rồi kiểm lại bằng máy trước khi đọc bằng mắt.
 
-## Việc 7 — Lượt 2: sinh case
+## Việc 8 — Lượt 2: sinh case
 
 Chỉ chạy sau khi có câu trả lời. Prompt:
 
@@ -463,7 +511,7 @@ gặp rule thiếu thông tin sẽ viết một case với expected mơ hồ, v�
 
 Lưu vào `outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md`.
 
-## Việc 8 — Kiểm bằng máy trước khi đọc bằng mắt
+## Việc 9 — Kiểm bằng máy trước khi đọc bằng mắt
 
 Bạn đã có parser từ Bài 13. Dùng nó trước khi đọc:
 
@@ -481,7 +529,7 @@ loi.forEach(l => console.log('  - ' + l));
 Nếu parser không đọc được thì agent đã sai định dạng, sửa prompt, đừng sửa tay bảng. Sửa tay là bạn đang
 làm việc của máy, và lần sau vẫn sai.
 
-## Việc 9 — Ba dấu hiệu case không execute được
+## Việc 10 — Ba dấu hiệu case không execute được
 
 Đây là thứ phân biệt bộ case dùng được với bộ case trông đẹp. Cả ba đều bắt được bằng mắt trong một phút.
 

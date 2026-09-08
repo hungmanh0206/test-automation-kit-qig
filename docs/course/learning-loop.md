@@ -2,6 +2,15 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: knowledge base có dữ liệu của vài sprint · Sau bài này: bảng rủi ro chấm được ngay từ tuần đầu
 
+**Vấn đề**
+
+Bạn có hai mươi module và thời gian đủ để test kỹ khoảng năm cái.
+
+Chọn năm cái nào?
+
+Nếu câu trả lời là cảm giác thì mỗi người chọn khác, và mỗi sprint lại đổi. Mà bạn đang có sẵn dữ
+liệu để trả lời: lịch sử bug của hai mươi module đó nằm ngay trong kho tri thức từ Bài 26.
+
 **Tóm tắt bài này**
 
 | | |

@@ -2,6 +2,15 @@
 
 > **2 giờ** · Có gì trong tay: một phát hiện đã qua triage và xác nhận là lỗi sản phẩm · Sau bài này: bug đi đúng người, đủ thông tin, và Dev không phải hỏi lại
 
+**Vấn đề**
+
+Bạn có một case đỏ, đã rerun ba lần, đã xác định là lỗi sản phẩm. Giờ tạo bug.
+
+Hai ngày sau nó bị trả về: *"không tái hiện được."*
+
+Bạn mở lại và làm theo đúng các bước mình đã ghi. Nó tái hiện. Vấn đề là Dev làm theo cách khác, vì
+phần các-bước-tái-hiện của bạn viết *"tạo một đơn hàng"* chứ không ghi bạn đã tạo nó bằng cách nào.
+
 **Tóm tắt bài này**
 
 | | |

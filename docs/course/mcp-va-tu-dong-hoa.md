@@ -2,6 +2,15 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: CI đang gác cổng · Sau bài này: agent đọc được dữ liệu ngoài qua một cửa, với quyền tối thiểu, và bạn biết ranh giới nào không được tự động hoá
 
+**Vấn đề**
+
+Agent của bạn cần đọc ticket trên hệ quản lý việc, đọc bản thiết kế, và đọc tài liệu API.
+
+Cách nhanh nhất là để mỗi chỗ tự gọi API của nó. Bạn viết ba đoạn code, mỗi đoạn tự lo token và phân
+trang theo một kiểu.
+
+Rồi một trong ba API đổi cách xác thực. Bạn phải tìm ra nó nằm ở mấy chỗ.
+
 **Tóm tắt bài này**
 
 | | |

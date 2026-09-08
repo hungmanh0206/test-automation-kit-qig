@@ -2,6 +2,15 @@
 
 > **1 giờ** · Có gì trong tay: khung kit, hai file luật · Sau bài này: đo được tài liệu trước khi đưa cho agent, và biết khi nào nên giao việc cho agent con
 
+**Vấn đề**
+
+Bạn quyết định dựng một bộ kit. Trước khi bỏ vào đó vài chục giờ, có hai câu nên hỏi.
+
+Câu thứ nhất là nó tốn bao nhiêu, không chỉ lúc dựng mà cả lúc bảo dưỡng.
+
+Câu thứ hai khó chịu hơn: có việc gì mà bộ kit này **không** làm được, để bạn không đặt nhầm kỳ vọng
+rồi thất vọng ở tháng thứ ba.
+
 **Tóm tắt bài này**
 
 | | |

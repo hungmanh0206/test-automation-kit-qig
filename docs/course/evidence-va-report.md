@@ -2,6 +2,20 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: FE và API đều chạy, kết quả vẫn chỉ có trong console · Sau bài này: ảnh có khoanh đỏ, video có banner, PII đã che, và một report người ngoài đọc được
 
+**Vấn đề**
+
+Bộ test chạy lúc 2 giờ 14 phút sáng. Tám giờ ba mươi bạn mở kết quả.
+
+```
+TC-104   FAILED
+Expected: 510.000
+Received: 515.000
+```
+
+Đang ở màn nào? Đơn nào? Trước đó bấm những gì? Màn hình lúc đó trông ra sao?
+
+Không ai biết. Kể cả bạn.
+
 **Tóm tắt bài này**
 
 | | |

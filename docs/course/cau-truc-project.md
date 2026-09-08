@@ -2,6 +2,15 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: một test chạy được, mọi thứ nằm trong một file · Sau bài này: bộ khung thư mục mà mọi bài sau sẽ lấp đầy
 
+**Vấn đề**
+
+Testcase đầu tiên đang chạy tốt. Bạn thêm testcase thứ hai. Rồi thứ ba.
+
+Đến file thứ ba bạn nhận ra mình đang copy: dòng mở trang, đoạn chọn khách, đoạn chọn sản phẩm. Ba
+file giống nhau tới tám phần mười.
+
+Chưa có gì sai ngay lập tức. Nhưng thử đổi nhãn một ô trên giao diện và đếm xem bạn phải sửa mấy chỗ.
+
 **Tóm tắt bài này**
 
 | | |

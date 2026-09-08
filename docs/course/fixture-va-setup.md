@@ -4,6 +4,15 @@
 >
 > *Bài này không đánh số, nó là phần đào sâu của **Bài 9**. Đọc kèm **Bài 9**.*
 
+**Vấn đề**
+
+Bạn mở ba mươi testcase của mình ra và đọc phần đầu của từng cái.
+
+Cả ba mươi đều bắt đầu bằng gần như đúng tám dòng giống nhau: tạo khách, tạo sản phẩm, tạo đơn, rồi
+đưa đơn về trạng thái cần thiết.
+
+Giờ luồng tạo đơn của sản phẩm đổi một bước. Bạn phải sửa ba mươi chỗ, và sẽ có chỗ bị bỏ sót.
+
 **Tóm tắt bài này**
 
 | | |

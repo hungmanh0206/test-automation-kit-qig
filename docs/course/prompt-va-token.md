@@ -2,6 +2,15 @@
 
 > **2 giờ** · Có gì trong tay: repo có kit tối thiểu · Sau bài này: bốn loại file nằm đúng chỗ, và prompt của bạn có điều kiện dừng
 
+**Vấn đề**
+
+Bạn đọc tài liệu của một công cụ agent và gặp bốn chữ: prompt, skill, rule, command.
+
+Bốn chữ, và cả bốn đều được giới thiệu là *"cách bạn ra lệnh cho agent"*.
+
+Nếu cả bốn cùng làm một việc thì vì sao có bốn? Nếu chúng khác nhau thì khác ở đâu, và lúc nào dùng
+cái nào?
+
 **Tóm tắt bài này**
 
 | | |

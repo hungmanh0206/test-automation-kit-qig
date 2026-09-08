@@ -2,6 +2,15 @@
 
 > **2 giờ** · Có gì trong tay: agent chạy được, quyền đã cấu hình · Sau bài này: kit nằm trên repo, và có máy chặn không cho dữ liệu nhạy cảm đi theo
 
+**Vấn đề**
+
+Bạn chưa từng dùng git. Người ta nói *"commit rồi push lên nhánh"* và bạn không rõ đó là mấy việc.
+
+Phần lớn hướng dẫn git dạy hai mươi lệnh. Bạn cần khoảng năm lệnh để làm việc, và một hiểu biết duy
+nhất: git giữ lại **mọi thứ** bạn từng commit, kể cả thứ bạn xoá ở lần commit sau.
+
+Chính điều đó làm một lần commit sai trở nên đắt.
+
 **Tóm tắt bài này**
 
 | | |

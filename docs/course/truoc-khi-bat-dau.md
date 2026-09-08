@@ -2,6 +2,15 @@
 
 > **1 giờ** · Có gì trong tay: chưa có gì · Sau bài này: app thực hành chạy được trên máy bạn, và bạn hiểu 10 từ sẽ gặp suốt các bài sau
 
+**Vấn đề**
+
+Bạn đọc tới dòng thứ ba của một tài liệu automation và gặp ba từ chưa từng nghe: fixture,
+assertion, oracle.
+
+Bạn tra từ thứ nhất. Định nghĩa của nó dùng thêm hai từ lạ nữa.
+
+Ba mươi phút sau bạn đã mở bảy tab và chưa gõ dòng nào.
+
 **Tóm tắt bài này**
 
 | | |

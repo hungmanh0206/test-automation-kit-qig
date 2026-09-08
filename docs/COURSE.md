@@ -136,8 +136,8 @@ Bạn không cần học hết toàn bộ tài liệu mới có thứ sử dụn
 |---|---|---|---|
 | ① Automation đầu tiên | hết Bài 4 | ~7.5 giờ | Một testcase automation chạy thật trên app thực hành. Quan trọng hơn: bạn đọc được vì sao nó Pass hoặc Fail, và biết cách chứng minh testcase có khả năng phát hiện lỗi |
 | ② Thành Automation Test Kit ⭐ | hết Bài 11 | ~22.5 giờ | Configuration tách khỏi testcase · test data được tạo chủ động · fixture dựng và dọn precondition · FE và API automation · screenshot, video và report. Đây là mốc bộ automation đủ cấu trúc để áp dụng vào dự án thật |
-| ③ Thành QA Workflow | hết Bài 17 | ~38 giờ | Automation không còn bắt đầu bằng locator mà bắt đầu từ requirement. Testcase truy được nguồn của expected, và một lần Failed phải được phân loại trước khi trở thành Bug |
-| ④ Thành Reusable QA Kit | hết Bài 29 | ~65.5 giờ | Kit vào CI, đo được reliability, tích luỹ knowledge, và được đóng gói. Bài cuối không dùng lại project cũ: bạn mang kit sang dự án thứ hai với requirement, UI, API và dữ liệu khác |
+| ③ Thành QA Workflow | hết Bài 17 | ~38.5 giờ | Automation không còn bắt đầu bằng locator mà bắt đầu từ requirement. Testcase truy được nguồn của expected, và một lần Failed phải được phân loại trước khi trở thành Bug |
+| ④ Thành Reusable QA Kit | hết Bài 29 | ~66 giờ | Kit vào CI, đo được reliability, tích luỹ knowledge, và được đóng gói. Bài cuối không dùng lại project cũ: bạn mang kit sang dự án thứ hai với requirement, UI, API và dữ liệu khác |
 
 Mốc ② là mốc quan trọng nhất. Dừng ở đó là một lựa chọn hợp lý, không phải làm dở: bộ kit lúc đó đã
 đủ cấu trúc để dùng trong dự án thật, và ba phần sau giải quyết những câu hỏi chỉ xuất hiện khi kit
@@ -500,7 +500,7 @@ fixture, FE, API, evidence và reporting.
 
 ---
 
-## PHẦN 3 — Từ Testcase đến QA Workflow (15.5 giờ)
+## PHẦN 3 — Từ Testcase đến QA Workflow (16 giờ)
 
 `CẤP ĐỘ 3 · CONTROL`
 
@@ -558,7 +558,7 @@ khi tạo bug.
 - **Xây gate:** `gate-mo-rong.js` hạ phát hiện không neo xuống `OBSERVATION`
 - Gộp cả chuỗi vào một lệnh `/phase2 <MÃ>` thay vì nhớ sáu lệnh
 
-### [Bài 17 — Test đỏ chưa có nghĩa là Bug](course/triage-va-rerun.md) *(2h · vừa)* ⭐
+### [Bài 17 — Test đỏ chưa có nghĩa là Bug](course/triage-va-rerun.md) *(2.5h · vừa)* ⭐
 
 *Có gì trong tay: một lượt chạy có case đỏ.*
 
@@ -716,13 +716,13 @@ toàn mới.
 
 ---
 
-## Tổng thời lượng: ~65.5 giờ
+## Tổng thời lượng: ~66 giờ
 
 | Phần | Giờ |
 |---|---|
 | 1. Từ Manual QA đến Automation đầu tiên | 7.5 |
 | 2. Từ Automation Project đến Test Kit | 15 |
-| 3. Từ Testcase đến QA Workflow | 15.5 |
+| 3. Từ Testcase đến QA Workflow | 16 |
 | 4. Đưa Kit vào Team và CI | 6 |
 | 5. Mở rộng, đo độ tin cậy và tái sử dụng | 21.5 |
 
@@ -794,5 +794,5 @@ Kiến thức "vì sao" mới là thứ còn lại sau 2 năm khi công cụ đ�
 giải nén ZIP · probe read-only sai vì Postgres cấp quyền `TEMPORARY` cho `PUBLIC` · mục lục tự dời số
 dòng của chính nó · lỗi độ ưu tiên toán tử làm một phép kiểm không bao giờ chạy mà vẫn báo đạt.
 
-**7. Nếu ~65.5 giờ quá dài:** dừng ở Mốc ② (hết Bài 11, ~22.5 giờ) là đã có bộ kit chạy được trong dự
+**7. Nếu ~66 giờ quá dài:** dừng ở Mốc ② (hết Bài 11, ~22.5 giờ) là đã có bộ kit chạy được trong dự
 án thật. Phần còn lại là khi bạn muốn cả team dùng chung và muốn kit tốt lên sau mỗi sprint.

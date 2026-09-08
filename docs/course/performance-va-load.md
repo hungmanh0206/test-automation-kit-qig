@@ -2,6 +2,15 @@
 
 > **2 giờ** · Có gì trong tay: bộ test chức năng đầy đủ · Sau bài này: đo được tốc độ bằng số, và biết chỗ nào không được kết luận
 
+**Vấn đề**
+
+Ai đó nói *"trang đơn hàng chậm"*.
+
+Bạn mở lên. Nó tải xong trong khoảng hai giây. Chậm hay không?
+
+Bạn không có con số nào để đồng ý hay phản đối, và cũng không có mốc nào để so. Nên cuộc trao đổi
+biến thành ai cảm thấy thế nào.
+
 **Tóm tắt bài này**
 
 | | |

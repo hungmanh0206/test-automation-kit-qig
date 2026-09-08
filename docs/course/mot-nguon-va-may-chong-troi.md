@@ -2,6 +2,15 @@
 
 > **2 giờ** · Có gì trong tay: bộ gate nền đang chạy · Sau bài này: máy canh chính hệ thống luật và gate của bạn
 
+**Vấn đề**
+
+Gate của bạn báo chặn. Bạn đọc thông báo và thấy nó sai.
+
+Bạn sửa gate cho nó thôi chặn. Đi tiếp.
+
+Hai tháng sau, một chỗ vi phạm thật lọt qua đúng cái gate đó. Nó vẫn chạy, vẫn báo đạt, và không ai
+biết nó đã ngừng kiểm từ lúc nào.
+
 **Tóm tắt bài này**
 
 | | |

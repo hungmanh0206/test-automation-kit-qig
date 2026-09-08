@@ -2,6 +2,16 @@
 
 > **2 giờ** · Có gì trong tay: bộ automation chạy được, nhưng chưa ai hỏi nó đang kiểm cái gì · Sau bài này: bộ case do agent sinh, đã qua Ambiguity Gate
 
+**Vấn đề**
+
+BA gửi một ticket. Ticket ghi: *"Đơn hàng trên 500.000 được miễn phí vận chuyển."*
+
+Bạn mở Figma. Bản thiết kế hiện phí vận chuyển 15.000 trên một đơn 600.000.
+
+Bạn mở tài liệu API. Nó không nói gì về miễn phí vận chuyển.
+
+Bạn automate theo cái nào?
+
 **Tóm tắt bài này**
 
 | | |

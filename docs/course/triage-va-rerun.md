@@ -1,6 +1,17 @@
 # Bài 17 — Test đỏ chưa có nghĩa là Bug
 
-> **2 giờ** · Có gì trong tay: một lượt chạy có case đỏ · Sau bài này: `phan-quyet.json` và `testcase-status.json` — hai file mà Phần 4 sẽ đọc
+> **2 giờ 30 phút** · Có gì trong tay: một lượt chạy có case đỏ · Sau bài này: `phan-quyet.json` và `testcase-status.json` — hai file mà Phần 4 sẽ đọc
+
+**Vấn đề**
+
+CI báo `TC-104 FAILED`. PM nhìn qua vai bạn và hỏi:
+
+*"Có bug à?"*
+
+Câu trả lời đúng lúc này là: **chưa biết**.
+
+Nhưng "chưa biết" là câu khó nói, nên phần lớn người ta nói "có" rồi tạo defect. Và một phần đáng
+kể số defect đó bị Dev trả về.
 
 **Tóm tắt bài này**
 
@@ -26,15 +37,16 @@ phần lớn bug bị trả về. Năm câu hỏi phải trả lời được tr
 | 4 | Có phải test chập chờn không? | Sửa test |
 | 5 | Chạy lại có tái hiện không? | Chưa đủ căn cứ |
 
-Bài này biến năm câu đó thành thứ máy đọc được. Bảy việc:
+Bài này biến năm câu đó thành thứ máy đọc được. Tám việc:
 
 1. Khai một file duy nhất cho mọi trạng thái kết quả và ngưỡng chạy lại (25 phút).
-2. Phân tầng lỗi, và biết chỉ hai tầng nào mới đáng log cho dev (25 phút).
-3. Chạy lại 2–3 lần để loại chập chờn (15 phút).
-4. `script_error`: loại dễ log nhầm nhất (15 phút).
-5. Hai trạng thái hay bị bỏ qua, cả hai đều đang chôn bug thật (15 phút).
-6. Viết máy sinh trạng thái từ kết quả chạy (20 phút).
-7. Khi nào thì được sang bước tạo bug (5 phút).
+2. Hai bước phán quyết rồi tầng lỗi, không phải một bảng 49 ô (15 phút).
+3. Phân tầng lỗi, và biết chỉ hai tầng nào mới đáng log cho dev (25 phút).
+4. Chạy lại 2–3 lần để loại chập chờn (15 phút).
+5. `script_error`: loại dễ log nhầm nhất (15 phút).
+6. Hai trạng thái hay bị bỏ qua, cả hai đều đang chôn bug thật (15 phút).
+7. Viết máy sinh trạng thái từ kết quả chạy (20 phút).
+8. Khi nào thì được sang bước tạo bug (5 phút).
 
 ---
 
@@ -135,7 +147,38 @@ module.exports = { TAXONOMY, DA_CHAY, LOG_JIRA };
 > để học. Bản đúng là đọc từ file này. Vì khi bạn thêm `PASS_WITH_DEVIATION`, gate viết tay sẽ **bỏ sót**
 > nó (nó đã chạy nhưng gate không đòi bằng chứng), mà bỏ sót thì không có tín hiệu nào báo.
 
-## Việc 2 — Bảy tầng lỗi, và chỉ hai đáng log
+## Việc 2 — Hai bước, không phải một bảng 49 ô (15 phút)
+
+Bạn có bảy phán quyết và bảy tầng lỗi. Nhân lên là bốn mươi chín tổ hợp, và nếu học theo bảng thì
+không ai nhớ được.
+
+Nhưng bạn không cần nhớ bảng đó, vì đây là **hai câu hỏi đi sau nhau**, không phải một lựa chọn từ
+bốn mươi chín ô.
+
+**Bước 1. Phán quyết: lượt chạy này kết luận là gì?**
+
+Bảy giá trị, và chỉ hai trong số đó là "sản phẩm sai". Năm cái còn lại là việc của bạn.
+
+**Bước 2. Chỉ khi phán quyết là sản phẩm sai, mới hỏi tầng lỗi: nó nằm ở đâu?**
+
+Nếu bước 1 ra `script_error` thì bước 2 không có nghĩa gì cả. Lỗi ở test của bạn, không có tầng nào
+để khoanh.
+
+Ví dụ hai lượt hoàn toàn khác nhau:
+
+```
+Lượt A                         Lượt B
+──────────────────             ──────────────────
+Bước 1  PRODUCT_DEFECT         Bước 1  TEST_ISSUE
+Bước 2  BACKEND                Bước 2  (không hỏi)
+        ↓                              ↓
+     tạo bug, giao BE               sửa fixture
+```
+
+Thứ tự này quan trọng vì nó chặn một phản xạ hay gặp: thấy case đỏ, đoán ngay tầng lỗi, rồi tạo bug.
+Bỏ bước 1 thì bạn đang khoanh tầng cho một lỗi có thể không phải của sản phẩm.
+
+## Việc 3 — Bảy tầng lỗi, và chỉ hai đáng log
 
 Khi test đỏ, câu hỏi không phải "bug gì" mà là "lỗi ở tầng nào".
 
@@ -183,7 +226,7 @@ test('bắt response để khoanh tầng lỗi', async ({ page }) => {
 });
 ```
 
-## Việc 3 — Chạy lại 2–3 lần
+## Việc 4 — Chạy lại 2–3 lần
 
 Case đỏ thì chạy lại tối thiểu 2 lần, tối đa 3 trước khi kết luận.
 
@@ -201,7 +244,7 @@ mà không thêm thông tin. Con số này khai trong taxonomy để đổi ở 
 > 30 phút vì có bản triển khai chen vào. Cách phòng: xác nhận lại sát giờ** viết báo cáo, và giữ một case
 > đối chứng đã biết kết quả để phát hiện môi trường vừa đổi.
 
-## Việc 4 — `script_error`: loại dễ log nhầm nhất
+## Việc 5 — `script_error`: loại dễ log nhầm nhất
 
 Đây là tầng lỗi tốn kém nhất vì nó trông giống bug thật: fail ổn định, tái hiện được 100%.
 
@@ -220,7 +263,7 @@ Ba nguyên nhân hay gặp, cả ba đều từ Bài 9:
 | Đọc sai vùng | Regex trên cả trang bắt trúng con số ở khu vực khác → báo "tổng tiền sai" |
 | Thao tác khi chưa đúng màn | Click trước khi modal đóng xong → click vào element phía sau |
 
-## Việc 5 — Hai trạng thái dễ bỏ qua
+## Việc 6 — Hai trạng thái dễ bỏ qua
 
 Hai trạng thái này không có trong sách giáo khoa, nhưng chúng chặn hai đường mà bug thật hay lọt qua.
 
@@ -256,7 +299,7 @@ Luật: chỉ được đổi sang `flaky` khi nêu được cơ chế cụ th�
 | "Chắc do mạng" | "Response chậm hơn 2s ở 1/5 lần, đo bằng log timing" |
 | "Môi trường không ổn định" | "Job đồng bộ chạy mỗi 5 phút, ghi đè dữ liệu test — trùng khung giờ fail" |
 
-## Việc 6 — Sinh `testcase-status.json`
+## Việc 7 — Sinh `testcase-status.json`
 
 Đây là file Phần 4 sẽ đọc. Sinh nó từ kết quả Playwright, không viết tay.
 
@@ -367,7 +410,7 @@ Hai quyết định thiết kế đáng để ý:
 | Pass sau retry → `PASS_WITH_DEVIATION`, không phải `PASS` | Retry **là** một deviation. Ghi PASS trơn là mất tín hiệu |
 | `tangLoi = null` cho FAIL, không suy tự động | Máy không biết lỗi ở tầng nào. Để `null` thì nó hiện ra là việc chưa làm, thay vì đoán bừa |
 
-## Việc 7 — Khi nào thì được sang bước tạo bug
+## Việc 8 — Khi nào thì được sang bước tạo bug
 
 Chỉ khi tầng lỗi là `product_bug` hoặc `api_bug`, và đã rerun đủ số lần.
 

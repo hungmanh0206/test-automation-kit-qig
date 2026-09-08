@@ -2,6 +2,14 @@
 
 > **1 giờ** · Có gì trong tay: nhiều lượt chạy đã ghi metrics · Sau bài này: một trang tự chứa cho người không có quyền vào công cụ, và biết vì sao dashboard không bao giờ là nguồn
 
+**Vấn đề**
+
+Bộ test chạy xong. Bạn có một thư mục kết quả với bốn mươi tấm ảnh và một file JSON.
+
+Bạn gửi cả thư mục cho PM.
+
+Họ mở ra, nhìn bốn mươi tấm ảnh, và hỏi lại đúng câu họ cần biết từ đầu: *"vậy có gì hỏng không?"*
+
 **Tóm tắt bài này**
 
 | | |

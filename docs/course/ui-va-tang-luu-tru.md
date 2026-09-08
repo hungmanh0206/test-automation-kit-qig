@@ -2,6 +2,15 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: bộ case đã mở rộng 7 trục, suite có bằng chứng · Sau bài này: bắt được lớp bug "báo thành công nhưng lưu sai", và biết khoanh tầng lỗi bằng hai nguồn
 
+**Vấn đề**
+
+Bạn tạo một đơn hàng. Màn hình hiện giảm giá `8.000`. Test so `8.000`, xanh.
+
+Ba tuần sau kế toán báo lệch tiền.
+
+Giá trị thật được lưu là `8.750`. Giao diện làm tròn xuống khi hiển thị, và chỉ làm tròn ở phần hiển
+thị. Test của bạn đọc đúng cái màn hình hiện, nên nó không thấy gì bất thường.
+
 **Tóm tắt bài này**
 
 | | |

@@ -2,6 +2,17 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: bảng luật `BR-` đã bóc từ requirement · Sau bài này: template 7 cột, một parser, và 10 case viết tay để đối chứng
 
+**Vấn đề**
+
+Sản phẩm trả về `515000`. Test của bạn viết `expect(total).toBe(515000)`. Chạy xanh.
+
+Test đó vừa chứng minh được gì?
+
+Nó chứng minh sản phẩm trả về đúng con số mà test vừa copy từ chính sản phẩm. Tức là sản phẩm bằng
+chính nó.
+
+Nó chưa chứng minh sản phẩm đúng requirement.
+
 **Tóm tắt bài này**
 
 | | |

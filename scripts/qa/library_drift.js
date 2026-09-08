@@ -635,7 +635,10 @@ if (!exists(COURSE_MD)) {
      * Khối "Vấn đề" phải VIẾT TAY cho từng bài (một tình huống cụ thể), nên nó dùng MỐC: ghi số bài
      * còn thiếu hôm nay, và chỉ chặn khi con số TĂNG. Bật chặn tuyệt đối ngay thì gate đỏ 43 bài và
      * bị tắt trong một ngày — bài học đã trả giá ở gate locator. */
-    const MOC_THIEU_VAN_DE = 42;
+    /* Mốc đã siết về 0: cả 43 bài đều có khối này, nên từ đây nó là phép chặn TUYỆT ĐỐI.
+       Đường đi của con số: 43 (lúc dựng gate) → 42 (Bài 1) → 0. Cơ chế mốc làm đúng việc của nó:
+       không bao giờ đỏ hàng loạt, và không bao giờ cho phép đi ngược. */
+    const MOC_THIEU_VAN_DE = 0;
     const thieuVanDe = [];
     const thieuDoChin = [];
     const baiSauKhongLyDo = [];

@@ -2,6 +2,14 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: vòng học đã chạy ít nhất một chu kỳ · Sau bài này: biết dữ liệu nào mất thì dựng lại được, dữ liệu nào mất là mất hẳn — và có máy canh
 
+**Vấn đề**
+
+Kho tri thức của bạn có vài trăm bản ghi, tích trong sáu tháng.
+
+Nó không nằm trong repo, vì nó là dữ liệu công ty. Nghĩa là git không giữ nó.
+
+Nghĩa là nếu bạn xoá sai một thư mục, không có bản lùi nào.
+
 **Tóm tắt bài này**
 
 | | |

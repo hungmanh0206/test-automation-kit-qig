@@ -2,6 +2,17 @@
 
 > **3 giờ** · Có gì trong tay: bộ testcase đã sinh và đã chốt · Sau bài này: bắt được bug ở chỗ testcase không hề nói tới — mà không biến mở rộng thành tautology nhân 7 lần
 
+**Vấn đề**
+
+Testcase ghi ba bước: chọn khách, chọn sản phẩm, bấm Tạo đơn. Kết quả mong đợi là đơn được tạo.
+
+Bạn chạy. Đơn được tạo. Test xanh.
+
+Trong lúc chạy, có bốn thứ bạn thấy mà testcase không nhắc: tổng tiền hiển thị lệch một nghìn, một
+thông báo sai chính tả, phản hồi API có một trường lạ, và trang tải lại mất gần hai giây.
+
+Bốn thứ đó đi đâu?
+
 **Tóm tắt bài này**
 
 | | |

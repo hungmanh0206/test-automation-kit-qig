@@ -2,6 +2,14 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: kit chạy trên dự án thật, đã va chạm và tinh chỉnh · Sau bài này: biết dừng xây ở đâu, và biết thêm gì khi nào
 
+**Vấn đề**
+
+Bạn làm hết hai mươi chín bài. Bộ kit chạy, đã mang sang dự án thứ hai, có CI gác cổng.
+
+Sáu tháng sau, một người trong đội tìm ra cách lách một gate của bạn để đẩy nhanh một bản phát hành.
+
+Phản ứng đầu tiên thường là siết gate lại. Nhưng có một cách đọc khác về chuyện vừa xảy ra.
+
 **Tóm tắt bài này**
 
 | | |

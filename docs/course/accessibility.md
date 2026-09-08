@@ -2,6 +2,15 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: bộ test FE ổn định · Sau bài này: một phép quét cắm vào test có sẵn, và bạn biết nó phủ được tới đâu
 
+**Vấn đề**
+
+Test của bạn click được nút Xác nhận. Xanh.
+
+Một người dùng chỉ dùng bàn phím thì bấm Tab qua từng element. Đến nút Xác nhận thì con trỏ nhảy
+qua, không dừng lại được.
+
+Test xanh. Người dùng bị kẹt.
+
 **Tóm tắt bài này**
 
 | | |
