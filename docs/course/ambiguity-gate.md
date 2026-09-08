@@ -19,14 +19,14 @@ Bốn việc:
 3. **Xây gate** chặn không cho sinh testcase khi chưa chốt — và học **công thức viết mọi gate** (30 phút).
 4. Chạy lại toàn luồng, thấy gate chặn thật rồi mở ra thật (15 phút).
 
-> Bài này cũng là bài dạy **cách viết một gate**. Từ đây trở đi khoá học sẽ nói *"xây gate chặn X"* rất nhiều
+> Bài này cũng là bài dạy **cách viết một gate**. Từ đây trở đi tài liệu này sẽ nói *"xây gate chặn X"* rất nhiều
 > lần; công thức 5 câu hỏi ở Việc 3 dùng cho tất cả.
 
 ---
 
 ## Việc 1 — Xem agent đoán (25 phút)
 
-Khoá có một tài liệu đặc tả **cố tình mơ hồ**: [`sample-requirement.md`](assets/sample-requirement.md) — một
+Tài liệu này có kèm một đặc tả đặc tả **cố tình mơ hồ**: [`sample-requirement.md`](assets/sample-requirement.md) — một
 FSD giả cho màn "Tạo đơn hàng", kèm 3 ghi chú của BA chứa mâu thuẫn và lỗ hổng. Nó có **10 vấn đề cài sẵn**.
 
 Mở phiên agent và gõ **đúng** câu này — câu mà 90% người sẽ gõ:

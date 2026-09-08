@@ -1,4 +1,4 @@
-# Bài 29 — Lộ trình sau khoá học
+# Bài 29 — Đi tiếp sau khi làm hết
 
 > **1 giờ 30 phút** · Có gì trong tay: kit chạy trên dự án thật, đã va chạm và tinh chỉnh · Sau bài này: biết dừng xây ở đâu, và biết thêm gì khi nào
 
@@ -168,7 +168,7 @@ Chặn nó sẽ làm người ta xoá ngoại lệ cho xanh, và mất luôn lý
 7. Vì sao `kiem-ngoai-le.js` chỉ cảnh báo mà không chặn?
 8. Một câu phân biệt "kit đang tốt lên" với "kit đang chạy" là gì?
 
-## Bài tập cuối khoá (30 phút)
+## Bài tập khép lại (30 phút)
 
 Ba việc. Làm được cả ba là kit của bạn đứng vững.
 
@@ -182,12 +182,12 @@ Ba việc. Làm được cả ba là kit của bạn đứng vững.
    máy đó, và chứng minh bằng một mutant chuyển từ SỐNG SÓT sang BỊ DIỆT. Ghi một dòng vào `knowledge/leak/`
    với trường `mutantXacNhan`.
 
-Việc thứ ba là việc quan trọng nhất trong cả khoá, vì nó là vòng lặp **duy nhất** khiến bộ kiểm tốt lên thay
+Việc thứ ba là việc quan trọng nhất trong cả tài liệu này, vì nó là vòng lặp **duy nhất** khiến bộ kiểm tốt lên thay
 vì chỉ chạy.
 
 ---
 
-## Hết khoá
+## Khép lại
 
 Bạn bắt đầu ở Bài 0 với một app có 3 bug và không có gì khác. Giờ bạn có:
 
@@ -212,6 +212,6 @@ Mọi thứ trong 30 bài là hai câu đó áp vào từng chỗ cụ thể.
 ## Đọc thêm
 
 - [`docs/BUILD_JOURNAL.md`](../BUILD_JOURNAL.md) — hồi ký dựng bộ kit thật này: bảy thời kỳ, sáu nguyên tắc,
-  bốn điểm mù đã trả giá để biết. Đọc **sau** khoá, vì giờ bạn đã có ngữ cảnh để nó có nghĩa.
+  bốn điểm mù đã trả giá để biết. Đọc **sau khi làm hết**, vì giờ bạn đã có ngữ cảnh để nó có nghĩa.
 - Thư viện thuật ngữ ở [`docs/library/`](../library/) — tra nhanh mọi luật, máy chặn, phán quyết, kỹ năng.
 - Bài 21 — [mutation testing](do-chinh-bo-kiem.md): quay lại đọc mỗi lần điểm tụt.

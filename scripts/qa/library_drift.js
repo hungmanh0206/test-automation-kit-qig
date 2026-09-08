@@ -233,9 +233,9 @@ if (!exists(COURSE_MD)) {
     if (empty.length) problems.push(`bài giảng gần như rỗng: ${empty.join(', ')} — link có mà nội dung không có thì tệ hơn không có link`);
 
     /* Mã trong bài giảng phải PARSE ĐƯỢC. Học viên copy nguyên khối, nên một dấu ngoặc rơi là họ vấp
-       vào lỗi của tài liệu chứ không phải lỗi của mình — và mất niềm tin vào cả khoá.
+       vào lỗi của tài liệu chứ không phải lỗi của mình — và mất niềm tin vào cả tài liệu này.
        Chỉ kiểm CÚ PHÁP: logic thì máy không đọc được (một lỗi ưu tiên toán tử trong bài 15 đã lọt qua
-       phép kiểm này, và đó là lý do mỗi gate trong khoá đều bắt buộc có negative control). */
+       phép kiểm này, và đó là lý do mỗi gate trong tài liệu này đều bắt buộc có negative control). */
     /* QUÉT MỌI FILE trong docs/course/, KHÔNG chỉ bài có link trong COURSE.md.
        Lý do: bản đầu chỉ quét bài có link, và khi giáo trình đổi cấu trúc thì 22 khối mã lặng lẽ
        rơi khỏi phép kiểm — gate vẫn báo ✓ với độ phủ thấp hơn. File chưa xếp chỗ vẫn là file học
@@ -284,9 +284,9 @@ if (!exists(COURSE_MD)) {
 
     /* Một bài được phép dạy qua bài chi tiết mà nó LIÊN KẾT TỚI — vd Bài 13 trỏ sang evidence.md cho
        phần chụp ảnh. Nên tìm cả trong các bài giảng mà bài chính link sang (1 chặng, không đệ quy sâu:
-       2 chặng thì "có nhắc ở đâu đó trong khoá" và phép kiểm mất nghĩa). */
+       2 chặng thì "có nhắc ở đâu đó trong tài liệu này" và phép kiểm mất nghĩa). */
     /* Gom nội dung mọi file bài giảng của một bài, cộng các bài chi tiết mà chính file đó link sang
-       (1 chặng, không đệ quy sâu: 2 chặng thì thành "có nhắc ở đâu đó trong khoá" và phép kiểm mất nghĩa). */
+       (1 chặng, không đệ quy sâu: 2 chặng thì thành "có nhắc ở đâu đó trong tài liệu này" và phép kiểm mất nghĩa). */
     const noiDungCoTheDay = (hrefs) => {
       let gop = '';
       for (const h of hrefs) {
@@ -318,7 +318,11 @@ if (!exists(COURSE_MD)) {
     /* XƯNG HÔ: tài liệu này nói THẲNG với người đọc ("bạn"), không gọi họ là "học viên"/"người học".
      * Vì sao thành máy chứ không phải lời dặn: hai từ đó rất dễ lọt lại khi thêm bài mới, và mỗi lần
      * lọt là một chỗ giọng văn đổi từ "hướng dẫn" sang "giáo án" — thứ người đọc cảm được ngay. */
-    const XUNG_HO_CAM = /học viên|người học|Học viên|Người học/;
+    /* Cấm cả cách TỰ XƯNG là "khoá học". Đây là tài liệu hướng dẫn, không phải giáo án.
+     * CHỈ cấm cụm tự xưng — "các khoá AI Testing hiện có" / "khoá phổ biến trên thị trường"
+     * là so sánh với khoá của NGƯỜI KHÁC, hoàn toàn hợp lệ. Cấm từ trần "khoá" thì bắt oan cả
+     * "khoảng cách", "tài khoản", "khoá API". */
+    const XUNG_HO_CAM = /học viên|người học|Học viên|Người học|khoá học này|cả khoá(?! AI| phổ biến| nhẹ| khác)|sau khoá học|cuối khoá|toàn khoá|trong khoá(?! AI)|khoá này(?! nhẹ)/;
     const viPhamXungHo = [];
     for (const rel of lessonFiles.concat(['COURSE.md'])) {
       const f = rel === 'COURSE.md' ? COURSE_MD : path.join(ROOT, 'docs', rel);
@@ -330,10 +334,10 @@ if (!exists(COURSE_MD)) {
       });
     }
     if (viPhamXungHo.length) {
-      problems.push(`${viPhamXungHo.length} chỗ còn gọi người đọc là "học viên"/"người học" — ` +
-        `xưng "bạn":\n      ${viPhamXungHo.slice(0, 12).join('\n      ')}`);
+      problems.push(`${viPhamXungHo.length} chỗ còn xưng kiểu giáo án ("học viên"/"người học"/tự gọi là "khoá học") — ` +
+        `xưng "bạn", gọi đây là "tài liệu/hướng dẫn":\n      ${viPhamXungHo.slice(0, 12).join('\n      ')}`);
     } else {
-      ok.push('xưng hô nhất quán: nói thẳng với "bạn", không có "học viên"/"người học"');
+      ok.push('xưng hô nhất quán: nói thẳng với "bạn", không tự xưng là khoá học');
     }
 
     /* MỌI bài giảng phải có khối "Cây thư mục sau bài này".

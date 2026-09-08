@@ -428,7 +428,7 @@ Kit không tự đứng vững. Bốn nhịp:
 Nhịp cuối là nhịp hay bị bỏ nhất và tốn nhất. Cách làm nó rẻ đi: bắt mọi ngoại lệ phải có **lý do** và **ngày**
 (Bài 15), rồi một máy cảnh báo khi ngoại lệ già hơn 90 ngày.
 
-## 8. Nhìn lại toàn khoá
+## 8. Nhìn lại toàn bộ tài liệu
 
 Bạn bắt đầu từ con số không. Giờ bạn có:
 
@@ -446,7 +446,7 @@ Nếu phải chọn **một** điều mang theo, chọn điều này:
 > **Một luật không có máy chặn thì không phải luật — nó là lời dặn.**
 > Và **một máy không có đối chứng âm thì không phải máy — nó là niềm tin.**
 
-Mọi thứ trong khoá này là hai câu đó áp vào từng chỗ cụ thể.
+Mọi thứ trong tài liệu này là hai câu đó áp vào từng chỗ cụ thể.
 
 ---
 
@@ -558,7 +558,7 @@ YAML — và `ci-scope.js` đảm bảo không bỏ sót.
 - [ ] README có mục "khi gate chặn bạn", và nó dẫn tới sửa luật, không tới thêm ngoại lệ.
 - [ ] Tôi có nhịp bảo dưỡng, và **nhịp tháng có đo mutation**.
 
-## Bài tập cuối khoá
+## Bài tập khép lại
 
 Ba việc, làm được cả ba là kit của bạn đứng vững:
 
@@ -571,11 +571,11 @@ Ba việc, làm được cả ba là kit của bạn đứng vững:
 3. **Đóng vòng lặp bug lọt.** Lấy bug gần nhất lọt ra ngoài. Trả lời: **máy nào lẽ ra phải bắt?** Rồi sửa
    đúng máy đó, và chứng minh bằng một mutant chuyển từ SỐNG SÓT sang BỊ DIỆT.
 
-Việc thứ ba là việc quan trọng nhất trong cả khoá, vì nó là vòng lặp duy nhất khiến bộ kiểm **tốt lên** thay vì
+Việc thứ ba là việc quan trọng nhất trong cả tài liệu này, vì nó là vòng lặp duy nhất khiến bộ kiểm **tốt lên** thay vì
 chỉ **chạy**.
 
 ## Đọc thêm
 
 - [`docs/BUILD_JOURNAL.md`](../BUILD_JOURNAL.md) — hồi ký dựng bộ kit thật này: bảy thời kỳ, sáu nguyên tắc,
-  và bốn điểm mù đã trả giá để biết. Đọc **sau** khoá, vì giờ bạn đã có ngữ cảnh để nó có nghĩa.
+  và bốn điểm mù đã trả giá để biết. Đọc **sau khi làm hết**, vì giờ bạn đã có ngữ cảnh để nó có nghĩa.
 - Thư viện thuật ngữ ở [`docs/library/`](../library/) — tra nhanh mọi luật, máy, verdict, kỹ năng.

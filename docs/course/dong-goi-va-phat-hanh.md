@@ -289,7 +289,7 @@ Bẫy này đã cắn thật, và nó là lý do bước nghiệm thu tồn tạ
 đúng lúc họ đang quyết định có tin kit này không.
 
 Bản `kiem-file-cam.js` ở Bài 5 đã xử đúng: nó bắt lỗi và trả **mã 2 — KHÔNG ĐO ĐƯỢC**, không crash. Đây là
-ví dụ rõ nhất trong cả khoá cho luật *KHÔNG ĐO ĐƯỢC ≠ VI PHẠM* (Bài 11): "không phải repo git" là *chưa đo
+ví dụ rõ nhất trong cả tài liệu này cho luật *KHÔNG ĐO ĐƯỢC ≠ VI PHẠM* (Bài 11): "không phải repo git" là *chưa đo
 được*, không phải *có tệp cấm*.
 
 ### Chạy thử

@@ -576,7 +576,7 @@ công cụ, và đó là lỗi **im lặng** đã tồn tại từ lượt publi
 
 ## Đọc thêm
 
-- Bài 19 là bài trọng tâm của cả khoá: giờ bạn đã có suite chạy nhiều lượt, **đo được** năng lực phát hiện
+- Bài 19 là bài trọng tâm của cả tài liệu: giờ bạn đã có suite chạy nhiều lượt, **đo được** năng lực phát hiện
   của nó.
 - [`scripts/integrations/aio/README.md`](../../scripts/integrations/aio/README.md) của kit này — tầng tích hợp
   đầy đủ với một công cụ thật.

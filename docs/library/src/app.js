@@ -472,7 +472,7 @@
     wrap.appendChild(vong);
   }
 
-  /* ─────────── Tab Khoá học (dữ liệu sinh từ docs/COURSE.md) ─────────── */
+  /* ─────────── Tab Tự dựng kit (dữ liệu sinh từ docs/COURSE.md) ─────────── */
   function renderCourse() {
     var allLessons = COURSE.parts.reduce(function (a, p) { return a.concat(p.lessons); }, []);
     var withLesson = allLessons.filter(function (l) { return l.href; }).length;
@@ -511,7 +511,7 @@
       mt.appendChild(w);
     }
 
-    /* Bảng so sánh với khoá khác — cột "khoá này" tô đậm để thấy ngay khác biệt. */
+    /* Bảng so sánh với khoá khác — cột "tài liệu này" tô đậm để thấy ngay khác biệt. */
     if (COURSE.compare.length) {
       var cmpWrap = $('#cCompare');
       COURSE.compare.forEach(function (r) {
@@ -523,7 +523,7 @@
       });
     }
 
-    /* Ba bug cài sẵn của app thực hành — đây là ĐỐI CHỨNG của cả khoá, nên để nổi. */
+    /* Ba bug cài sẵn của app thực hành — đây là ĐỐI CHỨNG của cả tài liệu này, nên để nổi. */
     if (COURSE.practiceBugs.length) {
       var bw = $('#cBugs');
       COURSE.practiceBugs.forEach(function (b) {

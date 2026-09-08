@@ -2,7 +2,7 @@
 
 > **3 giờ** · Có gì trong tay: suite đã chạy nhiều lượt, có evidence, có lịch sử · Sau bài này: bạn biết bộ kiểm của mình **bắt được bao nhiêu phần trăm** lỗi thật — bằng số, không bằng cảm giác
 
-Đây là bài trọng tâm của cả khoá. Mười tám bài trước dựng ra một bộ kiểm. Bài này trả lời câu hỏi mà không ai
+Đây là bài trọng tâm của cả tài liệu. Mười tám bài trước dựng ra một bộ kiểm. Bài này trả lời câu hỏi mà không ai
 hỏi cho tới khi đã muộn: **bộ kiểm đó có bắt được lỗi không?**
 
 ## Mục tiêu
@@ -552,7 +552,7 @@ cao, vì nó là chỗ bug sẽ sinh ra ở sprint sau.
 
 ## 8. Luật cuối: bug do người ngoài tìm ra = lỗi của máy
 
-Đây là luật khép lại toàn khoá.
+Đây là luật khép lại toàn bộ tài liệu.
 
 Khi có bug lọt ra ngoài — QA khác tìm ra, hay khách báo — phản xạ tự nhiên là *"case của tôi không phủ chỗ
 đó"*. Luật này bác bỏ phản xạ đó và bắt trả lời:

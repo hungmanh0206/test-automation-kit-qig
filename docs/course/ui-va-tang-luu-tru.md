@@ -315,7 +315,7 @@ chê**.
 ## Việc 5 — Nối database thật mà không phá gì (30 phút)
 
 App thực hành lưu trong bộ nhớ. Dự án thật là một database có dữ liệu người khác đang dùng. Đây là chỗ dễ
-gây tai nạn nhất trong cả khoá.
+gây tai nạn nhất trong cả tài liệu này.
 
 ### Mô hình an toàn 4 lớp
 

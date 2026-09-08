@@ -46,7 +46,7 @@ lỗi *"AI không tìm thấy file"*: mở sai cấp thư mục thì agent khôn
 
 ## 2. Cài công cụ AI agent
 
-Khoá này viết theo Claude Code, nhưng nguyên tắc áp cho mọi agent chạy trong terminal hoặc IDE.
+Tài liệu này viết theo Claude Code, nhưng nguyên tắc áp cho mọi agent chạy trong terminal hoặc IDE.
 
 ```bash
 node --version          # cần đạt bản tối thiểu mà công cụ yêu cầu

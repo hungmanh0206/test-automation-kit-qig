@@ -46,12 +46,12 @@ function parseCourse(mdPath) {
   if (!total) throw new Error('COURSE.md: không thấy "## Tổng thời lượng: …"');
 
   const positioning = stripMd((md.match(/>\s*\*\*Định vị:\*\*([\s\S]*?)\n\n/) || [, ''])[1]);
-  const coreQuestion = stripMd((md.match(/\*\*Câu hỏi cốt lõi của khoá:\*\*(.+)/) || [, ''])[1]);
+  const coreQuestion = stripMd((md.match(/\*\*Câu hỏi cốt lõi:\*\*(.+)/) || [, ''])[1]);
 
-  // "Bạn sẽ học được gì" — danh sách ✅ ở cấp khoá
-  const outcomeBlock = (md.match(/## Bạn sẽ học được gì([\s\S]*?)\n---/) || [, ''])[1];
+  // "Bạn làm được gì sau khi đọc hết" — danh sách ✅ ở cấp khoá
+  const outcomeBlock = (md.match(/## Bạn làm được gì sau khi đọc hết([\s\S]*?)\n---/) || [, ''])[1];
   const outcomes = [...outcomeBlock.matchAll(/^✅\s*(.+)$/gm)].map((x) => stripMd(x[1]));
-  if (!outcomes.length) throw new Error('COURSE.md: mục "Bạn sẽ học được gì" không có dòng ✅ nào');
+  if (!outcomes.length) throw new Error('COURSE.md: mục "Bạn làm được gì sau khi đọc hết" không có dòng ✅ nào');
 
   const required = stripMd((md.match(/\*\*Bắt buộc:\*\*(.+)/) || [, ''])[1]);
   const notRequired = stripMd((md.match(/\*\*Không bắt buộc:\*\*(.+)/) || [, ''])[1]);
@@ -205,10 +205,10 @@ function parseCourse(mdPath) {
   const deliverables = [...deliverBlock.matchAll(/^-\s+(.+)$/gm)].map((x) => stripMd(x[1]));
 
   // "Quyết định thiết kế khoá học" — N. **tiêu đề** nội dung
-  const designBlock = (md.match(/## Quyết định thiết kế khoá học([\s\S]*)$/) || [, ''])[1];
+  const designBlock = (md.match(/## Quyết định thiết kế tài liệu này([\s\S]*)$/) || [, ''])[1];
   const decisions = [...designBlock.matchAll(/^\*\*(\d+)\.\s*(.+?)\*\*([\s\S]*?)(?=\n\*\*\d+\.|\s*$)/gm)]
     .map((x) => ({ n: x[1], title: stripMd(x[2]), body: stripMd(x[3]) }));
-  if (!decisions.length) throw new Error('COURSE.md: mục "Quyết định thiết kế khoá học" không đọc được mục nào');
+  if (!decisions.length) throw new Error('COURSE.md: mục "Quyết định thiết kế tài liệu này" không đọc được mục nào');
 
   /* Bài chi tiết bổ trợ: không đánh số, nhưng được một bài có số trỏ tới. Phải NÊU RA, vì bài giảng
      tồn tại mà không ai dẫn tới thì bằng không tồn tại. */

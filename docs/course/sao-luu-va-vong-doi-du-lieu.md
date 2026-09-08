@@ -249,7 +249,7 @@ kit-cua-toi/
         └── _ban-ke.json              ·  bản kê để lần khôi phục biết bản này có gì
 ```
 
-Đây là bài duy nhất trong khoá có nhánh **nằm ngoài repo** — và đó chính là nội dung của bài.
+Đây là bài duy nhất trong tài liệu này có nhánh **nằm ngoài repo** — và đó chính là nội dung của bài.
 
 ## Tự kiểm
 

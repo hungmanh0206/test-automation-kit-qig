@@ -9,21 +9,21 @@ Năm việc, mỗi việc gõ tay:
 1. Kiểm máy bạn đã có Node.js chưa (5 phút).
 2. Chạy **app thực hành** và mở nó trên trình duyệt (10 phút).
 3. Tạo một đơn hàng bằng tay, ghi lại bốn con số (15 phút).
-4. Học 10 từ mà cả khoá sẽ dùng — bằng ví dụ, không bằng định nghĩa (30 phút).
+4. Học 10 từ mà cả tài liệu này sẽ dùng — bằng ví dụ, không bằng định nghĩa (30 phút).
 5. Xem trước **cây thư mục** của bộ kit bạn sắp dựng (10 phút).
 
 Hết bài này bạn **chưa** viết dòng test nào. Nhưng bạn sẽ có một app để test, và biết mình đang nói về cái gì.
 
-## Khoá này dành cho ai
+## Tài liệu này dành cho ai
 
 | Dành cho bạn nếu | Chưa dành cho bạn nếu |
 |---|---|
 | Bạn làm QA/tester, hoặc muốn làm | Bạn chưa từng đọc một bảng testcase nào — hãy học kiểm thử tay trước |
-| Bạn từng viết testcase bằng tay (Excel, Google Sheet cũng được) | Bạn muốn "AI tự test hộ" mà không phải kiểm lại — khoá này dạy điều ngược lại |
+| Bạn từng viết testcase bằng tay (Excel, Google Sheet cũng được) | Bạn muốn "AI tự test hộ" mà không phải kiểm lại — tài liệu này dạy điều ngược lại |
 | Bạn đọc được code đơn giản, kiểu `if (a > b) { … }` | Bạn chưa từng thấy code nào — dành 1–2 tuần học JavaScript cơ bản trước, rồi quay lại |
 | Bạn đã dùng AI (ChatGPT, Claude…) để nhờ việc | |
 
-**Không cần biết trước:** Playwright, CI/CD, Docker, cách gọi API, cách viết gate. Khoá này dạy từng thứ khi
+**Không cần biết trước:** Playwright, CI/CD, Docker, cách gọi API, cách viết gate. Tài liệu này dạy từng thứ khi
 tới lúc cần.
 
 ## Việc 1 — Kiểm Node.js (5 phút)
@@ -53,7 +53,7 @@ v20.11.1
 
 ## Việc 2 — Chạy app thực hành (10 phút)
 
-Cả khoá học thực hành trên **một** app duy nhất: một cửa hàng bán hàng bé xíu, chạy trên máy bạn.
+Cả tài liệu thực hành trên **một** app duy nhất: một cửa hàng bán hàng bé xíu, chạy trên máy bạn.
 
 **Vì sao không thực hành trên app của công ty bạn?** Ba lý do rất thực tế: bạn phải xin quyền; bạn có thể
 làm hỏng dữ liệu người khác đang dùng; và quan trọng nhất — bạn **không biết app đó có bao nhiêu bug**, nên
@@ -120,11 +120,11 @@ So với bảng bạn vừa ghi.
 
 **Chúng không khớp.** Màn hình hiện Phí giao hàng **30.000 đ** và Tổng cộng **515.000 đ**.
 
-Bạn vừa tìm ra một trong ba bug — bằng tay, ở phút thứ 40 của khoá học. Và hãy để ý **cách** bạn tìm ra nó:
+Bạn vừa tìm ra một trong ba bug — bằng tay, ở phút thứ 40 của tài liệu này. Và hãy để ý **cách** bạn tìm ra nó:
 
 > Bạn **không** hỏi app xem nó tính đúng chưa. Bạn tự tính bằng đặc tả, rồi mới so.
 
-Đó là toàn bộ ý tưởng của khoá này. Nếu bạn hỏi app "tổng cộng bao nhiêu?" rồi so với chính câu trả lời của
+Đó là toàn bộ ý tưởng của tài liệu này. Nếu bạn hỏi app "tổng cộng bao nhiêu?" rồi so với chính câu trả lời của
 nó, bạn luôn được kết quả khớp — và không chứng minh được gì cả.
 
 > ⚠ Đừng mở `BUGS.md`. Trong đó là đáp án cả 3 bug, và tự tìm ra chúng là bài học lớn nhất của khoá.
@@ -179,7 +179,7 @@ vì lúc gấp thì người ta quên.
 > "Nhớ chụp ảnh mỗi case nhé" = lời dặn.
 > Máy chặn khi case không có ảnh = forcing function.
 
-Cả khoá học là chuyện biến lời dặn thành máy chặn.
+Cả tài liệu này là chuyện biến lời dặn thành máy chặn.
 
 ### 6. Phán quyết (**verdict**)
 
@@ -310,7 +310,7 @@ khoản, mật khẩu), `outputs/` (kết quả từng lượt chạy, đổi li
 Trả lời được bằng lời của bạn thì đi tiếp. Không được thì đọc lại mục tương ứng.
 
 1. App thực hành đang chạy ở địa chỉ nào? Dừng nó bằng cách nào?
-2. Vì sao khoá này cho bạn một app **có bug cài sẵn** thay vì một app đúng?
+2. Vì sao tài liệu này cho bạn một app **có bug cài sẵn** thay vì một app đúng?
 3. Ở Việc 3, `485.000` và `515.000` — số nào là kết quả mong đợi độc lập? Vì sao số kia không phải?
 4. "Máy kiểm" khác "lời dặn" ở chỗ nào? Cho một ví dụ ngoài đời.
 5. Một case chạy được, app trả số khác spec ⇒ phán quyết gì? Còn case không đăng nhập được nên không chạy

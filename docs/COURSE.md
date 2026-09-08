@@ -1,4 +1,4 @@
-# Khoá học: Xây dựng AI Agent Automation Testing Kit từ con số 0
+# Hướng dẫn: Tự dựng bộ kit QA + AI Agent từ con số 0
 
 > **Định vị:** không dạy dùng kit có sẵn — dạy **tự xây** một nền tảng QA do AI agent điều phối,
 > hiểu vì sao từng cơ chế tồn tại, và có kit riêng mang đi mọi dự án.
@@ -7,21 +7,21 @@
 
 ## Khác gì các khoá AI Testing hiện có
 
-| | Khoá phổ biến trên thị trường | Khoá này |
+| | Khoá phổ biến trên thị trường | Tài liệu này |
 |---|---|---|
 | Trọng tâm | Manual testing + AI hỗ trợ | **Automation + AI agent tự thực thi** |
 | Kết quả | Biết dùng bộ skill được tặng | **Có kit tự xây, hiểu từng dòng** |
 | Chất lượng đầu ra | Dựa vào prompt tốt | **Dựa vào cổng kiểm tra chặn được** |
 | Đo hiệu quả | Cảm nhận | **Số liệu: mutation score, reliability index** |
-| Kỹ năng còn lại sau khoá | Dùng được một công cụ | **Thiết kế được hệ thống chất lượng** |
+| Còn lại được gì sau đó | Dùng được một công cụ | **Thiết kế được hệ thống chất lượng** |
 
-**Câu hỏi cốt lõi của khoá:** AI viết test rất nhanh — nhưng làm sao biết test đó **đúng** và **thực sự bắt được bug**?
+**Câu hỏi cốt lõi:** AI viết test rất nhanh — nhưng làm sao biết test đó **đúng** và **thực sự bắt được bug**?
 
 ---
 
-## Bạn sẽ học được gì
+## Bạn làm được gì sau khi đọc hết
 
-Sau khoá học, bạn có thể:
+Làm hết tài liệu này, bạn có thể:
 
 ✅ Hiểu **6 kiểu sai âm thầm** khi để AI làm QA, và cách chặn từng kiểu bằng máy
 ✅ Tự xây kit AI Agent Testing riêng: rules · skills · workflows · commands · gates
@@ -40,16 +40,16 @@ Sau khoá học, bạn có thể:
 ## Yêu cầu đầu vào
 
 **Bắt buộc:** biết cơ bản về kiểm thử (test case, bug, quy trình QA) · dùng được máy tính ở mức thao tác file/terminal · Node.js 18+.
-**Không bắt buộc:** biết code (khoá dạy từ đầu ở mức cần thiết) · biết Playwright · biết CI/CD · **có dự án thật** — khoá đi kèm [app thực hành](course/assets/app-thuc-hanh/README.md) chạy trên máy bạn.
+**Không bắt buộc:** biết code (tài liệu này dạy từ đầu ở mức cần thiết) · biết Playwright · biết CI/CD · **có dự án thật** — tài liệu này đi kèm [app thực hành](course/assets/app-thuc-hanh/README.md) chạy trên máy bạn.
 
-⚠️ **Nói thẳng:** đây **không** phải khoá "AI làm hộ, bạn ngồi xem". Bạn sẽ phải đọc code, hiểu logic
+⚠️ **Nói thẳng:** đây **không** phải kiểu "AI làm hộ, bạn ngồi xem". Bạn sẽ phải đọc code, hiểu logic
 gate, và tự sửa khi nó chặn sai. Nếu chỉ muốn dùng AI viết test case nhanh hơn thì có khoá nhẹ hơn phù hợp hơn.
 
 ---
 
 ## App thực hành: bạn có gì để test ngay từ Bài 0
 
-Cả khoá thực hành trên **một** app duy nhất — [Cửa hàng mini](course/assets/app-thuc-hanh/README.md), Node
+Cả tài liệu thực hành trên **một** app duy nhất — [Cửa hàng mini](course/assets/app-thuc-hanh/README.md), Node
 thuần, `node server.js` là chạy, không cài gì.
 
 Nó **có đúng 3 bug cài sẵn, cố ý**, mỗi bug đại diện một loại điểm mù:
@@ -63,7 +63,7 @@ Nó **có đúng 3 bug cài sẵn, cố ý**, mỗi bug đại diện một lo�
 Vì sao phải là app **có bug biết trước**: nếu thực hành trên app đúng hoàn toàn thì bộ kiểm của bạn luôn xanh,
 và bạn không có cách nào biết nó xanh vì app đúng hay vì bộ kiểm mù — hai thứ đó cho **cùng một dấu hiệu**.
 Biết trước "có 3 bug" nghĩa là bắt được 0/3 thì **lỗi ở bộ kiểm, không ở app**. Đó là **đối chứng**, và nó là
-ý tưởng trung tâm của cả khoá.
+ý tưởng trung tâm của cả tài liệu này.
 
 Nguồn phán đúng/sai là [`spec.md`](course/assets/app-thuc-hanh/spec.md) — mọi luật có mã (`BR-01`…`UI-04`).
 Nói "chỗ này sai" mà không chỉ được mã luật thì chưa chứng minh được gì.
@@ -90,7 +90,7 @@ Chặng 6 quay về chặng 1 của task sau — đó là chỗ kit **tốt lên
 
 ## Cấu trúc thư mục của bộ kit
 
-Đây là thư mục bạn có **sau khi học hết khoá**. Đọc trước một lượt, không cần hiểu hết — mục đích là khi bài
+Đây là thư mục bạn có **sau khi làm hết**. Đọc trước một lượt, không cần hiểu hết — mục đích là khi bài
 học nói "viết file này", bạn biết nó nằm ở đâu và cạnh cái gì. Mỗi nhánh ghi **bài nào tạo ra nó**.
 
 ```
@@ -210,7 +210,7 @@ kit-cua-toi/
 - Kiểm Node.js và đọc được thông báo lỗi khi thiếu — mỗi bước có khối *"Bạn sẽ thấy"* và bảng xử lý khi thấy khác
 - Chạy app thực hành, mở trên trình duyệt, hiểu vì sao cần **hai** cửa sổ terminal
 - **Thực hành:** tạo một đơn hàng bằng tay, tự tính kết quả từ `spec.md`, và **tìm ra bug đầu tiên ở phút thứ 40** — không dùng công cụ nào
-- 10 từ vựng của cả khoá, mỗi từ **một ví dụ lấy từ việc vừa làm**, không phải một định nghĩa
+- 10 từ vựng của cả tài liệu này, mỗi từ **một ví dụ lấy từ việc vừa làm**, không phải một định nghĩa
 - **Cây thư mục toàn kit xem trước** — mỗi nhánh ghi rõ bài nào tạo ra nó
 - Phân biệt `scripts/lib` (thư viện) · `scripts/qa` (máy chặn) · `tests/support` (hạ tầng test) bằng một câu hỏi
 - Ba thư mục không bao giờ commit và vì sao
@@ -226,7 +226,7 @@ kit-cua-toi/
 - Câu hỏi một-dòng phát hiện test vô nghĩa: *"nếu app sai, dòng này có đỏ không?"*
 - Tự chứng minh **dặn dò trong prompt không đảm bảo** — chạy 3–4 lần cho ra kết quả khác nhau
 - **XÂY gate:** máy chặn đầu tiên (12 dòng), thử 3 lần ra 3 mã thoát — `0` đạt · `1` chặn · `2` không đo được
-- Nguyên tắc xuyên suốt khoá: **rule không phải lời dặn — sai chuẩn thì phải chặn được**
+- Nguyên tắc xuyên suốt tài liệu: **rule không phải lời dặn — sai chuẩn thì phải chặn được**
 - Phân biệt: AI hỗ trợ tester → AI agent thực thi → nền tảng có gate
 
 ### [Bài 2 — Kiến trúc một QA platform](course/khung-kit-toi-thieu.md) *(1.5h)*
@@ -312,14 +312,14 @@ kit-cua-toi/
 
 - 7 nhóm kỹ thuật: miền giá trị (EP/BVA) · logic (decision table, state transition) · tổ hợp (pairwise) · kinh nghiệm (error guessing) · thời gian & môi trường · phi chức năng
 - **Nhóm hay bị bỏ nhất:** concurrency · idempotency · ordering · timezone · volume · persistence
-- Mô hình testcase **canonical**: tập cột bắt buộc (khoá này dùng 7) và vì sao **mỗi** cột tồn tại
+- Mô hình testcase **canonical**: tập cột bắt buộc (tài liệu này dùng 7) và vì sao **mỗi** cột tồn tại
 - Vì sao chỉ được có **một** bộ đọc testcase dùng chung cho Markdown và Excel
 - Phân biệt **Ưu tiên** (thứ tự làm) với **Severity** (hậu quả) — và vì sao severity là thuộc tính của *bug*, không phải của *testcase*
 - Bẫy thật: tách cột bằng dấu `|` làm lệch dữ liệu khi trong ô có ký tự thoát
 - Chia thành **chiều phủ** (dimension) để kiểm được bằng máy
 - **Thực hành:** sinh test case theo 8 chiều cho màn Tạo đơn hàng của app thực hành — bộ này sẽ bắt được BUG-1 nếu bạn phủ đúng biên
 
-### [Bài 10 — Kỷ luật Oracle: bài học quan trọng nhất khoá](course/oracle.md) *(2h)* ⭐
+### [Bài 10 — Kỷ luật Oracle: bài học quan trọng nhất](course/oracle.md) *(2h)* ⭐
 
 *Có gì trong tay: một bộ testcase do agent sinh.*
 
@@ -540,7 +540,7 @@ kit-cua-toi/
 - Chống trôi: máy đọc chính khai báo của mình, và danh sách cho phép **chặn khối lạ**
 - Cách đo và tinh chỉnh ngưỡng theo va chạm thực tế
 
-### [Bài 29 — Lộ trình sau khoá học](course/lo-trinh-sau-khoa.md) *(1.5h)*
+### [Bài 29 — Đi tiếp sau khi làm hết](course/lo-trinh-sau-khoa.md) *(1.5h)*
 
 *Có gì trong tay: kit chạy trên dự án thật, đã va chạm và tinh chỉnh.*
 
@@ -592,7 +592,7 @@ và bảng xử lý khi thấy khác · **cây thư mục sau bài này** · b�
 không bắt buộc.
 
 **Bài chi tiết bổ trợ (không đánh số)** — không phải bài trong lộ trình, mà là phần đào sâu mà một bài
-có số trỏ tới. Tách ra để bài chính không phình, nhưng nội dung vẫn nằm trong khoá:
+có số trỏ tới. Tách ra để bài chính không phình, nhưng nội dung vẫn nằm trong tài liệu này:
 
 | Bài chi tiết | Nội dung | Được dạy ở |
 |---|---|---|
@@ -603,24 +603,24 @@ có số trỏ tới. Tách ra để bài chính không phình, nhưng nội dun
 
 ---
 
-## Quyết định thiết kế khoá học — đọc trước khi triển khai
+## Quyết định thiết kế tài liệu này — đọc trước khi triển khai
 
 **1. KHÔNG dạy xây cả 59 gate.** Dạy ~10 gate cốt lõi + **mẫu hình chung**, rồi tặng kit đầy đủ.
 Bạn xây được thứ của mình, hiểu vì sao, và có bản xịn để lớn dần. Dạy xây hết thì bỏ dở giữa chừng.
 
 **2. Mỗi bài phải trả lời "cơ chế này chặn kiểu sai nào".** Đây là khác biệt lớn nhất so với các khoá
-khác: họ dạy *cách làm*, khoá này dạy *vì sao phải làm thế và không làm thì hỏng ra sao*. Kiến thức
+khác: họ dạy *cách làm*, tài liệu này dạy *vì sao phải làm thế và không làm thì hỏng ra sao*. Kiến thức
 "vì sao" mới là thứ còn lại sau 2 năm khi công cụ đã đổi.
 
 **3. Dùng lỗi thật của chính mình làm bài học.** Ví dụ đã đưa vào bài: script crash vì thiếu `.git` khi giải
 nén ZIP · probe read-only sai vì Postgres cấp quyền `TEMPORARY` cho `PUBLIC` · mục lục tự dời số dòng của
 chính nó · lỗi độ ưu tiên toán tử làm một phép kiểm **không bao giờ chạy** mà vẫn báo đạt. Những lỗi này
-không có trong sách, và chúng làm khoá học đáng tin.
+không có trong sách, và chúng làm tài liệu này đáng tin.
 
-**4. Nói thẳng giới hạn.** Khoá này khó, cần đọc code, không phải "AI làm hộ". Nói trước sẽ lọc đúng
+**4. Nói thẳng giới hạn.** Tài liệu này khó, cần đọc code, không phải "AI làm hộ". Nói trước sẽ lọc đúng
 đúng người và giảm tỷ lệ bỏ ngang.
 
-**5. Nếu ~59 giờ quá dài:** tách thành hai khoá — **Cơ bản** (Phần 1–4, ~35h, ra được kit chạy được) và
+**5. Nếu ~59 giờ quá dài:** tách thành hai chặng — **Cơ bản** (Phần 1–4, ~35h, ra được kit chạy được) và
 **Nâng cao** (Phần 5–8, ~24h, knowledge + chứng minh + CI/CD + phát hành).
 
 **6. Bổ sung so với bản khung gốc: app thực hành và Bài 0.** Lý do: đối tượng "không bắt buộc biết code,

@@ -22,7 +22,7 @@ Bài này bạn sẽ:
 4. Thử "dặn dò" nó và tự thấy dặn dò không có tác dụng (10 phút).
 5. Viết **máy chặn đầu tiên** — 12 dòng — và xem nó chặn thật (15 phút).
 
-Cuối bài bạn sẽ hiểu vì sao khoá này tên là "dựng bộ kit" chứ không phải "học prompt cho giỏi".
+Cuối bài bạn sẽ hiểu vì sao tài liệu này tên là "dựng bộ kit" chứ không phải "học prompt cho giỏi".
 
 ---
 
@@ -182,7 +182,7 @@ Mở file agent vừa sửa, đọc kỹ, rồi đối chiếu với bảng này
 | Điều kiện bị nới | *"Điều kiện này còn phân biệt được đúng với sai không?"* | Bug nhỏ hơn ngưỡng sẽ lọt vĩnh viễn |
 | Mất `process.exit(1)` | *"Test này thất bại thì máy khác biết bằng cách nào?"* | Kết quả đỏ thành một dòng chữ không ai đọc |
 
-Câu hỏi ở dòng thứ hai là câu hỏi quan trọng nhất trong cả khoá học:
+Câu hỏi ở dòng thứ hai là câu hỏi quan trọng nhất trong cả tài liệu này:
 
 > **"Nếu app sai, dòng này có đỏ không?"**
 
@@ -317,7 +317,7 @@ Bây giờ quay lại Việc 2: bảo agent làm cho test xanh **lần nữa**, 
 chặn bắt được ngay và trả về `1`. Bạn vừa có thứ mà lời dặn ở Việc 4 không cho được: một **đảm bảo**.
 
 > Máy này vẫn còn thô: nó bắt được Kiểu A, nhưng **chưa** bắt được Kiểu B (tính từ dữ liệu app) và Kiểu C
-> (nới điều kiện). Đúng vậy — và đó là lý do khoá này còn 19 bài nữa. Điều bạn cần mang ra khỏi Bài 1 không
+> (nới điều kiện). Đúng vậy — và đó là lý do tài liệu này còn 19 bài nữa. Điều bạn cần mang ra khỏi Bài 1 không
 > phải là một máy chặn hoàn hảo, mà là **kinh nghiệm thấy một máy chặn hoạt động**.
 
 ## Cây thư mục sau bài này
@@ -339,7 +339,7 @@ Hai file, hai vai khác nhau — và phân biệt được hai vai này là nề
 | `tests/api/don-hang-bac.js` | **test** | *App có đúng không?* |
 | `scripts/qa/kiem-so-mong-doi.js` | **máy chặn** | *Cái test kia có đáng tin không?* |
 
-Người mới thường chỉ có cột trên. Cả khoá này là chuyện dựng cột dưới.
+Người mới thường chỉ có cột trên. Cả tài liệu này là chuyện dựng cột dưới.
 
 ## Tự kiểm
 

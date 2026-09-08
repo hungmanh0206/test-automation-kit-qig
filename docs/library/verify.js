@@ -130,7 +130,7 @@ const ok = (name, cond, got) => {
   ok('có quy ước 3 mức', await p.locator('.prbox').count() === 3);
   await shot('05-readme.png');
 
-  console.log('\n[5a] Tab Khoá học (dẫn xuất từ docs/COURSE.md)');
+  console.log('\n[5a] Tab Tự dựng kit (dẫn xuất từ docs/COURSE.md)');
   await p.locator('.mode[data-mode="course"]').click(); await p.waitForTimeout(500);
   const lessons = await p.locator('.clesson').count();
   ok('có các bài', lessons >= 15, lessons);
