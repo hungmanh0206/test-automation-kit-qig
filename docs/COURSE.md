@@ -95,10 +95,10 @@ kit-cua-toi/
 │       ├── dimension-manifest.json   ← Bài 11 · chiều nào áp cho dự án này, `n/a` phải kèm lý do
 │       ├── mo-rong-truc.json         ← Bài 14 · 7 trục + số trục tối thiểu theo mức rủi ro
 │       ├── anh-xa-luu-tru.json       ← Bài 15 · một nguồn cho 3 tên gọi của cùng một trường
-│       ├── knowledge-schema.json    ← Bài 18 · trường bắt buộc · 4 trạng thái · hạn tái xác nhận
+│       ├── knowledge-schema.json     ← Bài 18 · trường bắt buộc · 4 trạng thái · hạn tái xác nhận
 │       ├── risk_model.json           ← Bài 19 · trọng số rủi ro + khối cold-start
-│       ├── vong-doi-du-lieu.json    ← Bài 20 · giữ bao lâu, tỉa thế nào, kèm LÝ DO
-│       ├── nguong-metrics.json      ← Bài 22 · ngưỡng khoảng cách + mốc xếp hạng độ tin cậy
+│       ├── vong-doi-du-lieu.json     ← Bài 20 · giữ bao lâu, tỉa thế nào, kèm LÝ DO
+│       ├── nguong-metrics.json       ← Bài 22 · ngưỡng khoảng cách + mốc xếp hạng độ tin cậy
 │       ├── mutants.json              ← Bài 21 · các lỗi cố tình tiêm để đo suite
 │       ├── ci_scope.json             ← Bài 24 · lệnh nào chạy ở đâu (một nguồn cho CI)
 │       ├── env-allow.json            ← Bài 24 · biến môi trường nào được đọc, ai dựng nó
@@ -480,7 +480,7 @@ kit-cua-toi/
 - Bẫy đắt nhất: test xanh trên máy dev vì **thừa hưởng biến môi trường** của shell, đỏ trên CI
 - **XÂY gate:** đo **độ với tới** — máy đúng mà không điểm vào nào gọi thì bằng không có
 
-### Bài 25 — MCP Server và tự động hoá quanh công việc *(1.5h)*
+### [Bài 25 — MCP Server và tự động hoá quanh công việc](course/mcp-va-tu-dong-hoa.md) *(1.5h)*
 
 *Có gì trong tay: CI đang gác cổng.*
 
@@ -489,7 +489,7 @@ kit-cua-toi/
 - Quyền **tối thiểu**: chỉ đọc, trừ đường tạo bug
 - **Ranh giới:** cái gì tự động được, cái gì bắt buộc người duyệt
 
-### Bài 26 — Đóng gói và phát hành kit *(2h)*
+### [Bài 26 — Đóng gói và phát hành kit](course/dong-goi-va-phat-hanh.md) *(2h)*
 
 *Có gì trong tay: kit có CI, có tích hợp.*
 
@@ -503,7 +503,7 @@ kit-cua-toi/
 
 ## PHẦN 8 — Áp vào dự án thật (5 giờ)
 
-### Bài 27 — Mang kit sang dự án mới *(2h)*
+### [Bài 27 — Mang kit sang dự án mới](course/mang-kit-sang-du-an-moi.md) *(2h)*
 
 *Có gì trong tay: bản phát hành đã nghiệm thu.*
 
@@ -522,7 +522,7 @@ kit-cua-toi/
 - Chống trôi: máy đọc chính khai báo của mình, và danh sách cho phép **chặn khối lạ**
 - Cách đo và tinh chỉnh ngưỡng theo va chạm thực tế
 
-### Bài 29 — Lộ trình sau khoá học *(1.5h)*
+### [Bài 29 — Lộ trình sau khoá học](course/lo-trinh-sau-khoa.md) *(1.5h)*
 
 *Có gì trong tay: kit chạy trên dự án thật, đã va chạm và tinh chỉnh.*
 
@@ -566,8 +566,8 @@ kit-cua-toi/
 
 ## Tình trạng nội dung chi tiết
 
-Tiêu đề bài là **link bấm được** khi bài đã có bài giảng đầy đủ. Bài chưa có link thì phần khung ở trên là
-bản chốt, nội dung chi tiết viết sau.
+**Cả 30 bài (Bài 0 → Bài 29) đều đã có bài giảng đầy đủ** — tiêu đề bài là **link bấm được**. Cộng
+4 bài chi tiết bổ trợ không đánh số ở bảng dưới, tổng cộng **34 bài giảng**.
 
 Mỗi bài giảng đầy đủ gồm: **từ mới của bài** · các **Việc** làm theo bước, mỗi việc có khối *"Bạn sẽ thấy"*
 và bảng xử lý khi thấy khác · **cây thư mục sau bài này** · bảng tự kiểm · bài tập về nhà · mục **Đào sâu**
