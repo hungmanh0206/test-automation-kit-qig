@@ -1,4 +1,4 @@
-# Bài 9 — Kỹ thuật thiết kế test case
+# Bài 13 — Thiết kế testcase
 
 > **2 giờ** · Có gì trong tay: khung kit, cách viết prompt · Sau bài này: template 7 cột, một parser, và 10 case viết tay để đối chứng
 
@@ -51,11 +51,11 @@ Chọn canonical nghĩa là chọn một bản duy nhất để mọi công cụ
 | # | Cột | Trả lời câu gì | Thiếu thì sao |
 |---|---|---|---|
 | 1 | `TC ID` | Truy vết: case nào | Không nối được kết quả về case, không nối được bug về case |
-| 2 | `Module` | Test **ở đâu** | Không chấm rủi ro theo module được (Bài 19) |
+| 2 | `Module` | Test **ở đâu** | Không chấm rủi ro theo module được (Bài 27) |
 | 3 | `Trường hợp kiểm thử` | Kiểm **điều gì** | Đọc case mà không biết nó nhằm gì |
-| 4 | `Tiền điều kiện` | Cần trạng thái nào trước | Case chết giữa chừng lúc execute (Bài 12) |
+| 4 | `Tiền điều kiện` | Cần trạng thái nào trước | Case chết giữa chừng lúc execute (Bài 9) |
 | 5 | `Các bước thực hiện` | Làm **thế nào** | Không automate được, không tái hiện được |
-| 6 | `Kết quả mong đợi` | **Đúng là gì** | Không phán được PASS/FAIL — case vô nghĩa (Bài 10) |
+| 6 | `Kết quả mong đợi` | **Đúng là gì** | Không phán được PASS/FAIL — case vô nghĩa (Bài 13) |
 | 7 | `Ưu tiên` | Làm **trước sau** | Không xếp được thứ tự, và mất cả đầu vào cho độ sâu mở rộng |
 
 Bảy cột này là mức tối thiểu. Dự án bạn cần thêm cột thì cứ thêm. Nhưng thiếu một trong bảy cột trên thì
@@ -76,7 +76,7 @@ sẽ có một công cụ phía sau vỡ.
 Ba quy ước trong ví dụ trên, và mỗi cái có lý do:
 
 1. Kết quả mong đợi đánh số khớp từng bước. `1.` ứng với bước `1.` Không gộp kiểu "các giá trị hiển thị
-   đúng", đó là oracle rỗng, Bài 10 sẽ nói kỹ.
+   đúng", đó là oracle rỗng, Bài 13 sẽ nói kỹ.
 2. Tiền điều kiện nêu dữ liệu cụ thể, có mã. Không viết "có một khách hàng hạng Bạc", lúc execute thì
    *khách nào*?
 3. Giá trị cụ thể trong kết quả mong đợi, kèm cách tính. `321.000` chứ không "tổng đúng".
@@ -236,7 +236,7 @@ Thêm phép kiểm này vào parser:
 ```js
 const UU_TIEN_HOP_LE = /^(critical|high|medium|low|lowest)$/i;
 
-/** Kiểm giá trị hợp lệ. Trả về mảng vấn đề — Bài 11 sẽ biến nó thành gate. */
+/** Kiểm giá trị hợp lệ. Trả về mảng vấn đề — Bài 14 sẽ biến nó thành gate. */
 function kiemTra(cases) {
   const loi = [];
   const daThay = new Set();
@@ -266,7 +266,7 @@ Câu trả lời đổi theo giai đoạn, và đây là chỗ dễ nhầm:
 | Execute (Phần 3) | **Công cụ test-management** | Cả team đã thấy và đã sửa ở đó |
 
 Nên khi chạy test, phải kéo bản mới nhất về trước. Chạy trên bản sao cũ nghĩa là bạn đang chấm theo kết quả
-mong đợi đã bị người khác sửa rồi. Kết quả nhìn thì hợp lệ, nhưng không có nghĩa gì. Bài 16 sẽ dựng máy
+mong đợi đã bị người khác sửa rồi. Kết quả nhìn thì hợp lệ, nhưng không có nghĩa gì. Bài 18 sẽ dựng máy
 kiểm chuyện này.
 
 ---
@@ -295,7 +295,7 @@ sửa trước khi đi tiếp. Thử lại bằng `split('|')` thô để **th�
 ### Bước 3 — Viết 10 case tay (15 phút)
 
 Dùng [`assets/sample-requirement.md`](assets/sample-requirement.md). Viết **tay**, không dùng agent, đây là
-bản đối chứng cho Bài 7.
+bản đối chứng cho Bài 12.
 
 Phân bổ gợi ý: 3 case luồng chính · 3 case công thức (giảm giá, phí giao hàng, tổng cộng) · 2 case biên
 (số lượng 1 và 999) · 2 case luồng lỗi.
@@ -357,7 +357,7 @@ kit-cua-toi/
 - [ ] Chỉ có một chỗ đọc markdown; công cụ xuất Excel gọi lại nó, không tự parse.
 - [ ] Tôi phân biệt được Ưu tiên với Severity, và nói được vì sao severity không thuộc testcase.
 - [ ] Thang Ưu tiên của tôi khớp công cụ sẽ publish lên, không phải thang tôi thích.
-- [ ] Tôi có 10 case viết tay, và biết chúng dùng làm gì ở Bài 7.
+- [ ] Tôi có 10 case viết tay, và biết chúng dùng làm gì ở Bài 12.
 - [ ] `kiemTra` bắt được: TC ID trùng, ô lõi rỗng, Ưu tiên ngoài thang.
 - [ ] Tôi nói được canonical đổi thế nào giữa giai đoạn biên soạn và giai đoạn execute.
 
@@ -370,10 +370,10 @@ markdown nếu cần). Đếm ba con số:
 2. Bao nhiêu case có `Ưu tiên` ngoài thang?
 3. Bao nhiêu case có `TC ID` trùng?
 
-Ba con số này là điểm khởi đầu của bộ case hiện tại. Đừng sửa gì lúc này — Bài 11 sẽ biến `kiemTra` thành
+Ba con số này là điểm khởi đầu của bộ case hiện tại. Đừng sửa gì lúc này — Bài 14 sẽ biến `kiemTra` thành
 gate, và lúc đó bạn có máy để sửa hàng loạt.
 
 ## Đọc thêm
 
 - [`scripts/lib/testcase/`](../../scripts/lib/testcase/) của kit này, bản đầy đủ, có cả phần đọc Excel.
-- Bài 7 sẽ dùng chính parser này để kiểm bộ case do agent sinh.
+- Bài 12 sẽ dùng chính parser này để kiểm bộ case do agent sinh.

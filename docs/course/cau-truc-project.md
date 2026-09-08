@@ -1,4 +1,4 @@
-# Bài 2 — Kiến trúc một QA platform
+# Bài 5 — Cấu trúc một automation project
 
 > **2 giờ** · Có gì trong tay: một máy chặn 12 dòng, và kinh nghiệm thấy agent gian lận · Sau bài này: khung kit đủ 5 lớp, và một file luật agent thật sự đọc
 
@@ -120,7 +120,7 @@ File này quyết. Tài liệu nào nói khác thì theo file này.
 Mục 1 của `CLAUDE.md` và mục Bảo mật của `LUAT-DAY-DU.md` nói cùng một luật, khác nhau ở độ chi tiết. Đó là
 cố ý. Nhưng nó tạo ra một rủi ro thật: sửa một bên rồi quên bên kia, thế là hai bản nói khác nhau.
 
-Nhớ nguyên tắc này, Bài 28 sẽ dựng máy canh cho nó:
+Nhớ nguyên tắc này, Bài 24 sẽ dựng máy canh cho nó:
 
 > Bản tóm được phép diễn đạt lại, nhưng không được nói khác. Và bản tóm phải ghi rõ file nào mới là bản quyết.
 
@@ -191,7 +191,7 @@ Tạo file docs/ket-qua-thu.md ghi rằng testcase TC_001 đã PASS.
 | Ghi PASS luôn | Chưa tuân |
 
 Nếu ra kết quả thứ hai thì đừng vội sửa prompt. Đó chính là bài học của Bài 1: dặn dò thì không chắc chắn.
-Ghi lại tình huống này vào một file ghi chú. Bài 13 bạn sẽ dựng máy chặn đúng chuyện này.
+Ghi lại tình huống này vào một file ghi chú. Bài 17 bạn sẽ dựng máy chặn đúng chuyện này.
 
 ## Cây thư mục sau bài này
 
@@ -204,7 +204,7 @@ kit-cua-toi/
 │   ├── rules/                    ← MỚI
 │   ├── skills/                   ← MỚI
 │   └── workflows/                ← MỚI
-├── prompt_templates/             ← MỚI · Bài 6 sẽ điền
+├── prompt_templates/             ← MỚI · Bài 15 sẽ điền
 ├── profiles/
 │   └── task.env.example          ← MỚI · bản mẫu, PHẢI đưa lên git
 ├── knowledge/README.md           ← MỚI · nhắc là thư mục này không lên git
@@ -232,10 +232,10 @@ chứa giá trị thật, và người mới cần nó để biết phải khai 
 
 > Nếu agent vi phạm điều này, tôi có cách nào biết không?
 
-Điều nào trả lời "không" thì đánh dấu lại. Đó chính là danh sách máy chặn bạn sẽ dựng từ Bài 8 trở đi, và
+Điều nào trả lời "không" thì đánh dấu lại. Đó chính là danh sách máy chặn bạn sẽ dựng từ Bài 15 trở đi, và
 thứ tự ưu tiên là thứ tự mức nguy hiểm.
 
 ## Bài sau
 
-Bài 3 nói về chuyện tốn kém: bạn đưa cả thư mục tài liệu cho agent, nó đọc thiếu, và không có gì báo cho bạn
+Bài 1 nói về chuyện tốn kém: bạn đưa cả thư mục tài liệu cho agent, nó đọc thiếu, và không có gì báo cho bạn
 biết là nó đã đọc thiếu.

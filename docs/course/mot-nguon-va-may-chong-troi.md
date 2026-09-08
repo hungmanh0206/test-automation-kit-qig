@@ -1,4 +1,4 @@
-# Bài 28 — Khi kit chặn sai
+# Khi kit chặn sai
 
 > **2 giờ** · Có gì trong tay: bộ gate nền đang chạy · Sau bài này: máy canh chính hệ thống luật và gate của bạn
 
@@ -29,7 +29,7 @@ Bốn việc:
 
 ---
 
-## 1. Vấn đề mới xuất hiện ở Bài 11
+## 1. Vấn đề mới xuất hiện ở Bài 14
 
 Bạn vừa có 5 gate. Bây giờ có ba câu hỏi mà không cách nào trả lời:
 
@@ -47,7 +47,7 @@ bạn vẫn tin mình có 5 gate chặn, thực tế còn 2.
 
 ## 2. Canonical và bản tóm
 
-Bài 2 bạn tạo hai file nói cùng một luật ở hai độ chi tiết: `CLAUDE.md` (ngắn, luôn trong ngữ cảnh) và
+Bài 5 bạn tạo hai file nói cùng một luật ở hai độ chi tiết: `CLAUDE.md` (ngắn, luôn trong ngữ cảnh) và
 `LUAT-DAY-DU.md` (dài, tra khi cần). Đó là **cố ý** — và nó tạo rủi ro thật.
 
 | | Canonical | Bản tóm |
@@ -88,7 +88,7 @@ Chúng không hỏng. Chúng chỉ không được gọi. Và không có cách n
 /*
  * chong-troi.js — canh chính HỆ THỐNG LUẬT: một nguồn, không mồ côi.
  *
- * VÌ SAO CÓ FILE NÀY: gate ở Bài 11 canh CÔNG VIỆC. File này canh chính BỘ MÁY CANH. Đo thật ở một kit:
+ * VÌ SAO CÓ FILE NÀY: gate ở Bài 14 canh CÔNG VIỆC. File này canh chính BỘ MÁY CANH. Đo thật ở một kit:
  * 11 lệnh gate chỉ nằm ở tầng workflow mà điểm vào không trỏ tới ⇒ ai làm đúng quy trình thì không bao giờ
  * chạy chúng. Không đọc bằng mắt mà thấy được.
  *
@@ -313,7 +313,7 @@ Thêm vào `package.json`:
 > Cảnh báo từ kinh nghiệm. Khi mới dựng danh mục ở kit này, **bốn "phát hiện" đầu tiên đều là lỗi của
 > BẢNG, không của kit** — mô tả trích sai dòng, bí danh không phân giải, mức suy sai vì gate gọi hàm khác
 > để thoát. Phải hiệu chuẩn danh mục trước khi tin số nó đưa ra. Đây đúng là nguyên tắc *"máy phải chạy
-> trên nội dung thật mới tính là nghiệm thu"* ở Bài 8.
+> trên nội dung thật mới tính là nghiệm thu"* ở Bài 15.
 
 ## 5. Allowlist: hai luật không được bỏ
 
@@ -428,7 +428,7 @@ kit-cua-toi/
 ## Bài tập về nhà
 
 Nối hai gate mới vào **CI**: `gate:policy` và `gates:index:check` đều chỉ đọc file, không cần môi trường thật,
-không cần credentials. Nên chúng thuộc diện chạy được ở mọi lần push. Bài 24 sẽ nói kỹ về ranh giới
+không cần credentials. Nên chúng thuộc diện chạy được ở mọi lần push. Bài 20 sẽ nói kỹ về ranh giới
 "CI dùng chung không được tự chạm môi trường thật", nhưng hai gate này thì an toàn tuyệt đối.
 
 Sau khi nối, thử push một commit cố tình thêm lệnh mồ côi và xác nhận CI đỏ.
@@ -438,4 +438,4 @@ Sau khi nối, thử push một commit cố tình thêm lệnh mồ côi và xá
 - [`.agent/config/GATES.md`](../../.agent/config/GATES.md) của kit này, bảng thật, sinh từ source.
 - [`scripts/qa/policy_source_check.js`](../../scripts/qa/policy_source_check.js) — bản đầy đủ, kiểm 5 quy ước
   thay vì 3. Để ý cách nó không bắt trùng văn bản.
-- Phần 5 (Bài 17–17) chuyển sang bộ nhớ dự án: làm gì khi chưa có dữ liệu nào.
+- Phần 5 (Bài 26–17) chuyển sang bộ nhớ dự án: làm gì khi chưa có dữ liệu nào.

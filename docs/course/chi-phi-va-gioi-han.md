@@ -1,4 +1,4 @@
-# Bài 3 — Chi phí và giới hạn thật
+# Chi phí và giới hạn thật
 
 > **1 giờ** · Có gì trong tay: khung kit, hai file luật · Sau bài này: đo được tài liệu trước khi đưa cho agent, và biết khi nào nên giao việc cho agent con
 
@@ -76,7 +76,7 @@ Ba dòng trên đều tệ vì cùng một lý do: bạn không biết nó đã 
 | Đọc tài liệu dài, sinh 200 testcase | trung bình | vừa phải. Đo trước là quản được |
 | Đọc lại cùng một tài liệu 10 lần trong 10 phiên | đắt nhất, và hay xảy ra nhất | có |
 
-Nhóm thứ ba là thứ mà bộ nhớ dự án ở Bài 17 và 18 giải: trích một lần, ghi ra đĩa, lần sau đọc bản trích.
+Nhóm thứ ba là thứ mà bộ nhớ dự án ở Bài 26 và 18 giải: trích một lần, ghi ra đĩa, lần sau đọc bản trích.
 
 ## Việc 2 — Máy đo tài liệu (25 phút)
 
@@ -249,5 +249,5 @@ thiếu, và từ đó bạn không còn tin câu "agent đã đọc tài liệu
 
 ## Bài sau
 
-Bài 4 cài công cụ và đặt chế độ quyền. Trong đó có một thí nghiệm nhỏ nhưng đáng làm: bảo agent xoá một thư
+Bài 2 cài công cụ và đặt chế độ quyền. Trong đó có một thí nghiệm nhỏ nhưng đáng làm: bảo agent xoá một thư
 mục, rồi xem quyền có chặn nó lại không.

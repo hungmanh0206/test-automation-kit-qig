@@ -1,4 +1,4 @@
-# Bài 29 — Đi tiếp sau khi làm hết
+# Đi tiếp sau khi làm hết
 
 > **1 giờ 30 phút** · Có gì trong tay: kit chạy trên dự án thật, đã va chạm và tinh chỉnh · Sau bài này: biết dừng xây ở đâu, và biết thêm gì khi nào
 
@@ -42,7 +42,7 @@ Dòng cuối quan trọng nhất. Khi ai đó lách một luật, cách họ lá
 > nếu không thì ba tháng đó chỉ là ba tháng.
 
 Nên việc tiếp theo không phải "xây gì nữa", mà là: **chạy 10 task thật, và mỗi task ghi một dòng vào
-`knowledge/`** (Bài 18). Sau 10 task, đọc lại 10 dòng đó — chúng sẽ nói cho bạn biết phải xây gì tiếp, cụ thể
+`knowledge/`** (Bài 26). Sau 10 task, đọc lại 10 dòng đó — chúng sẽ nói cho bạn biết phải xây gì tiếp, cụ thể
 hơn mọi phỏng đoán hôm nay.
 
 ## Việc 2 — Những thứ không nên thêm (20 phút)
@@ -51,9 +51,9 @@ hơn mọi phỏng đoán hôm nay.
 |---|---|---|
 | **Thêm framework thứ hai** (Cypress cạnh Playwright) | hai bộ locator, hai cách chờ, hai báo cáo, hai chỗ để bug lọt | bạn có một loại app mà bộ hiện tại không chạy nổi |
 | **Công cụ trùng chức năng** (thêm dashboard thứ hai) | hai nguồn số, và khi lệch thì không ai biết cái nào đúng | không bao giờ |
-| **Tự động hoá log bug** | bug sai làm mất niềm tin của đội dev, mất rất lâu để lấy lại (Bài 25) | không bao giờ |
+| **Tự động hoá log bug** | bug sai làm mất niềm tin của đội dev, mất rất lâu để lấy lại (Bài 20) | không bao giờ |
 | **Gate cho mọi thứ** | gate nổ liên tục ⇒ người ta học cách bỏ qua ⇒ mọi gate mất tác dụng | gate mới phải chặn một kiểu sai đã xảy ra thật |
-| **Phủ 100% chiều cho mọi module** | thời gian chạy nổ, và độ sâu ở chỗ rủi ro cao bị cắt để bù | không bao giờ — độ sâu bám rủi ro (Bài 11) |
+| **Phủ 100% chiều cho mọi module** | thời gian chạy nổ, và độ sâu ở chỗ rủi ro cao bị cắt để bù | không bao giờ — độ sâu bám rủi ro (Bài 14) |
 | **Báo cáo hàng ngày cho stakeholder** | tuần thứ hai không ai đọc | có sự kiện: sắp phát hành, sự cố |
 
 Dòng gate cho mọi thứ đáng nhấn, vì nó là cách kit tự sát phổ biến nhất:
@@ -76,7 +76,7 @@ Và một câu để kiểm tra chính mình:
 |---|---|
 | **Dấu hiệu** | Test đỏ vì backend đổi response mà không ai báo, ≥ 2 lần trong một quý |
 | **Giải** | Chốt hợp đồng giữa FE và BE; ai phá hợp đồng thì CI của **họ** đỏ, không phải test của bạn |
-| **Vì sao đúng lúc** | Bạn đã có Bài 16 (đối soát từng trường) và Bài 15 (UI ↔ nơi lưu) — đó là contract test làm bằng tay |
+| **Vì sao đúng lúc** | Bạn đã có Bài 18 (đối soát từng trường) và Bài 10 (UI ↔ nơi lưu) — đó là contract test làm bằng tay |
 | **Chưa cần nếu** | backend đổi hợp đồng dưới 1 lần/quý — chi phí dựng lớn hơn cái được |
 
 ### Performance engineering
@@ -85,7 +85,7 @@ Và một câu để kiểm tra chính mình:
 |---|---|
 | **Dấu hiệu** | Có test đỏ vì **chậm**, không phải vì sai; hoặc người dùng than chậm mà bạn không có số |
 | **Giải** | Đo có phương pháp: p95, tải đồng thời, ngưỡng khai trước |
-| **Bẫy** | **Đừng bịa SLA.** Không có ngưỡng do sản phẩm chốt thì kết quả là *advisory*, không phải PASS/FAIL — đúng luật "không neo thì là `OBSERVATION`" (Bài 14) |
+| **Bẫy** | **Đừng bịa SLA.** Không có ngưỡng do sản phẩm chốt thì kết quả là *advisory*, không phải PASS/FAIL — đúng luật "không neo thì là `OBSERVATION`" (Bài 16) |
 | **Chưa cần nếu** | chưa ai than, và chưa có test nào đỏ vì chậm |
 
 ### Observability
@@ -107,12 +107,12 @@ dấu hiệu thì học cũng được, nhưng đừng đưa vào kit, kit chỉ
 | Nhịp | Việc | Bỏ thì hỏng thế nào |
 |---|---|---|
 | **Mỗi lượt chạy** | Đọc kết quả gate — đừng bỏ qua CẢNH BÁO | cảnh báo bị bỏ đủ lâu sẽ thành nền, và bạn mất một lớp tín hiệu |
-| **Mỗi sprint** | Cập nhật `knowledge/` · rà bug đã lọt: *máy nào lẽ ra phải bắt?* (Bài 21) | tri thức không ghi thì mất khi người đi |
+| **Mỗi sprint** | Cập nhật `knowledge/` · rà bug đã lọt: *máy nào lẽ ra phải bắt?* (Bài 25) | tri thức không ghi thì mất khi người đi |
 | **Mỗi tháng** | `npm run mutation` toàn bộ · so điểm tháng trước · chạy sao lưu | điểm tụt = có oracle vừa bị làm yếu, và bạn phát hiện sau 6 tháng |
 | **Mỗi quý** | Rà **ngoại lệ** trong mọi allowlist: cái nào còn cần? · rà gate chưa từng nổ | ngoại lệ tích lại tới khi gate không chặn gì nữa |
 
 Nhịp quý là nhịp bị bỏ nhiều nhất và tốn nhất khi bỏ. Cách làm nó rẻ: bắt mọi ngoại lệ phải có **lý do** và
-**ngày** (Bài 28), rồi một máy cảnh báo khi ngoại lệ già hơn 90 ngày. Lúc đó rà quý là đọc một danh sách,
+**ngày** (Bài 24), rồi một máy cảnh báo khi ngoại lệ già hơn 90 ngày. Lúc đó rà quý là đọc một danh sách,
 không phải đi soát cả repo.
 
 ### Tự chấm kit của bạn
@@ -127,7 +127,7 @@ Mười câu. Trả lời được bằng số hoặc bằng lệnh, không bằ
 | 4 | Khoảng cách clean ↔ eventual? | `do-metrics.js` |
 | 5 | Bao nhiêu ngoại lệ trong allowlist? Cái già nhất bao lâu? | đếm + ngày |
 | 6 | Bug lọt gần nhất — **máy nào** lẽ ra phải bắt? | `knowledge/leak/` |
-| 7 | Người mới cần bao lâu để chạy được kit? | đã thử clone sạch chưa (Bài 26) |
+| 7 | Người mới cần bao lâu để chạy được kit? | đã thử clone sạch chưa (Bài 28) |
 | 8 | Gate nào bắt oan nhiều nhất? | ai đó đã phải `--qa-approved` mấy lần |
 | 9 | Tri thức nào quá hạn tái xác nhận? | `kiem-tri-thuc.js` |
 | 10 | Sao lưu gần nhất là khi nào? Đã khôi phục thử chưa? | `_ban-ke.json` |
@@ -159,7 +159,7 @@ kit-cua-toi/
 │   └── nhip-bao-duong.md             ← MỚI · 4 nhịp + 10 câu tự chấm
 ├── scripts/qa/
 │   └── kiem-ngoai-le.js              ← MỚI · ngoại lệ già hơn 90 ngày ⇒ cảnh báo (không chặn)
-└── knowledge/leak/                   ·  từ Bài 17 · mỗi bug lọt một dòng + máy nào lẽ ra bắt
+└── knowledge/leak/                   ·  từ Bài 26 · mỗi bug lọt một dòng + máy nào lẽ ra bắt
 ```
 
 `kiem-ngoai-le.js` cảnh báo, không chặn. Cố ý: ngoại lệ già không phải vi phạm, nó là việc cần rà.
@@ -197,7 +197,7 @@ vì chỉ chạy.
 
 ## Khép lại
 
-Bạn bắt đầu ở Bài 0 với một app có 3 bug và không có gì khác. Giờ bạn có:
+Bạn bắt đầu ở Bài 1 với một app có 3 bug và không có gì khác. Giờ bạn có:
 
 | Phần | Bạn có gì |
 |---|---|
@@ -225,4 +225,4 @@ Ba mươi bài vừa rồi là hai điều đó, áp vào từng chỗ cụ th�
 - [`docs/BUILD_JOURNAL.md`](../BUILD_JOURNAL.md) — hồi ký dựng bộ kit thật này: bảy thời kỳ, sáu nguyên tắc,
   bốn điểm mù đã trả giá để biết. Đọc sau khi làm hết, vì giờ bạn đã có ngữ cảnh để nó có nghĩa.
 - Thư viện thuật ngữ ở [`docs/library/`](../library/) — tra nhanh mọi luật, máy chặn, phán quyết, kỹ năng.
-- Bài 21 — [mutation testing](do-chinh-bo-kiem.md): quay lại đọc mỗi lần điểm tụt.
+- Bài 25 — [mutation testing](do-chinh-bo-kiem.md): quay lại đọc mỗi lần điểm tụt.

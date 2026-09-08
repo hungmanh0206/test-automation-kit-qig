@@ -1,4 +1,4 @@
-# Bài 27 — Mang kit sang dự án mới
+# Bài 29 — Mang kit sang một dự án hoàn toàn mới
 
 > **2 giờ** · Có gì trong tay: bản phát hành đã nghiệm thu · Sau bài này: kit chạy trên dự án thật của bạn — lần đầu rời app thực hành
 
@@ -86,7 +86,7 @@ cắt qua cả hai tầng.
 Vì sao cần máy: một commit sửa cả hai tầng là commit không mang đi được. Dự án khác muốn lấy phần chung
 thì phải tách tay, và họ sẽ tách sai.
 
-Áp công thức 5 câu hỏi (Bài 8):
+Áp công thức 5 câu hỏi (Bài 15):
 
 | # | | |
 |---|---|---|
@@ -105,7 +105,7 @@ thì phải tách tay, và họ sẽ tách sai.
  * Tách ra hai commit tốn 30 giây; tách sai tốn một buổi debug ở dự án khác.
  *
  * KHÔNG PHÂN LOẠI ĐƯỢC thì trả mã 2, KHÔNG đoán theo tên — đoán sai làm gate bắt oan,
- * và gate bắt oan thì mất uy tín (Bài 28).
+ * và gate bắt oan thì mất uy tín (Bài 24).
  *
  * Mã thoát: 0 = một tầng · 1 = trộn hai tầng · 2 = không đo được
  */
@@ -197,7 +197,7 @@ Hai dòng cuối là chỗ người mới mất nhiều ngày nhất, và cả h
 
 | Câu hỏi | Vì sao |
 |---|---|
-| Token sống bao lâu? | hết hạn giữa lượt chạy ⇒ đỏ rải rác, trông hệt flaky (Bài 22) |
+| Token sống bao lâu? | hết hạn giữa lượt chạy ⇒ đỏ rải rác, trông hệt flaky (Bài 25) |
 | Sai mật khẩu mấy lần thì **khoá**? | test chạy song song có thể tự khoá tài khoản của chính mình |
 | Một tài khoản đăng nhập được mấy nơi cùng lúc? | có hệ thống giới hạn 3 phiên — profile trình duyệt mới ăn một suất, hết suất là `setup_failure`, không phải bug |
 
@@ -214,7 +214,7 @@ Ba câu này lấy mất 5 phút hỏi, và tiết kiệm hàng ngày điều tr
  *   layToken()       → trả token cho test tầng API
  *
  * Lỗi setup PHẢI có tiền tố "SETUP:" — nhờ đó verdict xếp vào SETUP_FAILURE, không phải FAIL,
- * và KHÔNG log bug (Bài 13).
+ * và KHÔNG log bug (Bài 17).
  */
 
 async function layToken(request) {
@@ -267,35 +267,35 @@ Kit chỉ được coi là đã chuyển giao khi nó đi hết một vòng trê
 ### Cấu hình
 - [ ] `profiles/<TASK>/task.env`: URL, tài khoản test — **không** dùng `.env` chung
 - [ ] `chieu-phu.json`: chiều nào áp, `n/a` nào cũng có lý do
-- [ ] `risk_model.json`: module của dự án này; chưa có lịch sử bug ⇒ bật cold-start (Bài 19)
-- [ ] `anh-xa-luu-tru.json`: ánh xạ trường UI ↔ nơi lưu (Bài 15)
+- [ ] `risk_model.json`: module của dự án này; chưa có lịch sử bug ⇒ bật cold-start (Bài 27)
+- [ ] `anh-xa-luu-tru.json`: ánh xạ trường UI ↔ nơi lưu (Bài 10)
 - [ ] `ci_scope.json`: xếp hạng mọi lệnh
-- [ ] `mcp_config.md`: server + quyền + ai duyệt (Bài 25)
+- [ ] `mcp_config.md`: server + quyền + ai duyệt (Bài 20)
 
 ### Thay
 - [ ] `tests/support/auth.js` — đăng nhập, đã trả lời 3 câu ràng buộc
 - [ ] `tests/support/factory.js` — dựng dữ liệu qua API, prefix `IT test` + mã task
-- [ ] `mutants.json` — 5 mutant theo API thật (Bài 21)
+- [ ] `mutants.json` — 5 mutant theo API thật (Bài 25)
 
 ### Chạy thật MỘT vòng
 - [ ] Phase 1: một requirement thật → testcase → `gate-mo-ho` ĐẠT → publish dry-run
 - [ ] Phase 2: execute → bằng chứng có khoanh đỏ → verdict có tầng lỗi → `self-review` ĐẠT
 - [ ] Log **một** bug thật (human gate: bạn bấm)
-- [ ] Đo mutation lần đầu, ghi mốc gốc (Bài 21–22)
+- [ ] Đo mutation lần đầu, ghi mốc gốc (Bài 25–22)
 
 ### Đối chứng — bước không được bỏ
 - [ ] Suite của tôi bắt được **≥1** bug thật của dự án này. Không bắt được cái nào ⇒ chưa xong.
 ```
 
 Dòng cuối là điều kiện nghiệm thu thật. Kit chạy xanh trên dự án mới không chứng minh gì, đúng nguyên
-tắc từ Bài 0: app đúng và bộ kiểm mù cho cùng một dấu hiệu. Trên app thực hành bạn có 3 bug biết trước
+tắc từ Bài 1: app đúng và bộ kiểm mù cho cùng một dấu hiệu. Trên app thực hành bạn có 3 bug biết trước
 làm đối chứng; trên dự án thật, đối chứng là một bug thật.
 
 Chưa có bug nào để bắt? Có hai đường:
 
 | Đường | Cách |
 |---|---|
-| Lấy bug **đã fix** trong lịch sử | viết mutant tái hiện nó, kiểm suite có đỏ không (Bài 21) |
+| Lấy bug **đã fix** trong lịch sử | viết mutant tái hiện nó, kiểm suite có đỏ không (Bài 25) |
 | Tiêm lỗi vào response | `npm run mutation` — nếu 0/5 mutant bị diệt thì suite đang mù |
 
 ## Cây thư mục sau bài này
@@ -333,12 +333,12 @@ Chưa có bug nào để bắt? Có hai đường:
 1. Điền `kit-layers.md` cho dự án bạn. Chạy `layers-check.js` lên thay đổi gần nhất. Có tệp chưa phân loại
    thì khai. Đó chính là những chỗ bạn chưa quyết được nó thuộc tầng nào, và cần quyết.
 2. Trả lời ba câu ràng buộc đăng nhập bằng cách hỏi dev/BA, không đoán. Ghi vào
-   `knowledge/system/dang-nhap.json` kèm `source` (Bài 18).
+   `knowledge/system/dang-nhap.json` kèm `source` (Bài 26).
 3. Chạy trọn danh sách chuyển giao. Tới dòng cuối: suite của bạn bắt được bug thật nào chưa?
    Chưa thì chạy `npm run mutation` và đọc điểm, bạn sẽ biết mình đang mù ở đâu.
 
 ## Đọc thêm
 
-- Bài 26 — [đóng gói và phát hành](dong-goi-va-phat-hanh.md): quy trình đưa bản mới sang dự án đang chạy.
-- Bài 19 — [risk-based testing](risk-based-testing.md): dự án mới chưa có lịch sử bug ⇒ chế độ cold-start.
-- Bài 21 — [mutation testing](do-chinh-bo-kiem.md): cách chứng minh suite trên dự án mới không mù.
+- Bài 28 — [đóng gói và phát hành](dong-goi-va-phat-hanh.md): quy trình đưa bản mới sang dự án đang chạy.
+- Bài 27 — [risk-based testing](risk-based-testing.md): dự án mới chưa có lịch sử bug ⇒ chế độ cold-start.
+- Bài 25 — [mutation testing](do-chinh-bo-kiem.md): cách chứng minh suite trên dự án mới không mù.

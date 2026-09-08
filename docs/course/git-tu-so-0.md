@@ -1,4 +1,4 @@
-# Bài 5 — Git, GitHub/GitLab cho người mới
+# Git, GitHub/GitLab cho người mới
 
 > **2 giờ** · Có gì trong tay: agent chạy được, quyền đã cấu hình · Sau bài này: kit nằm trên repo, và có máy chặn không cho dữ liệu nhạy cảm đi theo
 
@@ -307,7 +307,7 @@ git add profiles/task.env.example
 npm run kiem:file-cam; echo "mã thoát = $?"      # phải là 0
 ```
 
-Nếu ra `1` thì máy của bạn **bắt oan** — và Bài 28 nói kỹ vì sao bắt oan còn tệ hơn không có máy: người ta sẽ
+Nếu ra `1` thì máy của bạn **bắt oan** — và Bài 24 nói kỹ vì sao bắt oan còn tệ hơn không có máy: người ta sẽ
 học cách tắt nó đi.
 
 ### Bài học đắt nhất của bài này
@@ -325,7 +325,7 @@ Chỉ cần chạy `git ls-files` trên một repo công khai là người ngoà
 ý bỏ qua điều gì, mà không cần mở một tệp nào.
 
 Đó là lý do `kiem-file-cam.js` đo danh sách file đang được git quản, chứ không đọc nội dung. Máy quét mật
-khẩu ở Bài 11 mới là cái đọc nội dung. Hai lớp khác nhau, và lớp tên file là lớp hay bị bỏ quên.
+khẩu ở Bài 14 mới là cái đọc nội dung. Hai lớp khác nhau, và lớp tên file là lớp hay bị bỏ quên.
 
 ## Việc 5 — Đẩy lên GitHub/GitLab (20 phút)
 
@@ -393,8 +393,8 @@ lúc đó người ta thêm `--no-verify`, thế là bạn mất luôn cái máy
 
 ## Đọc thêm
 
-- Bài 11 — [bộ gate nền](bo-gate-nen.md): máy quét secret đọc **nội dung**; máy ở bài này đọc **tên tệp**.
+- Bài 14 — [bộ gate nền](bo-gate-nen.md): máy quét secret đọc **nội dung**; máy ở bài này đọc **tên tệp**.
   Cần cả hai.
-- Bài 24 — [CI](ci-dong-goi-giao-kit.md): `kiem:file-cam` là ứng viên hạng *mọi commit* — rẻ, tất định,
+- Bài 20 — [CI](ci-dong-goi-giao-kit.md): `kiem:file-cam` là ứng viên hạng *mọi commit* — rẻ, tất định,
   không chạm môi trường nào.
-- Bài 28 — [khi kit chặn sai](mot-nguon-va-may-chong-troi.md): ngoại lệ phải có lý do và ngày.
+- Bài 24 — [khi kit chặn sai](mot-nguon-va-may-chong-troi.md): ngoại lệ phải có lý do và ngày.

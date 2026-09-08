@@ -1,4 +1,4 @@
-# Bài 8 — Ambiguity Gate: dừng đúng lúc
+# Bài 15 — Phase 1: sinh testcase từ requirement
 
 > **1 giờ 30 phút** · Có gì trong tay: một requirement đã bóc thành bảng `BR-` · Sau bài này: agent không còn đoán khi gặp mơ hồ, và bạn biết công thức viết mọi gate về sau
 
@@ -180,7 +180,7 @@ Máy không đọc được văn xuôi. Nên câu hỏi cần một bản máy-�
  * 3. Cửa: ngay trước bước sinh testcase.
  * 4. Không đo được: thiếu tệp, hoặc tệp không parse được ⇒ mã 2. KHÔNG coi là đạt —
  *    "chưa ai khảo sát mơ hồ" khác "đã khảo sát và không có mơ hồ nào".
- * 5. Đối chứng: xem mục "Thử nó" trong Bài 8.
+ * 5. Đối chứng: xem mục "Thử nó" trong Bài 15.
  *
  * Mã thoát:  0 = chốt đủ  ·  1 = còn câu CHẶN chưa trả lời  ·  2 = không đo được
  */
@@ -318,27 +318,27 @@ Ghi ra outputs/tasks/DEMO-1/analysis/questions.json theo đúng schema, và bả
 | Vấn đề nêu ra bây giờ (khi **cấm** sinh testcase) | ___ |
 
 **Điều vừa xảy ra:** cùng một agent, cùng một tài liệu. Khác biệt duy nhất là bạn **tách việc phân tích ra
-khỏi việc sinh** và **cấm nó đi tiếp**. Đây là lý do Bài 7 và Bài 9 là hai bài riêng, không phải một.
+khỏi việc sinh** và **cấm nó đi tiếp**. Đây là lý do Bài 12 và Bài 13 là hai bài riêng, không phải một.
 
 ## Cây thư mục sau bài này
 
 ```
 kit-cua-toi/
 ├── prompt_templates/phase1/
-│   ├── 01_phan_tich.md               ·  từ Bài 6
+│   ├── 01_phan_tich.md               ·  từ Bài 15
 │   └── 01b_khao_sat_mo_ho.md         ← MỚI · CẤM sinh testcase, chỉ liệt kê mơ hồ
 ├── scripts/qa/
-│   ├── kiem-file-cam.js              ·  từ Bài 5
+│   ├── kiem-file-cam.js              ·  từ Bài 2
 │   └── gate-mo-ho.js             ← MỚI · còn câu CHẶN chưa chốt ⇒ chặn (exit 0/1/2)
 └── outputs/tasks/<MÃ>/analysis/
-    ├── business-rules.md             ·  từ Bài 7
+    ├── business-rules.md             ·  từ Bài 12
     ├── questions.md                  ← MỚI · bản cho người — gửi BA
     └── questions.json                ← MỚI · bản cho máy — gate đọc cái này
 ```
 
 Hai tệp `questions.*` là một cặp có chủ ý: **người** đọc markdown, **máy** đọc JSON. Nhưng chỉ một trong
 hai là canonical, chọn JSON, và sinh markdown từ nó. Hai bản viết tay song song thì sẽ trôi khỏi nhau, đúng
-luật một-nguồn của Bài 6.
+luật một-nguồn của Bài 15.
 
 ## Tự kiểm
 
@@ -369,5 +369,5 @@ Bước 3 là cách rẻ nhất để phát hiện gate bắt oan: chạy nó **
 - [Viết gate đầu tiên](viet-gate-dau-tien.md) — bài chi tiết về cơ chế `exit 0/1/2` và ba phép tiêm lỗi để
   chứng minh gate chặn thật.
 - [Bộ gate nền](bo-gate-nen.md) — `lib/gate.js` dùng chung, để mọi gate về sau không phải viết lại phần khung.
-- Bài 28 — [khi kit chặn sai](mot-nguon-va-may-chong-troi.md): gate bắt oan mất uy tín, và đó là cách một kit
+- Bài 24 — [khi kit chặn sai](mot-nguon-va-may-chong-troi.md): gate bắt oan mất uy tín, và đó là cách một kit
   chết.

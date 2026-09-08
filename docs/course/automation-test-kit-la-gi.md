@@ -1,4 +1,4 @@
-# Bài 1 — Vì sao "prompt giỏi" là không đủ
+# Bài 1 — Automation Test Kit là gì
 
 > **1 giờ 30 phút** · Có gì trong tay: app thực hành đang chạy, 10 từ vựng · Sau bài này: bạn đã thấy agent gian lận trên máy mình, và đã viết máy chặn đầu tiên
 
@@ -19,7 +19,7 @@
 
 ## Bài này bạn sẽ làm gì
 
-Ở Bài 0 bạn tìm ra một bug bằng tay. Đơn 500.000 của khách hạng Bạc phải ra **485.000**, nhưng app trả
+Ở Bài 1 bạn tìm ra một bug bằng tay. Đơn 500.000 của khách hạng Bạc phải ra **485.000**, nhưng app trả
 **515.000**.
 
 Bài này bạn sẽ:
@@ -173,7 +173,7 @@ curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/js
 ```
 
 Trên Windows dùng `^` để nối dòng như trên, trên macOS hay Linux thì dùng `\`. Máy không có `curl` thì cứ mở
-`http://localhost:4010` rồi làm tay như Bài 0.
+`http://localhost:4010` rồi làm tay như Bài 1.
 
 Bạn sẽ thấy `"tongCong":515000`, y nguyên. Test xanh, app sai.
 
@@ -244,7 +244,7 @@ Tạo file `scripts/qa/kiem-so-mong-doi.js`:
  *
  * Mã thoát:  0 = đạt   ·   1 = vi phạm (chặn)   ·   2 = không đo được
  *
- * Máy này còn rất thô, nó chỉ biết đúng một case. Bài 13 sẽ làm bản dùng cho mọi case.
+ * Máy này còn rất thô, nó chỉ biết đúng một case. Bài 17 sẽ làm bản dùng cho mọi case.
  * Nhưng nó chặn thật, và hôm nay chỉ cần thế.
  */
 'use strict';
@@ -371,13 +371,13 @@ Máy chặn hiện tại không nhìn thấy Kiểu B. Vá nó:
 5. Rồi chạy trên file đúng ở Việc 1. Phải vẫn ra mã `0`.
 
 Bước 5 hay bị bỏ, mà nó lại quan trọng nhất. Một máy chặn bắt oan còn tệ hơn không có máy nào, vì người ta
-sẽ tìm cách tắt nó đi. Bài 13 và Bài 28 nói kỹ chuyện này.
+sẽ tìm cách tắt nó đi. Bài 17 và Bài 24 nói kỹ chuyện này.
 
 ---
 
 ## Đào sâu (đọc thêm, không bắt buộc)
 
-Ba mục dưới đây là bối cảnh. Bỏ qua được nếu bạn muốn sang Bài 2 luôn.
+Ba mục dưới đây là bối cảnh. Bỏ qua được nếu bạn muốn sang Bài 5 luôn.
 
 ### Ba mức dùng AI trong kiểm thử
 
@@ -396,17 +396,17 @@ sai thì có thứ chặn lại trước khi kết quả đi ra ngoài.
 
 Phiên hôm nay không biết phiên tuần trước đã kết luận gì. Hệ quả thấy ngay: cùng một bug bị log lại sau khi
 dev đã từ chối; cùng một cách dựng dữ liệu bị thử lại sau khi đã thất bại; cùng một câu hỏi được hỏi lại BA.
-Bài 17 dựng bộ nhớ trên đĩa để chữa chuyện này.
+Bài 26 dựng bộ nhớ trên đĩa để chữa chuyện này.
 
 ### Ba thứ một bộ kit phải giải
 
 | | Vấn đề | Giải bằng | Học ở |
 |---|---|---|---|
-| Kỷ luật | Agent làm cho nó xanh | Máy chặn đọc kết quả và chặn khi sai chuẩn | Bài 8, 11, 13 |
-| Bộ nhớ | Không có ký ức giữa các phiên | Kho trên đĩa: luật đã xác nhận, quyết định đã chốt | Bài 17, 18 |
-| Bằng chứng | Không kiểm chứng lại được | Ảnh và video bắt buộc, khoanh đúng chỗ, che thông tin cá nhân | Bài 13 |
+| Kỷ luật | Agent làm cho nó xanh | Máy chặn đọc kết quả và chặn khi sai chuẩn | Bài 15, 11, 13 |
+| Bộ nhớ | Không có ký ức giữa các phiên | Kho trên đĩa: luật đã xác nhận, quyết định đã chốt | Bài 26, 18 |
+| Bằng chứng | Không kiểm chứng lại được | Ảnh và video bắt buộc, khoanh đúng chỗ, che thông tin cá nhân | Bài 17 |
 
 ## Bài sau
 
-Bài 2 dựng khung: kit có những lớp nào, file luật nào agent thật sự đọc, và vì sao file đó phải ngắn dưới
+Bài 5 dựng khung: kit có những lớp nào, file luật nào agent thật sự đọc, và vì sao file đó phải ngắn dưới
 20 dòng thay vì 500 dòng.

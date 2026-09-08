@@ -1,8 +1,8 @@
-# Bài chi tiết — Bộ gate nền
+# Bài 24 — Quality Gates
 
 > **2 giờ 30 phút** · Có gì trong tay: một gate tự viết, đã chứng minh có răng · Sau bài này: 4 gate + một lệnh gộp
 >
-> *Bài này không đánh số, nó là phần đào sâu của **Bài 11**. Đọc kèm **Bài 11**.*
+> *Bài này không đánh số, nó là phần đào sâu của **Bài 14**. Đọc kèm **Bài 14**.*
 
 **Tóm tắt bài này**
 
@@ -33,7 +33,7 @@ Bốn việc:
 
 ## 1. Bốn lớp lỗi cần canh, và thứ tự nguy hiểm
 
-Bài 8 bạn canh **bằng chứng**. Còn bốn lớp nữa, xếp theo mức nguy hiểm giảm dần:
+Bài 15 bạn canh **bằng chứng**. Còn bốn lớp nữa, xếp theo mức nguy hiểm giảm dần:
 
 | # | Lớp lỗi | Vì sao nguy hiểm | Gate |
 |---|---|---|---|
@@ -56,24 +56,24 @@ một chỗ, ba chỗ kia vẫn kiểu cũ.
  * gate.js — khuôn dùng chung cho mọi gate.
  *
  * VÌ SAO TÁCH RA: bốn gate cùng cần "in vi phạm rồi thoát đúng mã". Chép bốn lần thì sửa một chỗ,
- * ba chỗ còn lại trôi. Tách ra còn cho phép Bài 28 gộp nhiều gate thành một báo cáo, vì tất cả
+ * ba chỗ còn lại trôi. Tách ra còn cho phép Bài 24 gộp nhiều gate thành một báo cáo, vì tất cả
  * trả về CÙNG một hình dạng kết quả.
  */
 'use strict';
 
-/** Kết quả chuẩn của một gate. Bài 28 sẽ cộng dồn những object này. */
+/** Kết quả chuẩn của một gate. Bài 24 sẽ cộng dồn những object này. */
 function ketQua(gateId, { viPham = [], ghiChu = [], daKiem = '' } = {}) {
   return { gateId, viPham, ghiChu, daKiem };
 }
 
-/** Không đo được — KHÁC hẳn với "đo được và xấu". Xem Bài 8 mục 2. */
+/** Không đo được — KHÁC hẳn với "đo được và xấu". Xem Bài 15 mục 2. */
 function khongDoDuoc(gateId, msg) {
   console.error(`[${gateId}] KHÔNG ĐO ĐƯỢC: ${msg}`);
   console.error('  → sửa hạ tầng rồi chạy lại. ĐỪNG đọc kết quả của lượt này.');
   process.exit(2);
 }
 
-/** In kết quả rồi thoát. warnOnly = true thì luôn exit 0 (giai đoạn cảnh báo, xem Bài 8 mục 7). */
+/** In kết quả rồi thoát. warnOnly = true thì luôn exit 0 (giai đoạn cảnh báo, xem Bài 15 mục 7). */
 function ketThuc(kq, { warnOnly = false } = {}) {
   if (kq.daKiem) console.log(`[${kq.gateId}] đã kiểm ${kq.daKiem}`);
   for (const g of kq.ghiChu) console.log(`[${kq.gateId}] ⚠ ${g}`);
@@ -157,7 +157,7 @@ ketThuc(kq);
 ```
 
 Để ý `khongDoDuoc` xuất hiện **hai lần**: runner không chạy được và runner trả về thứ không đọc được đều là
-*không đo được*, không phải *suite rỗng*. Gộp lại là đúng lỗi mà Bài 8 mục 2 cảnh báo.
+*không đo được*, không phải *suite rỗng*. Gộp lại là đúng lỗi mà Bài 15 mục 2 cảnh báo.
 
 ## 4. Gate 2 — quét secret trên file đã track
 
@@ -176,7 +176,7 @@ const { ketQua, khongDoDuoc, ketThuc, fileDangTrack } = require('./lib/gate');
 
 const GATE = 'secret-scan';
 
-// Mẫu HIGH-SIGNAL: thà bỏ sót vài dạng lạ còn hơn báo oan. Báo oan = gate bị tắt (Bài 8 mục 8).
+// Mẫu HIGH-SIGNAL: thà bỏ sót vài dạng lạ còn hơn báo oan. Báo oan = gate bị tắt (Bài 15 mục 8).
 const MAU = [
   [/-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/, 'private key'],
   [/\b(gh[pousr]_[A-Za-z0-9]{20,})/, 'GitHub token'],
@@ -233,13 +233,13 @@ chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ t
 
 > Vì sao mục 3 quan trọng đến thế. Quên truyền file env riêng của task là lỗi kinh điển: env rơi về file
 > chung, thiếu credentials, công cụ đứng ở màn đăng nhập, và mọi màn đọc ra 0 cột. Báo cáo trông y hệt
-> như ứng dụng hỏng thật. Đó chính là câu chuyện ở Bài 8 mục 2, và kiem-dau-vao là nơi chặn nó sớm nhất.
+> như ứng dụng hỏng thật. Đó chính là câu chuyện ở Bài 15 mục 2, và kiem-dau-vao là nơi chặn nó sớm nhất.
 
 **Tự kiểm sau khi viết:** thiếu `MA_TASK` → `2` · JSON hỏng → `1` kèm tên file và số dòng · đủ mọi thứ → `0`.
 
 ## 6. Gate 4 — design: soi thiết kế bộ testcase
 
-Bài 9 bạn chốt 7 cột bắt buộc. Gate này canh chúng:
+Bài 13 bạn chốt 7 cột bắt buộc. Gate này canh chúng:
 
 **Tầng cấu trúc** (chặn ngay, thiếu là mọi công cụ sau vỡ):
 - Đủ 7 cột, **đúng tên**. Thiếu hoặc đổi tên → `exit 1`.
@@ -260,7 +260,7 @@ const ORACLE_RONG = [
 ];
 if (ORACLE_RONG.some((re) => re.test(String(row.expected).trim()))) {
   kq.viPham.push(`${row.tcId}: "Kết quả mong đợi" không phán được gì — ` +
-    'phải nêu GIÁ TRỊ, URL hoặc element cụ thể, và trích được nguồn (Bài 10).');
+    'phải nêu GIÁ TRỊ, URL hoặc element cụ thể, và trích được nguồn (Bài 13).');
 }
 ```
 
@@ -427,10 +427,10 @@ Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát v�
 1. Tầng chất lượng dòng cho `design_gate`. Bắt oracle rỗng theo mẫu ở mục 6. Chạy trên bộ testcase thật
    của bạn rồi **đếm**: bao nhiêu phần trăm case có oracle không phán được gì? Con số đó thường gây bất ngờ.
 2. Cờ `--warn-only` cho gate mới. Tầng chất lượng dòng nên bắt đầu ở mức cảnh báo, theo đúng ba bước ở
-   Bài 8 mục 7.
+   Bài 15 mục 7.
 
 ## Đọc thêm
 
 - [`scripts/qa/`](../../scripts/qa/) của kit này, bộ máy, cùng một khuôn bạn vừa dựng.
-- Bài 28: khi số gate tăng lên, làm sao biết gate nào đã mất nơi gọi và **gate nào đã âm thầm tụt thành
+- Bài 24: khi số gate tăng lên, làm sao biết gate nào đã mất nơi gọi và **gate nào đã âm thầm tụt thành
   cảnh báo**.

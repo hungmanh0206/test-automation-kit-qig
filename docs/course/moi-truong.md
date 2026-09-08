@@ -1,4 +1,4 @@
-# Bài 4 — Claude Code: cài đặt và chế độ an toàn
+# Bài 2 — Cài môi trường và tạo repo
 
 > **2 giờ** · Có gì trong tay: kiến trúc đã vẽ, chưa có repo · Sau bài này: agent chạy được trên repo của bạn, và bạn biết nó bị chặn ở đâu
 
@@ -123,7 +123,7 @@ git push
 ```
 
 `npm init -y` tạo ra `package.json`. Từ giờ mọi lệnh bạn viết đều khai vào đó, ở mục `scripts`. Lý do là để
-người khác gõ `npm run <tên>` thay vì phải nhớ đường dẫn dài. Bài 5 sẽ thêm lệnh đầu tiên vào đây.
+người khác gõ `npm run <tên>` thay vì phải nhớ đường dẫn dài. Bài 2 sẽ thêm lệnh đầu tiên vào đây.
 
 Để ý thứ tự: `.gitignore` được viết trước cả README. Đó là cố ý. Chỉ cần một lần `git add .` lúc chưa có
 `.gitignore` là đủ đẩy thứ không nên đẩy lên, mà lịch sử git thì không xoá sạch được dễ dàng.
@@ -185,7 +185,7 @@ git push
 
 ## Việc phụ — vì sao chưa cài Playwright ở bài này
 
-Bạn sẽ cần Playwright, nhưng ở Bài 12. Cài sớm thì nó nằm đó tám bài không ai dùng, và bạn mất cơ hội hiểu
+Bạn sẽ cần Playwright, nhưng ở Bài 9. Cài sớm thì nó nằm đó tám bài không ai dùng, và bạn mất cơ hội hiểu
 vì sao cần tới nó.
 
 Nguyên tắc chung: cài khi đã có việc cho nó làm.
@@ -195,14 +195,14 @@ Nguyên tắc chung: cài khi đã có việc cho nó làm.
 ```
 kit-cua-toi/
 ├── .gitignore                    ← MỚI · viết TRƯỚC cả README
-├── README.md                     ← MỚI · một dòng cũng được, Bài 26 sẽ viết tử tế
+├── README.md                     ← MỚI · một dòng cũng được, Bài 28 sẽ viết tử tế
 ├── package.json                  ← MỚI · nơi khai mọi lệnh npm run
-├── CLAUDE.md                     ·  từ Bài 2
-├── LUAT-DAY-DU.md                ·  từ Bài 2
+├── CLAUDE.md                     ·  từ Bài 5
+├── LUAT-DAY-DU.md                ·  từ Bài 5
 ├── docs/
 │   └── moi-truong.md             ← MỚI · dán kết quả nghiệm thu vào đây
 ├── profiles/
-│   └── task.env.example          ·  từ Bài 2
+│   └── task.env.example          ·  từ Bài 5
 ├── scripts/qa/
 │   └── kiem-so-mong-doi.js       ·  từ Bài 1
 └── tests/api/
@@ -224,9 +224,9 @@ kit-cua-toi/
 Mở lịch sử git của một repo bạn đang tham gia. Tìm xem có file nào đáng lẽ không nên nằm ở đó không: `.env`,
 dump dữ liệu, ảnh chụp có thông tin khách.
 
-Chưa cần sửa, chỉ cần biết. Bài 5 bạn sẽ dựng máy quét đúng chuyện này.
+Chưa cần sửa, chỉ cần biết. Bài 2 bạn sẽ dựng máy quét đúng chuyện này.
 
 ## Bài sau
 
-Bài 5 dạy git từ đầu: commit, nhánh, và một máy chặn không cho tệp cấm lọt lên repo. Trong đó có bài học đắt
+Bài 2 dạy git từ đầu: commit, nhánh, và một máy chặn không cho tệp cấm lọt lên repo. Trong đó có bài học đắt
 nhất về `knowledge/`: không phải nội dung, mà chính tên file đã tiết lộ lỗi sản phẩm.

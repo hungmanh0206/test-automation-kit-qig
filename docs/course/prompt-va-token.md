@@ -1,4 +1,4 @@
-# Bài 6 — Prompt, Skill, Rule, Command: phân biệt và dùng đúng
+# Prompt, Skill, Rule, Command: phân biệt và dùng đúng
 
 > **2 giờ** · Có gì trong tay: repo có kit tối thiểu · Sau bài này: bốn loại file nằm đúng chỗ, và prompt của bạn có điều kiện dừng
 
@@ -114,7 +114,7 @@ Cách phân biệt gọn:
 > Câu có tác dụng là câu mà đọc kết quả xong bạn nói được ngay là nó đã được tuân hay chưa. Nếu nhìn đầu ra
 > mà không trả lời được câu đó thì bạn đang viết lời dặn, không phải ràng buộc.
 
-Đây là forcing function ở tầng prompt. Từ Bài 8 trở đi bạn sẽ biến chúng thành máy chặn thật.
+Đây là forcing function ở tầng prompt. Từ Bài 15 trở đi bạn sẽ biến chúng thành máy chặn thật.
 
 ### Ba mức mơ hồ
 
@@ -125,7 +125,7 @@ Không phải chỗ mơ hồ nào cũng phải dừng cả lượt:
 - **Ghi nhận**: không ảnh hưởng lượt này, ghi lại để sau.
 
 Chỉ mức chặn mới được dừng cả lượt. Không phân mức thì mọi chỗ hơi mơ hồ đều thành chặn, và sau ba lần bạn
-sẽ tắt luôn cơ chế này. Bài 8 sẽ biến nó thành gate.
+sẽ tắt luôn cơ chế này. Bài 15 sẽ biến nó thành gate.
 
 ## Việc 4 — So hai prompt trên cùng một tài liệu (35 phút)
 
@@ -179,7 +179,7 @@ git commit -m "docs: bài 6 — so prompt sơ sài với prompt có ràng buộc
 ```
 kit-cua-toi/
 ├── .agent/
-│   ├── rules/                    ·  từ Bài 2
+│   ├── rules/                    ·  từ Bài 5
 │   ├── skills/
 │   │   └── <vai>/SKILL.md        ← MỚI · năng lực theo vai, agent mở khi cần
 │   └── workflows/
@@ -214,5 +214,5 @@ Con số đó cho biết prompt của bạn đã đủ tốt chưa. Nó cũng l�
 
 ## Bài sau
 
-Bài 7 vào việc thật: đọc requirement nằm rải ở bốn nơi, mỗi nơi nói một kiểu, và bóc nó thành bảng luật dùng
+Bài 12 vào việc thật: đọc requirement nằm rải ở bốn nơi, mỗi nơi nói một kiểu, và bóc nó thành bảng luật dùng
 được.

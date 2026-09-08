@@ -1,4 +1,4 @@
-# Bài 17 — Một QA agent cần học những gì
+# Một QA agent cần học những gì
 
 > **2 giờ 30 phút** · Có gì trong tay: kit có kỷ luật, nhưng chưa có ký ức · Sau bài này: năm store, có mầm dữ liệu thật, và thu tự động
 
@@ -44,7 +44,7 @@ Ba thứ mất theo cách này:
 
 | Mất gì | Hậu quả cụ thể |
 |---|---|
-| **Cái đúng là gì** | Oracle phải suy lại từ đầu, hoặc tệ hơn: suy từ app (Bài 10) |
+| **Cái đúng là gì** | Oracle phải suy lại từ đầu, hoặc tệ hơn: suy từ app (Bài 13) |
 | **Vì sao đã kết luận thế** | Log lại bug đã bị từ chối; đánh FAIL oan case đã chốt là vướng môi trường |
 | **Làm sao dựng được state** | Mò lại một cách dựng đã thử và thất bại |
 
@@ -80,25 +80,25 @@ knowledge/
 
 Bốn nguồn, xếp theo thứ tự nên làm:
 
-### Nguồn 1 — Bạn đã có sẵn từ Bài 7 mà chưa nhận ra
+### Nguồn 1 — Bạn đã có sẵn từ Bài 12 mà chưa nhận ra
 
 Bảng `BR-` bạn sinh ở lượt phân tích **chính là** nội dung của `domain/`. Nó đã có: phát biểu kiểm được ·
 trích từ mục nào · và ví dụ input→expected. Chỉ cần chuyển nó vào store.
 
-Đây là lý do Bài 7 bắt đặt mã `BR-`: để hôm nay có thứ mà lưu.
+Đây là lý do Bài 12 bắt đặt mã `BR-`: để hôm nay có thứ mà lưu.
 
 ### Nguồn 2 — Câu trả lời của BA ở Ambiguity Gate
 
-Mỗi câu BA trả lời là một business rule đã được xác nhận. Ở Bài 7 bạn đã có ba câu. Ghi cả ba.
+Mỗi câu BA trả lời là một business rule đã được xác nhận. Ở Bài 12 bạn đã có ba câu. Ghi cả ba.
 
 Và ghi luôn nguồn xác nhận: ai chốt, ngày nào. Sáu tuần sau bạn cần điều đó.
 
 ### Nguồn 3 — Lịch sử hệ thống quản lý việc
 
 Nếu dự án đã chạy một thời gian thì đã có bug lịch sử. Quét về làm mầm cho `bugs/`, nó là đầu vào của
-Bài 19 (chấm rủi ro) và của việc đối chiếu "lỗi từng xảy ra đã có case canh chưa".
+Bài 27 (chấm rủi ro) và của việc đối chiếu "lỗi từng xảy ra đã có case canh chưa".
 
-Nhưng **suggest-only**: nạp dữ liệu, không tự kết luận. Lý do ở Bài 19 mục 5.
+Nhưng **suggest-only**: nạp dữ liệu, không tự kết luận. Lý do ở Bài 27 mục 5.
 
 ### Nguồn 4 — Chấp nhận trống, nhưng trống có kiểm soát
 
@@ -432,7 +432,7 @@ mất luôn phần kiểm. Cách ly giữ tín hiệu mà không để nó làm 
 
 ### Bước 1 — Chuyển bảng `BR-` vào store (15 phút)
 
-Lấy bảng business rule từ Bài 7, chuyển thành file JSON trong `knowledge/domain/`. Với **mỗi** rule, bắt buộc
+Lấy bảng business rule từ Bài 12, chuyển thành file JSON trong `knowledge/domain/`. Với **mỗi** rule, bắt buộc
 có `nguon`, và ít nhất **hai** ví dụ input→expected (một ca thường, một ca biên).
 
 Viết `scripts/qa/kiem-domain.js`, chạy, sửa cho tới khi ĐẠT.
@@ -457,7 +457,7 @@ Trường `lyDo` để trống là vô dụng. Chính nó là thứ khiến task
 
 ### Bước 3 — Ghi một recipe kèm cạm bẫy (10 phút)
 
-Lấy tiền điều kiện khó nhất ở Bài 12 và ghi vào `knowledge/setup_recipes/`. Phần **`camBay`** là phần giá trị
+Lấy tiền điều kiện khó nhất ở Bài 9 và ghi vào `knowledge/setup_recipes/`. Phần **`camBay`** là phần giá trị
 nhất, đó là thứ chỉ biết sau khi đã vấp:
 
 ```json
@@ -499,11 +499,11 @@ Chạy suite **năm lần** (đủ ngưỡng tối thiểu), rồi:
 node scripts/qa/do-tin-cay.js
 ```
 
-Có case nào dưới ngưỡng thì đó là danh sách cần truy nguyên nhân, quay lại Bài 12 mục 5.
+Có case nào dưới ngưỡng thì đó là danh sách cần truy nguyên nhân, quay lại Bài 9 mục 5.
 
 ### Bước 6 — Dùng lại store ở lượt sinh case (5 phút)
 
-Đây là bước chứng minh bộ nhớ có tác dụng. Chạy lại lượt sinh case ở Bài 7, nhưng thêm vào đầu vào:
+Đây là bước chứng minh bộ nhớ có tác dụng. Chạy lại lượt sinh case ở Bài 12, nhưng thêm vào đầu vào:
 
 ```
 ĐẦU VÀO
@@ -512,7 +512,7 @@ Có case nào dưới ngưỡng thì đó là danh sách cần truy nguyên nhâ
 3. knowledge/decisions/*.json     ← những gì đã chốt, ĐỪNG kết luận lại
 ```
 
-So với lượt Bài 7: agent có còn hỏi lại ba câu đã được BA trả lời không? **Không nên** — vì câu trả lời giờ đã
+So với lượt Bài 12: agent có còn hỏi lại ba câu đã được BA trả lời không? **Không nên** — vì câu trả lời giờ đã
 nằm trong `domain/`.
 
 ### Bước 7 — Commit
@@ -566,6 +566,6 @@ Rồi tự trả lời: trong sáu tháng qua, bao nhiêu lần team bạn kết
 
 ## Đọc thêm
 
-- Bài 19 sẽ dùng `bugs/` và `metrics/` để chấm rủi ro. Và giải bài toán cold start của chính việc chấm.
+- Bài 27 sẽ dùng `bugs/` và `metrics/` để chấm rủi ro. Và giải bài toán cold start của chính việc chấm.
 - [`knowledge/SCHEMA.md`](../../knowledge/SCHEMA.md) của kit này (nếu repo bạn có) — hình dạng đầy đủ của
   bảy store.

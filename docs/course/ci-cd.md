@@ -1,4 +1,4 @@
-# Bài 24 — CI: biến rule thành cổng chặn thật
+# Bài 20 — CI/CD
 
 > **2 giờ 30 phút** · Có gì trong tay: kit hoàn chỉnh có điểm mutation · Sau bài này: kit chạy không cần bạn, và người khác dùng được nó
 
@@ -37,7 +37,7 @@ Phản xạ đầu tiên là nhét mọi thứ vào CI. Sai, vì ba lý do:
 | Lý do | Cụ thể |
 |---|---|
 | Máy theo task cần `MA_TASK` | CI không có task nào ⇒ nó luôn KHÔNG ĐO ĐƯỢC ⇒ noise |
-| Test E2E cần môi trường UAT + tài khoản | Chạy mỗi commit thì khoá tài khoản (Bài 12) và mutate dữ liệu |
+| Test E2E cần môi trường UAT + tài khoản | Chạy mỗi commit thì khoá tài khoản (Bài 9) và mutate dữ liệu |
 | CI đỏ vì lý do không phải lỗi mã | Người ta học cách bỏ qua CI đỏ — và đó là lúc CI chết |
 
 Nên khai phạm vi CI bằng một nguồn, không để mỗi workflow tự chọn:
@@ -437,12 +437,12 @@ Kit không tự đứng vững. Bốn nhịp:
 | Nhịp | Việc | Vì sao |
 |---|---|---|
 | **Mỗi lượt chạy** | Đọc kết quả gate — đừng bỏ qua CẢNH BÁO | Cảnh báo bị bỏ qua đủ lâu sẽ thành nền |
-| **Mỗi sprint** | Cập nhật `knowledge/` từ những gì mới học · rà bug đã lọt (Bài 21 mục 8) | Tri thức không ghi thì mất khi người đi |
+| **Mỗi sprint** | Cập nhật `knowledge/` từ những gì mới học · rà bug đã lọt (Bài 25 mục 8) | Tri thức không ghi thì mất khi người đi |
 | **Mỗi tháng** | `npm run mutation` toàn bộ · so điểm với tháng trước | Điểm tụt = oracle bị làm yếu, thường do sửa test cho xanh |
 | **Mỗi quý** | Rà **ngoại lệ** trong mọi allowlist: cái nào còn cần? | Ngoại lệ tích lại cho tới khi gate không chặn gì nữa |
 
 Nhịp cuối là nhịp hay bị bỏ nhất và tốn nhất. Cách làm nó rẻ đi: bắt mọi ngoại lệ phải có **lý do** và **ngày**
-(Bài 28), rồi một máy cảnh báo khi ngoại lệ già hơn 90 ngày.
+(Bài 24), rồi một máy cảnh báo khi ngoại lệ già hơn 90 ngày.
 
 ---
 

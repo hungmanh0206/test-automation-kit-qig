@@ -1,4 +1,4 @@
-# Bài 23 — Dashboard và báo cáo
+# Dashboard và báo cáo
 
 > **1 giờ** · Có gì trong tay: nhiều lượt chạy đã ghi metrics · Sau bài này: một trang tự chứa cho người không có quyền vào công cụ, và biết vì sao dashboard không bao giờ là nguồn
 
@@ -39,7 +39,7 @@ Nghe hiển nhiên, nhưng nó bị vi phạm theo ba cách rất tự nhiên:
 |---|---|---|
 | Sửa tay một con số cho "đúng thực tế" | *"case này rõ ràng pass mà"* | lần sinh sau số quay lại — hoặc tệ hơn, không quay lại và không ai biết vì sao |
 | Nhập tay dữ liệu không có ở đâu khác | *"tiện, khỏi phải ghi hai chỗ"* | dashboard thành nguồn duy nhất, mà nó lại là thứ hay bị xoá đi sinh lại |
-| Gửi ảnh chụp dashboard làm bằng chứng | *"nhìn là thấy"* | ảnh chụp một con số không chứng minh người dùng thấy gì (Bài 13) |
+| Gửi ảnh chụp dashboard làm bằng chứng | *"nhìn là thấy"* | ảnh chụp một con số không chứng minh người dùng thấy gì (Bài 17) |
 
 Nên hai quy tắc cho mọi dashboard:
 
@@ -48,7 +48,7 @@ Nên hai quy tắc cho mọi dashboard:
 
 ## Việc 2 — Sinh dashboard tự chứa (35 phút)
 
-Ba đường cần vẽ, đúng ba đường ở cuối Bài 22, không hơn:
+Ba đường cần vẽ, đúng ba đường ở cuối Bài 25, không hơn:
 
 | Đường | Tụt/tăng thì nghĩa là |
 |---|---|
@@ -275,7 +275,7 @@ Bốn nguyên tắc:
 | **Nói cần gì để đi tiếp** | báo cáo không có bước tiếp theo thì chỉ là lời than |
 
 Và: không đính ảnh chụp dashboard làm bằng chứng cho một case. Bằng chứng cho case là ảnh/video màn hình
-thật, có khoanh đỏ (Bài 13). Dashboard là bức tranh tổng, không phải chứng cứ.
+thật, có khoanh đỏ (Bài 17). Dashboard là bức tranh tổng, không phải chứng cứ.
 
 ## Cây thư mục sau bài này
 
@@ -290,7 +290,7 @@ kit-cua-toi/
     └── dashboard.html                ← MỚI · artifact — xoá đi sinh lại được y hệt
 ```
 
-`lich-su.json` nằm trong `outputs/` nên không lên git, nhưng Bài 20 đã khai nó giữ **365 ngày** và
+`lich-su.json` nằm trong `outputs/` nên không lên git, nhưng Bài 27 đã khai nó giữ **365 ngày** và
 `mutation-diem` thì không bao giờ tỉa, vì mất chúng là mất đường xu hướng.
 
 ## Tự kiểm
@@ -316,6 +316,6 @@ kit-cua-toi/
 
 ## Đọc thêm
 
-- Bài 22 — [metrics và độ tin cậy](metrics-va-do-tin-cay.md): ba đường này tính ở đó.
-- Bài 21 — [mutation testing](do-chinh-bo-kiem.md): đường quan trọng nhất, và cách đọc điểm cho đúng.
-- Bài 20 — [sao lưu và vòng đời dữ liệu](sao-luu-va-vong-doi-du-lieu.md): vì sao `lich-su.json` không được tỉa.
+- Bài 25 — [metrics và độ tin cậy](metrics-va-do-tin-cay.md): ba đường này tính ở đó.
+- Bài 25 — [mutation testing](do-chinh-bo-kiem.md): đường quan trọng nhất, và cách đọc điểm cho đúng.
+- Bài 27 — [sao lưu và vòng đời dữ liệu](sao-luu-va-vong-doi-du-lieu.md): vì sao `lich-su.json` không được tỉa.

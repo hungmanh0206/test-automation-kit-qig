@@ -1,4 +1,4 @@
-# Bài 0 — Trước khi bắt đầu
+# Trước khi bắt đầu
 
 > **1 giờ** · Có gì trong tay: chưa có gì · Sau bài này: app thực hành chạy được trên máy bạn, và bạn hiểu 10 từ sẽ gặp suốt các bài sau
 
@@ -53,7 +53,7 @@ v20.11.1
 |---|---|---|
 | `v20.x` trở lên | Đủ dùng | Đi tiếp |
 | `v18.x` | Vẫn chạy được | Đi tiếp |
-| `v16.x` trở xuống | Quá cũ, sẽ gặp lỗi khó hiểu ở Bài 12 | Cài lại bản mới ở nodejs.org |
+| `v16.x` trở xuống | Quá cũ, sẽ gặp lỗi khó hiểu ở Bài 9 | Cài lại bản mới ở nodejs.org |
 | `node: command not found` hoặc `'node' is not recognized` | Máy chưa có Node | Vào nodejs.org, tải bản LTS, cài xong thì mở terminal mới rồi gõ lại |
 
 Chỗ hay vấp: cài xong mà gõ vẫn báo không tìm thấy. Lý do là cửa sổ terminal đang mở không biết bạn vừa cài
@@ -147,7 +147,7 @@ Mười từ này sẽ gặp lại rất nhiều lần. Mỗi từ có một ví
 Một lần kiểm cụ thể, viết ra để người khác làm lại được. Nó phải nói rõ: kiểm cái gì, cần chuẩn bị gì trước,
 làm những bước nào, và đúng thì ra sao.
 
-Việc 3 vừa rồi là một testcase, chỉ là bạn chưa viết nó ra giấy. Bài 9 dạy cách viết.
+Việc 3 vừa rồi là một testcase, chỉ là bạn chưa viết nó ra giấy. Bài 13 dạy cách viết.
 
 ### 2. Kết quả mong đợi độc lập (oracle)
 
@@ -159,7 +159,7 @@ không, vì đó là app tự nói về chính nó.
 Giống đi mua gạo. Bạn không cân gạo bằng cân của người bán rồi hỏi người bán xem cân có đúng không. Bạn mang
 cân riêng đi. Cái cân riêng đó là oracle.
 
-Đây là từ quan trọng nhất trong mười từ. Bài 10 dành cả hai tiếng chỉ để nói về nó.
+Đây là từ quan trọng nhất trong mười từ. Bài 13 dành cả hai tiếng chỉ để nói về nó.
 
 ### 3. Bản gốc (canonical)
 
@@ -175,7 +175,7 @@ photo sai, chứ bản chính vẫn thế.
 
 Một đoạn chương trình đọc kết quả làm việc của bạn, thấy sai chuẩn thì chặn lại. Chặn, chứ không phải nhắc.
 
-Ví dụ bạn sẽ viết ở Bài 13: một máy đọc danh sách case đã chạy, thấy case nào ghi PASS mà không kèm ảnh
+Ví dụ bạn sẽ viết ở Bài 17: một máy đọc danh sách case đã chạy, thấy case nào ghi PASS mà không kèm ảnh
 chứng minh thì nó báo lỗi và không cho đi tiếp.
 
 Giống cửa soát vé. Nhân viên có thể nhắc "nhớ mua vé nhé". Còn cửa soát vé thì không mở.
@@ -200,7 +200,7 @@ Kết luận về một case sau khi chạy. Không chỉ có PASS với FAIL:
 | `BLOCKED` | Không chạy được vì thứ khác chặn, ví dụ app sập hoặc không đăng nhập được |
 | `SETUP_FAILURE` | Không chạy được vì chuẩn bị dữ liệu hỏng. Lỗi của bạn, không phải bug của app |
 
-Điều cần nhớ: "không kết luận được" thì không được ghi thành PASS. Bài 13 dạy cách phân loại.
+Điều cần nhớ: "không kết luận được" thì không được ghi thành PASS. Bài 17 dạy cách phân loại.
 
 ### 7. Bằng chứng (evidence)
 
@@ -208,7 +208,7 @@ Kết luận về một case sau khi chạy. Không chỉ có PASS với FAIL:
 
 Ví dụ: ảnh chụp lúc Tổng cộng hiện `515.000`, có khoanh đỏ vào đúng con số đó.
 
-File `.txt` ghi "đã test, pass" thì không tính. Đó chỉ là bạn nói lại lần nữa thôi. Bài 13 dạy cách chụp có
+File `.txt` ghi "đã test, pass" thì không tính. Đó chỉ là bạn nói lại lần nữa thôi. Bài 17 dạy cách chụp có
 khoanh đỏ và che thông tin cá nhân.
 
 ### 8. Tiền điều kiện (precondition)
@@ -227,7 +227,7 @@ Test mà cùng một đoạn mã, cùng một app, chạy lần này đỏ lần
 Nguyên nhân hay gặp nhất là test bấm nút trước khi nút kịp hiện ra.
 
 Loại này khó chịu hơn test luôn đỏ. Test luôn đỏ thì bạn sửa. Test chập chờn thì bạn quen dần với việc chạy
-lại cho tới khi xanh. Rồi tới lúc bạn không tin màu nào nữa. Bài 12 và Bài 13 xử lý nó.
+lại cho tới khi xanh. Rồi tới lúc bạn không tin màu nào nữa. Bài 9 và Bài 17 xử lý nó.
 
 ### 10. Agent
 
@@ -243,44 +243,44 @@ này khi bài học nói "viết file này", bạn biết nó nằm ở đâu v�
 
 ```
 kit-cua-toi/
-├── CLAUDE.md                     ← Bài 2  · luật agent phải đọc mỗi lần chạy
-├── LUAT-DAY-DU.md                ← Bài 2  · bản luật đầy đủ; CLAUDE.md là bản rút gọn
-├── README.md                     ← Bài 26 · người mới đọc là chạy được
-├── package.json                  ← Bài 4  · khai mọi lệnh npm run
-├── playwright.config.js          ← Bài 12 · cấu hình chạy test
+├── CLAUDE.md                     ← Bài 5  · luật agent phải đọc mỗi lần chạy
+├── LUAT-DAY-DU.md                ← Bài 5  · bản luật đầy đủ; CLAUDE.md là bản rút gọn
+├── README.md                     ← Bài 28 · người mới đọc là chạy được
+├── package.json                  ← Bài 2  · khai mọi lệnh npm run
+├── playwright.config.js          ← Bài 9 · cấu hình chạy test
 │
 ├── .agent/                       ← phần "não": luật và cấu hình
-│   ├── rules/                    ·  Bài 2
+│   ├── rules/                    ·  Bài 5
 │   └── config/
-│       ├── phan-quyet.json       ← Bài 13 · danh mục phán quyết
-│       ├── chieu-phu.json        ← Bài 11 · các loại câu hỏi phải phủ
-│       ├── risk_model.json       ← Bài 19 · trọng số rủi ro
-│       ├── mutants.json          ← Bài 21 · các lỗi cố tình tiêm vào
-│       └── ci_scope.json         ← Bài 24 · lệnh nào chạy ở đâu
+│       ├── phan-quyet.json       ← Bài 17 · danh mục phán quyết
+│       ├── chieu-phu.json        ← Bài 14 · các loại câu hỏi phải phủ
+│       ├── risk_model.json       ← Bài 27 · trọng số rủi ro
+│       ├── mutants.json          ← Bài 25 · các lỗi cố tình tiêm vào
+│       └── ci_scope.json         ← Bài 20 · lệnh nào chạy ở đâu
 │
-├── .claude/commands/             ← Bài 16 · gõ một dòng thay vì sáu lệnh
+├── .claude/commands/             ← Bài 18 · gõ một dòng thay vì sáu lệnh
 │
-├── prompt_templates/             ← Bài 6  · bản mẫu ra lệnh cho agent
+├── prompt_templates/             ← Bài 15  · bản mẫu ra lệnh cho agent
 │
 ├── scripts/
 │   ├── lib/                      ← thư viện dùng chung, không tự chạy
-│   │   ├── testcase/             ·  Bài 9  · đọc và ghi bảng testcase
-│   │   └── gate.js               ·  Bài 11 · khung chung cho mọi máy kiểm
+│   │   ├── testcase/             ·  Bài 13  · đọc và ghi bảng testcase
+│   │   └── gate.js               ·  Bài 14 · khung chung cho mọi máy kiểm
 │   └── qa/                       ← máy kiểm: mỗi file tự chạy được và chặn được
 │       ├── kiem-so-mong-doi.js   ·  Bài 1  · máy đầu tiên bạn viết, 12 dòng
-│       ├── gate-mo-ho.js         ·  Bài 8  · chưa chốt chỗ mơ hồ thì không cho đi tiếp
-│       ├── gate-bang-chung.js    ·  Bài 13 · case chạy rồi mà không ảnh thì chặn
-│       └── tiem-loi.js           ·  Bài 21 · đo chính bộ kiểm của bạn
+│       ├── gate-mo-ho.js         ·  Bài 15  · chưa chốt chỗ mơ hồ thì không cho đi tiếp
+│       ├── gate-bang-chung.js    ·  Bài 17 · case chạy rồi mà không ảnh thì chặn
+│       └── tiem-loi.js           ·  Bài 25 · đo chính bộ kiểm của bạn
 │
 ├── tests/
 │   ├── support/                  ← hạ tầng test, dùng chung mọi test
-│   │   ├── factory.js            ·  Bài 12 · tạo dữ liệu qua API
-│   │   └── evidence.js           ·  Bài 13 · chụp ảnh có khoanh đỏ
+│   │   ├── factory.js            ·  Bài 9 · tạo dữ liệu qua API
+│   │   └── evidence.js           ·  Bài 17 · chụp ảnh có khoanh đỏ
 │   ├── api/                      ← Bài 1  · test gọi thẳng API
-│   └── e2e/                      ← Bài 12 · test qua giao diện
+│   └── e2e/                      ← Bài 9 · test qua giao diện
 │
-├── knowledge/                    ← Bài 17 · bộ nhớ dự án. Không đưa lên git
-├── profiles/<MÃ-TASK>/task.env   ← Bài 4  · URL và tài khoản. Không đưa lên git
+├── knowledge/                    ← Bài 26 · bộ nhớ dự án. Không đưa lên git
+├── profiles/<MÃ-TASK>/task.env   ← Bài 2  · URL và tài khoản. Không đưa lên git
 └── outputs/                      ← kết quả mỗi lượt chạy. Không đưa lên git
     └── tasks/<MÃ-TASK>/
         ├── test-cases/           ·  bảng case đã sinh
@@ -297,7 +297,7 @@ Ba chỗ người mới hay xếp nhầm. Phân biệt bằng một câu hỏi:
 | `tests/support/` | hạ tầng test, không phải test | File không có `test(...)` thì cho vào `support/` |
 
 Ba thư mục cuối không bao giờ đưa lên git. `knowledge/` chứa dữ liệu nghiệp vụ của công ty. `profiles/` chứa
-tài khoản và mật khẩu. `outputs/` là kết quả từng lượt chạy, đổi liên tục. Bài 5 sẽ dựng `.gitignore` cho chúng.
+tài khoản và mật khẩu. `outputs/` là kết quả từng lượt chạy, đổi liên tục. Bài 2 sẽ dựng `.gitignore` cho chúng.
 
 Bạn không phải tạo cây này bây giờ. Mỗi bài tạo đúng phần của nó, và bài nào cũng có khối "Cây thư mục sau
 bài này" để bạn đối chiếu.
@@ -323,7 +323,7 @@ Làm lại Việc 3, nhưng đổi khách sang `Lê Văn C — hạng Vàng`, s�
 3. Lấy máy tính cộng thử các số đang hiện: Tạm tính trừ Giảm giá cộng Phí giao hàng. Có ra đúng số Tổng cộng
    đang hiện không?
 
-Câu 3 mới là câu chính. Nếu thấy có gì lạ thì ghi vào một file `ghi-chu.md`, đừng vội kết luận. Bài 10 sẽ dạy
+Câu 3 mới là câu chính. Nếu thấy có gì lạ thì ghi vào một file `ghi-chu.md`, đừng vội kết luận. Bài 13 sẽ dạy
 cách biến "thấy lạ" thành "chứng minh được là sai".
 
 ## Bài sau

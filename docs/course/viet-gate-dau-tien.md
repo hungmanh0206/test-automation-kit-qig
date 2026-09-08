@@ -2,7 +2,7 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: một vòng làm việc hoàn chỉnh — case, chạy, verdict, evidence. Giờ mới có thứ để canh · Sau bài này: một gate chạy được, đã chứng minh có răng
 >
-> *Bài này không đánh số, nó là phần đào sâu của **Bài 8**. Đọc kèm **Bài 8**.*
+> *Bài này không đánh số, nó là phần đào sâu của **Bài 15**. Đọc kèm **Bài 15**.*
 
 **Tóm tắt bài này**
 
@@ -31,7 +31,7 @@ Bốn việc:
 
 ---
 
-## 1. Vì sao là Bài 8, không phải Bài 6
+## 1. Vì sao là Bài 15, không phải Bài 15
 
 Gate là một đoạn mã đọc artifact rồi phán. Nên nó cần ba thứ, và cả ba chỉ có sau Phần 3:
 
@@ -41,7 +41,7 @@ Gate là một đoạn mã đọc artifact rồi phán. Nên nó cần ba thứ,
 | Một chuẩn để so vào (trạng thái nào là hợp lệ) | 11 |
 | Đủ trải nghiệm để biết chỗ nào hay sai | 9–12 |
 
-Viết gate ở Bài 6 thì bạn đang đoán chỗ nào sẽ sai. Viết ở Bài 8 thì bạn **đã thấy** nó sai.
+Viết gate ở Bài 15 thì bạn đang đoán chỗ nào sẽ sai. Viết ở Bài 15 thì bạn **đã thấy** nó sai.
 
 Mở lại file bạn viết ở Thực hành Bài 1. Danh sách "nếu agent muốn báo cáo đẹp mà không làm thật, nó sẽ
 làm thế nào" cùng những câu dạng *"đọc X, nếu Y thì chặn"*. Hôm nay bạn biến một câu trong đó thành mã.
@@ -74,7 +74,7 @@ Mã thoát là phần dễ bị làm sai nhất. Ba mã, ba nghĩa **khác nhau*
 Gate đầu tiên nên thoả bốn điều: đọc artifact bạn **đã có** · bắt một lỗi **thật** · viết xong trong một
 buổi · và tiêm lỗi vào được để nghiệm thu.
 
-Luật cần canh nằm ở `CLAUDE.md` mục 4 bạn viết từ Bài 2:
+Luật cần canh nằm ở `CLAUDE.md` mục 4 bạn viết từ Bài 5:
 
 > Mọi case đã chạy (kể cả PASS) phải có ảnh hoặc video đúng màn.
 
@@ -82,7 +82,7 @@ Nó lý tưởng để làm gate đầu tiên vì phán được bằng máy tuy
 
 ### Đầu vào: file trạng thái
 
-Bài 13 bạn đã có file kết quả. Nếu chưa đúng dạng này thì tạo một file mẫu để làm việc:
+Bài 17 bạn đã có file kết quả. Nếu chưa đúng dạng này thì tạo một file mẫu để làm việc:
 
 `outputs/demo/tasks/PROJ-1234/test-results/testcase-status.json`
 
@@ -120,7 +120,7 @@ const path = require('path');
 const ANH = ['.png', '.jpg', '.jpeg', '.webp'];
 const VIDEO = ['.mp4', '.webm'];
 
-// Trạng thái nghĩa là ĐÃ CHẠY ⇒ mới đòi bằng chứng. Lấy đúng từ file taxonomy ở Bài 13.
+// Trạng thái nghĩa là ĐÃ CHẠY ⇒ mới đòi bằng chứng. Lấy đúng từ file taxonomy ở Bài 17.
 const DA_CHAY = ['PASS', 'FAIL'];
 
 function khongDoDuoc(msg) {
@@ -196,7 +196,7 @@ Ba chi tiết trong đoạn mã trên không phải trang trí, và mỗi cái �
 
 | Dòng | Vì sao có |
 |---|---|
-| `if (!cases.length) khongDoDuoc(...)` | File rỗng thì gate sẽ báo ✓ — **xanh giả**. Cùng lớp lỗi với "suite 0 test vẫn PASSED" ở Bài 11 |
+| `if (!cases.length) khongDoDuoc(...)` | File rỗng thì gate sẽ báo ✓ — **xanh giả**. Cùng lớp lỗi với "suite 0 test vẫn PASSED" ở Bài 14 |
 | `if (!DA_CHAY.includes(c.status)) continue` | Đòi bằng chứng cho case chưa chạy là **báo oan**, và đó là cách nhanh nhất làm người ta tắt gate |
 | `if (fs.statSync(f).size < 1024)` | Chụp lỗi thì file vẫn được tạo, chỉ là **ảnh trắng**. Có đường dẫn không chứng minh có bằng chứng |
 
@@ -220,7 +220,7 @@ Với **mỗi** dòng vi phạm, tự trả lời: thật hay oan?
 
 Ba kiểu báo oan bạn sẽ gặp ngay:
 
-1. Trạng thái ngoài danh sách. Bài 13 có thêm `PASS_WITH_DEVIATION` chẳng hạn, nó *đã chạy* nên phải
+1. Trạng thái ngoài danh sách. Bài 17 có thêm `PASS_WITH_DEVIATION` chẳng hạn, nó *đã chạy* nên phải
    đòi bằng chứng, nhưng `DA_CHAY` của bạn chưa có nó ⇒ gate **bỏ sót**, không phải báo oan. Cũng nguy hiểm.
 2. **Đường dẫn tương đối.** Gate chạy ở gốc repo, đường dẫn trong file lại tính từ thư mục task ⇒ báo "không
    tồn tại" oan hàng loạt. Chốt một quy ước rồi ghi vào luật.
@@ -298,7 +298,7 @@ lặng mãi. Cách chữa không phải biến đỏ thành vàng, mà là để
 
 ### Bước 1 — Chuẩn bị artifact (10 phút)
 
-Dùng kết quả thật từ Bài 13–12. Không có thì tạo file mẫu ở mục 3, cùng 2 file ảnh thật (chụp bất cứ màn nào).
+Dùng kết quả thật từ Bài 17–12. Không có thì tạo file mẫu ở mục 3, cùng 2 file ảnh thật (chụp bất cứ màn nào).
 
 ### Bước 2 — Viết gate (25 phút)
 
@@ -348,7 +348,7 @@ kit-cua-toi/scripts/qa/
 
 ## Tự kiểm
 
-- [ ] Tôi giải thích được vì sao gate không thể viết ở Bài 6.
+- [ ] Tôi giải thích được vì sao gate không thể viết ở Bài 15.
 - [ ] Gate của tôi phân biệt **exit 1** (có vi phạm) với **exit 2** (không đo được).
 - [ ] Gate không đòi bằng chứng cho case chưa chạy.
 - [ ] Gate chặn cả trường hợp file trạng thái **rỗng**.
@@ -362,7 +362,7 @@ kit-cua-toi/scripts/qa/
 Mở lại danh sách "phép kiểm đề xuất" từ Thực hành Bài 1. Chọn một câu nữa và viết thành gate thứ hai
 — tự làm, không cần khuôn. Gợi ý những cái vừa sức và bắt lỗi thật:
 
-- Mọi case `FAIL` phải có `failureLayer`, và giá trị đó phải thuộc danh sách ở file taxonomy Bài 13.
+- Mọi case `FAIL` phải có `failureLayer`, và giá trị đó phải thuộc danh sách ở file taxonomy Bài 17.
 - Case `SKIP` phải có `reason` không rỗng.
 - Mọi `id` trong file trạng thái phải tồn tại trong bộ testcase canonical (bắt case "mọc thêm từ đâu").
 
@@ -371,5 +371,5 @@ Với gate mới, vẫn phải làm negative control. Không có ngoại lệ ch
 ## Đọc thêm
 
 - [`scripts/qa/library_drift.js`](../../scripts/qa/library_drift.js) của kit này, một gate thật, để ý phần
-  allowlist bắt buộc ghi lý do (sẽ học ở Bài 28).
-- Bài 11 sẽ gộp gate của bạn vào một bộ có helper dùng chung.
+  allowlist bắt buộc ghi lý do (sẽ học ở Bài 24).
+- Bài 14 sẽ gộp gate của bạn vào một bộ có helper dùng chung.

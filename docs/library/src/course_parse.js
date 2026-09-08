@@ -58,7 +58,7 @@ function parseCourse(mdPath) {
   const warning = stripMd((md.match(/⚠️\s*\*\*Nói thẳng:\*\*([\s\S]*?)\n\n/) || [, ''])[1]);
 
   // So sánh với khoá khác — bảng 2 cột
-  const cmpBlock = (md.match(/## Khác gì các khoá AI Testing hiện có([\s\S]*?)\n\*\*Câu hỏi/) || [, ''])[1];
+  const cmpBlock = (md.match(/## Khác gì một tutorial Playwright([\s\S]*?)\n\*\*Câu hỏi/) || [, ''])[1];
   const compare = [...cmpBlock.matchAll(/^\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*$/gm)]
     .map((r) => ({ aspect: stripMd(r[1]), others: stripMd(r[2]), ours: stripMd(r[3]) }))
     .filter((r) => r.aspect && !/^-+$/.test(r.others));

@@ -1,4 +1,4 @@
-# Bài 11 — Gate chất lượng và đo độ phủ
+# Bài 14 — Coverage và Risk
 
 > **2 giờ** · Có gì trong tay: bộ testcase có oracle neo được · Sau bài này: biết bộ của mình trống hẳn loại câu hỏi nào
 
@@ -35,7 +35,7 @@ Bộ testcase có hai trục độc lập:
 
 | Trục | Trả lời | Bạn đã có từ | Đếm được không |
 |---|---|---|---|
-| **Module** | Test **ở đâu** | Bài 9 (cột `Module`) | Có — đếm theo cột |
+| **Module** | Test **ở đâu** | Bài 13 (cột `Module`) | Có — đếm theo cột |
 | **Chiều** | Hỏi loại câu hỏi nào | Chưa có gì | **Không** — chưa có gì để đếm |
 
 Và đây là bẫy trung tâm của cả bài:
@@ -104,7 +104,7 @@ Một case được phép nhiều tag: `[Calc][Boundary]`.
 
 > Vì sao tag nằm trong tiêu đề, không phải cột riêng. Ba lý do thực dụng: nó đi theo case khi publish lên
 > công cụ test-management (không mất) · người đọc thấy ngay khi quét danh sách · và không phải thêm cột bắt
-> buộc thứ tám (Bài 9 mục 2 đã nói vì sao nên tiết chế số cột).
+> buộc thứ tám (Bài 13 mục 2 đã nói vì sao nên tiết chế số cột).
 
 **Ràng buộc kèm theo, quan trọng hơn cái tag:**
 
@@ -150,7 +150,7 @@ Hai điều làm file này có giá trị:
    đã nghĩ gì, thay vì tự hỏi *"sao lúc đó không làm?"*
 
 > Cảnh báo: nếu bạn khai `n/a` cho một chiều mà artifact của task cho thấy chiều đó có tồn tại (ví dụ khai
-> `API: n/a` trong khi task có file đặc tả API), thì đó là khai sai. Bài 11 khi bạn viết gate cho chiều, hãy
+> `API: n/a` trong khi task có file đặc tả API), thì đó là khai sai. Bài 14 khi bạn viết gate cho chiều, hãy
 > chặn đúng trường hợp đó.
 
 ## 5. Đếm
@@ -266,7 +266,7 @@ Tự kiểm: đưa lý do cho người khác đọc, họ phản đối được
 
 ### Bước 2 — Gắn tag cho bộ hiện có (15 phút)
 
-Gắn tag chiều vào tiêu đề mọi case trong bộ Bài 7–7. Đừng gắn cho đủ, gắn đúng cái case **thật sự** đang hỏi.
+Gắn tag chiều vào tiêu đề mọi case trong bộ Bài 12–7. Đừng gắn cho đủ, gắn đúng cái case **thật sự** đang hỏi.
 
 Case nào bạn không biết gắn tag gì thường là case không rõ mục đích. Dấu hiệu cần viết lại.
 
@@ -347,11 +347,11 @@ Lấy bộ testcase **thật** lớn nhất ở dự án bạn. Gắn tag chiề
 Rất có thể bạn tìm ra ít nhất một chiều có **0 case** trong một bộ mà cả team đã review và đã chạy nhiều lần.
 Đó không phải lỗi của ai. Đó là điểm mù có hệ thống: tài liệu không nói thì không ai nghĩ ra.
 
-Ghi con số lại. Ở Bài 21 bạn sẽ có một cách khác để tìm điểm mù: không hỏi *"tôi thiếu loại câu hỏi nào"* mà
+Ghi con số lại. Ở Bài 25 bạn sẽ có một cách khác để tìm điểm mù: không hỏi *"tôi thiếu loại câu hỏi nào"* mà
 hỏi *"bộ kiểm của tôi có bắt được lỗi không"* — và đo được bằng số.
 
 ## Đọc thêm
 
 - [`scripts/qa/dimension_coverage.js`](../../scripts/qa/dimension_coverage.js) của kit này, bản đầy đủ,
   **20** chiều và có cả phần chặn khi khai `n/a` trái với artifact thật.
-- Phần 3 (Bài 12–12) chuyển sang chạy thật: locator bền, dựng dữ liệu, verdict, bằng chứng.
+- Phần 3 (Bài 9–12) chuyển sang chạy thật: locator bền, dựng dữ liệu, verdict, bằng chứng.

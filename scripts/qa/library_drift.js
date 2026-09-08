@@ -418,7 +418,7 @@ if (!exists(COURSE_MD)) {
      * hàng loạt, mà không phiền vài chỗ dùng hợp lý.
      *
      * Sàn lấy từ số đo THẬT sau khi đã dọn một lượt, cộng biên độ nhỏ. */
-    const SAN_GIONG = { gachNgang: 8, trichDamDau: 38 };
+    const SAN_GIONG = { gachNgang: 8, trichDamDau: 5 };
     function vanXuoi(md) {
       const ra = [];
       let trongMa = false;
@@ -446,7 +446,12 @@ if (!exists(COURSE_MD)) {
           demGach++;
         }
       }
-      demTrich += (s.match(/^> \*\*[^*]+\*\*/gm) || []).length;
+      /* BỎ dòng metadata đầu bài. Quy ước của tài liệu BẮT BUỘC nó mở đầu bằng thời lượng in đậm
+         ("> **2 giờ** · Có gì trong tay: …"), nên đếm nó là phạt bài giảng vì đã đúng quy ước —
+         và sàn thì tự trôi lên mỗi lần thêm một bài. Bộ đếm gạch ngang ngay trên đã loại dòng này
+         từ đầu; bộ đếm trích dẫn thì bỏ sót. */
+      demTrich += (s.match(/^> \*\*[^*]+\*\*.*$/gm) || [])
+        .filter((d) => !/^> \*\*[^*]+\*\* · Có gì trong tay/.test(d)).length;
       /* Lặp từ: dấu vết của một lượt thay chuỗi hàng loạt bị chồng lên nhau. Đã dính 2 lần. */
       for (const m of s.matchAll(/\b([a-zà-ỹ]{3,}) \1\b/g)) {
         if (['song', 'mãi', 'luôn', 'nhau', 'từng', 'chung', 'riêng'].includes(m[1])) continue;   // từ láy hợp lệ

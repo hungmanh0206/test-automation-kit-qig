@@ -1,4 +1,4 @@
-# Bài 16 — Bug report và tích hợp
+# Bài 18 — Test Management
 
 > **2 giờ 30 phút** · Có gì trong tay: kit chạy trọn vòng trên máy cá nhân · Sau bài này: cả team thấy được kết quả, và quy trình gõ được một dòng
 
@@ -53,7 +53,7 @@ Bốn nguyên tắc, và mỗi cái đến từ một lần mất mát:
 | **Luôn dry-run trước** | Đẩy nhầm 500 case lên công cụ dùng chung thì rất khó rút lại |
 | **Kiểm công cụ có API xoá không** | Nếu không thì mọi lần đẩy là vĩnh viễn — dry-run thành bắt buộc, không phải cẩn thận thừa |
 | **2xx không chứng minh mapping đúng** | Xem mục 4 |
-| **Một chiều rõ ràng** | Chốt rõ chiều nào là nguồn ở giai đoạn nào (Bài 9 mục 5) |
+| **Một chiều rõ ràng** | Chốt rõ chiều nào là nguồn ở giai đoạn nào (Bài 13 mục 5) |
 
 > Kinh nghiệm cụ thể: công cụ test-management mà kit này dùng không có API xoá. Nên "dọn dẹp" nghĩa là
 > chuyển trạng thái sang `Deprecated`, không phải xoá. Hoá ra điều đó **tốt hơn**: giữ case nghĩa là giữ nguyên
@@ -268,7 +268,7 @@ bỏ qua evidence đã có, thay vì đẻ cycle trùng.
 /*
  * day-ket-qua.js — đẩy testcase-status.json thành một cycle trên công cụ test-management.
  *
- * ĐẦU VÀO GIỮ NGUYÊN là testcase-status.json của Bài 13 — Phase 2 không phải đổi cách ghi kết quả,
+ * ĐẦU VÀO GIỮ NGUYÊN là testcase-status.json của Bài 17 — Phase 2 không phải đổi cách ghi kết quả,
  * chỉ đích đến là khác.
  *
  * CHẠY GATE TRƯỚC KHI GHI: chất lượng output. Bỏ qua có chủ ý thì --qa-approved.
@@ -366,7 +366,7 @@ main().catch((e) => { console.error('[day-ket-qua] lỗi: ' + e.message); proces
 
 ## 6. Đối soát độ tươi trước khi execute
 
-Bài 9 mục 5 đã chốt: khi execute thì công cụ test-management là canonical. Nên trước khi chạy, kéo bản mới
+Bài 13 mục 5 đã chốt: khi execute thì công cụ test-management là canonical. Nên trước khi chạy, kéo bản mới
 nhất về, và **kiểm** bản sao đang có có cũ không.
 
 ```js
@@ -429,8 +429,8 @@ Agent cần đọc Jira, tài liệu, thiết kế. Đừng để mỗi chỗ t�
 1. Quyền **tối thiểu**: chỉ đọc, trừ đường tạo bug.
 2. Token nằm ở `.env` hoặc `profiles/<TASK>/task.env` — **không** khai trong file này.
 3. Tài liệu nhiều tab: PHẢI bật tuỳ chọn đọc hết tab. Không bật thì chỉ được tab đầu và
-   **không có thông báo nào** (Bài 6 mục 4).
-4. Đo cỡ tài liệu trước khi đọc (Bài 6). Vượt ngưỡng thì giao subagent trích.
+   **không có thông báo nào** (Bài 15 mục 4).
+4. Đo cỡ tài liệu trước khi đọc (Bài 15). Vượt ngưỡng thì giao subagent trích.
 ```
 
 Nguyên tắc "một cửa vào" rất thực dụng: mỗi chỗ tự gọi API thì mỗi chỗ tự xử lý token, phân trang và lỗi theo
@@ -593,7 +593,7 @@ công cụ, và đó là lỗi **im lặng** đã tồn tại từ lượt publi
 
 ## Đọc thêm
 
-- Bài 21 là bài trọng tâm của cả tài liệu: giờ bạn đã có suite chạy nhiều lượt, **đo được** năng lực phát hiện
+- Bài 25 là bài trọng tâm của cả tài liệu: giờ bạn đã có suite chạy nhiều lượt, **đo được** năng lực phát hiện
   của nó.
 - [`scripts/integrations/aio/README.md`](../../scripts/integrations/aio/README.md) của kit này, tầng tích hợp
   đầy đủ với một công cụ thật.

@@ -1,4 +1,4 @@
-# Bài 21 — Mutation Testing: đo suite có bắt được bug không ⭐
+# Mutation Testing: đo suite có bắt được bug không
 
 > **3 giờ** · Có gì trong tay: suite đã chạy nhiều lượt, có evidence, có lịch sử · Sau bài này: bạn biết bộ kiểm của mình bắt được bao nhiêu phần trăm lỗi thật — bằng số, không bằng cảm giác
 
@@ -43,7 +43,7 @@ Câu đó có thể nghĩa là một trong hai điều. Và bạn không phân b
 | App đúng, và suite của bạn đủ nhạy để phát hiện nếu nó sai | ? |
 | Suite của bạn không nhạy, nên nó xanh kể cả khi app sai | ? |
 
-Cả hai đều cho ra màu xanh. Đây là đúng vấn đề của Bài 10, chỉ ở quy mô cả bộ: bạn không đo được năng lực
+Cả hai đều cho ra màu xanh. Đây là đúng vấn đề của Bài 13, chỉ ở quy mô cả bộ: bạn không đo được năng lực
 phát hiện của một bộ kiểm bằng cách chạy nó trên một app đang đúng.
 
 Chuyện quen thuộc: suite xanh suốt sprint, rồi một QA khác hoặc khách hàng tìm ra bug ở đúng luồng mà suite
@@ -402,7 +402,7 @@ Chưa chắc. Có bốn lý do khiến điểm 0 mà suite vẫn tốt:
 | Ứng dụng **không dùng** trường bạn tiêm | Đây là thu hoạch: trường đó có thể là trường chết |
 | Mutant quá nhỏ để nhìn thấy | Cộng 1.000đ vào tổng 50 triệu mà UI làm tròn về triệu ⇒ không sai được |
 
-Loại hết bốn lý do đó rồi thì điểm 0 mới nghĩa là suite không nhìn thấy gì. Đây đúng là luật ở Bài 11: chỗ
+Loại hết bốn lý do đó rồi thì điểm 0 mới nghĩa là suite không nhìn thấy gì. Đây đúng là luật ở Bài 14: chỗ
 không đo được thì không phải đạt, mà cũng không phải vi phạm.
 
 ### Điểm 5 trên 5 có nghĩa suite hoàn hảo không
@@ -459,7 +459,7 @@ mà lượt cuối lại xanh do một lý do khác (dữ liệu đổi giữa c
 
 Máy ở trên đặt `PW_RETRIES: '0'` cho mọi lượt tiêm lỗi. Lượt đo không cần chống nhoè, nó cần tín hiệu sạch.
 
-> Ba bẫy này là ví dụ hoàn hảo cho luật ở Bài 28: máy nào cũng phải có đối chứng âm. Trước khi tin điểm
+> Ba bẫy này là ví dụ hoàn hảo cho luật ở Bài 24: máy nào cũng phải có đối chứng âm. Trước khi tin điểm
 > mutation, hãy tiêm một mutant mà bạn **biết chắc** suite bắt được, và xem máy có báo BỊ DIỆT không. Nếu
 > không, máy sai, không phải suite sai.
 
@@ -599,7 +599,7 @@ vì đó chính là chỗ bug sẽ sinh ra ở sprint sau.
 }
 ```
 
-Đưa `spec:gap` vào cùng đường ra với bug (Bài 13), nhưng không log thành bug. Nó là câu hỏi cho BA.
+Đưa `spec:gap` vào cùng đường ra với bug (Bài 17), nhưng không log thành bug. Nó là câu hỏi cho BA.
 
 ## Việc 6 — Bug do người ngoài tìm ra là lỗi của máy (30 phút)
 
@@ -615,7 +615,7 @@ Ba câu trả lời hợp lệ, mỗi câu ứng một hành động:
 | Câu trả lời | Hành động |
 |---|---|
 | Có case phủ, nhưng oracle yếu ⇒ nó xanh dù sai | Thêm mutant tái hiện bug này · sửa oracle · đo lại tới khi mutant bị diệt |
-| Không có case phủ, và có chiều lẽ ra phải sinh ra case đó | Sửa máy đếm chiều (Bài 11) để chiều đó không còn báo đủ |
+| Không có case phủ, và có chiều lẽ ra phải sinh ra case đó | Sửa máy đếm chiều (Bài 14) để chiều đó không còn báo đủ |
 | Không có case phủ, và không chiều nào chỉ tới nó | Thêm một chiều mới vào danh mục chiều |
 
 Một câu trả lời không hợp lệ: "lần sau tôi sẽ để ý hơn". Đó là lời dặn, không phải máy chặn.
@@ -698,7 +698,7 @@ Hai câu hỏi quan trọng hơn con số:
 
 ### Bước 5 — Sửa một oracle rồi đo lại (15 phút)
 
-Chọn một mutant sống sót. Sửa oracle của case tương ứng theo Bài 10 (tính độc lập, không app==app). Đo lại
+Chọn một mutant sống sót. Sửa oracle của case tương ứng theo Bài 13 (tính độc lập, không app==app). Đo lại
 đúng mutant đó:
 
 ```bash
@@ -779,6 +779,6 @@ phép đo**. Đó là thứ phân biệt một bộ kiểm đang tốt lên vớ
 
 ## Đọc thêm
 
-- Bài 24 khép lại: đưa mọi máy này vào CI, và đóng gói kit để người khác dùng được.
-- Bài 10 (oracle) và Bài 11 (KHÔNG ĐO ĐƯỢC) là hai bài mà bài này dựa lên hoàn toàn, nếu mục 4 và mục 5 đọc
+- Bài 20 khép lại: đưa mọi máy này vào CI, và đóng gói kit để người khác dùng được.
+- Bài 13 (oracle) và Bài 14 (KHÔNG ĐO ĐƯỢC) là hai bài mà bài này dựa lên hoàn toàn, nếu mục 4 và mục 5 đọc
   thấy khó thì quay lại hai bài đó.

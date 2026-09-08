@@ -1,4 +1,4 @@
-# Bài 10 — Kỷ luật Oracle: bài học quan trọng nhất ⭐
+# Kỷ luật Oracle: bài học quan trọng nhất
 
 > **2 giờ** · Có gì trong tay: một bộ testcase do agent sinh · Sau bài này: mọi kết quả mong đợi đều chỉ được ra nguồn, và bạn nhận ra kiểu test tự khen mình từ xa
 
@@ -50,7 +50,7 @@ một quyết định đã chốt. Hai là nó cụ thể: một con số, một
 Không có oracle thì test chỉ mô tả app đang làm gì. Nó không nói được app làm có đúng không. Đó là ranh giới
 giữa kiểm thử và chụp ảnh hiện trạng.
 
-Giờ đếm trên bộ case agent sinh ở Bài 7:
+Giờ đếm trên bộ case agent sinh ở Bài 12:
 
 ```bash
 node -e "
@@ -135,7 +135,7 @@ Nhưng hai màn đó cùng đọc một API. Nếu API trả sai thì cả hai c
 
 ## Việc 3 — Neo kết quả mong đợi vào nguồn (20 phút)
 
-Ở Bài 7 bạn đã có bảng `BR-`. Giờ dùng nó làm neo. Mỗi kết quả mong đợi trỏ về một mã:
+Ở Bài 12 bạn đã có bảng `BR-`. Giờ dùng nó làm neo. Mỗi kết quả mong đợi trỏ về một mã:
 
 ```markdown
 | Kết quả mong đợi |
@@ -160,7 +160,7 @@ Ba loại nguồn, dùng cho ba việc khác nhau:
 | `UI-` hợp đồng giao diện | Nhãn, danh sách cột, thứ tự, màu | `UI-01` bốn cột khối B |
 | `SM-` bản đồ hệ thống | Trạng thái hợp lệ, ma trận phân quyền | `SM-02` kế toán chỉ được xem |
 
-`UI-` và `SM-` thì Bài 17 mới dựng. Lúc này cứ trỏ về mục tài liệu là đủ.
+`UI-` và `SM-` thì Bài 26 mới dựng. Lúc này cứ trỏ về mục tài liệu là đủ.
 
 ### Chữ hiển thị thì neo vào bản thiết kế
 
@@ -236,7 +236,7 @@ trị, kết quả mong đợi nêu giá trị nào phải thắng, và một c�
 `OBSERVATION` nghĩa là: tôi thấy điều này, tôi chưa có nguồn để nói nó đúng hay sai. Nó đi kèm một câu hỏi
 cho BA.
 
-Nhớ điều này: chỗ không kết luận được thì không ghi thành PASS. Đó là mục 3 trong `CLAUDE.md` bạn viết ở Bài 2.
+Nhớ điều này: chỗ không kết luận được thì không ghi thành PASS. Đó là mục 3 trong `CLAUDE.md` bạn viết ở Bài 5.
 PASS là một lời khẳng định, nghĩa là tôi đã kiểm và nó đúng. Không có nguồn thì bạn chưa kiểm được, nên chưa
 khẳng định được.
 
@@ -288,7 +288,7 @@ kit-cua-toi/
 ├── scripts/qa/
 │   └── gate-oracle.js            ← MỚI · giá trị tính toán không trỏ nguồn thì chặn
 └── outputs/tasks/<MÃ>/analysis/
-    └── business-rules.md         ·  từ Bài 7 — giờ là nguồn của mọi kết quả mong đợi
+    └── business-rules.md         ·  từ Bài 12 — giờ là nguồn của mọi kết quả mong đợi
 ```
 
 ## Tự kiểm
@@ -311,10 +311,10 @@ Lấy một bộ testcase thật đang dùng ở dự án bạn. Chạy script �
 
 Con số thứ ba đáng sợ nhất, vì những case đó luôn xanh và không ai biết.
 
-Đừng sửa hàng loạt ngay bây giờ. Bài 11 sẽ cho bạn gate, và Bài 21 sẽ cho bạn cách đo xem bộ kiểm có thật sự
+Đừng sửa hàng loạt ngay bây giờ. Bài 14 sẽ cho bạn gate, và Bài 25 sẽ cho bạn cách đo xem bộ kiểm có thật sự
 bắt được lỗi giá trị hay không.
 
 ## Bài sau
 
-Bài 11 trả lời câu này: bộ 200 case của bạn nghe thì nhiều, nhưng có khi cả 200 chỉ hỏi đúng một loại câu hỏi.
+Bài 14 trả lời câu này: bộ 200 case của bạn nghe thì nhiều, nhưng có khi cả 200 chỉ hỏi đúng một loại câu hỏi.
 Làm sao biết mình đang bỏ trống loại nào?

@@ -1,4 +1,4 @@
-# Bài 18 — Thiết kế knowledge base có kỷ luật
+# Bài 26 — Knowledge Base
 
 > **2 giờ 30 phút** · Có gì trong tay: knowledge base đã có vài chục bản ghi · Sau bài này: tri thức có phiên bản, truy được nguồn, và không âm thầm dạy sai cho agent
 
@@ -32,7 +32,7 @@ Bốn việc:
 
 ## Việc 1 — Tri thức không nguồn dạy sai thế nào (20 phút)
 
-Bài 17 dựng kho tri thức. Giờ nó có vài chục bản ghi, và một bản ghi trông thế này:
+Bài 26 dựng kho tri thức. Giờ nó có vài chục bản ghi, và một bản ghi trông thế này:
 
 ```json
 { "id": "R-014", "luat": "Phí giao hàng miễn khi tạm tính từ 450.000" }
@@ -49,7 +49,7 @@ Ai nói `450.000`? Không biết. Nhưng agent sẽ đọc và tin. Rồi:
 Đây là lớp lỗi tệ nhất của bộ nhớ dự án: sai một lần, dạy sai mãi mãi, và mỗi lần dùng lại làm nó có vẻ
 đúng thêm.
 
-> Bài 10 dạy: kết luận phải neo được vào tài liệu. Bài này là cùng luật đó áp cho tri thức: một bản ghi
+> Bài 13 dạy: kết luận phải neo được vào tài liệu. Bài này là cùng luật đó áp cho tri thức: một bản ghi
 > không neo được thì nó là phỏng đoán được cất giữ trang trọng.
 
 ## Việc 2 — Schema: `source` rỗng thì cấm ghi (30 phút)
@@ -182,11 +182,11 @@ Tri thức không sai, nó **cũ đi**. `hanTaiXacNhan` trong schema nói mỗi 
 | `leak` | 0 (không hết hạn) | bug đã lọt là sự thật lịch sử, không cũ đi |
 
 Quá hạn thì chuyển `cho-xac-nhan`. Không tự chuyển `invalid`. Quá hạn nghĩa là *"chưa ai kiểm lại"*,
-không phải *"đã sai"*. Đây lại đúng luật KHÔNG ĐO ĐƯỢC ≠ VI PHẠM của Bài 11.
+không phải *"đã sai"*. Đây lại đúng luật KHÔNG ĐO ĐƯỢC ≠ VI PHẠM của Bài 14.
 
 ## Việc 4 — Gate chống học sai (40 phút)
 
-Áp công thức 5 câu hỏi (Bài 8):
+Áp công thức 5 câu hỏi (Bài 15):
 
 | # | | |
 |---|---|---|
@@ -219,7 +219,7 @@ if (!fs.existsSync(SCHEMA_FILE)) {
 }
 if (!fs.existsSync(KHO)) {
   console.error(`[knowledge] KHÔNG ĐO ĐƯỢC: chưa có thư mục ${KHO}/`);
-  console.error('  Kho chưa tồn tại KHÁC với kho sạch — xem Bài 17 về "rỗng có kiểm soát".');
+  console.error('  Kho chưa tồn tại KHÁC với kho sạch — xem Bài 26 về "rỗng có kiểm soát".');
   process.exit(2);
 }
 const schema = JSON.parse(fs.readFileSync(SCHEMA_FILE, 'utf8'));
@@ -345,7 +345,7 @@ cũ cho gọn, và mất luôn lịch sử.
 
 ## Bảo mật: vì sao `knowledge/` không lên repo công khai
 
-Bài 5 đã nói và đáng nhắc lại ở đây, vì kho giờ đã lớn:
+Bài 2 đã nói và đáng nhắc lại ở đây, vì kho giờ đã lớn:
 
 > Không chỉ **nội dung** nguy hiểm. **Tên tệp** đã tiết lộ.
 
@@ -356,7 +356,7 @@ knowledge/leak/khach-bao-loi-tru-tien-hai-lan.json
 ```
 
 `git ls-files` trên một repo công khai là đủ để người ngoài biết sản phẩm có lỗi gì và bạn cố ý bỏ qua điều
-gì. Không cần mở tệp nào. `kiem-file-cam.js` (Bài 5) là máy canh chuyện đó; bài này chỉ nhắc rằng kho
+gì. Không cần mở tệp nào. `kiem-file-cam.js` (Bài 2) là máy canh chuyện đó; bài này chỉ nhắc rằng kho
 càng lớn thì rủi ro càng cao.
 
 ## Cây thư mục sau bài này
@@ -367,7 +367,7 @@ kit-cua-toi/
 │   └── knowledge-schema.json         ← MỚI · trường bắt buộc · 4 trạng thái · hạn tái xác nhận
 ├── scripts/qa/
 │   └── kiem-tri-thuc.js             ← MỚI · chặn ở cửa ĐỌC, không phải cửa ghi (exit 0/1/2)
-└── knowledge/                        ·  từ Bài 17 · ⛔ KHÔNG commit
+└── knowledge/                        ·  từ Bài 26 · ⛔ KHÔNG commit
     ├── domain/
     ├── system/
     ├── decisions/
@@ -400,6 +400,6 @@ Câu hỏi ở bước 2 là toàn bộ lý do bài này tồn tại. Không có
 
 ## Đọc thêm
 
-- Bài 17 — [bộ nhớ dự án](bo-nho-du-an.md): 5 kho, và câu trả lời cho *"từ số 0 thì học từ đâu"*.
-- Bài 20 — sao lưu và vòng đời dữ liệu: kho này mất thì mất theo cả lịch sử `superseded`.
-- Bài 5 — [Git](git-tu-so-0.md): vì sao `knowledge/` không lên repo, và tên tệp là lớp rò rỉ hay bị bỏ.
+- Bài 26 — [bộ nhớ dự án](bo-nho-du-an.md): 5 kho, và câu trả lời cho *"từ số 0 thì học từ đâu"*.
+- Bài 27 — sao lưu và vòng đời dữ liệu: kho này mất thì mất theo cả lịch sử `superseded`.
+- Bài 2 — [Git](git-tu-so-0.md): vì sao `knowledge/` không lên repo, và tên tệp là lớp rò rỉ hay bị bỏ.

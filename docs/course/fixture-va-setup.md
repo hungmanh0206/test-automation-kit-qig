@@ -1,8 +1,8 @@
-# Bài chi tiết — Tiền điều kiện
+# Bài 8 — Fixture và Setup
 
 > **2 giờ** · Có gì trong tay: 3 test chạy được · Sau bài này: dữ liệu dựng đúng luồng, dọn được, và không phá môi trường của ai
 >
-> *Bài này không đánh số, nó là phần đào sâu của **Bài 12**. Đọc kèm **Bài 12**.*
+> *Bài này không đánh số, nó là phần đào sâu của **Bài 9**. Đọc kèm **Bài 9**.*
 
 **Tóm tắt bài này**
 
@@ -31,7 +31,7 @@ Bốn việc:
 
 ---
 
-## 1. Vấn đề: 3 test ở Bài 12 đang giả định có sẵn dữ liệu
+## 1. Vấn đề: 3 test ở Bài 9 đang giả định có sẵn dữ liệu
 
 Nhìn lại `TC_015`:
 
@@ -92,7 +92,7 @@ Test trên đó rồi thấy màn Chi tiết hiển thị sai → bạn log bug 
 - Trường có trong DB nhưng màn không render?
 - Có ghi trùng hai bản ghi không?
 
-Và kể cả khi đọc: kết quả truy vấn DB không phải bằng chứng (Bài 13). Nó là công cụ điều tra.
+Và kể cả khi đọc: kết quả truy vấn DB không phải bằng chứng (Bài 17). Nó là công cụ điều tra.
 
 ## 4. Factory: cách mặc định
 
@@ -125,7 +125,7 @@ async function taoKhachHang(api, { hang = 'Thường' } = {}) {
   const body = { ten: tenDuyNhat('KH'), hang, sdt: '0900000000' };
   const r = await api.post('/api/customers', { data: body });
   if (!r.ok()) {
-    // Ném lỗi RÕ RÀNG: đây là setup_failure, không phải bug sản phẩm (Bài 13).
+    // Ném lỗi RÕ RÀNG: đây là setup_failure, không phải bug sản phẩm (Bài 17).
     throw new Error(`SETUP: tạo khách hàng thất bại ${r.status()} — ${await r.text()}`);
   }
   return r.json();
@@ -159,7 +159,7 @@ Bốn quyết định trong đoạn trên, mỗi cái chặn một vấn đề:
 |---|---|
 | Tiền tố `IT test` + `MA_TASK` | Người khác nhìn bản ghi biết là dữ liệu test của task nào — không xoá nhầm, không tưởng là dữ liệu thật |
 | `Date.now()` trong tên | Chạy song song không đụng nhau |
-| Ném lỗi có chữ `SETUP:` | Bài 13 phân loại được đây là lỗi dựng, không log Jira |
+| Ném lỗi có chữ `SETUP:` | Bài 17 phân loại được đây là lỗi dựng, không log Jira |
 | `don()` không throw | Dọn thất bại làm test đỏ thì bạn mất kết quả thật của lượt chạy |
 
 ## 5. Fixture của Playwright: dựng và dọn tự động
@@ -213,7 +213,7 @@ test('TC_015 [E2E] tạo đơn → lưu nháp → chi tiết, giá trị còn ng
   await page.goto('/orders/create');
   await page.getByLabel('Tìm khách hàng').fill(kh.ma);
   await page.getByRole('option', { name: kh.ma, exact: true }).click();
-  // … phần còn lại như Bài 12
+  // … phần còn lại như Bài 9
 });
 ```
 
@@ -221,7 +221,7 @@ test('TC_015 [E2E] tạo đơn → lưu nháp → chi tiết, giá trị còn ng
 
 Không phải tiền điều kiện nào cũng dựng được. Phân **ba mức**, và mỗi mức dẫn tới một trạng thái kết quả khác:
 
-| Mức | Nghĩa | Trạng thái ở Bài 13 nếu chưa chạy được |
+| Mức | Nghĩa | Trạng thái ở Bài 17 nếu chưa chạy được |
 |---|---|---|
 | **Ready** | Dựng được ngay bằng factory hoặc fixture | — (chạy bình thường) |
 | **Cần hook** | Cần Dev làm endpoint riêng; nêu rõ thiếu cái gì | `BLOCKED_SETUP` |
@@ -351,7 +351,7 @@ Viết `tests/support/setup/factory.js` cho **hai** thực thể của dự án 
 
 ### Bước 2 — Fixture (10 phút)
 
-Viết `tests/support/fixtures.js`. Sửa 3 test ở Bài 12 để dùng `duLieu` thay vì mã dữ liệu gán cứng.
+Viết `tests/support/fixtures.js`. Sửa 3 test ở Bài 9 để dùng `duLieu` thay vì mã dữ liệu gán cứng.
 
 Chạy lại. Chúng phải **vẫn xanh** — và giờ không còn phụ thuộc dữ liệu tình cờ.
 
@@ -373,7 +373,7 @@ Thử luôn ca xấu: cho một test **đỏ** có chủ ý, xác nhận phần 
 
 ### Bước 4 — Hợp đồng tiền điều kiện (10 phút)
 
-Viết `requirements/setup-strategy.md` cho mọi tiền điều kiện của bộ case Bài 11. Với mỗi cái, chấm **mức sẵn
+Viết `requirements/setup-strategy.md` cho mọi tiền điều kiện của bộ case Bài 14. Với mỗi cái, chấm **mức sẵn
 sàng**. Đếm:
 
 | Mức | Số tiền điều kiện |
@@ -408,13 +408,13 @@ kit-cua-toi/tests/support/
 ```
 
 Cả ba file nằm ở `tests/support/`, không ở `scripts/qa/`: chúng không tự chạy được và không chặn gì —
-chúng là hạ tầng test. Câu hỏi phân loại ở Bài 0 vẫn dùng được.
+chúng là hạ tầng test. Câu hỏi phân loại ở Bài 1 vẫn dùng được.
 
 ## Tự kiểm
 
 - [ ] 3 test của tôi **không còn** mã dữ liệu gán cứng; chúng dựng dữ liệu bằng fixture.
 - [ ] Mọi dữ liệu factory tạo ra mang tiền tố nhận diện được và có `MA_TASK`.
-- [ ] Lỗi dựng ném ra có chữ `SETUP:` để Bài 13 phân loại được.
+- [ ] Lỗi dựng ném ra có chữ `SETUP:` để Bài 17 phân loại được.
 - [ ] Hàm `don()` **không throw** — dọn lỗi không làm test đỏ.
 - [ ] Tôi đã đếm bản ghi trước và sau khi chạy suite, và hai số bằng nhau.
 - [ ] Tôi đã thử ca test đỏ, và phần dọn **vẫn chạy**.
@@ -436,6 +436,6 @@ Câu 3 là câu khó và cũng là câu đáng giá nhất.
 
 ## Đọc thêm
 
-- Bài 13 sẽ dùng chữ `SETUP:` trong lỗi factory để phân loại `setup_failure`, loại không log Jira.
+- Bài 17 sẽ dùng chữ `SETUP:` trong lỗi factory để phân loại `setup_failure`, loại không log Jira.
 - [`tests/support/setup/`](../../tests/support/setup/) của kit này, setup layer đầy đủ, gồm cả guarded client
   chỉ-đọc cho database.

@@ -1,4 +1,4 @@
-# Bài 15 — Kiểm song song UI ↔ Database
+# Kiểm song song UI ↔ Database
 
 > **2 giờ 30 phút** · Có gì trong tay: bộ case đã mở rộng 7 trục, suite có bằng chứng · Sau bài này: bắt được lớp bug "báo thành công nhưng lưu sai", và biết khoanh tầng lỗi bằng hai nguồn
 
@@ -70,7 +70,7 @@ curl -s http://localhost:4010/api/_store/orders
 | Phí giao hàng | 30.000 đ | `30000` | ✓ |
 | Tổng cộng | 196.250 đ | `196250` | ✓ |
 
-Bạn vừa bắt được BUG-2 theo một con đường khác hẳn Bài 13. Ở đó bạn tìm ra nó bằng cách cộng thử các số
+Bạn vừa bắt được BUG-2 theo một con đường khác hẳn Bài 17. Ở đó bạn tìm ra nó bằng cách cộng thử các số
 trên màn hình. Ở đây bạn tìm ra nó bằng cách so với nơi lưu. Cùng một bug mà hai đường đều bắt được. Đó là
 dấu hiệu bộ kiểm đang khoẻ.
 
@@ -112,7 +112,7 @@ Ba lớp đắt nhất trong thực tế là 2, 5 và 6:
 
 Đây là công dụng lớn thứ hai, và nhiều người bỏ qua nó.
 
-Khi một case FAIL, Bài 13 bắt bạn điền `tangLoi`. Trước đây bạn đoán. Giờ bạn **đo** được, bằng một bảng bốn ô:
+Khi một case FAIL, Bài 17 bắt bạn điền `tangLoi`. Trước đây bạn đoán. Giờ bạn **đo** được, bằng một bảng bốn ô:
 
 | | Tầng lưu trữ đúng | Tầng lưu trữ sai |
 |---|---|---|
@@ -154,7 +154,7 @@ test('đơn tạo xong đọc lại vẫn đúng số', async ({ page, request }
 
 > Để ý dòng cuối. Chuẩn để phán đúng sai vẫn là đặc tả. Tầng lưu trữ chỉ là nguồn thứ hai: nó cho bạn biết
 > lỗi nằm ở tầng nào, chứ không cho bạn kết luận đúng sai. Nếu cả giao diện lẫn nơi lưu cùng sai thì hai bên
-> vẫn khớp, và bạn sẽ ghi PASS. Đây đúng là cái bẫy của Bài 10, chỉ ở một tầng khác.
+> vẫn khớp, và bạn sẽ ghi PASS. Đây đúng là cái bẫy của Bài 13, chỉ ở một tầng khác.
 
 ## Việc 4 — Máy đối chiếu UI ↔ tầng lưu trữ (35 phút)
 
@@ -185,7 +185,7 @@ Ba thứ trong file này đáng chú ý:
 1. **`oracleRef` bắt buộc.** Không có mã luật thì phép so chỉ nói "hai tầng khác nhau", không nói tầng nào
    sai. Máy sẽ chặn nếu thiếu.
 2. **`uiCoTheLaChu`** — `BR-03` + `UI-03` nói phí bằng 0 thì hiện chữ *"Miễn phí"*. Không khai thì máy báo
-   lệch oan, và gate bắt oan thì gate chết (Bài 28).
+   lệch oan, và gate bắt oan thì gate chết (Bài 24).
 3. **`banDo`** cho enum. Giao diện hiện tiếng Việt, tầng lưu trữ ghi mã. So thô là lệch 100%.
 
 ```js
@@ -416,7 +416,7 @@ Ba lý do, xếp theo mức đau:
 |---|---|
 | Bỏ qua chính luồng cần test | `INSERT` một đơn "đã xác nhận" là bỏ qua toàn bộ đường tạo + xác nhận, và bạn không biết đường đó có chạy |
 | Thiếu tác dụng phụ | Ứng dụng còn ghi bảng liên quan, đẩy hàng đợi, sinh mã tham chiếu. `INSERT` tay thiếu hết |
-| Sinh trạng thái không tồn tại được | Bạn dựng ra tổ hợp mà ứng dụng không bao giờ tạo ra, rồi log một bug không có thật — **bug ma** (Bài 12) |
+| Sinh trạng thái không tồn tại được | Bạn dựng ra tổ hợp mà ứng dụng không bao giờ tạo ra, rồi log một bug không có thật — **bug ma** (Bài 9) |
 
 Dựng state qua giao diện, API, factory hoặc hook. Tầng lưu trữ chỉ để đọc và đối chiếu.
 
@@ -440,7 +440,7 @@ kit-cua-toi/
 ```
 
 Để ý `khoDonHang.js` nằm ở `tests/support/` chứ không nằm ở `scripts/qa/`. Nó không tự chạy được và cũng
-không chặn gì, nên nó là hạ tầng test. Câu hỏi phân loại ở Bài 0 vẫn dùng được.
+không chặn gì, nên nó là hạ tầng test. Câu hỏi phân loại ở Bài 1 vẫn dùng được.
 
 ## Tự kiểm
 
@@ -469,7 +469,7 @@ thật hay chỉ có trên giấy.
 
 ## Đọc thêm
 
-- Bài 13 — [bằng chứng và phân tầng lỗi](verdict-va-phan-tang-loi.md): bảng bốn ô ở Việc 3 đưa thẳng vào
+- Bài 17 — [bằng chứng và phân tầng lỗi](verdict-va-phan-tang-loi.md): bảng bốn ô ở Việc 3 đưa thẳng vào
   trường `tangLoi`.
-- Bài 10 — [oracle](oracle.md): "nhất quán ≠ đúng" ở đây là hai **tầng** cùng sai, không phải hai màn.
-- Bài 12 — [tiền điều kiện](tien-dieu-kien.md): vì sao dựng state bằng tầng lưu trữ sinh ra **bug ma**.
+- Bài 13 — [oracle](oracle.md): "nhất quán ≠ đúng" ở đây là hai **tầng** cùng sai, không phải hai màn.
+- Bài 9 — [tiền điều kiện](tien-dieu-kien.md): vì sao dựng state bằng tầng lưu trữ sinh ra **bug ma**.

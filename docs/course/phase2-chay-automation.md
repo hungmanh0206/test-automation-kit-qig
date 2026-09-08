@@ -1,4 +1,4 @@
-# Bài 14 — Chống lọt bug: mở rộng quanh mỗi case
+# Bài 16 — Phase 2: chạy automation có kiểm soát
 
 > **2 giờ 30 phút** · Có gì trong tay: kết quả đã phân tầng, có bằng chứng · Sau bài này: bắt được bug ở chỗ testcase không hề nói tới — mà không biến mở rộng thành tautology nhân 7 lần
 
@@ -47,7 +47,7 @@ Bảy dòng trên chính là 7 trục. Chúng không phải danh sách đẹp, m
 
 > Và có một luật đi kèm, khắt khe: bug do người ngoài tìm ra = lỗi của máy. Khi có bug lọt, câu hỏi không
 > phải *"case của tôi không phủ chỗ đó"* mà là *"máy nào lẽ ra phải bắt được, và vì sao nó không bắt?"*
-> Bài 21 đưa câu hỏi này thành phép đo.
+> Bài 25 đưa câu hỏi này thành phép đo.
 
 ## Việc 2 — Mở 7 trục quanh một case (50 phút)
 
@@ -86,7 +86,7 @@ ghi `8750`. Neo: `UI-04`. ⇒ **FAIL**, tầng `frontend`.
 curl -s http://localhost:4010/api/_store/orders
 ```
 
-Đây là Bài 15 làm kỹ. Ở đây chỉ cần thấy: có bốn tầng, và mỗi ranh giới là một chỗ giá trị đổi được.
+Đây là Bài 10 làm kỹ. Ở đây chỉ cần thấy: có bốn tầng, và mỗi ranh giới là một chỗ giá trị đổi được.
 
 ### Trục 4 — Biến thể
 
@@ -170,7 +170,7 @@ người ta tin bạn ít hơn.
 |---|---|---|---|
 | 1 · field cùng khối | 4 số đều khớp | `BR-01`…`BR-04` | PASS |
 | 2 · cùng giá trị khác nơi hiển thị | UI 8.000 ≠ lưu 8.750 | `UI-04` | **FAIL** · frontend |
-| 3 · chuỗi 4 tầng | thấy chỗ giá trị đổi được | — | (dẫn sang Bài 15) |
+| 3 · chuỗi 4 tầng | thấy chỗ giá trị đổi được | — | (dẫn sang Bài 10) |
 | 4 · biến thể | mốc 500.000 hạng Bạc sai phí | `BR-03` | **FAIL** · backend |
 | 5 · trạng thái kế cận | sửa được đơn đã xác nhận | `BR-08` | **FAIL** · backend |
 | 6 · đồng thời | 2 request ⇒ 2 đơn | **không có** | `OBSERVATION` |
@@ -185,7 +185,7 @@ Mở rộng có một mặt tối, và nó nguy hiểm đúng bằng mức nó h
 
 > Mở rộng mà không có oracle = tautology nhân 7 lần.
 
-Bài 10 dạy: lấy giá trị app làm kết quả mong đợi thì test luôn xanh. Mở rộng làm việc đó rộng ra bảy lần,
+Bài 13 dạy: lấy giá trị app làm kết quả mong đợi thì test luôn xanh. Mở rộng làm việc đó rộng ra bảy lần,
 vì mỗi trục là một cơ hội mới để so app với chính app.
 
 ### Cái bẫy cụ thể của trục 2
@@ -365,7 +365,7 @@ Bảy trục cho mọi case là bất khả thi. Nên độ sâu bám mức rủ
 | `medium` | 4/7 | đủ để bắt lớp bug hay gặp |
 | `low` (màn xem, không đổi dữ liệu) | 2/7 | mở 7 trục ở đây là tiêu thời gian vào chỗ rẻ |
 
-Mức rủi ro từ đâu ra? Từ Bài 11 và Bài 19, không phải bạn tự chọn lúc chạy. Truyền tay là bạn sẽ luôn chọn
+Mức rủi ro từ đâu ra? Từ Bài 14 và Bài 27, không phải bạn tự chọn lúc chạy. Truyền tay là bạn sẽ luôn chọn
 `low`.
 
 ## Cây thư mục sau bài này
@@ -379,7 +379,7 @@ kit-cua-toi/
 │   └── tu-soi.js                ← SỬA · gọi thêm gate-mo-rong
 └── outputs/tasks/<MÃ>/
     ├── test-results/
-    │   ├── testcase-status.json      ·  từ Bài 13
+    │   ├── testcase-status.json      ·  từ Bài 17
     │   ├── mo-rong.json              ← MỚI · phát hiện mở rộng, có trục + neo + kết luận
     │   └── spec-gaps.json            ← MỚI · trục 7 — câu hỏi cho BA, KHÔNG log bug
     └── evidence/
@@ -418,7 +418,7 @@ Rồi trả lời hai câu:
 
 ## Đọc thêm
 
-- Bài 15 — [UI ↔ Database](ui-va-tang-luu-tru.md): trục 3 làm kỹ, cộng bảng bốn ô khoanh tầng lỗi.
-- Bài 10 — [oracle](oracle.md): "nhất quán ≠ đúng" ở đây là bảy lần cơ hội vi phạm nó.
-- Bài 21 — [mutation testing](do-chinh-bo-kiem.md): đo xem suite của bạn **thật sự** bắt được bao nhiêu, và
+- Bài 10 — [UI ↔ Database](ui-va-tang-luu-tru.md): trục 3 làm kỹ, cộng bảng bốn ô khoanh tầng lỗi.
+- Bài 13 — [oracle](oracle.md): "nhất quán ≠ đúng" ở đây là bảy lần cơ hội vi phạm nó.
+- Bài 25 — [mutation testing](do-chinh-bo-kiem.md): đo xem suite của bạn **thật sự** bắt được bao nhiêu, và
   biến luật *"bug lọt = lỗi của máy"* thành con số.

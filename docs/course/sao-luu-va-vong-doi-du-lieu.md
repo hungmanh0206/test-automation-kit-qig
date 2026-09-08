@@ -1,4 +1,4 @@
-# Bài 20 — Sao lưu và vòng đời dữ liệu
+# Sao lưu và vòng đời dữ liệu
 
 > **1 giờ 30 phút** · Có gì trong tay: vòng học đã chạy ít nhất một chu kỳ · Sau bài này: biết dữ liệu nào mất thì dựng lại được, dữ liệu nào mất là mất hẳn — và có máy canh
 
@@ -49,7 +49,7 @@ Bốn dòng ⛔ là toàn bộ lý do bài này tồn tại. Chúng có ba đi�
 | Điểm chung | Hệ quả |
 |---|---|
 | Không có bản sao ở hệ thống nào khác | mất là hết |
-| **Không được commit lên git** (Bài 5) | lớp bảo vệ mặc định của mọi thứ khác không áp dụng |
+| **Không được commit lên git** (Bài 2) | lớp bảo vệ mặc định của mọi thứ khác không áp dụng |
 | Tích dần, mỗi ngày một ít | không có lúc nào là "lúc quan trọng" để nhớ sao lưu |
 
 Điểm thứ hai là cái bẫy: bạn quen "code an toàn vì có git", rồi vô thức nghĩ mọi thứ trong thư mục cũng an
@@ -62,7 +62,7 @@ toàn. `knowledge/` nằm trong `.gitignore`. Git không giữ nó.
 Sao lưu vào một thư mục **bên trong** repo là không sao lưu gì cả, nó chết cùng repo trong cả ba kịch bản
 trên. Nhưng đây là chỗ người ta hay làm, vì nó tiện.
 
-Áp công thức 5 câu hỏi (Bài 8):
+Áp công thức 5 câu hỏi (Bài 15):
 
 | # | | |
 |---|---|---|
@@ -190,7 +190,7 @@ Sao lưu chưa từng khôi phục là sao lưu chưa được nghiệm thu. Là
 mv knowledge knowledge-cu                                # giấu bản gốc
 cp -r ~/sao-luu-kit/knowledge-<ngày>/ knowledge          # khôi phục
 rm knowledge/_ban-ke.json
-npm run kiem:knowledge                                   # gate Bài 18 phải ĐẠT
+npm run kiem:knowledge                                   # gate Bài 26 phải ĐẠT
 ```
 
 Đạt thì bản sao lưu dùng được thật. Xong thì trả lại: `rm -rf knowledge && mv knowledge-cu knowledge`.
@@ -213,7 +213,7 @@ gấp, và mọi tệp đều "có vẻ cần". Lúc đó người ta xoá theo 
     "outputs-evidence": { "giuNgay": 90, "tia": "theo ngày",
       "lyDo": "nạp lại được bằng cách chạy lại, nhưng tốn; 90 ngày đủ cho vòng đối chất với dev" },
     "outputs-status": { "giuNgay": 365, "tia": "theo ngày",
-      "lyDo": "nhẹ, và là đầu vào của metrics 12 tháng (Bài 22)" },
+      "lyDo": "nhẹ, và là đầu vào của metrics 12 tháng (Bài 25)" },
     "mutation-diem": { "giuNgay": 0, "tia": "không bao giờ",
       "lyDo": "mốc so sánh theo tháng; tỉa là mất đường xu hướng" },
     "test-results-raw": { "giuNgay": 14, "tia": "theo ngày",
@@ -232,11 +232,11 @@ Một người thì `knowledge/` nằm trên máy bạn là đủ. Ba người t
 | Câu hỏi | Cách rẻ |
 |---|---|
 | Ai cũng thấy tri thức mới? | một repo **riêng, private** cho `knowledge/`, mỗi máy `git pull` |
-| Hai người ghi mâu thuẫn thì sao? | gate Bài 18 bắt "hai bản cùng `active`" — chạy nó ở **cửa đọc**, mỗi máy tự chạy |
+| Hai người ghi mâu thuẫn thì sao? | gate Bài 26 bắt "hai bản cùng `active`" — chạy nó ở **cửa đọc**, mỗi máy tự chạy |
 | Ai được sửa? | ai cũng **thêm** được; đổi `active` → `superseded`/`invalid` thì cần người thứ hai duyệt |
 
 Điểm cần cẩn thận: repo riêng cho `knowledge/` phải **private**, và vẫn áp `kiem-file-cam.js`, vì nó chứa
-đúng thứ Bài 5 nói là không được để lộ, kể cả qua tên tệp.
+đúng thứ Bài 2 nói là không được để lộ, kể cả qua tên tệp.
 
 > Đừng nhét `knowledge/` thành submodule của repo kit. Nghe gọn, nhưng người clone kit sẽ vô tình kéo cả kho
 > tri thức về, và bạn mất đúng ranh giới mình vừa dựng.
@@ -280,7 +280,7 @@ kit-cua-toi/
 
 ## Đọc thêm
 
-- Bài 18 — [knowledge base có kỷ luật](knowledge-base-co-ky-luat.md): bản `superseded` là thứ sao lưu phải
+- Bài 26 — [knowledge base có kỷ luật](knowledge-base-co-ky-luat.md): bản `superseded` là thứ sao lưu phải
   giữ, vì nó trả lời *"lượt chạy tháng trước dùng luật nào?"*.
-- Bài 22 — metrics: `outputs-status` giữ 365 ngày là để có đường xu hướng 12 tháng.
-- Bài 5 — [Git](git-tu-so-0.md): vì sao chính **tên tệp** trong `knowledge/` cũng là dữ liệu nhạy cảm.
+- Bài 25 — metrics: `outputs-status` giữ 365 ngày là để có đường xu hướng 12 tháng.
+- Bài 2 — [Git](git-tu-so-0.md): vì sao chính **tên tệp** trong `knowledge/` cũng là dữ liệu nhạy cảm.

@@ -1,4 +1,4 @@
-# Bài 13 — Bằng chứng và phân tầng lỗi
+# Bài 17 — Triage lỗi và rerun
 
 > **2 giờ 30 phút** · Có gì trong tay: test chạy được, có dữ liệu dựng đúng luồng · Sau bài này: `phan-quyet.json` và `testcase-status.json` — hai file mà Phần 4 sẽ đọc
 
@@ -32,7 +32,7 @@ Bốn việc:
 ## 1. Vì sao phải khai trạng thái ra một file
 
 Phản xạ tự nhiên: ghi `PASS`/`FAIL` trong báo cáo, xong. Nhưng ngay tuần sau bạn cần thêm `SKIP`. Rồi cần
-phân biệt *skip vì chưa dựng được dữ liệu* với *skip vì không tự động hoá được*. Rồi Bài 8 cần biết trạng thái
+phân biệt *skip vì chưa dựng được dữ liệu* với *skip vì không tự động hoá được*. Rồi Bài 15 cần biết trạng thái
 nào là **đã chạy** để đòi bằng chứng.
 
 Nếu mỗi chỗ tự khai thì:
@@ -122,7 +122,7 @@ const LOG_JIRA = Object.entries(TAXONOMY.tangLoi)
 module.exports = { TAXONOMY, DA_CHAY, LOG_JIRA };
 ```
 
-> Nhớ lại Bài 8: gate bằng chứng có hằng số `DA_CHAY = ['PASS', 'FAIL']` **viết tay**. Đó là bản đơn giản
+> Nhớ lại Bài 15: gate bằng chứng có hằng số `DA_CHAY = ['PASS', 'FAIL']` **viết tay**. Đó là bản đơn giản
 > để học. Bản đúng là đọc từ file này. Vì khi bạn thêm `PASS_WITH_DEVIATION`, gate viết tay sẽ **bỏ sót**
 > nó (nó đã chạy nhưng gate không đòi bằng chứng), mà bỏ sót thì không có tín hiệu nào báo.
 
@@ -134,7 +134,7 @@ Khi test đỏ, câu hỏi không phải "bug gì" mà là "lỗi ở tầng nà
 |---|---|---|
 | `product_bug` | ✅ | Dữ liệu BE đúng, màn hiện sai |
 | `api_bug` | ✅ | Đọc response thật: BE trả sai hoặc thiếu |
-| `setup_failure` | ❌ | Lỗi ném ra từ factory (chữ `SETUP:` ở Bài 12) |
+| `setup_failure` | ❌ | Lỗi ném ra từ factory (chữ `SETUP:` ở Bài 9) |
 | `script_error` | ❌ | Fail lặp lại ổn định, nhưng làm tay thì đúng |
 | `infra` | ❌ | API không phản hồi, timeout mạng, CI hết bộ nhớ |
 | `flaky` | ❌ | Pass sau retry, **và** nêu được cơ chế |
@@ -203,7 +203,7 @@ mà không thêm thông tin. Con số này khai trong taxonomy để đổi ở 
 
 Phép thử: **làm tay**. Mất năm phút và tiết kiệm một buổi của Dev.
 
-Ba nguyên nhân hay gặp, cả ba đều từ Bài 12:
+Ba nguyên nhân hay gặp, cả ba đều từ Bài 9:
 
 | Nguyên nhân | Ví dụ |
 |---|---|
@@ -261,7 +261,7 @@ Luật: chỉ được đổi sang `flaky` khi nêu được cơ chế cụ th�
  * VÌ SAO CẦN: results.json là định dạng của runner, gắn với runner. Mọi thứ phía sau (gate bằng chứng,
  * đẩy kết quả lên công cụ TMS, log bug) đọc MỘT định dạng canonical — đổi runner thì chỉ sửa file này.
  *
- * TC ID lấy từ TÊN TEST (quy ước Bài 12: tên test bắt đầu bằng TC ID).
+ * TC ID lấy từ TÊN TEST (quy ước Bài 9: tên test bắt đầu bằng TC ID).
  */
 'use strict';
 const fs = require('fs');
@@ -300,7 +300,7 @@ function di(suites) {
         } else if (lanCuoi.status === 'skipped') {
           status = 'SKIP';
         } else {
-          // Lỗi dựng dữ liệu tự nhận diện qua chữ SETUP: mà factory ném ra (Bài 12)
+          // Lỗi dựng dữ liệu tự nhận diện qua chữ SETUP: mà factory ném ra (Bài 9)
           const loi = (lanCuoi.error && lanCuoi.error.message) || '';
           status = /^SETUP:|SETUP: /.test(loi) ? 'BLOCKED_SETUP' : 'FAIL';
         }
@@ -317,7 +317,7 @@ function di(suites) {
         if (status === 'BLOCKED_SETUP') {
           item.lyDo = ((lanCuoi.error && lanCuoi.error.message) || '').split('\n')[0].slice(0, 200);
         }
-        // Bằng chứng: Bài 13 sẽ điền. Ở đây lấy attachment mà runner đã có.
+        // Bằng chứng: Bài 17 sẽ điền. Ở đây lấy attachment mà runner đã có.
         item.evidence = (lanCuoi.attachments || [])
           .filter((a) => /^(image|video)\//.test(a.contentType || ''))
           .map((a) => path.relative(process.cwd(), a.path).replace(/\\/g, '/'));
@@ -392,10 +392,10 @@ Bốn đặc điểm khiến bug này được nhận ngay: bước tái hiện 
 
 ### Bước 1 — Khai taxonomy (15 phút)
 
-Viết `.agent/config/phan-quyet.json` và `scripts/lib/verdict.js`. Rồi sửa `gate-bang-chung.js` ở Bài 8
+Viết `.agent/config/phan-quyet.json` và `scripts/lib/verdict.js`. Rồi sửa `gate-bang-chung.js` ở Bài 15
 để đọc `DA_CHAY` từ file thay vì hằng số viết tay.
 
-*(Nếu bạn học theo thứ tự bài thì Bài 8 chưa tới, ghi việc này vào danh sách để làm lúc đó.)*
+*(Nếu bạn học theo thứ tự bài thì Bài 15 chưa tới, ghi việc này vào danh sách để làm lúc đó.)*
 
 ### Bước 2 — Sinh status (15 phút)
 
@@ -486,5 +486,5 @@ và cả hai đều **không nên** lên Jira ngay từ đầu.
 ## Đọc thêm
 
 - [`.agent/config/phan-quyet.json`](../../.agent/config/phan-quyet.json) của kit này, bản đầy đủ,
-  gồm cả `EXPANSION_FINDING` cho phát hiện từ việc mở rộng (Bài 21).
-- Bài 13 sẽ điền phần `evidence` cho file trạng thái bạn vừa sinh.
+  gồm cả `EXPANSION_FINDING` cho phát hiện từ việc mở rộng (Bài 25).
+- Bài 17 sẽ điền phần `evidence` cho file trạng thái bạn vừa sinh.

@@ -1,4 +1,4 @@
-# Bài 26 — Đóng gói và phát hành kit
+# Bài 28 — Đóng gói thành kit dùng lại được
 
 > **2 giờ** · Có gì trong tay: kit có CI, có tích hợp · Sau bài này: một bản phát hành đã được chứng minh là chạy được, không phải một tệp zip hy vọng
 
@@ -62,7 +62,7 @@ Quy ước đơn giản, đủ dùng:
   **Cách xử lý:** hạ những phát hiện không neo được xuống `OBSERVATION`.
 - `kiem-mcp-quyen` chặn server có quyền ghi mà không ai duyệt.
   **Ảnh hưởng:** repo chưa có `mcp_config.md` sẽ ĐỎ ở CI.
-  **Cách xử lý:** tạo file theo mẫu Bài 25.
+  **Cách xử lý:** tạo file theo mẫu Bài 20.
 
 ### Thêm
 - `sinh-dashboard.js` — 3 đường xu hướng, tự chứa, tự kiểm 0 host ngoài.
@@ -262,7 +262,7 @@ let dat = true;
 dat = chay('npm ci', 'npm', ['ci', '--no-audit', '--no-fund']) && dat;
 
 /* Gate hạng "mọi commit" — đây là tập KHÔNG cần môi trường ngoài, nên chạy được ở sân sạch.
-   Đọc từ ci_scope.json để khỏi liệt kê hai nơi (Bài 24). */
+   Đọc từ ci_scope.json để khỏi liệt kê hai nơi (Bài 20). */
 let gates = [];
 const scopeFile = path.join(san, '.agent', 'config', 'ci_scope.json');
 if (fs.existsSync(scopeFile)) {
@@ -290,14 +290,14 @@ console.log('[nghiem-thu] ✓ gói chạy được ở thư mục sạch. ĐƯ�
 
 Bẫy này đã cắn thật, và nó là lý do bước nghiệm thu tồn tại:
 
-> `kiem-file-cam.js` (Bài 5) chạy `git ls-files`. Ở repo gốc luôn xanh. Ở thư mục giải nén **không có `.git`**
+> `kiem-file-cam.js` (Bài 2) chạy `git ls-files`. Ở repo gốc luôn xanh. Ở thư mục giải nén **không có `.git`**
 > ⇒ lệnh lỗi ⇒ máy crash.
 
 Điều tệ nhất không phải là crash. Là **nơi** nó crash: trên máy người nhận, trong ngày đầu tiên họ thử kit —
 đúng lúc họ đang quyết định có tin kit này không.
 
-Bản `kiem-file-cam.js` ở Bài 5 đã xử đúng: nó bắt lỗi và trả mã 2 — KHÔNG ĐO ĐƯỢC, không crash. Đây là
-ví dụ rõ nhất trong cả tài liệu này cho luật *KHÔNG ĐO ĐƯỢC ≠ VI PHẠM* (Bài 11): "không phải repo git" là *chưa đo
+Bản `kiem-file-cam.js` ở Bài 2 đã xử đúng: nó bắt lỗi và trả mã 2 — KHÔNG ĐO ĐƯỢC, không crash. Đây là
+ví dụ rõ nhất trong cả tài liệu này cho luật *KHÔNG ĐO ĐƯỢC ≠ VI PHẠM* (Bài 14): "không phải repo git" là *chưa đo
 được*, không phải *có tệp cấm*.
 
 ### Chạy thử
@@ -343,7 +343,7 @@ Bước 6 là đối chứng của cả quy trình, và nó rẻ: task đã xong
 Ra khác ⇒ kit mới đổi hành vi ngoài dự kiến.
 
 > Đừng chép đè cả thư mục kit. Bạn sẽ xoá mất `chieu-phu.json`, `risk_model.json`, `mutants.json`
-> của dự án B — tức toàn bộ phần B đã tự chỉnh. Bài 27 dựng ranh giới này thành máy kiểm.
+> của dự án B — tức toàn bộ phần B đã tự chỉnh. Bài 29 dựng ranh giới này thành máy kiểm.
 
 ## Cây thư mục sau bài này
 
@@ -384,6 +384,6 @@ Nhớ thêm `dist/` vào `.gitignore`, nó là artifact, sinh lại được t�
 
 ## Đọc thêm
 
-- Bài 24 — [CI](ci-dong-goi-giao-kit.md): hạng `moiCommit` mà nghiệm thu gói chạy lại, và luật một-nguồn cho CI.
-- Bài 27 — mang kit sang dự án mới: ranh giới tầng chung ↔ tầng dự án, dựng thành máy kiểm.
-- Bài 5 — [Git](git-tu-so-0.md): `kiem-file-cam.js` và cách nó trả mã 2 thay vì crash khi thiếu `.git`.
+- Bài 20 — [CI](ci-dong-goi-giao-kit.md): hạng `moiCommit` mà nghiệm thu gói chạy lại, và luật một-nguồn cho CI.
+- Bài 29 — mang kit sang dự án mới: ranh giới tầng chung ↔ tầng dự án, dựng thành máy kiểm.
+- Bài 2 — [Git](git-tu-so-0.md): `kiem-file-cam.js` và cách nó trả mã 2 thay vì crash khi thiếu `.git`.

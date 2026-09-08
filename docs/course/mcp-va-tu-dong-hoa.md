@@ -1,4 +1,4 @@
-# Bài 25 — MCP Server và tự động hoá quanh công việc
+# MCP Server và tự động hoá quanh công việc
 
 > **1 giờ 30 phút** · Có gì trong tay: CI đang gác cổng · Sau bài này: agent đọc được dữ liệu ngoài qua một cửa, với quyền tối thiểu, và bạn biết ranh giới nào không được tự động hoá
 
@@ -36,7 +36,7 @@ gọi Figma. Bốn hệ quả, đều đắt:
 | Hệ quả | Cụ thể |
 |---|---|
 | Mỗi chỗ tự xử lý token | token rải rác, và đó là đường rò rỉ |
-| Mỗi chỗ tự xử lý phân trang | chỗ nhớ, chỗ quên — đọc thiếu không có tín hiệu (Bài 3) |
+| Mỗi chỗ tự xử lý phân trang | chỗ nhớ, chỗ quên — đọc thiếu không có tín hiệu (Bài 1) |
 | API đổi thì sửa mười chỗ | và bạn chỉ tìm ra chín |
 | Không ai biết agent đang được phép làm gì | câu hỏi *"nó có xoá được issue không?"* không trả lời được |
 
@@ -59,8 +59,8 @@ gọi Figma. Bốn hệ quả, đều đắt:
 2. Token nằm ở `.env` hoặc `profiles/<TASK>/task.env` — **không** khai trong file này.
 3. Không server nào được cấp quyền **xoá**. Dọn dẹp là việc của người.
 4. Tài liệu nhiều tab: PHẢI bật tuỳ chọn đọc hết tab. Không bật thì chỉ được tab đầu và
-   **không có thông báo nào** (Bài 3).
-5. Đo cỡ tài liệu trước khi đọc (Bài 3). Vượt ngưỡng thì giao subagent trích.
+   **không có thông báo nào** (Bài 1).
+5. Đo cỡ tài liệu trước khi đọc (Bài 1). Vượt ngưỡng thì giao subagent trích.
 ```
 
 Quy tắc 3 đáng nhấn: không cấp quyền xoá cho bất cứ server nào. Không phải vì agent hay xoá bừa, mà vì
@@ -71,7 +71,7 @@ xoá là hành động không hoàn tác được, và không có lợi ích nà
 
 Bảng trên là văn bản. Văn bản thì trôi. Ai đó thêm một server, cấp quyền ghi, và không ai để ý.
 
-Áp công thức 5 câu hỏi (Bài 8):
+Áp công thức 5 câu hỏi (Bài 15):
 
 | # | | |
 |---|---|---|
@@ -181,13 +181,13 @@ Ranh giới không nằm ở *"máy làm nổi không"* — nó nằm ở hậu 
 |---|---|---|
 | Kéo requirement, tài liệu về | ✅ | chỉ đọc; sai thì đọc lại |
 | Sinh testcase nháp | ✅ | còn qua review của người |
-| Chạy suite theo lịch | ✅ | không đổi dữ liệu ai (nếu tiền điều kiện đúng — Bài 12) |
+| Chạy suite theo lịch | ✅ | không đổi dữ liệu ai (nếu tiền điều kiện đúng — Bài 9) |
 | Sinh báo cáo, dashboard | ✅ | artifact, sinh lại được |
 | Gửi thông báo vào một kênh | ✅ | ồn thì tắt |
-| **Publish testcase lên công cụ dùng chung** | ❌ | công cụ không có API xoá; đẩy nhầm là sống với nó (Bài 16) |
+| **Publish testcase lên công cụ dùng chung** | ❌ | công cụ không có API xoá; đẩy nhầm là sống với nó (Bài 18) |
 | **Log bug lên Jira** | ❌ | bug sai làm mất niềm tin của đội dev, và mất rất lâu để lấy lại |
 | **Đổi trạng thái case sang Deprecated** | ❌ | ảnh hưởng lịch sử chạy của người khác |
-| **Sửa `knowledge/`** ở mức đổi `active` → `invalid` | ❌ | quyết định "kết quả cũ mất giá trị" (Bài 18) |
+| **Sửa `knowledge/`** ở mức đổi `active` → `invalid` | ❌ | quyết định "kết quả cũ mất giá trị" (Bài 26) |
 
 Bốn dòng ❌ có chung một tính chất: hậu quả đổ lên người khác, và khó hoàn tác. Đó là định nghĩa dùng
 được của human gate, không phải "việc khó".
@@ -243,7 +243,7 @@ kit-cua-toi/
 │   ├── kiem-mcp-quyen.js             ← MỚI · quyền ghi không người duyệt ⇒ chặn; cấm quyền xoá
 │   └── bao-tin.js                    ← MỚI · chỉ báo khi ĐỎ, kèm link, nói rõ cái gì hỏng
 └── .github/workflows/
-    ├── gates.yml                     ·  từ Bài 24 · mọi commit
+    ├── gates.yml                     ·  từ Bài 20 · mọi commit
     └── hang-dem.yml                  ← MỚI · theo lịch, có workflow_dispatch để bấm tay
 ```
 
@@ -270,6 +270,6 @@ publish hoặc đường log bug.
 
 ## Đọc thêm
 
-- Bài 16 — [bug report và tích hợp](tich-hop.md): vì sao publish và log bug đều mặc định dry-run.
-- Bài 3 — [chi phí và giới hạn](chi-phi-va-gioi-han.md): đo tài liệu trước khi cho agent đọc qua MCP.
-- Bài 24 — [CI](ci-dong-goi-giao-kit.md): `kiem-mcp-quyen` thuộc hạng *mọi commit*.
+- Bài 18 — [bug report và tích hợp](tich-hop.md): vì sao publish và log bug đều mặc định dry-run.
+- Bài 1 — [chi phí và giới hạn](chi-phi-va-gioi-han.md): đo tài liệu trước khi cho agent đọc qua MCP.
+- Bài 20 — [CI](ci-dong-goi-giao-kit.md): `kiem-mcp-quyen` thuộc hạng *mọi commit*.

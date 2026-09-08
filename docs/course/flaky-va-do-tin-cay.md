@@ -1,4 +1,4 @@
-# Bài 22 — Metrics và độ tin cậy
+# Bài 25 — Flaky và độ tin cậy
 
 > **1 giờ 30 phút** · Có gì trong tay: mutation score gốc đã chốt, vài chục lượt chạy đã ghi · Sau bài này: đo được suite của bạn lệ thuộc retry bao nhiêu, và biết vì sao dọn flaky có thể chôn bug thật
 
@@ -236,7 +236,7 @@ Trước khi gắn nhãn `flaky` cho bất cứ test nào, bắt buộc ghi:
 ```
 
 Không điền được `daThu` thì chưa được gắn nhãn flaky. Đây là cách biến một phản xạ thành một bước có
-bằng chứng, cùng cơ chế với `tangLoi` ở Bài 13.
+bằng chứng, cùng cơ chế với `tangLoi` ở Bài 17.
 
 ## Việc 4 — Ba luật liêm chính của phép đo (20 phút)
 
@@ -266,7 +266,7 @@ cách làm đẹp số mà không sửa gì. `do-metrics.js` ở trên đã lọ
 ### Luật 3 — độ phủ phải có ngưỡng tối thiểu cho **mỗi** chiều
 
 "Phủ 20/danh mục chiều" nghe rất tốt cho tới khi bạn thấy 12 chiều có đúng một case. Ngưỡng phải theo từng
-chiều, không phải tổng (Bài 11).
+chiều, không phải tổng (Bài 14).
 
 ### Và một câu chốt
 
@@ -276,7 +276,7 @@ Nên số nào không đổi được hành động thì đừng đo. Ba số đ
 
 | Số | Tụt thì nghĩa là |
 |---|---|
-| Mutation score (Bài 21) | có oracle vừa bị làm yếu đi |
+| Mutation score (Bài 25) | có oracle vừa bị làm yếu đi |
 | Khoảng cách clean ↔ eventual | suite đang lệ thuộc retry hơn |
 | Số test hạng `chap-chon` trở xuống | nợ kỹ thuật đang tích |
 
@@ -289,7 +289,7 @@ kit-cua-toi/
 ├── scripts/qa/
 │   ├── do-metrics.js                 ← MỚI · clean vs eventual + KHOẢNG CÁCH (exit 0/1/2)
 │   └── do-tin-cay.js                 ← SỬA · thêm xếp hạng + hạn quarantine 30 ngày
-└── knowledge/reliability/            ·  từ Bài 17 · điểm tin cậy tích luỹ theo từng test
+└── knowledge/reliability/            ·  từ Bài 26 · điểm tin cậy tích luỹ theo từng test
     └── <ten-test>.json               ← MỚI · soLuot · xanhNgay · doTinCay · hang · daThu
 ```
 
@@ -319,7 +319,7 @@ nhiều tháng.
 
 ## Đọc thêm
 
-- Bài 21 — [mutation testing](do-chinh-bo-kiem.md): mutation run phải chạy `retries=0`, đúng lý do bài này.
-- Bài 13 — [phân tầng lỗi](verdict-va-phan-tang-loi.md): pass-sau-retry là `PASS_WITH_DEVIATION`, không phải
+- Bài 25 — [mutation testing](do-chinh-bo-kiem.md): mutation run phải chạy `retries=0`, đúng lý do bài này.
+- Bài 17 — [phân tầng lỗi](verdict-va-phan-tang-loi.md): pass-sau-retry là `PASS_WITH_DEVIATION`, không phải
   `PASS`.
-- Bài 23 — dashboard: ba số ở cuối Việc 4 là ba đường cần vẽ, và chỉ ba đường đó.
+- Bài 11 — dashboard: ba số ở cuối Việc 4 là ba đường cần vẽ, và chỉ ba đường đó.

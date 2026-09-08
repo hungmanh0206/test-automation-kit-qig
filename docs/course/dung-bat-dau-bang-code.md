@@ -1,4 +1,4 @@
-# Bài 7 — Phân tích requirement đa nguồn
+# Bài 12 — Đừng bắt đầu automation bằng code
 
 > **2 giờ 30 phút** · Có gì trong tay: template testcase, 10 case viết tay để so · Sau bài này: bộ case do agent sinh, đã qua Ambiguity Gate
 
@@ -46,7 +46,7 @@ Tách ra thì chỗ mơ hồ lộ trước khi tốn công.
 
 ## 2. Lượt 1 — phân tích
 
-Dùng khuôn 5 phần từ Bài 6. Điểm mới ở đây là định dạng đầu ra có mã tham chiếu:
+Dùng khuôn 5 phần từ Bài 15. Điểm mới ở đây là định dạng đầu ra có mã tham chiếu:
 
 ```
 VAI TRÒ
@@ -73,7 +73,7 @@ RÀNG BUỘC
 Nếu bảng 3 có dòng nào mức "chặn", ghi "AMBIGUITY_GATE: PENDING" ở cuối rồi DỪNG.
 ```
 
-**Mã `BR-` không phải trang trí.** Nó là cái neo: ở Bài 10 mỗi kết quả mong đợi sẽ trỏ về một mã `BR-`, và
+**Mã `BR-` không phải trang trí.** Nó là cái neo: ở Bài 13 mỗi kết quả mong đợi sẽ trỏ về một mã `BR-`, và
 khi BA đổi rule thì bạn biết ngay case nào phải sửa. Không có mã thì mối liên hệ đó nằm trong đầu người viết.
 
 Lưu kết quả vào `outputs/demo/tasks/PROJ-1234/requirements/phan-tich.md`.
@@ -99,7 +99,7 @@ Và bảng chỗ chưa rõ phải bắt được **cả ba** thứ này:
 | 2 | Rule "Vàng trên 10 triệu phải duyệt ngay" (Ghi chú 1) không có trong luồng chính mục 4 | **chặn** |
 | 3 | Khách chưa được phân hạng thì hiển thị gì và tính giảm giá thế nào (Ghi chú 3) | **chặn** |
 
-> Nếu lượt phân tích của bạn không bắt được cả ba, đừng sửa tài liệu — **sửa prompt**. Quay lại Bài 6
+> Nếu lượt phân tích của bạn không bắt được cả ba, đừng sửa tài liệu — **sửa prompt**. Quay lại Bài 15
 > mục 2: câu ràng buộc phải kiểm được. Ở đây câu hiệu quả là *"đọc TOÀN BỘ, gồm phần Ghi chú của BA ở cuối"*
 > — vì chỗ mơ hồ trong tài liệu thật gần như luôn nằm ở phần ghi chú, không nằm ở phần đặc tả.
 
@@ -167,7 +167,7 @@ Lưu vào `outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md`.
 
 ## 5. Kiểm bằng máy trước khi đọc bằng mắt
 
-Bạn đã có parser từ Bài 9. Dùng nó trước khi đọc:
+Bạn đã có parser từ Bài 13. Dùng nó trước khi đọc:
 
 ```bash
 node -e "
@@ -205,7 +205,7 @@ Phép thử một câu: hai người đọc expected này có phán cùng kết 
 | "Đơn hàng ở trạng thái phù hợp" | "Đơn `DH_NHAP_01` trạng thái Nháp, có 2 dòng sản phẩm" |
 | "Người dùng có quyền" | "Đăng nhập bằng `user_sales_01` (vai trò Nhân viên bán hàng)" |
 
-Phép thử: đọc xong bạn biết phải làm gì để có trạng thái đó chưa? Bài 12 sẽ nói kỹ về việc dựng.
+Phép thử: đọc xong bạn biết phải làm gì để có trạng thái đó chưa? Bài 9 sẽ nói kỹ về việc dựng.
 
 ### Dấu hiệu 3 — bước gộp nhiều hành động
 
@@ -228,7 +228,7 @@ Bước gộp thì khi FAIL bạn không biết hỏng ở bước nào, và đ�
 
 Nhóm thứ hai là chỗ học được nhiều nhất. Nếu bạn có case mà agent không nghĩ ra, hãy hỏi: **vì sao tôi biết
 mà tài liệu không nói?** Câu trả lời thường là một business rule chưa được ghi ở đâu — và đó chính là thứ
-phải ghi vào bộ nhớ dự án ở Bài 17.
+phải ghi vào bộ nhớ dự án ở Bài 26.
 
 ## 8. Vì sao review của người không bị thay thế
 
@@ -278,7 +278,7 @@ Có case nào lỗi thì thêm một câu ràng buộc vào prompt, chạy lại
 
 Điền bảng mục 7. Với mỗi case bạn có mà agent không, viết một dòng: *vì sao tôi biết mà tài liệu không nói?*
 
-Giữ danh sách đó lại, nó là đầu vào cho Bài 17.
+Giữ danh sách đó lại, nó là đầu vào cho Bài 26.
 
 ### Bước 6 — Commit
 
@@ -294,11 +294,11 @@ git commit -m "docs(course): bài 6 — phân tích + sinh case qua Ambiguity Ga
 ```
 kit-cua-toi/
 ├── prompt_templates/phase1/
-│   ├── 01_phan_tich.md           ·  từ Bài 7
+│   ├── 01_phan_tich.md           ·  từ Bài 12
 │   └── 02_sinh_testcase.md       ← MỚI · LƯỢT RIÊNG, không gộp với phân tích
 └── outputs/tasks/<MÃ>/
     └── analysis/
-        ├── business-rules.md     ← MỚI · bảng BR- — đầu vào của oracle ở Bài 12
+        ├── business-rules.md     ← MỚI · bảng BR- — đầu vào của oracle ở Bài 9
         └── questions.md          ← MỚI · câu hỏi cho BA, đánh số, có assumption đề xuất
 ```
 
@@ -323,8 +323,25 @@ Chạy đúng hai lượt này trên một tài liệu thật của dự án b�
 
 Con số thứ hai thường làm BA ngạc nhiên. Và nó là cách nhanh nhất để họ thấy giá trị của cách làm này.
 
+## Việc phụ — đo tài liệu trước khi đọc nó
+
+Một việc rẻ làm trước khi ngồi đọc: đo xem tài liệu này có đủ để sinh testcase không.
+
+`scripts/utils/do-tai-lieu.js` đếm bốn thứ và khuyến nghị chiến lược:
+
+| Đếm gì | Thấp thì nghĩa là |
+|---|---|
+| Số luật có mã (`BR-`, `UI-`) | Chưa bóc xong, hoặc tài liệu viết dạng văn xuôi |
+| Số giá trị cụ thể (con số, chuỗi) | Kết quả mong đợi sẽ phải đoán |
+| Số nhánh điều kiện ("nếu", "khi") | Ít nhánh quá thì thường là tài liệu chỉ tả luồng thuận |
+| Số chỗ mâu thuẫn giữa các nguồn | Cao thì phải hỏi trước khi viết dòng nào |
+
+Nó **cảnh báo chứ không chặn**, và đó là cố ý. Tài liệu sơ sài không phải lỗi của bạn, và có những task
+vẫn phải làm với tài liệu sơ sài. Cái bạn cần là biết trước mình đang đứng ở đâu, để nói được với
+quản lý rằng độ phủ sẽ bị giới hạn bởi nguồn, không bởi công sức.
+
 ## Đọc thêm
 
 - Phần "Ghi chú cho giảng viên" ở cuối [`assets/sample-requirement.md`](assets/sample-requirement.md):
   **10** chỗ cài cắm, không chỉ 3. Đọc sau khi làm xong để biết mình còn bỏ sót gì.
-- Bài 10 sẽ soi kỹ vào cột Kết quả mong đợi, phần dễ trông-như-đúng nhất.
+- Bài 13 sẽ soi kỹ vào cột Kết quả mong đợi, phần dễ trông-như-đúng nhất.

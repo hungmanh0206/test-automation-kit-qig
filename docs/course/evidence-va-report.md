@@ -1,8 +1,8 @@
-# Bài chi tiết — Bằng chứng
+# Bài 11 — Evidence và Reporting
 
 > **2 giờ** · Có gì trong tay: kết quả chạy có verdict và tầng lỗi · Sau bài này: ảnh có khoanh đỏ, video có banner, PII đã che — và file trạng thái đã đủ bằng chứng
 >
-> *Bài này không đánh số, nó là phần đào sâu của **Bài 13**. Đọc kèm **Bài 13**.*
+> *Bài này không đánh số, nó là phần đào sâu của **Bài 17**. Đọc kèm **Bài 17**.*
 
 **Tóm tắt bài này**
 
@@ -55,9 +55,9 @@ lúc đó màn hình trông thế nào?"*
 
 Không có ảnh thì mọi PASS của bạn là lời khai không kiểm chứng được. Có ảnh thì bạn trả lời được trong một
 phút. Hoặc phát hiện ra rằng lúc đó nó đã sai rồi mà oracle của bạn không bắt (và đó là thông tin cực
-giá trị cho Bài 21).
+giá trị cho Bài 25).
 
-Đây là mục 4 trong `CLAUDE.md` bạn viết ở Bài 2, và là luật mà `gate-bang-chung.js` ở Bài 8 canh.
+Đây là mục 4 trong `CLAUDE.md` bạn viết ở Bài 5, và là luật mà `gate-bang-chung.js` ở Bài 15 canh.
 
 ## 3. Khoanh đỏ: vì sao ảnh chụp trơn bị trả bug
 
@@ -178,7 +178,7 @@ test('TC_012 [Calc] giảm giá hạng Bạc', async ({ page, duLieu }, testInfo
     ],
     maskSelector: ['[data-field=sdt]', 'input[name=email]']
   });
-  // Gắn vào báo cáo để sinh-status.js đọc được (Bài 13)
+  // Gắn vào báo cáo để sinh-status.js đọc được (Bài 17)
   await testInfo.attach('TC_012', { path: anh, contentType: 'image/png' });
 });
 ```
@@ -272,7 +272,7 @@ async function buoc(page, moTa, giay = 2.5) {
 module.exports = { buoc };
 ```
 
-> `waitForTimeout` ở đây là ngoại lệ hợp lệ duy nhất của luật ở Bài 12. Nó không chờ ứng dụng, nó chờ
+> `waitForTimeout` ở đây là ngoại lệ hợp lệ duy nhất của luật ở Bài 9. Nó không chờ ứng dụng, nó chờ
 > người xem video kịp đọc banner. Ghi comment rõ để người sau không tưởng là mã ẩu.
 
 Bật quay video cho một test cụ thể:
@@ -340,7 +340,7 @@ báo không tồn tại).
 ]
 ```
 
-Đây chính là hình dạng mà `gate-bang-chung.js` ở Bài 8 đọc.
+Đây chính là hình dạng mà `gate-bang-chung.js` ở Bài 15 đọc.
 
 ## 7. Bốn thứ làm ảnh mất giá trị
 
@@ -352,7 +352,7 @@ báo không tồn tại).
 | **Còn PII** | Mở ra và **đọc** | Che, rồi mở ảnh ra soi |
 
 Ảnh trắng là thứ hay xảy ra nhất: khi test đỏ, Playwright vẫn chụp, chỉ là chụp **sau khi** trang đã hỏng
-hoặc chưa render. File vẫn được tạo, đường dẫn vẫn có. Nên `gate-bang-chung.js` ở Bài 8 kiểm cả **kích thước
+hoặc chưa render. File vẫn được tạo, đường dẫn vẫn có. Nên `gate-bang-chung.js` ở Bài 15 kiểm cả **kích thước
 file**, không chỉ kiểm sự tồn tại.
 
 ---
@@ -361,7 +361,7 @@ file**, không chỉ kiểm sự tồn tại.
 
 ### Bước 1 — Viết `evidence.js` (20 phút)
 
-Viết `tests/support/evidence.js` theo mục 3. Sửa 3 test ở Bài 12–10 để chụp bằng `chupCoHighlight` với ít nhất
+Viết `tests/support/evidence.js` theo mục 3. Sửa 3 test ở Bài 9–10 để chụp bằng `chupCoHighlight` với ít nhất
 **một** vùng khoanh mỗi test.
 
 ### Bước 2 — Mở ảnh ra soi (10 phút)
@@ -437,7 +437,7 @@ kit-cua-toi/tests/support/
 ```
 
 Hai file này là **hạ tầng**, không phải máy chặn. Máy chặn đọc *kết quả* của chúng, đó là
-`gate-bang-chung.js` ở Bài 8.
+`gate-bang-chung.js` ở Bài 15.
 
 ## Tự kiểm
 
@@ -466,5 +466,5 @@ nó. Rất thường là ảnh chụp trơn.
 
 ## Đọc thêm
 
-- Phần 4 (Bài 8–15) sẽ biến chính luật của bài này thành **máy chặn**: `gate-bang-chung.js` đọc file trạng thái
+- Phần 4 (Bài 15–15) sẽ biến chính luật của bài này thành **máy chặn**: `gate-bang-chung.js` đọc file trạng thái
   bạn vừa sinh, tìm case đã chạy mà thiếu bằng chứng, và thoát mã 1.
