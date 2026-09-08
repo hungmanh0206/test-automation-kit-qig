@@ -1,6 +1,14 @@
-# Bài 17 — Risk-Based Testing khi chưa có lịch sử bug
+# Bài 19 — Vòng học khép kín
 
 > **2 giờ** · Có gì trong tay: bộ nhớ đã có mầm dữ liệu · Sau bài này: bảng rủi ro chấm được ngay từ tuần đầu
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Thời gian có hạn. Test đều tay mọi chỗ nghĩa là chỗ nguy hiểm bị làm qua loa. |
+| **Bài này bạn gõ gì** | Khai mô hình rủi ro, viết máy chấm điểm, rồi viết gate ép test sâu hơn ở chỗ điểm cao. |
+| **Xong thì được gì** | Test kỹ đúng chỗ đáng. Và biết làm gì khi chưa có lịch sử bug nào. |
 
 ## Mục tiêu
 
@@ -15,7 +23,7 @@
 
 ## 1. Vấn đề: thời gian test luôn ít hơn thứ cần test
 
-Bài 8 cho bạn biết bộ case đang trống **loại câu hỏi** nào. Nhưng còn một câu khác chưa trả lời được:
+Bài 11 cho bạn biết bộ case đang trống **loại câu hỏi** nào. Nhưng còn một câu khác chưa trả lời được:
 
 > Trong 20 module, module nào đáng test **sâu**, module nào smoke là đủ?
 
@@ -161,7 +169,7 @@ const cheDo = coBug > 0 ? 'lich-su' : 'cold-start';
 
 if (cheDo === 'cold-start' && !cold) {
   console.error('[risk] KHÔNG ĐO ĐƯỢC: chưa có bug lịch sử, và cũng chưa khai .agent/config/cold-start-signals.json');
-  console.error('  → khai tín hiệu thay thế cho từng module (xem Bài 17 mục 3)');
+  console.error('  → khai tín hiệu thay thế cho từng module (xem Bài 19 mục 3)');
   process.exit(2);
 }
 
@@ -253,7 +261,7 @@ process.exit(0);
 ```
 
 > **Vì sao cold start chỉ cảnh báo, không chặn.** Tín hiệu thay thế là **phỏng đoán có cơ sở**, không phải dữ
-> liệu. Chặn dựa trên phỏng đoán thì sẽ chặn oan, và Bài 13 mục 8 đã nói hậu quả: gate báo oan là gate bị bỏ
+> liệu. Chặn dựa trên phỏng đoán thì sẽ chặn oan, và Bài 8 mục 8 đã nói hậu quả: gate báo oan là gate bị bỏ
 > qua. Khi `bugs/` đã có dữ liệu thật thì mới bàn tới chuyện chặn.
 
 ## 4. Bẫy dòng ma: tên module lệch
@@ -302,7 +310,7 @@ Vì vậy: không có chế độ `--apply`. Người đọc danh sách rồi gh
 
 Có bảng rủi ro rồi thì đối chiếu với bộ case: module band `high` có đủ độ sâu chưa?
 
-Nối với tag chiều ở Bài 8:
+Nối với tag chiều ở Bài 11:
 
 | Band | depthPolicy | Kiểm bằng tag |
 |---|---|---|
@@ -450,7 +458,7 @@ node scripts/qa/cham-rui-ro.js; echo "exit=$?"    # → 1, nêu NGHI LỆCH TÊN
 
 ### Bước 5 — Gate độ sâu (10 phút)
 
-Viết `gate-do-sau.js`, chạy trên bộ case Bài 8:
+Viết `gate-do-sau.js`, chạy trên bộ case Bài 11:
 
 ```bash
 node scripts/qa/gate-do-sau.js outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md
@@ -511,6 +519,6 @@ từng cái.
 
 ## Đọc thêm
 
-- Bài 19 sẽ dùng band rủi ro để quyết **độ sâu mở rộng** — mở 5 trục cho mọi case thì evidence nhân lên tới
+- Bài 21 sẽ dùng band rủi ro để quyết **độ sâu mở rộng** — mở 5 trục cho mọi case thì evidence nhân lên tới
   mức không ai đọc báo cáo nữa.
 - [`scripts/qa/risk_score.js`](../../scripts/qa/risk_score.js) của kit này — bản đầy đủ, dựa trên lịch sử thật.

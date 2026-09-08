@@ -2,6 +2,14 @@
 
 > **1 giờ** · Có gì trong tay: chưa có gì · Sau bài này: app thực hành chạy được trên máy bạn, và bạn hiểu 10 từ mà 20 bài sau sẽ dùng liên tục
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Bạn muốn dựng bộ kit nhưng chưa có gì để thử. Mấy từ sắp gặp cũng chưa rõ nghĩa. |
+| **Bài này bạn gõ gì** | Kiểm máy có Node chưa, chạy app thực hành, rồi tạo một đơn hàng bằng tay. |
+| **Xong thì được gì** | App chạy trên máy bạn. 10 từ vựng hiểu qua ví dụ. Và một bug bạn tự tìm ra sau 40 phút. |
+
 ## Bài này bạn sẽ làm gì
 
 Năm việc, mỗi việc gõ tay:
@@ -46,7 +54,7 @@ v20.11.1
 |---|---|---|
 | `v20.x` hoặc cao hơn | Đủ dùng | Đi tiếp |
 | `v18.x` | Vẫn dùng được | Đi tiếp |
-| `v16.x` hoặc thấp hơn | Quá cũ, sẽ lỗi lạ ở Bài 9 | Cài lại bản mới từ nodejs.org |
+| `v16.x` hoặc thấp hơn | Quá cũ, sẽ lỗi lạ ở Bài 12 | Cài lại bản mới từ nodejs.org |
 | `node: command not found` hoặc `'node' is not recognized` | Chưa có Node | Vào nodejs.org, tải bản **LTS**, cài xong **mở terminal mới** rồi gõ lại |
 
 > Mẹo: sau khi cài, **phải mở cửa sổ terminal mới**. Cửa sổ đang mở không biết là bạn vừa cài gì.
@@ -138,7 +146,7 @@ nó, bạn luôn được kết quả khớp — và không chứng minh đượ
 Một lần kiểm cụ thể, viết ra để người khác làm lại được. Nó phải trả lời được: kiểm **cái gì**, cần **chuẩn bị
 gì** trước, làm **những bước nào**, và **đúng là ra sao**.
 
-> Việc 3 vừa rồi chính là một testcase, chỉ là bạn chưa viết nó ra. Bài 5 sẽ dạy cách viết.
+> Việc 3 vừa rồi chính là một testcase, chỉ là bạn chưa viết nó ra. Bài 9 sẽ dạy cách viết.
 
 ### 2. Kết quả mong đợi độc lập (**oracle**)
 
@@ -150,7 +158,7 @@ Con số/trạng thái đúng, tính ra **không dùng app**.
 Ví như đi mua gạo: bạn không cân gạo bằng cân của người bán rồi hỏi người bán xem cân có đúng không. Bạn mang
 **cân riêng**. Cái cân riêng đó là oracle.
 
-Đây là từ quan trọng nhất trong 10 từ. Bài 7 dành cả 2 tiếng chỉ cho nó.
+Đây là từ quan trọng nhất trong 10 từ. Bài 10 dành cả 2 tiếng chỉ cho nó.
 
 ### 3. Bản gốc (**canonical**)
 
@@ -166,7 +174,7 @@ sai, không phải bản chính sai.
 
 Một đoạn chương trình đọc kết quả làm việc của bạn và **chặn lại** nếu sai chuẩn. Không phải cảnh báo — chặn.
 
-> Ví dụ bạn sẽ viết ở Bài 13: một máy đọc danh sách case đã chạy, thấy có case ghi PASS mà không kèm ảnh
+> Ví dụ bạn sẽ viết ở Bài 8: một máy đọc danh sách case đã chạy, thấy có case ghi PASS mà không kèm ảnh
 > chứng minh thì nó **báo lỗi và không cho đi tiếp**.
 
 Ví như cửa soát vé: nhân viên có thể nhắc "nhớ mua vé nhé"; cửa soát vé thì **không mở**.
@@ -192,7 +200,7 @@ Kết luận về một case sau khi chạy. Không phải chỉ có PASS/FAIL �
 | `BLOCKED` | Không chạy được vì cái khác chặn (app sập, không đăng nhập được) |
 | `SETUP_FAILURE` | Không chạy được vì **chuẩn bị dữ liệu thất bại** — lỗi của bạn, không phải bug của app |
 
-Từ quan trọng nhất ở đây: **"không phán được" KHÔNG bằng PASS.** Bài 11 dạy cách phân loại.
+Từ quan trọng nhất ở đây: **"không phán được" KHÔNG bằng PASS.** Bài 13 dạy cách phân loại.
 
 ### 7. Bằng chứng (**evidence**)
 
@@ -200,7 +208,7 @@ Từ quan trọng nhất ở đây: **"không phán được" KHÔNG bằng PASS
 
 > Ảnh chụp màn hình lúc Tổng cộng hiện `515.000`, có khoanh đỏ vào đúng con số đó.
 
-File `.txt` ghi *"đã test, pass"* **không phải** bằng chứng — nó chỉ là bạn nói lại lần nữa. Bài 12 dạy cách
+File `.txt` ghi *"đã test, pass"* **không phải** bằng chứng — nó chỉ là bạn nói lại lần nữa. Bài 13 dạy cách
 chụp có khoanh đỏ và che thông tin cá nhân.
 
 ### 8. Tiền điều kiện (**precondition**)
@@ -219,7 +227,7 @@ Test mà cùng một mã, cùng một app, chạy lần này đỏ lần sau xan
 > Nguyên nhân hay gặp nhất: test bấm nút trước khi nút hiện ra xong.
 
 Flaky **tệ hơn** test luôn đỏ. Test luôn đỏ thì bạn sửa; test chập chờn thì bạn học cách chạy lại cho tới khi
-xanh — và từ đó bạn không tin bất cứ màu nào nữa. Bài 9 và Bài 11 xử lý nó.
+xanh — và từ đó bạn không tin bất cứ màu nào nữa. Bài 12 và Bài 13 xử lý nó.
 
 ### 10. Agent
 
@@ -236,54 +244,54 @@ sau này khi tôi nói "viết file này", bạn biết nó nằm ở đâu và 
 
 ```
 kit-cua-toi/
-├── CLAUDE.md                    ← Bài 3 · luật agent PHẢI đọc mỗi phiên
-├── RULE_GLOBAL.md               ← Bài 3 · bản luật đầy đủ (CLAUDE.md là bản rút gọn)
-├── README.md                    ← Bài 20 · người mới đọc là chạy được
-├── package.json                 ← Bài 2 · khai mọi lệnh `npm run ...`
-├── playwright.config.js         ← Bài 9 · cấu hình chạy test
+├── CLAUDE.md                    ← Bài 2 · luật agent PHẢI đọc mỗi phiên
+├── LUAT-DAY-DU.md               ← Bài 2 · bản luật đầy đủ (CLAUDE.md là bản rút gọn)
+├── README.md                    ← Bài 24 · người mới đọc là chạy được
+├── package.json                 ← Bài 4 · khai mọi lệnh `npm run ...`
+├── playwright.config.js         ← Bài 12 · cấu hình chạy test
 │
 ├── .agent/                      ← "não" của kit: luật, cấu hình, kỹ năng
 │   ├── rules/
-│   │   └── core_rules.md        ← Bài 3
+│   │   └── core_rules.md        ← Bài 2
 │   └── config/
-│       ├── verdict_taxonomy.json     ← Bài 11 · danh mục phán quyết
-│       ├── dimension-manifest.json   ← Bài 8 · các chiều phải phủ
-│       ├── risk_model.json           ← Bài 17 · trọng số rủi ro
-│       ├── mutants.json              ← Bài 19 · các lỗi cố tình tiêm
-│       └── ci_scope.json             ← Bài 20 · lệnh nào chạy ở đâu
+│       ├── phan-quyet.json     ← Bài 13 · danh mục phán quyết
+│       ├── chieu-phu.json   ← Bài 11 · các chiều phải phủ
+│       ├── risk_model.json           ← Bài 19 · trọng số rủi ro
+│       ├── mutants.json              ← Bài 21 · các lỗi cố tình tiêm
+│       └── ci_scope.json             ← Bài 24 · lệnh nào chạy ở đâu
 │
 ├── .claude/
-│   └── commands/                ← Bài 18 · gõ `/phase2 ...` thay vì 6 lệnh
+│   └── commands/                ← Bài 16 · gõ `/phase2 ...` thay vì 6 lệnh
 │       ├── phase1.md
 │       └── phase2.md
 │
-├── prompt_templates/            ← Bài 4 · bản mẫu ra lệnh cho agent
+├── prompt_templates/            ← Bài 6 · bản mẫu ra lệnh cho agent
 │   ├── phase1/                  ·  sinh testcase
 │   └── phase2/                  ·  chạy test
 │
 ├── scripts/
 │   ├── lib/                     ← thư viện dùng chung (KHÔNG tự chạy)
-│   │   ├── testcase/            ·  Bài 5 · đọc/ghi bảng testcase
-│   │   ├── verdict.js           ·  Bài 11
-│   │   └── gate.js              ·  Bài 14 · khung chung cho mọi máy kiểm
+│   │   ├── testcase/            ·  Bài 9 · đọc/ghi bảng testcase
+│   │   ├── verdict.js           ·  Bài 13
+│   │   └── gate.js              ·  Bài 11 · khung chung cho mọi máy kiểm
 │   └── qa/                      ← MÁY KIỂM (mỗi file tự chạy được, chặn được)
-│       ├── evidence_gate.js     ·  Bài 13 · máy đầu tiên bạn viết
-│       ├── inventory_gate.js    ·  Bài 14
-│       ├── self_review.js       ·  Bài 14 · gọi mọi máy kiểm một lượt
-│       ├── policy_check.js      ·  Bài 15 · chống luật bị trôi
-│       └── tiem-loi.js          ·  Bài 19 · đo chính bộ kiểm
+│       ├── gate-bang-chung.js     ·  Bài 8 · máy đầu tiên bạn viết
+│       ├── kiem-ton-kho.js    ·  Bài 11
+│       ├── tu-soi.js       ·  Bài 11 · gọi mọi máy kiểm một lượt
+│       ├── chong-troi.js      ·  Bài 28 · chống luật bị trôi
+│       └── tiem-loi.js          ·  Bài 21 · đo chính bộ kiểm
 │
 ├── tests/
 │   ├── support/                 ← hạ tầng test (dùng chung mọi test)
-│   │   ├── fixtures/            ·  Bài 10 · dựng/dọn dữ liệu
-│   │   ├── evidence.js          ·  Bài 12 · chụp ảnh có khoanh đỏ
-│   │   └── factory.js           ·  Bài 10 · tạo dữ liệu qua API
-│   ├── e2e/                     ← Bài 9 · test qua giao diện
-│   └── api/                     ← Bài 18 · test gọi thẳng API
+│   │   ├── fixtures/            ·  Bài 12 · dựng/dọn dữ liệu
+│   │   ├── evidence.js          ·  Bài 13 · chụp ảnh có khoanh đỏ
+│   │   └── factory.js           ·  Bài 12 · tạo dữ liệu qua API
+│   ├── e2e/                     ← Bài 12 · test qua giao diện
+│   └── api/                     ← Bài 16 · test gọi thẳng API
 │
-├── knowledge/                   ← Bài 16 · bộ nhớ dự án. KHÔNG commit
+├── knowledge/                   ← Bài 17 · bộ nhớ dự án. KHÔNG commit
 ├── profiles/
-│   └── <MÃ-TASK>/task.env       ← Bài 2 · URL + tài khoản. KHÔNG commit
+│   └── <MÃ-TASK>/task.env       ← Bài 4 · URL + tài khoản. KHÔNG commit
 └── outputs/                     ← kết quả mỗi lượt chạy. KHÔNG commit
     └── tasks/<MÃ-TASK>/
         ├── test-cases/          ·  bảng case đã sinh
@@ -300,7 +308,7 @@ Ba chỗ đáng để ý ngay từ giờ, vì người mới hay xếp sai:
 | `tests/support/` | **hạ tầng test** — không phải test | Không có `test(...)` trong file ⇒ nó ở `support/` |
 
 Và ba thư mục **không bao giờ** đưa lên git — `knowledge/` (dữ liệu nghiệp vụ của công ty), `profiles/` (tài
-khoản, mật khẩu), `outputs/` (kết quả từng lượt chạy, đổi liên tục). Bài 2 sẽ dựng `.gitignore` cho chúng.
+khoản, mật khẩu), `outputs/` (kết quả từng lượt chạy, đổi liên tục). Bài 4 sẽ dựng `.gitignore` cho chúng.
 
 > **Bạn không phải tạo cây này bây giờ.** Mỗi bài tạo đúng phần của nó, và mỗi bài đều có một khối
 > **"Cây thư mục sau bài này"** để bạn đối chiếu.
@@ -327,7 +335,7 @@ lượng `1`.
 3. **Cộng thử các số đang hiện trên màn hình**: số Tạm tính, trừ số Giảm giá, cộng số Phí giao hàng. Có ra
    đúng số Tổng cộng đang hiện không?
 
-Câu 3 là câu quan trọng. Nếu bạn thấy có gì lạ — ghi nó vào một file `ghi-chu.md`, đừng vội kết luận. Bài 7
+Câu 3 là câu quan trọng. Nếu bạn thấy có gì lạ — ghi nó vào một file `ghi-chu.md`, đừng vội kết luận. Bài 10
 sẽ dạy bạn cách biến "thấy lạ" thành "chứng minh được sai".
 
 ## Bài sau

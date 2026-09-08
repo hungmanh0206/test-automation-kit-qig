@@ -1,6 +1,14 @@
-# Bài 1 — Tự tay xem agent "làm cho nó xanh"
+# Bài 1 — Vì sao "prompt giỏi" là không đủ
 
 > **1 giờ 30 phút** · Có gì trong tay: app thực hành đang chạy, 10 từ vựng · Sau bài này: bạn đã thấy agent gian lận trên máy mình, và đã viết máy chặn đầu tiên
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Bạn nhờ AI viết test. Nó báo xanh. Nhưng bạn không biết xanh đó là thật hay giả. |
+| **Bài này bạn gõ gì** | Viết một test 15 dòng. Bảo agent sửa cho nó pass. Rồi viết một máy chặn 12 dòng. |
+| **Xong thì được gì** | Bạn thấy tận mắt agent làm test xanh trong khi app vẫn sai, và có máy chặn được nó. |
 
 ## Từ mới của bài này
 
@@ -236,7 +244,7 @@ Tạo file `scripts/qa/kiem-so-mong-doi.js`:
  *
  * Mã thoát:  0 = đạt   ·   1 = vi phạm (chặn)   ·   2 = không đo được
  *
- * Máy này còn rất thô — nó chỉ biết ĐÚNG một case. Bài 13 sẽ làm bản dùng cho mọi case.
+ * Máy này còn rất thô — nó chỉ biết ĐÚNG một case. Bài 8 sẽ làm bản dùng cho mọi case.
  * Nhưng nó CHẶN thật, và đó là điều đáng quan tâm hôm nay.
  */
 'use strict';
@@ -363,13 +371,13 @@ Máy chặn hiện tại mù với **Kiểu B**. Thử vá nó:
 5. Rồi chạy lại trên file **đúng** (Việc 1): phải vẫn ra mã `0`.
 
 Bước 5 là bước hay bị bỏ, và nó quan trọng nhất: một máy chặn bắt oan còn tệ hơn không có máy nào — vì người
-ta sẽ học cách tắt nó đi. Bài 13 và Bài 15 nói kỹ về chuyện này.
+ta sẽ học cách tắt nó đi. Bài 8 và Bài 28 nói kỹ về chuyện này.
 
 ---
 
 ## Đào sâu (đọc thêm, không bắt buộc)
 
-Ba mục dưới đây là bối cảnh. Bỏ qua được nếu bạn muốn sang Bài 2 ngay.
+Ba mục dưới đây là bối cảnh. Bỏ qua được nếu bạn muốn sang Bài 4 ngay.
 
 ### Ba mức dùng AI trong kiểm thử
 
@@ -387,8 +395,7 @@ nó làm sai thì có thứ **chặn** trước khi kết quả đi ra ngoài.
 ### Vấn đề thứ hai: agent không có ký ức
 
 Phiên hôm nay không biết phiên tuần trước đã kết luận gì. Hệ quả thực tế: cùng một bug bị log lại sau khi Dev
-đã từ chối; cùng một cách dựng dữ liệu bị thử lại sau khi đã thất bại; cùng một câu hỏi được hỏi lại BA. Bài
-16 dựng bộ nhớ trên đĩa để chữa việc này.
+đã từ chối; cùng một cách dựng dữ liệu bị thử lại sau khi đã thất bại; cùng một câu hỏi được hỏi lại BA. Bài 17 dựng bộ nhớ trên đĩa để chữa việc này.
 
 ### Ba thứ một bộ kit phải giải
 
@@ -396,10 +403,10 @@ Phiên hôm nay không biết phiên tuần trước đã kết luận gì. Hệ
 |---|---|---|---|
 | Kỷ luật | Agent làm cho nó xanh | Máy chặn đọc kết quả và chặn khi sai chuẩn | Phần 4 (bài 13–15) |
 | Bộ nhớ | Không có ký ức giữa các phiên | Kho trên đĩa: luật đã xác nhận, quyết định đã chốt | Phần 5 (bài 16–17) |
-| Bằng chứng | Không kiểm chứng lại được | Ảnh/video bắt buộc, khoanh đúng chỗ, che thông tin cá nhân | Bài 12 |
+| Bằng chứng | Không kiểm chứng lại được | Ảnh/video bắt buộc, khoanh đúng chỗ, che thông tin cá nhân | Bài 13 |
 
 ## Bài sau
 
-Bài 2 dựng môi trường thật: cài Playwright, tạo `package.json`, dựng `.gitignore` cho ba thư mục không được
+Bài 4 dựng môi trường thật: cài Playwright, tạo `package.json`, dựng `.gitignore` cho ba thư mục không được
 commit, và thử ba mức quyền của agent — bao gồm một thí nghiệm nhỏ: **bảo agent xoá thư mục `docs/` và xem
 quyền chặn nó lại**.

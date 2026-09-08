@@ -1,6 +1,14 @@
-# Bài 7 — Oracle: dựa vào đâu mà bảo cái này sai
+# Bài 10 — Kỷ luật Oracle: bài học quan trọng nhất
 
 > **2 giờ** · Có gì trong tay: một bộ testcase do agent sinh · Sau bài này: mọi expected đều trích được nguồn, và bạn nhận ra tautology từ xa
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | AI lấy luôn số app đang trả làm kết quả mong đợi. Thế là test luôn xanh, kể cả khi app sai. |
+| **Bài này bạn gõ gì** | Sửa 5 kết quả mong đợi yếu thành loại trỏ được về tài liệu, rồi viết gate chặn số không có nguồn. |
+| **Xong thì được gì** | Mọi kết luận đúng sai đều chỉ được ra một dòng luật cụ thể. Đây là bài quan trọng nhất. |
 
 ## Mục tiêu
 
@@ -99,7 +107,7 @@ thể cùng sai. Nhất quán chỉ chứng minh **không mâu thuẫn**, không
 
 ## 3. Neo expected vào nguồn
 
-Bài 6 bạn đã có bảng `BR-`. Giờ dùng nó làm neo: mỗi expected trỏ về một mã.
+Bài 7 bạn đã có bảng `BR-`. Giờ dùng nó làm neo: mỗi expected trỏ về một mã.
 
 ```markdown
 | Kết quả mong đợi |
@@ -121,7 +129,7 @@ Ba loại nguồn hợp lệ, và chúng khác nhau:
 | `UI-` hợp đồng giao diện | Nhãn, danh sách cột, thứ tự, design token | `UI-01` bốn cột khối B |
 | `SM-` bản đồ hệ thống | Trạng thái hợp lệ, ma trận phân quyền | `SM-02` kế toán chỉ xem |
 
-`UI-` và `SM-` chưa có bây giờ — Bài 16 sẽ dựng. Lúc này cứ trỏ về mục tài liệu là đủ.
+`UI-` và `SM-` chưa có bây giờ — Bài 17 sẽ dựng. Lúc này cứ trỏ về mục tài liệu là đủ.
 
 ## 4. Khi nguồn nói chữ, phải neo đúng chữ
 
@@ -182,12 +190,12 @@ Màn hiện `Vàng` → chứng minh nó đọc CRM. Hiện `Bạc` → chứng 
 
 `OBSERVATION` nghĩa là: *tôi thấy điều này, tôi chưa có nguồn để nói nó đúng hay sai.* Nó đi kèm câu hỏi cho BA.
 
-> **"Không phán được" KHÔNG thành PASS.** Đây là mục 3 trong `CLAUDE.md` bạn viết ở Bài 3. PASS là một khẳng
+> **"Không phán được" KHÔNG thành PASS.** Đây là mục 3 trong `CLAUDE.md` bạn viết ở Bài 2. PASS là một khẳng
 > định: *tôi đã kiểm và nó đúng*. Không có nguồn thì bạn không kiểm được, nên không được khẳng định.
 
 ## 7. Danh sách chữ "oracle rỗng"
 
-Những cụm này **phán với gần như mọi giá trị**, kể cả giá trị sai. Chép vào `RULE_GLOBAL.md` — Bài 14 sẽ biến
+Những cụm này **phán với gần như mọi giá trị**, kể cả giá trị sai. Chép vào `LUAT-DAY-DU.md` — Bài 11 sẽ biến
 nó thành gate:
 
 ```
@@ -198,7 +206,7 @@ hiển thị đúng · thành công · không lỗi · hoạt động bình thư
 Chúng có một điểm chung: **không nêu giá trị nào**. Phép thử: xoá cụm đó và hỏi *"còn lại thông tin gì để đối
 chiếu?"* Nếu không còn gì thì đó là oracle rỗng.
 
-Thêm vào `RULE_GLOBAL.md`:
+Thêm vào `LUAT-DAY-DU.md`:
 
 ```markdown
 ## Oracle
@@ -221,7 +229,7 @@ Thêm vào `RULE_GLOBAL.md`:
 
 ### Bước 1 — Soi bộ case của bạn (15 phút)
 
-Đếm trên bộ agent sinh ở Bài 6:
+Đếm trên bộ agent sinh ở Bài 7:
 
 ```bash
 node -e "
@@ -273,10 +281,10 @@ câu giải thích *nếu ra giá trị kia thì kết luận gì*.
 
 ### Bước 5 — Chốt luật và commit
 
-Thêm mục `## Oracle` ở mục 7 vào `RULE_GLOBAL.md`.
+Thêm mục `## Oracle` ở mục 7 vào `LUAT-DAY-DU.md`.
 
 ```bash
-git add RULE_GLOBAL.md outputs/demo/tasks/PROJ-1234/test-cases
+git add LUAT-DAY-DU.md outputs/demo/tasks/PROJ-1234/test-cases
 git commit -m "feat(rule): mục Oracle — cấm tautology, ép neo nguồn, fixture phân biệt, OBSERVATION
 
 Sửa 5 expected yếu thành có neo. Bộ hiện tại: <N> case, <X> dòng oracle rỗng còn lại."
@@ -291,9 +299,9 @@ kit-cua-toi/
 ├── .agent/rules/
 │   └── oracle.md                 ← MỚI · khối luật: không neo được ⇒ OBSERVATION
 ├── scripts/qa/
-│   └── oracle_gate.js            ← MỚI · giá trị tính toán không trỏ nguồn ⇒ chặn
+│   └── gate-oracle.js            ← MỚI · giá trị tính toán không trỏ nguồn ⇒ chặn
 └── outputs/tasks/<MÃ>/analysis/
-    └── business-rules.md         ·  từ Bài 7 — giờ là NGUỒN của mọi expected
+    └── business-rules.md         ·  từ Bài 10 — giờ là NGUỒN của mọi expected
 ```
 
 ## Tự kiểm
@@ -305,7 +313,7 @@ kit-cua-toi/
 - [ ] Tôi giải thích được vì sao `toContain` yếu hơn so khớp toàn chuỗi.
 - [ ] Tôi thiết kế được một fixture phân biệt, và nói được kết luận cho **cả hai** kết quả có thể.
 - [ ] Tôi biết ghi `OBSERVATION` khi không neo được, và **không** ghi PASS.
-- [ ] `RULE_GLOBAL.md` của tôi đã có mục Oracle.
+- [ ] `LUAT-DAY-DU.md` của tôi đã có mục Oracle.
 
 ## Bài tập về nhà
 
@@ -316,11 +324,11 @@ Lấy **một bộ testcase thật** đang dùng ở dự án bạn. Chạy scri
 3. Trong số case kiểm tính toán, bao nhiêu case lấy số liệu từ **màn hình** để tính kỳ vọng?
 
 Con số thứ ba là con số đáng sợ nhất, vì những case đó **luôn xanh** và không ai biết. Đừng sửa hàng loạt bây
-giờ — Bài 14 sẽ cho bạn gate, và Bài 19 sẽ cho bạn cách **đo** xem bộ kiểm có bắt được lỗi giá trị hay không.
+giờ — Bài 11 sẽ cho bạn gate, và Bài 21 sẽ cho bạn cách **đo** xem bộ kiểm có bắt được lỗi giá trị hay không.
 
 ## Đọc thêm
 
-- Bài 19 sẽ đo chính điều này bằng cách tiêm lỗi giá trị vào. Con số thật ở kit này lần đầu đo được là
+- Bài 21 sẽ đo chính điều này bằng cách tiêm lỗi giá trị vào. Con số thật ở kit này lần đầu đo được là
   **0/4** — bộ kiểm hiển thị không bắt được lỗi giá trị nào, vì phạm vi nó là *kiểm kê trường*, không phải
   *kiểm giá trị*.
-- Bài 8 chuyển sang câu hỏi khác: bộ case của bạn đang trống hẳn **loại câu hỏi** nào.
+- Bài 11 chuyển sang câu hỏi khác: bộ case của bạn đang trống hẳn **loại câu hỏi** nào.

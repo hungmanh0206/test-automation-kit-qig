@@ -2,6 +2,14 @@
 
 > **1 giờ** · Có gì trong tay: nhiều lượt chạy đã ghi metrics · Sau bài này: một trang tự chứa cho người không có quyền vào công cụ, và biết vì sao dashboard **không bao giờ** là nguồn
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Sếp không có quyền vào công cụ. Còn bảng số thì không cho thấy đang tốt lên hay xấu đi. |
+| **Bài này bạn gõ gì** | Viết máy sinh một trang HTML gọn, chỉ 3 đường, và soạn mẫu báo cáo 4 phần. |
+| **Xong thì được gì** | Nhìn một cái là biết tháng này kit khá hơn hay kém đi. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |
@@ -235,7 +243,7 @@ Bốn phần, đúng thứ tự này:
 # Kết quả kiểm thử — <Sprint/Story> — <ngày>
 
 ## 1. Kết luận một câu
-Chức năng Tạo đơn hàng **chưa nên phát hành**: còn 1 lỗi tính tiền ở mốc 500.000 (SAPP-1234).
+Chức năng Tạo đơn hàng **chưa nên phát hành**: còn 1 lỗi tính tiền ở mốc 500.000 (PROJ-1234).
 
 ## 2. Con số
 | | |
@@ -253,7 +261,7 @@ Chức năng Tạo đơn hàng **chưa nên phát hành**: còn 1 lỗi tính ti
 | Sửa được đơn đã xác nhận qua API | dữ liệu đơn đổi sau khi chốt | cao |
 
 ## 4. Cần gì để đi tiếp
-- Dev sửa SAPP-1234 → kiểm lại 6 case (~2 giờ)
+- Dev sửa PROJ-1234 → kiểm lại 6 case (~2 giờ)
 - BA trả lời: có chống trùng đơn khi bấm hai lần không? (chưa có trong đặc tả)
 ```
 

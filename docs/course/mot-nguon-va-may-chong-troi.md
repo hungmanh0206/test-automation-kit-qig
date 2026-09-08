@@ -1,6 +1,14 @@
-# Bài 15 — Một nguồn, và máy chống trôi
+# Bài 28 — Khi kit chặn sai
 
 > **2 giờ** · Có gì trong tay: bộ gate nền đang chạy · Sau bài này: máy canh chính hệ thống luật và gate của bạn
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Gate báo đỏ nhưng bạn thấy code mình đúng. Nới ngưỡng cho qua thì lần sau nó chẳng chặn được gì nữa. |
+| **Bài này bạn gõ gì** | Viết máy dò luật bị trôi khỏi tài liệu, và danh sách miễn trừ bắt buộc ghi lý do kèm ngày. |
+| **Xong thì được gì** | Biết khi nào sửa gate, khi nào ghi miễn trừ. Và gate của bạn không mất uy tín. |
 
 ## Mục tiêu
 
@@ -13,7 +21,7 @@
 
 ---
 
-## 1. Vấn đề mới xuất hiện ở Bài 14
+## 1. Vấn đề mới xuất hiện ở Bài 11
 
 Bạn vừa có 5 gate. Bây giờ có ba câu hỏi mà **không cách nào trả lời**:
 
@@ -31,8 +39,8 @@ bạn vẫn tin mình có 5 gate chặn, thực tế còn 2.
 
 ## 2. Canonical và bản tóm
 
-Bài 3 bạn tạo hai file nói **cùng một luật** ở hai độ chi tiết: `CLAUDE.md` (ngắn, luôn trong ngữ cảnh) và
-`RULE_GLOBAL.md` (dài, tra khi cần). Đó là **cố ý** — và nó tạo rủi ro thật.
+Bài 2 bạn tạo hai file nói **cùng một luật** ở hai độ chi tiết: `CLAUDE.md` (ngắn, luôn trong ngữ cảnh) và
+`LUAT-DAY-DU.md` (dài, tra khi cần). Đó là **cố ý** — và nó tạo rủi ro thật.
 
 | | Canonical | Bản tóm |
 |---|---|---|
@@ -65,14 +73,14 @@ Chuyện thật ở kit này, và con số đủ để giật mình:
 
 Chúng không hỏng. Chúng chỉ **không được gọi**. Và không có cách nào biết bằng cách đọc.
 
-`scripts/qa/policy_check.js`:
+`scripts/qa/chong-troi.js`:
 
 ```js
 #!/usr/bin/env node
 /*
- * policy_check.js — canh chính HỆ THỐNG LUẬT: một nguồn, không mồ côi.
+ * chong-troi.js — canh chính HỆ THỐNG LUẬT: một nguồn, không mồ côi.
  *
- * VÌ SAO CÓ FILE NÀY: gate ở Bài 14 canh CÔNG VIỆC. File này canh chính BỘ MÁY CANH. Đo thật ở một kit:
+ * VÌ SAO CÓ FILE NÀY: gate ở Bài 11 canh CÔNG VIỆC. File này canh chính BỘ MÁY CANH. Đo thật ở một kit:
  * 11 lệnh gate chỉ nằm ở tầng workflow mà điểm vào không trỏ tới ⇒ ai làm đúng quy trình thì không bao giờ
  * chạy chúng. Không đọc bằng mắt mà thấy được.
  *
@@ -85,7 +93,7 @@ const { ketQua, khongDoDuoc, ketThuc, fileDangTrack } = require('./lib/gate');
 
 const GATE = 'policy-check';
 const ROOT = process.cwd();
-const CANONICAL = 'RULE_GLOBAL.md';
+const CANONICAL = 'LUAT-DAY-DU.md';
 const BAN_TOM = ['CLAUDE.md', '.agent/rules/core_rules.md'];
 const DIEM_VAO_DIR = 'prompt_templates';
 const ALLOW_FILE = '.agent/config/policy-check.allow.json';
@@ -182,7 +190,7 @@ Ba chi tiết đắt giá trong đoạn trên:
 
 ```json
 {
-  "_note": "Miễn trừ cho policy_check. Mỗi miễn trừ BẮT BUỘC ghi lý do — để trống là gate chặn. Khối lạ cũng bị chặn.",
+  "_note": "Miễn trừ cho chong-troi. Mỗi miễn trừ BẮT BUỘC ghi lý do — để trống là gate chặn. Khối lạ cũng bị chặn.",
   "npmScripts": {
     "lint": "lệnh dev chung của toàn repo, không phải gate cần điểm vào",
     "typecheck": "lệnh dev chung"
@@ -199,12 +207,12 @@ thì nó mục ngay tuần sau.
 Mẹo hay: **suy mức chặn từ chính mã**. Gate có `process.exit(1)` là **CHẶN**; chỉ ghi file là **SINH**; chỉ
 in ra là **BÁO CÁO**.
 
-`scripts/qa/gates_index.js`:
+`scripts/qa/danh-muc-gate.js`:
 
 ```js
 #!/usr/bin/env node
 /*
- * gates_index.js — sinh DANH MỤC GATE từ chính source. Có --check để chặn khi bảng lệch.
+ * danh-muc-gate.js — sinh DANH MỤC GATE từ chính source. Có --check để chặn khi bảng lệch.
  *
  * VÌ SAO CẦN: cột "Mức" (CHẶN / SINH / BÁO CÁO) là thông tin chưa máy nào ghi, và là chỗ dễ trôi nhất —
  * nới một gate chỉ là sửa MỘT dòng. Bảng viết tay thì mục; bảng sinh từ source thì không thể lệch mà im.
@@ -258,7 +266,7 @@ const dem = (m) => rows.filter((r) => r.muc === m).length;
 const md = [
   '# Danh mục GATE của kit',
   '',
-  '> **SINH TỰ ĐỘNG** bởi `node scripts/qa/gates_index.js`. Đừng sửa tay — `--check` sẽ chặn khi bảng',
+  '> **SINH TỰ ĐỘNG** bởi `node scripts/qa/danh-muc-gate.js`. Đừng sửa tay — `--check` sẽ chặn khi bảng',
   '> lệch source. Cột **Mức** suy từ mã: `exit 1` = CHẶN · ghi file = SINH · chỉ in = BÁO CÁO.',
   '',
   `Tổng **${rows.length}** máy — **${dem('CHẶN')} CHẶN** · ${dem('SINH')} SINH · ${dem('BÁO CÁO')} BÁO CÁO.`,
@@ -275,7 +283,7 @@ if (CHECK) {
   const cu = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
   if (cu.trim() !== md.trim()) {
     console.error('[gates-index] CHẶN: GATES.md LỆCH source — gate được thêm/xoá, hoặc một gate ' +
-      'đã đổi mức CHẶN ↔ CẢNH BÁO mà bảng không ghi. Chạy `node scripts/qa/gates_index.js` rồi commit.');
+      'đã đổi mức CHẶN ↔ CẢNH BÁO mà bảng không ghi. Chạy `node scripts/qa/danh-muc-gate.js` rồi commit.');
     process.exit(1);
   }
   console.log(`[gates-index] OK — ${rows.length} gate, bảng khớp source.`);
@@ -289,15 +297,15 @@ console.log(`[gates-index] đã ghi ${path.relative(ROOT, OUT)} — ${rows.lengt
 Thêm vào `package.json`:
 
 ```json
-"gates:index": "node scripts/qa/gates_index.js",
-"gates:index:check": "node scripts/qa/gates_index.js --check",
-"gate:policy": "node scripts/qa/policy_check.js"
+"gates:index": "node scripts/qa/danh-muc-gate.js",
+"gates:index:check": "node scripts/qa/danh-muc-gate.js --check",
+"gate:policy": "node scripts/qa/chong-troi.js"
 ```
 
 > **Cảnh báo từ kinh nghiệm.** Khi mới dựng danh mục ở kit này, **bốn "phát hiện" đầu tiên đều là lỗi của
 > BẢNG, không của kit** — mô tả trích sai dòng, bí danh không phân giải, mức suy sai vì gate gọi hàm khác
 > để thoát. Phải **hiệu chuẩn danh mục trước khi tin số nó đưa ra**. Đây đúng là nguyên tắc *"máy phải chạy
-> trên nội dung thật mới tính là nghiệm thu"* ở Bài 13.
+> trên nội dung thật mới tính là nghiệm thu"* ở Bài 8.
 
 ## 5. Allowlist: hai luật không được bỏ
 
@@ -325,9 +333,9 @@ nó thì allowlist chỉ phình lên, không bao giờ co lại.
 
 ## Thực hành (55 phút)
 
-### Bước 1 — policy_check (20 phút)
+### Bước 1 — chong-troi (20 phút)
 
-Viết `policy_check.js` và file allowlist. Chạy `npm run gate:policy`.
+Viết `chong-troi.js` và file allowlist. Chạy `npm run gate:policy`.
 
 Rất có thể nó **đỏ ngay lần đầu** — đó là bình thường, và là dấu hiệu tốt. Với mỗi lệnh bị báo mồ côi, quyết
 định: nối vào một điểm vào, hay khai miễn trừ **kèm lý do**? Đừng khai miễn trừ chỉ để cho nó xanh.
@@ -345,7 +353,7 @@ Rất có thể nó **đỏ ngay lần đầu** — đó là bình thường, v�
 ```bash
 # ① thêm một lệnh không nơi nào nhắc tới → mong đợi exit 1
 node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));
-p.scripts['gate:khong-ai-goi']='node scripts/qa/evidence_gate.js';
+p.scripts['gate:khong-ai-goi']='node scripts/qa/gate-bang-chung.js';
 fs.writeFileSync('package.json',JSON.stringify(p,null,2))"
 npm run gate:policy; echo "exit=$?"        # → 1, nêu đúng tên lệnh
 
@@ -357,18 +365,18 @@ npm run gate:policy; echo "exit=$?"        # → 1, nêu đúng tên lệnh
 
 ### Bước 3 — Danh mục tự sinh (15 phút)
 
-Viết `gates_index.js`, chạy `npm run gates:index`, **mở `GATES.md` ra đọc**.
+Viết `danh-muc-gate.js`, chạy `npm run gates:list`, **mở `GATES.md` ra đọc**.
 
-Soi từng dòng. Với mỗi dòng sai — mô tả trích sai, mức suy sai, bí danh không nhận ra — **sửa `gates_index`,
+Soi từng dòng. Với mỗi dòng sai — mô tả trích sai, mức suy sai, bí danh không nhận ra — **sửa `danh-muc-gate`,
 không sửa gate**. Đây là bước hiệu chuẩn ở mục 4, và nó là phần đáng giá nhất của bài.
 
 ### Bước 4 — Nghiệm thu `--check` (10 phút)
 
 ```bash
-npm run gates:index:check                  # → 0
+npm run gates:kiem                  # → 0
 
-# nới một gate: đổi process.exit(1) thành process.exit(0) trong evidence_gate.js
-npm run gates:index:check; echo "exit=$?"  # → 1, vì mức đổi từ CHẶN sang BÁO CÁO
+# nới một gate: đổi process.exit(1) thành process.exit(0) trong gate-bang-chung.js
+npm run gates:kiem; echo "exit=$?"  # → 1, vì mức đổi từ CHẶN sang BÁO CÁO
 # hoàn nguyên, chạy lại → 0
 ```
 
@@ -378,10 +386,10 @@ Mũi tiêm này chính là câu 3 ở mục 1: **gate nào đã âm thầm tụt
 
 ```bash
 git add scripts/qa .agent/config package.json
-git commit -m "feat(gate): policy_check + danh mục gate tự sinh
+git commit -m "feat(gate): chong-troi + danh mục gate tự sinh
 
-policy_check: bản tóm khai canonical · lệnh mồ côi · rule mồ côi · allowlist có lý do + chặn khối lạ.
-gates_index: sinh GATES.md từ source, mức suy từ mã; --check chặn khi bảng lệch.
+chong-troi: bản tóm khai canonical · lệnh mồ côi · rule mồ côi · allowlist có lý do + chặn khối lạ.
+danh-muc-gate: sinh GATES.md từ source, mức suy từ mã; --check chặn khi bảng lệch.
 Nghiệm thu: lệnh mồ côi → 1 · khối lạ → 1 · nới một gate → --check ra 1."
 ```
 
@@ -394,25 +402,25 @@ kit-cua-toi/
 ├── .agent/config/
 │   └── policy.allow.json         ← MỚI · miễn trừ PHẢI có lý do + ngày; khối lạ ⇒ chặn
 └── scripts/qa/
-    ├── policy_check.js           ← MỚI · luật bị trôi khỏi bề mặt kit ⇒ chặn
-    └── gates_index.js            ← MỚI · danh mục gate TỰ SINH từ source, không viết tay
+    ├── chong-troi.js           ← MỚI · luật bị trôi khỏi bề mặt kit ⇒ chặn
+    └── danh-muc-gate.js            ← MỚI · danh mục gate TỰ SINH từ source, không viết tay
 ```
 
 ## Tự kiểm
 
 - [ ] Tôi giải thích được vì sao **không** bắt bản tóm trùng từng chữ với canonical.
-- [ ] `policy_check` phân giải được **bí danh** qua `package.json`.
+- [ ] `chong-troi` phân giải được **bí danh** qua `package.json`.
 - [ ] Allowlist của tôi **chặn khối lạ** và **đòi lý do**.
 - [ ] Miễn trừ trỏ tới thứ không còn tồn tại cũng bị chặn.
 - [ ] `GATES.md` sinh tự động, và cột Mức **suy từ mã** chứ không khai tay.
-- [ ] Tôi đã **hiệu chuẩn** danh mục: soi từng dòng, sửa `gates_index` cho phần sai.
+- [ ] Tôi đã **hiệu chuẩn** danh mục: soi từng dòng, sửa `danh-muc-gate` cho phần sai.
 - [ ] `gates:index:check` đỏ khi tôi nới một gate từ `exit 1` sang `exit 0`.
 - [ ] Ba mũi tiêm ở Bước 2 và Bước 4 đều cho mã mong đợi.
 
 ## Bài tập về nhà
 
 Nối hai gate mới vào **CI**: `gate:policy` và `gates:index:check` đều chỉ đọc file, không cần môi trường thật,
-không cần credentials — nên chúng thuộc diện chạy được ở **mọi lần push**. Bài 20 sẽ nói kỹ về ranh giới
+không cần credentials — nên chúng thuộc diện chạy được ở **mọi lần push**. Bài 24 sẽ nói kỹ về ranh giới
 "CI dùng chung không được tự chạm môi trường thật", nhưng hai gate này thì an toàn tuyệt đối.
 
 Sau khi nối, thử push một commit cố tình thêm lệnh mồ côi và xác nhận CI đỏ.
@@ -422,4 +430,4 @@ Sau khi nối, thử push một commit cố tình thêm lệnh mồ côi và xá
 - [`.agent/config/GATES.md`](../../.agent/config/GATES.md) của kit này — bảng thật, sinh từ source.
 - [`scripts/qa/policy_source_check.js`](../../scripts/qa/policy_source_check.js) — bản đầy đủ, kiểm 5 quy ước
   thay vì 3. Để ý cách nó **không** bắt trùng văn bản.
-- Phần 5 (Bài 16–17) chuyển sang bộ nhớ dự án: làm gì khi chưa có dữ liệu nào.
+- Phần 5 (Bài 17–17) chuyển sang bộ nhớ dự án: làm gì khi chưa có dữ liệu nào.

@@ -1,6 +1,14 @@
-# Bài 20 — CI, đóng gói, và giao kit cho người khác
+# Bài 24 — CI: biến rule thành cổng chặn thật
 
 > **2 giờ 30 phút** · Có gì trong tay: kit hoàn chỉnh có điểm mutation · Sau bài này: kit chạy không cần bạn, và người khác dùng được nó
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Gate chỉ chạy khi bạn nhớ gõ lệnh. Tức là nó chưa thật sự canh cửa. |
+| **Bài này bạn gõ gì** | Khai chỗ nào chạy lệnh nào, chặn test ăn theo biến môi trường, và đo xem máy nào không ai gọi. |
+| **Xong thì được gì** | Gate tự chạy mỗi lần đẩy code, và không còn máy nào nằm không. |
 
 ## Mục tiêu
 
@@ -20,8 +28,8 @@ Phản xạ đầu tiên là nhét mọi thứ vào CI. Sai, vì ba lý do:
 
 | Lý do | Cụ thể |
 |---|---|
-| Máy theo task cần `TASK_KEY` | CI không có task nào ⇒ nó luôn KHÔNG ĐO ĐƯỢC ⇒ noise |
-| Test E2E cần môi trường UAT + tài khoản | Chạy mỗi commit thì khoá tài khoản (Bài 10) và mutate dữ liệu |
+| Máy theo task cần `MA_TASK` | CI không có task nào ⇒ nó luôn KHÔNG ĐO ĐƯỢC ⇒ noise |
+| Test E2E cần môi trường UAT + tài khoản | Chạy mỗi commit thì khoá tài khoản (Bài 12) và mutate dữ liệu |
 | CI đỏ vì lý do không phải lỗi mã | Người ta học cách bỏ qua CI đỏ — và đó là lúc CI chết |
 
 Nên **khai phạm vi CI bằng một nguồn**, không để mỗi workflow tự chọn:
@@ -35,9 +43,9 @@ Nên **khai phạm vi CI bằng một nguồn**, không để mỗi workflow t�
     "moTa": "Rẻ, tất định, không cần môi trường ngoài. Đỏ ở đây LUÔN là lỗi mã.",
     "lenh": [
       "npm run json:check",
-      "npm run secret:scan",
-      "npm run gates:index:check",
-      "npm run policy:check",
+      "npm run quet-secret",
+      "npm run gates:kiem",
+      "npm run chong-troi",
       "npm run env:no-ambient",
       "npm run gates:reach",
       "npm run branch:parity"
@@ -60,8 +68,8 @@ Nên **khai phạm vi CI bằng một nguồn**, không để mỗi workflow t�
   },
   "khongVaoCi": {
     "moTa": "Máy theo task. Chạy ở phiên làm việc, KHÔNG ở CI.",
-    "lenh": ["npm run preflight", "npm run self-review", "npm run mo-rong", "npm run tms:push-exec"],
-    "lyDo": "cần TASK_KEY và artifact của một task cụ thể ⇒ ở CI luôn KHÔNG ĐO ĐƯỢC"
+    "lenh": ["npm run kiem-dau-vao", "npm run tu-soi", "npm run mo-rong", "npm run tms:push-exec"],
+    "lyDo": "cần MA_TASK và artifact của một task cụ thể ⇒ ở CI luôn KHÔNG ĐO ĐƯỢC"
   }
 }
 ```
@@ -109,8 +117,8 @@ Chuyện này xảy ra với mọi người một lần, và mất nửa ngày �
 
 > Test xanh trên máy bạn. Đỏ trên CI. Mã giống nhau. Môi trường giống nhau.
 
-Nguyên nhân: trên máy bạn, `TASK_KEY` và `RUN_ID` đang có trong shell từ lượt chạy tay trước đó. Test đọc
-`process.env.TASK_KEY`, thấy có, chạy được. Trên CI không có biến đó ⇒ đỏ.
+Nguyên nhân: trên máy bạn, `MA_TASK` và `RUN_ID` đang có trong shell từ lượt chạy tay trước đó. Test đọc
+`process.env.MA_TASK`, thấy có, chạy được. Trên CI không có biến đó ⇒ đỏ.
 
 Đây là lỗi của **test**, không phải của CI: test đang phụ thuộc vào thứ nó không tự dựng.
 
@@ -170,8 +178,8 @@ console.log('[env-thua-huong] ✓ ĐẠT');
 ```json
 {
   "duocPhep": {
-    "TASK_KEY": { "aiDung": "người dùng đặt qua profiles/<TASK>/task.env", "khaiO": "profiles/task.env.example" },
-    "PROJECT_OUTPUT_DIR": { "aiDung": "người dùng đặt qua task.env", "khaiO": "profiles/task.env.example" },
+    "MA_TASK": { "aiDung": "người dùng đặt qua profiles/<TASK>/task.env", "khaiO": "profiles/task.env.example" },
+    "THU_MUC_KET_QUA": { "aiDung": "người dùng đặt qua task.env", "khaiO": "profiles/task.env.example" },
     "APP_BASE_URL": { "aiDung": "task.env", "khaiO": "profiles/task.env.example" },
     "TEST_USER": { "aiDung": "task.env", "khaiO": "profiles/task.env.example" },
     "TEST_PASS": { "aiDung": "task.env", "khaiO": "profiles/task.env.example" }
@@ -194,7 +202,7 @@ env -i PATH="$PATH" HOME="$HOME" npx playwright test tests/smoke
 
 ```powershell
 # PowerShell — xoá biến khả nghi khỏi phiên hiện tại rồi chạy
-'TASK_KEY','RUN_ID','PROJECT_OUTPUT_DIR' | ForEach-Object { Remove-Item "env:$_" -ErrorAction SilentlyContinue }
+'MA_TASK','RUN_ID','THU_MUC_KET_QUA' | ForEach-Object { Remove-Item "env:$_" -ErrorAction SilentlyContinue }
 npx playwright test tests/smoke
 ```
 
@@ -287,7 +295,7 @@ Kit sống ở nhiều nhánh, và mỗi nhánh có vòng đời riêng. Nhánh 
   "$schema": "máy nào PHẢI với tới được từ workflow của nhánh nào.",
   "nhanh": {
     "phase1": { "batBuoc": ["tc:validate", "policy:check", "json:check"] },
-    "phase2": { "batBuoc": ["preflight", "self-review", "mo-rong", "policy:check"] },
+    "phase2": { "batBuoc": ["kiem-dau-vao", "self-review", "mo-rong", "policy:check"] },
     "rerun":  { "batBuoc": ["self-review", "mo-rong", "bugs:checklist"] },
     "finalize": { "batBuoc": ["self-review", "tms:verify-fields", "secret:scan"] }
   }
@@ -314,8 +322,8 @@ rõ ràng:
 |---|---|
 | `scripts/lib/**` | Thư viện: đọc/ghi testcase, verdict, gate helper |
 | `scripts/qa/*_gate.js` `scripts/qa/tiem-loi.js` | Máy kiểm không phụ thuộc dự án |
-| `.agent/config/verdict_taxonomy.json` | Danh mục verdict |
-| `.agent/rules/core_rules.md` `CLAUDE.md` `RULE_GLOBAL.md` | Luật |
+| `.agent/config/phan-quyet.json` | Danh mục verdict |
+| `.agent/rules/core_rules.md` `CLAUDE.md` `LUAT-DAY-DU.md` | Luật |
 | `tests/support/**` | Fixture, factory, evidence, video |
 
 Sửa tầng này thì ảnh hưởng MỌI task đang chạy. Quy tắc: chỉ sửa khi không có task nào đang mở, hoặc sửa
@@ -325,7 +333,7 @@ theo hướng chỉ thêm, không đổi hành vi cũ.
 
 | Đường dẫn | Là gì |
 |---|---|
-| `.agent/config/dimension-manifest.json` | Chiều nào áp cho dự án này |
+| `.agent/config/chieu-phu.json` | Chiều nào áp cho dự án này |
 | `.agent/config/risk_model.json` | Trọng số rủi ro của dự án này |
 | `.agent/config/mutants.json` | Mutant theo API của dự án này |
 | `tests/e2e/**` `tests/smoke/**` | Test của dự án này |
@@ -375,7 +383,7 @@ npm run gates                                            # phải ĐẠT hết t
 
 1. **Excel/testcase canonical là nguồn duy nhất.** Mọi tầng khác PARSE từ nó, không copy.
 2. **Output của bạn bị máy kiểm.** Sai chuẩn = chặn. Xem `npm run gates:list`.
-3. **"Không phán được" KHÔNG thành PASS.** Xem `.agent/config/verdict_taxonomy.json`.
+3. **"Không phán được" KHÔNG thành PASS.** Xem `.agent/config/phan-quyet.json`.
 
 ## Vòng làm việc
 
@@ -421,12 +429,12 @@ Kit không tự đứng vững. Bốn nhịp:
 | Nhịp | Việc | Vì sao |
 |---|---|---|
 | **Mỗi lượt chạy** | Đọc kết quả gate — đừng bỏ qua CẢNH BÁO | Cảnh báo bị bỏ qua đủ lâu sẽ thành nền |
-| **Mỗi sprint** | Cập nhật `knowledge/` từ những gì mới học · rà bug đã lọt (Bài 19 mục 8) | Tri thức không ghi thì mất khi người đi |
+| **Mỗi sprint** | Cập nhật `knowledge/` từ những gì mới học · rà bug đã lọt (Bài 21 mục 8) | Tri thức không ghi thì mất khi người đi |
 | **Mỗi tháng** | `npm run mutation` toàn bộ · so điểm với tháng trước | Điểm tụt = oracle bị làm yếu, thường do sửa test cho xanh |
 | **Mỗi quý** | Rà **ngoại lệ** trong mọi allowlist: cái nào còn cần? | Ngoại lệ tích lại cho tới khi gate không chặn gì nữa |
 
 Nhịp cuối là nhịp hay bị bỏ nhất và tốn nhất. Cách làm nó rẻ đi: bắt mọi ngoại lệ phải có **lý do** và **ngày**
-(Bài 15), rồi một máy cảnh báo khi ngoại lệ già hơn 90 ngày.
+(Bài 28), rồi một máy cảnh báo khi ngoại lệ già hơn 90 ngày.
 
 ## 8. Nhìn lại toàn bộ tài liệu
 

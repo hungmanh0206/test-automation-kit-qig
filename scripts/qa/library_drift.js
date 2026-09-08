@@ -315,6 +315,50 @@ if (!exists(COURSE_MD)) {
       ok.push(`${treeLeaves.length} lá trong cây khớp tên file với bài giảng`);
     }
 
+    /* SỐ BÀI trong file phải KHỚP giáo trình.
+     *
+     * VÌ SAO CÓ PHÉP KIỂM NÀY (đo được): sau khi đổi cấu trúc sang 8 phần / 30 bài, **19/34 file**
+     * vẫn mang số cũ — bấm "Bài 11" trong giáo trình thì rơi vào file có tiêu đề "Bài 8". Không gate
+     * nào bắt, và người đọc là người phát hiện. Đây đúng loại lỗi làm mất niềm tin ngay trang đầu.
+     *
+     * Bài BỔ TRỢ thì NGƯỢC LẠI: không được mang số, vì nó không có chỗ trong dãy 0–29. */
+    const soLech = [];
+    const boTroFile = new Set(cs.orphans.map((o) => path.basename(o.href)));
+    for (const p of cs.parts) for (const l of p.lessons) {
+      if (!l.href) continue;
+      const h1 = (rd(path.join(ROOT, 'docs', l.href)).match(/^#\s+(.+)$/m) || [, ''])[1].replace(' ⭐', '').trim();
+      const mong = `Bài ${l.n} — ${l.title}`;
+      if (h1 !== mong) soLech.push(`${path.basename(l.href)}: tiêu đề "${h1}" ≠ giáo trình "${mong}"`);
+    }
+    for (const o of cs.orphans) {
+      const h1 = (rd(path.join(ROOT, 'docs', o.href)).match(/^#\s+(.+)$/m) || [, ''])[1].trim();
+      if (/^Bài\s+\d/.test(h1)) {
+        soLech.push(`${path.basename(o.href)}: là bài BỔ TRỢ nhưng tiêu đề vẫn mang số — "${h1}"`);
+      }
+    }
+    if (soLech.length) {
+      problems.push(`${soLech.length} file bài giảng lệch số/tiêu đề so với giáo trình:\n      ` +
+        soLech.slice(0, 12).join('\n      '));
+    } else {
+      ok.push(`${Object.keys(cs.parts).length ? cs.lessonCount + boTroFile.size : 0} file bài giảng khớp số + tiêu đề giáo trình`);
+    }
+
+    /* Mọi tham chiếu "Bài N" trong bài giảng phải trỏ tới bài CÓ THẬT. */
+    const soCo = new Set(cs.parts.flatMap((p) => p.lessons.map((l) => Number(l.n))));
+    const troHong = [];
+    for (const rel of lessonFiles) {
+      const noi = rd(path.join(ROOT, 'docs', rel));
+      for (const m of noi.matchAll(/Bài\s+(\d+)/g)) {
+        if (!soCo.has(Number(m[1]))) troHong.push(`${path.basename(rel)}: nhắc "Bài ${m[1]}" — không có bài này`);
+      }
+    }
+    if (troHong.length) {
+      problems.push(`${troHong.length} tham chiếu tới bài KHÔNG tồn tại:\n      ` +
+        [...new Set(troHong)].slice(0, 10).join('\n      '));
+    } else {
+      ok.push('mọi tham chiếu "Bài N" đều trỏ tới bài có thật');
+    }
+
     /* XƯNG HÔ: tài liệu này nói THẲNG với người đọc ("bạn"), không gọi họ là "học viên"/"người học".
      * Vì sao thành máy chứ không phải lời dặn: hai từ đó rất dễ lọt lại khi thêm bài mới, và mỗi lần
      * lọt là một chỗ giọng văn đổi từ "hướng dẫn" sang "giáo án" — thứ người đọc cảm được ngay. */
@@ -338,6 +382,45 @@ if (!exists(COURSE_MD)) {
         `xưng "bạn", gọi đây là "tài liệu/hướng dẫn":\n      ${viPhamXungHo.slice(0, 12).join('\n      ')}`);
     } else {
       ok.push('xưng hô nhất quán: nói thẳng với "bạn", không tự xưng là khoá học');
+    }
+
+    /* KHÔNG được dán nội bộ của kit CÓ SẴN vào tài liệu hướng dẫn.
+     *
+     * VÌ SAO: người đọc phải TỰ DỰNG kit của họ và tự đặt tên. Dán tên file, tên biến, con số của
+     * một kit đã hoàn thiện vào đây là bắt họ chép chứ không phải dựng — và những tên đó vô nghĩa
+     * với dự án của họ. Đã dính 220 chỗ một lần.
+     *
+     * Tài liệu chỉ được dùng tên mà chính nó dựng ra trong các bài. */
+    const NOI_BO_KIT = [
+      'RULE_GLOBAL', 'verdict_taxonomy', 'dimension-manifest', 'dimension_manifest',
+      'policy_check', 'gates_index', 'self_review', 'preflight_gate', 'inventory_gate',
+      'secret_scan', 'PROJECT_OUTPUT_DIR', 'TASK_KEY', 'SAPP'
+    ];
+    const danKit = [];
+    for (const rel of lessonFiles.concat(['COURSE.md'])) {
+      const f = rel === 'COURSE.md' ? COURSE_MD : path.join(ROOT, 'docs', rel);
+      const noi = rd(f);
+      for (const t of NOI_BO_KIT) {
+        if (noi.includes(t)) danKit.push(`${path.basename(f)}: còn "${t}"`);
+      }
+    }
+    if (danKit.length) {
+      problems.push(`${danKit.length} chỗ còn dán nội bộ của kit có sẵn vào tài liệu ` +
+        `(người đọc phải tự đặt tên kit của họ):\n      ${[...new Set(danKit)].slice(0, 12).join('\n      ')}`);
+    } else {
+      ok.push('không dán nội bộ kit có sẵn — tài liệu chỉ dùng tên do chính nó dựng');
+    }
+
+    /* Mỗi bài phải mở đầu bằng khối tóm tắt 3 dòng.
+     * Bài dài 400–700 dòng mà mở đầu bằng bảng thuật ngữ thì người mới chưa biết bài này
+     * chữa vấn đề gì của mình đã phải học từ vựng. */
+    const thieuTomTat = lessonFiles.filter((rel) =>
+      !rd(path.join(ROOT, 'docs', rel)).includes('| **Bạn đang khổ vì** |'));
+    if (thieuTomTat.length) {
+      problems.push(`${thieuTomTat.length} bài thiếu khối "Tóm tắt bài này": ` +
+        thieuTomTat.map((f) => path.basename(f)).join(', '));
+    } else if (lessonFiles.length) {
+      ok.push(`${lessonFiles.length} bài đều mở đầu bằng tóm tắt 3 dòng`);
     }
 
     /* MỌI bài giảng phải có khối "Cây thư mục sau bài này".

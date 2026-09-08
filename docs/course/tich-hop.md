@@ -1,6 +1,14 @@
-# Bài 18 — Tích hợp: test-management, Jira, MCP, và điểm vào gõ được
+# Bài 16 — Bug report và tích hợp
 
 > **2 giờ 30 phút** · Có gì trong tay: kit chạy trọn vòng trên máy cá nhân · Sau bài này: cả team thấy được kết quả, và quy trình gõ được một dòng
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Kết quả nằm trên máy bạn. Team không thấy, và mỗi lần chạy lại là mất lịch sử lần trước. |
+| **Bài này bạn gõ gì** | Đẩy testcase lên công cụ chung, đối chiếu lại từng ô, rồi đẩy kết quả thành một đợt chạy. |
+| **Xong thì được gì** | Cả team nhìn chung một chỗ. Và bạn biết API trả 200 chưa chứng minh dữ liệu vào đúng ô. |
 
 ## Mục tiêu
 
@@ -36,7 +44,7 @@ Bốn nguyên tắc, và mỗi cái đến từ một lần mất mát:
 | **Luôn dry-run trước** | Đẩy nhầm 500 case lên công cụ dùng chung thì rất khó rút lại |
 | **Kiểm công cụ có API xoá không** | Nếu **không** thì mọi lần đẩy là vĩnh viễn — dry-run thành bắt buộc, không phải cẩn thận thừa |
 | **2xx không chứng minh mapping đúng** | Xem mục 4 |
-| **Một chiều rõ ràng** | Chốt rõ chiều nào là nguồn ở giai đoạn nào (Bài 5 mục 5) |
+| **Một chiều rõ ràng** | Chốt rõ chiều nào là nguồn ở giai đoạn nào (Bài 9 mục 5) |
 
 > Kinh nghiệm cụ thể: công cụ test-management mà kit này dùng **không có API xoá**. Nên "dọn dẹp" nghĩa là
 > chuyển trạng thái sang `Deprecated`, không phải xoá. Hoá ra điều đó **tốt hơn**: giữ case nghĩa là giữ nguyên
@@ -251,7 +259,7 @@ bỏ qua evidence đã có, thay vì đẻ cycle trùng.
 /*
  * day-ket-qua.js — đẩy testcase-status.json thành một cycle trên công cụ test-management.
  *
- * ĐẦU VÀO GIỮ NGUYÊN là testcase-status.json của Bài 11 — Phase 2 không phải đổi cách ghi kết quả,
+ * ĐẦU VÀO GIỮ NGUYÊN là testcase-status.json của Bài 13 — Phase 2 không phải đổi cách ghi kết quả,
  * chỉ đích đến là khác.
  *
  * CHẠY GATE TRƯỚC KHI GHI: chất lượng output. Bỏ qua có chủ ý thì --qa-approved.
@@ -276,10 +284,10 @@ if (!statusFile) { console.error('Dùng: node scripts/qa/day-ket-qua.js --status
 /* Gate chất lượng ĐỨNG Ở ĐÂY, không chỉ ở lệnh tự soi — vì bỏ qua lệnh tự soi rồi đẩy thẳng thì
    trước đây không gì cản. Cùng một luật, hai cửa. */
 if (!BO_QUA_GATE) {
-  const g = spawnSync(process.execPath, ['scripts/qa/evidence_gate.js', statusFile], { encoding: 'utf8' });
+  const g = spawnSync(process.execPath, ['scripts/qa/gate-bang-chung.js', statusFile], { encoding: 'utf8' });
   if (g.status !== 0) {
     console.error(g.stdout + g.stderr);
-    console.error('[day-ket-qua] CHẶN bởi evidence_gate. Sửa, hoặc --qa-approved nếu cố ý bỏ qua.');
+    console.error('[day-ket-qua] CHẶN bởi gate-bang-chung. Sửa, hoặc --qa-approved nếu cố ý bỏ qua.');
     process.exit(1);
   }
 }
@@ -291,7 +299,7 @@ if (!base || !token) { console.error('[day-ket-qua] KHÔNG ĐO ĐƯỢC: thiếu
 /** Trạng thái canonical → trạng thái run của công cụ. Ánh xạ khai ở TAXONOMY, không hardcode ở đây. */
 function sangTms(status) {
   const s = TAXONOMY.statuses[status];
-  if (!s) throw new Error(`trạng thái lạ "${status}" — không có trong verdict_taxonomy`);
+  if (!s) throw new Error(`trạng thái lạ "${status}" — không có trong phan-quyet`);
   return s.tms;
 }
 
@@ -349,7 +357,7 @@ main().catch((e) => { console.error('[day-ket-qua] lỗi: ' + e.message); proces
 
 ## 6. Đối soát độ tươi trước khi execute
 
-Bài 5 mục 5 đã chốt: khi execute thì **công cụ test-management** là canonical. Nên trước khi chạy, kéo bản mới
+Bài 9 mục 5 đã chốt: khi execute thì **công cụ test-management** là canonical. Nên trước khi chạy, kéo bản mới
 nhất về — và **kiểm** bản sao đang có có cũ không.
 
 ```js
@@ -358,7 +366,7 @@ nhất về — và **kiểm** bản sao đang có có cũ không.
 'use strict';
 const fs = require('fs');
 const ENFORCE = process.argv.includes('--enforce');
-const manifest = 'outputs/demo/tasks/' + process.env.TASK_KEY + '/test-cases/from-tms/manifest.json';
+const manifest = 'outputs/demo/tasks/' + process.env.MA_TASK + '/test-cases/from-tms/manifest.json';
 
 if (!fs.existsSync(manifest)) {
   console.error('[do-tuoi] KHÔNG ĐO ĐƯỢC: chưa có bản sao local. Chạy `npm run tms:pull` trước.');
@@ -412,8 +420,8 @@ Agent cần đọc Jira, tài liệu, thiết kế. Đừng để mỗi chỗ t�
 1. Quyền **tối thiểu**: chỉ đọc, trừ đường tạo bug.
 2. Token nằm ở `.env` hoặc `profiles/<TASK>/task.env` — **không** khai trong file này.
 3. Tài liệu nhiều tab: PHẢI bật tuỳ chọn đọc hết tab. Không bật thì chỉ được tab đầu và
-   **không có thông báo nào** (Bài 4 mục 4).
-4. Đo cỡ tài liệu trước khi đọc (Bài 4). Vượt ngưỡng thì giao subagent trích.
+   **không có thông báo nào** (Bài 6 mục 4).
+4. Đo cỡ tài liệu trước khi đọc (Bài 6). Vượt ngưỡng thì giao subagent trích.
 ```
 
 Nguyên tắc "một cửa vào" rất thực dụng: mỗi chỗ tự gọi API thì mỗi chỗ tự xử lý token, phân trang và lỗi theo
@@ -440,12 +448,12 @@ Task: **$ARGUMENTS**
 Gate BẮT BUỘC, theo đúng thứ tự này:
 
 ```bash
-npm run preflight -- --task $ARGUMENTS          # đủ input chưa
+npm run kiem-dau-vao -- --task $ARGUMENTS          # đủ input chưa
 npm run tms:verify -- --enforce                 # bản sao testcase còn tươi chưa
 npx playwright test                             # chạy thật
 node scripts/qa/sinh-status.js test-results/results.json \
   outputs/<PROJECT>/tasks/$ARGUMENTS/test-results/testcase-status.json
-npm run self-review -- --task $ARGUMENTS \
+npm run tu-soi -- --task $ARGUMENTS \
   --status outputs/<PROJECT>/tasks/$ARGUMENTS/test-results/testcase-status.json
 ```
 
@@ -458,7 +466,7 @@ npm run tms:push-exec -- --status <...> --folder "<Sprint>" --apply
 Nếu có case FAIL: rerun 2–3 lần, đọc response để khoanh tầng, điền `tangLoi`, rồi mới log bug.
 ```
 
-Chín lệnh nên có: `/phase1` `/phase2` `/rerun` `/publish` `/preflight` `/gates` `/explore` `/ui-debug`
+Chín lệnh nên có: `/phase1` `/phase2` `/rerun` `/publish` `/kiem-dau-vao` `/gates` `/explore` `/ui-debug`
 `/partial-rerun`.
 
 > **Slash command KHÔNG thay thế gate** — nó chỉ dẫn đúng đường. Gate vẫn là thứ chặn. Nhưng nó xoá được một
@@ -516,7 +524,7 @@ Viết `day-ket-qua.js`. Chạy dry-run, rồi `--apply`. Mở công cụ ra ki�
 - Trạng thái từng run có đúng ánh xạ?
 - **Bằng chứng có mở được** từ giao diện công cụ?
 
-Rồi thử ca xấu: xoá `evidence` của một case rồi đẩy lại — nó phải **bị `evidence_gate` chặn**.
+Rồi thử ca xấu: xoá `evidence` của một case rồi đẩy lại — nó phải **bị `gate-bang-chung` chặn**.
 
 ### Bước 5 — Slash command (10 phút)
 
@@ -576,7 +584,7 @@ công cụ, và đó là lỗi **im lặng** đã tồn tại từ lượt publi
 
 ## Đọc thêm
 
-- Bài 19 là bài trọng tâm của cả tài liệu: giờ bạn đã có suite chạy nhiều lượt, **đo được** năng lực phát hiện
+- Bài 21 là bài trọng tâm của cả tài liệu: giờ bạn đã có suite chạy nhiều lượt, **đo được** năng lực phát hiện
   của nó.
 - [`scripts/integrations/aio/README.md`](../../scripts/integrations/aio/README.md) của kit này — tầng tích hợp
   đầy đủ với một công cụ thật.

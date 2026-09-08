@@ -2,6 +2,14 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: knowledge base đã có vài chục bản ghi · Sau bài này: tri thức có phiên bản, truy được nguồn, và không âm thầm dạy sai cho agent
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Một ghi chú sai vào kho là agent tin theo mãi. Càng dùng lại càng trông giống thật. |
+| **Bài này bạn gõ gì** | Khai khuôn bắt buộc có nguồn, bốn trạng thái vòng đời, rồi viết gate chặn ngay ở cửa đọc. |
+| **Xong thì được gì** | Ghi chú có phiên bản, tra được ai nói, và không âm thầm dạy sai cho agent. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |
@@ -191,7 +199,7 @@ không phải *"đã sai"*. Đây lại đúng luật **KHÔNG ĐO ĐƯỢC ≠ 
 ```js
 #!/usr/bin/env node
 /*
- * kiem_knowledge.js — kho tri thức phải có kỷ luật TRƯỚC KHI agent được đọc.
+ * kiem-tri-thuc.js — kho tri thức phải có kỷ luật TRƯỚC KHI agent được đọc.
  *
  * VÌ SAO CHẶN Ở CỬA ĐỌC, KHÔNG PHẢI CỬA GHI: bản ghi sai có thể vào kho bằng nhiều đường
  * (agent ghi, người sửa tay, merge nhánh). Chặn ở cửa đọc thì đường nào cũng đi qua đây.
@@ -358,7 +366,7 @@ kit-cua-toi/
 ├── .agent/config/
 │   └── knowledge-schema.json         ← MỚI · trường bắt buộc · 4 trạng thái · hạn tái xác nhận
 ├── scripts/qa/
-│   └── kiem_knowledge.js             ← MỚI · chặn ở cửa ĐỌC, không phải cửa ghi (exit 0/1/2)
+│   └── kiem-tri-thuc.js             ← MỚI · chặn ở cửa ĐỌC, không phải cửa ghi (exit 0/1/2)
 └── knowledge/                        ·  từ Bài 17 · ⛔ KHÔNG commit
     ├── domain/
     ├── system/
@@ -384,7 +392,7 @@ kit-cua-toi/
    bằng cách nào?* Bản nào không trả lời được → sửa `source`, hoặc chuyển `cho-xac-nhan`.
 2. Tìm một luật nghiệp vụ **đã đổi** trong dự án bạn. Ghi đủ cặp `v1` (`superseded`, có `hieuLucDen`) và
    `v2` (`active`, có `hieuLucTu`). Rồi trả lời: *kết quả chạy tháng trước còn giá trị không?*
-3. Chạy `kiem_knowledge.js` lên kho thật. Con số vi phạm lần đầu thường lớn — đó là bình thường. Sửa **5 cái
+3. Chạy `kiem-tri-thuc.js` lên kho thật. Con số vi phạm lần đầu thường lớn — đó là bình thường. Sửa **5 cái
    nặng nhất**, đừng sửa hết trong một lần.
 
 Câu hỏi ở bước 2 là toàn bộ lý do bài này tồn tại. Không có `superseded`/`invalid` tách bạch thì bạn phải

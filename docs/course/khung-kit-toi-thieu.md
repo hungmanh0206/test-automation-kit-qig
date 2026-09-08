@@ -1,6 +1,14 @@
-# Bài 3 — Khung kit tối thiểu: mấy thư mục và hai file quan trọng nhất
+# Bài 2 — Kiến trúc một QA platform
 
 > **2 giờ** · Có gì trong tay: repo trống, agent chạy được · Sau bài này: khung kit + file luật agent thật sự tuân
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Vài script rời rạc thì chưa thành kit. Sửa chỗ này lại hỏng chỗ kia. |
+| **Bài này bạn gõ gì** | Dựng cây thư mục. Viết file luật ngắn dưới 20 dòng, và một file luật đầy đủ. |
+| **Xong thì được gì** | Kit có 5 lớp rõ ràng, và agent thật sự đọc file luật mỗi lần chạy. |
 
 ## Mục tiêu
 
@@ -29,7 +37,7 @@
 ├── profiles/<TASK>/     # credentials riêng theo task (KHÔNG commit)
 ├── outputs/<PROJECT>/   # kết quả theo task (KHÔNG commit)
 ├── CLAUDE.md            # ← luôn-trong-ngữ-cảnh, ngắn
-└── RULE_GLOBAL.md       # ← canonical, dài, tra khi cần
+└── LUAT-DAY-DU.md       # ← canonical, dài, tra khi cần
 ```
 
 Điều đáng chú ý: **bốn nhánh không được commit** (`knowledge`, `profiles/*/task.env`, `outputs`, và `.env`).
@@ -47,7 +55,7 @@ git add -A && git commit -m "chore: dựng khung thư mục kit"
 
 Đây là chỗ nhiều người làm sai và trả giá về sau.
 
-| | `CLAUDE.md` | `RULE_GLOBAL.md` |
+| | `CLAUDE.md` | `LUAT-DAY-DU.md` |
 |---|---|---|
 | Tính chất | **Luôn** nằm trong ngữ cảnh mọi phiên | Chỉ đọc khi cần tra |
 | Độ dài | Dưới ~20 dòng | Dài bao nhiêu cũng được |
@@ -64,7 +72,7 @@ Sáu điều dưới đây là bộ tối thiểu tôi khuyên. Sửa cho khớp
 ```markdown
 # CLAUDE.md — Điều không-thương-lượng (đọc TRƯỚC mọi việc)
 
-> Chi tiết: `RULE_GLOBAL.md` — mâu thuẫn thì theo file đó.
+> Chi tiết: `LUAT-DAY-DU.md` — mâu thuẫn thì theo file đó.
 
 1. **Bảo mật** — Không commit secret (token, password, cookie, khoá API). Mọi bằng chứng và
    báo cáo phải che thông tin khách hàng (email, SĐT, tên, địa chỉ).
@@ -80,12 +88,12 @@ Sáu điều dưới đây là bộ tối thiểu tôi khuyên. Sửa cho khớp
    khớp bản build, không bỏ case để tỉ lệ pass đẹp hơn.
 ```
 
-### Viết `RULE_GLOBAL.md` — bản canonical
+### Viết `LUAT-DAY-DU.md` — bản canonical
 
 Bài này chỉ cần **một mục** làm mẫu, các mục khác thêm dần ở những bài sau:
 
 ```markdown
-# RULE_GLOBAL — Luật vận hành (CANONICAL)
+# LUAT-DAY-DU — Luật vận hành (CANONICAL)
 
 Mâu thuẫn với bất kỳ tài liệu nào khác thì theo file này.
 
@@ -100,10 +108,10 @@ Mâu thuẫn với bất kỳ tài liệu nào khác thì theo file này.
 
 ### Quan hệ canonical ↔ bản tóm
 
-`CLAUDE.md` mục 1 và `RULE_GLOBAL.md` mục Bảo mật nói **cùng một luật**, khác độ chi tiết. Đó là **cố ý**,
+`CLAUDE.md` mục 1 và `LUAT-DAY-DU.md` mục Bảo mật nói **cùng một luật**, khác độ chi tiết. Đó là **cố ý**,
 và nó tạo ra một rủi ro thật: hai bản sẽ trôi khỏi nhau khi bạn sửa một bên.
 
-Cách xử lý — nhớ nguyên tắc này, Bài 15 sẽ dựng máy cho nó:
+Cách xử lý — nhớ nguyên tắc này, Bài 28 sẽ dựng máy cho nó:
 
 > Bản tóm được phép **diễn đạt lại**, nhưng không được **nói khác**. Và bản tóm phải khai rõ ai là canonical.
 
@@ -113,11 +121,11 @@ Ba biến, đặt từ đầu:
 
 | Biến | Ví dụ | Vai trò |
 |---|---|---|
-| `TASK_KEY` | `PROJ-1234` | Mã task, quyết định mọi đường dẫn |
-| `PROJECT_OUTPUT_DIR` | `outputs/crm` | Thư mục gốc chứa kết quả |
+| `MA_TASK` | `PROJ-1234` | Mã task, quyết định mọi đường dẫn |
+| `THU_MUC_KET_QUA` | `outputs/crm` | Thư mục gốc chứa kết quả |
 | `TASK_ENV` | `profiles/PROJ-1234/task.env` | Credentials riêng của task |
 
-Mọi kết quả đi vào `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/`, bên trong chia:
+Mọi kết quả đi vào `<THU_MUC_KET_QUA>/tasks/<MA_TASK>/`, bên trong chia:
 
 ```
 requirements/   tài liệu đầu vào đã tải về
@@ -132,8 +140,8 @@ Tạo mẫu:
 mkdir -p profiles/PROJ-1234
 cat > profiles/PROJ-1234/task.env.example <<'EOF'
 # Mẫu — copy thành task.env rồi điền. task.env KHÔNG commit.
-TASK_KEY=PROJ-1234
-PROJECT_OUTPUT_DIR=outputs/crm
+MA_TASK=PROJ-1234
+THU_MUC_KET_QUA=outputs/crm
 APP_BASE_URL=
 APP_USERNAME=
 APP_PASSWORD=
@@ -153,7 +161,7 @@ lỗi xuất hiện **im lặng**: agent đăng nhập bằng tài khoản sai r
 | Quy ước canonical | Sửa luật ở một chỗ, ba chỗ khác vẫn nói điều cũ, không biết tin chỗ nào |
 | Quy ước cô lập | Phải sửa lại **mọi** đường dẫn đã viết, ở mọi script đã có |
 
-Cả ba đều rẻ lúc này và đắt về sau. Đó là toàn bộ lý do chúng ở Bài 3 chứ không phải Bài 13.
+Cả ba đều rẻ lúc này và đắt về sau. Đó là toàn bộ lý do chúng ở Bài 2 chứ không phải Bài 8.
 
 ---
 
@@ -188,13 +196,13 @@ Câu hỏi này là **cái bẫy**: theo mục 4 của `CLAUDE.md`, ghi PASS mà
 - **Kết quả xấu:** nó ghi PASS luôn.
 
 Nếu ra kết quả xấu — **đừng vội sửa prompt**. Đó chính là bài học của Bài 1: *dặn dò không đủ*. Ghi lại tình
-huống này vào file bạn đã tạo ở Thực hành Bài 1. Bài 13 bạn sẽ dựng máy chặn đúng nó.
+huống này vào file bạn đã tạo ở Thực hành Bài 1. Bài 8 bạn sẽ dựng máy chặn đúng nó.
 
 ### Bước 4 — Commit
 
 ```bash
 git add -A
-git commit -m "feat(kit): khung thư mục + CLAUDE.md + RULE_GLOBAL mục Bảo mật + quy ước cô lập"
+git commit -m "feat(kit): khung thư mục + CLAUDE.md + LUAT-DAY-DU mục Bảo mật + quy ước cô lập"
 git push
 ```
 
@@ -204,7 +212,7 @@ git push
 
 - [ ] Cây thư mục đã đủ, và bốn nhánh dữ liệu đã nằm trong `.gitignore`.
 - [ ] `CLAUDE.md` dưới 20 dòng và có đủ 6 điều.
-- [ ] `RULE_GLOBAL.md` có ít nhất một mục, và `CLAUDE.md` khai rõ nó là canonical.
+- [ ] `LUAT-DAY-DU.md` có ít nhất một mục, và `CLAUDE.md` khai rõ nó là canonical.
 - [ ] Agent kể lại được 6 điều mà không cần tôi chỉ file.
 - [ ] Tôi đã thử "bẫy ghi PASS" và **ghi lại kết quả** dù tốt hay xấu.
 - [ ] Có `task.env.example`, và `task.env` thật thì bị `.gitignore`.
@@ -218,5 +226,5 @@ mức độ nguy hiểm.
 
 ## Đọc thêm
 
-- [`CLAUDE.md`](../../CLAUDE.md) và [`RULE_GLOBAL.md`](../../RULE_GLOBAL.md) của kit này — bản đã chạy thật.
+- [`CLAUDE.md`](../../CLAUDE.md) và [`LUAT-DAY-DU.md`](../../LUAT-DAY-DU.md) của kit này — bản đã chạy thật.
   Để ý tỉ lệ độ dài giữa hai file.

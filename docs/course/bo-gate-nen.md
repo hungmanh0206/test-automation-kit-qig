@@ -1,6 +1,16 @@
-# Bài 14 — Bộ gate nền
+# Bài chi tiết — Bộ gate nền
 
 > **2 giờ 30 phút** · Có gì trong tay: một gate tự viết, đã chứng minh có răng · Sau bài này: 4 gate + một lệnh gộp
+>
+> *Bài này không đánh số — nó là phần đào sâu của **Bài 11**. Đọc kèm **Bài 11**.*
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Mỗi gate lại viết lại phần khung một lần. Mười gate thành mười kiểu báo lỗi khác nhau. |
+| **Bài này bạn gõ gì** | Viết một thư viện khung dùng chung, thêm máy kiểm tồn kho, máy quét mật khẩu, và một lệnh gộp. |
+| **Xong thì được gì** | Một lệnh chạy hết mọi máy chặn. Và chỗ chưa đo được thì không bị coi là đạt. |
 
 ## Mục tiêu
 
@@ -16,13 +26,13 @@
 
 ## 1. Bốn lớp lỗi cần canh, và thứ tự nguy hiểm
 
-Bài 13 bạn canh **bằng chứng**. Còn bốn lớp nữa, xếp theo mức nguy hiểm giảm dần:
+Bài 8 bạn canh **bằng chứng**. Còn bốn lớp nữa, xếp theo mức nguy hiểm giảm dần:
 
 | # | Lớp lỗi | Vì sao nguy hiểm | Gate |
 |---|---|---|---|
-| 1 | **Suite rỗng vẫn xanh** | Không tạo ra tín hiệu nào cả. Pipeline xanh, báo cáo xanh, mà thực tế 0 thứ được kiểm | `inventory_gate` |
-| 2 | **Chạy trên nền sai** | Thiếu input ⇒ cả phase chạy sai, và hỏng tới cuối mới lộ | `preflight_gate` |
-| 3 | **Bí mật lọt vào repo** | Không hồi phục được — lịch sử git không xoá sạch dễ | `secret_scan` |
+| 1 | **Suite rỗng vẫn xanh** | Không tạo ra tín hiệu nào cả. Pipeline xanh, báo cáo xanh, mà thực tế 0 thứ được kiểm | `kiem-ton-kho` |
+| 2 | **Chạy trên nền sai** | Thiếu input ⇒ cả phase chạy sai, và hỏng tới cuối mới lộ | `kiem-dau-vao_gate` |
+| 3 | **Bí mật lọt vào repo** | Không hồi phục được — lịch sử git không xoá sạch dễ | `quet-secret` |
 | 4 | **Bộ testcase sai thiết kế** | Công sức execute đổ đi hết | `design_gate` |
 
 Lớp 1 đứng đầu vì nó là lớp **duy nhất** không có triệu chứng. Ba lớp còn lại rồi cũng lộ; lớp 1 thì không.
@@ -39,24 +49,24 @@ một chỗ, ba chỗ kia vẫn kiểu cũ.
  * gate.js — khuôn dùng chung cho mọi gate.
  *
  * VÌ SAO TÁCH RA: bốn gate cùng cần "in vi phạm rồi thoát đúng mã". Chép bốn lần thì sửa một chỗ,
- * ba chỗ còn lại trôi. Tách ra còn cho phép Bài 15 gộp nhiều gate thành một báo cáo, vì tất cả
+ * ba chỗ còn lại trôi. Tách ra còn cho phép Bài 28 gộp nhiều gate thành một báo cáo, vì tất cả
  * trả về CÙNG một hình dạng kết quả.
  */
 'use strict';
 
-/** Kết quả chuẩn của một gate. Bài 15 sẽ cộng dồn những object này. */
+/** Kết quả chuẩn của một gate. Bài 28 sẽ cộng dồn những object này. */
 function ketQua(gateId, { viPham = [], ghiChu = [], daKiem = '' } = {}) {
   return { gateId, viPham, ghiChu, daKiem };
 }
 
-/** Không đo được — KHÁC hẳn với "đo được và xấu". Xem Bài 13 mục 2. */
+/** Không đo được — KHÁC hẳn với "đo được và xấu". Xem Bài 8 mục 2. */
 function khongDoDuoc(gateId, msg) {
   console.error(`[${gateId}] KHÔNG ĐO ĐƯỢC: ${msg}`);
   console.error('  → sửa hạ tầng rồi chạy lại. ĐỪNG đọc kết quả của lượt này.');
   process.exit(2);
 }
 
-/** In kết quả rồi thoát. warnOnly = true thì luôn exit 0 (giai đoạn cảnh báo, xem Bài 13 mục 7). */
+/** In kết quả rồi thoát. warnOnly = true thì luôn exit 0 (giai đoạn cảnh báo, xem Bài 8 mục 7). */
 function ketThuc(kq, { warnOnly = false } = {}) {
   if (kq.daKiem) console.log(`[${kq.gateId}] đã kiểm ${kq.daKiem}`);
   for (const g of kq.ghiChu) console.log(`[${kq.gateId}] ⚠ ${g}`);
@@ -92,12 +102,12 @@ module.exports = { ketQua, khongDoDuoc, ketThuc, fileDangTrack };
 Lớp lỗi này có thật và rất dễ xảy ra: đổi cấu trúc thư mục, sửa một glob, đổi tên `describe` — bất cứ cái nào
 cũng có thể làm bộ test không khớp file nào. Mà nhiều runner có cờ *"không có test thì vẫn coi là thành công"*.
 
-`scripts/qa/inventory_gate.js`:
+`scripts/qa/kiem-ton-kho.js`:
 
 ```js
 #!/usr/bin/env node
 /*
- * inventory_gate.js — CHẶN "suite rỗng vẫn xanh".
+ * kiem-ton-kho.js — CHẶN "suite rỗng vẫn xanh".
  *
  * VÌ SAO CÓ FILE NÀY: đây là lớp lỗi DUY NHẤT không tạo ra tín hiệu nào. Một glob sai đường dẫn là đủ
  * để 0 test được chạy, trong khi pipeline, báo cáo và tỉ lệ pass đều xanh. Không ai phát hiện được.
@@ -140,14 +150,14 @@ ketThuc(kq);
 ```
 
 Để ý `khongDoDuoc` xuất hiện **hai lần**: runner không chạy được và runner trả về thứ không đọc được đều là
-*không đo được*, không phải *suite rỗng*. Gộp lại là đúng lỗi mà Bài 13 mục 2 cảnh báo.
+*không đo được*, không phải *suite rỗng*. Gộp lại là đúng lỗi mà Bài 8 mục 2 cảnh báo.
 
 ## 4. Gate 2 — quét secret trên file đã track
 
 ```js
 #!/usr/bin/env node
 /*
- * secret_scan.js — CHẶN secret bị commit nhầm.
+ * quet-secret.js — CHẶN secret bị commit nhầm.
  *
  * VÌ SAO QUÉT FILE ĐÃ TRACK, không quét cả thư mục: thứ nguy hiểm là thứ ĐÃ VÀO GIT. File nằm trong
  * .gitignore thì không rời khỏi máy bạn. Quét cả thư mục thì node_modules làm nhiễu tới mức không ai đọc.
@@ -159,7 +169,7 @@ const { ketQua, khongDoDuoc, ketThuc, fileDangTrack } = require('./lib/gate');
 
 const GATE = 'secret-scan';
 
-// Mẫu HIGH-SIGNAL: thà bỏ sót vài dạng lạ còn hơn báo oan. Báo oan = gate bị tắt (Bài 13 mục 8).
+// Mẫu HIGH-SIGNAL: thà bỏ sót vài dạng lạ còn hơn báo oan. Báo oan = gate bị tắt (Bài 8 mục 8).
 const MAU = [
   [/-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/, 'private key'],
   [/\b(gh[pousr]_[A-Za-z0-9]{20,})/, 'GitHub token'],
@@ -170,7 +180,7 @@ const MAU = [
 ];
 
 // File mẫu và tài liệu thì CHỨA placeholder là đúng — bỏ qua, nếu không gate đỏ mãi.
-const BO_QUA = [/\.example$/, /\.sample$/, /(^|\/)docs\//, /\.md$/, /(^|\/)scripts\/qa\/secret_scan\.js$/];
+const BO_QUA = [/\.example$/, /\.sample$/, /(^|\/)docs\//, /\.md$/, /(^|\/)scripts\/qa\/quet-secret\.js$/];
 const BINARY = /\.(png|jpg|jpeg|webp|gif|mp4|webm|pdf|zip|xlsx|woff2?|ico)$/i;
 
 const files = fileDangTrack();
@@ -199,16 +209,16 @@ ketThuc(kq);
 Hai danh sách `BO_QUA` và `BINARY` **không phải để làm gate dễ dãi** — chúng là phần chống báo oan. Không có
 chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ token đều đỏ, và bạn sẽ tắt gate trong tuần.
 
-## 5. Gate 3 — preflight: bạn tự viết
+## 5. Gate 3 — kiem-dau-vao: bạn tự viết
 
 Đây là bài tập, không phải bài đọc. Đặc tả:
 
-**Tên:** `scripts/qa/preflight_gate.js` · **Chạy:** `npm run preflight -- --task PROJ-1234`
+**Tên:** `scripts/qa/kiem-dau-vao.js` · **Chạy:** `npm run kiem-dau-vao -- --task PROJ-1234`
 
 **Phải kiểm:**
-1. Biến `TASK_KEY` và `PROJECT_OUTPUT_DIR` **có giá trị** (không rỗng).
-2. Thư mục `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/` **tồn tại**.
-3. File `profiles/<TASK_KEY>/task.env` **tồn tại** — nếu không thì credentials sẽ rơi về `.env` chung.
+1. Biến `MA_TASK` và `THU_MUC_KET_QUA` **có giá trị** (không rỗng).
+2. Thư mục `<THU_MUC_KET_QUA>/tasks/<MA_TASK>/` **tồn tại**.
+3. File `profiles/<MA_TASK>/task.env` **tồn tại** — nếu không thì credentials sẽ rơi về `.env` chung.
 4. **Mọi** file `.json` trong thư mục task **parse được**.
 5. Bộ testcase canonical đã có (ít nhất một file trong `test-cases/`).
 
@@ -216,13 +226,13 @@ chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ t
 
 > **Vì sao mục 3 quan trọng đến thế.** Quên truyền file env riêng của task là lỗi kinh điển: env rơi về file
 > chung, thiếu credentials, công cụ đứng ở màn đăng nhập, và **mọi màn đọc ra 0 cột** — báo cáo trông y hệt
-> như ứng dụng hỏng thật. Đó chính là câu chuyện ở Bài 13 mục 2, và preflight là nơi chặn nó sớm nhất.
+> như ứng dụng hỏng thật. Đó chính là câu chuyện ở Bài 8 mục 2, và kiem-dau-vao là nơi chặn nó sớm nhất.
 
-**Tự kiểm sau khi viết:** thiếu `TASK_KEY` → `2` · JSON hỏng → `1` kèm tên file và số dòng · đủ mọi thứ → `0`.
+**Tự kiểm sau khi viết:** thiếu `MA_TASK` → `2` · JSON hỏng → `1` kèm tên file và số dòng · đủ mọi thứ → `0`.
 
 ## 6. Gate 4 — design: soi thiết kế bộ testcase
 
-Bài 5 bạn chốt 7 cột bắt buộc. Gate này canh chúng:
+Bài 9 bạn chốt 7 cột bắt buộc. Gate này canh chúng:
 
 **Tầng cấu trúc** (chặn ngay — thiếu là mọi công cụ sau vỡ):
 - Đủ 7 cột, **đúng tên**. Thiếu hoặc đổi tên → `exit 1`.
@@ -243,7 +253,7 @@ const ORACLE_RONG = [
 ];
 if (ORACLE_RONG.some((re) => re.test(String(row.expected).trim()))) {
   kq.viPham.push(`${row.tcId}: "Kết quả mong đợi" không phán được gì — ` +
-    'phải nêu GIÁ TRỊ, URL hoặc element cụ thể, và trích được nguồn (Bài 7).');
+    'phải nêu GIÁ TRỊ, URL hoặc element cụ thể, và trích được nguồn (Bài 10).');
 }
 ```
 
@@ -251,12 +261,12 @@ if (ORACLE_RONG.some((re) => re.test(String(row.expected).trim()))) {
 
 Bốn gate chạy rời thì sẽ có lần bạn quên một cái. Gộp lại:
 
-`scripts/qa/self_review.js`:
+`scripts/qa/tu-soi.js`:
 
 ```js
 #!/usr/bin/env node
 /*
- * self_review.js — chạy CẢ BỘ gate và gom thành MỘT báo cáo.
+ * tu-soi.js — chạy CẢ BỘ gate và gom thành MỘT báo cáo.
  *
  * VÌ SAO CẦN: trước khi kết thúc một task, thứ nguy hiểm không phải lỗi bạn biết, mà là gate bạn QUÊN
  * chạy. Một lệnh gộp biến "check chưa kỹ" thành thứ có bằng chứng thay vì cảm tính.
@@ -267,15 +277,15 @@ Bốn gate chạy rời thì sẽ có lần bạn quên một cái. Gộp lại:
 const { spawnSync } = require('child_process');
 
 const args = process.argv.slice(2);
-const task = (args[args.indexOf('--task') + 1]) || process.env.TASK_KEY || '';
+const task = (args[args.indexOf('--task') + 1]) || process.env.MA_TASK || '';
 const statusFile = (args[args.indexOf('--status') + 1]) || '';
 
 const BO_GATE = [
-  { ten: 'preflight',  lenh: ['scripts/qa/preflight_gate.js', '--task', task] },
-  { ten: 'inventory',  lenh: ['scripts/qa/inventory_gate.js'] },
-  { ten: 'secret',     lenh: ['scripts/qa/secret_scan.js'] },
+  { ten: 'kiem-dau-vao',  lenh: ['scripts/qa/kiem-dau-vao.js', '--task', task] },
+  { ten: 'inventory',  lenh: ['scripts/qa/kiem-ton-kho.js'] },
+  { ten: 'secret',     lenh: ['scripts/qa/quet-secret.js'] },
   { ten: 'design',     lenh: ['scripts/qa/design_gate.js'] },
-  { ten: 'evidence',   lenh: statusFile ? ['scripts/qa/evidence_gate.js', statusFile] : null }
+  { ten: 'evidence',   lenh: statusFile ? ['scripts/qa/gate-bang-chung.js', statusFile] : null }
 ];
 
 const bang = [];
@@ -314,16 +324,16 @@ process.exit(0);
 
 ```json
 "scripts": {
-  "preflight": "node scripts/qa/preflight_gate.js",
-  "inventory:gate": "node scripts/qa/inventory_gate.js",
-  "secret:scan": "node scripts/qa/secret_scan.js",
+  "kiem-dau-vao": "node scripts/qa/kiem-dau-vao.js",
+  "inventory:gate": "node scripts/qa/kiem-ton-kho.js",
+  "secret:scan": "node scripts/qa/quet-secret.js",
   "design:gate": "node scripts/qa/design_gate.js",
-  "gate:evidence": "node scripts/qa/evidence_gate.js",
-  "self-review": "node scripts/qa/self_review.js"
+  "gate:evidence": "node scripts/qa/gate-bang-chung.js",
+  "self-review": "node scripts/qa/tu-soi.js"
 }
 ```
 
-Ba quyết định thiết kế trong `self_review` đáng để ý:
+Ba quyết định thiết kế trong `tu-soi` đáng để ý:
 
 | Quyết định | Vì sao |
 |---|---|
@@ -337,9 +347,9 @@ Ba quyết định thiết kế trong `self_review` đáng để ý:
 
 ### Bước 1 — Helper + 2 gate (25 phút)
 
-Viết `lib/gate.js`, `inventory_gate.js`, `secret_scan.js`. Chạy từng cái, xác nhận `exit 0`.
+Viết `lib/gate.js`, `kiem-ton-kho.js`, `quet-secret.js`. Chạy từng cái, xác nhận `exit 0`.
 
-### Bước 2 — Tự viết preflight (20 phút)
+### Bước 2 — Tự viết kiem-dau-vao (20 phút)
 
 Theo đặc tả mục 5. Xong thì tự kiểm ba trường hợp ở cuối mục đó.
 
@@ -349,7 +359,7 @@ Chỉ cần tầng cấu trúc: đủ 7 cột, `TC ID` không rỗng và không 
 
 ### Bước 4 — Lệnh gộp (10 phút)
 
-Viết `self_review.js`, chạy `npm run self-review -- --task PROJ-1234 --status <đường/dẫn/status.json>`.
+Viết `tu-soi.js`, chạy `npm run tu-soi -- --task PROJ-1234 --status <đường/dẫn/status.json>`.
 
 ### Bước 5 — Cố tình làm sai từng thứ (15 phút)
 
@@ -360,8 +370,8 @@ phạm vi của chúng đang chồng nhau, cần tách lại.
 |---|---|---|---|---|
 | Đổi `testMatch` thành glob không khớp file nào | inventory | 1 | | |
 | Thêm `password = "abc12345678"` vào một file đã track | secret | 1 | | |
-| Xoá `profiles/PROJ-1234/task.env` | preflight | 2 | | |
-| Làm hỏng một dấu ngoặc trong file `.json` của task | preflight | 1 | | |
+| Xoá `profiles/PROJ-1234/task.env` | kiem-dau-vao | 2 | | |
+| Làm hỏng một dấu ngoặc trong file `.json` của task | kiem-dau-vao | 1 | | |
 | Đổi tên cột `Ưu tiên` thành `Priority` | design | 1 | | |
 | Xoá `evidence` của một case `PASS` | evidence | 1 | | |
 
@@ -373,7 +383,7 @@ Nhớ **hoàn nguyên** sau mỗi dòng.
 git add scripts/qa package.json
 git commit -m "feat(gate): bộ gate nền + lệnh gộp self-review
 
-4 gate: inventory (chống xanh giả) · secret · preflight · design.
+4 gate: inventory (chống xanh giả) · secret · kiem-dau-vao · design.
 Nghiệm thu: 6/6 tình huống làm sai đều đỏ đúng gate mong đợi."
 ```
 
@@ -386,9 +396,9 @@ kit-cua-toi/scripts/
 ├── lib/
 │   └── gate.js                   ← MỚI · khung chung: ketQua · khongDoDuoc · fileDangTrack
 └── qa/
-    ├── inventory_gate.js         ← MỚI · artifact bắt buộc thiếu ⇒ chặn
-    ├── secret_scan.js            ← MỚI · secret trên file đã track ⇒ chặn
-    └── self_review.js            ← SỬA · gộp mọi gate; KHÔNG ĐO ĐƯỢC thắng VI PHẠM
+    ├── kiem-ton-kho.js         ← MỚI · artifact bắt buộc thiếu ⇒ chặn
+    ├── quet-secret.js            ← MỚI · secret trên file đã track ⇒ chặn
+    └── tu-soi.js            ← SỬA · gộp mọi gate; KHÔNG ĐO ĐƯỢC thắng VI PHẠM
 ```
 
 `lib/gate.js` ở `scripts/lib/` vì gõ `node scripts/lib/gate.js` không làm gì cả — nó là thư viện.
@@ -398,11 +408,11 @@ Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát v�
 
 - [ ] Bốn gate dùng chung `lib/gate.js`, không chép logic in kết quả.
 - [ ] `fileDangTrack` **không crash** khi không có `.git`.
-- [ ] `inventory_gate` hỏi runner, không tự đếm file.
-- [ ] `secret_scan` bỏ qua file `.example` và tài liệu — và tôi hiểu vì sao đó không phải nới lỏng.
-- [ ] `preflight` phân biệt đúng `exit 2` với `exit 1`.
-- [ ] `self_review` chỉ điều phối, và **mỗi gate vẫn chạy được riêng**.
-- [ ] Trong `self_review`, `KHÔNG ĐO ĐƯỢC` thắng `VI PHẠM`.
+- [ ] `kiem-ton-kho` hỏi runner, không tự đếm file.
+- [ ] `quet-secret` bỏ qua file `.example` và tài liệu — và tôi hiểu vì sao đó không phải nới lỏng.
+- [ ] `kiem-dau-vao` phân biệt đúng `exit 2` với `exit 1`.
+- [ ] `tu-soi` chỉ điều phối, và **mỗi gate vẫn chạy được riêng**.
+- [ ] Trong `tu-soi`, `KHÔNG ĐO ĐƯỢC` thắng `VI PHẠM`.
 - [ ] **6/6 dòng** ở bảng Bước 5 đỏ đúng gate mong đợi, không gate nào chồng phạm vi.
 
 ## Bài tập về nhà
@@ -410,10 +420,10 @@ Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát v�
 1. **Tầng chất lượng dòng cho `design_gate`** — bắt oracle rỗng theo mẫu ở mục 6. Chạy trên bộ testcase thật
    của bạn rồi **đếm**: bao nhiêu phần trăm case có oracle không phán được gì? Con số đó thường gây bất ngờ.
 2. **Cờ `--warn-only` cho gate mới.** Tầng chất lượng dòng nên bắt đầu ở mức cảnh báo, theo đúng ba bước ở
-   Bài 13 mục 7.
+   Bài 8 mục 7.
 
 ## Đọc thêm
 
-- [`scripts/qa/`](../../scripts/qa/) của kit này — 59 máy, cùng một khuôn bạn vừa dựng.
-- Bài 15: khi số gate tăng lên, làm sao biết **gate nào đã mất nơi gọi** và **gate nào đã âm thầm tụt thành
+- [`scripts/qa/`](../../scripts/qa/) của kit này — bộ máy, cùng một khuôn bạn vừa dựng.
+- Bài 28: khi số gate tăng lên, làm sao biết **gate nào đã mất nơi gọi** và **gate nào đã âm thầm tụt thành
   cảnh báo**.

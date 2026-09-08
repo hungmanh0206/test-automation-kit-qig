@@ -1,6 +1,16 @@
-# Bài 12 — Evidence kiểm chứng được
+# Bài chi tiết — Bằng chứng
 
 > **2 giờ** · Có gì trong tay: kết quả chạy có verdict và tầng lỗi · Sau bài này: ảnh có khoanh đỏ, video có banner, PII đã che — và file trạng thái đã đủ bằng chứng
+>
+> *Bài này không đánh số — nó là phần đào sâu của **Bài 13**. Đọc kèm **Bài 13**.*
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Bạn nói case đã chạy và đúng. Ba tuần sau không ai kiểm lại được nữa. |
+| **Bài này bạn gõ gì** | Viết hàm chụp ảnh có khoanh đỏ và che thông tin cá nhân, rồi hàm quay video có chú thích từng bước. |
+| **Xong thì được gì** | Case nào đã chạy cũng có ảnh hoặc video, mở ra là thấy ngay chỗ cần nhìn. |
 
 ## Mục tiêu
 
@@ -37,9 +47,9 @@ lúc đó màn hình trông thế nào?"*
 
 Không có ảnh thì mọi PASS của bạn là **lời khai không kiểm chứng được**. Có ảnh thì bạn trả lời được trong một
 phút — hoặc phát hiện ra rằng lúc đó nó **đã sai rồi** mà oracle của bạn không bắt (và đó là thông tin cực
-giá trị cho Bài 19).
+giá trị cho Bài 21).
 
-Đây là mục 4 trong `CLAUDE.md` bạn viết ở Bài 3, và là luật mà `evidence_gate.js` ở Bài 13 canh.
+Đây là mục 4 trong `CLAUDE.md` bạn viết ở Bài 2, và là luật mà `gate-bang-chung.js` ở Bài 8 canh.
 
 ## 3. Khoanh đỏ: vì sao ảnh chụp trơn bị trả bug
 
@@ -151,7 +161,7 @@ test('TC_012 [Calc] giảm giá hạng Bạc', async ({ page, duLieu }, testInfo
   await page.goto('/orders/create');
   // … thao tác …
 
-  const anh = `outputs/demo/tasks/${process.env.TASK_KEY}/evidence/TC_012.png`;
+  const anh = `outputs/demo/tasks/${process.env.MA_TASK}/evidence/TC_012.png`;
   await chupCoHighlight(page, {
     file: anh,
     khoanh: [
@@ -160,7 +170,7 @@ test('TC_012 [Calc] giảm giá hạng Bạc', async ({ page, duLieu }, testInfo
     ],
     maskSelector: ['[data-field=sdt]', 'input[name=email]']
   });
-  // Gắn vào báo cáo để sinh-status.js đọc được (Bài 11)
+  // Gắn vào báo cáo để sinh-status.js đọc được (Bài 13)
   await testInfo.attach('TC_012', { path: anh, contentType: 'image/png' });
 });
 ```
@@ -172,7 +182,7 @@ Với bug lệch giữa hai nơi, khoanh **cả hai** và ghi rõ bên nào đú
 ```js
 test('TC_020 [Display] ngày sinh lệch định dạng giữa hai tab', async ({ page }) => {
   await chupCoHighlight(page, {
-    file: `outputs/demo/tasks/${process.env.TASK_KEY}/evidence/TC_020-lech-dinh-dang.png`,
+    file: `outputs/demo/tasks/${process.env.MA_TASK}/evidence/TC_020-lech-dinh-dang.png`,
     khoanh: [
       { selector: '#tab-a [data-field=ngay-sinh]', nhan: 'Tab A: 2001-05-20 (SAI)', mau: '#e11d48' },
       { selector: '#tab-b [data-field=ngay-sinh]', nhan: 'Tab B: 20/05/2001 (ĐÚNG)', mau: '#16a34a' }
@@ -254,7 +264,7 @@ async function buoc(page, moTa, giay = 2.5) {
 module.exports = { buoc };
 ```
 
-> `waitForTimeout` ở đây là **ngoại lệ hợp lệ** duy nhất của luật ở Bài 9. Nó không chờ ứng dụng — nó chờ
+> `waitForTimeout` ở đây là **ngoại lệ hợp lệ** duy nhất của luật ở Bài 12. Nó không chờ ứng dụng — nó chờ
 > **người xem video** kịp đọc banner. Ghi comment rõ để người sau không tưởng là mã ẩu.
 
 Bật quay video cho một test cụ thể:
@@ -299,7 +309,7 @@ Bẫy thật, và nó làm mất bằng chứng **im lặng**:
 Nên ghi vào thư mục của **task**:
 
 ```
-outputs/<PROJECT>/tasks/<TASK_KEY>/evidence/TC_012.png
+outputs/<PROJECT>/tasks/<MA_TASK>/evidence/TC_012.png
 ```
 
 Và trong file trạng thái, ghi đường dẫn **tính từ gốc repo** — không phải đường dẫn tuyệt đối của máy bạn
@@ -322,7 +332,7 @@ báo không tồn tại).
 ]
 ```
 
-Đây chính là hình dạng mà `evidence_gate.js` ở Bài 13 đọc.
+Đây chính là hình dạng mà `gate-bang-chung.js` ở Bài 8 đọc.
 
 ## 7. Bốn thứ làm ảnh mất giá trị
 
@@ -334,7 +344,7 @@ báo không tồn tại).
 | **Còn PII** | Mở ra và **đọc** | Che, rồi mở ảnh ra soi |
 
 Ảnh trắng là thứ hay xảy ra nhất: khi test đỏ, Playwright vẫn chụp — chỉ là chụp **sau khi** trang đã hỏng
-hoặc chưa render. File vẫn được tạo, đường dẫn vẫn có. Nên `evidence_gate.js` ở Bài 13 kiểm cả **kích thước
+hoặc chưa render. File vẫn được tạo, đường dẫn vẫn có. Nên `gate-bang-chung.js` ở Bài 8 kiểm cả **kích thước
 file**, không chỉ kiểm sự tồn tại.
 
 ---
@@ -343,7 +353,7 @@ file**, không chỉ kiểm sự tồn tại.
 
 ### Bước 1 — Viết `evidence.js` (20 phút)
 
-Viết `tests/support/evidence.js` theo mục 3. Sửa 3 test ở Bài 9–10 để chụp bằng `chupCoHighlight` với ít nhất
+Viết `tests/support/evidence.js` theo mục 3. Sửa 3 test ở Bài 12–10 để chụp bằng `chupCoHighlight` với ít nhất
 **một** vùng khoanh mỗi test.
 
 ### Bước 2 — Mở ảnh ra soi (10 phút)
@@ -419,7 +429,7 @@ kit-cua-toi/tests/support/
 ```
 
 Hai file này là **hạ tầng**, không phải máy chặn. Máy chặn đọc *kết quả* của chúng — đó là
-`evidence_gate.js` ở Bài 13.
+`gate-bang-chung.js` ở Bài 8.
 
 ## Tự kiểm
 
@@ -448,5 +458,5 @@ nó. Rất thường là ảnh chụp trơn.
 
 ## Đọc thêm
 
-- Phần 4 (Bài 13–15) sẽ biến chính luật của bài này thành **máy chặn**: `evidence_gate.js` đọc file trạng thái
+- Phần 4 (Bài 8–15) sẽ biến chính luật của bài này thành **máy chặn**: `gate-bang-chung.js` đọc file trạng thái
   bạn vừa sinh, tìm case đã chạy mà thiếu bằng chứng, và **thoát mã 1**.

@@ -2,6 +2,14 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: kết quả đã phân tầng, có bằng chứng · Sau bài này: bắt được bug ở chỗ testcase không hề nói tới — mà không biến mở rộng thành tautology nhân 7 lần
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Bộ case phủ hết những gì tài liệu nói. Nhưng bug lại nằm ở chỗ tài liệu không nói. |
+| **Bài này bạn gõ gì** | Lấy một case đã pass rồi soi rộng ra 7 hướng quanh nó, ngay trên app thực hành. |
+| **Xong thì được gì** | Từ đúng một case, bạn tìm ra cả 3 bug cài sẵn và thêm một chỗ tài liệu còn thiếu. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |
@@ -230,7 +238,7 @@ Luật ở Việc 3 bị vi phạm **theo phản xạ** — thấy hai màn gi�
 ```js
 #!/usr/bin/env node
 /*
- * gate_mo_rong.js — mở rộng phải neo được mới kết luận, và phải phủ đủ trục.
+ * gate-mo-rong.js — mở rộng phải neo được mới kết luận, và phải phủ đủ trục.
  *
  * 1. Chặn kiểu sai nào: ghi PASS/FAIL cho một phát hiện KHÔNG neo được vào mã luật —
  *    tức biến "hai chỗ giống nhau" thành "đúng" (tautology nhân 7 lần).
@@ -259,7 +267,7 @@ const TOI_THIEU = { high: 6, medium: 4, low: 2 };
 const file = process.argv[2];
 const band = (process.argv[3] || 'medium').toLowerCase();
 if (!file) {
-  console.error('Dùng: node scripts/qa/gate_mo_rong.js <mo-rong.json> [high|medium|low]');
+  console.error('Dùng: node scripts/qa/gate-mo-rong.js <mo-rong.json> [high|medium|low]');
   process.exit(2);
 }
 if (!fs.existsSync(file)) {
@@ -367,8 +375,8 @@ kit-cua-toi/
 ├── .agent/config/
 │   └── mo-rong-truc.json             ← MỚI · 7 trục + số trục tối thiểu theo mức rủi ro
 ├── scripts/qa/
-│   ├── gate_mo_rong.js               ← MỚI · không neo ⇒ OBSERVATION; thiếu trục ⇒ chặn
-│   └── self_review.js                ← SỬA · gọi thêm gate_mo_rong
+│   ├── gate-mo-rong.js               ← MỚI · không neo ⇒ OBSERVATION; thiếu trục ⇒ chặn
+│   └── tu-soi.js                ← SỬA · gọi thêm gate-mo-rong
 └── outputs/tasks/<MÃ>/
     ├── test-results/
     │   ├── testcase-status.json      ·  từ Bài 13

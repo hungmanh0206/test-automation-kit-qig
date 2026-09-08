@@ -2,6 +2,14 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: bộ case đã mở rộng 7 trục, suite có bằng chứng · Sau bài này: bắt được lớp bug "báo thành công nhưng lưu sai", và biết khoanh tầng lỗi bằng hai nguồn
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Màn hình báo thành công nhưng dữ liệu lưu xuống lại sai. Test qua giao diện không thấy được. |
+| **Bài này bạn gõ gì** | So từng ô trên màn hình với bản ghi đã lưu, dựa vào một bảng ánh xạ khai sẵn. |
+| **Xong thì được gì** | Bắt được 7 loại bug chỉ lộ ở nơi lưu dữ liệu, và biết lỗi thuộc tầng nào. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |

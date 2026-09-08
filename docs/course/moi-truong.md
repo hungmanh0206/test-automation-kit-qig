@@ -1,6 +1,14 @@
-# Bài 2 — Môi trường làm việc: Node, Git, VS Code, AI agent
+# Bài 4 — Claude Code: cài đặt và chế độ an toàn
 
 > **2 giờ** · Có gì trong tay: một máy tính trắng · Sau bài này: agent chạy được trên repo của bạn, có kiểm soát
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Cho agent tự do sửa source thật là chuyện chỉ cần sai một lần cũng đủ mệt. |
+| **Bài này bạn gõ gì** | Cài công cụ, đặt chế độ quyền, rồi thử bảo agent xoá một thư mục xem quyền có chặn không. |
+| **Xong thì được gì** | Agent chạy được trên repo của bạn, và bạn biết chắc nó bị chặn ở chỗ nào. |
 
 ## Mục tiêu
 
@@ -116,7 +124,7 @@ là đủ để đẩy thứ không nên đẩy lên, và lịch sử git thì k
 | Bộ nhớ dự án | thư mục knowledge sau này | Dữ liệu công ty — đối xử như `.env` |
 | File tạm | dump API, script nháp | Hay chứa dữ liệu mẫu là dữ liệu thật |
 
-Đây là mục **1 trong 6 điều không-thương-lượng** mà bạn sẽ viết ở Bài 3.
+Đây là mục **1 trong 6 điều không-thương-lượng** mà bạn sẽ viết ở Bài 2.
 
 > Một chuyện thật đáng nhớ: bảy file nháp dump API còn sót ở thư mục gốc, chưa được `.gitignore`. Trong đó
 > có dump chứa **24 email và 6 số điện thoại** ở phần giá trị mẫu. Một lần `git add .` là xong. Cách chữa
@@ -124,7 +132,7 @@ là đủ để đẩy thứ không nên đẩy lên, và lịch sử git thì k
 
 ## 6. Vì sao chưa cài Playwright ở bài này
 
-Bạn sẽ cần nó, nhưng ở **Bài 9**. Cài sớm thì nó nằm đó ba bài không dùng, và bạn mất cơ hội hiểu vì sao cần.
+Bạn sẽ cần nó, nhưng ở **Bài 12**. Cài sớm thì nó nằm đó ba bài không dùng, và bạn mất cơ hội hiểu vì sao cần.
 Nguyên tắc của khoá: **cài khi có việc cho nó làm.**
 
 ---
@@ -188,7 +196,7 @@ git push
 ```
 kit-cua-toi/
 ├── package.json                  ← MỚI · nơi khai mọi lệnh `npm run ...`
-├── playwright.config.js          ← MỚI · bản tối thiểu, sẽ mở rộng ở Bài 12
+├── playwright.config.js          ← MỚI · bản tối thiểu, sẽ mở rộng ở Bài 13
 ├── .gitignore                    ← MỚI · chặn 3 thư mục không được commit
 ├── profiles/
 │   └── DEMO-1/task.env           ← MỚI · URL + tài khoản. ⛔ KHÔNG commit
@@ -211,8 +219,8 @@ kit-cua-toi/
 ## Bài tập về nhà
 
 Mở lịch sử git của một repo bạn đang tham gia, tìm xem có file nào **đáng lẽ không nên** ở đó không: `.env`,
-dump dữ liệu, ảnh chụp có thông tin khách. Không cần sửa — chỉ cần biết. Ở Bài 14 bạn sẽ dựng máy quét việc này.
+dump dữ liệu, ảnh chụp có thông tin khách. Không cần sửa — chỉ cần biết. Ở Bài 11 bạn sẽ dựng máy quét việc này.
 
 ## Đọc thêm
 
-- Tài liệu permission mode của công cụ bạn dùng — đọc kỹ phần danh sách cho phép, vì Bài 3 sẽ dùng tới.
+- Tài liệu permission mode của công cụ bạn dùng — đọc kỹ phần danh sách cho phép, vì Bài 2 sẽ dùng tới.

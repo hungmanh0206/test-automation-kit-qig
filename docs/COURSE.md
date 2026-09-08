@@ -143,7 +143,7 @@ học nói "viết file này", bạn biết nó nằm ở đâu và cạnh cái 
 ```
 kit-cua-toi/
 ├── CLAUDE.md                         ← Bài 2  · luật agent PHẢI đọc mỗi phiên (dưới 20 dòng)
-├── RULE_GLOBAL.md                    ← Bài 2  · bản luật đầy đủ; CLAUDE.md là bản rút gọn có pointer
+├── LUAT-DAY-DU.md                    ← Bài 2  · bản luật đầy đủ; CLAUDE.md là bản rút gọn có pointer
 ├── README.md                         ← Bài 26 · người mới đọc là chạy được
 ├── CHANGELOG.md                      ← Bài 26 · kit cũng có phiên bản
 ├── package.json                      ← Bài 4  · khai mọi lệnh `npm run ...`
@@ -152,12 +152,12 @@ kit-cua-toi/
 │
 ├── .agent/                           ← "bộ não": luật, cấu hình, năng lực
 │   ├── rules/
-│   │   └── core_rules.md             ← Bài 2  · digest, canonical là RULE_GLOBAL.md
+│   │   └── core_rules.md             ← Bài 2  · digest, canonical là LUAT-DAY-DU.md
 │   ├── skills/                       ← Bài 6  · năng lực theo vai (không tự nạp)
 │   ├── workflows/                    ← Bài 6  · quy trình từng phase
 │   └── config/
-│       ├── verdict_taxonomy.json     ← Bài 13 · 7 phán quyết + 7 tầng lỗi + ngưỡng rerun
-│       ├── dimension-manifest.json   ← Bài 11 · chiều nào áp cho dự án này, `n/a` phải kèm lý do
+│       ├── phan-quyet.json     ← Bài 13 · 7 phán quyết + 7 tầng lỗi + ngưỡng rerun
+│       ├── chieu-phu.json   ← Bài 11 · chiều nào áp cho dự án này, `n/a` phải kèm lý do
 │       ├── mo-rong-truc.json         ← Bài 14 · 7 trục + số trục tối thiểu theo mức rủi ro
 │       ├── anh-xa-luu-tru.json       ← Bài 15 · một nguồn cho 3 tên gọi của cùng một trường
 │       ├── knowledge-schema.json     ← Bài 18 · trường bắt buộc · 4 trạng thái · hạn tái xác nhận
@@ -186,23 +186,23 @@ kit-cua-toi/
 │   └── qa/                           ← MÁY CHẶN — mỗi file tự chạy, thoát mã 0/1/2
 │       ├── kiem-so-mong-doi.js       ·  Bài 1  · máy chặn đầu tiên, 12 dòng
 │       ├── kiem-file-cam.js          ·  Bài 5  · tệp cấm bị git track ⇒ chặn
-│       ├── ambiguity_gate.js         ·  Bài 8  · chưa chốt mơ hồ thì không cho sinh case
-│       ├── oracle_gate.js            ·  Bài 10 · giá trị tính toán không trỏ nguồn ⇒ chặn
+│       ├── gate-mo-ho.js         ·  Bài 8  · chưa chốt mơ hồ thì không cho sinh case
+│       ├── gate-oracle.js            ·  Bài 10 · giá trị tính toán không trỏ nguồn ⇒ chặn
 │       ├── dem_chieu.js              ·  Bài 11 · chiều bắt buộc chưa đủ ngưỡng ⇒ chặn
-│       ├── evidence_gate.js          ·  Bài 13 · case đã chạy mà không có ảnh/video ⇒ chặn
+│       ├── gate-bang-chung.js          ·  Bài 13 · case đã chạy mà không có ảnh/video ⇒ chặn
 │       ├── doi-chieu-luu-tru.js      ·  Bài 15 · so UI với nơi lưu, khoanh tầng lỗi
-│       ├── gate_mo_rong.js           ·  Bài 14 · không neo được vào mã luật ⇒ OBSERVATION
+│       ├── gate-mo-rong.js           ·  Bài 14 · không neo được vào mã luật ⇒ OBSERVATION
 │       ├── doi-soat-truong.js        ·  Bài 16 · 2xx không chứng minh mapping đúng
 │       ├── kiem-domain.js            ·  Bài 17 · rule không có `nguon` ⇒ cấm ghi
-│       ├── kiem_knowledge.js         ·  Bài 18 · chặn ở cửa ĐỌC: thiếu source · mâu thuẫn · quá hạn
+│       ├── kiem-tri-thuc.js         ·  Bài 18 · chặn ở cửa ĐỌC: thiếu source · mâu thuẫn · quá hạn
 │       ├── sao-luu-knowledge.js      ·  Bài 20 · đích sao lưu nằm TRONG repo ⇒ từ chối
 │       ├── do-metrics.js             ·  Bài 22 · clean vs eventual + KHOẢNG CÁCH lệ thuộc retry
 │       ├── sinh-dashboard.js         ·  Bài 23 · 1 tệp .html tự chứa, tự kiểm 0 host ngoài
 │       ├── cham-rui-ro.js            ·  Bài 19 · tính điểm rủi ro, ép độ sâu theo band
 │       ├── tiem-loi.js               ·  Bài 21 · đo chính bộ kiểm bằng tiêm lỗi
 │       ├── gates-voi-toi.js          ·  Bài 24 · máy không ai gọi thì bằng không có
-│       ├── policy_check.js           ·  Bài 28 · chống luật bị trôi, allowlist chặn khối lạ
-│       └── self_review.js            ·  Bài 11 · gọi mọi máy chặn một lượt
+│       ├── chong-troi.js           ·  Bài 28 · chống luật bị trôi, allowlist chặn khối lạ
+│       └── tu-soi.js            ·  Bài 11 · gọi mọi máy chặn một lượt
 │
 ├── tests/
 │   ├── support/                      ← HẠ TẦNG TEST — không phải test
@@ -668,7 +668,7 @@ có số trỏ tới. Tách ra để bài chính không phình, nhưng nội dun
 
 ## Quyết định thiết kế tài liệu này — đọc trước khi triển khai
 
-**1. KHÔNG dạy xây cả 59 gate.** Dạy ~10 gate cốt lõi + **mẫu hình chung**, rồi tặng kit đầy đủ.
+**1. KHÔNG dạy xây cả bộ gate.** Dạy ~10 gate cốt lõi + **mẫu hình chung**, rồi tặng kit đầy đủ.
 Bạn xây được thứ của mình, hiểu vì sao, và có bản xịn để lớn dần. Dạy xây hết thì bỏ dở giữa chừng.
 
 **2. Mỗi bài phải trả lời "cơ chế này chặn kiểu sai nào".** Đây là khác biệt lớn nhất so với các khoá

@@ -2,6 +2,14 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: mutation score gốc đã chốt, vài chục lượt chạy đã ghi · Sau bài này: đo được suite của bạn **lệ thuộc retry bao nhiêu**, và biết vì sao dọn flaky có thể chôn bug thật
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Báo cáo ghi 98% pass. Con số đó không cho biết app tốt hay chỉ do chạy lại nhiều lần. |
+| **Bài này bạn gõ gì** | Tính hai loại tỉ lệ pass, đo khoảng cách giữa chúng, rồi chấm điểm tin cậy từng test. |
+| **Xong thì được gì** | Biết suite phụ thuộc vào việc chạy lại đến mức nào, và không chôn nhầm bug thật. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |
@@ -257,7 +265,7 @@ cách **làm đẹp số** mà không sửa gì. `do-metrics.js` ở trên đã 
 
 ### Luật 3 — độ phủ phải có ngưỡng tối thiểu cho **mỗi** chiều
 
-"Phủ 20/20 chiều" nghe rất tốt cho tới khi bạn thấy 12 chiều có đúng **một** case. Ngưỡng phải theo từng
+"Phủ 20/danh mục chiều" nghe rất tốt cho tới khi bạn thấy 12 chiều có đúng **một** case. Ngưỡng phải theo từng
 chiều, không phải tổng (Bài 11).
 
 ### Và một câu chốt

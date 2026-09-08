@@ -2,6 +2,14 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: vòng học đã chạy ít nhất một chu kỳ · Sau bài này: biết dữ liệu nào mất thì dựng lại được, dữ liệu nào mất là mất hẳn — và có máy canh
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Bốn loại dữ liệu quý nhất của kit đều nằm ngoài git, nên git không cứu được chúng. |
+| **Bài này bạn gõ gì** | Viết máy sao lưu, cho nó từ chối nếu bạn để đích ngay trong repo, rồi khai vòng đời từng loại. |
+| **Xong thì được gì** | Mất máy vẫn dựng lại được, vì bạn đã thử khôi phục một lần rồi. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |
@@ -264,7 +272,7 @@ kit-cua-toi/
 ## Bài tập về nhà (25 phút)
 
 1. Khai `KNOWLEDGE_BACKUP_DIR` trỏ ra ngoài repo. Chạy sao lưu. Kiểm bằng mắt là tệp có ở đó thật.
-2. **Khôi phục thật** theo Việc 2, và chạy `kiem_knowledge.js` trên bản khôi phục. Đạt mới tính là xong.
+2. **Khôi phục thật** theo Việc 2, và chạy `kiem-tri-thuc.js` trên bản khôi phục. Đạt mới tính là xong.
 3. Điền `vong-doi-du-lieu.json` cho dự án bạn. Với **mỗi** loại, viết `lyDo` — nếu không viết nổi lý do thì
    bạn chưa biết dữ liệu đó dùng làm gì, và đó là thứ cần biết trước khi quyết giữ hay xoá.
 4. Đặt một nhắc lịch **hàng tuần** chạy sao lưu. Không tự động hoá được thì nhắc tay còn hơn không có gì —

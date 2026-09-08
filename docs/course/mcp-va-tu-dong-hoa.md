@@ -2,6 +2,14 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: CI đang gác cổng · Sau bài này: agent đọc được dữ liệu ngoài qua **một** cửa, với quyền tối thiểu, và bạn biết ranh giới nào không được tự động hoá
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Mỗi chỗ tự gọi API riêng nên mật khẩu rải khắp nơi, và không ai biết agent được làm gì. |
+| **Bài này bạn gõ gì** | Lập một bảng khai server, quyền, ai duyệt. Rồi viết gate chặn quyền ghi chưa ai duyệt. |
+| **Xong thì được gì** | Agent lấy dữ liệu ngoài qua một cửa duy nhất, quyền vừa đủ, và rõ chỗ nào phải người bấm. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |

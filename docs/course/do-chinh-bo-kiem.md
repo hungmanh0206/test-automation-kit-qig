@@ -1,9 +1,17 @@
-# Bài 19 ⭐ — Đo chính bộ kiểm của bạn
+# Bài 21 — Mutation Testing: đo suite có bắt được bug không ⭐
 
 > **3 giờ** · Có gì trong tay: suite đã chạy nhiều lượt, có evidence, có lịch sử · Sau bài này: bạn biết bộ kiểm của mình **bắt được bao nhiêu phần trăm** lỗi thật — bằng số, không bằng cảm giác
 
 Đây là bài trọng tâm của cả tài liệu. Mười tám bài trước dựng ra một bộ kiểm. Bài này trả lời câu hỏi mà không ai
 hỏi cho tới khi đã muộn: **bộ kiểm đó có bắt được lỗi không?**
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Cả bộ pass hết. Nhưng không biết là app đúng hay bộ kiểm của bạn không nhìn thấy gì. |
+| **Bài này bạn gõ gì** | Cố tình làm sai dữ liệu app trả về, rồi đếm xem suite có đỏ lên không. |
+| **Xong thì được gì** | Có con số cho biết bộ kiểm bắt được bao nhiêu phần trăm. Đây là bài quan trọng nhất. |
 
 ## Mục tiêu
 
@@ -26,7 +34,7 @@ Nó nghĩa là **một** trong hai điều, và bạn không phân biệt đư�
 | Ứng dụng đúng, và suite của bạn đủ nhạy để phát hiện nếu nó sai | ? |
 | Suite của bạn **không nhạy** — nó sẽ xanh dù ứng dụng sai | ? |
 
-Xanh là **cùng một dấu hiệu** cho cả hai. Đây chính là vấn đề đã bàn ở Bài 7 (oracle tautology) nhưng ở
+Xanh là **cùng một dấu hiệu** cho cả hai. Đây chính là vấn đề đã bàn ở Bài 10 (oracle tautology) nhưng ở
 tầm **cả bộ**: bạn không đo được năng lực phát hiện của bộ kiểm bằng cách chạy nó trên ứng dụng đúng.
 
 Câu chuyện quen thuộc: suite xanh suốt sprint, rồi một QA khác (hoặc khách) tìm ra bug ở đúng luồng suite đã
@@ -385,7 +393,7 @@ exports.expect = base.expect;
 | Ứng dụng **không dùng** trường bạn tiêm | Đây là thu hoạch: trường đó có thể là trường chết |
 | Mutant quá nhỏ để nhìn thấy | Cộng 1.000đ vào tổng 50 triệu mà UI làm tròn về triệu ⇒ không sai được |
 
-Chỉ khi cả bốn đã loại thì điểm 0 mới nghĩa là **suite mù**. Đây là ứng dụng trực tiếp của luật ở Bài 14:
+Chỉ khi cả bốn đã loại thì điểm 0 mới nghĩa là **suite mù**. Đây là ứng dụng trực tiếp của luật ở Bài 11:
 **KHÔNG ĐO ĐƯỢC không phải là ĐẠT, cũng không phải là VI PHẠM.**
 
 ### Điểm 5/5 — "suite của tôi hoàn hảo"?
@@ -442,7 +450,7 @@ mà lượt cuối lại xanh do một lý do khác (dữ liệu đổi giữa c
 Máy ở trên đặt `PW_RETRIES: '0'` cho mọi lượt mutation. Mutation run **không** cần chống nhoè — nó cần tín hiệu
 sạch.
 
-> Ba bẫy này là ví dụ hoàn hảo cho luật ở Bài 15: **máy nào cũng phải có đối chứng âm**. Trước khi tin điểm
+> Ba bẫy này là ví dụ hoàn hảo cho luật ở Bài 28: **máy nào cũng phải có đối chứng âm**. Trước khi tin điểm
 > mutation, hãy tiêm một mutant mà bạn **biết chắc** suite bắt được, và xem máy có báo BỊ DIỆT không. Nếu
 > không, máy sai, không phải suite sai.
 
@@ -548,7 +556,7 @@ cao, vì nó là chỗ bug sẽ sinh ra ở sprint sau.
 }
 ```
 
-Đưa `spec:gap` vào cùng đường ra với bug (Bài 11), nhưng **không** log thành bug. Nó là câu hỏi cho BA.
+Đưa `spec:gap` vào cùng đường ra với bug (Bài 13), nhưng **không** log thành bug. Nó là câu hỏi cho BA.
 
 ## 8. Luật cuối: bug do người ngoài tìm ra = lỗi của máy
 
@@ -564,7 +572,7 @@ Ba câu trả lời hợp lệ, mỗi câu ứng một hành động:
 | Câu trả lời | Hành động |
 |---|---|
 | Có case phủ, nhưng oracle yếu ⇒ nó xanh dù sai | Thêm mutant tái hiện bug này · sửa oracle · đo lại tới khi mutant bị diệt |
-| Không có case phủ, và có chiều lẽ ra phải sinh ra case đó | Sửa **máy đếm chiều** (Bài 8) để chiều đó không còn báo đủ |
+| Không có case phủ, và có chiều lẽ ra phải sinh ra case đó | Sửa **máy đếm chiều** (Bài 11) để chiều đó không còn báo đủ |
 | Không có case phủ, và không chiều nào chỉ tới nó | Thêm **một chiều mới** vào danh mục chiều |
 
 Câu trả lời **không** hợp lệ: *"tôi sẽ để ý hơn"*. Đó là dặn dò, không phải forcing function (Bài 1).
@@ -647,7 +655,7 @@ Hai câu hỏi quan trọng hơn con số:
 
 ### Bước 5 — Sửa một oracle rồi đo lại (15 phút)
 
-Chọn **một** mutant sống sót. Sửa oracle của case tương ứng theo Bài 7 (tính độc lập, không app==app). Đo lại
+Chọn **một** mutant sống sót. Sửa oracle của case tương ứng theo Bài 10 (tính độc lập, không app==app). Đo lại
 đúng mutant đó:
 
 ```bash
@@ -728,6 +736,6 @@ phép đo**. Đó là thứ phân biệt một bộ kiểm đang tốt lên vớ
 
 ## Đọc thêm
 
-- Bài 20 khép lại: đưa mọi máy này vào CI, và đóng gói kit để người khác dùng được.
-- Bài 7 (oracle) và Bài 14 (KHÔNG ĐO ĐƯỢC) là hai bài mà bài này dựa lên hoàn toàn — nếu mục 4 và mục 5 đọc
+- Bài 24 khép lại: đưa mọi máy này vào CI, và đóng gói kit để người khác dùng được.
+- Bài 10 (oracle) và Bài 11 (KHÔNG ĐO ĐƯỢC) là hai bài mà bài này dựa lên hoàn toàn — nếu mục 4 và mục 5 đọc
   thấy khó thì quay lại hai bài đó.

@@ -1,6 +1,14 @@
-# Bài 9 — Playwright và locator bền
+# Bài 12 — Playwright từ số 0
 
 > **2 giờ 30 phút** · Có gì trong tay: bộ testcase đã review · Sau bài này: suite chạy được, và locator không đoán
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Test tự động viết vội hay đỏ vì tìm nhầm nút, không phải vì app sai. Rồi bạn hết tin nó. |
+| **Bài này bạn gõ gì** | Cấu hình Playwright, dò thử giao diện, và viết case đầu tiên chạy trên app thực hành. |
+| **Xong thì được gì** | Suite chạy được, và không vỡ mỗi khi giao diện đổi chút ít. |
 
 ## Mục tiêu
 
@@ -47,8 +55,8 @@ Ba dòng đáng để ý, mỗi dòng chặn một lớp lỗi:
 
 | Dòng | Chặn gì |
 |---|---|
-| `forbidOnly` khi CI | Một `.only` sót lại làm cả suite chỉ chạy **một** test mà vẫn xanh. Cùng lớp lỗi "suite rỗng vẫn xanh" ở Bài 14 |
-| `reporter: json` | Sinh `results.json` — Bài 11 và Bài 14 đều đọc file này |
+| `forbidOnly` khi CI | Một `.only` sót lại làm cả suite chỉ chạy **một** test mà vẫn xanh. Cùng lớp lỗi "suite rỗng vẫn xanh" ở Bài 11 |
+| `reporter: json` | Sinh `results.json` — Bài 13 và Bài 11 đều đọc file này |
 | `retries: 2` chỉ ở CI | Local thì **không** retry: bạn cần thấy nó đỏ để sửa, không phải để nó tự xanh |
 
 ## 2. Chiến lược locator theo tầng
@@ -128,7 +136,7 @@ async function khaoSat(page) {
   });
 }
 
-/** Liệt kê tên cột của một bảng — dùng cho case chiều [Display] ở Bài 8. */
+/** Liệt kê tên cột của một bảng — dùng cho case chiều [Display] ở Bài 11. */
 async function cotBang(page, selectorBang = 'table') {
   return page.$$eval(`${selectorBang} thead th`,
     (ths) => ths.map((t) => t.textContent.replace(/\s+/g, ' ').trim()));
@@ -218,12 +226,12 @@ test('chờ trạng thái, không chờ thời gian', async ({ page }) => {
 ```
 
 > `waitForTimeout` trong mã production của suite là **mùi**. Nó nói: *tôi không biết chờ điều kiện gì, nên
-> tôi chờ bừa.* Và ở Bài 11 bạn sẽ thấy nó còn tệ hơn thế — một cái `wait` thêm vào để cho test xanh có thể
+> tôi chờ bừa.* Và ở Bài 13 bạn sẽ thấy nó còn tệ hơn thế — một cái `wait` thêm vào để cho test xanh có thể
 > đang **lấp một bug hiệu năng thật**.
 
 ## 6. Một spec đầy đủ
 
-Nối lại: case `[E2E]` từ Bài 8, oracle có neo từ Bài 7.
+Nối lại: case `[E2E]` từ Bài 11, oracle có neo từ Bài 10.
 
 `tests/orders/tao-don.spec.js`:
 
@@ -237,7 +245,7 @@ test.describe('Tạo đơn hàng', () => {
 
   // TC_015 [E2E] — oracle: BR-01 BR-02 BR-03 (xem requirements/phan-tich.md)
   test('TC_015 [E2E] tạo đơn → lưu nháp → chi tiết, giá trị còn nguyên', async ({ page }) => {
-    // Tiền điều kiện: KH_BAC_01 hạng Bạc, SP_A giá 100.000 (Bài 10 sẽ dựng bằng factory)
+    // Tiền điều kiện: KH_BAC_01 hạng Bạc, SP_A giá 100.000 (Bài 12 sẽ dựng bằng factory)
     await page.getByLabel('Tìm khách hàng').fill('KH_BAC_01');
     await page.getByRole('option', { name: 'KH_BAC_01', exact: true }).click();
 
@@ -246,7 +254,7 @@ test.describe('Tạo đơn hàng', () => {
     await dong.getByLabel('Sản phẩm').selectOption('SP_A');
     await dong.getByLabel('Số lượng').fill('3');
 
-    // Oracle từ TÀI LIỆU, không đọc Đơn giá từ màn hình rồi tự tính (Bài 7 mục 2 dạng ②)
+    // Oracle từ TÀI LIỆU, không đọc Đơn giá từ màn hình rồi tự tính (Bài 10 mục 2 dạng ②)
     const tongKet = page.locator('#tong-ket');
     await expect(tongKet.getByLabel('Tạm tính')).toHaveText('300.000');      // BR-03
     await expect(tongKet.getByLabel('Giảm giá')).toHaveText('9.000');        // BR-01: Bạc 3%
@@ -255,7 +263,7 @@ test.describe('Tạo đơn hàng', () => {
 
     await page.getByRole('button', { name: 'Lưu nháp', exact: true }).click();
 
-    // Chữ hiển thị: so khớp TOÀN CHUỖI, không dùng contains (Bài 7 mục 4)
+    // Chữ hiển thị: so khớp TOÀN CHUỖI, không dùng contains (Bài 10 mục 4)
     await expect(page.getByRole('alert')).toHaveText('Đã lưu đơn nháp');
     await expect(page).toHaveURL(/\/orders\/\d+$/);
 
@@ -276,7 +284,7 @@ test.describe('Tạo đơn hàng', () => {
 
 Ba điều làm spec này khác spec thông thường:
 
-1. **Tên test mang `TC ID` và tag chiều** — nối được kết quả về testcase canonical (Bài 11 cần điều này).
+1. **Tên test mang `TC ID` và tag chiều** — nối được kết quả về testcase canonical (Bài 13 cần điều này).
 2. **Comment ghi mã oracle** — người review biết kiểm đối chiếu ở đâu.
 3. **Giá trị kỳ vọng là hằng số từ tài liệu**, không tính từ màn hình.
 
@@ -284,14 +292,14 @@ Ba điều làm spec này khác spec thông thường:
 
 ```bash
 npx playwright test                       # cả suite
-npx playwright test --list                # đếm — Bài 14 dùng để chống suite rỗng
+npx playwright test --list                # đếm — Bài 11 dùng để chống suite rỗng
 npx playwright test -g "TC_015"           # một test
 npx playwright test --headed --debug      # xem tận mắt khi đỏ
 npx playwright show-report                # báo cáo HTML
 ```
 
 `--list` là lệnh bạn nên chạy **mỗi lần sửa cấu trúc thư mục**. Nó trả lời: *runner có còn thấy test của tôi
-không?* Bài 14 sẽ biến nó thành gate.
+không?* Bài 11 sẽ biến nó thành gate.
 
 ---
 
@@ -314,7 +322,7 @@ Viết `tests/support/kham-pha-dom.js` và một spec khảo sát. Chạy rồi 
 
 ### Bước 3 — Viết 3 test (30 phút)
 
-Chọn 3 case từ bộ Bài 8, ưu tiên khác chiều nhau: một `[Calc]`, một `[Display]`, một `[E2E]`.
+Chọn 3 case từ bộ Bài 11, ưu tiên khác chiều nhau: một `[Calc]`, một `[Display]`, một `[E2E]`.
 
 Ràng buộc **không được vi phạm**:
 - Không `.first()`, không `.nth(N)`, không `mouse.click(x, y)`, không regex trên `body.innerText`.
@@ -329,7 +337,7 @@ grep -rn "\.first()\|\.nth(\|mouse\.click\|waitForTimeout\|body\.innerText" test
   echo "^ CÒN MẪU ẨU — sửa trước khi commit" || echo "sạch"
 ```
 
-Còn dòng nào thì sửa. **Đừng thêm vào danh sách bỏ qua** — ở Bài 14 bạn sẽ biến chính lệnh này thành gate,
+Còn dòng nào thì sửa. **Đừng thêm vào danh sách bỏ qua** — ở Bài 11 bạn sẽ biến chính lệnh này thành gate,
 và lúc đó nó sẽ đỏ.
 
 ### Bước 5 — Commit
@@ -383,4 +391,4 @@ một element khác so với ý bạn — và đó chính là lớp lỗi *log s
 
 - [`.agent/skills/phase2/ui_debug_agent/SKILL.md`](../../.agent/skills/phase2/ui_debug_agent/SKILL.md) —
   skill khám phá DOM của kit này, bản đầy đủ.
-- Bài 10 sẽ dựng dữ liệu cho phần tiền điều kiện mà 3 test này đang giả định có sẵn.
+- Bài 12 sẽ dựng dữ liệu cho phần tiền điều kiện mà 3 test này đang giả định có sẵn.

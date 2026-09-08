@@ -2,6 +2,14 @@
 
 > **2 giờ** · Có gì trong tay: agent chạy được, quyền đã cấu hình · Sau bài này: kit nằm trên repo, và có máy chặn không cho dữ liệu nhạy cảm đi theo
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Kit là code nhưng chưa có chỗ lưu. Lỡ đưa tri thức nội bộ lên repo là rò rỉ thật. |
+| **Bài này bạn gõ gì** | Chạy git init, commit, tạo nhánh, viết .gitignore, rồi viết một máy chặn tệp cấm. |
+| **Xong thì được gì** | Kit nằm trên repo, và có máy canh không cho mật khẩu hay dữ liệu công ty đi theo. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |

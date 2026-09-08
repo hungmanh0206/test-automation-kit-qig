@@ -1,6 +1,14 @@
-# Bài 11 — Verdict và phân tầng lỗi
+# Bài 13 — Bằng chứng và phân tầng lỗi
 
-> **2 giờ 30 phút** · Có gì trong tay: test chạy được, có dữ liệu dựng đúng luồng · Sau bài này: `verdict_taxonomy.json` và `testcase-status.json` — hai file mà Phần 4 sẽ đọc
+> **2 giờ 30 phút** · Có gì trong tay: test chạy được, có dữ liệu dựng đúng luồng · Sau bài này: `phan-quyet.json` và `testcase-status.json` — hai file mà Phần 4 sẽ đọc
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Case đỏ. Nhưng đỏ vì app sai hay vì test của bạn sai? Đoán nhầm là dev hết tin bạn. |
+| **Bài này bạn gõ gì** | Khai danh mục kết luận, viết bộ đọc dùng chung, rồi viết máy sinh trạng thái từ kết quả chạy. |
+| **Xong thì được gì** | Mỗi lỗi biết nó thuộc tầng nào, và chỗ chưa kết luận được thì không bị đẩy thành pass. |
 
 ## Mục tiêu
 
@@ -16,7 +24,7 @@
 ## 1. Vì sao phải khai trạng thái ra một file
 
 Phản xạ tự nhiên: ghi `PASS`/`FAIL` trong báo cáo, xong. Nhưng ngay tuần sau bạn cần thêm `SKIP`. Rồi cần
-phân biệt *skip vì chưa dựng được dữ liệu* với *skip vì không tự động hoá được*. Rồi Bài 13 cần biết trạng thái
+phân biệt *skip vì chưa dựng được dữ liệu* với *skip vì không tự động hoá được*. Rồi Bài 8 cần biết trạng thái
 nào là **đã chạy** để đòi bằng chứng.
 
 Nếu mỗi chỗ tự khai thì:
@@ -30,7 +38,7 @@ có case nào đã chạy, và báo ✓.
 
 Nên: **một file, mọi nơi trỏ về.**
 
-`.agent/config/verdict_taxonomy.json`:
+`.agent/config/phan-quyet.json`:
 
 ```json
 {
@@ -95,7 +103,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TAXONOMY = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../../.agent/config/verdict_taxonomy.json'), 'utf8'));
+  fs.readFileSync(path.join(__dirname, '../../.agent/config/phan-quyet.json'), 'utf8'));
 
 const DA_CHAY = Object.entries(TAXONOMY.statuses)
   .filter(([, v]) => v.daChay).map(([k]) => k);
@@ -106,7 +114,7 @@ const LOG_JIRA = Object.entries(TAXONOMY.tangLoi)
 module.exports = { TAXONOMY, DA_CHAY, LOG_JIRA };
 ```
 
-> Nhớ lại Bài 13: gate bằng chứng có hằng số `DA_CHAY = ['PASS', 'FAIL']` **viết tay**. Đó là bản đơn giản
+> Nhớ lại Bài 8: gate bằng chứng có hằng số `DA_CHAY = ['PASS', 'FAIL']` **viết tay**. Đó là bản đơn giản
 > để học. Bản đúng là đọc từ file này — vì khi bạn thêm `PASS_WITH_DEVIATION`, gate viết tay sẽ **bỏ sót**
 > nó (nó đã chạy nhưng gate không đòi bằng chứng), mà bỏ sót thì không có tín hiệu nào báo.
 
@@ -118,7 +126,7 @@ Khi test đỏ, câu hỏi **không** phải "bug gì" mà là **"lỗi ở tầ
 |---|---|---|
 | `product_bug` | ✅ | Dữ liệu BE đúng, màn hiện sai |
 | `api_bug` | ✅ | Đọc response thật: BE trả sai hoặc thiếu |
-| `setup_failure` | ❌ | Lỗi ném ra từ factory (chữ `SETUP:` ở Bài 10) |
+| `setup_failure` | ❌ | Lỗi ném ra từ factory (chữ `SETUP:` ở Bài 12) |
 | `script_error` | ❌ | Fail **lặp lại ổn định**, nhưng làm tay thì đúng |
 | `infra` | ❌ | API không phản hồi, timeout mạng, CI hết bộ nhớ |
 | `flaky` | ❌ | Pass sau retry, **và** nêu được cơ chế |
@@ -187,7 +195,7 @@ mà không thêm thông tin. Con số này khai trong taxonomy để **đổi �
 
 Phép thử: **làm tay**. Mất năm phút và tiết kiệm một buổi của Dev.
 
-Ba nguyên nhân hay gặp, cả ba đều từ Bài 9:
+Ba nguyên nhân hay gặp, cả ba đều từ Bài 12:
 
 | Nguyên nhân | Ví dụ |
 |---|---|
@@ -245,7 +253,7 @@ Luật: chỉ được đổi sang `flaky` khi **nêu được cơ chế cụ th
  * VÌ SAO CẦN: results.json là định dạng của runner, gắn với runner. Mọi thứ phía sau (gate bằng chứng,
  * đẩy kết quả lên công cụ TMS, log bug) đọc MỘT định dạng canonical — đổi runner thì chỉ sửa file này.
  *
- * TC ID lấy từ TÊN TEST (quy ước Bài 9: tên test bắt đầu bằng TC ID).
+ * TC ID lấy từ TÊN TEST (quy ước Bài 12: tên test bắt đầu bằng TC ID).
  */
 'use strict';
 const fs = require('fs');
@@ -284,7 +292,7 @@ function di(suites) {
         } else if (lanCuoi.status === 'skipped') {
           status = 'SKIP';
         } else {
-          // Lỗi dựng dữ liệu tự nhận diện qua chữ SETUP: mà factory ném ra (Bài 10)
+          // Lỗi dựng dữ liệu tự nhận diện qua chữ SETUP: mà factory ném ra (Bài 12)
           const loi = (lanCuoi.error && lanCuoi.error.message) || '';
           status = /^SETUP:|SETUP: /.test(loi) ? 'BLOCKED_SETUP' : 'FAIL';
         }
@@ -301,7 +309,7 @@ function di(suites) {
         if (status === 'BLOCKED_SETUP') {
           item.lyDo = ((lanCuoi.error && lanCuoi.error.message) || '').split('\n')[0].slice(0, 200);
         }
-        // Bằng chứng: Bài 12 sẽ điền. Ở đây lấy attachment mà runner đã có.
+        // Bằng chứng: Bài 13 sẽ điền. Ở đây lấy attachment mà runner đã có.
         item.evidence = (lanCuoi.attachments || [])
           .filter((a) => /^(image|video)\//.test(a.contentType || ''))
           .map((a) => path.relative(process.cwd(), a.path).replace(/\\/g, '/'));
@@ -376,10 +384,10 @@ Bốn đặc điểm khiến bug này được nhận ngay: **bước tái hiệ
 
 ### Bước 1 — Khai taxonomy (15 phút)
 
-Viết `.agent/config/verdict_taxonomy.json` và `scripts/lib/verdict.js`. Rồi **sửa `evidence_gate.js` ở Bài 13**
+Viết `.agent/config/phan-quyet.json` và `scripts/lib/verdict.js`. Rồi **sửa `gate-bang-chung.js` ở Bài 8**
 để đọc `DA_CHAY` từ file thay vì hằng số viết tay.
 
-*(Nếu bạn học theo thứ tự bài thì Bài 13 chưa tới — ghi việc này vào danh sách để làm lúc đó.)*
+*(Nếu bạn học theo thứ tự bài thì Bài 8 chưa tới — ghi việc này vào danh sách để làm lúc đó.)*
 
 ### Bước 2 — Sinh status (15 phút)
 
@@ -423,7 +431,7 @@ Lấy case FAIL ở Bước 3, viết mô tả bug theo mẫu mục 7. Tự ki�
 ### Bước 6 — Commit
 
 ```bash
-git add .agent/config/verdict_taxonomy.json scripts/lib/verdict.js scripts/qa/sinh-status.js
+git add .agent/config/phan-quyet.json scripts/lib/verdict.js scripts/qa/sinh-status.js
 git commit -m "feat(verdict): taxonomy MỘT nguồn + sinh testcase-status canonical
 
 7 trạng thái, 7 tầng lỗi, ngưỡng rerun 2-3. Pass sau retry → PASS_WITH_DEVIATION.
@@ -437,7 +445,7 @@ tangLoi để null cho FAIL — máy không đoán, người chấm sau khi reru
 ```
 kit-cua-toi/
 ├── .agent/config/
-│   └── verdict_taxonomy.json     ← MỚI · 7 phán quyết · 7 tầng lỗi · ngưỡng rerun 2–3
+│   └── phan-quyet.json     ← MỚI · 7 phán quyết · 7 tầng lỗi · ngưỡng rerun 2–3
 ├── scripts/lib/
 │   └── verdict.js                ← MỚI · MỘT nơi đọc taxonomy, không hardcode ở đâu khác
 └── scripts/qa/
@@ -469,6 +477,6 @@ và cả hai đều **không nên** lên Jira ngay từ đầu.
 
 ## Đọc thêm
 
-- [`.agent/config/verdict_taxonomy.json`](../../.agent/config/verdict_taxonomy.json) của kit này — bản đầy đủ,
-  gồm cả `EXPANSION_FINDING` cho phát hiện từ việc mở rộng (Bài 19).
-- Bài 12 sẽ điền phần `evidence` cho file trạng thái bạn vừa sinh.
+- [`.agent/config/phan-quyet.json`](../../.agent/config/phan-quyet.json) của kit này — bản đầy đủ,
+  gồm cả `EXPANSION_FINDING` cho phát hiện từ việc mở rộng (Bài 21).
+- Bài 13 sẽ điền phần `evidence` cho file trạng thái bạn vừa sinh.

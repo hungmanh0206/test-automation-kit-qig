@@ -2,6 +2,14 @@
 
 > **1 giờ** · Có gì trong tay: khung kit, một rule canonical · Sau bài này: đo được tài liệu trước khi đọc, và biết khi nào giao việc cho subagent
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Bạn đưa cả thư mục tài liệu cho agent. Nó đọc thiếu. Và không có gì báo cho bạn biết. |
+| **Bài này bạn gõ gì** | Viết một máy đo cỡ tài liệu, chạy thử trên hai thư mục to nhỏ khác nhau. |
+| **Xong thì được gì** | Biết trước tài liệu nào đọc thẳng được, tài liệu nào phải nhờ agent con trích ra. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |

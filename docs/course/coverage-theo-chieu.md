@@ -1,6 +1,14 @@
-# Bài 8 — Coverage theo chiều, không theo số lượng
+# Bài 11 — Gate chất lượng và đo độ phủ
 
 > **2 giờ** · Có gì trong tay: bộ testcase có oracle neo được · Sau bài này: biết bộ của mình trống hẳn loại câu hỏi nào
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Bộ 200 case nghe thì nhiều, nhưng có khi cả 200 chỉ hỏi đúng một loại câu hỏi. |
+| **Bài này bạn gõ gì** | Khai danh mục các loại câu hỏi cần phủ, rồi viết máy đếm và chặn khi thiếu. |
+| **Xong thì được gì** | Biết bộ case của mình đang bỏ trống hẳn loại nào, bằng con số chứ không phải cảm giác. |
 
 ## Mục tiêu
 
@@ -19,7 +27,7 @@ Bộ testcase có hai trục độc lập:
 
 | Trục | Trả lời | Bạn đã có từ | Đếm được không |
 |---|---|---|---|
-| **Module** | Test **ở đâu** | Bài 5 (cột `Module`) | Có — đếm theo cột |
+| **Module** | Test **ở đâu** | Bài 9 (cột `Module`) | Có — đếm theo cột |
 | **Chiều** | Hỏi **loại câu hỏi nào** | Chưa có gì | **Không** — chưa có gì để đếm |
 
 Và đây là bẫy trung tâm của cả bài:
@@ -88,7 +96,7 @@ Một case được phép nhiều tag: `[Calc][Boundary]`.
 
 > **Vì sao tag nằm trong tiêu đề, không phải cột riêng.** Ba lý do thực dụng: nó đi theo case khi publish lên
 > công cụ test-management (không mất) · người đọc thấy ngay khi quét danh sách · và không phải thêm cột bắt
-> buộc thứ tám (Bài 5 mục 2 đã nói vì sao nên tiết chế số cột).
+> buộc thứ tám (Bài 9 mục 2 đã nói vì sao nên tiết chế số cột).
 
 **Ràng buộc kèm theo, quan trọng hơn cái tag:**
 
@@ -105,7 +113,7 @@ Không phải task nào cũng cần đủ mọi chiều. Task sửa một nhãn 
 
 Nên mỗi task **khai** chiều nào bắt buộc — và **ghi lý do** khi khai một chiều là không áp dụng.
 
-`outputs/demo/tasks/PROJ-1234/requirements/dimension-manifest.json`:
+`outputs/demo/tasks/PROJ-1234/requirements/chieu-phu.json`:
 
 ```json
 {
@@ -134,7 +142,7 @@ Hai điều làm file này có giá trị:
    đã nghĩ gì — thay vì tự hỏi *"sao lúc đó không làm?"*
 
 > Cảnh báo: nếu bạn khai `n/a` cho một chiều mà **artifact của task cho thấy chiều đó có tồn tại** (ví dụ khai
-> `API: n/a` trong khi task có file đặc tả API), thì đó là khai sai. Bài 14 khi bạn viết gate cho chiều, hãy
+> `API: n/a` trong khi task có file đặc tả API), thì đó là khai sai. Bài 11 khi bạn viết gate cho chiều, hãy
 > chặn đúng trường hợp đó.
 
 ## 5. Đếm
@@ -146,7 +154,7 @@ Giờ mới đếm được. Script đơn giản, đủ dùng:
 ```js
 #!/usr/bin/env node
 /*
- * dem_chieu.js — đếm case theo CHIỀU (tag trong tiêu đề), đối chiếu với dimension-manifest.
+ * dem_chieu.js — đếm case theo CHIỀU (tag trong tiêu đề), đối chiếu với chieu-phu.
  *
  * VÌ SAO CẦN: trục "module" đếm được từ đầu, trục "chiều" thì vô hình cho tới khi có tag và có máy đếm.
  * Bộ phủ kín module mà trống một chiều thì vẫn TRÔNG đầy đủ — đo thật trên một bộ 530 case: chiều E2E
@@ -160,7 +168,7 @@ const { docMarkdown } = require('../lib/testcase');
 
 const [tcFile, manifestFile] = process.argv.slice(2);
 if (!tcFile || !manifestFile) {
-  console.error('Dùng: node scripts/qa/dem_chieu.js <testcase.md> <dimension-manifest.json>');
+  console.error('Dùng: node scripts/qa/dem_chieu.js <testcase.md> <chieu-phu.json>');
   process.exit(2);
 }
 
@@ -243,14 +251,14 @@ chưa hỏi loại câu hỏi đó, không phải chưa dán nhãn.
 
 ### Bước 1 — Khai manifest (10 phút)
 
-Viết `dimension-manifest.json` cho task của bạn. Với mỗi `n/a`, viết lý do **cụ thể** — không viết "không cần".
+Viết `chieu-phu.json` cho task của bạn. Với mỗi `n/a`, viết lý do **cụ thể** — không viết "không cần".
 
 Tự kiểm: đưa lý do cho người khác đọc, họ **phản đối được** không? Nếu lý do mơ hồ tới mức không ai phản đối
 được thì nó chưa phải lý do.
 
 ### Bước 2 — Gắn tag cho bộ hiện có (15 phút)
 
-Gắn tag chiều vào tiêu đề mọi case trong bộ Bài 6–7. Đừng gắn cho đủ — gắn đúng cái case **thật sự** đang hỏi.
+Gắn tag chiều vào tiêu đề mọi case trong bộ Bài 7–7. Đừng gắn cho đủ — gắn đúng cái case **thật sự** đang hỏi.
 
 Case nào bạn không biết gắn tag gì thường là case **không rõ mục đích** — dấu hiệu cần viết lại.
 
@@ -259,7 +267,7 @@ Case nào bạn không biết gắn tag gì thường là case **không rõ mụ
 ```bash
 node scripts/qa/dem_chieu.js \
   outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md \
-  outputs/demo/tasks/PROJ-1234/requirements/dimension-manifest.json
+  outputs/demo/tasks/PROJ-1234/requirements/chieu-phu.json
 ```
 
 Điền bảng:
@@ -307,10 +315,10 @@ Trước: <N> chiều bắt buộc có 0 case. Sau: bổ sung case cho Guard và
 ```
 kit-cua-toi/
 ├── .agent/config/
-│   └── dimension-manifest.json   ← MỚI · chiều nào áp, `n/a` PHẢI kèm lý do
+│   └── chieu-phu.json   ← MỚI · chiều nào áp, `n/a` PHẢI kèm lý do
 └── scripts/qa/
     ├── dem_chieu.js              ← MỚI · chiều bắt buộc chưa đủ ngưỡng ⇒ chặn
-    └── self_review.js            ← MỚI · gọi mọi máy chặn một lượt
+    └── tu-soi.js            ← MỚI · gọi mọi máy chặn một lượt
 ```
 
 ## Tự kiểm
@@ -319,7 +327,7 @@ kit-cua-toi/
 - [ ] Tôi nói được vì sao ba chiều `Guard` `E2E` `Impact` hay trống — và nguyên nhân chung của cả ba.
 - [ ] Mọi case trong bộ của tôi đã có tag chiều.
 - [ ] Case gắn `[Display]` có expected **liệt kê tên cột**, không phải "hiển thị đủ".
-- [ ] `dimension-manifest.json` của tôi có lý do cho **mọi** `n/a`, và lý do đó phản đối được.
+- [ ] `chieu-phu.json` của tôi có lý do cho **mọi** `n/a`, và lý do đó phản đối được.
 - [ ] Máy đếm **từ chối kết luận** khi quá nửa case chưa gắn tag.
 - [ ] Tôi đã viết case mới cho hai chiều trống — không lấp bằng cách dán tag vào case cũ.
 - [ ] Case `[Guard]` của tôi kiểm **403 ở tầng dưới**, không chỉ kiểm nút bị ẩn.
@@ -331,11 +339,11 @@ Lấy bộ testcase **thật** lớn nhất ở dự án bạn. Gắn tag chiề
 Rất có thể bạn tìm ra ít nhất một chiều có **0 case** trong một bộ mà cả team đã review và đã chạy nhiều lần.
 Đó không phải lỗi của ai — đó là **điểm mù có hệ thống**: tài liệu không nói thì không ai nghĩ ra.
 
-Ghi con số lại. Ở Bài 19 bạn sẽ có một cách khác để tìm điểm mù: không hỏi *"tôi thiếu loại câu hỏi nào"* mà
+Ghi con số lại. Ở Bài 21 bạn sẽ có một cách khác để tìm điểm mù: không hỏi *"tôi thiếu loại câu hỏi nào"* mà
 hỏi *"bộ kiểm của tôi có bắt được lỗi không"* — và đo được bằng số.
 
 ## Đọc thêm
 
 - [`scripts/qa/dimension_coverage.js`](../../scripts/qa/dimension_coverage.js) của kit này — bản đầy đủ,
   **20** chiều và có cả phần chặn khi khai `n/a` trái với artifact thật.
-- Phần 3 (Bài 9–12) chuyển sang chạy thật: locator bền, dựng dữ liệu, verdict, bằng chứng.
+- Phần 3 (Bài 12–12) chuyển sang chạy thật: locator bền, dựng dữ liệu, verdict, bằng chứng.

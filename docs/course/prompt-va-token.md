@@ -1,6 +1,14 @@
-# Bài 4 — Prompt và token: nói cho đúng, và đo cái mình đưa vào
+# Bài 6 — Prompt, Skill, Rule, Command: phân biệt và dùng đúng
 
 > **2 giờ** · Có gì trong tay: khung kit, một rule canonical · Sau bài này: prompt có ràng buộc, và biết đo tài liệu trước khi đọc
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Bạn viết "hãy cẩn thận" trong prompt. Agent vẫn làm sai. Và bạn không hiểu vì sao. |
+| **Bài này bạn gõ gì** | Viết một bản mẫu prompt 5 phần, rồi tách luật, kỹ năng, quy trình và lệnh ra bốn chỗ. |
+| **Xong thì được gì** | Prompt có điều kiện dừng rõ ràng, và luật chỉ nằm ở một nơi. |
 
 ## Mục tiêu
 
@@ -200,7 +208,7 @@ git commit -m "docs(course): bài 4 — so sánh prompt sơ sài vs có ràng bu
 kit-cua-toi/
 ├── .agent/
 │   ├── rules/
-│   │   └── core_rules.md         ·  từ Bài 2 · digest
+│   │   └── core_rules.md         ·  từ Bài 4 · digest
 │   ├── skills/
 │   │   └── <vai>/SKILL.md        ← MỚI · năng lực theo vai, KHÔNG tự nạp
 │   └── workflows/
@@ -232,4 +240,4 @@ Mang bảng "chỗ chưa rõ" đó đi hỏi BA thật. Đếm bao nhiêu câu l
 
 - Phần "Ghi chú cho giảng viên" ở cuối [`assets/sample-requirement.md`](assets/sample-requirement.md) —
   liệt kê đủ **10** chỗ cài cắm. Đọc sau khi đã tự làm.
-- Bài 6 sẽ dùng lại đúng tài liệu này để sinh testcase thật.
+- Bài 7 sẽ dùng lại đúng tài liệu này để sinh testcase thật.

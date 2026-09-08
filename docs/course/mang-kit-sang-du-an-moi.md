@@ -2,6 +2,14 @@
 
 > **2 giờ** · Có gì trong tay: bản phát hành đã nghiệm thu · Sau bài này: kit chạy trên dự án thật của bạn — lần đầu rời app thực hành
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Dự án thứ hai tới. Bạn sợ phải làm lại từ đầu. |
+| **Bài này bạn gõ gì** | Chia ba loại giữ nguyên, sửa cấu hình, viết mới. Viết lại phần đăng nhập. Chạy trọn một vòng. |
+| **Xong thì được gì** | Kit chạy trên dự án thật của bạn, và bắt được ít nhất một bug thật ở đó. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |
@@ -27,8 +35,8 @@ Người ta hay chia hai: "dùng lại được" và "phải viết mới". Th�
 
 | Loại | Là gì | Ví dụ | Công sức |
 |---|---|---|---|
-| **Giữ nguyên** | mang sang không sửa một chữ | `scripts/lib/**`, mọi máy chặn, `verdict_taxonomy.json`, `tests/support/evidence.js` | 0 |
-| **Cấu hình** | giữ mã, **đổi dữ liệu khai báo** | `dimension-manifest.json`, `risk_model.json`, `mutants.json`, `anh-xa-luu-tru.json`, `ci_scope.json` | thấp |
+| **Giữ nguyên** | mang sang không sửa một chữ | `scripts/lib/**`, mọi máy chặn, `phan-quyet.json`, `tests/support/evidence.js` | 0 |
+| **Cấu hình** | giữ mã, **đổi dữ liệu khai báo** | `chieu-phu.json`, `risk_model.json`, `mutants.json`, `anh-xa-luu-tru.json`, `ci_scope.json` | thấp |
 | **Thay** | phải viết mới cho dự án này | đăng nhập, `factory.js`, page object, `tests/e2e/**` | **cao** |
 
 Nhìn theo tỉ lệ thì kit đã trả công: **giữ nguyên** chiếm phần lớn số dòng, **thay** chiếm phần lớn thời gian.
@@ -45,9 +53,9 @@ Nhìn theo tỉ lệ thì kit đã trả công: **giữ nguyên** chiếm phần
 | `scripts/lib/**` | thư viện: đọc/ghi testcase, verdict, khung gate |
 | `scripts/qa/**` | máy chặn — không phụ thuộc dự án |
 | `scripts/utils/**` | máy tư vấn |
-| `.agent/config/verdict_taxonomy.json` | danh mục phán quyết |
+| `.agent/config/phan-quyet.json` | danh mục phán quyết |
 | `.agent/config/knowledge-schema.json` | hình dạng bản ghi tri thức |
-| `.agent/rules/**` `CLAUDE.md` `RULE_GLOBAL.md` | luật |
+| `.agent/rules/**` `CLAUDE.md` `LUAT-DAY-DU.md` | luật |
 | `prompt_templates/**` `.claude/commands/**` | bản mẫu, điểm vào |
 | `tests/support/**` | fixture, evidence, video, cửa tới tầng lưu trữ |
 
@@ -58,7 +66,7 @@ hoặc sửa theo hướng CHỈ THÊM, không đổi hành vi cũ.
 
 | Đường dẫn | Là gì |
 |---|---|
-| `.agent/config/dimension-manifest.json` | chiều nào áp cho dự án này |
+| `.agent/config/chieu-phu.json` | chiều nào áp cho dự án này |
 | `.agent/config/risk_model.json` | trọng số rủi ro của dự án này |
 | `.agent/config/mutants.json` | mutant theo API của dự án này |
 | `.agent/config/anh-xa-luu-tru.json` | ánh xạ trường của dự án này |
@@ -106,14 +114,14 @@ const { execSync } = require('child_process');
 
 const CHUNG = [
   /^scripts\/(lib|qa|utils)\//,
-  /^\.agent\/config\/(verdict_taxonomy|knowledge-schema)\.json$/,
+  /^\.agent\/config\/(phan-quyet|knowledge-schema)\.json$/,
   /^\.agent\/(rules|skills|workflows)\//,
-  /^(CLAUDE|RULE_GLOBAL|README|CHANGELOG)\.md$/,
+  /^(CLAUDE|LUAT-DAY-DU|README|CHANGELOG)\.md$/,
   /^prompt_templates\//, /^\.claude\/commands\//, /^tests\/support\//,
   /^(package\.json|playwright\.config\.js|\.gitignore)$/, /^\.github\/workflows\//
 ];
 const DU_AN = [
-  /^\.agent\/config\/(dimension-manifest|risk_model|mutants|anh-xa-luu-tru|ci_scope|env-allow|cold-start-signals|nguong-metrics|vong-doi-du-lieu|mo-rong-truc)\.json$/,
+  /^\.agent\/config\/(chieu-phu|risk_model|mutants|anh-xa-luu-tru|ci_scope|env-allow|cold-start-signals|nguong-metrics|vong-doi-du-lieu|mo-rong-truc)\.json$/,
   /^tests\/(e2e|api|smoke|fe|mobile-web)\//, /^knowledge\//, /^profiles\//, /^outputs\//
 ];
 /* Không tính vào phân tầng: tài liệu và artifact — chúng đi kèm cả hai. */
@@ -258,7 +266,7 @@ Kit chỉ được coi là đã chuyển giao khi nó đi hết **một** vòng 
 
 ### Cấu hình
 - [ ] `profiles/<TASK>/task.env`: URL, tài khoản test — **không** dùng `.env` chung
-- [ ] `dimension-manifest.json`: chiều nào áp, `n/a` nào cũng có lý do
+- [ ] `chieu-phu.json`: chiều nào áp, `n/a` nào cũng có lý do
 - [ ] `risk_model.json`: module của dự án này; chưa có lịch sử bug ⇒ bật cold-start (Bài 19)
 - [ ] `anh-xa-luu-tru.json`: ánh xạ trường UI ↔ nơi lưu (Bài 15)
 - [ ] `ci_scope.json`: xếp hạng mọi lệnh
@@ -270,7 +278,7 @@ Kit chỉ được coi là đã chuyển giao khi nó đi hết **một** vòng 
 - [ ] `mutants.json` — 5 mutant theo API thật (Bài 21)
 
 ### Chạy thật MỘT vòng
-- [ ] Phase 1: một requirement thật → testcase → `ambiguity_gate` ĐẠT → publish dry-run
+- [ ] Phase 1: một requirement thật → testcase → `gate-mo-ho` ĐẠT → publish dry-run
 - [ ] Phase 2: execute → bằng chứng có khoanh đỏ → verdict có tầng lỗi → `self-review` ĐẠT
 - [ ] Log **một** bug thật (human gate: bạn bấm)
 - [ ] Đo mutation lần đầu, ghi mốc gốc (Bài 21–22)
@@ -296,7 +304,7 @@ Chưa có bug nào để bắt? Có hai đường:
 <du-an-cua-ban>/
 ├── .agent/config/
 │   ├── kit-layers.md                 ← MỚI · ranh giới tầng CHUNG ↔ tầng DỰ ÁN
-│   ├── dimension-manifest.json       ← CẤU HÌNH LẠI cho dự án này
+│   ├── chieu-phu.json       ← CẤU HÌNH LẠI cho dự án này
 │   ├── risk_model.json               ← CẤU HÌNH LẠI · chưa có bug ⇒ bật cold-start
 │   ├── anh-xa-luu-tru.json           ← CẤU HÌNH LẠI · ánh xạ trường thật
 │   └── mutants.json                  ← THAY · theo API thật

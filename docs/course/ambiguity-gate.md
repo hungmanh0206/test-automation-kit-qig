@@ -1,6 +1,14 @@
-# Bài 8 — Ambiguity Gate: dừng đúng lúc — và cách viết một gate
+# Bài 8 — Ambiguity Gate: dừng đúng lúc
 
 > **1 giờ 30 phút** · Có gì trong tay: một requirement đã bóc thành bảng `BR-` · Sau bài này: agent không còn đoán khi gặp mơ hồ, và bạn biết công thức viết mọi gate về sau
+
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Gặp chỗ chưa rõ, agent sẽ tự đoán. Đoán sai thì cả bộ testcase sai theo, mà nhìn vẫn thấy ổn. |
+| **Bài này bạn gõ gì** | Soạn bộ câu hỏi kèm sẵn phương án, rồi viết gate chặn không cho sinh case khi chưa chốt. |
+| **Xong thì được gì** | Agent hết đoán bừa. Và bạn có cách viết gate dùng lại cho mọi bài sau. |
 
 ## Từ mới của bài này
 
@@ -162,7 +170,7 @@ Máy không đọc được văn xuôi. Nên câu hỏi cần một bản máy-�
 ```js
 #!/usr/bin/env node
 /*
- * ambiguity_gate.js — chưa chốt mơ hồ CHẶN thì không cho sinh testcase.
+ * gate-mo-ho.js — chưa chốt mơ hồ CHẶN thì không cho sinh testcase.
  *
  * 1. Chặn kiểu sai nào: agent gặp mơ hồ sẽ ĐOÁN; đoán sai thì cả bộ testcase sai, và sai theo
  *    cách khó thấy nhất vì từng case đều "trông đúng".
@@ -180,7 +188,7 @@ const fs = require('fs');
 
 const file = process.argv[2];
 if (!file) {
-  console.error('Dùng: node scripts/qa/ambiguity_gate.js <analysis/questions.json>');
+  console.error('Dùng: node scripts/qa/gate-mo-ho.js <analysis/questions.json>');
   process.exit(2);
 }
 if (!fs.existsSync(file)) {
@@ -253,7 +261,7 @@ Thêm lệnh:
 ```json
 {
   "scripts": {
-    "gate:ambiguity": "node scripts/qa/ambiguity_gate.js"
+    "gate:ambiguity": "node scripts/qa/gate-mo-ho.js"
   }
 }
 ```
@@ -320,7 +328,7 @@ kit-cua-toi/
 │   └── 01b_khao_sat_mo_ho.md         ← MỚI · CẤM sinh testcase, chỉ liệt kê mơ hồ
 ├── scripts/qa/
 │   ├── kiem-file-cam.js              ·  từ Bài 5
-│   └── ambiguity_gate.js             ← MỚI · còn câu CHẶN chưa chốt ⇒ chặn (exit 0/1/2)
+│   └── gate-mo-ho.js             ← MỚI · còn câu CHẶN chưa chốt ⇒ chặn (exit 0/1/2)
 └── outputs/tasks/<MÃ>/analysis/
     ├── business-rules.md             ·  từ Bài 7
     ├── questions.md                  ← MỚI · bản cho người — gửi BA

@@ -2,6 +2,14 @@
 
 > **1 giờ 30 phút** · Có gì trong tay: kit chạy trên dự án thật, đã va chạm và tinh chỉnh · Sau bài này: biết dừng xây ở đâu, và biết thêm gì khi nào
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Kit chạy được rồi. Giờ bạn không biết nên xây thêm hay dừng lại. |
+| **Bài này bạn gõ gì** | Rà nhịp bảo trì, và tự chấm kit của mình bằng 10 câu trả lời được bằng số. |
+| **Xong thì được gì** | Biết dừng ở đâu, thêm gì khi nào, và cách phân biệt kit đang tốt lên với kit chỉ đang chạy. |
+
 ## Bài này bạn sẽ làm gì
 
 Bốn việc:
@@ -121,7 +129,7 @@ Mười câu. Trả lời được **bằng số hoặc bằng lệnh**, không 
 | 6 | Bug lọt gần nhất — **máy nào** lẽ ra phải bắt? | `knowledge/leak/` |
 | 7 | Người mới cần bao lâu để chạy được kit? | đã thử clone sạch chưa (Bài 26) |
 | 8 | Gate nào bắt oan nhiều nhất? | ai đó đã phải `--qa-approved` mấy lần |
-| 9 | Tri thức nào quá hạn tái xác nhận? | `kiem_knowledge.js` |
+| 9 | Tri thức nào quá hạn tái xác nhận? | `kiem-tri-thuc.js` |
 | 10 | Sao lưu gần nhất là khi nào? Đã **khôi phục thử** chưa? | `_ban-ke.json` |
 
 Câu nào không trả lời được bằng lệnh hoặc bằng số ⇒ **đó là thứ đáng xây tiếp**, và nó cụ thể hơn mọi phỏng

@@ -2,6 +2,14 @@
 
 > **2 giờ** · Có gì trong tay: kit có CI, có tích hợp · Sau bài này: một bản phát hành **đã được chứng minh là chạy được**, không phải một tệp zip hy vọng
 
+**Tóm tắt bài này**
+
+| | |
+|---|---|
+| **Bạn đang khổ vì** | Bạn gửi kit cho người khác bằng file zip, mà không biết nó chạy nổi ở máy họ không. |
+| **Bài này bạn gõ gì** | Đóng gói chỉ phần dùng chung, quét mật khẩu trong gói, rồi giải nén ra chỗ sạch chạy thử. |
+| **Xong thì được gì** | Có một bản phát hành đã chạy thử được thật, kèm ghi chú cái gì thay đổi. |
+
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |
@@ -35,7 +43,7 @@ Quy ước đơn giản, đủ dùng:
 
 | Đổi gì | Tăng | Ví dụ |
 |---|---|---|
-| Gate **mới chặn thêm** thứ trước đây cho qua | **major** | thêm `gate_mo_rong` ⇒ mọi task đang chạy có thể đỏ |
+| Gate **mới chặn thêm** thứ trước đây cho qua | **major** | thêm `gate-mo-rong` ⇒ mọi task đang chạy có thể đỏ |
 | Thêm máy/lệnh mà không đổi hành vi cũ | minor | thêm `sinh-dashboard.js` |
 | Sửa lỗi, sửa chữ, chỉnh ngưỡng nhỏ | patch | sửa regex bắt oan |
 
@@ -49,7 +57,7 @@ Quy ước đơn giản, đủ dùng:
 
 ## 3.0.0 — 2026-09-08
 ### PHÁ (đọc trước khi nâng cấp)
-- `gate_mo_rong` chặn phát hiện mở rộng có `PASS`/`FAIL` mà không `oracleRef`.
+- `gate-mo-rong` chặn phát hiện mở rộng có `PASS`/`FAIL` mà không `oracleRef`.
   **Ảnh hưởng:** task đang chạy có `mo-rong.json` cũ sẽ ĐỎ.
   **Cách xử lý:** hạ những phát hiện không neo được xuống `OBSERVATION`.
 - `kiem-mcp-quyen` chặn server có quyền ghi mà không ai duyệt.
@@ -79,7 +87,7 @@ Gói phát hành phải chứa **tầng chung**, và tuyệt đối không chứ
 /*
  * dong-goi.js — tạo gói phát hành CHỈ gồm tầng chung, và quét secret TRONG GÓI.
  *
- * VÌ SAO QUÉT LẠI TRONG GÓI, DÙ ĐÃ CÓ secret_scan Ở CI: secret_scan quét file ĐANG TRACK.
+ * VÌ SAO QUÉT LẠI TRONG GÓI, DÙ ĐÃ CÓ quet-secret Ở CI: quet-secret quét file ĐANG TRACK.
  * Gói lại được tạo từ ĐĨA, nên nó gom cả file chưa track — gồm .env và các tệp task.env
  * trong profiles đang nằm ngay đó. Hai phép quét, hai tập file khác nhau;
  * bỏ cái thứ hai là rò rỉ thật.
@@ -92,7 +100,7 @@ const path = require('path');
 
 /* Tầng CHUNG — mang đi được mọi dự án. */
 const GOM = [
-  'package.json', 'playwright.config.js', 'CLAUDE.md', 'RULE_GLOBAL.md', 'README.md', 'CHANGELOG.md',
+  'package.json', 'playwright.config.js', 'CLAUDE.md', 'LUAT-DAY-DU.md', 'README.md', 'CHANGELOG.md',
   '.gitignore', '.agent/rules', '.agent/skills', '.agent/workflows', '.claude/commands',
   'prompt_templates', 'scripts/lib', 'scripts/qa', 'scripts/utils', 'tests/support', '.github/workflows'
 ];
@@ -145,7 +153,7 @@ function chep(rel) {
 for (const g of GOM) chep(g);
 chep('profiles/task.env.example');
 
-/* Quét secret TRONG GÓI — tập file khác với secret_scan ở CI. */
+/* Quét secret TRONG GÓI — tập file khác với quet-secret ở CI. */
 const MAU_SECRET = [
   { re: /(?:token|secret|password|passwd|api[_-]?key)\s*[:=]\s*['"][^'"\s]{8,}/i, ten: 'gán token/mật khẩu' },
   { re: /-----BEGIN [A-Z ]*PRIVATE KEY-----/, ten: 'khoá riêng' },
@@ -180,7 +188,7 @@ Hai chi tiết đáng chú ý:
 
 | Chi tiết | Vì sao |
 |---|---|
-| Quét secret **lại**, dù CI đã quét | `secret_scan` quét file **đang track**; gói tạo từ **đĩa**, gom cả file chưa track — `.env` và `task.env` đang nằm ngay đó |
+| Quét secret **lại**, dù CI đã quét | `quet-secret` quét file **đang track**; gói tạo từ **đĩa**, gom cả file chưa track — `.env` và `task.env` đang nằm ngay đó |
 | Phát hiện secret thì **xoá gói** | để gói lại đó là để ai đó gửi nhầm nó đi |
 
 ## Việc 3 — Nghiệm thu gói (40 phút)
@@ -309,9 +317,9 @@ npm run nghiem-thu-goi -- dist/kit-3.1.0
 [nghiem-thu] chạy như người nhận:
   npm ci                    ✓
   npm run json:check        ✓
-  npm run secret:scan       ✓
+  npm run quet-secret       ✓
   npm run kiem:file-cam     ✓
-  npm run gates:index:check ✓
+  npm run gates:kiem ✓
 
 [nghiem-thu] ✓ gói chạy được ở thư mục sạch. ĐƯỢC phát hành.
 ```
@@ -334,7 +342,7 @@ Dự án B đang dùng kit `2.4.0`, bạn phát hành `3.0.0`. Quy trình:
 Bước 6 là đối chứng của cả quy trình, và nó rẻ: task đã xong thì bạn **biết trước** kết quả đúng phải là gì.
 Ra khác ⇒ kit mới đổi hành vi ngoài dự kiến.
 
-> **Đừng chép đè cả thư mục kit.** Bạn sẽ xoá mất `dimension-manifest.json`, `risk_model.json`, `mutants.json`
+> **Đừng chép đè cả thư mục kit.** Bạn sẽ xoá mất `chieu-phu.json`, `risk_model.json`, `mutants.json`
 > của dự án B — tức toàn bộ phần B đã tự chỉnh. Bài 27 dựng ranh giới này thành máy kiểm.
 
 ## Cây thư mục sau bài này
@@ -356,7 +364,7 @@ Nhớ thêm `dist/` vào `.gitignore` — nó là artifact, sinh lại được 
 
 1. Gate siết chặt hơn là major hay minor? Vì sao?
 2. Ba thứ làm một changelog dùng được — kể ra.
-3. Vì sao phải quét secret **lại** trong gói, dù CI đã có `secret_scan`?
+3. Vì sao phải quét secret **lại** trong gói, dù CI đã có `quet-secret`?
 4. Phát hiện secret trong gói ⇒ vì sao **xoá gói** chứ không chỉ báo?
 5. Vì sao sân nghiệm thu phải nằm **ngoài** repo?
 6. Bẫy thiếu `.git` — nó cắn ở đâu, và vì sao **nơi** nó cắn mới là điều tệ nhất?
