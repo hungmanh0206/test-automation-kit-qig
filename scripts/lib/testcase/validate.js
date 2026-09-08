@@ -30,10 +30,19 @@ for (const t of CASE_TYPES.types) for (const tag of t.tags || []) TAG_TO_TYPE.se
 const REQUIRED_COLS = [
   ['TC ID', m.COL.tcId], ['Module', m.COL.module], ['Trường hợp kiểm thử', m.COL.title],
   ['Tiền điều kiện', m.COL.precondition], ['Các bước thực hiện', m.COL.steps],
-  ['Kết quả mong đợi', m.COL.expected], ['Ưu tiên', m.COL.priority], ['Severity | Mức độ rủi ro', m.COL.risk],
+  ['Kết quả mong đợi', m.COL.expected], ['Ưu tiên', m.COL.priority],
 ];
 // ô lõi mỗi TC không được rỗng (KQ mong đợi để output_rules lo oracle-rỗng; precondition/data có thể rỗng hợp lệ)
-const REQUIRED_FIELDS = [['module', 'Module'], ['title', 'Trường hợp kiểm thử'], ['stepsRaw', 'Các bước thực hiện'], ['priority', 'Ưu tiên'], ['risk', 'Severity']];
+/*
+ * `Severity`/`Mức độ rủi ro` KHÔNG còn là cột bắt buộc (bỏ 21/08/2026).
+ *
+ * Severity là thuộc tính của BUG, không phải của testcase — chấm nó lúc viết case là đoán trước hậu quả
+ * của một lỗi chưa xảy ra. Việc duy nhất nó còn gánh trong kit là risk band (độ sâu mở rộng), mà band
+ * lấy `Math.max(risk, priority)`; sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên 1977 case toàn
+ * repo: bỏ cột này làm đổi band **0 case**. Tức nó dư thật, chỉ đang che lỗi thang ưu tiên.
+ * `COL.risk` vẫn giữ trong model để 17 bộ TC cũ (còn cột này) parse không lỗi.
+ */
+const REQUIRED_FIELDS = [['module', 'Module'], ['title', 'Trường hợp kiểm thử'], ['stepsRaw', 'Các bước thực hiện'], ['priority', 'Ưu tiên']];
 
 // GIÁ TRỊ hợp lệ. `Ưu tiên` phải là 1 trong 5 priority CÓ THẬT trên Jira: bug được log lấy Priority TỪ CHÍNH
 // cột này (prompt `08_log_bug_jira.md`), giá trị lạ (`Critical`, `P0`…) ⇒ Jira không set được ⇒ bug rơi về
@@ -106,9 +115,14 @@ function validate(doc) {
      * không phải `UI`). Chặn ở đây là phạt đúng những case phân loại TINH nhất. Chỉ xét khi case mang đúng
      * MỘT tag đã ánh xạ được — nhiều tag thì bản thân tag đã không quyết được, im lặng mới đúng.
      */
-    const title = String(tc.title || tc.name || '');
-    const mapped = [...new Set((title.match(/\[([A-Za-z0-9]+)\]/g) || [])
-      .map((x) => TAG_TO_TYPE.get(x.slice(1, -1).toLowerCase()))
+    /*
+     * Nguồn tag phải là `tc.dimensions` của model, KHÔNG tự regex lại tiêu đề.
+     * Đã dính thật 21/08/2026: chỗ này từng đọc `tc.title.match(/\[...\]/g)`, nên khi tag chuyển sang
+     * cột `Tag` và tiêu đề sạch thì kiểm tra IM LẶNG — 45 cảnh báo tag↔loại của bộ SAPP-26878 tụt về 0
+     * mà không có dòng lỗi nào. `dimensions` là HỢP của cột `Tag` và tiêu đề nên đúng cho cả hai đời bộ TC.
+     */
+    const mapped = [...new Set((tc.dimensions || [])
+      .map((d) => TAG_TO_TYPE.get(String(d).toLowerCase()))
       .filter(Boolean))];
     if (ct && CASE_TYPE_SET.has(ctLow) && mapped.length === 1 && mapped[0].toLowerCase() !== ctLow) {
       warnings.push(`${id}: tag chiều gợi \`${mapped[0]}\` nhưng \`Loại case\` khai \`${ct}\`. Không nhất thiết sai — xem mục "không chọn khi" của \`${mapped[0]}\` trong \`.agent/config/case_types.json\`; nếu vẫn giữ \`${ct}\` thì nói rõ lý do ở \`Assumptions\`.`);
@@ -224,10 +238,61 @@ function validate(doc) {
   // 3) DIMENSION (set-level) — cảnh báo.
   const dims = new Set(doc.tests.flatMap((t) => t.dimensions));
   if (!dims.has('negative')) warnings.push('Bộ testcase chưa có case [Negative] nào — mọi chức năng nên có ≥1 negative');
-  const highs = doc.tests.filter((t) => RISK_HIGH.test(String(t.risk || '').trim()));
+  /*
+   * Neo vào `Ưu tiên`, KHÔNG vào cột Severity đã bỏ — nếu cứ đọc `t.risk` thì bộ mới (không có cột đó)
+   * làm check này im lặng: `highs.length` luôn 0 nên không bao giờ cảnh báo. Đúng lớp lỗi đã dính ở
+   * `validate.js` khi tag rời tiêu đề. Vẫn nhận `t.risk` để bộ TC cũ giữ nguyên hành vi.
+   */
+  const highs = doc.tests.filter((t) => /^(critical|high)$/i.test(String(t.priority || '').trim())
+    || RISK_HIGH.test(String(t.risk || '').trim()));
   if (highs.length && !dims.has('boundary') && !dims.has('security')) {
     warnings.push(`Có ${highs.length} case High-risk nhưng chưa thấy [Boundary]/[Security] — chạy risk:gate:enforce để ép depth`);
   }
+  /*
+   * 4) CHẤT LƯỢNG TIÊU ĐỀ (set-level) — cảnh báo.
+   *
+   * Từ 21/08/2026 tag ra cột `Tag`, nên tiêu đề phải TỰ ĐỦ NGHĨA. Hai lỗi dưới đây đo được bằng máy,
+   * và cả hai đều đã xảy ra thật ở bộ SAPP-26878:
+   *
+   *  (a) TIỀN TỐ HẰNG SỐ — `Cross-app - ` gắn cho 101/101 case. Một trường mà mọi dòng cùng một giá trị
+   *      thì không phân biệt được gì; nó chỉ đẩy nội dung thật ra xa. Chỉ kêu khi bộ có ≥5 case và
+   *      TOÀN BỘ dùng chung tiền tố — dưới ngưỡng đó thì trùng nhau là chuyện bình thường.
+   *  (b) GHI TAG HAI CHỖ — cột `Tag` đã có mà tiêu đề vẫn còn khối ngoặc ở đầu. Không sai kết quả (model
+   *      lấy HỢP) nhưng là dấu hiệu bộ đang chuyển dở, và người đọc lại phải lướt qua ngoặc.
+   */
+  const titles = doc.tests.map((t) => String(t.title || '').trim()).filter(Boolean);
+  /*
+   * CHỈ áp cho bộ đã theo format mới (có cột `Tag`) — đúng tiền lệ lúc thêm `Loại case`: luật mới không
+   * được làm đỏ/ồn những bộ có TRƯỚC luật. Đo thật 21/08/2026: bật cho tất cả thì 8 bộ cũ kêu ngay
+   * (`OPS - ` 95/95 · `Mobile - ` 96/96 · `LMS-Pro Staging - ` 34/36 …). Chúng đúng là cùng một lỗi,
+   * nhưng nag bộ đã publish mà không ai sinh lại chỉ dạy người đọc bỏ qua cảnh báo. Bộ nào sinh lại
+   * theo prompt mới sẽ có cột `Tag` và tự vào tầm ngắm.
+   */
+  const isNewFormat = (doc.headers || []).some((h) => m.COL.tags(m.normalizeHeader(h)));
+  if (isNewFormat && titles.length >= 5) {
+    /*
+     * ĐA SỐ, không phải TOÀN BỘ. Bản đầu đòi `titles.every(...)` và bị chính bộ thử bắt lỗi: chỉ cần
+     * MỘT case lệch (vd còn sót `[Positive]` ở đầu) là head khác đi và check tắt hoàn toàn — trong khi
+     * 5/6 case vẫn đang mang tiền tố vô nghĩa. Ngưỡng 80% bắt được cả bộ đang dở dang.
+     * Bỏ khối tag ở đầu trước khi lấy head, để tag còn sót không che mất tiền tố thật.
+     */
+    const head = (x) => {
+      const bare = x.replace(/^(?:\s*\[[^\]]*\])+\s*/, '');
+      const i = bare.indexOf(' - ');
+      return i > 0 ? bare.slice(0, i) : '';
+    };
+    const freq = new Map();
+    for (const t of titles) { const h = head(t); if (h) freq.set(h, (freq.get(h) || 0) + 1); }
+    const [top, n] = [...freq.entries()].sort((a, b) => b[1] - a[1])[0] || [null, 0];
+    if (top && n / titles.length >= 0.8) {
+      warnings.push(`${n}/${titles.length} case mở đầu bằng "${top} - " — tiền tố hằng số KHÔNG phân biệt được case nào với case nào. Bỏ đi; thông tin đó thuộc \`Loại case\` và tên nhóm/folder.`);
+    }
+  }
+  const bothPlaces = doc.tests.filter((t) => String(t.tags || '').trim() && /^\s*\[/.test(String(t.title || '')));
+  if (bothPlaces.length) {
+    warnings.push(`${bothPlaces.length} case ghi tag ở CẢ cột \`Tag\` lẫn đầu tiêu đề (${bothPlaces.slice(0, 3).map((t) => t.tcId).join(', ')}${bothPlaces.length > 3 ? '…' : ''}) — giữ ở cột \`Tag\`, gỡ khỏi tiêu đề.`);
+  }
+
   return { problems, warnings };
 }
 
