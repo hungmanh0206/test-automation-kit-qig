@@ -1,0 +1,117 @@
+{
+  "_why": "Chủ repo yêu cầu output đọc như QA viết cho người đọc, không như máy sinh. Nhưng giọng văn là cảm nhận, không chặn được bằng cảm nhận. Nên mọi ngưỡng ở đây đến từ một MẪU CÓ NHÃN, không từ trực giác.",
+  "_measured_at": "2026-09-08",
+  "_mau_co_nhan": {
+    "cách làm": "So 34 bài docs/course được người viết tay lại cho tự nhiên (6 commit 0613122..3601a1e) với 50 file prompt/workflow/tài liệu chưa viết lại. Lấy đúng những dấu hiệu phân biệt được hai nhóm.",
+    "hai giả thuyết bị bác": "(1) Văn máy là từ vựng hype: quét 180 nghìn từ, chỉ 2 lần trong toàn repo. (2) Văn máy là bôi đậm dày: bản ĐÃ viết tay lại có đậm giữa câu 18.9 trên 1000 từ, CAO HƠN bản chưa sửa 16.7. Đậm không phân biệt được gì nên KHÔNG đưa vào máy.",
+    "dấu hiệu phân biệt được (trung vị: đã viết lại → chưa)": {
+      "gạch chéo giữa hai từ thường": "0 → 13.7",
+      "câu dài quá 35 từ": "1.2 → 3.4",
+      "ký hiệu thay chữ": "4.8 → 13.0",
+      "gạch dài": "5.7 → 10.1",
+      "độ dài câu trung bình": "13.8 → 17.6 từ"
+    },
+    "lọc để khỏi báo oan": "Gạch chéo chỉ tính khi cả hai bên là từ chữ thường. Không lọc thì nó bắt PASS/FAIL, Critical/High, UI/API, AIO/Jira, ngày 14/08/2026, đường dẫn docs/user — nửa số lần xuất hiện là từ vựng hợp lệ.",
+    "mơ hồ đo riêng": "Trên 34 bài mẫu: trung vị 4.8, p75 6.1, max 11.1 trên 1000 từ. Mốc 6 sẽ đánh 9/34 bài CHUẨN nên quá chặt. Đặt 12 để không báo oan trên chính mẫu tham chiếu.",
+    "cách chọn mốc": "Đặt ở MAX của 34 bài mẫu, không phải p75. Lý do: mẫu là ĐÍCH, nên đích mà đánh 25% mẫu là đích sai. Max của mẫu: gạch-chéo 1.5 · câu-dài 4 · ký-hiệu 14.1 · gạch-dài 10.4 · mơ-hồ 11.1 · câu tb 15.2. Mốc = max làm tròn lên. Nghĩa của gate: KHÔNG được tệ hơn bản người viết tay."
+  },
+  "policy": "Máy soi OUTPUT CỦA LƯỢT LÀM VIỆC (testcase, thân bug, report, tài liệu vừa viết). KHÔNG soi tài liệu cũ của repo và KHÔNG nằm trong CI: ép viết lại tài liệu cũ là việc khác, chủ repo đã nói không làm. Ngưỡng đặt ở MỨC CAO NHẤT của 34 bài mẫu, không phải phân vị 75: mốc mà đánh 25% mẫu là mốc sai, vì mẫu chính là đích.",
+  "profiles": {
+    "doc": {
+      "_dùng cho": "tài liệu hướng dẫn vừa viết",
+      "limits": {
+        "slash": 2,
+        "longSent": 4,
+        "sym": 15,
+        "emDash": 11,
+        "vague": 12,
+        "meanSent": 16
+      },
+      "emojiMax": 10,
+      "_note": "emojiMax 10 lấy từ mẫu: 12/34 bài dùng emoji, nhiều nhất 10. Đó là văn phong đã được chấp nhận cho tài liệu."
+    },
+    "report": {
+      "_dùng cho": "outputs/**/reports/*.md",
+      "limits": {
+        "slash": 2,
+        "longSent": 4,
+        "sym": 15,
+        "emDash": 11,
+        "vague": 10,
+        "meanSent": 16
+      },
+      "emojiMax": 0,
+      "_note": "emoji 0 ở report/bug/testcase là PHÁN ĐOÁN, không phải số đo: ba loại này đi vào Jira và Excel, nơi emoji chỉ là nhiễu."
+    },
+    "bug": {
+      "_dùng cho": "thân bug trước khi log Jira",
+      "_why": "Dev đọc bug để tái hiện. Lượng từ mơ hồ làm bug bị bounce nên ngưỡng chặt hơn report.",
+      "limits": {
+        "slash": 2,
+        "longSent": 4,
+        "sym": 15,
+        "emDash": 11,
+        "vague": 6,
+        "meanSent": 15
+      },
+      "emojiMax": 0,
+      "_note": "Mốc mơ-hồ 6 ở bug là PHÁN ĐOÁN, không phải số đo: chưa có mẫu bug có nhãn. Dev đọc bug để tái hiện nên chỗ đáng có số phải có số. Nếu nó báo oan thì nới, đừng tắt."
+    },
+    "testcase": {
+      "_dùng cho": "outputs/**/test-cases/*.md",
+      "_why": "Testcase là bảng. Sau khi bỏ bảng thì còn rất ít văn xuôi nên máy sẽ bỏ qua phần mật độ và chỉ kiểm emoji cùng cụm bị cấm. Đó là hành vi đúng, không phải thiếu sót.",
+      "limits": {
+        "slash": 2,
+        "vague": 6
+      },
+      "emojiMax": 0
+    }
+  },
+  "bannedPhrases": {
+    "_why": "Danh sách NGẮN có chủ đích: chỉ giữ cụm mà số đo cho thấy gần như không xuất hiện trong văn bản thật, nên cấm vào không báo oan. Đã bỏ \"toàn diện\" vì nó báo trên RULE_GLOBAL dòng 232, chỗ đó nó bổ nghĩa cho \"script\" chứ không phải hype rỗng. Luật báo trên văn bản tốt thì sửa luật. Bỏ tiếp \"hoàn hảo\": nó báo trên docs/course/do-chinh-bo-kiem.md, một bài thuộc mẫu chuẩn. Bỏ tiếp \"hy vọng\": trong bài mẫu nó dùng đúng nghĩa (\"chứng minh là chạy được, không phải hy vọng là chạy được\"). Chỉ kiểu \"Hy vọng bài viết này...\" mới là tật, mà cái đó không khớp được bằng regex nếu không báo oan.",
+    "hype": [
+      "một cách hiệu quả",
+      "mạnh mẽ",
+      "vô cùng",
+      "hết sức",
+      "tuyệt vời",
+      "nhanh chóng và chính xác"
+    ],
+    "rào trước": [
+      "nhìn chung",
+      "về cơ bản",
+      "có thể nói rằng",
+      "điều quan trọng cần lưu ý",
+      "đáng chú ý là",
+      "như đã đề cập ở trên"
+    ],
+    "kết bài rỗng": [
+      "tóm lại có thể thấy",
+      "nói chung là"
+    ]
+  },
+  "vagueWords": {
+    "_why": "Không cấm hẳn vì QA vẫn nói \"một số case\". Chỉ đặt ngưỡng mật độ, vì chỗ nào đáng có số thì phải có số.",
+    "words": [
+      "nhiều",
+      "một số",
+      "khá",
+      "tương đối",
+      "đôi khi",
+      "thường xuyên",
+      "hầu hết",
+      "phần lớn"
+    ]
+  },
+  "testcaseFieldRules": {
+    "_why": "Kết quả mong đợi phải là điều kiểm được, không phải lời kể.",
+    "expectedMustNotStartWith": [
+      "Hệ thống sẽ",
+      "Người dùng sẽ",
+      "Màn hình sẽ",
+      "Có thể",
+      "Nên"
+    ],
+    "_note": "Chưa nối vào máy: cần parser cột. Ghi ở đây để không mất ý."
+  }
+}

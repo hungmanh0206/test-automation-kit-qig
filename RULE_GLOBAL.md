@@ -33,35 +33,36 @@
 
 | # | Mục | Dòng | ~token | Tra nhanh |
 |---|---|---|---|---|
-| 1 | [Purpose](#purpose) | 67-70 | 30 | npm run rule -- 1 |
-| 2 | [When To Use](#when-to-use) | 71-82 | 60 | npm run rule -- 2 |
-| 3 | [Inputs](#inputs) | 83-95 | 339 | npm run rule -- 3 |
-| 4 | [Outputs](#outputs) | 96-106 | 262 | npm run rule -- 4 |
-| 5 | [Rules](#rules) | 107-443 | 10786 | npm run rule -- 5 |
-| 6 | &nbsp;&nbsp;[Language](#language) | 109-115 | 79 | npm run rule -- 6 |
-| 7 | &nbsp;&nbsp;[Security](#security) | 116-123 | 287 | npm run rule -- 7 |
-| 8 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 124-135 | 280 | npm run rule -- 8 |
-| 9 | &nbsp;&nbsp;[Parallel Story Safety](#parallel-story-safety) | 136-152 | 257 | npm run rule -- 9 |
-| 10 | &nbsp;&nbsp;[Phase-Separated Story Execution](#phase-separated-story-execution) | 153-179 | 1953 | npm run rule -- 10 |
-| 11 | &nbsp;&nbsp;[Task-Scoped Automation Code](#task-scoped-automation-code) | 180-190 | 312 | npm run rule -- 11 |
-| 12 | &nbsp;&nbsp;[Shared Change Gate](#shared-change-gate) | 191-202 | 394 | npm run rule -- 12 |
-| 13 | &nbsp;&nbsp;[Automation Promote Review](#automation-promote-review) | 203-211 | 159 | npm run rule -- 13 |
-| 14 | &nbsp;&nbsp;[Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)](#analysis-ambiguity-gate-phase-1-đọc-kỹ-hỏi-trước-khi-gen) | 212-217 | 492 | npm run rule -- 14 |
-| 15 | &nbsp;&nbsp;[Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)](#chiều-coverage-phase-1-khai-phạm-vi-gắn-tag-có-máy-đếm) | 218-227 | 516 | npm run rule -- 15 |
-| 16 | &nbsp;&nbsp;[Execution Discipline (Kỷ luật thực thi — chạy thông suốt)](#execution-discipline-kỷ-luật-thực-thi-chạy-thông-suốt) | 228-237 | 445 | npm run rule -- 16 |
-| 17 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 238-363 | 3549 | npm run rule -- 17 |
-| 18 | &nbsp;&nbsp;[Execute Results](#execute-results) | 364-383 | 223 | npm run rule -- 18 |
-| 19 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 384-398 | 302 | npm run rule -- 19 |
-| 20 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 399-410 | 614 | npm run rule -- 20 |
-| 21 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 411-422 | 393 | npm run rule -- 21 |
-| 22 | &nbsp;&nbsp;[Jira Bug Gate](#jira-bug-gate) | 423-432 | 144 | npm run rule -- 22 |
-| 23 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 433-443 | 382 | npm run rule -- 23 |
-| 24 | [Workflow](#workflow) | 444-457 | 43 | npm run rule -- 24 |
-| 25 | [Cleanup Rules](#cleanup-rules) | 458-483 | 383 | npm run rule -- 25 |
-| 26 | [Examples](#examples) | 484-491 | 82 | npm run rule -- 26 |
-| 27 | [References](#references) | 492-500 | 84 | npm run rule -- 27 |
+| 1 | [Purpose](#purpose) | 68-71 | 30 | npm run rule -- 1 |
+| 2 | [When To Use](#when-to-use) | 72-83 | 60 | npm run rule -- 2 |
+| 3 | [Inputs](#inputs) | 84-96 | 339 | npm run rule -- 3 |
+| 4 | [Outputs](#outputs) | 97-141 | 743 | npm run rule -- 4 |
+| 5 | &nbsp;&nbsp;[Giọng văn output](#giọng-văn-output) | 109-141 | 450 | npm run rule -- 5 |
+| 6 | [Rules](#rules) | 142-478 | 10786 | npm run rule -- 6 |
+| 7 | &nbsp;&nbsp;[Language](#language) | 144-150 | 79 | npm run rule -- 7 |
+| 8 | &nbsp;&nbsp;[Security](#security) | 151-158 | 287 | npm run rule -- 8 |
+| 9 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 159-170 | 280 | npm run rule -- 9 |
+| 10 | &nbsp;&nbsp;[Parallel Story Safety](#parallel-story-safety) | 171-187 | 257 | npm run rule -- 10 |
+| 11 | &nbsp;&nbsp;[Phase-Separated Story Execution](#phase-separated-story-execution) | 188-214 | 1953 | npm run rule -- 11 |
+| 12 | &nbsp;&nbsp;[Task-Scoped Automation Code](#task-scoped-automation-code) | 215-225 | 312 | npm run rule -- 12 |
+| 13 | &nbsp;&nbsp;[Shared Change Gate](#shared-change-gate) | 226-237 | 394 | npm run rule -- 13 |
+| 14 | &nbsp;&nbsp;[Automation Promote Review](#automation-promote-review) | 238-246 | 159 | npm run rule -- 14 |
+| 15 | &nbsp;&nbsp;[Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)](#analysis-ambiguity-gate-phase-1-đọc-kỹ-hỏi-trước-khi-gen) | 247-252 | 492 | npm run rule -- 15 |
+| 16 | &nbsp;&nbsp;[Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)](#chiều-coverage-phase-1-khai-phạm-vi-gắn-tag-có-máy-đếm) | 253-262 | 516 | npm run rule -- 16 |
+| 17 | &nbsp;&nbsp;[Execution Discipline (Kỷ luật thực thi — chạy thông suốt)](#execution-discipline-kỷ-luật-thực-thi-chạy-thông-suốt) | 263-272 | 445 | npm run rule -- 17 |
+| 18 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 273-398 | 3549 | npm run rule -- 18 |
+| 19 | &nbsp;&nbsp;[Execute Results](#execute-results) | 399-418 | 223 | npm run rule -- 19 |
+| 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 419-433 | 302 | npm run rule -- 20 |
+| 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 434-445 | 614 | npm run rule -- 21 |
+| 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 446-457 | 393 | npm run rule -- 22 |
+| 23 | &nbsp;&nbsp;[Jira Bug Gate](#jira-bug-gate) | 458-467 | 144 | npm run rule -- 23 |
+| 24 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 468-478 | 382 | npm run rule -- 24 |
+| 25 | [Workflow](#workflow) | 479-492 | 43 | npm run rule -- 25 |
+| 26 | [Cleanup Rules](#cleanup-rules) | 493-518 | 383 | npm run rule -- 26 |
+| 27 | [Examples](#examples) | 519-526 | 82 | npm run rule -- 27 |
+| 28 | [References](#references) | 527-535 | 84 | npm run rule -- 28 |
 
-> Cả file ~13464 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
+> Cả file ~13969 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
 <!-- MỤC-LỤC:KẾT-THÚC -->
 
 ## Purpose
@@ -97,12 +98,46 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 
 | Output | Rule |
 |---|---|
+| Giọng văn mọi output | Viết như QA viết cho người đọc, không như máy sinh. Chi tiết ở §"Giọng văn output" ngay dưới. |
 | Markdown/report | Tiếng Việt chuẩn có dấu, UTF-8, không lộ secret. |
 | Test results | Nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/`. |
 | Evidence | Chỉ **ảnh/video** làm evidence (xem §"Evidence — Quy chuẩn bắt buộc"); `trace/log` là diagnostic local, KHÔNG phải evidence. Lưu đúng scope task. |
 | Testcase publish (AIO Tests) | Step riêng trong phạm vi Phase 1; chỉ publish từ Excel canonical sau khi QA xác nhận (`npm run aio:publish:apply -- ... --qa-approved`). Excel là source of truth khi gen/publish; **Phase 2 execute mặc định lấy nguồn từ AIO** (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx`), `excel` là opt-out. |
 | Jira bug | Chỉ tạo khi fail đã được xác nhận là product/API bug. |
 | Testcase (md/Excel) | Cột "Kết quả mong đợi" đánh số **KHỚP từng bước** (bước 1→KQ 1, 2→2…), xuống dòng `<br>`; **CẤM gộp range** kiểu `1-2.`/`2-3.`; không ghi chung chung ("thành công"/"đúng"). Áp cả khi gen VÀ khi chỉnh sửa TC thủ công. Chi tiết: prompt gen Phase 1 §6. |
+
+### Giọng văn output
+
+Áp cho **mọi thứ người khác đọc**: testcase, thân bug Jira, comment Jira, report, tài liệu hướng dẫn,
+và cả phần trình bày trong hội thoại. Không áp cho comment trong code.
+
+Luật này không đến từ cảm nhận. Ngày 08/09/2026 đã so 34 bài `docs/course/**` được người viết tay lại
+cho tự nhiên với 50 file prompt và workflow chưa viết lại, rồi lấy đúng những dấu hiệu phân biệt được.
+Hai giả thuyết trực giác đều bị số đo bác: từ vựng hype kiểu máy chỉ xuất hiện 2 lần trong 180 nghìn từ,
+còn mật độ bôi đậm thì bản viết tay lại còn cao hơn bản chưa sửa.
+
+| Việc phải làm | Trung vị bản viết tay lại | Bản chưa sửa |
+|---|---|---|
+| Không viết tắt bằng gạch chéo. "ảnh hoặc video", không phải "ảnh/video" | 0 lần trên 1000 từ | 13.7 |
+| Câu dài quá 35 từ thì cắt thành hai câu | 1.2 | 3.4 |
+| Ký hiệu thay bằng chữ: "khoảng" thay `≈`, "nên" thay `⇒` | 4.8 | 13.0 |
+| Gạch dài không dùng để nối mệnh đề; tách câu mới | 5.7 | 10.1 |
+| Câu trung bình dưới 15 từ | 13.8 từ | 17.6 |
+
+Ba việc nữa, không đo bằng mật độ nhưng cùng gốc:
+
+- Tiếng Việt trước, thuật ngữ Anh trong ngoặc. "Agent con (subagent)", không phải "Subagent".
+- Chỗ nào đáng có số thì phải có số. "36 trên 93 đơn" thay cho "nhiều đơn".
+- Kết quả mong đợi của testcase phải là điều kiểm được. "Cột Paid Amount hiện 2.000.000", không phải
+  "Hệ thống sẽ hiển thị đúng số tiền".
+
+Máy kiểm: `npm run writing:lint <file>`. Ngưỡng ở `.agent/config/writing_style.json` đặt ở **mức cao
+nhất** của 34 bài mẫu, không phải phân vị 75. Mốc mà đánh 25% mẫu là mốc sai, vì mẫu chính là đích.
+Nghĩa của gate: không được tệ hơn bản người viết tay. Cả 34 bài đạt, còn report tôi viết cùng ngày thì
+vượt 4 trục.
+
+Máy này soi **output của lượt làm việc** và không nằm trong CI. Ép viết lại tài liệu cũ của repo là
+việc khác, và không làm.
 
 ## Rules
 
