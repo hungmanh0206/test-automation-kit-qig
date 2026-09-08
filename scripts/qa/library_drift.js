@@ -27,7 +27,17 @@ const LIB = path.join(ROOT, 'docs', 'library');
 const SRC = path.join(LIB, 'src');
 const ALLOW_FILE = path.join(ROOT, '.agent', 'config', 'library-drift.allow.json');
 
-const rd = (p) => fs.readFileSync(p, 'utf8');
+/*
+ * CHUẨN HOÁ CRLF NGAY Ở CỬA ĐỌC. Cùng một lớp lỗi đã dính ba chỗ trong ngày 08/09/2026:
+ * `course_parse.js` (regex `\n\n` không khớp `\r\n\r\n` nên COURSE.md đọc được 0 chặng), `build.js`
+ * (nội dung bài học qua JSON.stringify nên `\r` sống sót, output khác nhau giữa Windows và Linux), và
+ * chính file này (đọc 43 file bài học mà bắt được 0 khối mã, trong khi sàn là 78).
+ *
+ * Gốc chung: git checkout áp `core.autocrlf` nên bản trên đĩa Windows là CRLF, còn blob và CI là LF.
+ * Gate đỏ ở máy mà xanh ở CI là kiểu sai làm người ta bỏ qua gate. Chuẩn hoá một dòng ở đây phủ mọi
+ * regex trong file, thay vì vá từng chỗ.
+ */
+const rd = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 const exists = (p) => fs.existsSync(p);
 
 const problems = [];
@@ -807,52 +817,24 @@ if (!HTML) {
   problems.push('chưa có docs/library/index.html — chạy `node docs/library/build.js`');
 } else {
   /*
-   * SO BẰNG GÌ: file nào ĐANG SỬA DỞ thì so mtime, file nào sạch thì so THỜI ĐIỂM COMMIT.
+   * SO NỘI DUNG, không so thời gian. Đây là chỗ đã sai hai lần nên ghi lại cả hai:
    *
-   * Bản đầu so mtime cho mọi file. Sai trên CI, và sai một cách luôn-đỏ: git KHÔNG giữ mtime, nên sau
-   * mỗi lần clone thì mtime chỉ phản ánh THỨ TỰ CHECKOUT. `index.html` xếp trước `src/` theo alphabet
-   * nên nó luôn được ghi trước, khiến mọi file nguồn trông như mới hơn. Đo được ngày 08/09/2026: ở cây
-   * làm việc thì `index.html` mới hơn nguồn (đúng, vừa build), nhưng trong hai worktree vừa checkout
-   * và trong log CI job 14237 thì nó đều báo "CŨ hơn nguồn". Một gate luôn đỏ thì sẽ bị tắt.
+   *  (1) Bản đầu so mtime cho mọi file. Sai trên CI một cách LUÔN-ĐỎ: git không giữ mtime, nên sau mỗi
+   *      lần clone thì mtime chỉ phản ánh thứ tự checkout, và `index.html` xếp trước `src/` theo
+   *      alphabet nên luôn được ghi trước. Đo 08/09/2026: cây làm việc báo đúng, còn hai worktree vừa
+   *      checkout và log CI job 14237 đều báo "CŨ hơn nguồn".
+   *  (2) Sửa thành so thời điểm commit thì hết đỏ oan, nhưng sinh lỗi ngược: commit một file nguồn mà
+   *      output KHÔNG đổi (vd chỉ thêm ghi chú) làm index.html trông như cũ hơn mãi mãi.
    *
-   * Vẫn giữ mtime cho file sửa dở, vì đó là tín hiệu duy nhất bắt được "vừa sửa nguồn mà chưa build".
-   * Không có git thì bỏ qua phép kiểm này chứ không quay về mtime: quay về là quay lại đúng chỗ sai.
+   * Cả hai đều là hệ quả của việc lấy THỜI GIAN làm proxy cho "đã build lại chưa". Câu hỏi thật là
+   * "nội dung có khớp nguồn không", nên hỏi thẳng: `build.js --check` ghép trong bộ nhớ rồi đối chiếu,
+   * không ghi gì. Build đã đo là tất định (hai lượt cho ra byte giống nhau). Dùng chính đường ghép
+   * thật nên không nhân bản logic sang gate.
    */
-  const gitTs = (relPath) => {
-    try {
-      const o = require('child_process').execFileSync('git', ['log', '-1', '--format=%ct', '--', relPath], {
-        cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
-      }).trim();
-      return o ? Number(o) * 1000 : null;
-    } catch (e) { return null; }
-  };
-  let dirty;
-  try {
-    dirty = new Set(require('child_process').execFileSync('git', ['status', '--porcelain'], {
-      cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
-    }).split(/\r?\n/).map((l) => l.slice(3).trim()).filter(Boolean));
-  } catch (e) { dirty = null; }
-
-  const OUT_REL = 'docs/library/index.html';
-  const outMtime = fs.statSync(path.join(LIB, 'index.html')).mtimeMs;
-  const outCommit = gitTs(OUT_REL);
-  const srcList = [...DATA_FILES, 'shell.html', 'style.css', 'style.extra.css', 'app.js', 'graph3d.js', 'course_parse.js']
-    .filter((f) => exists(path.join(SRC, f)))
-    .map((f) => ({ label: f, abs: path.join(SRC, f), rel: `docs/library/src/${f}` }));
-  srcList.push({ label: 'docs/COURSE.md', abs: COURSE_MD, rel: 'docs/COURSE.md' });
-
-  const stale = [];
-  for (const s of srcList) {
-    if (dirty && dirty.has(s.rel)) {
-      if (fs.statSync(s.abs).mtimeMs > outMtime) stale.push(`${s.label} (đang sửa dở)`);
-      continue;
-    }
-    if (dirty === null || outCommit === null) continue;   // không đọc được git ⇒ không phán
-    const t = gitTs(s.rel);
-    if (t !== null && t > outCommit) stale.push(s.label);
-  }
-  if (stale.length) problems.push(`index.html CŨ hơn nguồn (${stale.join(' ')}) — chạy \`node docs/library/build.js\``);
-  else ok.push('index.html mới hơn mọi file nguồn');
+  const chk = require('child_process').spawnSync(process.execPath, [path.join(LIB, 'build.js'), '--check'],
+    { cwd: ROOT, encoding: 'utf8' });
+  if (chk.status === 0) ok.push('index.html khớp nguồn (đối chiếu nội dung, không so thời gian)');
+  else problems.push(`index.html KHÔNG khớp nguồn — chạy \`node docs/library/build.js\` rồi commit lại. ${String(chk.stderr || '').trim().split('\n')[0]}`);
   /* Chỉ soi chỗ TRÌNH DUYỆT ĐI NẠP: src=, href=, và url() trong CSS.
    *
    * Bản đầu quét mọi chuỗi `http://` trong cả tệp. Từ lúc trang nhúng toàn văn 43 bài giảng thì nó

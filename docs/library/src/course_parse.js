@@ -39,7 +39,18 @@ function classifyBullet(raw) {
 }
 
 function parseCourse(mdPath) {
-  const md = fs.readFileSync(mdPath, 'utf8');
+  /*
+   * CHUẨN HOÁ CRLF NGAY Ở CỬA ĐỌC, không vá từng regex.
+   *
+   * Đo 08/09/2026: file này có 281 chỗ dùng `\n` trong regex và 0 chỗ phòng CRLF. Trên Windows,
+   * `git checkout` áp `core.autocrlf` nên COURSE.md thành 798 dòng CRLF (blob của git là LF). Regex
+   * kết thúc bằng `\n\n` không khớp `\r\n\r\n`, nên `parseCourse` throw "mục Một vòng QA chỉ đọc được
+   * 0 chặng" — trong khi trên CI (Linux, LF) thì đúng. Tức `npm run library:drift` đỏ ở máy Windows và
+   * xanh ở CI: kiểu sai làm người ta mất tin vào gate.
+   *
+   * Chuẩn hoá một dòng ở đây sửa cả 281 chỗ. Parser chỉ ĐỌC nên việc này không đổi hành vi nào khác.
+   */
+  const md = fs.readFileSync(mdPath, 'utf8').replace(/\r\n/g, '\n');
   const root = path.dirname(mdPath);
 
   const total = plain((md.match(/^## Tổng thời lượng:\s*(.+)$/m) || [, ''])[1]);
