@@ -26,6 +26,16 @@ const TERMS_GATE3 = [
   trap:'Gate so theo VĂN BẢN, nên viết lại một con số cũ để kể lịch sử cũng bị bắt (đã xảy ra với đúng mục này). Diễn đạt tránh con số thay vì nới luật, cùng cách xử lý như luật một-công-cụ. Và nhớ: nguồn quyết luôn là repo, sửa trang cho khớp chứ đừng sửa ngược.',
   src:'scripts/qa/library_drift.js', rel:['c-canonical','g-gate_index','c-forcing-function','c-gate-real-content','g-skills_index'] },
 
+{ id:'g-course_maturity', t:'course:maturity', cat:'gate',
+  def:'Sinh khối "Bộ kit của bạn đang ở đâu" cho từng bài giảng, từ chính giáo trình.',
+  detail:'Khối này nhắc số bài, số cấp độ và tên bài kế tiếp. Toàn những thứ đã đổi ba lần trong một tuần. Viết tay thì nó trôi khỏi giáo trình mà không ai biết, nên nó là lớp DẪN XUẤT của docs/COURSE.md, y như trang thư viện.',
+  why:'Đo trên 43 bài giảng: 43 bài không có chỗ nào trả lời hai câu mà người đọc từ số 0 hỏi ở khoảng bài thứ mười bảy. Tôi đang ở đâu, và cấp độ này còn mấy bài. Mất phương hướng giữa một tài liệu 65 giờ là lý do người ta bỏ dở, không phải vì nội dung khó.',
+  how:['npm run course:maturity ghi khối vào từng bài.','npm run course:maturity:check chặn khi có bài lệch, dùng ở CI.'],
+  cmd:'npm run course:maturity   ·   npm run course:maturity:check',
+  ex:'Bài 2 hiện: CẤP ĐỘ 1 · AUTOMATE, bài 2/4 của cấp độ này, cả tài liệu bài 2/29, và câu nói được sau cấp độ đó.',
+  trap:'Đừng sửa tay khối này. Lượt sinh sau ghi đè, và bản --check sẽ chặn vì nội dung lệch giáo trình.',
+  src:'scripts/qa/course_maturity.js', rel:['c-canonical','g-library_drift'] },
+
 { id:'g-rule_lookup', t:'rule / rule:toc', cat:'gate',
   def:'Tra RULE_GLOBAL.md THEO MỤC, thay vì đọc cả file.',
   detail:'Đo 07/09/2026: RULE_GLOBAL.md có 465 dòng, 51.116 ký tự, khoảng 12.800 token, và đó là SÀN, vì 12% ký tự có dấu nên thực tế cao hơn.',

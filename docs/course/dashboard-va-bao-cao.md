@@ -10,12 +10,8 @@
 | **Bài này bạn gõ gì** | Viết máy sinh một trang HTML gọn, chỉ 3 đường, và soạn mẫu báo cáo 4 phần. |
 | **Xong thì được gì** | Nhìn một cái là biết tháng này kit khá hơn hay kém đi. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Artifact** | Thứ **sinh ra** từ dữ liệu. Xoá đi sinh lại được, y hệt |
-| **Tự chứa** | Một tệp `.html` mở được offline, không gọi ra mạng |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -242,10 +238,10 @@ Bốn phần, đúng thứ tự này:
 ```markdown
 # Kết quả kiểm thử — <Sprint/Story> — <ngày>
 
-## 1. Kết luận một câu
+## Việc 1 — Kết luận một câu
 Chức năng Tạo đơn hàng **chưa nên phát hành**: còn 1 lỗi tính tiền ở mốc 500.000 (PROJ-1234).
 
-## 2. Con số
+## Việc 2 — Con số
 | | |
 |---|---|
 | Đã kiểm | 42 / 42 case |
@@ -253,14 +249,14 @@ Chức năng Tạo đơn hàng **chưa nên phát hành**: còn 1 lỗi tính ti
 | Không đạt | 3 — trong đó **1 chặn phát hành** |
 | Chưa kiểm được | 0 |
 
-## 3. Cái gì hỏng, ảnh hưởng ai
+## Việc 3 — Cái gì hỏng, ảnh hưởng ai
 | Lỗi | Ảnh hưởng | Mức |
 |---|---|---|
 | Phí giao hàng tính sai ở mốc 500.000 | khách hạng Bạc bị thu thừa 30.000đ/đơn | **chặn** |
 | Số trên màn không cộng khớp | khách thấy số lệch, gọi hỗ trợ | cao |
 | Sửa được đơn đã xác nhận qua API | dữ liệu đơn đổi sau khi chốt | cao |
 
-## 4. Cần gì để đi tiếp
+## Việc 4 — Cần gì để đi tiếp
 - Dev sửa PROJ-1234 → kiểm lại 6 case (~2 giờ)
 - BA trả lời: có chống trùng đơn khi bấm hai lần không? (chưa có trong đặc tả)
 ```
@@ -276,6 +272,13 @@ Bốn nguyên tắc:
 
 Và: không đính ảnh chụp dashboard làm bằng chứng cho một case. Bằng chứng cho case là ảnh/video màn hình
 thật, có khoanh đỏ (Bài 17). Dashboard là bức tranh tổng, không phải chứng cứ.
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Artifact** | Thứ **sinh ra** từ dữ liệu. Xoá đi sinh lại được, y hệt |
+| **Tự chứa** | Một tệp `.html` mở được offline, không gọi ra mạng |
 
 ## Cây thư mục sau bài này
 

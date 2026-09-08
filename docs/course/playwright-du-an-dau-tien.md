@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Cài Playwright, đi qua từng tuỳ chọn trong config, và thử ba tuỳ chọn đặt sai gây xanh giả. |
 | **Xong thì được gì** | Một `playwright.config.js` bạn hiểu và sửa được, không phải một file copy từ đâu đó. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Headless** | Chạy trình duyệt không hiện cửa sổ. Nhanh hơn, nhưng không nhìn được |
-| **Retry** | Chạy lại test đỏ. Hữu ích để lọc chập chờn, nguy hiểm nếu dùng để giấu lỗi |
-| **Trace** | Bản ghi lại toàn bộ lượt chạy để xem lại sau. Nặng, nên chỉ bật khi cần |
-| **Xanh giả** | Pipeline báo thành công trong khi không có gì được kiểm thật |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -236,6 +230,15 @@ Khai lệnh vào `package.json` để không phải nhớ:
 Từ giờ mọi lệnh đều khai vào đây. Lý do đơn giản: người khác gõ `npm run test:ui` được, còn nhớ cả
 chuỗi tham số thì không.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Headless** | Chạy trình duyệt không hiện cửa sổ. Nhanh hơn, nhưng không nhìn được |
+| **Retry** | Chạy lại test đỏ. Hữu ích để lọc chập chờn, nguy hiểm nếu dùng để giấu lỗi |
+| **Trace** | Bản ghi lại toàn bộ lượt chạy để xem lại sau. Nặng, nên chỉ bật khi cần |
+| **Xanh giả** | Pipeline báo thành công trong khi không có gì được kiểm thật |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -256,6 +259,20 @@ playwright-report/
 ```
 
 Hai thư mục này sinh lại mỗi lượt chạy, nặng, và chứa ảnh có thể có dữ liệu khách.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 1 · AUTOMATE      bài 3/4 của cấp độ này
+█████████████████████░░░░░░░
+
+cả tài liệu           bài 3/29
+███░░░░░░░░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 1 bạn nói được:** Tôi chạy được test và tôi hiểu kết quả của nó.
+
+Cấp độ này còn 1 bài nữa.
 
 ## Tự kiểm
 

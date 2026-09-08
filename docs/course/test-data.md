@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Một factory tạo dữ liệu qua API, đặt tiền tố nhận diện được, và dọn sạch sau lượt chạy. |
 | **Xong thì được gì** | Test chạy được trên môi trường vừa reset, chạy song song không đụng nhau, và không để rác lại. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Factory** | Hàm tạo ra dữ liệu test theo yêu cầu, trả về đúng thứ test cần dùng |
-| **Dữ liệu mồ côi** | Bản ghi test tạo ra rồi không ai xoá. Tích lại theo tháng |
-| **Janitor** | Thứ dọn dữ liệu sau lượt chạy. Có thể chạy riêng khi test chết giữa chừng |
-| **Dữ liệu tựa ngẫu nhiên** | Ngẫu nhiên đủ để không trùng, nhưng lặp lại được khi cần điều tra |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -248,6 +242,15 @@ thức trong sản phẩm. Và lúc đó test của bạn đang so sản phẩm 
 Đó gọi là **tautology**, và Bài 13 dành cả bài cho nó, vì nó là cách hỏng âm thầm nhất trong nghề
 này: test luôn xanh, và không chứng minh được gì.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Factory** | Hàm tạo ra dữ liệu test theo yêu cầu, trả về đúng thứ test cần dùng |
+| **Dữ liệu mồ côi** | Bản ghi test tạo ra rồi không ai xoá. Tích lại theo tháng |
+| **Janitor** | Thứ dọn dữ liệu sau lượt chạy. Có thể chạy riêng khi test chết giữa chừng |
+| **Dữ liệu tựa ngẫu nhiên** | Ngẫu nhiên đủ để không trùng, nhưng lặp lại được khi cần điều tra |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -267,6 +270,20 @@ kit-cua-toi/
     └── e2e/
         └── tao-don-hang.spec.js  ·  từ Bài 4, nay dùng factory
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 2 · BUILD      bài 3/7 của cấp độ này
+████████████░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 7/29
+███████░░░░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 2 bạn nói được:** Tôi có một Test Kit.
+
+Cấp độ này còn 4 bài nữa.
 
 ## Tự kiểm
 

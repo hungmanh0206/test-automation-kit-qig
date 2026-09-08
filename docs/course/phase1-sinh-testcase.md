@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Soạn bộ câu hỏi kèm sẵn phương án, rồi viết gate chặn không cho sinh case khi chưa chốt. |
 | **Xong thì được gì** | Agent hết đoán bừa. Và bạn có cách viết gate dùng lại cho mọi bài sau. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Mơ hồ chặn** (blocking) | Không trả lời được thì **không thể** viết testcase đúng. Phải dừng |
-| **Mơ hồ không chặn** | Đoán được, ghi rõ mình đã đoán gì, đi tiếp — sửa sau nếu sai |
-| **Giả định đề xuất** | Câu trả lời bạn *nghĩ là đúng*, gửi kèm câu hỏi để BA chỉ cần xác nhận |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -520,6 +515,14 @@ Bước gộp thì khi FAIL bạn không biết hỏng ở bước nào, và đ�
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Mơ hồ chặn** (blocking) | Không trả lời được thì **không thể** viết testcase đúng. Phải dừng |
+| **Mơ hồ không chặn** | Đoán được, ghi rõ mình đã đoán gì, đi tiếp — sửa sau nếu sai |
+| **Giả định đề xuất** | Câu trả lời bạn *nghĩ là đúng*, gửi kèm câu hỏi để BA chỉ cần xác nhận |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -539,6 +542,20 @@ kit-cua-toi/
 Hai tệp `questions.*` là một cặp có chủ ý: **người** đọc markdown, **máy** đọc JSON. Nhưng chỉ một trong
 hai là canonical, chọn JSON, và sinh markdown từ nó. Hai bản viết tay song song thì sẽ trôi khỏi nhau, đúng
 luật một-nguồn của Bài 15.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 3 · CONTROL      bài 4/9 của cấp độ này
+████████████░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 15/29
+██████████████░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 3 bạn nói được:** Tôi có một QA workflow được enforce trong team.
+
+Cấp độ này còn 5 bài nữa.
 
 ## Tự kiểm
 

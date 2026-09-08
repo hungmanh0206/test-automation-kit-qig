@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Bóc một requirement thật thành bảng luật, kèm danh sách chỗ chưa rõ. |
 | **Xong thì được gì** | Có bảng luật để làm chuẩn cho mọi kết quả mong đợi về sau. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Luật kiểm được** | Câu luật nêu giá trị cụ thể, đọc xong là biết đúng sai thế nào |
-| **Bảng `BR-`** | Danh sách luật, mỗi luật một mã. Về sau mọi kết quả mong đợi đều trỏ về đây |
-| **Hai lượt** | Lượt phân tích và lượt sinh case tách riêng, không gộp làm một |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -206,6 +201,14 @@ git commit -m "docs(course): bài 6 — phân tích + sinh case qua Ambiguity Ga
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Luật kiểm được** | Câu luật nêu giá trị cụ thể, đọc xong là biết đúng sai thế nào |
+| **Bảng `BR-`** | Danh sách luật, mỗi luật một mã. Về sau mọi kết quả mong đợi đều trỏ về đây |
+| **Hai lượt** | Lượt phân tích và lượt sinh case tách riêng, không gộp làm một |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -218,6 +221,20 @@ kit-cua-toi/
         ├── business-rules.md     ← MỚI · bảng BR- — đầu vào của oracle ở Bài 9
         └── questions.md          ← MỚI · câu hỏi cho BA, đánh số, có assumption đề xuất
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 3 · CONTROL      bài 1/9 của cấp độ này
+███░░░░░░░░░░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 12/29
+████████████░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 3 bạn nói được:** Tôi có một QA workflow được enforce trong team.
+
+Cấp độ này còn 8 bài nữa.
 
 ## Tự kiểm
 

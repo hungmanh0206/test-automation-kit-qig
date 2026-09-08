@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Cắm phép quét vào test đã có, chọn ngưỡng chặn, và tách phần máy không kiểm được. |
 | **Xong thì được gì** | Một lane chạy được, bắt được lỗi thật, và không bị tắt sau một tuần. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Khả năng tiếp cận** | Người dùng bàn phím, trình đọc màn hình, hoặc mắt kém vẫn dùng được sản phẩm |
-| **Vai trò** (role) | Element này là nút, là ô nhập, hay là tiêu đề. Trình đọc màn hình đọc theo cái này |
-| **Nhãn có thể tiếp cận** | Chuỗi trình đọc màn hình đọc lên khi tới element |
-| **Vi phạm** | Một luật cụ thể bị phá, có mã và có mức nghiêm trọng |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -154,6 +148,15 @@ không giữ được.
 > Đây là cùng một kỷ luật với Bài 21 (bàn phím ảo) và Bài 16 (`OBSERVATION`): thứ chưa đo được thì
 > ghi là chưa đo, không ghi là đạt.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Khả năng tiếp cận** | Người dùng bàn phím, trình đọc màn hình, hoặc mắt kém vẫn dùng được sản phẩm |
+| **Vai trò** (role) | Element này là nút, là ô nhập, hay là tiêu đề. Trình đọc màn hình đọc theo cái này |
+| **Nhãn có thể tiếp cận** | Chuỗi trình đọc màn hình đọc lên khi tới element |
+| **Vi phạm** | Một luật cụ thể bị phá, có mã và có mức nghiêm trọng |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -169,6 +172,20 @@ kit-cua-toi/
 
 Không có thư mục `tests/a11y/` riêng, và đó là cố ý: phép quét chạy trong test có sẵn, ở đúng trạng
 thái mà test đã dựng ra.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 4 · EVOLVE      bài 2/9 của cấp độ này
+██████░░░░░░░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 22/29
+█████████████████████░░░░░░░
+```
+
+**Hết cấp độ 4 bạn nói được:** Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.
+
+Cấp độ này còn 7 bài nữa.
 
 ## Tự kiểm
 

@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Chọn locator theo thang ưu tiên, đọc DOM thật thay vì đoán, và một máy chặn mẫu ẩu. |
 | **Xong thì được gì** | Bộ test FE chịu được thay đổi giao diện, và bạn phân biệt được "không tìm thấy" với "sản phẩm sai". |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Locator** | Cách chỉ cho công cụ biết bạn đang nói tới element nào |
-| **Locator gãy** | Giao diện đổi một chút là không khớp nữa, dù element vẫn còn đó |
-| **Bắt sai element** | Locator khớp, nhưng khớp nhầm element khác. Nguy hiểm hơn gãy hẳn |
-| **Chập chờn** (flaky) | Cùng một test, cùng một app, lúc xanh lúc đỏ |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -291,6 +285,15 @@ Rồi bỏ dòng vừa thêm.
 Điểm quan trọng của cơ chế mốc: nó **không tha** cho code mới, mà cũng **không đòi** bạn dọn hết lịch
 sử trong một hôm. Một gate làm đỏ toàn bộ repo là một gate sắp bị tắt.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Locator** | Cách chỉ cho công cụ biết bạn đang nói tới element nào |
+| **Locator gãy** | Giao diện đổi một chút là không khớp nữa, dù element vẫn còn đó |
+| **Bắt sai element** | Locator khớp, nhưng khớp nhầm element khác. Nguy hiểm hơn gãy hẳn |
+| **Chập chờn** (flaky) | Cùng một test, cùng một app, lúc xanh lúc đỏ |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -309,6 +312,20 @@ kit-cua-toi/
     └── e2e/
         └── tao-don-hang.spec.js  ·  từ Bài 4, nay locator đã sửa
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 2 · BUILD      bài 5/7 của cấp độ này
+████████████████████░░░░░░░░
+
+cả tài liệu           bài 9/29
+█████████░░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 2 bạn nói được:** Tôi có một Test Kit.
+
+Cấp độ này còn 2 bài nữa.
 
 ## Tự kiểm
 

@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Khai danh mục các loại câu hỏi cần phủ, rồi viết máy đếm và chặn khi thiếu. |
 | **Xong thì được gì** | Biết bộ case của mình đang bỏ trống hẳn loại nào, bằng con số chứ không phải cảm giác. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Chiều phủ** | Loại câu hỏi mà một case đang hỏi. Ví dụ: giá trị biên, phân quyền, đồng thời |
-| **Ngưỡng theo chiều** | Mỗi chiều bắt buộc phải có ít nhất bao nhiêu case |
-| **`n/a` có lý do** | Chiều không áp dụng cho màn này, nhưng phải ghi vì sao |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -372,6 +367,14 @@ Trước: <N> chiều bắt buộc có 0 case. Sau: bổ sung case cho Guard và
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Chiều phủ** | Loại câu hỏi mà một case đang hỏi. Ví dụ: giá trị biên, phân quyền, đồng thời |
+| **Ngưỡng theo chiều** | Mỗi chiều bắt buộc phải có ít nhất bao nhiêu case |
+| **`n/a` có lý do** | Chiều không áp dụng cho màn này, nhưng phải ghi vì sao |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -382,6 +385,20 @@ kit-cua-toi/
     ├── dem_chieu.js              ← MỚI · chiều bắt buộc chưa đủ ngưỡng ⇒ chặn
     └── tu-soi.js            ← MỚI · gọi mọi máy chặn một lượt
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 3 · CONTROL      bài 3/9 của cấp độ này
+█████████░░░░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 14/29
+██████████████░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 3 bạn nói được:** Tôi có một QA workflow được enforce trong team.
+
+Cấp độ này còn 6 bài nữa.
 
 ## Tự kiểm
 

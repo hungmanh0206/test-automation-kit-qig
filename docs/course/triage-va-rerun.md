@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Khai danh mục kết luận, viết bộ đọc dùng chung, rồi viết máy sinh trạng thái từ kết quả chạy. |
 | **Xong thì được gì** | Mỗi lỗi biết nó thuộc tầng nào, và chỗ chưa kết luận được thì không bị đẩy thành pass. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Phán quyết** | Kết luận về một case sau khi chạy. Nhiều hơn hai giá trị PASS và FAIL |
-| **Tầng lỗi** | Lỗi này thuộc về đâu: test của bạn, khâu chuẩn bị dữ liệu, môi trường, hay app |
-| **Chạy lại** (rerun) | Chạy lại case đỏ vài lần để loại trường hợp chập chờn, trước khi kết luận |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -453,6 +448,14 @@ tangLoi để null cho FAIL — máy không đoán, người chấm sau khi reru
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Phán quyết** | Kết luận về một case sau khi chạy. Nhiều hơn hai giá trị PASS và FAIL |
+| **Tầng lỗi** | Lỗi này thuộc về đâu: test của bạn, khâu chuẩn bị dữ liệu, môi trường, hay app |
+| **Chạy lại** (rerun) | Chạy lại case đỏ vài lần để loại trường hợp chập chờn, trước khi kết luận |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -464,6 +467,20 @@ kit-cua-toi/
 └── scripts/qa/
     └── sinh-status.js            ← MỚI · results.json → testcase-status.json
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 3 · CONTROL      bài 6/9 của cấp độ này
+███████████████████░░░░░░░░░
+
+cả tài liệu           bài 17/29
+████████████████░░░░░░░░░░░░
+```
+
+**Hết cấp độ 3 bạn nói được:** Tôi có một QA workflow được enforce trong team.
+
+Cấp độ này còn 3 bài nữa.
 
 ## Tự kiểm
 

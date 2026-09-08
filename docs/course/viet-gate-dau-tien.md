@@ -12,13 +12,8 @@
 | **Bài này bạn gõ gì** | Viết một gate hoàn chỉnh, rồi cố tình tạo 3 lỗi để xem nó có chặn thật không. |
 | **Xong thì được gì** | Hiểu ba mã thoát 0, 1, 2. Và biết gate chưa thử thì chưa tin được. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Mã thoát** | Số chương trình trả về khi kết thúc. 0 là đạt, 1 là vi phạm, 2 là chưa đo được |
-| **Tiêm lỗi** | Cố tình làm hỏng dữ liệu để xem máy chặn có bắt được không |
-| **Bắt oan** | Máy báo đỏ ở chỗ thật ra đúng. Tệ hơn không có máy nào |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -31,7 +26,7 @@ Bốn việc:
 
 ---
 
-## 1. Vì sao là Bài 15, không phải Bài 15
+## Việc 1 — Vì sao gate xuất hiện ở Bài 15, không phải Bài 5
 
 Gate là một đoạn mã đọc artifact rồi phán. Nên nó cần ba thứ, và cả ba chỉ có sau Phần 3:
 
@@ -41,12 +36,12 @@ Gate là một đoạn mã đọc artifact rồi phán. Nên nó cần ba thứ,
 | Một chuẩn để so vào (trạng thái nào là hợp lệ) | 11 |
 | Đủ trải nghiệm để biết chỗ nào hay sai | 9–12 |
 
-Viết gate ở Bài 15 thì bạn đang đoán chỗ nào sẽ sai. Viết ở Bài 15 thì bạn **đã thấy** nó sai.
+Viết gate ở Bài 5 thì bạn đang đoán chỗ nào sẽ sai. Viết ở Bài 15 thì bạn **đã thấy** nó sai.
 
 Mở lại file bạn viết ở Thực hành Bài 1. Danh sách "nếu agent muốn báo cáo đẹp mà không làm thật, nó sẽ
 làm thế nào" cùng những câu dạng *"đọc X, nếu Y thì chặn"*. Hôm nay bạn biến một câu trong đó thành mã.
 
-## 2. Gate là gì, chính xác
+## Việc 2 — Gate là gì, chính xác
 
 Ba thứ, không hơn:
 
@@ -69,7 +64,7 @@ Mã thoát là phần dễ bị làm sai nhất. Ba mã, ba nghĩa **khác nhau*
 >
 > Nguyên tắc: *"không biết"* và *"biết là xấu"* là hai câu trả lời khác nhau. Đừng làm tròn cái trước thành cái sau.
 
-## 3. Chọn gate đầu tiên: evidence
+## Việc 3 — Chọn gate đầu tiên: evidence
 
 Gate đầu tiên nên thoả bốn điều: đọc artifact bạn **đã có** · bắt một lỗi **thật** · viết xong trong một
 buổi · và tiêm lỗi vào được để nghiệm thu.
@@ -98,7 +93,7 @@ Bài 17 bạn đã có file kết quả. Nếu chưa đúng dạng này thì t�
 Chú ý `TC_003`: trạng thái `SKIP` là **chưa chạy**, nên không đòi evidence. Gate phải biết phân biệt —
 đây chính là chỗ dễ báo oan đầu tiên.
 
-## 4. Viết gate
+## Việc 4 — Viết gate
 
 `scripts/qa/gate-bang-chung.js`:
 
@@ -200,7 +195,7 @@ Ba chi tiết trong đoạn mã trên không phải trang trí, và mỗi cái �
 | `if (!DA_CHAY.includes(c.status)) continue` | Đòi bằng chứng cho case chưa chạy là **báo oan**, và đó là cách nhanh nhất làm người ta tắt gate |
 | `if (fs.statSync(f).size < 1024)` | Chụp lỗi thì file vẫn được tạo, chỉ là **ảnh trắng**. Có đường dẫn không chứng minh có bằng chứng |
 
-## 5. Chạy trên nội dung thật, rồi soi từng cảnh báo
+## Việc 5 — Chạy trên nội dung thật, rồi soi từng cảnh báo
 
 Đây là bước mà đa số người bỏ, và bỏ nó thì gate không đáng tin.
 
@@ -226,7 +221,7 @@ Ba kiểu báo oan bạn sẽ gặp ngay:
    tồn tại" oan hàng loạt. Chốt một quy ước rồi ghi vào luật.
 3. **Ngưỡng 1024 byte.** Ảnh chụp một vùng nhỏ có thể dưới 1KB thật. Đo vài ảnh thật của bạn rồi mới chốt số.
 
-## 6. Negative control: chứng minh gate có răng
+## Việc 6 — Negative control: chứng minh gate có răng
 
 **Gate chưa từng đỏ là gate chưa được nghiệm thu.** Nó có thể đang xanh vì không kiểm gì cả.
 
@@ -254,7 +249,7 @@ npm run gate:evidence -- khong-co-file.json; echo "exit=$?"           # → 2
 Mũi ③ là mũi quan trọng nhất: nếu nó ra `1` thay vì `2` thì gate của bạn đang **gộp "không đo được" với
 "có vi phạm"** — sửa ngay.
 
-## 7. Chọn mức: cảnh báo trước, chặn sau
+## Việc 7 — Chọn mức: cảnh báo trước, chặn sau
 
 Gate mới không nên chặn ngay. Lý do là con số, không phải sự thận trọng:
 
@@ -279,7 +274,7 @@ if (viPham.length) {
 }
 ```
 
-## 8. Vì sao báo oan tệ hơn không có gate
+## Việc 8 — Vì sao báo oan tệ hơn không có gate
 
 Không có gate: mọi người biết là không có gì canh, nên tự cẩn thận.
 
@@ -337,6 +332,14 @@ Nghiệm thu bằng negative control: 3/3 mũi tiêm bắt đúng, phân biệt 
 ```
 
 ---
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Mã thoát** | Số chương trình trả về khi kết thúc. 0 là đạt, 1 là vi phạm, 2 là chưa đo được |
+| **Tiêm lỗi** | Cố tình làm hỏng dữ liệu để xem máy chặn có bắt được không |
+| **Bắt oan** | Máy báo đỏ ở chỗ thật ra đúng. Tệ hơn không có máy nào |
 
 ## Cây thư mục sau bài này
 

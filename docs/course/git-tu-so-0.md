@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Chạy git init, commit, tạo nhánh, viết .gitignore, rồi viết một máy chặn tệp cấm. |
 | **Xong thì được gì** | Kit nằm trên repo, và có máy canh không cho mật khẩu hay dữ liệu công ty đi theo. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Commit** | Một lần chốt: *"tới đây là một mốc"*. Kèm lời giải thích vì sao |
-| **Branch** (nhánh) | Bản làm việc song song. Bạn thử một hướng mà không phá bản đang chạy |
-| **Được track** | Tệp git đang quản. Tệp **chưa** track thì git chưa biết nó tồn tại |
-| **`.gitignore`** | Danh sách tệp git cố tình bỏ qua |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -215,6 +209,15 @@ git push -u origin main
 
 Ba câu này là nghiệm thu thật cho Việc 3 và Việc 4. Máy chặn nói "sạch" là một chuyện; **mắt bạn nhìn thấy
 repo trên web** là chuyện khác, và lần đầu thì nên làm cả hai.
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Commit** | Một lần chốt: *"tới đây là một mốc"*. Kèm lời giải thích vì sao |
+| **Branch** (nhánh) | Bản làm việc song song. Bạn thử một hướng mà không phá bản đang chạy |
+| **Được track** | Tệp git đang quản. Tệp **chưa** track thì git chưa biết nó tồn tại |
+| **`.gitignore`** | Danh sách tệp git cố tình bỏ qua |
 
 ## Cây thư mục sau bài này
 

@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Chốt 7 cột bắt buộc, viết một bộ đọc dùng chung, rồi viết tay 10 case. |
 | **Xong thì được gì** | Bộ case có khuôn cố định, xuất ra Excel được, và máy đọc được. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Canonical** | Bản gốc. Mọi bản khác sinh ra từ nó, không ai sửa riêng |
-| **Parser** | Đoạn mã đọc file testcase thành dữ liệu cho máy dùng |
-| **Ưu tiên và Severity** | Một cái nói làm trước sau, một cái nói hậu quả nếu lỗi xảy ra. Hai thứ khác nhau |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -566,6 +561,14 @@ git commit -m "feat(testcase): model canonical 7 cột + MỘT parser (xử lý 
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Canonical** | Bản gốc. Mọi bản khác sinh ra từ nó, không ai sửa riêng |
+| **Parser** | Đoạn mã đọc file testcase thành dữ liệu cho máy dùng |
+| **Ưu tiên và Severity** | Một cái nói làm trước sau, một cái nói hậu quả nếu lỗi xảy ra. Hai thứ khác nhau |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -578,6 +581,20 @@ kit-cua-toi/
     ├── testcases.md              ← MỚI · bản CANONICAL
     └── testcases.xlsx            ← MỚI · bản SINH RA từ .md, không sửa tay
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 3 · CONTROL      bài 2/9 của cấp độ này
+██████░░░░░░░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 13/29
+█████████████░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 3 bạn nói được:** Tôi có một QA workflow được enforce trong team.
+
+Cấp độ này còn 7 bài nữa.
 
 ## Tự kiểm
 

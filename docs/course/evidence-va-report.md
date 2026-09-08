@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Hàm chụp có khoanh đỏ và che dữ liệu khách, hàm quay video, rồi ráp tất cả thành một report. |
 | **Xong thì được gì** | Một thư mục kết quả tự nó kể lại được lượt chạy, không cần bạn ngồi giải thích. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Bằng chứng** | Ảnh hoặc video chứng minh case đã chạy thật và ra đúng kết quả bạn nói |
-| **Khoanh đỏ** | Vẽ khung vào đúng chỗ cần nhìn, kèm nhãn ngắn |
-| **Che thông tin cá nhân** | Bôi email, số điện thoại, tên khách trước khi lưu ảnh |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -541,6 +536,14 @@ Kiểm: <N> case đã chạy, 0 thiếu evidence, 0 đường dẫn chết."
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Bằng chứng** | Ảnh hoặc video chứng minh case đã chạy thật và ra đúng kết quả bạn nói |
+| **Khoanh đỏ** | Vẽ khung vào đúng chỗ cần nhìn, kèm nhãn ngắn |
+| **Che thông tin cá nhân** | Bôi email, số điện thoại, tên khách trước khi lưu ảnh |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -551,6 +554,20 @@ kit-cua-toi/tests/support/
 
 Hai file này là **hạ tầng**, không phải máy chặn. Máy chặn đọc *kết quả* của chúng, đó là
 `gate-bang-chung.js` ở Bài 15.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 2 · BUILD      bài 7/7 của cấp độ này
+████████████████████████████
+
+cả tài liệu           bài 11/29
+███████████░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 2 bạn nói được:** Tôi có một Test Kit.
+
+Đây là bài cuối của cấp độ 2. Bài 12 mở cấp độ 3 · CONTROL.
 
 ## Tự kiểm
 

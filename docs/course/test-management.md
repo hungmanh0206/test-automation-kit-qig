@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Đẩy testcase lên công cụ chung, đối chiếu lại từng ô, rồi đẩy kết quả thành một đợt chạy. |
 | **Xong thì được gì** | Cả team nhìn chung một chỗ. Và bạn biết API trả 200 chưa chứng minh dữ liệu vào đúng ô. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Dry-run** | Chạy thử để xem sẽ gửi đi cái gì, nhưng chưa gửi thật |
-| **Đối soát trường** | Đọc lại từ công cụ rồi so từng ô với nguồn. API trả 200 không thay được bước này |
-| **Cycle** | Một lượt chạy được ghi lại trên công cụ, có lịch sử riêng |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -483,6 +478,14 @@ Gate chất lượng đứng ở CẢ hai cửa: lệnh tự soi và đường p
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Dry-run** | Chạy thử để xem sẽ gửi đi cái gì, nhưng chưa gửi thật |
+| **Đối soát trường** | Đọc lại từ công cụ rồi so từng ô với nguồn. API trả 200 không thay được bước này |
+| **Cycle** | Một lượt chạy được ghi lại trên công cụ, có lịch sử riêng |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -498,6 +501,20 @@ kit-cua-toi/
     ├── day-ket-qua.js            ← MỚI · một lượt chạy = một cycle có lịch sử
     └── kiem-do-tuoi.js           ← MỚI · bản sao local cũ hơn công cụ ⇒ chặn
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 3 · CONTROL      bài 7/9 của cấp độ này
+██████████████████████░░░░░░
+
+cả tài liệu           bài 18/29
+█████████████████░░░░░░░░░░░
+```
+
+**Hết cấp độ 3 bạn nói được:** Tôi có một QA workflow được enforce trong team.
+
+Cấp độ này còn 2 bài nữa.
 
 ## Tự kiểm
 

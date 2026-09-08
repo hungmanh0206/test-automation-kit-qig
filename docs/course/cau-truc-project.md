@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Dựng cây thư mục bốn nhóm, và đặt quy ước tên file. |
 | **Xong thì được gì** | Một bộ khung mà mọi bài sau chỉ việc đặt đúng chỗ, không phải nghĩ lại. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Hạ tầng test** | Code phục vụ việc test nhưng bản thân không phải test |
-| **Thư viện** | Code dùng chung, gọi `node <file>` không chạy được |
-| **Máy chặn** | File tự chạy được, báo lỗi rồi thoát với mã khác 0 |
-| **Cô lập theo task** | Mỗi task một thư mục kết quả riêng, không đè lên nhau |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -156,6 +150,15 @@ Vì sao không dùng một file `.env` chung? Vì có tuần bạn làm hai task
 và hai thư mục kết quả khác nhau. Dùng chung một file thì task này sửa, task kia hỏng. Và hỏng kiểu im lặng:
 agent đăng nhập bằng tài khoản sai rồi vẫn báo cáo bình thường.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Hạ tầng test** | Code phục vụ việc test nhưng bản thân không phải test |
+| **Thư viện** | Code dùng chung, gọi `node <file>` không chạy được |
+| **Máy chặn** | File tự chạy được, báo lỗi rồi thoát với mã khác 0 |
+| **Cô lập theo task** | Mỗi task một thư mục kết quả riêng, không đè lên nhau |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -179,6 +182,20 @@ kit-cua-toi/
 
 Để ý `profiles/task.env.example` có đưa lên git, còn `profiles/PROJ-1234/task.env` thì không. Bản mẫu không
 chứa giá trị thật, và người mới cần nó để biết phải khai những biến gì.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 2 · BUILD      bài 1/7 của cấp độ này
+████░░░░░░░░░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 5/29
+█████░░░░░░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 2 bạn nói được:** Tôi có một Test Kit.
+
+Cấp độ này còn 6 bài nữa.
 
 ## Tự kiểm
 

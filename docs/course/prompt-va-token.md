@@ -10,15 +10,8 @@
 | **Bài này bạn gõ gì** | Viết một bản mẫu prompt 5 phần, rồi tách luật, kỹ năng, quy trình và lệnh ra bốn chỗ. |
 | **Xong thì được gì** | Prompt có điều kiện dừng rõ ràng, và luật chỉ nằm ở một nơi. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Rule** | Luật bất biến. Luôn đúng, không phụ thuộc bạn đang làm việc gì |
-| **Skill** | Năng lực theo vai. Agent mở ra khi cần, không tự nạp |
-| **Workflow** | Quy trình một chặng: làm gì trước, làm gì sau |
-| **Command** | Điểm vào. Gõ một dòng thì nạp đúng file và chạy đúng thứ tự |
-| **Điều kiện dừng** | Câu nói cho agent biết khi nào phải dừng lại hỏi, thay vì tự đoán rồi đi tiếp |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -173,6 +166,16 @@ Ghi vào `prompt_templates/`. Đây là dòng đầu tiên trong bộ prompt c�
 git add docs prompt_templates
 git commit -m "docs: bài 6 — so prompt sơ sài với prompt có ràng buộc"
 ```
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Rule** | Luật bất biến. Luôn đúng, không phụ thuộc bạn đang làm việc gì |
+| **Skill** | Năng lực theo vai. Agent mở ra khi cần, không tự nạp |
+| **Workflow** | Quy trình một chặng: làm gì trước, làm gì sau |
+| **Command** | Điểm vào. Gõ một dòng thì nạp đúng file và chạy đúng thứ tự |
+| **Điều kiện dừng** | Câu nói cho agent biết khi nào phải dừng lại hỏi, thay vì tự đoán rồi đi tiếp |
 
 ## Cây thư mục sau bài này
 

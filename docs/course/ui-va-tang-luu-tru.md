@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | So từng ô trên màn hình với bản ghi đã lưu, dựa vào một bảng ánh xạ khai sẵn. |
 | **Xong thì được gì** | Bắt được 7 loại bug chỉ lộ ở nơi lưu dữ liệu, và biết lỗi thuộc tầng nào. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Tầng lưu trữ** | Nơi dữ liệu thật sự nằm sau khi bấm Lưu — database, hoặc bất cứ chỗ nào ứng dụng đọc lại lần sau |
-| **Oracle phụ** | Nguồn thứ hai để đối chiếu, không thay thế oracle chính là đặc tả |
-| **Xoá mềm** | Không xoá bản ghi, chỉ đánh dấu `deleted_at`. Đọc sai cờ này là bản ghi "đã xoá" vẫn hiện |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -425,6 +420,14 @@ Và một câu nữa:
 > Tầng lưu trữ không phải bằng chứng. Ảnh chụp một câu `SELECT` không dùng làm bằng chứng cho một case được,
 > vì nó không nói lên người dùng đã nhìn thấy gì. Nó là dữ liệu để khoanh tầng lỗi, đính vào phần phân tích
 > của bug.
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Tầng lưu trữ** | Nơi dữ liệu thật sự nằm sau khi bấm Lưu — database, hoặc bất cứ chỗ nào ứng dụng đọc lại lần sau |
+| **Oracle phụ** | Nguồn thứ hai để đối chiếu, không thay thế oracle chính là đặc tả |
+| **Xoá mềm** | Không xoá bản ghi, chỉ đánh dấu `deleted_at`. Đọc sai cờ này là bản ghi "đã xoá" vẫn hiện |
 
 ## Cây thư mục sau bài này
 

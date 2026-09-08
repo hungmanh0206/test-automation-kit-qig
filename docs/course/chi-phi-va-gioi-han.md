@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Viết một máy đo cỡ tài liệu, chạy thử trên hai thư mục to nhỏ khác nhau. |
 | **Xong thì được gì** | Biết trước tài liệu nào đọc thẳng được, tài liệu nào phải nhờ agent con trích ra. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Token** | Đơn vị agent đọc và viết. Tiếng Việt thì khoảng 3 ký tự là 1 token, tiếng Anh khoảng 4 |
-| **Ngữ cảnh** | Toàn bộ chữ mà agent đang nhìn thấy trong một phiên. Nó có giới hạn, và giới hạn đó là thật |
-| **Agent con** (subagent) | Một phiên phụ, ngữ cảnh riêng. Nó làm một việc rồi trả về kết luận, không trả về mọi thứ nó đã đọc |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -214,6 +209,14 @@ Chống bằng một thói quen, không chống bằng cách dặn nhau cẩn th
 
 Hai số khớp thì đi tiếp. Lệch thì bạn vừa tránh được một kết luận sai. Với tệp trên đĩa thì `do-tai-lieu.js`
 đo hộ bạn. Với nguồn ngoài thì bạn phải tự hỏi công cụ con số thứ hai.
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Token** | Đơn vị agent đọc và viết. Tiếng Việt thì khoảng 3 ký tự là 1 token, tiếng Anh khoảng 4 |
+| **Ngữ cảnh** | Toàn bộ chữ mà agent đang nhìn thấy trong một phiên. Nó có giới hạn, và giới hạn đó là thật |
+| **Agent con** (subagent) | Một phiên phụ, ngữ cảnh riêng. Nó làm một việc rồi trả về kết luận, không trả về mọi thứ nó đã đọc |
 
 ## Cây thư mục sau bài này
 

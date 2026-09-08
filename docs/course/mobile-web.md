@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Khai thiết bị trong config, sửa ba thứ hỏng ngay, và chọn tập case đáng chạy trên mobile. |
 | **Xong thì được gì** | Một lane mobile chạy được, đủ nhẹ để không ai muốn tắt nó. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Viewport** | Kích thước vùng hiển thị. Không phải kích thước màn hình vật lý |
-| **Chạm** (tap) | Thao tác của điện thoại. Khác click ở chỗ không có trạng thái di chuột |
-| **Thiết bị khai sẵn** | Bộ cấu hình có sẵn cho từng máy: viewport, user agent, tỉ lệ điểm ảnh |
-| **Lane** | Một nhánh chạy riêng trong CI, có tập test và lịch chạy riêng |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -145,6 +139,15 @@ const project = { name: 'mobile', use: { ...devices['Pixel 7'] }, grep: /@mobile
 Vì sao tag chứ không phải thư mục `tests/mobile/`: vì cùng một case chạy hai nơi thì hai bản sẽ trôi
 xa nhau. Sửa một bản, quên bản kia, và bạn có hai testcase nói hai điều khác nhau về cùng một quy tắc.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Viewport** | Kích thước vùng hiển thị. Không phải kích thước màn hình vật lý |
+| **Chạm** (tap) | Thao tác của điện thoại. Khác click ở chỗ không có trạng thái di chuột |
+| **Thiết bị khai sẵn** | Bộ cấu hình có sẵn cho từng máy: viewport, user agent, tỉ lệ điểm ảnh |
+| **Lane** | Một nhánh chạy riêng trong CI, có tập test và lịch chạy riêng |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -159,6 +162,20 @@ kit-cua-toi/
 
 Thư mục `mobile-web/` chỉ chứa case **không tồn tại trên desktop**, ví dụ vuốt để xoá. Case chạy cả
 hai nơi thì ở nguyên chỗ cũ, gắn tag.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 4 · EVOLVE      bài 1/9 của cấp độ này
+███░░░░░░░░░░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 21/29
+████████████████████░░░░░░░░
+```
+
+**Hết cấp độ 4 bạn nói được:** Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.
+
+Cấp độ này còn 8 bài nữa.
 
 ## Tự kiểm
 

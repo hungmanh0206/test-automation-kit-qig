@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Khai khuôn bắt buộc có nguồn, bốn trạng thái vòng đời, rồi viết gate chặn ngay ở cửa đọc. |
 | **Xong thì được gì** | Ghi chú có phiên bản, tra được ai nói, và không âm thầm dạy sai cho agent. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **`source`** | Ai/cái gì khẳng định điều này. Không có thì đây là **phỏng đoán**, không phải tri thức |
-| **`supersedes`** | Bản ghi này **thay thế** bản ghi cũ nào |
-| **`covered_by`** | Testcase nào đang canh luật này. Dùng để truy **ngược** |
-| **`superseded` ≠ `invalid`** | Nghiệp vụ **đổi** (kết quả cũ vẫn đúng lúc đó) ≠ ghi sai từ đầu (kết quả cũ mất giá trị) |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -414,6 +408,15 @@ knowledge/leak/khach-bao-loi-tru-tien-hai-lan.json
 gì. Không cần mở tệp nào. `kiem-file-cam.js` (Bài 2) là máy canh chuyện đó; bài này chỉ nhắc rằng kho
 càng lớn thì rủi ro càng cao.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **`source`** | Ai/cái gì khẳng định điều này. Không có thì đây là **phỏng đoán**, không phải tri thức |
+| **`supersedes`** | Bản ghi này **thay thế** bản ghi cũ nào |
+| **`covered_by`** | Testcase nào đang canh luật này. Dùng để truy **ngược** |
+| **`superseded` ≠ `invalid`** | Nghiệp vụ **đổi** (kết quả cũ vẫn đúng lúc đó) ≠ ghi sai từ đầu (kết quả cũ mất giá trị) |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -429,6 +432,20 @@ kit-cua-toi/
     ├── fixture/
     └── leak/
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 4 · EVOLVE      bài 6/9 của cấp độ này
+███████████████████░░░░░░░░░
+
+cả tài liệu           bài 26/29
+█████████████████████████░░░
+```
+
+**Hết cấp độ 4 bạn nói được:** Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.
+
+Cấp độ này còn 3 bài nữa.
 
 ## Tự kiểm
 

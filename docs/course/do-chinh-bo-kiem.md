@@ -13,13 +13,8 @@
 | **Bài này bạn gõ gì** | Cố tình làm sai dữ liệu app trả về, rồi đếm xem suite có đỏ lên không. |
 | **Xong thì được gì** | Có con số cho biết bộ kiểm bắt được bao nhiêu phần trăm. Đây là bài quan trọng nhất. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Tiêm lỗi** | Cố tình làm sai dữ liệu app trả về, để xem suite có đỏ lên không |
-| **Mutant sống sót** | Bạn làm app sai mà suite vẫn xanh. Nghĩa là suite không nhìn thấy lỗi đó |
-| **Đối chứng** | Thử một ca biết chắc kết quả, để biết máy đo có hoạt động không |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -731,6 +726,14 @@ gate-mo-rong: phát hiện không có oracle_ref thì là OBSERVATION, không đ
 ```
 
 ---
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Tiêm lỗi** | Cố tình làm sai dữ liệu app trả về, để xem suite có đỏ lên không |
+| **Mutant sống sót** | Bạn làm app sai mà suite vẫn xanh. Nghĩa là suite không nhìn thấy lỗi đó |
+| **Đối chứng** | Thử một ca biết chắc kết quả, để biết máy đo có hoạt động không |
 
 ## Cây thư mục sau bài này
 

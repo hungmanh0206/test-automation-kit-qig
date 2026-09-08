@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Viết máy dò luật bị trôi khỏi tài liệu, và danh sách miễn trừ bắt buộc ghi lý do kèm ngày. |
 | **Xong thì được gì** | Biết khi nào sửa gate, khi nào ghi miễn trừ. Và gate của bạn không mất uy tín. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Trôi** | Hai bản của cùng một luật dần nói khác nhau, mà không ai để ý |
-| **Máy mồ côi** | Máy chặn viết xong, đúng, nhưng không ai gọi nên không bao giờ chạy |
-| **Miễn trừ** | Chỗ cố ý cho qua. Phải ghi lý do và ngày, nếu không nó thành chỗ giấu nợ |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -29,7 +24,7 @@ Bốn việc:
 
 ---
 
-## 1. Vấn đề mới xuất hiện ở Bài 14
+## Việc 1 — Vấn đề mới xuất hiện ở Bài 14
 
 Bạn vừa có 5 gate. Bây giờ có ba câu hỏi mà không cách nào trả lời:
 
@@ -45,7 +40,7 @@ Ba câu này nghe như chuyện tiện lợi. Không phải:
 Nới một gate là sửa **một dòng**: `process.exit(1)` thành `process.exit(0)`. Không có ai để ý. Sáu tháng sau
 bạn vẫn tin mình có 5 gate chặn, thực tế còn 2.
 
-## 2. Canonical và bản tóm
+## Việc 2 — Canonical và bản tóm
 
 Bài 5 bạn tạo hai file nói cùng một luật ở hai độ chi tiết: `CLAUDE.md` (ngắn, luôn trong ngữ cảnh) và
 `LUAT-DAY-DU.md` (dài, tra khi cần). Đó là **cố ý** — và nó tạo rủi ro thật.
@@ -68,7 +63,7 @@ Nên gate không so văn bản. Nó kiểm ba quy ước:
 2. Mọi tài liệu luật có đường vào từ một điểm vào nào đó.
 3. Mọi lệnh gate có nơi nhắc tới.
 
-## 3. Gate chống mồ côi
+## Việc 3 — Gate chống mồ côi
 
 Đây là gate quan trọng nhất của bài, vì nó bắt một lớp lỗi mà bạn không thể tự phát hiện bằng mắt.
 
@@ -207,7 +202,7 @@ Ba chi tiết đắt giá trong đoạn trên:
 }
 ```
 
-## 4. Danh mục máy tự sinh
+## Việc 4 — Danh mục máy tự sinh
 
 Câu 1 và câu 3 ở mục 1 cần một danh mục. Và danh mục đó phải sinh từ source, không viết tay. Viết tay
 thì nó mục ngay tuần sau.
@@ -315,7 +310,7 @@ Thêm vào `package.json`:
 > để thoát. Phải hiệu chuẩn danh mục trước khi tin số nó đưa ra. Đây đúng là nguyên tắc *"máy phải chạy
 > trên nội dung thật mới tính là nghiệm thu"* ở Bài 15.
 
-## 5. Allowlist: hai luật không được bỏ
+## Việc 5 — Allowlist: hai luật không được bỏ
 
 Mọi gate rồi sẽ cần miễn trừ. Hai luật, và cả hai đều đến từ vấp thật:
 
@@ -402,6 +397,14 @@ Nghiệm thu: lệnh mồ côi → 1 · khối lạ → 1 · nới một gate �
 ```
 
 ---
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Trôi** | Hai bản của cùng một luật dần nói khác nhau, mà không ai để ý |
+| **Máy mồ côi** | Máy chặn viết xong, đúng, nhưng không ai gọi nên không bao giờ chạy |
+| **Miễn trừ** | Chỗ cố ý cho qua. Phải ghi lý do và ngày, nếu không nó thành chỗ giấu nợ |
 
 ## Cây thư mục sau bài này
 

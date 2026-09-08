@@ -12,13 +12,8 @@
 | **Bài này bạn gõ gì** | Viết hàm tạo dữ liệu qua API, viết fixture dựng và dọn, rồi viết máy quét rác còn sót. |
 | **Xong thì được gì** | Mỗi case bắt đầu từ trạng thái biết trước. Và bạn hiểu vì sao có loại bug không có thật. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Tiền điều kiện** | Trạng thái phải có sẵn trước khi bước 1 của case bắt đầu |
-| **Factory** | Hàm tạo dữ liệu qua đúng đường app dùng, chứ không ghi thẳng vào database |
-| **Bug ma** | Bug bạn tưởng là thật, nhưng nó chỉ xuất hiện vì bạn dựng dữ liệu sai cách |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -397,6 +392,14 @@ Kiểm dọn: số bản ghi test trước và sau khi chạy suite bằng nhau,
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Tiền điều kiện** | Trạng thái phải có sẵn trước khi bước 1 của case bắt đầu |
+| **Factory** | Hàm tạo dữ liệu qua đúng đường app dùng, chứ không ghi thẳng vào database |
+| **Bug ma** | Bug bạn tưởng là thật, nhưng nó chỉ xuất hiện vì bạn dựng dữ liệu sai cách |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -409,6 +412,20 @@ kit-cua-toi/tests/support/
 
 Cả ba file nằm ở `tests/support/`, không ở `scripts/qa/`: chúng không tự chạy được và không chặn gì —
 chúng là hạ tầng test. Câu hỏi phân loại ở Bài 1 vẫn dùng được.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 2 · BUILD      bài 4/7 của cấp độ này
+████████████████░░░░░░░░░░░░
+
+cả tài liệu           bài 8/29
+████████░░░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 2 bạn nói được:** Tôi có một Test Kit.
+
+Cấp độ này còn 3 bài nữa.
 
 ## Tự kiểm
 

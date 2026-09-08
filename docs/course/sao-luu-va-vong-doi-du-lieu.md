@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Viết máy sao lưu, cho nó từ chối nếu bạn để đích ngay trong repo, rồi khai vòng đời từng loại. |
 | **Xong thì được gì** | Mất máy vẫn dựng lại được, vì bạn đã thử khôi phục một lần rồi. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Nạp lại được** | Mất thì kéo lại từ nguồn gốc (Jira, công cụ test-management, git) |
-| **Do người tạo** | Không có nguồn nào khác. Mất là **mất hẳn** |
-| **Tỉa** (prune) | Xoá bớt dữ liệu cũ theo luật đã khai trước |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -240,6 +235,14 @@ Một người thì `knowledge/` nằm trên máy bạn là đủ. Ba người t
 
 > Đừng nhét `knowledge/` thành submodule của repo kit. Nghe gọn, nhưng người clone kit sẽ vô tình kéo cả kho
 > tri thức về, và bạn mất đúng ranh giới mình vừa dựng.
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Nạp lại được** | Mất thì kéo lại từ nguồn gốc (Jira, công cụ test-management, git) |
+| **Do người tạo** | Không có nguồn nào khác. Mất là **mất hẳn** |
+| **Tỉa** (prune) | Xoá bớt dữ liệu cũ theo luật đã khai trước |
 
 ## Cây thư mục sau bài này
 

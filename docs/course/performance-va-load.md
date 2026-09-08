@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Ba loại phép đo cho ba câu hỏi khác nhau, và một kịch bản tải chạy được. |
 | **Xong thì được gì** | Số đo lặp lại được, và một báo cáo không kết luận quá tay. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Độ trễ** | Một yêu cầu mất bao lâu để có phản hồi |
-| **Thông lượng** | Hệ thống xử lý được bao nhiêu yêu cầu trong một giây |
-| **Phân vị 95** | 95% số lần nhanh hơn con số này. Đáng tin hơn giá trị trung bình |
-| **SLA** | Ngưỡng đã cam kết. Không có SLA thì không có "đạt" hay "trượt" |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -195,6 +189,15 @@ bạn nói được "nó chậm hơn sprint trước 40%", và đó là thông t
 > Đây cùng một kỷ luật với Bài 13: kết luận phải neo vào một nguồn. Có SLA thì neo vào SLA. Không có
 > thì neo vào lần đo trước của chính mình. Không neo được vào đâu thì ghi số và dừng lại, đừng phán.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Độ trễ** | Một yêu cầu mất bao lâu để có phản hồi |
+| **Thông lượng** | Hệ thống xử lý được bao nhiêu yêu cầu trong một giây |
+| **Phân vị 95** | 95% số lần nhanh hơn con số này. Đáng tin hơn giá trị trung bình |
+| **SLA** | Ngưỡng đã cam kết. Không có SLA thì không có "đạt" hay "trượt" |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -207,6 +210,20 @@ kit-cua-toi/
     └── load/
         └── tao-don-dong-thoi.js  ← MỚI · kịch bản tải tối thiểu
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 4 · EVOLVE      bài 3/9 của cấp độ này
+█████████░░░░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 23/29
+██████████████████████░░░░░░
+```
+
+**Hết cấp độ 4 bạn nói được:** Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.
+
+Cấp độ này còn 6 bài nữa.
 
 ## Tự kiểm
 

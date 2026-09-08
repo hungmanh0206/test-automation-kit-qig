@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Viết một thư viện khung dùng chung, thêm máy kiểm tồn kho, máy quét mật khẩu, và một lệnh gộp. |
 | **Xong thì được gì** | Một lệnh chạy hết mọi máy chặn. Và chỗ chưa đo được thì không bị coi là đạt. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Khung gate dùng chung** | Thư viện lo phần lặp lại, để mỗi gate chỉ viết phần riêng của nó |
-| **Suite rỗng vẫn xanh** | Không test nào chạy, mà báo cáo vẫn báo pass |
-| **Lệnh gộp** | Một lệnh chạy hết mọi máy chặn, in ra một bảng kết quả |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -394,6 +389,14 @@ Nghiệm thu: 6/6 tình huống làm sai đều đỏ đúng gate mong đợi."
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Khung gate dùng chung** | Thư viện lo phần lặp lại, để mỗi gate chỉ viết phần riêng của nó |
+| **Suite rỗng vẫn xanh** | Không test nào chạy, mà báo cáo vẫn báo pass |
+| **Lệnh gộp** | Một lệnh chạy hết mọi máy chặn, in ra một bảng kết quả |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -408,6 +411,20 @@ kit-cua-toi/scripts/
 
 `lib/gate.js` ở `scripts/lib/` vì gõ `node scripts/lib/gate.js` không làm gì cả, nó là thư viện.
 Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát với mã khác 0 khi có vi phạm.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 4 · EVOLVE      bài 4/9 của cấp độ này
+████████████░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 24/29
+███████████████████████░░░░░
+```
+
+**Hết cấp độ 4 bạn nói được:** Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.
+
+Cấp độ này còn 5 bài nữa.
 
 ## Tự kiểm
 

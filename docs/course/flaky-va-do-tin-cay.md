@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Tính hai loại tỉ lệ pass, đo khoảng cách giữa chúng, rồi chấm điểm tin cậy từng test. |
 | **Xong thì được gì** | Biết suite phụ thuộc vào việc chạy lại đến mức nào, và không chôn nhầm bug thật. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Clean pass rate** | Tỉ lệ case xanh ngay lượt đầu, không cần chạy lại |
-| **Eventual pass rate** | Tỉ lệ case xanh sau khi đã chạy lại vài lần |
-| **Reliability index** | Điểm tin cậy của **từng test**: nó xanh-ngay bao nhiêu phần trăm số lần |
-| **Quarantine** | Tách một test ra khỏi luồng chính vì nó quá chập chờn — nhưng **không xoá** |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -385,6 +379,15 @@ Chi tiết đầy đủ, kèm cách khai `mutants.json` và cách gộp kết qu
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Clean pass rate** | Tỉ lệ case xanh ngay lượt đầu, không cần chạy lại |
+| **Eventual pass rate** | Tỉ lệ case xanh sau khi đã chạy lại vài lần |
+| **Reliability index** | Điểm tin cậy của **từng test**: nó xanh-ngay bao nhiêu phần trăm số lần |
+| **Quarantine** | Tách một test ra khỏi luồng chính vì nó quá chập chờn — nhưng **không xoá** |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -397,6 +400,20 @@ kit-cua-toi/
 └── knowledge/reliability/            ← MỚI · điểm tin cậy theo từng test; Bài 26 sẽ đưa cả thư mục này vào kỷ luật chung
     └── <ten-test>.json               ← MỚI · soLuot · xanhNgay · doTinCay · hang · daThu
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 4 · EVOLVE      bài 5/9 của cấp độ này
+████████████████░░░░░░░░░░░░
+
+cả tài liệu           bài 25/29
+████████████████████████░░░░
+```
+
+**Hết cấp độ 4 bạn nói được:** Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.
+
+Cấp độ này còn 4 bài nữa.
 
 ## Tự kiểm
 

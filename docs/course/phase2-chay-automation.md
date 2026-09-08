@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Lấy một case đã pass rồi soi rộng ra 7 hướng quanh nó, ngay trên app thực hành. |
 | **Xong thì được gì** | Từ đúng một case, bạn tìm ra cả 3 bug cài sẵn và thêm một chỗ tài liệu còn thiếu. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Mở rộng** | Trong lúc execute một case, cố tình nhìn ra **quanh** nó, không chỉ làm đúng chữ trong case |
-| **`OBSERVATION`** | Thấy một điều lạ nhưng không neo được vào mã luật nào. Không phải PASS, không phải FAIL |
-| **`spec:gap`** | Ứng dụng làm một việc mà đặc tả không nói gì. Không phải bug — là lỗ hổng đặc tả |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -422,6 +417,14 @@ Chín lệnh nên có: `/phase1` `/phase2` `/rerun` `/publish` `/kiem-dau-vao` `
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Mở rộng** | Trong lúc execute một case, cố tình nhìn ra **quanh** nó, không chỉ làm đúng chữ trong case |
+| **`OBSERVATION`** | Thấy một điều lạ nhưng không neo được vào mã luật nào. Không phải PASS, không phải FAIL |
+| **`spec:gap`** | Ứng dụng làm một việc mà đặc tả không nói gì. Không phải bug — là lỗ hổng đặc tả |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -442,6 +445,20 @@ kit-cua-toi/
 
 Để ý `spec-gaps.json` là tệp **riêng**, không lẫn vào `mo-rong.json`: nó đi tới **BA**, không đi tới đường log
 bug. Trộn hai đường là cách sinh ra bug bị Rejected.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 3 · CONTROL      bài 5/9 của cấp độ này
+████████████████░░░░░░░░░░░░
+
+cả tài liệu           bài 16/29
+███████████████░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 3 bạn nói được:** Tôi có một QA workflow được enforce trong team.
+
+Cấp độ này còn 4 bài nữa.
 
 ## Tự kiểm
 

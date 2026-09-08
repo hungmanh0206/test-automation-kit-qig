@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Test gọi thẳng API, và một máy so cái UI hiện với cái tầng lưu trữ giữ. |
 | **Xong thì được gì** | Bắt được bug thứ ba của app thực hành, và biết khoanh lỗi thuộc tầng nào. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Tầng lưu trữ** | Nơi dữ liệu thật sự nằm. Giao diện chỉ là một cách hiển thị nó |
-| **Guard trạng thái** | Luật chặn thao tác không hợp lệ, ví dụ sửa đơn đã xác nhận |
-| **Kiểm song song** | Cùng một sự việc, đọc từ hai nguồn, rồi so |
-| **Khoanh tầng lỗi** | Xác định lỗi nằm ở giao diện hay ở phía sau, trước khi báo cho ai |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -286,6 +280,15 @@ node scripts/qa/doi-chieu-luu-tru.js mau/ui-khop.json mau/lt-thieu.json    # →
 
 Ba ca, không phải hai. Gate nào có trạng thái "không đo được" thì phải chứng minh cả ba.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Tầng lưu trữ** | Nơi dữ liệu thật sự nằm. Giao diện chỉ là một cách hiển thị nó |
+| **Guard trạng thái** | Luật chặn thao tác không hợp lệ, ví dụ sửa đơn đã xác nhận |
+| **Kiểm song song** | Cùng một sự việc, đọc từ hai nguồn, rồi so |
+| **Khoanh tầng lỗi** | Xác định lỗi nằm ở giao diện hay ở phía sau, trước khi báo cho ai |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -306,6 +309,20 @@ kit-cua-toi/
         ├── bao-gia.spec.js       ← MỚI · BR-02, BR-03, BR-04
         └── guard-trang-thai.spec.js  ← MỚI · BR-07, bug thứ ba
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 2 · BUILD      bài 6/7 của cấp độ này
+████████████████████████░░░░
+
+cả tài liệu           bài 10/29
+██████████░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 2 bạn nói được:** Tôi có một Test Kit.
+
+Cấp độ này còn 1 bài nữa.
 
 ## Tự kiểm
 

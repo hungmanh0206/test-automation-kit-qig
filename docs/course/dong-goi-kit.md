@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Đóng gói chỉ phần dùng chung, quét mật khẩu trong gói, rồi giải nén ra chỗ sạch chạy thử. |
 | **Xong thì được gì** | Có một bản phát hành đã chạy thử được thật, kèm ghi chú cái gì thay đổi. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Bản phát hành** | Một gói có số phiên bản, có ghi chú đổi gì, và đã được nghiệm thu |
-| **Nghiệm thu gói** | Giải nén ra thư mục sạch → cài lại → chạy gate. Đạt mới gọi là phát hành được |
-| **Tầng chung / tầng dự án** | Cái mang đi được mọi nơi / cái chỉ đúng với dự án này |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -414,6 +409,14 @@ Ba đặc điểm của README này đáng chép lại:
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Bản phát hành** | Một gói có số phiên bản, có ghi chú đổi gì, và đã được nghiệm thu |
+| **Nghiệm thu gói** | Giải nén ra thư mục sạch → cài lại → chạy gate. Đạt mới gọi là phát hành được |
+| **Tầng chung / tầng dự án** | Cái mang đi được mọi nơi / cái chỉ đúng với dự án này |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -428,6 +431,20 @@ kit-cua-toi/
 ```
 
 Nhớ thêm `dist/` vào `.gitignore`, nó là artifact, sinh lại được từ mã nguồn.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 4 · EVOLVE      bài 8/9 của cấp độ này
+█████████████████████████░░░
+
+cả tài liệu           bài 28/29
+███████████████████████████░
+```
+
+**Hết cấp độ 4 bạn nói được:** Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.
+
+Cấp độ này còn 1 bài nữa.
 
 ## Tự kiểm
 

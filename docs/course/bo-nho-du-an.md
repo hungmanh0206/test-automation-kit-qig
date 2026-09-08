@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Dựng năm kho ghi nhớ, viết máy chặn ghi chú không có nguồn, và cách bắt đầu khi chưa có dữ liệu. |
 | **Xong thì được gì** | Kit nhớ được việc đã làm, kể cả khi bạn mới bắt đầu từ số không. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Kho tri thức** | Chỗ ghi lại những gì đã học được, để phiên sau không phải học lại |
-| **Bắt đầu từ trống** | Tình huống bạn chưa có dữ liệu gì. Chương này giải đúng nó |
-| **Độ tin cậy** | Một test xanh ngay lượt đầu bao nhiêu phần trăm số lần |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -29,7 +24,7 @@ Bốn việc:
 
 ---
 
-## 1. Vấn đề: agent không có ký ức
+## Việc 1 — Vấn đề: agent không có ký ức
 
 Bạn đã có kit khá đầy đủ. Nhưng thử tình huống này:
 
@@ -48,7 +43,7 @@ Ba thứ mất theo cách này:
 | **Vì sao đã kết luận thế** | Log lại bug đã bị từ chối; đánh FAIL oan case đã chốt là vướng môi trường |
 | **Làm sao dựng được state** | Mò lại một cách dựng đã thử và thất bại |
 
-## 2. Năm store, năm câu hỏi
+## Việc 2 — Năm store, năm câu hỏi
 
 | Store | Trả lời câu | Ví dụ nội dung | Ghi bằng |
 |---|---|---|---|
@@ -74,7 +69,7 @@ knowledge/
 └── bugs/                ← nạp từ hệ thống quản lý việc
 ```
 
-## 3. Cold start: dữ liệu ở đâu ra khi chưa có gì
+## Việc 3 — Cold start: dữ liệu ở đâu ra khi chưa có gì
 
 Đây là mục quan trọng nhất của bài, và là chỗ mà mọi hướng dẫn khác im lặng.
 
@@ -131,7 +126,7 @@ vì nó trông như đã có nguồn.
 
 Trường `chuaKhaoSat` là thứ làm file này trung thực. Nó cũng là danh sách việc.
 
-## 4. Ghi rule: có kiểm, không phải ghi bừa
+## Việc 4 — Ghi rule: có kiểm, không phải ghi bừa
 
 `knowledge/domain/BR-01-giam-gia.json`:
 
@@ -209,7 +204,7 @@ if (loi.length) {
 console.log('[domain] ✓ ĐẠT');
 ```
 
-## 5. Không commit — và phải sao lưu ngoài repo
+## Việc 5 — Không commit — và phải sao lưu ngoài repo
 
 `knowledge/` là dữ liệu công ty, đối xử như `.env`:
 
@@ -278,7 +273,7 @@ fs.writeFileSync(path.join(goi, 'MANIFEST.txt'),
 console.log(`[backup] đã sao lưu ${soFile} file → ${goi}`);
 ```
 
-## 6. Thu tự động: gắn vào reporter
+## Việc 6 — Thu tự động: gắn vào reporter
 
 Với `metrics/`, đừng gắn vào một lệnh phải nhớ gọi. Gắn vào **reporter** của test runner, nó chạy sau **mỗi**
 lượt test, mặc định, không ai phải nhớ.
@@ -360,7 +355,7 @@ module.exports = {
 > reporter `json` ghi xong `results.json`. Nên nếu bạn đọc file đó ở teardown thì đọc bản cũ hoặc không có
 > file. Reporter khai cuối thì chạy sau các reporter trước nó.
 
-## 7. Độ tin cậy từng case, và cách ly test bất ổn
+## Việc 7 — Độ tin cậy từng case, và cách ly test bất ổn
 
 Có `lich-su-case.jsonl` tích luỹ, giờ trả lời được câu mà một lượt chạy không trả lời được: **case nào không
 đáng tin?**
@@ -526,6 +521,14 @@ Store ghi tay không nạp lại được từ nguồn máy ⇒ bắt buộc sao
 ```
 
 ---
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Kho tri thức** | Chỗ ghi lại những gì đã học được, để phiên sau không phải học lại |
+| **Bắt đầu từ trống** | Tình huống bạn chưa có dữ liệu gì. Chương này giải đúng nó |
+| **Độ tin cậy** | Một test xanh ngay lượt đầu bao nhiêu phần trăm số lần |
 
 ## Cây thư mục sau bài này
 

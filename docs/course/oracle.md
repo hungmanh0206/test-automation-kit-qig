@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Sửa 5 kết quả mong đợi yếu thành loại trỏ được về tài liệu, rồi viết gate chặn số không có nguồn. |
 | **Xong thì được gì** | Mọi kết luận đúng sai đều chỉ được ra một dòng luật cụ thể. Đây là bài quan trọng nhất. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Oracle** | Câu trả lời cho "dựa vào đâu mà bảo cái này đúng hay sai" |
-| **Test tự khen mình** (tautology) | Test lấy chính app làm chuẩn để chấm app. Nó luôn xanh |
-| **Fixture phân biệt** | Dữ liệu thử được dựng sao cho hai khả năng cho ra hai kết quả khác nhau |
-| **`OBSERVATION`** | Thấy điều lạ nhưng chưa có nguồn để nói đúng sai. Không phải PASS, không phải FAIL |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -277,6 +271,15 @@ git commit -m "feat(rule): mục Oracle — cấm test tự khen mình, ép neo 
 
 Sửa 5 kết quả mong đợi yếu thành có neo. Bộ hiện tại: <N> case, còn <X> dòng oracle rỗng."
 ```
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Oracle** | Câu trả lời cho "dựa vào đâu mà bảo cái này đúng hay sai" |
+| **Test tự khen mình** (tautology) | Test lấy chính app làm chuẩn để chấm app. Nó luôn xanh |
+| **Fixture phân biệt** | Dữ liệu thử được dựng sao cho hai khả năng cho ra hai kết quả khác nhau |
+| **`OBSERVATION`** | Thấy điều lạ nhưng chưa có nguồn để nói đúng sai. Không phải PASS, không phải FAIL |
 
 ## Cây thư mục sau bài này
 

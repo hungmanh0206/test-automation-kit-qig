@@ -244,8 +244,12 @@ if (!exists(COURSE_MD)) {
     const badBlocks = [];
     let blockCount = 0;
     const COURSE_DIR = path.join(ROOT, 'docs', 'course');
+    /* TEMPLATE.md khai HÌNH DẠNG của một bài, nó không phải một bài. Đưa nó vào danh sách bài thì
+       mọi phép kiểm template đều báo oan chính cái file định nghĩa template. */
     const lessonFiles = fs.existsSync(COURSE_DIR)
-      ? fs.readdirSync(COURSE_DIR).filter((f) => f.endsWith('.md')).map((f) => 'course/' + f)
+      ? fs.readdirSync(COURSE_DIR)
+          .filter((f) => f.endsWith('.md') && f !== 'TEMPLATE.md')
+          .map((f) => 'course/' + f)
       : [];
     for (const rel of lessonFiles) {
       const md = rd(path.join(ROOT, 'docs', rel));
@@ -577,28 +581,107 @@ if (!exists(COURSE_MD)) {
         `trích dẫn in đậm ${demTrich}/${SAN_GIONG.trichDamDau})`);
     }
 
-    /* Mỗi bài phải có khối "Từ mới của bài này".
+    /* Mỗi bài phải có khối thuật ngữ, và nó phải nằm SAU các Việc.
      *
-     * VÌ SAO: người đọc từ số 0 gặp từ lạ ngay giữa bài thì phải dừng lại tra, và thường là tra sai.
-     * Gom từ mới lên đầu bài, giải thích bằng ví dụ, thì đọc một mạch được.
+     * VÌ SAO ĐẶT SAU: luật của template là không định nghĩa thuật ngữ trước khi người đọc từng chạm
+     * vào nó. Một định nghĩa đọc trước khi có trải nghiệm thì chỉ là chữ; cùng định nghĩa đó đọc sau
+     * khi vừa làm thì nó gắn vào một việc cụ thể. Đo được: 38/43 bài từng đặt khối này ở ĐẦU bài.
      *
-     * Miễn trừ phải khai TƯỜNG MINH kèm lý do — giống mọi allowlist khác trong kit. */
+     * Miễn trừ phải khai TƯỜNG MINH kèm lý do — giống mọi allowlist khác trong kit.
+     * Nguồn quyết về hình dạng bài: docs/course/TEMPLATE.md */
     const MIEN_TU_MOI = {
       'truoc-khi-bat-dau.md': 'bài này DẠY 10 từ vựng làm nội dung chính (Việc 4), nên không có khối riêng',
       'lo-trinh-sau-khoa.md': 'bài khép lại, chỉ nhìn lại và chỉ đường đi tiếp, không giới thiệu từ nào mới'
     };
-    const thieuTuMoi = lessonFiles.filter((rel) => {
+    const TEN_KHOI_TU = '## Gọi tên những gì bạn vừa làm';
+    const thieuTuMoi = [];
+    const tuMoiDatTruoc = [];
+    for (const rel of lessonFiles) {
       const ten = path.basename(rel);
-      if (MIEN_TU_MOI[ten]) return false;
-      return !rd(path.join(ROOT, 'docs', rel)).includes('## Từ mới của bài này');
-    });
+      if (MIEN_TU_MOI[ten]) continue;
+      const noi = rd(path.join(ROOT, 'docs', rel));
+      const iTu = noi.indexOf(TEN_KHOI_TU);
+      if (iTu < 0) {
+        if (noi.includes('## Từ mới của bài này')) {
+          tuMoiDatTruoc.push(`${ten}: còn dùng tên khối cũ "Từ mới của bài này"`);
+        } else {
+          thieuTuMoi.push(ten);
+        }
+        continue;
+      }
+      const iViec = noi.indexOf('\n## Việc 1');
+      if (iViec >= 0 && iTu < iViec) {
+        tuMoiDatTruoc.push(`${ten}: khối thuật ngữ đặt TRƯỚC Việc 1`);
+      }
+    }
     if (thieuTuMoi.length) {
-      problems.push(`${thieuTuMoi.length} bài thiếu khối "Từ mới của bài này": ` +
-        thieuTuMoi.map((f) => path.basename(f)).join(', ') +
-        ' — thêm khối, hoặc khai miễn trừ kèm lý do trong library_drift.js');
-    } else if (lessonFiles.length) {
-      ok.push(`${lessonFiles.length - Object.keys(MIEN_TU_MOI).length} bài có khối từ mới ` +
+      problems.push(`${thieuTuMoi.length} bài thiếu khối "${TEN_KHOI_TU}": ` +
+        thieuTuMoi.join(', ') + ' — thêm khối, hoặc khai miễn trừ kèm lý do trong library_drift.js');
+    }
+    if (tuMoiDatTruoc.length) {
+      problems.push(`${tuMoiDatTruoc.length} bài định nghĩa thuật ngữ SAI CHỖ (xem docs/course/TEMPLATE.md):\n      ` +
+        tuMoiDatTruoc.slice(0, 10).join('\n      '));
+    }
+    if (!thieuTuMoi.length && !tuMoiDatTruoc.length && lessonFiles.length) {
+      ok.push(`${lessonFiles.length - Object.keys(MIEN_TU_MOI).length} bài có khối thuật ngữ, đều đặt SAU các Việc ` +
         `(${Object.keys(MIEN_TU_MOI).length} bài miễn trừ có lý do)`);
+    }
+
+    /* ── Ba khối còn lại của template ────────────────────────────────────────────────
+     * Nguồn quyết: docs/course/TEMPLATE.md. Số đo ngày 08/09/2026 trước khi có phép kiểm này:
+     * 43/43 bài thiếu khối "Vấn đề" · 43/43 thiếu chỉ báo độ chín · 7 bài có "Bài sau" chỉ liệt kê
+     * nội dung mà không nêu lý do đi tiếp.
+     *
+     * Khối "Vấn đề" phải VIẾT TAY cho từng bài (một tình huống cụ thể), nên nó dùng MỐC: ghi số bài
+     * còn thiếu hôm nay, và chỉ chặn khi con số TĂNG. Bật chặn tuyệt đối ngay thì gate đỏ 43 bài và
+     * bị tắt trong một ngày — bài học đã trả giá ở gate locator. */
+    const MOC_THIEU_VAN_DE = 43;
+    const thieuVanDe = [];
+    const thieuDoChin = [];
+    const baiSauKhongLyDo = [];
+    for (const rel of lessonFiles) {
+      const ten = path.basename(rel);
+      const noi = rd(path.join(ROOT, 'docs', rel));
+      if (!/(?:^|\n)(?:\*\*Vấn đề\*\*|## Vấn đề)/.test(noi)) thieuVanDe.push(ten);
+      if (!noi.includes('## Bộ kit của bạn đang ở đâu')) thieuDoChin.push(ten);
+      /* ĐO ĐỘ DÀI, không đo từ khoá.
+       *
+       * Bản đầu tìm các từ "vì / nhưng / còn một / ?" và cho ra 8/8 BÁO OAN: cả tám mục đều nêu lý
+       * do thật, chỉ là bằng cách khác ("mọi gate chỉ chạy khi bạn nhớ chạy" · "đặt sai là pipeline
+       * báo xanh" · "với một người thì đủ, với năm người thì không"). Tôi đang đo sự có mặt của vài
+       * từ tôi tự liệt kê, chứ không đo sự có mặt của một lý do.
+       *
+       * "Có nêu lý do hay không" là việc máy KHÔNG đo được, và TEMPLATE.md nói rõ đó là luật cho
+       * người. Thứ máy đo được là: mục này có tồn tại, có nhắc bài kế tiếp, và đủ dài để chứa một lý
+       * do. Sàn 90 ký tự lấy từ số đo thật: mục ngắn nhất trong 32 mục hiện có là 111 ký tự. */
+      const m = /(?:^|\n)## Bài sau\n+([\s\S]*?)(?=\n## |$)/.exec(noi);
+      if (m) {
+        const than = m[1].split(/\s+/).join(' ').trim();
+        if (than.length < 90) baiSauKhongLyDo.push(`${ten}: chỉ ${than.length} ký tự, quá ngắn để chứa một lý do`);
+      }
+    }
+    if (thieuVanDe.length > MOC_THIEU_VAN_DE) {
+      problems.push(`${thieuVanDe.length} bài thiếu khối "Vấn đề" mở bài, mốc là ${MOC_THIEU_VAN_DE} — ` +
+        'số đang TĂNG. Bài mới phải mở bằng một tình huống cụ thể, xem docs/course/TEMPLATE.md');
+    } else {
+      ok.push(`khối "Vấn đề": ${lessonFiles.length - thieuVanDe.length}/${lessonFiles.length} bài đã có ` +
+        `(mốc còn thiếu ${MOC_THIEU_VAN_DE}, hiện ${thieuVanDe.length})`);
+    }
+    /* Chỉ báo độ chín thì SINH TỰ ĐỘNG được, nên chặn tuyệt đối. Bài nào thiếu thì chạy
+       `npm run course:maturity`. Chỉ áp cho bài CÓ SỐ — bài bổ trợ không nằm trong lộ trình. */
+    const coSoFile = new Set(cs.parts.flatMap((p) => p.lessons.map((l) => path.basename(l.href || ''))));
+    const thieuDoChinCoSo = thieuDoChin.filter((t) => coSoFile.has(t));
+    if (thieuDoChinCoSo.length) {
+      problems.push(`${thieuDoChinCoSo.length} bài có số thiếu chỉ báo độ chín: ` +
+        thieuDoChinCoSo.slice(0, 8).join(', ') + ' — chạy `npm run course:maturity`');
+    } else {
+      ok.push(`${coSoFile.size} bài có số đều có chỉ báo độ chín (sinh từ COURSE.md)`);
+    }
+    if (baiSauKhongLyDo.length) {
+      problems.push(`${baiSauKhongLyDo.length} mục "Bài sau" quá ngắn để chứa một lý do:\n      ` +
+        baiSauKhongLyDo.join('\n      '));
+    } else {
+      ok.push('mọi mục "Bài sau" đủ dài để chứa lý do (sàn 90 ký tự, đo từ 32 mục thật)');
     }
     /* Miễn trừ trỏ tới bài không còn tồn tại thì phải dọn, nếu không allowlist thành rác. */
     for (const ten of Object.keys(MIEN_TU_MOI)) {

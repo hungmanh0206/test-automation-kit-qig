@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Cài ba công cụ và nghiệm thu từng cái, tạo repo, rồi viết máy canh tệp cấm. |
 | **Xong thì được gì** | Một repo có người gác cổng, thay vì một lời dặn nhau cẩn thận hơn. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Nghiệm thu** | Cài xong thì chạy một lệnh để chứng minh nó hoạt động, không tin lời khai |
-| **Tệp cấm** | Tệp không bao giờ được commit: bí mật, dữ liệu khách, kết quả chạy |
-| **Git track** | Git đang theo dõi tệp này. Thêm vào `.gitignore` sau đó KHÔNG gỡ nó ra |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -256,6 +251,14 @@ Chỉ cần chạy `git ls-files` trên một repo công khai là người ngoà
 khẩu ở Bài 14 mới là cái đọc nội dung. Hai lớp khác nhau, và lớp tên file là lớp hay bị bỏ quên.
 
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Nghiệm thu** | Cài xong thì chạy một lệnh để chứng minh nó hoạt động, không tin lời khai |
+| **Tệp cấm** | Tệp không bao giờ được commit: bí mật, dữ liệu khách, kết quả chạy |
+| **Git track** | Git đang theo dõi tệp này. Thêm vào `.gitignore` sau đó KHÔNG gỡ nó ra |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -271,6 +274,20 @@ kit-cua-toi/
 ```
 
 Ba file ở gốc và một máy chặn. Đó là toàn bộ repo lúc này, và nó đã có người gác cổng.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 1 · AUTOMATE      bài 2/4 của cấp độ này
+██████████████░░░░░░░░░░░░░░
+
+cả tài liệu           bài 2/29
+██░░░░░░░░░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 1 bạn nói được:** Tôi chạy được test và tôi hiểu kết quả của nó.
+
+Cấp độ này còn 2 bài nữa.
 
 ## Tự kiểm
 

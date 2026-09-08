@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Bốn phần bắt buộc của một bug report, cách gán theo tầng lỗi, và một máy tạo bug từ kết quả chạy. |
 | **Xong thì được gì** | Bug Dev đọc là làm được, và một đường rerun sau khi fix. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Triage** | Chặng phân loại giữa "test đỏ" và "bug". Bỏ chặng này thì Dev trả về |
-| **Tầng lỗi** | Lỗi nằm ở giao diện, ở phía sau, ở dữ liệu, hay ở môi trường |
-| **Bug ma** | Bug không tồn tại, sinh ra vì tiền điều kiện dựng sai |
-| **Rerun** | Chạy lại sau khi Dev fix, để xác nhận |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -166,6 +160,15 @@ Dev đóng bug với trạng thái Rejected không có nghĩa là bạn sai. Ba 
 Dòng thứ hai xảy ra thường xuyên hơn người ta tưởng. Tài liệu đặc tả có nhiều phiên bản, và bản bạn
 đang đọc có thể không phải bản mới nhất. Kiểm trước khi tranh luận thì rẻ hơn nhiều.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Triage** | Chặng phân loại giữa "test đỏ" và "bug". Bỏ chặng này thì Dev trả về |
+| **Tầng lỗi** | Lỗi nằm ở giao diện, ở phía sau, ở dữ liệu, hay ở môi trường |
+| **Bug ma** | Bug không tồn tại, sinh ra vì tiền điều kiện dựng sai |
+| **Rerun** | Chạy lại sau khi Dev fix, để xác nhận |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -181,6 +184,20 @@ kit-cua-toi/
     ├── test-results/             ·  từ Bài 17
     └── bugs/                     ← MỚI · bản nháp bug trước khi đẩy lên
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 3 · CONTROL      bài 8/9 của cấp độ này
+█████████████████████████░░░
+
+cả tài liệu           bài 19/29
+██████████████████░░░░░░░░░░
+```
+
+**Hết cấp độ 3 bạn nói được:** Tôi có một QA workflow được enforce trong team.
+
+Cấp độ này còn 1 bài nữa.
 
 ## Tự kiểm
 

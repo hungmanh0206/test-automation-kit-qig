@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Lập một bảng khai server, quyền, ai duyệt. Rồi viết gate chặn quyền ghi chưa ai duyệt. |
 | **Xong thì được gì** | Agent lấy dữ liệu ngoài qua một cửa duy nhất, quyền vừa đủ, và rõ chỗ nào phải người bấm. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **MCP server** | Cầu nối cho agent đọc/ghi một hệ thống ngoài (Jira, Drive, Figma…) qua một giao diện chung |
-| **Quyền tối thiểu** | Cấp đúng cái cần, không hơn. Chỉ đọc là mặc định |
-| **Human gate** | Bước bắt buộc có người bấm. Không phải vì máy làm không nổi — vì hậu quả |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -232,6 +227,14 @@ Bốn điều về thông báo, học từ chỗ mọi kênh thông báo đều 
 
 Dòng đầu là dòng quan trọng nhất: thông báo bị bỏ qua còn tệ hơn không có thông báo, vì nó tạo cảm giác
 đang được canh.
+
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **MCP server** | Cầu nối cho agent đọc/ghi một hệ thống ngoài (Jira, Drive, Figma…) qua một giao diện chung |
+| **Quyền tối thiểu** | Cấp đúng cái cần, không hơn. Chỉ đọc là mặc định |
+| **Human gate** | Bước bắt buộc có người bấm. Không phải vì máy làm không nổi — vì hậu quả |
 
 ## Cây thư mục sau bài này
 

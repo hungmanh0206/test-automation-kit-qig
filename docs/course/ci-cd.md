@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Khai chỗ nào chạy lệnh nào, chặn test ăn theo biến môi trường, và đo xem máy nào không ai gọi. |
 | **Xong thì được gì** | Gate tự chạy mỗi lần đẩy code, và không còn máy nào nằm không. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **CI** | Máy chủ tự chạy lệnh mỗi lần bạn đẩy code lên |
-| **Thừa hưởng biến môi trường** | Test chạy được ở máy bạn chỉ vì shell còn sẵn một biến. Lên CI là đỏ |
-| **Độ với tới** | Máy có được gọi từ đâu đó không. Không ai gọi thì coi như không có |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -407,6 +402,14 @@ gates-voi-toi: máy đúng mà không điểm vào nào gọi thì bằng không
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **CI** | Máy chủ tự chạy lệnh mỗi lần bạn đẩy code lên |
+| **Thừa hưởng biến môi trường** | Test chạy được ở máy bạn chỉ vì shell còn sẵn một biến. Lên CI là đỏ |
+| **Độ với tới** | Máy có được gọi từ đâu đó không. Không ai gọi thì coi như không có |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -427,6 +430,20 @@ kit-cua-toi/
 
 Để ý `gates.yml` không liệt kê lệnh: nó đọc `ci_scope.json`. Thêm gate mới thì sửa JSON, không sửa
 YAML — và `ci-scope.js` đảm bảo không bỏ sót.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 3 · CONTROL      bài 9/9 của cấp độ này
+████████████████████████████
+
+cả tài liệu           bài 20/29
+███████████████████░░░░░░░░░
+```
+
+**Hết cấp độ 3 bạn nói được:** Tôi có một QA workflow được enforce trong team.
+
+Đây là bài cuối của cấp độ 3. Bài 21 mở cấp độ 4 · EVOLVE.
 
 ## Tự kiểm
 

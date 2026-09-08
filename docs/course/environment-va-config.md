@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Tách cấu hình ra khỏi testcase, viết một hàm nạp duy nhất, và khai danh sách biến được phép đọc. |
 | **Xong thì được gì** | Đổi dự án bằng cách đổi một file cấu hình, không đụng vào testcase. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Biến môi trường** | Giá trị đưa vào chương trình từ bên ngoài, không nằm trong code |
-| **Profile** | Một bộ cấu hình cho một task hoặc một dự án. Mỗi profile một thư mục |
-| **Nạp theo tầng** | Đọc nhiều nguồn cấu hình theo thứ tự, nguồn sau đè nguồn trước |
-| **Allowlist** | Danh sách những thứ được phép. Nằm ngoài danh sách thì chặn, không im lặng bỏ qua |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -300,6 +294,15 @@ Chỉ chạy ca thứ nhất thì bạn mới biết gate **không chê bừa**.
 **bắt được thật**. Đây là công thức dùng lại cho mọi gate còn lại của tài liệu, và Bài 15 sẽ đặt tên
 cho nó.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Biến môi trường** | Giá trị đưa vào chương trình từ bên ngoài, không nằm trong code |
+| **Profile** | Một bộ cấu hình cho một task hoặc một dự án. Mỗi profile một thư mục |
+| **Nạp theo tầng** | Đọc nhiều nguồn cấu hình theo thứ tự, nguồn sau đè nguồn trước |
+| **Allowlist** | Danh sách những thứ được phép. Nằm ngoài danh sách thì chặn, không im lặng bỏ qua |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -323,6 +326,20 @@ kit-cua-toi/
     └── e2e/
         └── tao-don-hang.spec.js  ·  từ Bài 4
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 2 · BUILD      bài 2/7 của cấp độ này
+████████░░░░░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 6/29
+██████░░░░░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 2 bạn nói được:** Tôi có một Test Kit.
+
+Cấp độ này còn 5 bài nữa.
 
 ## Tự kiểm
 

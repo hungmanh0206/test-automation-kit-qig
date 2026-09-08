@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Một test cho luồng tạo đơn hàng. Làm nó đỏ trước, rồi mới làm cho xanh. |
 | **Xong thì được gì** | Một test chạy thật, và quan trọng hơn: bằng chứng rằng nó thật sự đang kiểm chứ không chỉ chạy qua. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Assertion** | Câu khẳng định trong test. Sai thì test đỏ. Không có assertion thì test chỉ đang bấm qua màn hình |
-| **Locator** | Cách chỉ cho Playwright biết bạn đang nói tới element nào trên trang |
-| **Đỏ có chủ đích** | Cố tình làm test sai để xem nó có bắt được không. Nếu không đỏ thì assertion của bạn vô dụng |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -184,6 +179,14 @@ Với ví dụ này, `spec.md` mục `BR-04` nói phí giao hàng miễn phí kh
 tính là `450.000`, chưa đạt, nên phí `50.000` là đúng. Nhưng app lại tính miễn phí dựa trên số sau
 giảm giá. Vậy app sai. Bạn vừa xác nhận bug thứ nhất bằng automation.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Assertion** | Câu khẳng định trong test. Sai thì test đỏ. Không có assertion thì test chỉ đang bấm qua màn hình |
+| **Locator** | Cách chỉ cho Playwright biết bạn đang nói tới element nào trên trang |
+| **Đỏ có chủ đích** | Cố tình làm test sai để xem nó có bắt được không. Nếu không đỏ thì assertion của bạn vô dụng |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -198,6 +201,20 @@ kit-cua-toi/
 ```
 
 Chỉ một file mới. Bài 5 sẽ hỏi vì sao không nên để nó nằm một mình mãi.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 1 · AUTOMATE      bài 4/4 của cấp độ này
+████████████████████████████
+
+cả tài liệu           bài 4/29
+████░░░░░░░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 1 bạn nói được:** Tôi chạy được test và tôi hiểu kết quả của nó.
+
+Đây là bài cuối của cấp độ 1. Bài 5 mở cấp độ 2 · BUILD.
 
 ## Tự kiểm
 

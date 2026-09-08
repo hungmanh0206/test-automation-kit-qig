@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Khai mô hình rủi ro, viết máy chấm điểm, rồi viết gate ép test sâu hơn ở chỗ điểm cao. |
 | **Xong thì được gì** | Test kỹ đúng chỗ đáng. Và biết làm gì khi chưa có lịch sử bug nào. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Điểm rủi ro** | Khả năng hỏng nhân với hậu quả nếu hỏng |
-| **Band** | Mức rủi ro: cao, vừa, thấp. Nó quyết định test sâu tới đâu |
-| **Chế độ chưa có dữ liệu** | Khi chưa có lịch sử bug, máy chỉ cảnh báo chứ không chặn |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -569,6 +564,14 @@ sao lưu vào chính chỗ bạn đang lo mất thì không phải sao lưu.
 
 ---
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Điểm rủi ro** | Khả năng hỏng nhân với hậu quả nếu hỏng |
+| **Band** | Mức rủi ro: cao, vừa, thấp. Nó quyết định test sâu tới đâu |
+| **Chế độ chưa có dữ liệu** | Khi chưa có lịch sử bug, máy chỉ cảnh báo chứ không chặn |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -580,6 +583,20 @@ kit-cua-toi/
     ├── cham-rui-ro.js            ← MỚI · tính band; cold-start chỉ CẢNH BÁO
     └── gate-do-sau.js            ← MỚI · từ chối chặn ở chế độ cold-start, kể cả --enforce
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 4 · EVOLVE      bài 7/9 của cấp độ này
+██████████████████████░░░░░░
+
+cả tài liệu           bài 27/29
+██████████████████████████░░
+```
+
+**Hết cấp độ 4 bạn nói được:** Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.
+
+Cấp độ này còn 2 bài nữa.
 
 ## Tự kiểm
 

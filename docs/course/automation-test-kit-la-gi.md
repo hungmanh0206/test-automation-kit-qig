@@ -10,14 +10,8 @@
 | **Bài này bạn gõ gì** | Chạy một app có bug cài sẵn, tự tìm ra bug đầu tiên bằng tay, rồi vẽ ra dây chuyền bạn sắp dựng. |
 | **Xong thì được gì** | Một bug tự tìm được, mười từ vựng dùng cả tài liệu, và một bản đồ để không lạc. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Đặc tả** (spec) | Tài liệu nói sản phẩm *phải* làm gì. Nguồn để phán đúng sai |
-| **Oracle** | Câu trả lời cho *"dựa vào đâu mà bảo cái này sai"*. Phải là một thứ cụ thể |
-| **Bug biên** | Lỗi chỉ lộ ra ở ngay chỗ chuyển trạng thái, ví dụ đúng mốc `500.000` |
-| **Đối chứng** | Biết trước đáp án để đo xem cách kiểm của mình có hiệu quả không |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -251,6 +245,15 @@ Tạo `docs/xuat-phat.md` trong thư mục bạn sẽ làm việc, và trả l�
 Nghe hình thức, nhưng nó có tác dụng thật: đến Bài 29 bạn mở lại file này và đối chiếu. Không có nó
 thì bạn không có cách nào đo mình đã đi được bao xa, vì trí nhớ về "hồi đó khổ thế nào" mờ rất nhanh.
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Đặc tả** (spec) | Tài liệu nói sản phẩm *phải* làm gì. Nguồn để phán đúng sai |
+| **Oracle** | Câu trả lời cho *"dựa vào đâu mà bảo cái này sai"*. Phải là một thứ cụ thể |
+| **Bug biên** | Lỗi chỉ lộ ra ở ngay chỗ chuyển trạng thái, ví dụ đúng mốc `500.000` |
+| **Đối chứng** | Biết trước đáp án để đo xem cách kiểm của mình có hiệu quả không |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -260,6 +263,20 @@ kit-cua-toi/
 ```
 
 Đúng một file, và nó không phải code. Bài 2 mới bắt đầu dựng repo thật.
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 1 · AUTOMATE      bài 1/4 của cấp độ này
+███████░░░░░░░░░░░░░░░░░░░░░
+
+cả tài liệu           bài 1/29
+█░░░░░░░░░░░░░░░░░░░░░░░░░░░
+```
+
+**Hết cấp độ 1 bạn nói được:** Tôi chạy được test và tôi hiểu kết quả của nó.
+
+Cấp độ này còn 3 bài nữa.
 
 ## Tự kiểm
 

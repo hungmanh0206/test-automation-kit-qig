@@ -52,6 +52,12 @@ jobs:
       - name: Thư viện + tài liệu khớp repo (library:drift — số liệu, link bài, cú pháp mã trong bài giảng)
         run: npm run library:drift
 
+      # Khối "Bộ kit của bạn đang ở đâu" là lớp DẪN XUẤT của docs/COURSE.md. Nó nhắc số bài, số cấp
+      # độ và tên bài kế tiếp — toàn thứ đã đổi ba lần trong một tuần. Không có phép kiểm này thì nó
+      # trôi khỏi giáo trình mà không ai biết.
+      - name: Chỉ báo độ chín từng bài khớp giáo trình (course:maturity:check)
+        run: npm run course:maturity:check
+
       - name: Mục lục RULE_GLOBAL khớp nội dung (bảng tra sai = agent đọc sai khối luật)
         run: npm run rule -- --check
 

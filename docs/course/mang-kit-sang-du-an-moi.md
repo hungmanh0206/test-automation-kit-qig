@@ -10,13 +10,8 @@
 | **Bài này bạn gõ gì** | Chia ba loại giữ nguyên, sửa cấu hình, viết mới. Viết lại phần đăng nhập. Chạy trọn một vòng. |
 | **Xong thì được gì** | Kit chạy trên dự án thật của bạn, và bắt được ít nhất một bug thật ở đó. |
 
-## Từ mới của bài này
-
-| Từ | Nghĩa gọn |
-|---|---|
-| **Tầng CHUNG** | Mang đi được mọi dự án. Sửa nó ảnh hưởng mọi task đang chạy |
-| **Tầng DỰ ÁN** | Chỉ đúng với dự án này. Sửa thoải mái |
-| **Chuyển giao** | Đưa kit vào một dự án tới lúc nó chạy trọn một vòng thật |
+> Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
+> chứ không định nghĩa trước. Gặp từ lạ giữa bài thì đọc tiếp, mục đó sẽ gom lại.
 
 ## Bài này bạn sẽ làm gì
 
@@ -298,6 +293,14 @@ Chưa có bug nào để bắt? Có hai đường:
 | Lấy bug **đã fix** trong lịch sử | viết mutant tái hiện nó, kiểm suite có đỏ không (Bài 25) |
 | Tiêm lỗi vào response | `npm run mutation` — nếu 0/5 mutant bị diệt thì suite đang mù |
 
+## Gọi tên những gì bạn vừa làm
+
+| Từ | Nghĩa gọn |
+|---|---|
+| **Tầng CHUNG** | Mang đi được mọi dự án. Sửa nó ảnh hưởng mọi task đang chạy |
+| **Tầng DỰ ÁN** | Chỉ đúng với dự án này. Sửa thoải mái |
+| **Chuyển giao** | Đưa kit vào một dự án tới lúc nó chạy trọn một vòng thật |
+
 ## Cây thư mục sau bài này
 
 ```
@@ -316,6 +319,20 @@ Chưa có bug nào để bắt? Có hai đường:
 │   └── e2e/                          ← THAY · test của dự án này
 └── profiles/<TASK>/task.env          ← MỚI · ⛔ KHÔNG commit
 ```
+
+## Bộ kit của bạn đang ở đâu
+
+```
+CẤP ĐỘ 4 · EVOLVE      bài 9/9 của cấp độ này
+████████████████████████████
+
+cả tài liệu           bài 29/29
+████████████████████████████
+```
+
+**Hết cấp độ 4 bạn nói được:** Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.
+
+Đây là bài cuối của cả tài liệu.
 
 ## Tự kiểm
 
