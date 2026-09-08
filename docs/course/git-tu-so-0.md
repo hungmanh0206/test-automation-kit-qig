@@ -80,8 +80,8 @@ don-hang-bac.js đỏ vì app sai BR-03 thật (485.000 vs 515.000)."
 
 **Bạn sẽ thấy** đại ý `2 files changed, N insertions(+)`.
 
-> **Lời commit viết cho người đọc sau 6 tháng**, và người đó thường là bạn. `"update"` hay `"fix"` thì vô
-> dụng. Viết **vì sao**, không viết *đã sửa file nào* — git đã biết file nào rồi.
+> Lời commit là viết cho người đọc sau 6 tháng. Người đó thường là chính bạn. Ghi "update" hay "fix" thì
+> chẳng giúp được gì. Hãy viết vì sao bạn sửa, đừng viết đã sửa file nào. Git biết file nào rồi.
 
 ## Việc 2 — Nhánh: thử mà không phá (20 phút)
 
@@ -127,8 +127,9 @@ git merge siet-may-chan
 | **Testcase là dữ liệu có phiên bản** | Ai đổi kết quả mong đợi của `TC_012`? Khi nào? Vì sao? Git trả lời được. File Excel trên Drive thì không |
 | **Bản mẫu là tài sản chung** | Sửa `prompt_templates/` trong khi người khác đang chạy task là phá việc của họ. Nhánh giải chuyện đó |
 
-Lý do thứ hai đáng nhấn: **kết quả mong đợi bị đổi âm thầm là cách một bộ test mất giá trị mà không ai hay.**
-Git biến nó thành thứ tra được — `git log -p` trên tệp testcase cho bạn xem từng lần đổi và lời giải thích.
+Lý do thứ hai đáng nói thêm. Kết quả mong đợi bị đổi âm thầm là cách một bộ test mất giá trị mà không ai
+hay biết. Git làm chuyện đó tra được: `git log -p` trên file testcase cho bạn xem từng lần đổi kèm lời
+giải thích.
 
 ## Việc 3 — `.gitignore` cho ba thư mục cấm (15 phút)
 
@@ -311,7 +312,7 @@ học cách tắt nó đi.
 
 ### Bài học đắt nhất của bài này
 
-> Không phải *nội dung* của `knowledge/` mới nguy hiểm. **Chính tên tệp đã tiết lộ.**
+> Nguy hiểm không nằm ở nội dung file trong `knowledge/`. Chính tên file đã đủ để lộ chuyện.
 
 Một thư mục tri thức có thể chứa những tệp tên kiểu:
 
@@ -323,8 +324,8 @@ knowledge/decisions/khong-chan-thanh-toan-trung-vi-chua-kip-sprint.md
 Chỉ cần chạy `git ls-files` trên một repo công khai là người ngoài biết sản phẩm của bạn có lỗi gì và bạn cố
 ý bỏ qua điều gì — **mà không cần mở một tệp nào.**
 
-Đây là lý do `kiem-file-cam.js` đo **danh sách tệp đang track**, không đo nội dung. Máy quét secret (Bài 11)
-đọc nội dung; máy này đọc **tên**. Hai lớp khác nhau, và lớp tên là lớp hay bị bỏ.
+Đó là lý do `kiem-file-cam.js` đo danh sách file đang được git quản, chứ không đọc nội dung. Máy quét mật
+khẩu ở Bài 11 mới là cái đọc nội dung. Hai lớp khác nhau, và lớp tên file là lớp hay bị bỏ quên.
 
 ## Việc 5 — Đẩy lên GitHub/GitLab (20 phút)
 

@@ -1,6 +1,6 @@
-# Bài 10 — Kỷ luật Oracle: bài học quan trọng nhất
+# Bài 10 — Kỷ luật Oracle: bài học quan trọng nhất ⭐
 
-> **2 giờ** · Có gì trong tay: một bộ testcase do agent sinh · Sau bài này: mọi expected đều trích được nguồn, và bạn nhận ra tautology từ xa
+> **2 giờ** · Có gì trong tay: một bộ testcase do agent sinh · Sau bài này: mọi kết quả mong đợi đều chỉ được ra nguồn, và bạn nhận ra kiểu test tự khen mình từ xa
 
 **Tóm tắt bài này**
 
@@ -10,226 +10,47 @@
 | **Bài này bạn gõ gì** | Sửa 5 kết quả mong đợi yếu thành loại trỏ được về tài liệu, rồi viết gate chặn số không có nguồn. |
 | **Xong thì được gì** | Mọi kết luận đúng sai đều chỉ được ra một dòng luật cụ thể. Đây là bài quan trọng nhất. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Hiểu oracle độc lập và vì sao expected phải trích được nguồn.
-✅ Nhận diện tautology — dạng lộ và dạng tinh vi.
-✅ Hiểu vì sao đây là lỗi nguy hiểm nhất.
-✅ Fixture phân biệt: hai nguồn phải khác giá trị.
-✅ Sửa 5 expected yếu thành expected có neo.
-✅ Biết ghi gì khi không neo được, và vì sao "không phán được" không thành PASS.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Oracle** | Câu trả lời cho "dựa vào đâu mà bảo cái này đúng hay sai" |
+| **Test tự khen mình** (tautology) | Test lấy chính app làm chuẩn để chấm app. Nó luôn xanh |
+| **Fixture phân biệt** | Dữ liệu thử được dựng sao cho hai khả năng cho ra hai kết quả khác nhau |
+| **`OBSERVATION`** | Thấy điều lạ nhưng chưa có nguồn để nói đúng sai. Không phải PASS, không phải FAIL |
+
+## Bài này bạn sẽ làm gì
+
+Năm việc:
+
+1. Đếm xem bộ case của bạn có bao nhiêu chỗ không trỏ về nguồn nào (15 phút).
+2. Nhận ra ba kiểu test tự khen mình, kiểu nào cũng trông rất bận rộn (25 phút).
+3. Sửa 5 kết quả mong đợi yếu thành loại có neo (20 phút).
+4. Dựng một fixture phân biệt (20 phút).
+5. Chốt luật oracle vào file luật, và biết ghi gì khi không neo được (20 phút).
 
 ---
 
-## 1. Oracle là gì
+## Việc 1 — Đếm trước đã (15 phút)
 
-**Oracle** là câu trả lời cho: *dựa vào đâu mà bảo cái này đúng hoặc sai?*
+Oracle là câu trả lời cho một câu hỏi rất đơn giản: dựa vào đâu mà bảo cái này đúng hay sai?
 
-Nghe hiển nhiên, nhưng thử trả lời cho một case thật của bạn. Nếu câu trả lời là *"vì nhìn thấy nó thế"* thì
-bạn không có oracle — bạn có một bản ghi hiện trạng.
+Nghe hiển nhiên. Nhưng thử trả lời cho một case thật của bạn xem. Nếu câu trả lời là "vì nhìn thấy nó thế"
+thì bạn chưa có oracle. Bạn chỉ có một bản ghi lại hiện trạng.
 
-Oracle **độc lập** phải thoả hai điều:
+Một oracle dùng được phải thoả hai điều. Một là nó nằm ngoài hệ thống đang test: tài liệu, công thức, hoặc
+một quyết định đã chốt. Hai là nó cụ thể: một con số, một URL, một element, một chuỗi chữ. Tính từ thì không tính.
 
-1. **Nằm ngoài hệ thống đang test** — tài liệu, công thức, quyết định đã chốt.
-2. **Cụ thể** — một giá trị, một URL, một element, một chuỗi chữ. Không phải một tính từ.
-
-| Không phải oracle | Là oracle |
+| Chưa phải oracle | Là oracle |
 |---|---|
-| "Tổng tiền hiển thị đúng" | "Tổng cộng = `321.000`, theo BR-03: 300.000 − 9.000 + 30.000" |
-| "Chuyển sang màn chi tiết" | "URL khớp `/orders/{id}` và tiêu đề trang = `Chi tiết đơn hàng`" |
+| "Tổng tiền hiển thị đúng" | "Tổng cộng = 321.000, theo BR-03: 300.000 − 9.000 + 30.000" |
+| "Chuyển sang màn chi tiết" | "URL khớp `/orders/{id}` và tiêu đề trang là `Chi tiết đơn hàng`" |
 | "Có thông báo lỗi" | "Hiện đúng chữ `Số lượng phải từ 1 đến 999`, theo mục 5" |
 
-> Không có oracle độc lập thì test chỉ **mô tả** ứng dụng đang làm gì, chứ không nói được nó làm có **đúng**
-> không. Đây là ranh giới giữa *kiểm thử* và *chụp ảnh hiện trạng*.
+Không có oracle thì test chỉ mô tả app đang làm gì. Nó không nói được app làm có đúng không. Đó là ranh giới
+giữa kiểm thử và chụp ảnh hiện trạng.
 
-## 2. Tautology: lỗi nguy hiểm nhất
-
-**Tautology** là lấy chính bản build làm expected. Về logic nó là "A bằng A" — luôn đúng.
-
-Nó nguy hiểm hơn mọi lỗi khác vì **không có triệu chứng**: test xanh, coverage đẹp, tỉ lệ pass cao, không ai
-nghi ngờ. Mọi lỗi khác rồi cũng lộ; tautology thì không.
-
-### Dạng lộ
-
-```js
-test('tautology dạng lộ', async ({ page }) => {
-  const cols = await page.$$eval('th', (e) => e.map((x) => x.textContent));
-  expect(cols).toEqual(cols);          // A bằng A
-});
-```
-
-Không ai viết thế này có ý thức. Nhưng biến thể nhẹ hơn thì rất phổ biến:
-
-```js
-test('vẫn là tautology, chỉ trông có việc', async ({ page }) => {
-  const tong = await page.locator('#tong-cong').innerText();
-  expect(tong).toBe(tong.trim());      // A bằng A
-});
-```
-
-### Dạng tinh vi — và đây là dạng bạn sẽ gặp
-
-**① So UI với API của chính hệ thống.**
-
-```js
-test('so UI với API của chính hệ thống', async ({ page, request }) => {
-  const tuApi = (await (await request.get('/api/orders/1')).json()).total;
-  const tuUi = await page.locator('#tong-cong').innerText();
-  expect(chuanHoa(tuUi)).toBe(chuanHoa(tuApi));   // KHÔNG chứng minh BE tính đúng
-});
-```
-
-Hợp lệ **nếu** mục tiêu là kiểm FE map đúng dữ liệu BE. Nhưng nó **không** chứng minh BE tính đúng. Nếu công
-thức backend sai thì cả hai bên cùng sai và test vẫn xanh.
-
-Phép thử: **nếu công thức tính sai, test này có đỏ không?** Không → nó không kiểm công thức.
-
-**② Đọc kỳ vọng từ chính màn hình.**
-
-```js
-test('đọc kỳ vọng từ chính màn hình', async ({ page }) => {
-  const donGia = await page.locator('#don-gia').innerText();     // 100.000
-  const soLuong = await page.locator('#so-luong').inputValue();  // 3
-  const mongDoi = Number(donGia) * Number(soLuong);              // ← kỳ vọng lấy TỪ MÀN HÌNH
-  expect(await page.locator('#thanh-tien').innerText()).toBe(dinhDang(mongDoi));
-});
-```
-
-Trông rất "có tính toán". Nhưng nếu ô Đơn giá hiển thị **sai giá** thì Thành tiền cũng sai theo, và test xanh.
-Oracle đúng: `SP_A` giá `100.000` — lấy từ **danh mục sản phẩm**, không lấy từ màn hình.
-
-**③ Nhất quán hai nơi coi là đúng.**
-
-Thấy màn A và màn B cùng hiển thị `20/05/2001` rồi kết luận đúng. Nhưng hai màn cùng đọc một API — cả hai có
-thể cùng sai. Nhất quán chỉ chứng minh **không mâu thuẫn**, không chứng minh **đúng**.
-
-> Nguyên tắc gọn: **nhất quán KHÔNG phải bằng chứng của đúng.**
-
-## 3. Neo expected vào nguồn
-
-Bài 7 bạn đã có bảng `BR-`. Giờ dùng nó làm neo: mỗi expected trỏ về một mã.
-
-```markdown
-| Kết quả mong đợi |
-|---|
-| 1. Tạm tính = 300.000<br>2. Giảm giá = 9.000 — `BR-01` (Bạc 3%, chưa tới trần 100.000)<br>3. Phí giao hàng = 30.000 — `BR-02` (tạm tính < 500.000)<br>4. **Tổng cộng = 321.000** — `BR-03` |
-```
-
-Ba thứ được lợi ngay:
-
-1. **Kiểm chứng được.** Người review mở đúng mục tài liệu để đối chiếu, không phải tin bạn.
-2. **Truy vết đổi rule.** BA đổi `BR-01` từ 3% sang 4% → tìm mọi case có `BR-01` → biết chính xác phải sửa gì.
-3. **Bắt được oracle thiếu neo.** Case nào không trỏ được về mã nào là case đang tự nghĩ ra kỳ vọng.
-
-Ba loại nguồn hợp lệ, và chúng khác nhau:
-
-| Neo | Dùng cho | Ví dụ |
-|---|---|---|
-| `BR-` business rule | Công thức, điều kiện nghiệp vụ | `BR-03` tổng cộng |
-| `UI-` hợp đồng giao diện | Nhãn, danh sách cột, thứ tự, design token | `UI-01` bốn cột khối B |
-| `SM-` bản đồ hệ thống | Trạng thái hợp lệ, ma trận phân quyền | `SM-02` kế toán chỉ xem |
-
-`UI-` và `SM-` chưa có bây giờ — Bài 17 sẽ dựng. Lúc này cứ trỏ về mục tài liệu là đủ.
-
-## 4. Khi nguồn nói chữ, phải neo đúng chữ
-
-Với nhãn và thông báo hiển thị, có một bẫy riêng: neo **sai nguồn**.
-
-> Chuyện thật: bug log theo chữ trong "file tổng hợp yêu cầu" — nhưng file đó chỉ nói **ý định**. Chữ thật sự
-> hiển thị được chốt ở **Figma**. Hai nguồn lệch nhau ở đúng phần chữ nghĩa, và bug bị trả về.
-
-Thứ tự ưu tiên cho chữ hiển thị: **Figma (hoặc bản thiết kế đã chốt) > tài liệu đặc tả > file tổng hợp yêu cầu**.
-
-Và kiểm **đúng từng chữ**, không kiểm "có thông báo là được":
-
-| Yếu | Đủ |
-|---|---|
-| `expect(loi).toBeVisible()` | `expect(loi).toHaveText('Số lượng phải từ 1 đến 999')` |
-| `expect(text).toContain('Số lượng')` | so khớp **toàn chuỗi** |
-
-`toContain` bỏ qua đúng thứ hay sai: thiếu chữ, sai số, sai hoa thường, thừa dấu cách.
-
-## 5. Fixture phân biệt
-
-Một loại case rất hay sai lặng lẽ: kiểm **"trường này lấy từ nguồn nào"**.
-
-Ví dụ: `Hạng khách hàng` ở khối A — tài liệu nói lấy từ hệ thống CRM. Bạn muốn kiểm điều đó.
-
-**Cách sai:** chọn một khách có hạng `Bạc` ở CRM, và trong hệ thống nội bộ cũng `Bạc`. Màn hiện `Bạc` → PASS.
-
-Nhưng bạn **không chứng minh được gì**: nó có thể đọc từ CRM, hoặc từ cơ sở dữ liệu nội bộ, hoặc gán cứng —
-mọi khả năng đều cho ra `Bạc`.
-
-**Cách đúng:** dựng fixture mà hai nguồn **khác giá trị**.
-
-| Nguồn | Giá trị |
-|---|---|
-| CRM | `Vàng` |
-| Nội bộ | `Bạc` |
-
-Màn hiện `Vàng` → chứng minh nó đọc CRM. Hiện `Bạc` → chứng minh nó **không** đọc CRM, và đó là bug.
-
-> **Fixture phân biệt**: muốn phân biệt hai khả năng thì dữ liệu thử phải khiến hai khả năng cho **kết quả
-> khác nhau**. Nếu cả hai cho cùng kết quả thì case chạy xong vẫn không biết gì hơn.
-
-Áp dụng rộng hơn:
-
-- Kiểm "giá lấy từ danh mục, không phải nhập tay" → đặt hai giá khác nhau.
-- Kiểm "phí giao hàng theo Tạm tính, không theo Tổng cộng" → dựng ca mà hai con số nằm hai bên mốc.
-- Kiểm "làm tròn xuống, không làm tròn thường" → dùng số lẻ ra `.5`.
-
-## 6. Khi không neo được thì ghi gì
-
-Đôi khi bạn thấy điều gì đó **có vẻ sai** nhưng không tài liệu nào nói. Ba lựa chọn, chỉ một đúng:
-
-| Lựa chọn | Hậu quả |
-|---|---|
-| Ghi PASS vì "nhìn thì hợp lý" | Bịa oracle từ chính app — đúng thứ bài này cấm |
-| Ghi FAIL vì "tôi nghĩ nó sai" | Log bug không có căn cứ, bị Dev trả về |
-| **Ghi là `OBSERVATION`** | ✅ Giữ được phát hiện, không giả vờ đã phán được |
-
-`OBSERVATION` nghĩa là: *tôi thấy điều này, tôi chưa có nguồn để nói nó đúng hay sai.* Nó đi kèm câu hỏi cho BA.
-
-> **"Không phán được" KHÔNG thành PASS.** Đây là mục 3 trong `CLAUDE.md` bạn viết ở Bài 2. PASS là một khẳng
-> định: *tôi đã kiểm và nó đúng*. Không có nguồn thì bạn không kiểm được, nên không được khẳng định.
-
-## 7. Danh sách chữ "oracle rỗng"
-
-Những cụm này **phán với gần như mọi giá trị**, kể cả giá trị sai. Chép vào `LUAT-DAY-DU.md` — Bài 11 sẽ biến
-nó thành gate:
-
-```
-hiển thị đúng · thành công · không lỗi · hoạt động bình thường · như mong đợi
-đúng như thiết kế · dữ liệu chính xác · tính toán chính xác · hệ thống xử lý đúng · OK
-```
-
-Chúng có một điểm chung: **không nêu giá trị nào**. Phép thử: xoá cụm đó và hỏi *"còn lại thông tin gì để đối
-chiếu?"* Nếu không còn gì thì đó là oracle rỗng.
-
-Thêm vào `LUAT-DAY-DU.md`:
-
-```markdown
-## Oracle
-
-- Mọi `Kết quả mong đợi` phải nêu GIÁ TRỊ, URL hoặc element CỤ THỂ, và trích được nguồn
-  (mã `BR-`/`UI-`/`SM-`, hoặc mục tài liệu).
-- CẤM lấy chính bản build làm expected (tautology), kể cả dạng gián tiếp: đọc giá trị từ
-  màn hình rồi tính kỳ vọng từ nó.
-- Chữ hiển thị neo theo thứ tự: bản thiết kế đã chốt > tài liệu đặc tả > file tổng hợp yêu cầu.
-  So khớp TOÀN CHUỖI, không dùng "contains".
-- Muốn chứng minh một trường lấy từ nguồn nào thì hai nguồn PHẢI khác giá trị (fixture phân biệt).
-- Thấy điều đáng nghi mà không neo được nguồn: ghi `OBSERVATION` kèm câu hỏi.
-  KHÔNG ghi PASS, KHÔNG ghi FAIL.
-- Nhất quán giữa hai nơi KHÔNG phải bằng chứng của đúng.
-```
-
----
-
-## Thực hành (55 phút)
-
-### Bước 1 — Soi bộ case của bạn (15 phút)
-
-Đếm trên bộ agent sinh ở Bài 7:
+Giờ đếm trên bộ case agent sinh ở Bài 7:
 
 ```bash
 node -e "
@@ -247,88 +68,253 @@ console.log('\n' + c.length + ' case · ' + rong + ' có dòng oracle rỗng · 
 " outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md
 ```
 
-Ghi lại hai con số. Chúng thường lớn hơn bạn tưởng — trên một bộ thật, tỉ lệ không-trỏ-về-nguồn thường trên
-một nửa nếu prompt chưa ép.
+Ghi lại hai con số. Chúng thường lớn hơn bạn nghĩ. Trên một bộ case thật, nếu prompt chưa ép thì tỉ lệ
+không-trỏ-về-nguồn hay vượt quá một nửa.
 
-### Bước 2 — Sửa 5 expected yếu (20 phút)
+## Việc 2 — Ba kiểu test tự khen mình (25 phút)
 
-Chọn 5 case yếu nhất, sửa tay. Mỗi case điền bảng:
+Đây là lỗi nguy hiểm nhất trong nghề, vì nó không có triệu chứng. Test xanh, độ phủ đẹp, tỉ lệ pass cao,
+không ai nghi ngờ gì. Mọi lỗi khác rồi cũng lộ ra. Loại này thì không.
 
-| TC ID | Expected cũ | Expected mới | Neo về | Vì sao cũ không đủ |
+### Dạng lộ, ít gặp
+
+```js
+test('tautology dạng lộ', async ({ page }) => {
+  const cols = await page.$$eval('th', (e) => e.map((x) => x.textContent));
+  expect(cols).toEqual(cols);          // A bằng A
+});
+```
+
+Không ai viết thế này một cách có ý thức. Nhưng biến thể nhẹ hơn thì gặp suốt:
+
+```js
+test('vẫn là tautology, chỉ trông có việc hơn', async ({ page }) => {
+  const tong = await page.locator('#tong-cong').innerText();
+  expect(tong).toBe(tong.trim());      // A bằng A
+});
+```
+
+### Kiểu 1: so giao diện với API của chính hệ thống
+
+```js
+test('so UI với API của chính hệ thống', async ({ page, request }) => {
+  const tuApi = (await (await request.get('/api/orders/1')).json()).total;
+  const tuUi = await page.locator('#tong-cong').innerText();
+  expect(chuanHoa(tuUi)).toBe(chuanHoa(tuApi));   // không chứng minh backend tính đúng
+});
+```
+
+Cách này hợp lệ nếu mục tiêu của bạn là kiểm giao diện có lấy đúng dữ liệu backend không. Nhưng nó không nói
+gì về chuyện backend tính đúng hay sai. Công thức backend sai thì cả hai bên cùng sai, và test vẫn xanh.
+
+Thử bằng một câu: nếu công thức tính sai, test này có đỏ không? Không đỏ thì nó không kiểm công thức.
+
+### Kiểu 2: lấy kỳ vọng từ chính màn hình
+
+```js
+test('đọc kỳ vọng từ chính màn hình', async ({ page }) => {
+  const donGia = await page.locator('#don-gia').innerText();     // 100.000
+  const soLuong = await page.locator('#so-luong').inputValue();  // 3
+  const mongDoi = Number(donGia) * Number(soLuong);              // ← kỳ vọng lấy TỪ MÀN HÌNH
+  expect(await page.locator('#thanh-tien').innerText()).toBe(dinhDang(mongDoi));
+});
+```
+
+Trông rất có tính toán. Nhưng nếu ô Đơn giá hiển thị sai giá thì Thành tiền cũng sai theo, và test vẫn xanh.
+
+Oracle đúng phải là: `SP_A` giá `100.000`, lấy từ danh mục sản phẩm chứ không lấy từ màn hình.
+
+### Kiểu 3: thấy hai nơi giống nhau rồi kết luận đúng
+
+Màn A hiện `20/05/2001`. Màn B cũng hiện `20/05/2001`. Bạn kết luận đúng.
+
+Nhưng hai màn đó cùng đọc một API. Nếu API trả sai thì cả hai cùng sai, và chúng vẫn giống nhau.
+
+> Hai màn hình cùng hiện một giá trị không có nghĩa giá trị đó đúng. Chỉ có nghĩa là cả hai đang đọc từ cùng
+> một chỗ. Nếu chỗ đó sai thì cả hai cùng sai.
+
+## Việc 3 — Neo kết quả mong đợi vào nguồn (20 phút)
+
+Ở Bài 7 bạn đã có bảng `BR-`. Giờ dùng nó làm neo. Mỗi kết quả mong đợi trỏ về một mã:
+
+```markdown
+| Kết quả mong đợi |
+|---|
+| 1. Tạm tính = 300.000<br>2. Giảm giá = 9.000 — `BR-01` (Bạc 3%, chưa tới trần 100.000)<br>3. Phí giao hàng = 30.000 — `BR-02` (tạm tính < 500.000)<br>4. **Tổng cộng = 321.000** — `BR-03` |
+```
+
+Bạn được ngay ba thứ.
+
+Thứ nhất, người review kiểm chứng được. Họ mở đúng mục tài liệu ra đối chiếu, không phải tin lời bạn.
+
+Thứ hai, đổi luật thì truy được. BA đổi `BR-01` từ 3% sang 4%, bạn tìm mọi case có `BR-01` là biết chính xác
+phải sửa những case nào.
+
+Thứ ba, chỗ nào thiếu neo thì lộ ra. Case không trỏ được về mã nào là case đang tự nghĩ ra kỳ vọng.
+
+Ba loại nguồn, dùng cho ba việc khác nhau:
+
+| Neo | Dùng cho | Ví dụ |
+|---|---|---|
+| `BR-` luật nghiệp vụ | Công thức, điều kiện | `BR-03` tổng cộng |
+| `UI-` hợp đồng giao diện | Nhãn, danh sách cột, thứ tự, màu | `UI-01` bốn cột khối B |
+| `SM-` bản đồ hệ thống | Trạng thái hợp lệ, ma trận phân quyền | `SM-02` kế toán chỉ được xem |
+
+`UI-` và `SM-` thì Bài 17 mới dựng. Lúc này cứ trỏ về mục tài liệu là đủ.
+
+### Chữ hiển thị thì neo vào bản thiết kế
+
+Với nhãn và thông báo có một cái bẫy riêng: neo sai nguồn.
+
+Chuyện có thật. Một bug được log theo chữ trong file tổng hợp yêu cầu. Nhưng file đó chỉ ghi ý định. Chữ
+thật sự hiển thị thì đã chốt ở Figma. Hai bên lệch nhau đúng ở phần chữ, và bug bị trả về.
+
+Thứ tự ưu tiên cho chữ hiển thị: bản thiết kế đã chốt, rồi tới tài liệu đặc tả, cuối cùng mới tới file tổng
+hợp yêu cầu.
+
+Và kiểm đúng từng chữ, đừng kiểm kiểu "có thông báo là được":
+
+| Yếu | Đủ |
+|---|---|
+| `expect(loi).toBeVisible()` | `expect(loi).toHaveText('Số lượng phải từ 1 đến 999')` |
+| `expect(text).toContain('Số lượng')` | so khớp toàn chuỗi |
+
+`toContain` bỏ qua đúng những thứ hay sai nhất: thiếu chữ, sai số, sai hoa thường, thừa dấu cách.
+
+### Sửa 5 case
+
+Chọn 5 case yếu nhất trong bộ của bạn, sửa tay. Mỗi case điền một dòng:
+
+| TC ID | Kết quả mong đợi cũ | Cái mới | Neo về | Vì sao cái cũ chưa đủ |
 |---|---|---|---|---|
 
-Yêu cầu: expected mới phải nêu **giá trị cụ thể** và **trỏ về một mã `BR-`**.
+Yêu cầu: cái mới phải nêu giá trị cụ thể, và trỏ về một mã `BR-`.
 
-### Bước 3 — Tìm tautology (10 phút)
+## Việc 4 — Fixture phân biệt (20 phút)
 
-Đọc bộ case, tìm case nào **nếu công thức backend sai thì vẫn PASS**. Gợi ý chỗ hay có:
+Có một loại case rất hay sai mà không ai nhận ra: case kiểm "trường này lấy từ nguồn nào".
 
-- Case kiểm Thành tiền mà lấy Đơn giá từ màn hình.
-- Case kiểm Tổng cộng bằng cách cộng lại các số **đang hiển thị**.
-- Case kiểm hiển thị bằng cách so với API của chính hệ thống.
+Ví dụ. Trường `Hạng khách hàng` ở khối A, tài liệu nói lấy từ hệ thống CRM. Bạn muốn kiểm điều đó.
 
-Với mỗi case tìm được, viết lại expected dùng **giá trị từ tài liệu**, không từ màn hình.
+**Cách hay làm và nó sai.** Chọn một khách có hạng `Bạc` ở CRM. Trong hệ thống nội bộ cũng `Bạc`. Màn hiện
+`Bạc`, bạn ghi PASS.
 
-### Bước 4 — Thiết kế một fixture phân biệt (10 phút)
+Nhưng bạn chưa chứng minh được gì. App có thể đọc từ CRM, có thể đọc từ cơ sở dữ liệu nội bộ, cũng có thể
+gán cứng. Cả ba khả năng đều cho ra `Bạc`.
 
-Chọn một trong hai:
+**Cách đúng.** Dựng dữ liệu sao cho hai nguồn khác giá trị:
 
-- `Hạng khách hàng` lấy từ CRM: đặt CRM `Vàng`, nội bộ `Bạc`.
-- `Đơn giá` lấy từ danh mục: đặt danh mục `100.000`, nơi khác `90.000`.
+| Nguồn | Giá trị |
+|---|---|
+| CRM | `Vàng` |
+| Nội bộ | `Bạc` |
 
-Viết một case với: tiền điều kiện nêu **cả hai** giá trị · expected nêu giá trị **mong đợi thắng** · và một
-câu giải thích *nếu ra giá trị kia thì kết luận gì*.
+Màn hiện `Vàng` thì chứng minh nó đọc CRM. Hiện `Bạc` thì chứng minh nó không đọc CRM, và đó là bug.
 
-### Bước 5 — Chốt luật và commit
+Nguyên tắc chung: muốn phân biệt hai khả năng thì dữ liệu thử phải làm hai khả năng đó cho ra kết quả khác
+nhau. Nếu cả hai cho cùng một kết quả thì chạy xong bạn vẫn không biết gì thêm.
 
-Thêm mục `## Oracle` ở mục 7 vào `LUAT-DAY-DU.md`.
+Áp rộng ra:
+
+- Kiểm "giá lấy từ danh mục chứ không phải nhập tay" thì đặt hai giá khác nhau.
+- Kiểm "phí giao hàng tính theo Tạm tính chứ không theo Tổng cộng" thì dựng ca mà hai số đó nằm hai bên mốc.
+- Kiểm "làm tròn xuống chứ không làm tròn thường" thì dùng số lẻ ra `.5`.
+
+Giờ tự viết một case. Chọn một trong hai tình huống trên, rồi viết đủ ba phần: tiền điều kiện nêu cả hai giá
+trị, kết quả mong đợi nêu giá trị nào phải thắng, và một câu nói rõ nếu ra giá trị kia thì kết luận gì.
+
+## Việc 5 — Không neo được thì ghi gì (20 phút)
+
+Đôi khi bạn thấy một thứ có vẻ sai nhưng không tài liệu nào nói tới. Ba cách xử lý, chỉ một cách đúng:
+
+| Cách | Hậu quả |
+|---|---|
+| Ghi PASS vì "nhìn thì hợp lý" | Bạn vừa tự bịa ra oracle từ chính app. Đúng thứ bài này cấm |
+| Ghi FAIL vì "tôi nghĩ nó sai" | Log bug không có căn cứ, dev trả về |
+| Ghi `OBSERVATION` | Giữ được phát hiện, mà không giả vờ là đã kết luận được |
+
+`OBSERVATION` nghĩa là: tôi thấy điều này, tôi chưa có nguồn để nói nó đúng hay sai. Nó đi kèm một câu hỏi
+cho BA.
+
+Nhớ điều này: chỗ không kết luận được thì không ghi thành PASS. Đó là mục 3 trong `CLAUDE.md` bạn viết ở Bài 2.
+PASS là một lời khẳng định, nghĩa là tôi đã kiểm và nó đúng. Không có nguồn thì bạn chưa kiểm được, nên chưa
+khẳng định được.
+
+### Danh sách chữ nghe như kết luận nhưng không kết luận gì
+
+Những cụm dưới đây đúng với gần như mọi giá trị, kể cả giá trị sai:
+
+```
+hiển thị đúng · thành công · không lỗi · hoạt động bình thường · như mong đợi
+đúng như thiết kế · dữ liệu chính xác · tính toán chính xác · hệ thống xử lý đúng · OK
+```
+
+Chúng có chung một điểm: không nêu giá trị nào. Cách thử nhanh là xoá cụm đó đi rồi hỏi còn lại thông tin gì
+để đối chiếu. Không còn gì thì đó là oracle rỗng.
+
+Thêm mục này vào `LUAT-DAY-DU.md`:
+
+```markdown
+## Oracle
+
+- Mọi Kết quả mong đợi phải nêu giá trị, URL hoặc element cụ thể, và trỏ được về nguồn
+  (mã `BR-`, `UI-`, `SM-`, hoặc mục tài liệu).
+- Cấm lấy chính app làm chuẩn để chấm app, kể cả kiểu gián tiếp: đọc giá trị từ màn hình
+  rồi tính kỳ vọng từ nó.
+- Chữ hiển thị neo theo thứ tự: bản thiết kế đã chốt, rồi tài liệu đặc tả, rồi file tổng hợp
+  yêu cầu. So khớp toàn chuỗi, không dùng contains.
+- Muốn chứng minh một trường lấy từ nguồn nào thì hai nguồn phải khác giá trị.
+- Thấy điều đáng nghi mà không neo được nguồn thì ghi `OBSERVATION` kèm câu hỏi.
+  Không ghi PASS, không ghi FAIL.
+- Hai nơi giống nhau không phải bằng chứng của đúng.
+```
+
+Rồi commit:
 
 ```bash
 git add LUAT-DAY-DU.md outputs/demo/tasks/PROJ-1234/test-cases
-git commit -m "feat(rule): mục Oracle — cấm tautology, ép neo nguồn, fixture phân biệt, OBSERVATION
+git commit -m "feat(rule): mục Oracle — cấm test tự khen mình, ép neo nguồn, fixture phân biệt
 
-Sửa 5 expected yếu thành có neo. Bộ hiện tại: <N> case, <X> dòng oracle rỗng còn lại."
+Sửa 5 kết quả mong đợi yếu thành có neo. Bộ hiện tại: <N> case, còn <X> dòng oracle rỗng."
 ```
-
----
 
 ## Cây thư mục sau bài này
 
 ```
 kit-cua-toi/
 ├── .agent/rules/
-│   └── oracle.md                 ← MỚI · khối luật: không neo được ⇒ OBSERVATION
+│   └── oracle.md                 ← MỚI · khối luật: không neo được thì ghi OBSERVATION
+├── LUAT-DAY-DU.md                ← SỬA · thêm mục Oracle
 ├── scripts/qa/
-│   └── gate-oracle.js            ← MỚI · giá trị tính toán không trỏ nguồn ⇒ chặn
+│   └── gate-oracle.js            ← MỚI · giá trị tính toán không trỏ nguồn thì chặn
 └── outputs/tasks/<MÃ>/analysis/
-    └── business-rules.md         ·  từ Bài 10 — giờ là NGUỒN của mọi expected
+    └── business-rules.md         ·  từ Bài 7 — giờ là nguồn của mọi kết quả mong đợi
 ```
 
 ## Tự kiểm
 
-- [ ] Tôi định nghĩa được oracle độc lập bằng hai điều kiện.
-- [ ] Tôi nhận ra **cả ba** dạng tautology tinh vi ở mục 2.
-- [ ] Tôi dùng được phép thử: *"nếu công thức sai thì test này có đỏ không?"*
-- [ ] Mọi expected tôi sửa đều nêu giá trị cụ thể và trỏ về một mã nguồn.
-- [ ] Tôi giải thích được vì sao `toContain` yếu hơn so khớp toàn chuỗi.
-- [ ] Tôi thiết kế được một fixture phân biệt, và nói được kết luận cho **cả hai** kết quả có thể.
-- [ ] Tôi biết ghi `OBSERVATION` khi không neo được, và **không** ghi PASS.
-- [ ] `LUAT-DAY-DU.md` của tôi đã có mục Oracle.
+1. Oracle dùng được phải thoả hai điều gì?
+2. Kể ba kiểu test tự khen mình. Kiểu nào bạn thấy quen nhất trong bộ case của mình?
+3. Câu hỏi một dòng nào phát hiện được cả ba kiểu đó?
+4. Vì sao `toContain` yếu hơn so khớp toàn chuỗi? Nó bỏ qua những lỗi nào?
+5. Chữ hiển thị thì neo vào nguồn nào trước? Vì sao không neo vào file tổng hợp yêu cầu?
+6. Bạn kiểm "hạng khách lấy từ CRM" mà cả hai nguồn đều là `Bạc`. Chạy xong bạn biết thêm được gì?
+7. Thấy điều đáng nghi mà không có tài liệu nào nói thì ghi gì? Vì sao không ghi PASS?
 
 ## Bài tập về nhà
 
-Lấy **một bộ testcase thật** đang dùng ở dự án bạn. Chạy script đếm ở Bước 1 lên nó và ghi ba con số:
+Lấy một bộ testcase thật đang dùng ở dự án bạn. Chạy script đếm ở Việc 1 lên nó, ghi ba con số:
 
 1. Bao nhiêu phần trăm case có dòng oracle rỗng?
 2. Bao nhiêu phần trăm case không trỏ về nguồn nào?
-3. Trong số case kiểm tính toán, bao nhiêu case lấy số liệu từ **màn hình** để tính kỳ vọng?
+3. Trong số case kiểm tính toán, bao nhiêu case lấy số liệu từ màn hình để tính kỳ vọng?
 
-Con số thứ ba là con số đáng sợ nhất, vì những case đó **luôn xanh** và không ai biết. Đừng sửa hàng loạt bây
-giờ — Bài 11 sẽ cho bạn gate, và Bài 21 sẽ cho bạn cách **đo** xem bộ kiểm có bắt được lỗi giá trị hay không.
+Con số thứ ba đáng sợ nhất, vì những case đó luôn xanh và không ai biết.
 
-## Đọc thêm
+Đừng sửa hàng loạt ngay bây giờ. Bài 11 sẽ cho bạn gate, và Bài 21 sẽ cho bạn cách đo xem bộ kiểm có thật sự
+bắt được lỗi giá trị hay không.
 
-- Bài 21 sẽ đo chính điều này bằng cách tiêm lỗi giá trị vào. Con số thật ở kit này lần đầu đo được là
-  **0/4** — bộ kiểm hiển thị không bắt được lỗi giá trị nào, vì phạm vi nó là *kiểm kê trường*, không phải
-  *kiểm giá trị*.
-- Bài 11 chuyển sang câu hỏi khác: bộ case của bạn đang trống hẳn **loại câu hỏi** nào.
+## Bài sau
+
+Bài 11 trả lời câu này: bộ 200 case của bạn nghe thì nhiều, nhưng có khi cả 200 chỉ hỏi đúng một loại câu hỏi.
+Làm sao biết mình đang bỏ trống loại nào?

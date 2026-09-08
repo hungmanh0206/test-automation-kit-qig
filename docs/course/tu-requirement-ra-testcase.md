@@ -10,14 +10,22 @@
 | **Bài này bạn gõ gì** | Bóc một requirement thật thành bảng luật, kèm danh sách chỗ chưa rõ. |
 | **Xong thì được gì** | Có bảng luật để làm chuẩn cho mọi kết quả mong đợi về sau. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Bóc requirement thành phạm vi và business rule kiểm được.
-✅ Sinh testcase bằng agent với ràng buộc định dạng, đối chiếu với 10 case tự viết.
-✅ Dừng đúng lúc ở Ambiguity Gate thay vì gen bừa với giả định.
-✅ Nhận ra ba dấu hiệu testcase không execute được.
-✅ Thực hành trên tài liệu thật của dự án bạn.
-✅ Hiểu vì sao review của người không bị thay thế.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Luật kiểm được** | Câu luật nêu giá trị cụ thể, đọc xong là biết đúng sai thế nào |
+| **Bảng `BR-`** | Danh sách luật, mỗi luật một mã. Về sau mọi kết quả mong đợi đều trỏ về đây |
+| **Hai lượt** | Lượt phân tích và lượt sinh case tách riêng, không gộp làm một |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Đọc requirement nằm rải ở nhiều nơi, và biết mỗi nơi cho gì (30 phút).
+2. Bóc nó thành bảng luật `BR-` kèm danh sách chỗ chưa rõ (45 phút).
+3. Sinh testcase ở một lượt RIÊNG, rồi so với 10 case bạn tự viết (45 phút).
+4. Nhận ra ba dấu hiệu một case không chạy được (30 phút).
 
 ---
 

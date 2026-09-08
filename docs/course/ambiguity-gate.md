@@ -51,11 +51,11 @@ Mở phiên agent và gõ **đúng** câu này — câu mà 90% người sẽ g�
 | **Case cho nhánh tài liệu không nói** | Có case cho "khách hạng Kim cương" — tài liệu chưa từng nhắc hạng này |
 | **Mâu thuẫn bị làm phẳng** | Tài liệu nói mốc `500.000`, ghi chú BA nói `450.000`. Bộ case chọn **một** số và không nói gì |
 
-**Điều vừa xảy ra:** agent không hỏi bạn câu nào. Nó **đoán**, và đoán một cách hợp lý — nhưng nếu đoán sai
-thì **cả bộ testcase sai theo**, và sai theo cách khó thấy nhất: từng case đều "trông đúng".
+Để ý là agent không hỏi bạn câu nào. Nó tự đoán, mà đoán khá hợp lý. Nhưng nếu đoán sai thì cả bộ testcase
+sai theo, và sai theo kiểu khó thấy nhất: từng case đọc lên đều thấy ổn.
 
-So với Bài 1: ở đó agent làm cho *một* test xanh sai. Ở đây nó làm cho *cả bộ* sai. Cùng một cơ chế — nó được
-giao việc "sinh testcase", và đoán **là** cách hoàn thành việc đó.
+So với Bài 1 thì khác về quy mô. Ở đó nó làm một test xanh sai. Ở đây nó làm cả bộ sai. Cơ chế thì vẫn thế:
+bạn giao việc "sinh testcase", và đoán là một cách hoàn thành việc đó.
 
 ### Đếm xem nó bỏ qua mấy vấn đề
 

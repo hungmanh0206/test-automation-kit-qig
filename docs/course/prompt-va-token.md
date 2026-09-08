@@ -1,6 +1,6 @@
 # Bài 6 — Prompt, Skill, Rule, Command: phân biệt và dùng đúng
 
-> **2 giờ** · Có gì trong tay: khung kit, một rule canonical · Sau bài này: prompt có ràng buộc, và biết đo tài liệu trước khi đọc
+> **2 giờ** · Có gì trong tay: repo có kit tối thiểu · Sau bài này: bốn loại file nằm đúng chỗ, và prompt của bạn có điều kiện dừng
 
 **Tóm tắt bài này**
 
@@ -10,154 +10,129 @@
 | **Bài này bạn gõ gì** | Viết một bản mẫu prompt 5 phần, rồi tách luật, kỹ năng, quy trình và lệnh ra bốn chỗ. |
 | **Xong thì được gì** | Prompt có điều kiện dừng rõ ràng, và luật chỉ nằm ở một nơi. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Cấu trúc prompt cho việc dài, gồm cả điều kiện dừng.
-✅ Hiểu vì sao "hãy cẩn thận" không có tác dụng, và loại câu nào thì có.
-✅ Ambiguity Gate: gộp câu hỏi, dừng chờ, không đoán.
-✅ Đo tài liệu đầu vào trước khi đọc.
-✅ Nhận biết bẫy tài liệu nhiều tab hoặc nhiều bản.
-✅ Thực hành so sánh hai prompt trên cùng một tài liệu.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Rule** | Luật bất biến. Luôn đúng, không phụ thuộc bạn đang làm việc gì |
+| **Skill** | Năng lực theo vai. Agent mở ra khi cần, không tự nạp |
+| **Workflow** | Quy trình một chặng: làm gì trước, làm gì sau |
+| **Command** | Điểm vào. Gõ một dòng thì nạp đúng file và chạy đúng thứ tự |
+| **Điều kiện dừng** | Câu nói cho agent biết khi nào phải dừng lại hỏi, thay vì tự đoán rồi đi tiếp |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Tách bốn loại file, và hiểu vì sao nhồi chung một chỗ là hỏng (25 phút).
+2. Viết bản mẫu prompt 5 phần (30 phút).
+3. Học cách phân biệt câu ràng buộc có tác dụng với câu chỉ nghe hay (20 phút).
+4. So hai prompt trên cùng một tài liệu, rồi đếm xem mỗi bên bắt được mấy chỗ mơ hồ (35 phút).
 
 ---
 
-## 1. Năm phần của một prompt cho việc dài
+## Việc 1 — Bốn loại file, bốn vai (25 phút)
 
-Prompt hỏi–đáp thì một câu là đủ. Prompt giao **cả một chặng việc** thì cần năm phần, và thiếu phần nào sẽ
-hỏng theo cách riêng của phần đó.
+Người mới hay nhồi tất cả vào một file `CLAUDE.md` 500 dòng. Rồi agent đọc lướt, và không ai hiểu vì sao.
+
+Tách ra bốn loại:
+
+| Loại | Ở đâu | Là gì | Khi nào được đọc |
+|---|---|---|---|
+| **Rule** | `.agent/rules/` và `CLAUDE.md` | Luật bất biến, đúng với mọi việc | Luôn luôn |
+| **Skill** | `.agent/skills/<vai>/` | Năng lực theo vai, ví dụ cách dựng dữ liệu | Khi agent thấy cần |
+| **Workflow** | `.agent/workflows/` | Các bước của một chặng | Khi chạy chặng đó |
+| **Command** | `.claude/commands/` | Điểm vào, gõ một dòng | Khi bạn gõ `/tên` |
+
+Vì sao phải tách? Vì mỗi loại có tần suất đọc khác nhau.
+
+Rule đọc mỗi lần chạy, nên nó phải ngắn. Skill thì có thể dài, vì chỉ mở khi cần. Nhồi một skill 300 dòng
+vào file rule là bắt agent đọc 300 dòng đó ở mọi phiên, kể cả những phiên chẳng liên quan.
+
+Và có một luật nữa, quan trọng không kém:
+
+> Một luật chỉ được viết ở một nơi. Chỗ khác thì trỏ tới nơi đó, đừng chép lại.
+
+Chép lại thì hai bản sẽ lệch nhau. Lúc đó không ai biết bản nào mới đúng, và người ta sẽ chọn bản tiện hơn.
+
+## Việc 2 — Năm phần của một prompt cho việc dài (30 phút)
+
+Prompt hỏi đáp thì một câu là đủ. Prompt giao cả một chặng việc thì cần năm phần. Thiếu phần nào hỏng theo
+kiểu của phần đó:
 
 | Phần | Nội dung | Thiếu thì sao |
 |---|---|---|
-| **Vai trò** | Bạn là ai trong việc này | Agent tự chọn giọng, thường quá tự tin |
-| **Đầu vào** | Đọc file nào, theo thứ tự nào | Nó đoán, hoặc đọc thiếu |
-| **Ràng buộc** | Điều gì tuyệt đối không được làm | Nó tối ưu cho "xong việc" |
-| **Định dạng đầu ra** | Kết quả trông như thế nào | Mỗi lần một kiểu, không parse được |
-| **Điều kiện dừng** | Khi nào phải dừng lại hỏi | **Nó không bao giờ dừng** — phần bị bỏ nhiều nhất |
+| Vai trò | Bạn là ai trong việc này | Agent tự chọn giọng, thường quá tự tin |
+| Đầu vào | Đọc file nào, theo thứ tự nào | Nó đoán, hoặc đọc thiếu |
+| Ràng buộc | Điều gì tuyệt đối không được làm | Nó tối ưu cho "xong việc" |
+| Định dạng đầu ra | Kết quả trông ra sao | Mỗi lần một kiểu, máy không đọc được |
+| Điều kiện dừng | Khi nào phải dừng lại hỏi | Nó không bao giờ dừng |
 
-Điều kiện dừng là phần quan trọng nhất và hay bị quên nhất. Không có nó, agent gặp chỗ mơ hồ sẽ **chọn một
-cách hiểu rồi đi tiếp** — và bạn không biết nó đã chọn gì.
+Điều kiện dừng là phần quan trọng nhất, và cũng là phần hay bị quên nhất. Không có nó thì agent gặp chỗ mơ
+hồ sẽ tự chọn một cách hiểu rồi đi tiếp. Bạn không biết nó đã chọn gì.
 
 ### Khuôn dùng được ngay
 
 ```
 VAI TRÒ
-Bạn là QA phân tích tài liệu để chuẩn bị sinh testcase. Bạn CHƯA sinh testcase ở lượt này.
+Bạn là QA phân tích tài liệu để chuẩn bị sinh testcase. Lượt này CHƯA sinh testcase.
 
 ĐẦU VÀO
 Đọc: docs/course/assets/sample-requirement.md
-Đọc TOÀN BỘ, gồm cả các bảng và phần "Ghi chú của BA" ở cuối.
+Đọc toàn bộ, gồm cả các bảng và phần "Ghi chú của BA" ở cuối.
 
 RÀNG BUỘC
 - Không suy đoán bất cứ giá trị nào tài liệu không nói.
-- Nếu hai chỗ trong tài liệu nói khác nhau, KHÔNG chọn một bên — báo cả hai.
-- Không đề xuất giải pháp; chỉ báo cáo những gì tài liệu nói và không nói.
+- Hai chỗ trong tài liệu nói khác nhau thì KHÔNG chọn bên nào. Báo cả hai.
+- Không đề xuất giải pháp. Chỉ báo cáo tài liệu nói gì và không nói gì.
 
 ĐỊNH DẠNG ĐẦU RA
-1. Phạm vi: những gì màn này làm và không làm.
-2. Bảng quy tắc nghiệp vụ kiểm được: | Mã | Quy tắc | Trích từ mục nào |
+1. Phạm vi: màn này làm gì và không làm gì.
+2. Bảng luật kiểm được: | Mã | Luật | Trích từ mục nào |
 3. Bảng chỗ chưa rõ: | # | Chỗ chưa rõ | Vì sao chặn | Câu hỏi cho BA |
 
 ĐIỀU KIỆN DỪNG
-Nếu bảng 3 có bất kỳ dòng nào ở mức chặn, ghi "AMBIGUITY_GATE: PENDING" ở cuối và DỪNG.
+Bảng 3 có bất kỳ dòng nào ở mức chặn thì ghi "CHUA_CHOT" ở cuối và DỪNG.
 Không sinh testcase cho tới khi tôi trả lời.
 ```
 
-## 2. Vì sao "hãy cẩn thận" không có tác dụng
+Lưu khuôn này vào `prompt_templates/phase1/01_phan_tich.md`.
 
-Câu dặn dò thất bại vì nó **không kiểm được** và **không nói agent phải làm gì khác đi**.
+## Việc 3 — Câu ràng buộc nào có tác dụng (20 phút)
+
+Câu dặn dò thất bại vì hai lý do. Một là không kiểm được. Hai là nó không nói agent phải làm gì khác đi.
 
 | Câu không có tác dụng | Vì sao | Câu có tác dụng |
 |---|---|---|
 | "Hãy cẩn thận" | Không nói cẩn thận với cái gì | "Với mỗi kết quả mong đợi, ghi kèm mục nào của tài liệu nói ra nó" |
-| "Đừng bỏ sót gì" | Không có cách biết đã sót | "Liệt kê mọi trường ở Khối B rồi đối chiếu với bảng trong tài liệu, báo số đếm hai bên" |
-| "Hãy trung thực" | Agent vốn không thấy mình đang không trung thực | "Nếu không xác định được giá trị đúng, ghi CHƯA_XÁC_ĐỊNH — không được đoán" |
-| "Test cho kỹ" | Không định nghĩa được "kỹ" | "Mỗi trường có ràng buộc số phải có case tại biên dưới, biên trên, và ngoài biên" |
+| "Đừng bỏ sót gì" | Không có cách nào biết đã sót | "Liệt kê mọi trường ở Khối B rồi đối chiếu với bảng trong tài liệu, báo số đếm hai bên" |
+| "Hãy trung thực" | Agent vốn không thấy mình đang không trung thực | "Không xác định được giá trị đúng thì ghi CHƯA_XÁC_ĐỊNH, không được đoán" |
+| "Test cho kỹ" | Không ai định nghĩa được "kỹ" | "Mỗi trường có ràng buộc số phải có case ở biên dưới, biên trên, và ngoài biên" |
 
-Quy tắc chung:
+Cách phân biệt gọn:
 
-> Câu có tác dụng là câu **kiểm được bằng cách đọc kết quả**. Nếu bạn không thể nhìn đầu ra và nói "câu này
-> đã được tuân hay chưa", thì đó là lời dặn, không phải ràng buộc.
+> Câu có tác dụng là câu mà đọc kết quả xong bạn nói được ngay là nó đã được tuân hay chưa. Nếu nhìn đầu ra
+> mà không trả lời được câu đó thì bạn đang viết lời dặn, không phải ràng buộc.
 
-Đây chính là forcing function ở tầng prompt — và là bước chuẩn bị cho Phần 4, nơi bạn biến chúng thành máy.
+Đây là forcing function ở tầng prompt. Từ Bài 8 trở đi bạn sẽ biến chúng thành máy chặn thật.
 
-## 3. Ambiguity Gate
+### Ba mức mơ hồ
 
-Ba cách xử lý chỗ mơ hồ, chỉ một cách đúng:
+Không phải chỗ mơ hồ nào cũng phải dừng cả lượt:
 
-| Cách | Hậu quả |
-|---|---|
-| Agent tự đoán, không nói | Cả bộ case dựng trên giả định sai, lộ ra rất muộn |
-| Agent hỏi từng câu một | Bạn bị ngắt liên tục, và nó vẫn đoán những chỗ không hỏi |
-| **Gộp thành một danh sách, dừng chờ** | ✅ Bạn hỏi BA một lượt, trả lời một lượt |
+- **Chặn**: không trả lời thì không sinh case được. Ví dụ hai chỗ nói hai con số khác nhau.
+- **Cần xác nhận**: sinh case được với một giả định, nhưng phải ghi rõ giả định đó ra.
+- **Ghi nhận**: không ảnh hưởng lượt này, ghi lại để sau.
 
-Ba mức chặn nên phân biệt:
+Chỉ mức chặn mới được dừng cả lượt. Không phân mức thì mọi chỗ hơi mơ hồ đều thành chặn, và sau ba lần bạn
+sẽ tắt luôn cơ chế này. Bài 8 sẽ biến nó thành gate.
 
-- **Chặn** — không trả lời thì không sinh case được (mâu thuẫn số, thiếu rule cho một nhánh).
-- **Cần xác nhận** — có thể sinh case với giả định, nhưng phải ghi rõ giả định đó ra.
-- **Ghi nhận** — không ảnh hưởng lượt này, ghi vào để sau.
+## Việc 4 — So hai prompt trên cùng một tài liệu (35 phút)
 
-Chỉ mức **Chặn** mới được dừng cả lượt. Nếu không phân mức, mọi chỗ hơi mơ hồ đều thành chặn và bạn sẽ tắt
-luôn cơ chế này.
+Dùng [`assets/sample-requirement.md`](assets/sample-requirement.md). Đây là tài liệu mẫu, cố ý cài cắm chỗ
+mơ hồ và mâu thuẫn giống tài liệu thật.
 
-## 4. Đo tài liệu trước khi đọc
-
-Nghe lạ nhưng đây là bước rất thực dụng, và nó cứu bạn khỏi hai lớp lỗi.
-
-**Ngưỡng.** Ngữ cảnh của agent hữu hạn. Tài liệu quá lớn thì phần đầu bị đẩy ra khỏi ngữ cảnh trước khi nó
-đọc xong phần cuối — và **không có thông báo nào**. Nên đo trước:
-
-```bash
-wc -c docs/course/assets/sample-requirement.md    # số ký tự
-```
-
-Quy ước đơn giản để bắt đầu (điều chỉnh theo công cụ của bạn):
-
-| Cỡ tài liệu | Cách làm |
-|---|---|
-| Dưới ~30.000 ký tự | Đọc thẳng |
-| Trên ngưỡng đó | Giao subagent trích ra bảng cần thiết, rồi chỉ đọc bảng đó |
-
-Với tiếng Việt, nhớ là **chữ có dấu tốn nhiều token hơn** chữ không dấu, nên số ký tự chỉ là sàn.
-
-**Hai bẫy thật, cả hai đều im lặng:**
-
-1. **Tài liệu nhiều tab.** Google Doc có nhiều tab: nếu không bật đúng tuỳ chọn khi đọc thì chỉ lấy được
-   **tab đầu tiên**, và agent sẽ phân tích bình thường trên 5% nội dung. Cách phát hiện duy nhất là **đo**:
-   tài liệu 20 trang mà đọc ra 8KB thì có gì sai.
-2. **Tài liệu nhiều bản.** Cùng một FSD có bản cũ và bản mới, tên gần giống. Đọc bản cũ thì mất hẳn phần bổ
-   sung. Cách xử lý: liệt kê **mọi** bản tìm thấy, so ngày sửa, rồi mới chọn — và ghi lại đã chọn bản nào.
-
-## 5. Token: tiết kiệm ở đâu thì đáng
-
-Tiết kiệm token không phải mục tiêu tự thân — mục tiêu là **để phần quan trọng nằm trong ngữ cảnh**.
-
-| Nên | Không nên |
-|---|---|
-| Giữ file luôn-trong-ngữ-cảnh ngắn | Nhồi mọi luật vào đó "cho chắc" |
-| Mở đúng phần tài liệu đang cần | Đọc cả file 12.000 token để trả lời một câu |
-| Giao việc đọc–trích cho subagent | Tự đọc rồi giữ nguyên văn trong ngữ cảnh |
-| Chia việc dài thành chặng có mốc lưu | Chạy một phiên 4 tiếng rồi mất hết |
-
-Con số minh hoạ từ kit thật: một file luật 465 dòng tốn khoảng **12.800 token** nếu đọc cả file, còn tra
-riêng một mục thì **287 token** — rẻ hơn 45 lần. Bài học không phải "đừng viết tài liệu dài" mà là **cho nó
-một mục lục và cách tra từng mục**.
-
----
-
-## Thực hành (55 phút)
-
-Dùng [`assets/sample-requirement.md`](assets/sample-requirement.md) — tài liệu mẫu có cài cắm chỗ mơ hồ và
-mâu thuẫn, cố ý giống tài liệu thật.
-
-### Bước 1 — Đo trước
-
-```bash
-wc -c docs/course/assets/sample-requirement.md
-```
-
-Ghi con số lại. Nó nằm trong ngưỡng đọc thẳng hay không?
-
-### Bước 2 — Prompt sơ sài
+### Bước 1: prompt sơ sài
 
 Mở phiên mới, gõ đúng câu này, không thêm gì:
 
@@ -165,79 +140,79 @@ Mở phiên mới, gõ đúng câu này, không thêm gì:
 Đọc file docs/course/assets/sample-requirement.md và viết testcase cho màn này.
 ```
 
-Lưu kết quả vào `docs/course/bai-04-ket-qua-so-sai.md`.
+Lưu kết quả vào `docs/bai-06-so-sai.md`.
 
-### Bước 3 — Prompt có ràng buộc
+### Bước 2: prompt có ràng buộc
 
-Mở phiên **mới** (quan trọng — phiên cũ đã có ngữ cảnh), dùng khuôn 5 phần ở mục 1.
+Mở phiên **mới**. Chỗ này quan trọng, vì phiên cũ đã có ngữ cảnh rồi. Dùng khuôn 5 phần ở Việc 2.
 
-Lưu kết quả vào `docs/course/bai-04-ket-qua-co-rang-buoc.md`.
+Lưu kết quả vào `docs/bai-06-co-rang-buoc.md`.
 
-### Bước 4 — Đối chiếu
+### Bước 3: đếm
 
-Tài liệu mẫu cài **ba** chỗ mơ hồ có chủ ý, tất cả nằm ở phần "Ghi chú của BA" cuối file:
+Tài liệu mẫu cài ba chỗ mơ hồ có chủ ý, tất cả nằm ở phần "Ghi chú của BA" cuối file:
 
 | # | Chỗ mơ hồ | Lượt sơ sài có bắt? | Lượt có ràng buộc có bắt? |
 |---|---|---|---|
-| 1 | Hai mốc phí giao hàng khác nhau (500.000 vs 700.000) | | |
-| 2 | Rule "hạng Vàng trên 10 triệu phải duyệt ngay" không có trong luồng chính | | |
+| 1 | Hai mốc phí giao hàng khác nhau, 500.000 và 700.000 | | |
+| 2 | Luật "hạng Vàng trên 10 triệu phải duyệt ngay" không có trong luồng chính | | |
 | 3 | Khách chưa được phân hạng thì tính giảm giá thế nào | | |
 
-Điền bảng này. Kết quả điển hình: lượt sơ sài bỏ cả ba và **không hỏi gì**; lượt có ràng buộc bắt được ít
-nhất chỗ số 1.
+Điền bảng. Kết quả hay gặp: lượt sơ sài bỏ cả ba và không hỏi câu nào. Lượt có ràng buộc bắt được ít nhất
+chỗ số 1.
 
-### Bước 5 — Rút ra câu ràng buộc của riêng bạn
+### Bước 4: viết câu ràng buộc của riêng bạn
 
-Nhìn những chỗ **lượt có ràng buộc vẫn bỏ sót**, viết thêm một câu ràng buộc để lần sau bắt được. Nhớ tiêu
-chí ở mục 2: câu đó phải **kiểm được bằng cách đọc kết quả**.
+Nhìn những chỗ mà lượt có ràng buộc vẫn bỏ sót. Viết thêm một câu để lần sau bắt được.
 
-Ghi câu đó vào `prompt_templates/` — đây là dòng đầu tiên của bộ prompt template của bạn.
+Nhớ tiêu chí ở Việc 3: câu đó phải kiểm được bằng cách đọc kết quả.
 
-### Bước 6 — Commit
+Ghi vào `prompt_templates/`. Đây là dòng đầu tiên trong bộ prompt của bạn.
 
 ```bash
-git add docs/course prompt_templates
-git commit -m "docs(course): bài 4 — so sánh prompt sơ sài vs có ràng buộc"
+git add docs prompt_templates
+git commit -m "docs: bài 6 — so prompt sơ sài với prompt có ràng buộc"
 ```
-
----
 
 ## Cây thư mục sau bài này
 
 ```
 kit-cua-toi/
 ├── .agent/
-│   ├── rules/
-│   │   └── core_rules.md         ·  từ Bài 4 · digest
+│   ├── rules/                    ·  từ Bài 2
 │   ├── skills/
-│   │   └── <vai>/SKILL.md        ← MỚI · năng lực theo vai, KHÔNG tự nạp
+│   │   └── <vai>/SKILL.md        ← MỚI · năng lực theo vai, agent mở khi cần
 │   └── workflows/
 │       └── phase1.md             ← MỚI · quy trình, gọi prompt theo thứ tự
-└── prompt_templates/
-    └── phase1/
-        └── 01_phan_tich.md       ← MỚI · 5 phần: vai · đầu vào · ràng buộc · định dạng · ĐIỀU KIỆN DỪNG
+├── prompt_templates/
+│   └── phase1/
+│       └── 01_phan_tich.md       ← MỚI · 5 phần, có ĐIỀU KIỆN DỪNG
+└── docs/
+    ├── bai-06-so-sai.md          ← MỚI · kết quả lượt prompt sơ sài
+    └── bai-06-co-rang-buoc.md    ← MỚI · kết quả lượt có ràng buộc
 ```
+
+Giữ lại hai file kết quả ở `docs/`. Vài bài nữa bạn sẽ mở lại chúng để so.
 
 ## Tự kiểm
 
-- [ ] Tôi nêu được 5 phần của prompt việc dài, và phần nào hay bị quên nhất.
-- [ ] Tôi viết được 3 câu ràng buộc **kiểm được**, và giải thích được vì sao "hãy cẩn thận" thì không.
-- [ ] Tôi phân biệt được ba mức chặn / cần xác nhận / ghi nhận.
-- [ ] Tôi đã đo cỡ tài liệu **trước** khi cho agent đọc.
-- [ ] Tôi kể được hai bẫy tài liệu im lặng và cách phát hiện từng cái.
-- [ ] Tôi đã điền xong bảng đối chiếu ở Bước 4.
-- [ ] Tôi có ít nhất một câu ràng buộc của riêng mình trong `prompt_templates/`.
+1. Kể bốn loại file và vai của từng loại. Vì sao skill không nên nằm trong file rule?
+2. Năm phần của prompt việc dài là gì? Phần nào hay bị quên nhất, và quên thì hỏng ra sao?
+3. Vì sao "hãy cẩn thận" không có tác dụng? Viết lại nó thành câu có tác dụng.
+4. Cách phân biệt câu ràng buộc với lời dặn, nói bằng một câu.
+5. Ba mức mơ hồ là gì? Vì sao không nên coi mọi chỗ mơ hồ đều là chặn?
+6. Ở Bước 3, lượt sơ sài bắt được mấy trên ba? Lượt có ràng buộc thì mấy?
 
 ## Bài tập về nhà
 
-Lấy **một** tài liệu thật của dự án bạn. Đo cỡ. Rồi chạy khuôn 5 phần ở mục 1 lên nó — chỉ tới bước liệt kê
-chỗ chưa rõ, **chưa sinh testcase**.
+Lấy một tài liệu thật của dự án bạn. Chạy khuôn 5 phần lên nó, nhưng chỉ tới bước liệt kê chỗ chưa rõ. Chưa
+sinh testcase.
 
-Mang bảng "chỗ chưa rõ" đó đi hỏi BA thật. Đếm bao nhiêu câu là câu đáng hỏi. Đó là thước đo prompt của bạn
-đã đủ tốt hay chưa — và cũng là cách nhanh nhất để BA thấy giá trị của cách làm này.
+Mang bảng "chỗ chưa rõ" đó đi hỏi BA thật. Đếm xem bao nhiêu câu là câu đáng hỏi.
 
-## Đọc thêm
+Con số đó cho biết prompt của bạn đã đủ tốt chưa. Nó cũng là cách nhanh nhất để BA thấy cách làm này có giá trị.
 
-- Phần "Ghi chú cho giảng viên" ở cuối [`assets/sample-requirement.md`](assets/sample-requirement.md) —
-  liệt kê đủ **10** chỗ cài cắm. Đọc sau khi đã tự làm.
-- Bài 7 sẽ dùng lại đúng tài liệu này để sinh testcase thật.
+## Bài sau
+
+Bài 7 vào việc thật: đọc requirement nằm rải ở bốn nơi, mỗi nơi nói một kiểu, và bóc nó thành bảng luật dùng
+được.

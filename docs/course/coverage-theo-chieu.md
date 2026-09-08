@@ -10,14 +10,22 @@
 | **Bài này bạn gõ gì** | Khai danh mục các loại câu hỏi cần phủ, rồi viết máy đếm và chặn khi thiếu. |
 | **Xong thì được gì** | Biết bộ case của mình đang bỏ trống hẳn loại nào, bằng con số chứ không phải cảm giác. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Hiểu hai trục: module và chiều.
-✅ Nắm các chiều hay bị bỏ trống nhất.
-✅ Khai chiều bắt buộc, và ghi lý do khi khai không áp dụng.
-✅ Gắn tag chiều để về sau đếm được bằng máy.
-✅ Tự đếm: bộ của mình trống chiều nào.
-✅ Hiểu bẫy trung tâm: phủ kín module mà trống một chiều thì vẫn trông đầy đủ.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Chiều phủ** | Loại câu hỏi mà một case đang hỏi. Ví dụ: giá trị biên, phân quyền, đồng thời |
+| **Ngưỡng theo chiều** | Mỗi chiều bắt buộc phải có ít nhất bao nhiêu case |
+| **`n/a` có lý do** | Chiều không áp dụng cho màn này, nhưng phải ghi vì sao |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Hiểu vì sao đếm số case không nói lên điều gì (20 phút).
+2. Khai danh mục chiều cho dự án bạn (30 phút).
+3. Gắn nhãn chiều vào từng case để máy đếm được (25 phút).
+4. Viết máy đếm, và để nó chặn khi một chiều bắt buộc còn trống (45 phút).
 
 ---
 

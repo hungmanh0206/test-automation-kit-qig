@@ -10,22 +10,31 @@
 | **Bài này bạn gõ gì** | Chốt 7 cột bắt buộc, viết một bộ đọc dùng chung, rồi viết tay 10 case. |
 | **Xong thì được gì** | Bộ case có khuôn cố định, xuất ra Excel được, và máy đọc được. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Chọn tập cột bắt buộc và hiểu vì sao mỗi cột tồn tại.
-✅ Hiểu vì sao chỉ được có một bộ đọc testcase dùng chung.
-✅ Phân biệt Ưu tiên với Severity, và vì sao severity không thuộc testcase.
-✅ Viết tay 10 testcase theo template, xuất ra Excel.
-✅ Bẫy: tách cột bằng dấu `|` khi ô chứa ký tự thoát.
-✅ Hiểu khi nào Excel là nguồn, khi nào công cụ test-management là nguồn.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Canonical** | Bản gốc. Mọi bản khác sinh ra từ nó, không ai sửa riêng |
+| **Parser** | Đoạn mã đọc file testcase thành dữ liệu cho máy dùng |
+| **Ưu tiên và Severity** | Một cái nói làm trước sau, một cái nói hậu quả nếu lỗi xảy ra. Hai thứ khác nhau |
+
+## Bài này bạn sẽ làm gì
+
+Năm việc:
+
+1. Chốt bảy cột bắt buộc, và hiểu vì sao thiếu cột nào cũng có chỗ vỡ (20 phút).
+2. Viết một bộ đọc dùng chung, chỉ một cái thôi (30 phút).
+3. Tránh bẫy tách cột khi ô chứa dấu gạch đứng (15 phút).
+4. Viết tay 10 case để làm bản đối chứng (25 phút).
+5. Xuất Excel và chạy phép kiểm đầu tiên (30 phút).
 
 ---
 
 ## 1. Vì sao cần "canonical" chứ không phải "một cái template"
 
-Template là hình thức. **Canonical** là cam kết: *đây là bản gốc, mọi thứ khác đọc từ đây.*
+Template chỉ là cái khuôn. Canonical là một cam kết: đây là bản gốc, mọi bản khác phải đọc từ đây.
 
-Không có cam kết đó thì chuyện này xảy ra — và nó xảy ra rất nhanh:
+Không có cam kết đó thì chuyện dưới đây xảy ra, và xảy ra rất nhanh:
 
 ```
 Agent sinh testcase ở dạng markdown
@@ -35,7 +44,7 @@ Agent sinh testcase ở dạng markdown
             → giờ có BA BẢN khác nhau, và không ai biết bản nào đúng
 ```
 
-Chọn canonical là chọn **một** bản để mọi công cụ đọc, và mọi bản khác là bản sinh ra từ nó.
+Chọn canonical nghĩa là chọn một bản duy nhất để mọi công cụ đọc. Các bản khác đều sinh ra từ nó.
 
 ## 2. Bảy cột, và vì sao mỗi cột tồn tại
 
@@ -49,11 +58,12 @@ Chọn canonical là chọn **một** bản để mọi công cụ đọc, và m
 | 6 | `Kết quả mong đợi` | **Đúng là gì** | Không phán được PASS/FAIL — case vô nghĩa (Bài 10) |
 | 7 | `Ưu tiên` | Làm **trước sau** | Không xếp được thứ tự, và mất cả đầu vào cho độ sâu mở rộng |
 
-Bảy cột này là **tối thiểu**, không phải tối đa. Thêm cột thì tuỳ dự án; nhưng bảy cột trên thì thiếu cái nào
-cũng có một công cụ phía sau vỡ.
+Bảy cột này là mức tối thiểu. Dự án bạn cần thêm cột thì cứ thêm. Nhưng thiếu một trong bảy cột trên thì
+sẽ có một công cụ phía sau vỡ.
 
-> **Đừng thêm cột chỉ vì "có thể cần".** Mỗi cột bắt buộc là một thứ agent phải điền cho **mọi** case. Cột
-> ít dùng sẽ được điền cho có, rồi thành dữ liệu rác — mà dữ liệu rác còn tệ hơn ô trống, vì nó trông như thật.
+> Đừng thêm cột chỉ vì thấy "có thể cần". Mỗi cột bắt buộc là một thứ agent phải điền cho mọi case. Cột ít
+> dùng rồi sẽ được điền cho có, và thành dữ liệu rác. Dữ liệu rác còn khó chịu hơn ô trống, vì nó trông
+> như thật.
 
 ### Template markdown
 
@@ -73,8 +83,8 @@ Ba quy ước trong ví dụ trên, và mỗi cái có lý do:
 
 ## 3. Một parser, không phải bốn
 
-Bạn sẽ cần đọc testcase từ nhiều chỗ: markdown khi agent sinh, Excel khi BA sửa, và về sau là từ công cụ
-test-management. Phản xạ tự nhiên là viết một hàm đọc cho mỗi nơi. **Đừng.**
+Bạn sẽ phải đọc testcase từ nhiều chỗ. Markdown khi agent sinh ra. Excel khi BA sửa. Sau này còn từ công
+cụ quản lý testcase nữa. Phản xạ tự nhiên là viết một hàm đọc cho mỗi nơi. Đừng làm thế.
 
 > Chuyện thật ở kit này: có **4 parser trùng nhau**, và một trong số đó tách cột bằng `split('|')` thô nên
 > **lệch cột** khi ô chứa `\|`. Ba parser kia đúng. Nghĩa là cùng một file testcase đọc ra hai kết quả khác
@@ -207,7 +217,7 @@ Hai khái niệm này bị lẫn ở gần như mọi dự án.
 | Thang | `Critical` `High` `Medium` `Low` `Lowest` | `Blocker` `Critical` `Major` `Minor` `Trivial` |
 | Thuộc về | **Testcase** | **Bug** |
 
-Chúng độc lập: một lỗi hậu quả rất lớn nhưng cực hiếm gặp có thể để ưu tiên thấp, và ngược lại.
+Hai thứ này độc lập với nhau. Một lỗi hậu quả rất lớn nhưng hiếm khi gặp thì vẫn có thể để ưu tiên thấp.
 
 **Nhưng Severity không nên là cột bắt buộc của testcase.** Lý do rất thẳng:
 
@@ -255,9 +265,9 @@ Câu trả lời **đổi theo giai đoạn** — và đây là chỗ dễ nhầ
 | Publish lên công cụ test-management | Excel là **nguồn đẩy đi** | Một chiều: repo → công cụ |
 | Execute (Phần 3) | **Công cụ test-management** | Cả team đã thấy và đã sửa ở đó |
 
-Hệ quả thực dụng: khi execute, phải **kéo bản mới nhất về** rồi mới chạy. Chạy trên bản sao cũ nghĩa là đang
-chấm theo kết quả mong đợi **đã bị sửa** — kết quả trông hợp lệ nhưng vô nghĩa. Bài 16 sẽ dựng máy đối soát
-độ tươi cho việc này.
+Nên khi chạy test, phải kéo bản mới nhất về trước. Chạy trên bản sao cũ nghĩa là bạn đang chấm theo kết quả
+mong đợi đã bị người khác sửa rồi. Kết quả nhìn thì hợp lệ, nhưng không có nghĩa gì. Bài 16 sẽ dựng máy
+kiểm chuyện này.
 
 ---
 
