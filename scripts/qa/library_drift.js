@@ -98,7 +98,7 @@ if (!badRel) ok.push(`${TERMS.length} mục · 0 id trùng · 0 rel gãy · đ�
 let badSrc = 0;
 for (const t of TERMS) {
   // bỏ phần chú thích sau § hoặc trong ngoặc: "RULE_GLOBAL.md § Evidence" · "CLAUDE.md (global)"
-  const p = String(t.src).split('§')[0].split('(')[0].trim().replace(/[\/\\]$/, '');
+  const p = String(t.src).split('§')[0].split('(')[0].trim().replace(/[/\\]$/, '');
   if (!p) continue;
   if (!exists(path.join(ROOT, p))) { problems.push(`${t.id}: src trỏ tới đường dẫn KHÔNG tồn tại — "${t.src}"`); badSrc++; }
 }
@@ -326,12 +326,12 @@ if (!exists(COURSE_MD)) {
     const boTroFile = new Set(cs.orphans.map((o) => path.basename(o.href)));
     for (const p of cs.parts) for (const l of p.lessons) {
       if (!l.href) continue;
-      const h1 = (rd(path.join(ROOT, 'docs', l.href)).match(/^#\s+(.+)$/m) || [, ''])[1].replace(' ⭐', '').trim();
+      const h1 = (rd(path.join(ROOT, 'docs', l.href)).match(/^#\s+(.+)$/m) || ['', ''])[1].replace(' ⭐', '').trim();
       const mong = `Bài ${l.n} — ${l.title}`;
       if (h1 !== mong) soLech.push(`${path.basename(l.href)}: tiêu đề "${h1}" ≠ giáo trình "${mong}"`);
     }
     for (const o of cs.orphans) {
-      const h1 = (rd(path.join(ROOT, 'docs', o.href)).match(/^#\s+(.+)$/m) || [, ''])[1].trim();
+      const h1 = (rd(path.join(ROOT, 'docs', o.href)).match(/^#\s+(.+)$/m) || ['', ''])[1].trim();
       if (/^Bài\s+\d/.test(h1)) {
         soLech.push(`${path.basename(o.href)}: là bài BỔ TRỢ nhưng tiêu đề vẫn mang số — "${h1}"`);
       }
