@@ -441,21 +441,22 @@ YAML — và `ci-scope.js` đảm bảo không bỏ sót.
 - [ ] README có mục "khi gate chặn bạn", và nó dẫn tới sửa luật, không tới thêm ngoại lệ.
 - [ ] Tôi có nhịp bảo dưỡng, và nhịp tháng có đo mutation.
 
-## Bài tập khép lại
+## Bài tập về nhà
 
-Ba việc, làm được cả ba là kit của bạn đứng vững:
+Mở workflow CI của một repo bạn đang tham gia, rồi đếm ba con số:
 
-1. **Nghiệm thu clone sạch.** Clone repo vào thư mục mới, làm theo README đúng từng chữ, tới khi
-   `npm run gates` ĐẠT. Mọi chỗ phải ứng biến là một chỗ thiếu trong README.
+| Đếm gì | Con số của bạn |
+|---|---|
+| Số lệnh được **liệt kê thẳng** trong tệp workflow | ___ |
+| Số lệnh đó cũng có trong `package.json` | ___ |
+| Số lệnh trong `package.json` mà workflow **không** gọi | ___ |
 
-2. **Chốt điểm mutation gốc.** Chạy `npm run mutation` toàn bộ, lưu `diem.json`, ghi ngày. Đây là mốc so
-   sánh. Tháng sau đo lại, tụt thì tìm oracle nào bị làm yếu.
+Con số thứ nhất lớn hơn 0 là workflow đang tự khai lệnh, và nó sẽ trôi khỏi `package.json` theo thời
+gian. Con số thứ ba là những máy đang nằm không: có người viết, không ai chạy.
 
-3. Đóng vòng lặp bug lọt. Lấy bug gần nhất lọt ra ngoài. Trả lời: máy nào lẽ ra phải bắt? Rồi sửa
-   đúng máy đó, và chứng minh bằng một mutant chuyển từ SỐNG SÓT sang BỊ DIỆT.
-
-Việc thứ ba là việc quan trọng nhất trong cả tài liệu này, vì nó là vòng lặp duy nhất khiến bộ kiểm **tốt lên** thay vì
-chỉ **chạy**.
+Rồi thử một việc khó chịu hơn. Tìm trong lịch sử CI một lượt chạy **xanh** của ba tháng trước, và
+tự trả lời: lượt đó có chạy đủ số gate mà repo đang có hôm nay không. Nếu không trả lời được thì
+repo của bạn chưa có thứ Việc 3 gọi là độ với tới.
 
 ## Đọc thêm
 

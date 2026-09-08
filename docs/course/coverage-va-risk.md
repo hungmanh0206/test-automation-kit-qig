@@ -1,6 +1,6 @@
 # Bài 14 — Coverage và Risk
 
-> **2 giờ 30 phút** · Có gì trong tay: bộ testcase có oracle, chưa biết đủ hay thiếu · Sau bài này: biết bộ của mình trống hẳn loại câu hỏi nào
+> **3 giờ** · Có gì trong tay: bộ testcase có oracle, chưa biết đủ hay thiếu · Sau bài này: biết bộ của mình trống hẳn loại câu hỏi nào
 
 **Tóm tắt bài này**
 
@@ -20,12 +20,15 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Bảy việc:
 
-1. Hiểu vì sao đếm số case không nói lên điều gì (20 phút).
-2. Khai danh mục chiều cho dự án bạn (30 phút).
-3. Gắn nhãn chiều vào từng case để máy đếm được (25 phút).
-4. Viết máy đếm, và để nó chặn khi một chiều bắt buộc còn trống (45 phút).
+1. Hai trục của độ phủ, và vì sao trục thứ hai vô hình (15 phút).
+2. Các chiều phủ, và chiều nào hay trống nhất (25 phút).
+3. Gắn tag vào từng case để máy đếm được (25 phút).
+4. Khai chiều bắt buộc cho dự án bạn, `n/a` phải kèm lý do (25 phút).
+5. Viết máy đếm (35 phút).
+6. Đọc kết quả cho đúng, và ba cách đọc sai (15 phút).
+7. Band rủi ro: cách đọc, và vì sao độ sâu phải theo band (25 phút).
 
 ---
 
@@ -252,6 +255,57 @@ Sau khi chạy, ba câu hỏi theo thứ tự:
 
 Với chiều 0 case, đừng lấp bằng cách gắn tag vào case cũ. Viết case mới, vì chiều đó trống nghĩa là bạn
 chưa hỏi loại câu hỏi đó, không phải chưa dán nhãn.
+
+---
+
+## Việc 7 — Band rủi ro: chiều thứ hai của độ sâu (25 phút)
+
+Sáu việc trên trả lời câu *"bộ case có phủ đủ các chiều chưa"*. Còn một câu nữa, và nó độc lập với
+câu trên:
+
+> Chiều nào cũng có case rồi. Nhưng module nào đáng được test **sâu hơn** module nào?
+
+Phủ đều mọi module nghe công bằng, mà thực tế là phân bổ sai: phần rủi ro cao bị test hời hợt, phần
+rủi ro thấp bị test thừa.
+
+### Ba band, và ba mức độ sâu khác nhau
+
+| Band | Dấu hiệu của module | Độ sâu tối thiểu |
+|---|---|---|
+| **High** | Chạm tiền, chạm dữ liệu khách, hoặc vừa sửa xong | Luồng thuận + biên + nhánh lỗi + trạng thái kế cận |
+| **Medium** | Nghiệp vụ bình thường, ít đổi | Luồng thuận + biên |
+| **Low** | Màn hiển thị, không có logic tính toán | Luồng thuận |
+
+Ba dấu hiệu ở cột giữa không phải cảm nhận, chúng đo được:
+
+| Dấu hiệu | Đo bằng gì |
+|---|---|
+| Chạm tiền hoặc dữ liệu khách | Đọc requirement, có mã `BR-` nào nói về tiền hay thông tin cá nhân không |
+| Vừa sửa xong | `git log` trên thư mục source của module, 30 ngày gần nhất |
+| Từng có bug | Số bug đã log cho module đó |
+
+Dòng cuối là dòng mạnh nhất, và cũng là dòng bạn **chưa có** lúc này: nó cần lịch sử bug của vài
+sprint. Bài 27 dựng máy chấm điểm đọc từ lịch sử đó, và ép độ sâu theo band.
+
+Bài này chỉ cần bạn làm một việc rẻ: mở bảng module của dự án, gán tay mỗi module một band, và ghi
+**lý do** bên cạnh.
+
+```
+outputs/tasks/<MÃ>/analysis/band.md
+
+| Module      | Band   | Vì sao                                        |
+|-------------|--------|-----------------------------------------------|
+| Thanh toán  | High   | BR-12..BR-19 đều về tiền; sửa 3 lần tháng này |
+| Đơn hàng    | Medium | nghiệp vụ ổn định, không chạm tiền            |
+| Trang chủ   | Low    | chỉ hiển thị, không tính toán                 |
+```
+
+Cột "Vì sao" là cột quan trọng nhất. Không có nó thì band trở thành ý kiến, và ý kiến thì không tranh
+luận được. Có nó thì người không đồng ý sẽ chỉ vào đúng dòng lý do mà nói *"chỗ này tôi thấy khác"*,
+và đó là một cuộc trao đổi có ích.
+
+> Đừng gán tất cả thành High. Nghe an toàn nhưng nó xoá luôn tác dụng của việc phân band: nếu mọi
+> thứ đều quan trọng nhất thì không có gì được ưu tiên.
 
 ---
 

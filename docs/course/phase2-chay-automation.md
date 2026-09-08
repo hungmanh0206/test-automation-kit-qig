@@ -1,6 +1,6 @@
 # Bài 16 — Phase 2: chạy automation có kiểm soát
 
-> **2 giờ 30 phút** · Có gì trong tay: bộ testcase đã sinh và đã chốt · Sau bài này: bắt được bug ở chỗ testcase không hề nói tới — mà không biến mở rộng thành tautology nhân 7 lần
+> **3 giờ** · Có gì trong tay: bộ testcase đã sinh và đã chốt · Sau bài này: bắt được bug ở chỗ testcase không hề nói tới — mà không biến mở rộng thành tautology nhân 7 lần
 
 **Tóm tắt bài này**
 
@@ -20,12 +20,13 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Năm việc:
 
 1. Tự thấy vì sao bộ case "đầy đủ" vẫn lọt bug (15 phút).
 2. Mở **7 trục** quanh một case trên app thực hành, và tìm ra một thứ thật (50 phút).
 3. Học luật sống-còn: không neo thì là `OBSERVATION`, và vì sao "nhất quán" không cứu được bạn (20 phút).
 4. **Xây gate**: mở rộng không có neo ⇒ chặn; và gate độ sâu theo mức rủi ro để không nổ thời gian (35 phút).
+5. Gộp cả chuỗi sáu lệnh vào một lệnh gõ được (25 phút).
 
 ---
 
@@ -367,6 +368,59 @@ Bảy trục cho mọi case là bất khả thi. Nên độ sâu bám mức rủ
 
 Mức rủi ro từ đâu ra? Từ Bài 14 và Bài 27, không phải bạn tự chọn lúc chạy. Truyền tay là bạn sẽ luôn chọn
 `low`.
+
+Bốn việc trên cho bạn một lượt execute có kiểm soát. Nhưng nó gồm sáu lệnh phải gõ đúng thứ tự, và
+thứ tự đó hiện đang nằm trong đầu bạn. Đó là chỗ hỏng cuối cùng của bài này: một quy trình chỉ tồn
+tại trong đầu một người thì không phải quy trình.
+
+## Việc 5 — Gộp cả chuỗi vào một lệnh (25 phút)
+
+Bạn giờ có hơn mười lệnh, và một **trình tự** phải đúng. Trước đó trình tự đó nằm trong đầu bạn.
+
+`.claude/commands/phase2.md`:
+
+```markdown
+---
+description: Execute testcase của một task — dựng automation, chạy thật, chấm verdict, thu bằng chứng.
+---
+
+Task: **$ARGUMENTS**
+
+Đọc theo thứ tự, làm đúng những gì file nói:
+
+1. `.agent/rules/core_rules.md`
+2. `prompt_templates/run_phase2.md`
+
+Gate BẮT BUỘC, theo đúng thứ tự này:
+
+```bash
+npm run kiem-dau-vao -- --task $ARGUMENTS          # đủ input chưa
+npm run tms:verify -- --enforce                 # bản sao testcase còn tươi chưa
+npx playwright test                             # chạy thật
+node scripts/qa/sinh-status.js test-results/results.json \
+  outputs/<PROJECT>/tasks/$ARGUMENTS/test-results/testcase-status.json
+npm run tu-soi -- --task $ARGUMENTS \
+  --status outputs/<PROJECT>/tasks/$ARGUMENTS/test-results/testcase-status.json
+```
+
+Chỉ khi cả bộ gate ĐẠT mới đẩy kết quả:
+
+```bash
+npm run tms:push-exec -- --status <...> --folder "<Sprint>" --apply
+```
+
+Nếu có case FAIL: rerun 2–3 lần, đọc response để khoanh tầng, điền `tangLoi`, rồi mới log bug.
+```
+
+Chín lệnh nên có: `/phase1` `/phase2` `/rerun` `/publish` `/kiem-dau-vao` `/gates` `/explore` `/ui-debug`
+`/partial-rerun`.
+
+> Slash command KHÔNG thay thế gate, nó chỉ dẫn đúng đường. Gate vẫn là thứ chặn. Nhưng nó xoá được một
+> lớp lỗi thật: *"tôi không biết phải chạy gì"*.
+
+---
+
+---
 
 ## Cây thư mục sau bài này
 

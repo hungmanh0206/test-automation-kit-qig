@@ -173,159 +173,22 @@ git add .gitignore
 git commit -m "chore(git): cấm knowledge/ · task.env · outputs/ — ba lý do khác nhau"
 ```
 
-## Việc 4 — Máy chặn, và tự tay thử phá nó (30 phút)
+## Việc 4 — Máy chặn tệp cấm (dạy ở Bài 2)
 
-`.gitignore` **không đủ**, vì một lệnh là xuyên qua nó:
+`.gitignore` không đủ, vì một lệnh là xuyên qua nó:
 
 ```bash
 git add -f profiles/DEMO-1/task.env      # -f = force, bỏ qua .gitignore
 ```
 
-Và `git add -A` trong lúc gấp cũng có thể gom thứ bạn không định. Nên cần **máy chặn**.
+Và `.gitignore` chỉ áp cho tệp **chưa** track. Tệp đã track một lần rồi thì thêm vào `.gitignore`
+cũng vô tác dụng, git vẫn theo dõi nó mãi.
 
-```js
-#!/usr/bin/env node
-/*
- * kiem-file-cam.js — không tệp cấm nào được git TRACK.
- *
- * VÌ SAO KHÔNG DỰA VÀO .gitignore: `git add -f` xuyên qua nó, và .gitignore chỉ áp cho tệp CHƯA track —
- * tệp đã track một lần rồi thì thêm vào .gitignore cũng vô tác dụng, git vẫn theo dõi nó mãi.
- *
- * ĐO CÁI GÌ: danh sách tệp git ĐANG track (git ls-files), không phải nội dung .gitignore.
- * Đo khai báo thì chỉ biết ý định; đo tệp đang track thì biết SỰ THẬT.
- *
- * Mã thoát:  0 = sạch  ·  1 = có tệp cấm bị track (CHẶN)  ·  2 = không đo được
- */
-'use strict';
-const { execSync } = require('child_process');
+Nên cần một máy chặn đo **danh sách tệp git đang track**, không đo nội dung `.gitignore`. Đo khai báo
+thì chỉ biết ý định, đo tệp đang track thì biết sự thật.
 
-/* Mẫu cấm. Khai TƯỜNG MINH kèm lý do — người sau đọc là hiểu, không phải đoán. */
-const CAM = [
-  { re: /^knowledge\//, ly: 'dữ liệu nghiệp vụ của công ty; chính tên file cũng tiết lộ lỗi sản phẩm' },
-  { re: /(^|\/)\.env($|\.)/, ly: 'chứa credential' },
-  { re: /(^|\/)task\.env$/, ly: 'credential theo task' },
-  { re: /^outputs\//, ly: 'kết quả từng lượt chạy, có thể chứa PII của khách' },
-  { re: /^test-results\//, ly: 'artifact của runner' },
-  { re: /\.(pem|p12|pfx|key)$/, ly: 'khoá riêng' },
-  { re: /service-account.*\.json$/, ly: 'khoá service account' }
-];
-/* Ngoại lệ CÓ CHỦ Ý: bản mẫu không có giá trị thật thì PHẢI vào repo. */
-const CHO_PHEP = [/^profiles\/task\.env\.example$/, /\.env\.example$/];
-
-let dsFile;
-try {
-  dsFile = execSync('git ls-files', { encoding: 'utf8' }).split('\n').map((s) => s.trim()).filter(Boolean);
-} catch (e) {
-  console.error('[file-cam] KHÔNG ĐO ĐƯỢC: không chạy được git ls-files — đây có phải repo git?');
-  process.exit(2);
-}
-if (!dsFile.length) {
-  console.error('[file-cam] KHÔNG ĐO ĐƯỢC: git chưa track tệp nào. Chạy git add trước.');
-  process.exit(2);
-}
-
-const viPham = [];
-for (const f of dsFile) {
-  if (CHO_PHEP.some((r) => r.test(f))) continue;
-  const hit = CAM.find((c) => c.re.test(f));
-  if (hit) viPham.push({ f: f, ly: hit.ly });
-}
-
-console.log(`[file-cam] kiểm ${dsFile.length} tệp đang được git track`);
-if (!viPham.length) {
-  console.log('[file-cam] ✓ ĐẠT — không tệp cấm nào bị track.');
-  process.exit(0);
-}
-
-console.error(`\n[file-cam] ✗ CHẶN — ${viPham.length} tệp cấm đang bị track:`);
-for (const v of viPham) console.error(`  - ${v.f}\n      lý do cấm: ${v.ly}`);
-console.error('\nBỎ TRACK (giữ tệp trên đĩa):  git rm --cached <tệp>');
-console.error('Nếu tệp đó đã từng được PUSH và chứa credential thì xoá commit KHÔNG đủ —');
-console.error('phải ĐỔI credential đó ngay, vì nó đã nằm trong lịch sử ở máy người khác.');
-process.exit(1);
-```
-
-Thêm lệnh:
-
-```json
-{
-  "scripts": {
-    "kiem:file-cam": "node scripts/qa/kiem-file-cam.js"
-  }
-}
-```
-
-### Thử nó — ba lần
-
-**Lần 1 — repo sạch.**
-
-```bash
-npm run kiem:file-cam; echo "mã thoát = $?"
-```
-
-**Bạn sẽ thấy:**
-
-```
-[file-cam] kiểm 3 tệp đang được git track
-[file-cam] ✓ ĐẠT — không tệp cấm nào bị track.
-mã thoát = 0
-```
-
-**Lần 2 — đối chứng dương: tự tay phá.** Tạo một tệp giả (⚠ giá trị giả, đừng dùng token thật):
-
-```bash
-mkdir -p profiles/DEMO-1
-printf 'APP_BASE_URL=http://localhost:4010\nTEST_PASS=day-la-mat-khau-gia\n' > profiles/DEMO-1/task.env
-git add -f profiles/DEMO-1/task.env
-npm run kiem:file-cam; echo "mã thoát = $?"
-```
-
-**Bạn sẽ thấy:**
-
-```
-[file-cam] ✗ CHẶN — 1 tệp cấm đang bị track:
-  - profiles/DEMO-1/task.env
-      lý do cấm: credential theo task
-
-BỎ TRACK (giữ tệp trên đĩa):  git rm --cached <tệp>
-...
-mã thoát = 1
-```
-
-Dọn theo đúng hướng dẫn máy vừa in:
-
-```bash
-git rm --cached profiles/DEMO-1/task.env
-npm run kiem:file-cam; echo "mã thoát = $?"      # phải về 0
-```
-
-**Lần 3 — đối chứng âm cho ngoại lệ.** Bản mẫu phải đi qua được:
-
-```bash
-printf 'APP_BASE_URL=\nTEST_USER=\nTEST_PASS=\n' > profiles/task.env.example
-git add profiles/task.env.example
-npm run kiem:file-cam; echo "mã thoát = $?"      # phải là 0
-```
-
-Nếu ra `1` thì máy của bạn **bắt oan** — và Bài 24 nói kỹ vì sao bắt oan còn tệ hơn không có máy: người ta sẽ
-học cách tắt nó đi.
-
-### Bài học đắt nhất của bài này
-
-> Nguy hiểm không nằm ở nội dung file trong `knowledge/`. Chính tên file đã đủ để lộ chuyện.
-
-Một thư mục tri thức có thể chứa những tệp tên kiểu:
-
-```
-knowledge/domain/tinh-phi-sai-khi-khach-hang-vang.md
-knowledge/decisions/khong-chan-thanh-toan-trung-vi-chua-kip-sprint.md
-```
-
-Chỉ cần chạy `git ls-files` trên một repo công khai là người ngoài biết sản phẩm của bạn có lỗi gì và bạn cố
-ý bỏ qua điều gì, mà không cần mở một tệp nào.
-
-Đó là lý do `kiem-file-cam.js` đo danh sách file đang được git quản, chứ không đọc nội dung. Máy quét mật
-khẩu ở Bài 14 mới là cái đọc nội dung. Hai lớp khác nhau, và lớp tên file là lớp hay bị bỏ quên.
+Máy đó là `kiem-file-cam.js`, và [Bài 2](moi-truong.md) dựng nó từng dòng, kèm ba phép thử tự tay phá
+nó. Bài này không viết lại, để một nội dung chỉ có một chỗ.
 
 ## Việc 5 — Đẩy lên GitHub/GitLab (20 phút)
 

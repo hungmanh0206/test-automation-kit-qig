@@ -1,6 +1,6 @@
 # Bài 1 — Automation Test Kit là gì
 
-> **2 giờ** · Có gì trong tay: chưa có gì · Sau bài này: bạn đã tự tìm ra một bug bằng tay, và biết mình sắp dựng cái gì trong 62 giờ tới
+> **2 giờ** · Có gì trong tay: chưa có gì · Sau bài này: bạn đã tự tìm ra một bug bằng tay, và biết mình sắp dựng cái gì trong 63 giờ tới
 
 **Tóm tắt bài này**
 

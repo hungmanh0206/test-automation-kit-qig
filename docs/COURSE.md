@@ -47,14 +47,14 @@ environment, chạy. Mất một buổi, không phải viết lại từ đầu.
 
 ## Bốn mốc dừng được
 
-Đừng nhìn 63 giờ rồi nản. Tài liệu chia thành bốn mốc, dừng ở mốc nào cũng đã có thứ dùng được.
+Đừng nhìn 64.5 giờ rồi nản. Tài liệu chia thành bốn mốc, dừng ở mốc nào cũng đã có thứ dùng được.
 
 | Mốc | Tới bài | Cộng dồn | Dừng ở đây bạn đã có |
 |---|---|---|---|
 | ① Chạy được | hết Bài 4 | ~7.5 giờ | Một testcase automation chạy thật trên app thực hành, và bạn đọc được vì sao nó xanh hay đỏ |
 | ② Thành bộ kit ⭐ | hết Bài 11 | ~22.5 giờ | Config tách khỏi testcase · dữ liệu test dựng bằng factory · FE và API cùng một khung · có ảnh, video và report. Đây là điểm áp được vào dự án thật |
-| ③ Thành quy trình QA | hết Bài 17 | ~37 giờ | Bắt đầu từ requirement chứ không từ locator · testcase có nguồn · fail được phân loại trước khi thành bug |
-| ④ Mang đi được | hết Bài 29 | ~63 giờ | CI gác cổng · knowledge tích luỹ qua từng sprint · kit chạy trên dự án thứ hai |
+| ③ Thành quy trình QA | hết Bài 17 | ~38 giờ | Bắt đầu từ requirement chứ không từ locator · testcase có nguồn · fail được phân loại trước khi thành bug |
+| ④ Mang đi được | hết Bài 29 | ~64.5 giờ | CI gác cổng · knowledge tích luỹ qua từng sprint · kit chạy trên dự án thứ hai |
 
 Mốc ② là mốc quan trọng nhất. Nhiều người dừng ở đó và dùng cả năm. Hoàn toàn hợp lý. Mốc ③ và ④
 là khi bạn muốn cả team dùng chung, và muốn bộ kit tốt lên sau mỗi sprint thay vì chỉ chạy lại.
@@ -199,7 +199,6 @@ kit-cua-toi/
 │       ├── kiem-so-mong-doi.js       ·  Bài 13 · máy chặn đầu tiên, 12 dòng
 │       ├── kiem-file-cam.js          ·  Bài 2  · tệp cấm bị git track ⇒ chặn
 │       ├── gate-mo-ho.js             ·  Bài 15 · chưa chốt mơ hồ thì không cho sinh case
-│       ├── gate-oracle.js            ·  Bài 13 · giá trị tính toán không trỏ nguồn ⇒ chặn
 │       ├── dem_chieu.js              ·  Bài 14 · chiều bắt buộc chưa đủ ngưỡng ⇒ chặn
 │       ├── gate-bang-chung.js        ·  Bài 11 · case đã chạy mà không có ảnh/video ⇒ chặn
 │       ├── doi-chieu-luu-tru.js      ·  Bài 10 · so UI với nơi lưu, khoanh tầng lỗi
@@ -380,7 +379,7 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 3 — Quy trình QA (14.5 giờ)
+## PHẦN 3 — Quy trình QA (15.5 giờ)
 
 > **Xong phần này bạn có:** một quy trình bắt đầu từ requirement, testcase truy được nguồn, và fail được phân loại trước khi thành bug
 
@@ -397,19 +396,19 @@ kit-cua-toi/
 
 *Có gì trong tay: bảng luật `BR-` đã bóc từ requirement.*
 
-- Mười cột của một bảng testcase dùng chung được cho cả người lẫn máy
+- Bảy cột của một bảng testcase dùng chung được cho cả người lẫn máy, và vì sao mỗi cột tồn tại
 - Kỷ luật oracle: kết quả mong đợi phải trỏ về một mã luật, không được lấy giá trị app đang trả
-- **Xây gate:** `gate-oracle.js` chặn giá trị tính toán không trỏ nguồn
+- **Xây gate:** `kiem-so-mong-doi.js` chặn kết quả mong đợi lấy từ chính giá trị app đang trả
 - **Thực hành:** bảo agent sửa cho test pass, xem nó lấy số của app làm chuẩn, và xem máy chặn lại
 - Đào sâu: [kỷ luật oracle](course/oracle.md), bài quan trọng nhất của cả tài liệu
 
-### [Bài 14 — Coverage và Risk](course/coverage-va-risk.md) *(2.5h · vừa)*
+### [Bài 14 — Coverage và Risk](course/coverage-va-risk.md) *(3h · vừa)*
 
 *Có gì trong tay: bộ testcase có oracle, chưa biết đủ hay thiếu.*
 
 - Đếm số testcase không nói được gì về độ phủ, và một ví dụ 300 case phủ đúng một chiều
 - Đo phủ theo chiều: khai chiều nào áp cho dự án này, `n/a` phải kèm lý do
-- Chấm rủi ro theo module, rồi ép độ sâu testcase theo band
+- Band rủi ro: cách đọc, và vì sao độ sâu testcase phải theo band (máy chấm điểm dựng ở Bài 27)
 - **Xây gate:** `dem_chieu.js` chặn khi chiều bắt buộc chưa đủ ngưỡng
 
 ### [Bài 15 — Phase 1: sinh testcase từ requirement](course/phase1-sinh-testcase.md) *(3h · khó)*
@@ -422,7 +421,7 @@ kit-cua-toi/
 - Công thức 5 câu hỏi để viết mọi gate về sau, dùng lại suốt phần còn lại
 - Đào sâu: [viết gate đầu tiên](course/viet-gate-dau-tien.md) · [prompt, skill, rule, command](course/prompt-va-token.md)
 
-### [Bài 16 — Phase 2: chạy automation có kiểm soát](course/phase2-chay-automation.md) *(2.5h · khó)*
+### [Bài 16 — Phase 2: chạy automation có kiểm soát](course/phase2-chay-automation.md) *(3h · khó)*
 
 *Có gì trong tay: bộ testcase đã sinh và đã chốt.*
 
@@ -477,7 +476,7 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 5 — Nâng cao và đóng gói (20 giờ)
+## PHẦN 5 — Nâng cao và đóng gói (20.5 giờ)
 
 > **Xong phần này bạn có:** kit phủ thêm mobile, khả năng tiếp cận và hiệu năng, tự đo được chính mình, và đóng gói mang đi được
 
@@ -533,7 +532,7 @@ kit-cua-toi/
 *Có gì trong tay: đã chạy hàng trăm testcase qua nhiều sprint.*
 
 - Một automation suite thông thường chỉ biết chạy lại. Nó không học được gì từ 500 lần chạy trước
-- Tám loại tri thức đáng giữ, và loại nào giá trị nhất theo số đo thật
+- Tri thức không nguồn dạy sai thế nào, và bốn trạng thái của một bản ghi
 - Bản ghi phải có nguồn, có trạng thái, và có hạn tái xác nhận
 - **Xây gate:** chặn ở cửa ĐỌC chứ không chỉ cửa ghi, vì tri thức sai còn tệ hơn không có
 - Đào sâu: [một QA agent cần học những gì](course/bo-nho-du-an.md)
@@ -544,10 +543,10 @@ kit-cua-toi/
 
 - Vòng khép kín: bug đã log quay lại thành trọng số rủi ro của lượt chạy sau
 - Cold start: chưa có lịch sử thì chấm rủi ro bằng gì
-- Vòng đời dữ liệu: giữ bao lâu, tỉa thế nào, và mỗi mốc phải kèm lý do
+- Bẫy dòng ma: tên module lệch làm cả bảng rủi ro thành vô nghĩa
 - Đào sâu: [sao lưu và vòng đời dữ liệu](course/sao-luu-va-vong-doi-du-lieu.md)
 
-### [Bài 28 — Đóng gói thành kit dùng lại được](course/dong-goi-kit.md) *(2h · vừa)*
+### [Bài 28 — Đóng gói thành kit dùng lại được](course/dong-goi-kit.md) *(2.5h · vừa)*
 
 *Có gì trong tay: kit đầy đủ, chạy tốt trên máy bạn.*
 
@@ -567,15 +566,15 @@ kit-cua-toi/
 
 ---
 
-## Tổng thời lượng: ~63 giờ
+## Tổng thời lượng: ~64.5 giờ
 
 | Phần | Giờ |
 |---|---|
 | 1. Nền tảng | 7.5 |
 | 2. Dựng bộ kit | 15 |
-| 3. Quy trình QA | 14.5 |
+| 3. Quy trình QA | 15.5 |
 | 4. Làm việc nhóm và bàn giao | 6 |
-| 5. Nâng cao và đóng gói | 20 |
+| 5. Nâng cao và đóng gói | 20.5 |
 
 ---
 
@@ -645,5 +644,5 @@ Kiến thức "vì sao" mới là thứ còn lại sau 2 năm khi công cụ đ�
 giải nén ZIP · probe read-only sai vì Postgres cấp quyền `TEMPORARY` cho `PUBLIC` · mục lục tự dời số
 dòng của chính nó · lỗi độ ưu tiên toán tử làm một phép kiểm không bao giờ chạy mà vẫn báo đạt.
 
-**7. Nếu ~63 giờ quá dài:** dừng ở Mốc ② (hết Bài 11, ~22.5 giờ) là đã có bộ kit chạy được trong dự
+**7. Nếu ~64.5 giờ quá dài:** dừng ở Mốc ② (hết Bài 11, ~22.5 giờ) là đã có bộ kit chạy được trong dự
 án thật. Phần còn lại là khi bạn muốn cả team dùng chung và muốn kit tốt lên sau mỗi sprint.

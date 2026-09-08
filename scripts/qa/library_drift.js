@@ -343,6 +343,36 @@ if (!exists(COURSE_MD)) {
       ok.push(`${Object.keys(cs.parts).length ? cs.lessonCount + boTroFile.size : 0} file bài giảng khớp số + tiêu đề giáo trình`);
     }
 
+    /* Không khối mã nào được xuất hiện nguyên vẹn ở HAI bài.
+     *
+     * VÌ SAO: đo được 2 chỗ trùng, và cả hai đều là nội dung bị dạy hai lần. Máy chặn tệp cấm nằm
+     * y nguyên ở cả Bài 2 và bài bổ trợ về git; bài tập khép-lại-toàn-tài-liệu nằm ở cả Bài 20 và
+     * bài cuối. Hại thật không phải dài dòng: hai bản sẽ TRÔI XA NHAU. Sửa một bản, quên bản kia,
+     * và người đọc gặp hai phiên bản khác nhau của cùng một đoạn code mà không biết tin bản nào.
+     *
+     * So KHỚP CHÍNH XÁC sau khi gộp khoảng trắng, nên không báo oan. Ngưỡng 180 ký tự để bỏ qua
+     * những đoạn ngắn trùng nhau một cách tự nhiên (`npm run gates`, `git push`). */
+    const banSao = new Map();
+    for (const rel of lessonFiles) {
+      const raw = rd(path.join(ROOT, 'docs', rel));
+      for (const m of raw.matchAll(/```(?:js|bash|json)\n([\s\S]*?)```/g)) {
+        const c = m[1].split(/\s+/).join(' ').trim();
+        if (c.length < 180) continue;
+        if (!banSao.has(c)) banSao.set(c, new Set());
+        banSao.get(c).add(path.basename(rel));
+      }
+    }
+    const maTrung = [];
+    for (const [c, dsFile] of banSao) {
+      if (dsFile.size > 1) maTrung.push(`${[...dsFile].join(' ↔ ')} — "${c.slice(0, 62)}…"`);
+    }
+    if (maTrung.length) {
+      problems.push(`${maTrung.length} khối mã bị dạy ở HAI bài (hai bản sẽ trôi xa nhau):\n      ` +
+        maTrung.slice(0, 8).join('\n      '));
+    } else {
+      ok.push(`${banSao.size} khối mã dài, không khối nào trùng giữa hai bài`);
+    }
+
     /* Không tệp nguồn nào được chứa byte điều khiển.
      *
      * VÌ SAO: một bài giảng có ví dụ code kiểm tệp nhị phân, và ký tự NUL trong ví dụ đó được gõ

@@ -1,6 +1,6 @@
 # Bài 28 — Đóng gói thành kit dùng lại được
 
-> **2 giờ** · Có gì trong tay: kit đầy đủ, chạy tốt trên máy bạn · Sau bài này: một bản phát hành đã được chứng minh là chạy được, không phải một tệp zip hy vọng
+> **2 giờ 30 phút** · Có gì trong tay: kit đầy đủ, chạy tốt trên máy bạn · Sau bài này: một bản phát hành đã được chứng minh là chạy được, không phải một tệp zip hy vọng
 
 **Tóm tắt bài này**
 
@@ -20,12 +20,13 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Năm việc:
 
 1. Đánh số phiên bản và viết ghi chú đổi gì (20 phút).
 2. Đóng gói **sạch**: loại tầng dự án, quét secret trong gói (35 phút).
 3. Nghiệm thu gói. Bước quan trọng nhất, và bước hay bị bỏ nhất (40 phút).
 4. Đưa bản mới sang dự án khác thế nào (25 phút).
+5. Viết README mà người mới đọc là chạy được (30 phút).
 
 ---
 
@@ -344,6 +345,74 @@ Ra khác ⇒ kit mới đổi hành vi ngoài dự kiến.
 
 > Đừng chép đè cả thư mục kit. Bạn sẽ xoá mất `chieu-phu.json`, `risk_model.json`, `mutants.json`
 > của dự án B — tức toàn bộ phần B đã tự chỉnh. Bài 29 dựng ranh giới này thành máy kiểm.
+
+Gói đã nghiệm thu được rồi. Còn một thứ nữa quyết định kit của bạn có được ai dùng hay không, và nó
+không phải code.
+
+## Việc 5 — README mà người mới đọc là chạy được (30 phút)
+
+Đây là thứ quyết định kit của bạn có được ai dùng hay không. Cấu trúc đã chứng minh hiệu quả:
+
+```markdown
+# <Tên kit>
+
+Bộ kiểm thử có máy-chặn cho <dự án>. Agent AI sinh testcase và chạy test; **máy** quyết định
+kết quả có được chấp nhận không.
+
+## Chạy trong 5 phút
+
+```bash
+git clone <repo> && cd <repo>
+npm ci
+npx playwright install chromium
+cp profiles/task.env.example profiles/DEMO-1/task.env   # điền URL + tài khoản
+npm run gates                                            # phải ĐẠT hết trước khi làm gì
+```
+
+## Ba điều phải biết trước khi sửa gì
+
+1. **Excel/testcase canonical là nguồn duy nhất.** Mọi tầng khác PARSE từ nó, không copy.
+2. **Output của bạn bị máy kiểm.** Sai chuẩn = chặn. Xem `npm run gates:list`.
+3. **"Không phán được" KHÔNG thành PASS.** Xem `.agent/config/phan-quyet.json`.
+
+## Vòng làm việc
+
+| Giai đoạn | Lệnh | Ra gì |
+|---|---|---|
+| Sinh testcase | `/phase1 <KEY>` | Excel canonical + kiểm cấu trúc |
+| Publish | `npm run tms:publish -- --apply --qa-approved` | case trên công cụ + đối soát trường |
+| Execute | `/phase2 <KEY>` | kết quả + bằng chứng + verdict |
+| Đẩy kết quả | `npm run tms:push-exec -- --apply` | cycle có lịch sử |
+| Log bug | `npm run bug:report -- --task <KEY>` | bug có tầng lỗi + bằng chứng |
+
+## Danh mục máy
+
+`npm run gates:list` — sinh tự động, KHÔNG viết tay. Nó nói mỗi máy CHẶN gì.
+
+## Khi gate chặn bạn
+
+Đọc thông báo. Nó nói **luật nào** và **sửa ở đâu**. Nếu bạn tin gate sai:
+
+1. Tái hiện bằng một trường hợp nhỏ nhất.
+2. **Sửa luật**, đừng thêm ngoại lệ cho riêng mình.
+3. Thêm đối chứng âm để lần sau không tái phạm.
+
+Gate bắt oan thì gate mất uy tín, và đó là cách một kit chết.
+
+## Đo bộ kiểm
+
+`npm run mutation` — tiêm lỗi có kiểm soát và đếm suite có bắt được không.
+Chạy hàng tháng. Điểm tụt = có oracle vừa bị làm yếu đi.
+```
+
+Ba đặc điểm của README này đáng chép lại:
+
+1. Lệnh chạy được ở dòng đầu, không phải triết lý.
+2. Ba điều phải biết, không phải ba mươi.
+3. Mục "khi gate chặn bạn", vì đó là trải nghiệm đầu tiên của người mới, và nếu nó khó chịu thì họ sẽ đi
+   tìm cách vô hiệu gate.
+
+---
 
 ## Cây thư mục sau bài này
 
