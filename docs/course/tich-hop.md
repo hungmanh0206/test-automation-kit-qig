@@ -10,14 +10,23 @@
 | **Bài này bạn gõ gì** | Đẩy testcase lên công cụ chung, đối chiếu lại từng ô, rồi đẩy kết quả thành một đợt chạy. |
 | **Xong thì được gì** | Cả team nhìn chung một chỗ. Và bạn biết API trả 200 chưa chứng minh dữ liệu vào đúng ô. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Publish testcase lên công cụ test-management, luôn dry-run trước.
-✅ **Đối soát từng trường sau publish** — 2xx không chứng minh mapping đúng.
-✅ Đẩy kết quả thành một lượt chạy có lịch sử, evidence neo xuống từng bước.
-✅ Đối soát độ tươi trước khi execute.
-✅ Cấu hình MCP server cho Jira và các nguồn tài liệu.
-✅ Gói trình tự thành slash command.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Dry-run** | Chạy thử để xem sẽ gửi đi cái gì, nhưng chưa gửi thật |
+| **Đối soát trường** | Đọc lại từ công cụ rồi so từng ô với nguồn. API trả 200 không thay được bước này |
+| **Cycle** | Một lượt chạy được ghi lại trên công cụ, có lịch sử riêng |
+
+## Bài này bạn sẽ làm gì
+
+Năm việc:
+
+1. Chốt bốn nguyên tắc trước khi nối bất cứ hệ thống nào (20 phút).
+2. Viết lệnh publish, mặc định chạy thử chứ không ghi thật (35 phút).
+3. Viết máy đối soát từng ô sau khi publish (35 phút).
+4. Đẩy kết quả thành một lượt chạy có lịch sử (30 phút).
+5. Gói cả trình tự thành một lệnh gõ được (30 phút).
 
 ---
 

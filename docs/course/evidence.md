@@ -12,14 +12,22 @@
 | **Bài này bạn gõ gì** | Viết hàm chụp ảnh có khoanh đỏ và che thông tin cá nhân, rồi hàm quay video có chú thích từng bước. |
 | **Xong thì được gì** | Case nào đã chạy cũng có ảnh hoặc video, mở ra là thấy ngay chỗ cần nhìn. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Quy chuẩn định dạng: chỉ ảnh hoặc video.
-✅ Khoanh đỏ đúng element kèm nhãn — vì sao ảnh chụp trơn hay bị trả bug.
-✅ Biết khi nào buộc phải quay video.
-✅ Mask PII, và bẫy: che chữ hiển thị không che được giá trị trong ô nhập.
-✅ Vì sao case PASS cũng phải có evidence.
-✅ Thực hành: chụp và quay bằng Playwright, rồi tự mở ảnh ra soi lại.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Bằng chứng** | Ảnh hoặc video chứng minh case đã chạy thật và ra đúng kết quả bạn nói |
+| **Khoanh đỏ** | Vẽ khung vào đúng chỗ cần nhìn, kèm nhãn ngắn |
+| **Che thông tin cá nhân** | Bôi email, số điện thoại, tên khách trước khi lưu ảnh |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Chốt định dạng: chỉ ảnh hoặc video, không nhận file text (15 phút).
+2. Viết hàm chụp có khoanh đỏ và có nhãn (45 phút).
+3. Che thông tin cá nhân, kèm cái bẫy ô nhập liệu (30 phút).
+4. Quay video cho case nhiều bước (30 phút).
 
 ---
 
@@ -191,7 +199,7 @@ test('TC_020 [Display] ngày sinh lệch định dạng giữa hai tab', async (
 });
 ```
 
-Ảnh này nói được toàn bộ vấn đề mà không cần đọc mô tả — và đó là tiêu chuẩn nên nhắm tới.
+Ảnh này nói được toàn bộ vấn đề mà người xem không cần đọc mô tả. Đó là mức nên nhắm tới.
 
 ## 4. Bẫy PII: che chữ không che được ô nhập
 

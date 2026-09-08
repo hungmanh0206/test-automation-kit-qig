@@ -10,14 +10,22 @@
 | **Bài này bạn gõ gì** | Viết máy dò luật bị trôi khỏi tài liệu, và danh sách miễn trừ bắt buộc ghi lý do kèm ngày. |
 | **Xong thì được gì** | Biết khi nào sửa gate, khi nào ghi miễn trừ. Và gate của bạn không mất uy tín. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Nguyên tắc canonical: mỗi loại thông tin đúng một nguồn thật.
-✅ Phân biệt canonical với bản tóm, và cách chống hai bản trôi khỏi nhau.
-✅ Gate chống mồ côi — máy không ai gọi thì bằng không có máy.
-✅ Danh mục máy tự sinh: không liệt kê được thì không kiểm toán được.
-✅ Allowlist phải có lý do, và khối lạ phải bị chặn.
-✅ Thực hành: thêm lệnh mới, xác nhận gate mồ côi bắt được.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Trôi** | Hai bản của cùng một luật dần nói khác nhau, mà không ai để ý |
+| **Máy mồ côi** | Máy chặn viết xong, đúng, nhưng không ai gọi nên không bao giờ chạy |
+| **Miễn trừ** | Chỗ cố ý cho qua. Phải ghi lý do và ngày, nếu không nó thành chỗ giấu nợ |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Hiểu vì sao gate bắt oan nguy hiểm hơn không có gate (20 phút).
+2. Viết máy dò luật bị trôi khỏi các bề mặt của kit (35 phút).
+3. Viết máy tìm gate mồ côi, và danh mục gate tự sinh (30 phút).
+4. Làm danh sách miễn trừ có kỷ luật: bắt buộc có lý do và ngày (25 phút).
 
 ---
 

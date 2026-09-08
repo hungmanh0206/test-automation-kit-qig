@@ -10,14 +10,22 @@
 | **Bài này bạn gõ gì** | Dựng năm kho ghi nhớ, viết máy chặn ghi chú không có nguồn, và cách bắt đầu khi chưa có dữ liệu. |
 | **Xong thì được gì** | Kit nhớ được việc đã làm, kể cả khi bạn mới bắt đầu từ số không. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Năm store và câu hỏi mỗi store trả lời.
-✅ **Giải bài toán cold start**: từ 0 thì dữ liệu ở đâu ra.
-✅ Hiểu vì sao bộ nhớ này là dữ liệu công ty: không commit, phải sao lưu ngoài repo.
-✅ Thu dữ liệu tự động qua reporter, không qua lệnh phải nhớ gọi.
-✅ Chỉ số theo thời gian: độ tin cậy từng case, tỉ lệ chập chờn, cách ly test bất ổn.
-✅ Ghi 3 rule và 1 recipe, rồi dùng lại chúng ở lượt sinh case sau.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Kho tri thức** | Chỗ ghi lại những gì đã học được, để phiên sau không phải học lại |
+| **Bắt đầu từ trống** | Tình huống bạn chưa có dữ liệu gì. Chương này giải đúng nó |
+| **Độ tin cậy** | Một test xanh ngay lượt đầu bao nhiêu phần trăm số lần |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Dựng năm kho, mỗi kho trả lời một câu hỏi khác nhau (30 phút).
+2. Giải bài toán chưa có dữ liệu gì: bốn nguồn để bắt đầu (35 phút).
+3. Viết máy chặn ghi chú không có nguồn (35 phút).
+4. Thu dữ liệu tự động, thay vì trông vào việc nhớ gõ lệnh (50 phút).
 
 ---
 

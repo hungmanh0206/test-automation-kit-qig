@@ -10,14 +10,22 @@
 | **Bài này bạn gõ gì** | Khai danh mục kết luận, viết bộ đọc dùng chung, rồi viết máy sinh trạng thái từ kết quả chạy. |
 | **Xong thì được gì** | Mỗi lỗi biết nó thuộc tầng nào, và chỗ chưa kết luận được thì không bị đẩy thành pass. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Khai một file duy nhất cho mọi trạng thái kết quả và ngưỡng rerun.
-✅ Phân tầng lỗi: chỉ hai loại đáng log cho Dev.
-✅ Chạy lại 2–3 lần trước khi kết luận, và hiểu vì sao đúng con số đó.
-✅ Nhận diện lỗi script: fail lặp lại ổn định nhưng làm tay lại đúng.
-✅ Hai trạng thái dễ bỏ qua, cả hai đều đang chôn bug thật.
-✅ Log bug: đủ bốn phần, gán đúng tầng sau khi đã đọc response thật.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Phán quyết** | Kết luận về một case sau khi chạy. Nhiều hơn hai giá trị PASS và FAIL |
+| **Tầng lỗi** | Lỗi này thuộc về đâu: test của bạn, khâu chuẩn bị dữ liệu, môi trường, hay app |
+| **Chạy lại** (rerun) | Chạy lại case đỏ vài lần để loại trường hợp chập chờn, trước khi kết luận |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Khai một file duy nhất cho mọi trạng thái kết quả và ngưỡng chạy lại (35 phút).
+2. Phân tầng lỗi, và biết chỉ hai tầng nào mới đáng log cho dev (40 phút).
+3. Nhận ra hai trạng thái hay bị bỏ qua, cả hai đều đang chôn bug thật (30 phút).
+4. Viết máy sinh trạng thái từ kết quả chạy (45 phút).
 
 ---
 
@@ -179,7 +187,7 @@ Case đỏ thì **chạy lại tối thiểu 2 lần, tối đa 3** trước khi
 Vì sao 2–3 chứ không phải 1 hay 10: một lần chạy lại đủ loại phần lớn chập chờn; hơn ba lần thì tốn thời gian
 mà không thêm thông tin. Con số này khai trong taxonomy để **đổi ở một chỗ**.
 
-> **Cảnh báo: kết quả rerun hết hạn.** Nếu môi trường được triển khai bản mới giữa lúc bạn rerun hoặc giữa lúc
+> Kết quả chạy lại có hạn dùng. Nếu môi trường được triển khai bản mới giữa lúc bạn rerun hoặc giữa lúc
 > viết báo cáo thì kết luận cũ không còn nói gì về bản hiện tại. Chuyện thật: kết quả **lật ngược sau khoảng
 > 30 phút** vì có bản triển khai chen vào. Cách phòng: xác nhận lại **sát giờ** viết báo cáo, và giữ một case
 > đối chứng đã biết kết quả để phát hiện môi trường vừa đổi.

@@ -10,15 +10,23 @@
 | **Bài này bạn gõ gì** | Khai chỗ nào chạy lệnh nào, chặn test ăn theo biến môi trường, và đo xem máy nào không ai gọi. |
 | **Xong thì được gì** | Gate tự chạy mỗi lần đẩy code, và không còn máy nào nằm không. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Đưa máy vào CI, và biết **máy nào không nên** vào CI.
-✅ Chặn lỗi kinh điển: test xanh trên máy dev vì **thừa hưởng biến môi trường**.
-✅ Đo **độ với tới** của máy — máy tồn tại mà không ai gọi thì bằng không tồn tại.
-✅ Kiểm **ngang nhánh**: nhánh nào phải có máy nào.
-✅ Đóng gói: phân biệt tầng **chung** với tầng **theo dự án**.
-✅ Viết `README` mà người mới đọc là chạy được.
-✅ Chốt nhịp bảo dưỡng kit.
+| Từ | Nghĩa gọn |
+|---|---|
+| **CI** | Máy chủ tự chạy lệnh mỗi lần bạn đẩy code lên |
+| **Thừa hưởng biến môi trường** | Test chạy được ở máy bạn chỉ vì shell còn sẵn một biến. Lên CI là đỏ |
+| **Độ với tới** | Máy có được gọi từ đâu đó không. Không ai gọi thì coi như không có |
+
+## Bài này bạn sẽ làm gì
+
+Năm việc:
+
+1. Khai phạm vi CI ở một nguồn, và biết máy nào không nên vào CI (30 phút).
+2. Chặn lỗi kinh điển: test xanh ở máy bạn vì ăn theo biến môi trường (35 phút).
+3. Đo độ với tới của từng máy (30 phút).
+4. Phân tầng chung và tầng dự án để mang kit đi được (25 phút).
+5. Viết README mà người mới đọc là chạy được (30 phút).
 
 ---
 

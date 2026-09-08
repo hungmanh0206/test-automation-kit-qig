@@ -411,6 +411,36 @@ if (!exists(COURSE_MD)) {
       ok.push('không dán nội bộ kit có sẵn — tài liệu chỉ dùng tên do chính nó dựng');
     }
 
+    /* Mỗi bài phải có khối "Từ mới của bài này".
+     *
+     * VÌ SAO: người đọc từ số 0 gặp từ lạ ngay giữa bài thì phải dừng lại tra, và thường là tra sai.
+     * Gom từ mới lên đầu bài, giải thích bằng ví dụ, thì đọc một mạch được.
+     *
+     * Miễn trừ phải khai TƯỜNG MINH kèm lý do — giống mọi allowlist khác trong kit. */
+    const MIEN_TU_MOI = {
+      'truoc-khi-bat-dau.md': 'bài này DẠY 10 từ vựng làm nội dung chính (Việc 4), nên không có khối riêng',
+      'lo-trinh-sau-khoa.md': 'bài khép lại, chỉ nhìn lại và chỉ đường đi tiếp, không giới thiệu từ nào mới'
+    };
+    const thieuTuMoi = lessonFiles.filter((rel) => {
+      const ten = path.basename(rel);
+      if (MIEN_TU_MOI[ten]) return false;
+      return !rd(path.join(ROOT, 'docs', rel)).includes('## Từ mới của bài này');
+    });
+    if (thieuTuMoi.length) {
+      problems.push(`${thieuTuMoi.length} bài thiếu khối "Từ mới của bài này": ` +
+        thieuTuMoi.map((f) => path.basename(f)).join(', ') +
+        ' — thêm khối, hoặc khai miễn trừ kèm lý do trong library_drift.js');
+    } else if (lessonFiles.length) {
+      ok.push(`${lessonFiles.length - Object.keys(MIEN_TU_MOI).length} bài có khối từ mới ` +
+        `(${Object.keys(MIEN_TU_MOI).length} bài miễn trừ có lý do)`);
+    }
+    /* Miễn trừ trỏ tới bài không còn tồn tại thì phải dọn, nếu không allowlist thành rác. */
+    for (const ten of Object.keys(MIEN_TU_MOI)) {
+      if (!lessonFiles.some((rel) => path.basename(rel) === ten)) {
+        problems.push(`miễn trừ "Từ mới" trỏ tới bài KHÔNG còn tồn tại — ${ten}. Dọn đi.`);
+      }
+    }
+
     /* Mỗi bài phải mở đầu bằng khối tóm tắt 3 dòng.
      * Bài dài 400–700 dòng mà mở đầu bằng bảng thuật ngữ thì người mới chưa biết bài này
      * chữa vấn đề gì của mình đã phải học từ vựng. */

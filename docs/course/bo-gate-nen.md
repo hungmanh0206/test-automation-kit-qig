@@ -12,15 +12,22 @@
 | **Bài này bạn gõ gì** | Viết một thư viện khung dùng chung, thêm máy kiểm tồn kho, máy quét mật khẩu, và một lệnh gộp. |
 | **Xong thì được gì** | Một lệnh chạy hết mọi máy chặn. Và chỗ chưa đo được thì không bị coi là đạt. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Gate chống suite rỗng vẫn xanh — lớp lỗi không tạo tín hiệu nào.
-✅ Gate kiểm đủ input trước khi chạy cả một phase.
-✅ Gate soi thiết kế bộ testcase.
-✅ Gate soi output trước khi đẩy đi.
-✅ Quét secret trên các file đã track.
-✅ Nối tất cả vào một lệnh gộp.
-✅ Cố tình làm sai từng thứ, xác nhận đúng gate nào đỏ.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Khung gate dùng chung** | Thư viện lo phần lặp lại, để mỗi gate chỉ viết phần riêng của nó |
+| **Suite rỗng vẫn xanh** | Không test nào chạy, mà báo cáo vẫn báo pass |
+| **Lệnh gộp** | Một lệnh chạy hết mọi máy chặn, in ra một bảng kết quả |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Viết khung dùng chung, để gate sau khỏi lặp lại phần vỏ (30 phút).
+2. Viết gate chống suite rỗng vẫn xanh (35 phút).
+3. Viết máy quét mật khẩu trên file đã đưa lên git (30 phút).
+4. Nối tất cả vào một lệnh, rồi cố tình làm sai từng thứ để xem đúng gate nào đỏ (55 phút).
 
 ---
 

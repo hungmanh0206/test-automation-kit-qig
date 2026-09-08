@@ -12,14 +12,22 @@
 | **Bài này bạn gõ gì** | Viết hàm tạo dữ liệu qua API, viết fixture dựng và dọn, rồi viết máy quét rác còn sót. |
 | **Xong thì được gì** | Mỗi case bắt đầu từ trạng thái biết trước. Và bạn hiểu vì sao có loại bug không có thật. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Bốn cách dựng trạng thái, và vì sao không dùng câu lệnh database.
-✅ Hiểu hậu quả cụ thể của việc dựng bằng database: **bug ma**.
-✅ Ba mức sẵn sàng, và mỗi mức dẫn tới trạng thái kết quả nào.
-✅ Viết hợp đồng tiền điều kiện: dựng · verify · dọn.
-✅ Nguyên tắc non-destructive.
-✅ Dữ liệu tự tạo phải nhận diện được và dọn được.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Tiền điều kiện** | Trạng thái phải có sẵn trước khi bước 1 của case bắt đầu |
+| **Factory** | Hàm tạo dữ liệu qua đúng đường app dùng, chứ không ghi thẳng vào database |
+| **Bug ma** | Bug bạn tưởng là thật, nhưng nó chỉ xuất hiện vì bạn dựng dữ liệu sai cách |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Bốn cách dựng dữ liệu, và vì sao không dùng câu lệnh database (25 phút).
+2. Viết hàm tạo dữ liệu qua API, có dấu nhận diện để dọn được (45 phút).
+3. Viết fixture dựng trước và dọn sau mỗi case (35 phút).
+4. Viết máy quét rác còn sót, với ba lớp an toàn (35 phút).
 
 ---
 
@@ -74,7 +82,7 @@ trạng thái không tồn tại trong sản phẩm thật.
 Test trên đó rồi thấy màn Chi tiết hiển thị sai → bạn log bug → Dev điều tra → phát hiện dữ liệu không hợp lệ
 → trả về. Mất thời gian hai phía, và mất uy tín của báo cáo.
 
-> **Nguyên tắc `natural setup`:** trước khi kết luận là bug, phải tái hiện được trên dữ liệu **dựng đúng luồng
+> Trước khi kết luận là bug, phải tái hiện được trên dữ liệu dựng đúng luồng
 > ứng dụng**. Chỉ tái hiện được trên dữ liệu dựng tay ở tầng DB thì rất có thể đó là hệ quả của cách dựng.
 
 **Vậy DB dùng để làm gì?** Để **đọc**, và chỉ ở những chỗ UI và API không phân biệt được:
@@ -259,7 +267,7 @@ Ba lý do hợp đồng này đáng viết:
 2. **Phần verify** là thứ hay bị bỏ — dựng xong mà không kiểm thì bạn không biết nó đã dựng đúng.
 3. **Phần dọn** viết ra thì mới có người làm.
 
-> **Vì sao verify quan trọng.** Factory trả về `200` không có nghĩa dữ liệu đúng như bạn muốn. API có thể bỏ
+> Vì sao phải kiểm lại sau khi dựng. Hàm tạo dữ liệu trả về `200` không có nghĩa dữ liệu đúng như bạn muốn. API có thể bỏ
 > qua field `hang` (không có trong danh sách cho phép ghi) và tạo khách hạng `Thường`. Test sau đó kiểm giảm
 > giá 3% và đỏ — bạn tưởng công thức sai, thực ra khách sai hạng. **Verify bắt được ngay.**
 

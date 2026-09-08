@@ -10,14 +10,22 @@
 | **Bài này bạn gõ gì** | Khai mô hình rủi ro, viết máy chấm điểm, rồi viết gate ép test sâu hơn ở chỗ điểm cao. |
 | **Xong thì được gì** | Test kỹ đúng chỗ đáng. Và biết làm gì khi chưa có lịch sử bug nào. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Công thức Risk = Likelihood × Impact, và mỗi vế lấy từ nguồn nào.
-✅ **Xử lý cold start**: chấm rủi ro khi chưa có bug nào.
-✅ Gate độ sâu theo band, mặc định cảnh báo.
-✅ Bẫy đo được: tên module lệch làm bảng rủi ro đầy dòng ma.
-✅ Vì sao công cụ đề xuất module cho bug thì không được tự ghi.
-✅ Quyền override của người, kèm nghĩa vụ ghi lý do.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Điểm rủi ro** | Khả năng hỏng nhân với hậu quả nếu hỏng |
+| **Band** | Mức rủi ro: cao, vừa, thấp. Nó quyết định test sâu tới đâu |
+| **Chế độ chưa có dữ liệu** | Khi chưa có lịch sử bug, máy chỉ cảnh báo chứ không chặn |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Chốt công thức tính điểm rủi ro, và mỗi vế lấy số từ đâu (30 phút).
+2. Giải tình huống chưa có bug nào: năm tín hiệu thay thế (35 phút).
+3. Viết máy chấm điểm, và một bẫy đo được: tên module lệch làm bảng đầy dòng ma (40 phút).
+4. Viết gate ép độ sâu theo band, mặc định chỉ cảnh báo (35 phút).
 
 ---
 

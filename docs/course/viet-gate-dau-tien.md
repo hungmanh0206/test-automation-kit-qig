@@ -12,15 +12,22 @@
 | **Bài này bạn gõ gì** | Viết một gate hoàn chỉnh, rồi cố tình tạo 3 lỗi để xem nó có chặn thật không. |
 | **Xong thì được gì** | Hiểu ba mã thoát 0, 1, 2. Và biết gate chưa thử thì chưa tin được. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Hiểu vì sao đến bài này mới viết gate.
-✅ Viết một gate đọc artifact thật và thoát mã 1 khi phát hiện vi phạm.
-✅ Chạy nó trên nội dung thật, soi từng cảnh báo: thật hay oan.
-✅ Cảnh báo oan thì sửa LUẬT, không sửa dữ liệu.
-✅ Negative control: tiêm lỗi để chứng minh gate bắt được.
-✅ Chọn mức: cảnh báo trước, chặn sau.
-✅ Hiểu vì sao báo oan tệ hơn không có gate.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Mã thoát** | Số chương trình trả về khi kết thúc. 0 là đạt, 1 là vi phạm, 2 là chưa đo được |
+| **Tiêm lỗi** | Cố tình làm hỏng dữ liệu để xem máy chặn có bắt được không |
+| **Bắt oan** | Máy báo đỏ ở chỗ thật ra đúng. Tệ hơn không có máy nào |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Viết một gate đọc dữ liệu thật và thoát mã 1 khi phát hiện vi phạm (40 phút).
+2. Chạy nó trên nội dung thật, soi từng cảnh báo xem thật hay oan (30 phút).
+3. Tiêm ba lỗi để chứng minh gate bắt được (35 phút).
+4. Chọn mức: cảnh báo trước, chặn sau (25 phút).
 
 ---
 

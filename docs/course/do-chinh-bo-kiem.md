@@ -13,15 +13,24 @@ hỏi cho tới khi đã muộn: **bộ kiểm đó có bắt được lỗi kh�
 | **Bài này bạn gõ gì** | Cố tình làm sai dữ liệu app trả về, rồi đếm xem suite có đỏ lên không. |
 | **Xong thì được gì** | Có con số cho biết bộ kiểm bắt được bao nhiêu phần trăm. Đây là bài quan trọng nhất. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Hiểu vì sao "toàn bộ case PASS" là **thông tin gần bằng không**.
-✅ Viết máy **tiêm lỗi** vào ứng dụng đang chạy và đếm suite có đỏ hay không.
-✅ Đọc **điểm 0** cho đúng — nó không có nghĩa "suite tệ".
-✅ Nhận ba cái bẫy của chính máy đo (bẫy nào cũng cho ra số đẹp giả).
-✅ Mở rộng **5 trục** quanh mỗi case và biết khi nào kết quả mở rộng **không** được PASS/FAIL.
-✅ Chạy chiều ngược: từ ứng dụng ra `spec:gap`.
-✅ Chốt luật: bug do người ngoài tìm ra = **lỗi của máy**.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Tiêm lỗi** | Cố tình làm sai dữ liệu app trả về, để xem suite có đỏ lên không |
+| **Mutant sống sót** | Bạn làm app sai mà suite vẫn xanh. Nghĩa là suite không nhìn thấy lỗi đó |
+| **Đối chứng** | Thử một ca biết chắc kết quả, để biết máy đo có hoạt động không |
+
+## Bài này bạn sẽ làm gì
+
+Sáu việc:
+
+1. Hiểu vì sao câu "toàn bộ case PASS" gần như không nói lên điều gì (20 phút).
+2. Viết máy tiêm lỗi vào app đang chạy, rồi đếm suite có đỏ không (45 phút).
+3. Đọc điểm 0 cho đúng. Nó không có nghĩa suite của bạn tệ (25 phút).
+4. Nhận ba cái bẫy của chính máy đo, bẫy nào cũng cho ra số đẹp giả (30 phút).
+5. Mở 5 hướng quanh mỗi case, và biết khi nào không được kết luận (30 phút).
+6. Chốt luật: bug do người ngoài tìm ra là lỗi của máy (30 phút).
 
 ---
 

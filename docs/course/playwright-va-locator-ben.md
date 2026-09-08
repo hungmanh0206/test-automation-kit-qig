@@ -10,14 +10,23 @@
 | **Bài này bạn gõ gì** | Cấu hình Playwright, dò thử giao diện, và viết case đầu tiên chạy trên app thực hành. |
 | **Xong thì được gì** | Suite chạy được, và không vỡ mỗi khi giao diện đổi chút ít. |
 
-## Mục tiêu
+## Từ mới của bài này
 
-✅ Cài Playwright, chạy test đầu tiên, hiểu cấu trúc một spec.
-✅ Nắm chiến lược locator theo tầng, và **kiểm** app của bạn có phát test id không.
-✅ Đọc DOM thật để tìm locator, thay vì đoán từ tên tính năng.
-✅ Hiểu vì sao `.first()`, `.nth(N)`, click theo toạ độ đều là dấu hiệu không biết mình chạm cái gì.
-✅ Viết 3 test cho 3 màn, không dùng locator mơ hồ nào.
-✅ Xử lý ba nguồn chập chờn phổ biến.
+| Từ | Nghĩa gọn |
+|---|---|
+| **Locator** | Cách test chỉ ra một nút, một ô, một dòng trên màn hình |
+| **Locator bền** | Loại không vỡ khi giao diện đổi chút ít, ví dụ đổi màu hay đổi chỗ |
+| **Test id** | Nhãn dev gắn sẵn vào phần tử để test bám vào. Bền nhất trong các cách |
+| **Chập chờn** | Test cùng một mã, chạy lần này đỏ lần sau xanh |
+
+## Bài này bạn sẽ làm gì
+
+Bốn việc:
+
+1. Cài Playwright, chạy test đầu tiên trên app thực hành (35 phút).
+2. Kiểm xem app của bạn có phát test id không, rồi chọn cách bám phù hợp (30 phút).
+3. Nhận ra bốn kiểu locator hớ hênh, và đo xem chúng khớp bao nhiêu phần tử (40 phút).
+4. Xử lý ba nguồn chập chờn hay gặp nhất (55 phút).
 
 ---
 
@@ -385,7 +394,7 @@ Chạy lệnh grep ở Bước 4 lên **suite thật** của dự án bạn (n�
 
 Đừng sửa hàng loạt. Thay vào đó chọn **một** test có `.first()` và làm phép thử này: đổi thứ tự dữ liệu trên
 màn (thêm một dòng vào đầu bảng chẳng hạn) rồi chạy lại. Test vẫn **xanh** không? Nếu xanh thì nó đang kiểm
-một element khác so với ý bạn — và đó chính là lớp lỗi *log sai bug* ở mục 4.
+một element khác với cái bạn định chạm. Đó chính là cách sinh ra một bug log sai địa chỉ.
 
 ## Đọc thêm
 
