@@ -28,7 +28,7 @@ Sáu việc:
 1. Hiểu vì sao câu "toàn bộ case PASS" gần như không nói lên điều gì (20 phút).
 2. Viết máy tiêm lỗi vào app đang chạy, rồi đếm suite có đỏ không (45 phút).
 3. Đọc điểm 0 cho đúng. Nó không có nghĩa suite của bạn tệ (25 phút).
-4. Nhận ba cái bẫy của chính máy đo, bẫy nào cũng cho ra số đẹp giả (30 phút).
+4. Nhận bốn cái bẫy của chính máy đo, bẫy nào cũng cho ra số sai mà trông như thật (35 phút).
 5. Mở 5 hướng quanh mỗi case, và biết khi nào không được kết luận (30 phút).
 6. Chốt luật: bug do người ngoài tìm ra là lỗi của máy (30 phút).
 
@@ -429,9 +429,9 @@ M05 (thiếu một bản ghi) SỐNG SÓT
 
 Đây là một vòng lặp có thước đo: sửa oracle, đo lại, mutant bị diệt.
 
-## Việc 4 — Ba cái bẫy của chính máy đo (30 phút)
+## Việc 4 — Bốn cái bẫy của chính máy đo (35 phút)
 
-Máy đo cũng là mã, và nó cũng sai được. Ba bẫy dưới đây đều cho ra số đẹp giả. Đó là lý do chúng nguy hiểm
+Máy đo cũng là mã, và nó cũng sai được. Bốn bẫy dưới đây đều cho ra số sai mà trông như số thật. Đó là lý do chúng nguy hiểm
 hơn một lỗi làm máy chết hẳn.
 
 ### Bẫy 1: nền đỏ cho ra 100% giả
@@ -462,6 +462,40 @@ Máy ở trên đặt `PW_RETRIES: '0'` cho mọi lượt tiêm lỗi. Lượt �
 > Ba bẫy này là ví dụ hoàn hảo cho luật ở Bài 28: **máy nào cũng phải có đối chứng âm**. Trước khi tin điểm
 > mutation, hãy tiêm một mutant mà bạn **biết chắc** suite bắt được, và xem máy có báo BỊ DIỆT không. Nếu
 > không, máy sai, không phải suite sai.
+
+### Bẫy 4: đối chứng một dòng không đủ
+
+Ba bẫy trên nói về máy tiêm lỗi. Bẫy này nói về mọi phép đo bạn viết, và nó vừa xảy ra khi soạn chính tài
+liệu bạn đang đọc.
+
+Tôi viết một máy đếm để tìm những dòng văn có quá nhiều chữ in đậm. Nó dùng regex này:
+
+```js
+const RE = /^(?![|#>\s*-]).*(\*\*[^*]+\*\*.*){3,}$/gm;
+```
+
+Tôi thử nó trên năm ca đối chứng: dòng có ba cụm in đậm, dòng có một cụm, dòng có hai cụm, dòng bảng, dòng
+gạch đầu dòng. Cả năm đều ra đúng. Nên tôi tin nó, và nó báo **151 dòng** cần sửa.
+
+Sau đó tôi viết một máy đếm thứ hai theo cách hiển nhiên: tách từng dòng, đếm số cụm `**...**` trên dòng đó.
+Máy này báo **0 dòng**.
+
+Hai máy, hai số, chênh nhau 151. Một trong hai sai, và không có cách nào biết cái nào nếu chỉ nhìn con số.
+
+Nguyên nhân nằm ở `[^*]`. Lớp ký tự này loại trừ dấu sao, nhưng **không loại trừ ký tự xuống dòng**. Nên một
+cụm `**A**` ở dòng 1 và một cụm `**B**` ở dòng 5 bị ghép thành một cụm in đậm kéo qua bốn dòng. Regex đếm
+phồng lên. Bản đúng phải là `[^*\n]`.
+
+Ba điều rút ra, và cả ba đều áp cho mọi phép đo bạn viết:
+
+| Điều | Cụ thể |
+|---|---|
+| Đối chứng một dòng không bắt được lỗi nhiều dòng | Năm ca thử của tôi đều là một dòng. Lỗi chỉ hiện khi chạy trên văn bản thật |
+| Hai phép đo lệch nhau thì **đừng chọn một cái** | Phải tìm cho ra vì sao lệch. Chọn bừa là 50% khả năng tin vào số sai |
+| Máy đo sai kiểu này **không bao giờ tự lộ** | Nó không chết, không báo lỗi. Nó chỉ đưa bạn một con số, và bạn hành động theo con số đó |
+
+Cách rẻ nhất để tránh: với mọi phép đếm quan trọng, **viết máy thứ hai theo cách khác hẳn** rồi so hai số.
+Khớp thì yên tâm. Lệch thì bạn vừa tìm ra một lỗi mà không phép thử đơn lẻ nào bắt được.
 
 ### Đối chứng âm cho chính máy đo
 

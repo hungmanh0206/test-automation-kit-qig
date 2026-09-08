@@ -46,6 +46,12 @@ jobs:
       - name: INDEX.md khớp nguồn SKILL.md (artifact sinh trôi khỏi nguồn = không ai thấy)
         run: npm run skills:index:check
 
+      # Trang docs/library/ và tài liệu hướng dẫn là lớp DẪN XUẤT: viết tay, nguồn thì đổi liên tục.
+      # Trước đây gate này chỉ chạy khi có người NHỚ gõ lệnh — tức là nó chưa thật sự gác cổng.
+      # Rẻ và tất định: chỉ đọc file trong repo, không cần môi trường ngoài.
+      - name: Thư viện + tài liệu khớp repo (library:drift — số liệu, link bài, cú pháp mã trong bài giảng)
+        run: npm run library:drift
+
       - name: Mục lục RULE_GLOBAL khớp nội dung (bảng tra sai = agent đọc sai khối luật)
         run: npm run rule -- --check
 
