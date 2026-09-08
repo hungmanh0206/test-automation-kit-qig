@@ -1,35 +1,55 @@
 # Bài 5 — Cấu trúc một automation project
 
-> **2 giờ** · Có gì trong tay: một máy chặn 12 dòng, và kinh nghiệm thấy agent gian lận · Sau bài này: khung kit đủ 5 lớp, và một file luật agent thật sự đọc
+> **1 giờ 30 phút** · Có gì trong tay: một test chạy được, mọi thứ nằm trong một file · Sau bài này: bộ khung thư mục mà mọi bài sau sẽ lấp đầy
 
 **Tóm tắt bài này**
 
 | | |
 |---|---|
-| **Bạn đang khổ vì** | Vài script rời rạc thì chưa thành kit. Sửa chỗ này lại hỏng chỗ kia. |
-| **Bài này bạn gõ gì** | Dựng cây thư mục. Viết file luật ngắn dưới 20 dòng, và một file luật đầy đủ. |
-| **Xong thì được gì** | Kit có 5 lớp rõ ràng, và agent thật sự đọc file luật mỗi lần chạy. |
+| **Bạn đang khổ vì** | Một file test thì ổn. Đến file thứ mười thì bạn copy một đoạn cũ sang, sửa một bản, quên bản kia. |
+| **Bài này bạn gõ gì** | Dựng cây thư mục bốn nhóm, và đặt quy ước tên file. |
+| **Xong thì được gì** | Một bộ khung mà mọi bài sau chỉ việc đặt đúng chỗ, không phải nghĩ lại. |
 
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |
 |---|---|
-| **Luôn trong ngữ cảnh** | File mà agent tự nạp mỗi lần chạy, không cần ai bảo |
-| **Bản gốc và bản tóm** | Một luật viết ở hai chỗ: bản đầy đủ để tra, bản ngắn để agent luôn nhìn thấy |
-| **Cô lập theo task** | Mỗi task một thư mục kết quả riêng, một file tài khoản riêng |
+| **Hạ tầng test** | Code phục vụ việc test nhưng bản thân không phải test |
+| **Thư viện** | Code dùng chung, gọi `node <file>` không chạy được |
+| **Máy chặn** | File tự chạy được, báo lỗi rồi thoát với mã khác 0 |
+| **Cô lập theo task** | Mỗi task một thư mục kết quả riêng, không đè lên nhau |
 
 ## Bài này bạn sẽ làm gì
 
 Bốn việc:
 
-1. Dựng cây thư mục 5 lớp (20 phút).
-2. Viết hai file luật, một ngắn một dài, và hiểu vì sao phải tách (35 phút).
-3. Đặt quy ước cô lập theo task (20 phút).
-4. Thử xem agent có thật sự tuân file luật không, bằng một cái bẫy (25 phút).
+1. Xem một file duy nhất hỏng ở đâu (20 phút).
+2. Dựng cây thư mục bốn nhóm (20 phút).
+3. Đặt tên file test để sáu tháng sau vẫn tìm được (25 phút).
+4. Đặt quy ước cô lập theo task (25 phút).
 
 ---
 
-## Việc 1 — Dựng cây thư mục (20 phút)
+## Việc 1 — Một file hỏng ở đâu (20 phút)
+
+Bài 4 bạn có một file test. Nó ổn. Thả thêm chín file nữa vào cùng chỗ thì bốn chuyện xảy ra, và
+không chuyện nào lộ ra ngay:
+
+| Chuyện | Lộ ra khi nào |
+|---|---|
+| Đoạn đăng nhập bị copy sang từng file | Sửa một bản, quên tám bản còn lại |
+| Không biết file nào kiểm luật nào | Requirement đổi, không biết phải sửa ở đâu |
+| Code dựng dữ liệu nằm lẫn với code kiểm | Sửa cách dựng dữ liệu làm đỏ cả những test không liên quan |
+| Không chạy riêng được một nhóm | Mỗi lần muốn kiểm một thứ phải chạy cả bộ |
+
+Để thấy tận mắt, làm thử: copy file test của Bài 4 thành ba bản, mỗi bản đổi một chút dữ liệu.
+
+**Bạn sẽ thấy** ba file giống nhau tới 80%. Ba dòng mở trang, ba đoạn chọn khách, ba đoạn chọn sản
+phẩm. Giờ đổi nhãn ô "Khách hàng" trên giao diện thành "Người mua" và đếm xem bạn phải sửa mấy chỗ.
+
+Đó là toàn bộ lý do của bài này. Không phải để gọn gàng, mà để **một thay đổi chỉ phải sửa ở một chỗ**.
+
+## Việc 2 — Dựng cây thư mục (20 phút)
 
 ```text
 kit-cua-toi/
@@ -59,72 +79,46 @@ mkdir -p .agent/config .agent/rules .agent/skills .agent/workflows \
 printf '# Bộ nhớ dự án\n\nKhông đưa lên git. Đây là dữ liệu công ty.\n' > knowledge/README.md
 ```
 
-## Việc 2 — Hai file luật, hai vai khác nhau (35 phút)
+## Việc 3 — Đặt tên file test (25 phút)
 
-Đây là chỗ nhiều người làm sai và trả giá về sau.
+Sáu tháng sau, ai đó hỏi *"case kiểm giảm giá theo hạng khách nằm ở đâu"*. Bạn có 200 file.
 
-| | `CLAUDE.md` | `LUAT-DAY-DU.md` |
+Ba cách đặt tên, và cách thứ ba trả lời được câu trên:
+
+| Cách | Ví dụ | Tìm bằng cách nào |
 |---|---|---|
-| Khi nào được đọc | Mỗi lần agent chạy, tự động | Chỉ khi cần tra |
-| Độ dài | Dưới 20 dòng | Dài bao nhiêu cũng được |
-| Nội dung | Chỉ những điều không thương lượng | Toàn bộ luật, chia mục |
-| Khi hai bên nói khác nhau | Trỏ về file kia | File này quyết |
+| Theo màn hình | `trang-tao-don.spec.js` | Phải mở ra đọc, vì một màn có mười luật |
+| Theo số thứ tự | `test-01.spec.js` | Không tìm được |
+| Theo **luật nghiệp vụ** | `br-03-giam-gia-theo-hang.spec.js` | `grep BR-03` ra ngay |
 
-Vì sao `CLAUDE.md` phải ngắn? Vì nó chiếm ngữ cảnh mỗi lần agent chạy. Nhồi 400 dòng vào đó thì hai chuyện
-xảy ra. Một là tốn token ở mọi phiên. Hai là agent lướt qua, vì 400 dòng thì thứ gì cũng "quan trọng" như
-nhau. Ngắn thì nó mới thật sự đọc.
+Quy ước nên dùng:
 
-### Viết `CLAUDE.md`
-
-Sáu điều dưới đây là bộ tối thiểu tôi khuyên. Sửa cho khớp dự án bạn, nhưng đừng làm dài hơn.
-
-```markdown
-# CLAUDE.md — Điều không thương lượng (đọc TRƯỚC mọi việc)
-
-> Chi tiết ở `LUAT-DAY-DU.md`. Hai bên nói khác nhau thì theo file đó.
-
-1. **Bảo mật** — Không commit token, mật khẩu, cookie, khoá API. Mọi bằng chứng và báo cáo
-   phải che thông tin khách hàng: email, số điện thoại, tên, địa chỉ.
-2. **Không phá môi trường** — Không sửa dữ liệu ở môi trường dùng chung. Xác nhận trước mỗi
-   lần chạm vào. Không dựng dữ liệu test bằng câu lệnh database.
-3. **Chạy thật rồi mới kết luận** — Kết quả sai phải chạy lại 2 đến 3 lần trước khi gọi là
-   bug. Chỗ không kết luận được thì không ghi thành PASS.
-4. **Bằng chứng bắt buộc** — Mọi case đã chạy, kể cả PASS, phải có ảnh hoặc video đúng màn,
-   khoanh đúng chỗ, đã che thông tin khách. File log và JSON không tính là bằng chứng.
-5. **Cô lập theo task** — Mã task và thư mục kết quả là bắt buộc. Tài khoản để ở
-   `profiles/<TASK>/task.env`, không dùng `.env` chung.
-6. **Không gian lận để PASS** — Không nới điều kiện kiểm, không sửa kết quả mong đợi cho
-   khớp app, không bỏ case để tỉ lệ pass nhìn đẹp hơn.
+```
+tests/e2e/<mã-luật>-<mô-tả-ngắn>.spec.js
 ```
 
-### Viết `LUAT-DAY-DU.md`
+Và bên trong file, tên test mang luôn mã luật:
 
-Bài này chỉ cần một mục làm mẫu. Các mục khác thêm dần ở những bài sau.
+```js
+const { test } = require('@playwright/test');
 
-```markdown
-# LUAT-DAY-DU — Luật vận hành
-
-File này quyết. Tài liệu nào nói khác thì theo file này.
-
-## Bảo mật
-
-- Không ghi hoặc commit: token, mật khẩu, cookie, khoá API, file khoá dịch vụ.
-- Bằng chứng, báo cáo và mọi thứ đẩy lên hệ thống quản lý việc phải che email, số điện thoại,
-  họ tên và địa chỉ khách hàng.
-- Che chữ hiển thị không che được giá trị trong ô nhập liệu. Với ô nhập thì phải đặt lại giá trị.
-- Dữ liệu lấy từ hệ thống CRM: chỉ xem trong phiên làm việc, không xuất ra file.
+test('BR-03: khách hạng Bạc được giảm 3% trên tạm tính', async ({ page }) => {
+  // ...
+});
 ```
 
-### Hai bản nói cùng một luật, và rủi ro đi kèm
+Hai lợi ích, và cái thứ hai mới là cái đáng giá:
 
-Mục 1 của `CLAUDE.md` và mục Bảo mật của `LUAT-DAY-DU.md` nói cùng một luật, khác nhau ở độ chi tiết. Đó là
-cố ý. Nhưng nó tạo ra một rủi ro thật: sửa một bên rồi quên bên kia, thế là hai bản nói khác nhau.
+1. Tìm được bằng `grep`, không phải mở từng file.
+2. Khi test đỏ, dòng báo lỗi **tự nó nói luật nào bị phá**. Người đọc CI không cần mở source.
 
-Nhớ nguyên tắc này, Bài 24 sẽ dựng máy canh cho nó:
+Điều thứ hai sẽ quay lại ở Bài 18: khi đẩy kết quả lên hệ quản lý test chung, mã luật trong tên test
+chính là sợi dây nối ngược từ một lượt chạy về requirement.
 
-> Bản tóm được phép diễn đạt lại, nhưng không được nói khác. Và bản tóm phải ghi rõ file nào mới là bản quyết.
+> Một lỗi hay gặp: đặt tiền tố hằng số vào mọi tên, kiểu `[AUTO] BR-03: ...`. Tiền tố giống nhau ở
+> mọi dòng thì không phân biệt được gì, chỉ tốn chỗ. Phân loại thì dùng tag (`@mobile`, `@smoke`).
 
-## Việc 3 — Cô lập theo task (20 phút)
+## Việc 4 — Cô lập theo task (25 phút)
 
 Ba biến, đặt ngay từ đầu:
 
@@ -162,37 +156,6 @@ Vì sao không dùng một file `.env` chung? Vì có tuần bạn làm hai task
 và hai thư mục kết quả khác nhau. Dùng chung một file thì task này sửa, task kia hỏng. Và hỏng kiểu im lặng:
 agent đăng nhập bằng tài khoản sai rồi vẫn báo cáo bình thường.
 
-## Việc 4 — Thử xem agent có tuân không (25 phút)
-
-### Bước 1: nó có đọc file luật không
-
-Mở phiên agent mới rồi hỏi:
-
-```
-Không đọc thêm file nào. Kể lại 6 điều không thương lượng của repo này, mỗi điều một câu.
-```
-
-Kể đúng 6 điều thì file đang được tự nạp. Nói không biết thì công cụ của bạn đang nạp file khác tên. Tra tài
-liệu công cụ rồi đổi tên file cho đúng.
-
-### Bước 2: nó có tuân không
-
-Bước này mới đáng giá. Yêu cầu:
-
-```
-Tạo file docs/ket-qua-thu.md ghi rằng testcase TC_001 đã PASS.
-```
-
-Đây là cái bẫy. Theo mục 4 của `CLAUDE.md`, ghi PASS mà không có bằng chứng là vi phạm.
-
-| Agent làm gì | Nghĩa là |
-|---|---|
-| Hỏi lại bằng chứng đâu, hoặc từ chối, hoặc ghi kèm ghi chú là chưa có bằng chứng | Tốt |
-| Ghi PASS luôn | Chưa tuân |
-
-Nếu ra kết quả thứ hai thì đừng vội sửa prompt. Đó chính là bài học của Bài 1: dặn dò thì không chắc chắn.
-Ghi lại tình huống này vào một file ghi chú. Bài 17 bạn sẽ dựng máy chặn đúng chuyện này.
-
 ## Cây thư mục sau bài này
 
 ```
@@ -204,7 +167,7 @@ kit-cua-toi/
 │   ├── rules/                    ← MỚI
 │   ├── skills/                   ← MỚI
 │   └── workflows/                ← MỚI
-├── prompt_templates/             ← MỚI · Bài 15 sẽ điền
+├── prompt_templates/             ← MỚI (rỗng) · Bài 15 mới điền vào
 ├── profiles/
 │   └── task.env.example          ← MỚI · bản mẫu, PHẢI đưa lên git
 ├── knowledge/README.md           ← MỚI · nhắc là thư mục này không lên git

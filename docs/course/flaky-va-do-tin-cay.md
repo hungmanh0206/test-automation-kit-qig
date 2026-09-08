@@ -289,7 +289,7 @@ kit-cua-toi/
 ├── scripts/qa/
 │   ├── do-metrics.js                 ← MỚI · clean vs eventual + KHOẢNG CÁCH (exit 0/1/2)
 │   └── do-tin-cay.js                 ← SỬA · thêm xếp hạng + hạn quarantine 30 ngày
-└── knowledge/reliability/            ·  từ Bài 26 · điểm tin cậy tích luỹ theo từng test
+└── knowledge/reliability/            ← MỚI · điểm tin cậy theo từng test; Bài 26 sẽ đưa cả thư mục này vào kỷ luật chung
     └── <ten-test>.json               ← MỚI · soLuot · xanhNgay · doTinCay · hang · daThu
 ```
 

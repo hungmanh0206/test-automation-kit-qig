@@ -196,7 +196,7 @@ kit-cua-toi/
 │   ├── utils/                        ← MÁY TƯ VẤN — trả lời câu hỏi, KHÔNG chặn
 │   │   └── do-tai-lieu.js            ·  Bài 12 · đo tài liệu → khuyến nghị chiến lược
 │   └── qa/                           ← MÁY CHẶN — mỗi file tự chạy, thoát mã 0/1/2
-│       ├── kiem-so-mong-doi.js       ·  Bài 1  · máy chặn đầu tiên, 12 dòng
+│       ├── kiem-so-mong-doi.js       ·  Bài 13 · máy chặn đầu tiên, 12 dòng
 │       ├── kiem-file-cam.js          ·  Bài 2  · tệp cấm bị git track ⇒ chặn
 │       ├── gate-mo-ho.js             ·  Bài 15 · chưa chốt mơ hồ thì không cho sinh case
 │       ├── gate-oracle.js            ·  Bài 13 · giá trị tính toán không trỏ nguồn ⇒ chặn

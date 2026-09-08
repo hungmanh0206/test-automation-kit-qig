@@ -1,412 +1,293 @@
 # Bài 1 — Automation Test Kit là gì
 
-> **1 giờ 30 phút** · Có gì trong tay: app thực hành đang chạy, 10 từ vựng · Sau bài này: bạn đã thấy agent gian lận trên máy mình, và đã viết máy chặn đầu tiên
+> **2 giờ** · Có gì trong tay: chưa có gì · Sau bài này: bạn đã tự tìm ra một bug bằng tay, và biết mình sắp dựng cái gì trong 61 giờ tới
 
 **Tóm tắt bài này**
 
 | | |
 |---|---|
-| **Bạn đang khổ vì** | Bạn nhờ AI viết test. Nó báo xanh. Nhưng bạn không biết xanh đó là thật hay giả. |
-| **Bài này bạn gõ gì** | Viết một test 15 dòng. Bảo agent sửa cho nó pass. Rồi viết một máy chặn 12 dòng. |
-| **Xong thì được gì** | Bạn thấy tận mắt agent làm test xanh trong khi app vẫn sai, và có máy chặn được nó. |
+| **Bạn đang khổ vì** | "Automation test kit" là một cụm từ nghe to mà không rõ ranh giới. Bắt đầu từ đâu cũng không biết. |
+| **Bài này bạn gõ gì** | Chạy một app có bug cài sẵn, tự tìm ra bug đầu tiên bằng tay, rồi vẽ ra dây chuyền bạn sắp dựng. |
+| **Xong thì được gì** | Một bug tự tìm được, mười từ vựng dùng cả tài liệu, và một bản đồ để không lạc. |
 
 ## Từ mới của bài này
 
 | Từ | Nghĩa gọn |
 |---|---|
-| **Máy chặn** (gate) | Đoạn chương trình đọc kết quả của bạn, thấy sai chuẩn thì thoát với lỗi |
-| **Mã thoát** (exit code) | Số mà một chương trình trả về khi kết thúc. `0` là ổn, khác `0` là có lỗi. Máy khác đọc được số này |
+| **Đặc tả** (spec) | Tài liệu nói sản phẩm *phải* làm gì. Nguồn để phán đúng sai |
+| **Oracle** | Câu trả lời cho *"dựa vào đâu mà bảo cái này sai"*. Phải là một thứ cụ thể |
+| **Bug biên** | Lỗi chỉ lộ ra ở ngay chỗ chuyển trạng thái, ví dụ đúng mốc `500.000` |
+| **Đối chứng** | Biết trước đáp án để đo xem cách kiểm của mình có hiệu quả không |
 
 ## Bài này bạn sẽ làm gì
 
-Ở Bài 1 bạn tìm ra một bug bằng tay. Đơn 500.000 của khách hạng Bạc phải ra **485.000**, nhưng app trả
-**515.000**.
+Bốn việc:
 
-Bài này bạn sẽ:
+1. Chạy app thực hành và tìm bug đầu tiên bằng tay (45 phút).
+2. Ba thứ hay bị gọi lẫn: bộ test, automation project, và test kit (25 phút).
+3. Mười từ vựng, mỗi từ một ví dụ lấy từ việc vừa làm (25 phút).
+4. Vẽ dây chuyền 11 chặng, đánh dấu chặng nào bạn đang làm bằng tay (25 phút).
 
-1. Viết một test tự động bắt đúng bug đó. 15 dòng, không cần cài gì (20 phút).
-2. Bảo agent làm cho test đó xanh, rồi xem nó làm gì (25 phút).
-3. Tìm ra chỗ nó gian lận, và gọi tên ba kiểu (20 phút).
-4. Thử dặn dò nó, rồi thấy dặn dò không ăn thua (10 phút).
-5. Viết máy chặn đầu tiên, 12 dòng, và xem nó chặn thật (15 phút).
-
-Cuối bài bạn sẽ hiểu vì sao tài liệu này dạy dựng kit, chứ không dạy viết prompt cho giỏi.
+Chưa cài gì ngoài Node.js. Chưa viết dòng code nào. Đó là cố ý.
 
 ---
 
-## Việc 1 — Viết test đầu tiên (20 phút)
+## Việc 1 — Tìm bug đầu tiên bằng tay (45 phút)
 
-App thực hành còn đang chạy chứ? Nếu tắt rồi thì mở terminal gõ lại:
+### Chạy app
 
 ```bash
 node docs/course/assets/app-thuc-hanh/server.js
 ```
 
-Mở cửa sổ terminal thứ hai. Tạo thư mục làm việc:
-
-```bash
-mkdir -p kit-cua-toi/tests/api
-cd kit-cua-toi
-```
-
-Tạo file `tests/api/don-hang-bac.js` với nội dung dưới đây. Gõ tay, đừng copy. Bạn cần biết từng dòng làm gì.
-
-```js
-/*
- * Kiểm BR-03 + BR-04: đơn 500.000 của khách hạng Bạc.
- * Kết quả mong đợi TÍNH TỪ spec.md, không lấy từ app.
- */
-
-// 500.000 (tạm tính) − 15.000 (giảm 3%) + 0 (miễn phí vì tạm tính ≥ 500.000)
-const KY_VONG = 485000;
-
-async function main() {
-  const r = await fetch('http://localhost:4010/api/quote', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ customerId: 'KH02', items: [{ productId: 'SP01', qty: 2 }] })
-  });
-  const j = await r.json();
-  const thucTe = j.data.tongCong;
-
-  console.log('spec mong đợi :', KY_VONG);
-  console.log('app trả về    :', thucTe);
-
-  if (thucTe !== KY_VONG) {
-    console.error('FAIL — lệch ' + (thucTe - KY_VONG));
-    process.exit(1);
-  }
-  console.log('PASS');
-}
-
-main();
-```
-
-Chạy nó:
-
-```bash
-node tests/api/don-hang-bac.js
-```
-
-Bạn sẽ thấy:
+**Bạn sẽ thấy:**
 
 ```
-spec mong đợi : 485000
-app trả về    : 515000
-FAIL — lệch 30000
+Cửa hàng mini đang chạy ở http://localhost:4010
 ```
 
-| Bạn thấy gì | Nghĩa là | Làm gì |
+| Thấy khác | Nghĩa là | Làm gì |
 |---|---|---|
-| Đúng ba dòng trên | Xong. Test đang đỏ, và đỏ là đúng | Đi tiếp |
-| `fetch failed` hoặc `ECONNREFUSED` | App thực hành không chạy | Quay lại cửa sổ terminal thứ nhất, chạy lại `server.js` |
-| `Cannot read properties of undefined` | Đường API gõ sai | So lại với `spec.md` mục 5 |
-| `PASS` | App bạn đang chạy đã được sửa rồi | Kiểm lại `KY_VONG` có đúng `485000` không |
+| `command not found: node` | Chưa cài Node.js | Cài bản LTS ở nodejs.org, mở lại terminal |
+| `EADDRINUSE: address already in use` | Cổng 4010 đang bận | `PORT=4011 node server.js` |
+| Không có gì in ra, con trỏ đứng im | Bình thường. Nó đang chạy | Mở trình duyệt |
 
-Giờ bạn có một test đỏ, và nó đỏ vì app sai thật. Hai chi tiết trong đoạn mã trên còn quan trọng hơn cả cái test.
+Mở `http://localhost:4010`. Bạn có một trang tạo đơn hàng: chọn khách, chọn sản phẩm, nhập số lượng.
 
-Thứ nhất, `KY_VONG = 485000` được viết thẳng vào code, tính từ `spec.md`. Test này không hỏi app "tổng bao
-nhiêu" rồi lấy chính câu trả lời đó đem so.
+### Đọc đặc tả trước khi bấm
 
-Thứ hai, khi lệch thì nó gọi `process.exit(1)`. Số `1` là cách chương trình nói "tôi thất bại" bằng thứ máy
-khác đọc được, chứ không phải bằng dòng chữ tiếng Việt trên màn hình. Việc 5 sẽ dùng lại đúng cơ chế này.
+Mở [`spec.md`](assets/app-thuc-hanh/spec.md) trong một cửa sổ khác. Đọc bốn luật này, chỉ bốn thôi:
 
-## Việc 2 — Bảo agent làm cho nó xanh (25 phút)
-
-Giờ giao việc cho agent y như một người bình thường sẽ giao. Mở phiên agent ở thư mục `kit-cua-toi` rồi gõ
-đúng câu này:
-
-```
-File tests/api/don-hang-bac.js đang FAIL. Sửa cho nó pass đi.
-```
-
-Đừng thêm gì. Đây là câu mà hầu hết mọi người sẽ gõ.
-
-Agent sẽ làm một trong ba việc dưới đây. Mỗi lần chạy nó có thể chọn khác nhau, và chuyện đó cũng đáng để ý.
-
-### Kiểu A — Đổi số mong đợi cho khớp app
-
-```js
-const KY_VONG = 515000;   // ← đổi từ 485000
-```
-
-Test xanh ngay. Bug thì vẫn nằm nguyên trong app.
-
-### Kiểu B — Lấy số mong đợi từ chính app
-
-```js
-const thucTe = j.data.tongCong;
-const KY_VONG = j.data.tamTinh - j.data.giamGia + j.data.phiGiaoHang;   // ← tính lại từ app
-```
-
-Nhìn thì có vẻ thông minh, kiểu "tôi tính lại từ các thành phần". Nhưng bốn số đó đều do app trả về. Nó đang
-so app với chính app. Cách này lúc nào cũng xanh, kể cả khi app tính sai bét.
-
-### Kiểu C — Nới điều kiện
-
-```js
-if (Math.abs(thucTe - KY_VONG) > 50000) {   // ← cho phép lệch tới 50.000
-  console.error('FAIL');
-  process.exit(1);
-}
-```
-
-Lệch 30.000 giờ nhỏ hơn ngưỡng 50.000 nên test xanh. Một biến thể khác là bỏ luôn `process.exit(1)`, chỉ để
-lại `console.warn`. Lúc đó test in một dòng cảnh báo rồi thoát với mã `0`, và không máy nào biết nó đã thất bại.
-
-### Chạy lại và xem
-
-```bash
-node tests/api/don-hang-bac.js
-```
-
-Bạn sẽ thấy `PASS`.
-
-Đọc chậm chỗ này. App không hề được sửa. Bug 30.000đ vẫn còn. Nhưng bạn vừa nhận một chữ `PASS`, và nếu
-không mở file ra đọc thì bạn không có cách nào biết.
-
-Muốn chắc thì gọi lại API bằng tay ở terminal thứ hai:
-
-```bash
-curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/json" ^
-  -d "{\"customerId\":\"KH02\",\"items\":[{\"productId\":\"SP01\",\"qty\":2}]}"
-```
-
-Trên Windows dùng `^` để nối dòng như trên, trên macOS hay Linux thì dùng `\`. Máy không có `curl` thì cứ mở
-`http://localhost:4010` rồi làm tay như Bài 1.
-
-Bạn sẽ thấy `"tongCong":515000`, y nguyên. Test xanh, app sai.
-
-## Việc 3 — Gọi tên chỗ gian lận (20 phút)
-
-Mở file agent vừa sửa, đọc kỹ, rồi đối chiếu với bảng này:
-
-| Dấu hiệu | Câu hỏi để phát hiện | Vì sao nguy hiểm |
-|---|---|---|
-| Số mong đợi bị đổi | "Con số này tôi tính từ spec, hay lấy từ app?" | Bug được biến thành hành vi đúng |
-| Số mong đợi tính từ dữ liệu app trả | "Nếu app sai, dòng này có đỏ không?" | Không bao giờ đỏ. Test vô nghĩa nhưng trông rất bận rộn |
-| Điều kiện bị nới | "Điều kiện này còn phân biệt được đúng với sai không?" | Bug nhỏ hơn ngưỡng sẽ lọt mãi |
-| Mất `process.exit(1)` | "Test này thất bại thì máy khác biết bằng cách nào?" | Kết quả đỏ thành một dòng chữ không ai đọc |
-
-Câu ở dòng thứ hai là câu bạn sẽ dùng nhiều nhất về sau:
-
-> Nếu app sai, dòng này có đỏ không?
-
-Thử áp nó vào Kiểu B. Giả sử app trả `tamTinh: 1`, `giamGia: 0`, `phiGiaoHang: 0`, `tongCong: 1`. Sai bét.
-Nhưng `1 - 0 + 0 === 1` nên test vẫn xanh. Vậy là dòng đó không kiểm gì cả.
-
-### Agent không cố ý gian lận
-
-Chi tiết này quyết định cách bạn dựng kit về sau, nên đừng lướt qua.
-
-Bạn giao cho nó việc "làm cho pass". Đổi một con số là một cách làm cho pass. Xét theo đúng câu bạn giao thì
-nó làm đúng.
-
-Vấn đề nằm ở chỗ hai bên hiểu chữ "pass" khác nhau. Bạn hiểu là app đúng. Nó hiểu là chương trình thoát với
-mã 0. Và nó có nhiều đường đi tới mã 0 hơn bạn tưởng.
-
-## Việc 4 — Thử dặn dò, rồi thấy nó không ăn thua (10 phút)
-
-Phản xạ đầu tiên của ai cũng vậy: viết luật vào prompt. Thử luôn đi. Sửa file về `KY_VONG = 485000`, rồi gõ:
-
-```
-File tests/api/don-hang-bac.js đang FAIL. Sửa cho nó pass.
-Hãy trung thực. KHÔNG được đổi số mong đợi, KHÔNG được nới điều kiện,
-KHÔNG được lấy giá trị mong đợi từ dữ liệu app trả về.
-```
-
-Bạn sẽ gặp một trong hai:
-
-| Kết quả | Nghĩa |
+| Mã | Luật |
 |---|---|
-| Agent nói "test đang đỏ vì app có bug ở BR-03, nên tôi không sửa test" | Lần này lời dặn có tác dụng |
-| Agent vẫn tìm đường khác để xanh: sửa `server.js`, thêm `try/catch`, hoặc đổi dữ liệu đầu vào sang khách hạng Thường | Lời dặn không ăn thua |
+| `BR-02` | Tạm tính = tổng (đơn giá × số lượng) |
+| `BR-03` | Giảm giá theo hạng khách: Thường 0%, Bạc 3%, Vàng 5% |
+| `BR-04` | Phí giao hàng 50.000. Miễn phí khi **tạm tính** đạt 500.000 |
+| `BR-05` | Tổng tiền = Tạm tính − Giảm giá + Phí giao hàng |
 
-Chạy thử ba bốn lần. Bạn sẽ gặp cả hai.
+Để ý chữ **tạm tính** ở `BR-04`. Nó sẽ quan trọng trong mười lăm phút nữa.
 
-Lời dặn không sai. Nó chỉ không chắc chắn. Mà một luật chỉ đúng bảy trên mười lần thì không giao việc được,
-vì bạn vẫn phải đọc lại từng dòng. Đọc lại từng dòng thì giao việc để làm gì.
+### Tính bằng tay trước, bấm sau
 
-Đó là ý chính của cả bài:
+Đây là thói quen quan trọng nhất của cả tài liệu, và nó rẻ hơn mọi công cụ: **viết ra con số bạn kỳ
+vọng, rồi mới nhìn con số app trả về.**
 
-> Luật mà không có máy đứng sau thì chỉ là lời dặn. Muốn chắc thì phải có thứ chặn lại khi luật bị vi phạm.
-> Kể cả khi người vi phạm là chính bạn, lúc 6 giờ chiều thứ Sáu.
-
-Thứ đó gọi là máy chặn. Viết cái đầu tiên luôn.
-
-## Việc 5 — Máy chặn đầu tiên (15 phút)
-
-Tạo file `scripts/qa/kiem-so-mong-doi.js`:
-
-```js
-/*
- * Máy chặn đầu tiên: số mong đợi phải tính từ spec, không được là số app đang trả.
- *
- * Mã thoát:  0 = đạt   ·   1 = vi phạm (chặn)   ·   2 = không đo được
- *
- * Máy này còn rất thô, nó chỉ biết đúng một case. Bài 17 sẽ làm bản dùng cho mọi case.
- * Nhưng nó chặn thật, và hôm nay chỉ cần thế.
- */
-'use strict';
-const fs = require('fs');
-
-const file = process.argv[2];
-if (!file || !fs.existsSync(file)) {
-  console.error('[kiem] KHÔNG ĐO ĐƯỢC: không thấy file. Dùng: node scripts/qa/kiem-so-mong-doi.js <file>');
-  process.exit(2);
-}
-
-const noiDung = fs.readFileSync(file, 'utf8');
-const SO_THEO_SPEC = '485000';   // tính từ spec.md: BR-01..BR-04
-const SO_APP_DANG_TRA = '515000';
-
-if (noiDung.includes(SO_APP_DANG_TRA)) {
-  console.error(`[kiem] ✗ CHẶN — file chứa ${SO_APP_DANG_TRA}, đây là số APP đang trả, không phải số spec.`);
-  console.error('        Số mong đợi phải tính từ spec.md, không phải copy từ app.');
-  process.exit(1);
-}
-if (!noiDung.includes(SO_THEO_SPEC)) {
-  console.error(`[kiem] ✗ CHẶN — không thấy số theo spec (${SO_THEO_SPEC}) trong file.`);
-  console.error('        Có phải số mong đợi đã bị xoá hoặc đổi thành biểu thức lấy từ app?');
-  process.exit(1);
-}
-
-console.log('[kiem] ✓ ĐẠT — số mong đợi đúng theo spec.');
-```
-
-### Thử ba lần, ba kết quả khác nhau
-
-Đây là phần quan trọng nhất của Việc 5. Một máy chặn chưa được thử thì chưa tin được.
-
-**Lần 1, file đúng.** Đặt `KY_VONG = 485000` trong file test rồi chạy:
-
-```bash
-node scripts/qa/kiem-so-mong-doi.js tests/api/don-hang-bac.js
-echo "mã thoát = $?"
-```
-
-Bạn sẽ thấy:
+Lấy giấy. Khách `KH02` (hạng Bạc), sản phẩm `SP01` (225.000), số lượng 2:
 
 ```
-[kiem] ✓ ĐẠT — số mong đợi đúng theo spec.
-mã thoát = 0
+Tạm tính     = 225.000 × 2        = 450.000
+Giảm giá     = 450.000 × 3%       =  13.500
+Phí giao hàng: 450.000 < 500.000  =  50.000
+Tổng tiền    = 450.000 − 13.500 + 50.000 = 486.500
 ```
 
-**Lần 2, file bị gian lận.** Sửa `KY_VONG` thành `515000` rồi chạy lại:
+Giờ mới bấm. Nhập đúng bộ đó trên trang, bấm Tạo đơn.
 
-```
-[kiem] ✗ CHẶN — file chứa 515000, đây là số APP đang trả, không phải số spec.
-        Số mong đợi phải tính từ spec.md, không phải copy từ app.
-mã thoát = 1
-```
+**Bạn sẽ thấy** con số app trả về **khác** con số bạn vừa tính.
 
-**Lần 3, file không tồn tại.**
+Đừng vội kết luận ai sai. Đây là lúc dùng đến `spec.md`: đi từng dòng, xem app lệch ở khâu nào.
 
-```bash
-node scripts/qa/kiem-so-mong-doi.js tests/api/khong-co-file-nay.js
-echo "mã thoát = $?"
-```
+| Khâu | Bạn tính | App trả | Khớp? |
+|---|---|---|---|
+| Tạm tính | 450.000 | | |
+| Giảm giá | 13.500 | | |
+| Phí giao hàng | 50.000 | | |
+| Tổng tiền | 486.500 | | |
 
-```
-[kiem] KHÔNG ĐO ĐƯỢC: không thấy file. Dùng: node scripts/qa/kiem-so-mong-doi.js <file>
-mã thoát = 2
-```
+Điền cột "App trả" vào. Ba dòng đầu thường khớp, dòng phí giao hàng thì không.
 
-Ba mã thoát, ba nghĩa khác nhau. Chỗ khác nhau giữa `1` và `2` là chỗ nhiều người làm nghề này bỏ qua cả
-sự nghiệp:
+### Vì sao nó sai
 
-| Mã | Nghĩa | Vì sao phải tách riêng |
+App đang tính miễn phí giao hàng dựa trên số **sau khi trừ giảm giá**, chứ không phải tạm tính. Mà
+`BR-04` nói rõ là **tạm tính**.
+
+Thử thêm một bộ nữa để chắc chắn: khách hạng Vàng (5%), tạm tính đúng `520.000`. Theo `BR-04` thì
+miễn phí giao hàng, vì tạm tính đã vượt mốc. Nhưng sau giảm giá còn `494.000`, dưới mốc. Nếu app tính
+nhầm chỗ thì nó sẽ thu `50.000` phí.
+
+Bấm thử. Nếu nó thu phí thật, bạn vừa **chứng minh** được chỗ sai chứ không chỉ đoán.
+
+> **Ghi lại cách bạn vừa làm**, vì đó chính là phương pháp của cả tài liệu này:
+> 1. Đọc đặc tả, viết ra con số kỳ vọng.
+> 2. Chạy, ghi con số thực tế.
+> 3. Lệch thì đi từng khâu tìm chỗ lệch.
+> 4. Dựng thêm một bộ dữ liệu **phân biệt được** hai giả thuyết, để chắc.
+>
+> Bước 4 là bước người ta hay bỏ. Bỏ nó thì bạn có một nghi ngờ, không phải một bằng chứng.
+
+### Vì sao app này cố tình có bug
+
+Nếu bạn thực hành trên một app đúng hoàn toàn thì bộ kiểm của bạn sẽ luôn xanh. Và bạn không có cách
+nào biết nó xanh **vì app đúng** hay **vì bộ kiểm của bạn mù**. Hai thứ đó cho cùng một dấu hiệu.
+
+App này có đúng 3 bug, biết trước. Nên nếu bộ kiểm của bạn bắt được 0/3 thì lỗi nằm ở bộ kiểm, không
+ở app. Đó gọi là **đối chứng**, và nó là ý tưởng trung tâm của mọi phép đo trong tài liệu này.
+
+Hai bug còn lại bạn sẽ gặp ở Bài 9 và Bài 10. Đừng mở [`BUGS.md`](assets/app-thuc-hanh/BUGS.md) trước
+khi làm hết Phần 2 — mở sớm thì mất luôn phép đối chứng.
+
+## Việc 2 — Bộ test, project, và kit (25 phút)
+
+Ba thứ này hay bị gọi lẫn, và ranh giới giữa chúng quyết định bạn đang dựng cái gì.
+
+| | Là gì | Dấu hiệu | Sang dự án khác |
+|---|---|---|---|
+| **Một bộ test** | Vài file test chạy được | Chạy bằng cách gõ tên file | Viết lại từ đầu |
+| **Một automation project** | Bộ test + cấu trúc + config + CI | Có `package.json`, có lệnh `npm run`, có thư mục rõ ràng | Copy rồi sửa nhiều chỗ |
+| **Một test kit** | Project + tách hai tầng + quy trình + máy kiểm | Đổi dự án bằng cách đổi **một file cấu hình** | Clone, khai profile, chạy |
+
+Khác biệt thật nằm ở dòng cuối cùng. Một project automation tốt vẫn gắn với sản phẩm nó được viết
+cho: URL nằm trong code, dữ liệu test là bản ghi có sẵn trên môi trường, quy tắc nghiệp vụ nằm rải
+trong assertion.
+
+Một kit thì tách làm hai tầng:
+
+| Tầng | Chứa gì | Mang sang dự án mới |
 |---|---|---|
-| `0` | Đã kiểm, và đạt | |
-| `1` | Đã kiểm, và vi phạm | Chặn lại, có việc phải sửa |
-| `2` | Không kiểm được | Chưa nói được gì. Gộp nó vào `0` là biến "không biết" thành "ổn", và đó là cách một bộ kiểm mù đi mà không ai hay |
+| **Chung** | Khung chạy, factory, evidence, máy kiểm, quy trình | Không sửa một chữ |
+| **Dự án** | URL, tài khoản, quy tắc nghiệp vụ, bản đồ tên trường | Khai lại một lần |
 
-Giờ quay lại Việc 2. Bảo agent làm cho test xanh lần nữa, rồi chạy máy chặn. Nếu nó chọn Kiểu A thì máy bắt
-được ngay và trả về `1`. Bạn vừa có thứ mà lời dặn ở Việc 4 không cho được: một sự chắc chắn.
+Nghe đơn giản, nhưng giữ được ranh giới đó là việc khó nhất của cả tài liệu, và Bài 28 sẽ chỉ ra vì
+sao nhầm ranh giới không phải chuyện gọn gàng mà là chuyện **an toàn**.
 
-Máy này vẫn còn thô. Nó bắt được Kiểu A, nhưng chưa bắt được Kiểu B và Kiểu C. Đúng vậy, và đó là lý do
-tài liệu này còn nhiều bài nữa. Thứ bạn cần mang ra khỏi Bài 1 không phải một máy chặn hoàn hảo, mà là cảm
-giác đã thấy một máy chặn hoạt động.
+### Và cái gì không phải kit
+
+Một thư mục có 200 file `.spec.js` và không ai dám xoá cái nào. Một bộ test mà cách duy nhất để biết
+nó còn đúng là chạy lên xem có đỏ không. Một quy trình nằm trong đầu một người.
+
+Ba thứ đó rất phổ biến, và chúng đều là **một đống script**, không phải một kit. Khác biệt không nằm
+ở số lượng test.
+
+## Việc 3 — Mười từ vựng (25 phút)
+
+Mỗi từ kèm một ví dụ lấy từ đúng việc bạn vừa làm ở Việc 1. Đọc định nghĩa suông thì quên, gắn vào
+việc đã làm thì nhớ.
+
+| Từ | Nghĩa | Ví dụ vừa rồi |
+|---|---|---|
+| **Đặc tả** | Tài liệu nói sản phẩm phải làm gì | `spec.md`, mục `BR-04` |
+| **Oracle** | Căn cứ để phán đúng sai | `BR-04` nói mốc so trên *tạm tính*, không phải số sau giảm giá |
+| **Kết quả mong đợi** | Con số bạn viết ra **trước** khi chạy | `486.500` bạn tính trên giấy |
+| **Kết quả thực tế** | Con số app trả về | Con số bạn điền vào cột bên phải |
+| **Tiền điều kiện** | Trạng thái phải có trước khi kiểm | Phải có khách hạng Bạc và sản phẩm `SP01` |
+| **Bug biên** | Lỗi chỉ lộ ra ngay chỗ chuyển trạng thái | Tạm tính đúng `520.000`, ngay trên mốc |
+| **Bằng chứng** | Thứ chứng minh bạn đã kiểm thật | Ảnh màn hình có khoanh đỏ ô sai |
+| **Tầng lỗi** | Lỗi nằm ở giao diện, phía sau, hay dữ liệu | Bug này ở phía sau: API trả sai từ đầu |
+| **Đối chứng** | Biết trước đáp án để đo cách kiểm | Biết app có 3 bug, bắt 0/3 thì bộ kiểm mù |
+| **Gate** | Máy chặn, không cho đi tiếp khi có vi phạm | Bài 6 bạn viết cái đầu tiên |
+
+Ba từ hay bị dùng sai nhất, nói rõ luôn:
+
+**Oracle không phải là "kết quả mong đợi".** Kết quả mong đợi là con số `486.500`. Oracle là **lý do**
+con số đó là `486.500`, tức là `BR-02` cộng `BR-03` cộng `BR-04`. Viết được con số mà không chỉ được
+mã luật thì bạn đang đoán, và Bài 13 sẽ dựng một máy chặn đúng chuyện đó.
+
+**"Không phán được" không phải là PASS.** Nếu bạn không đọc được con số vì trang lỗi, kết quả là *chưa
+đo được*, không phải *đạt*. Trộn hai thứ này là cách bảng kết quả trở nên đẹp trong khi độ phủ thật
+giảm đi.
+
+**"Nhất quán" không phải là "đúng".** Hai màn hình cùng hiện `515.000` chỉ chứng minh chúng đọc chung
+một nguồn. Cả hai vẫn có thể sai so với `spec.md`.
+
+## Việc 4 — Dây chuyền bạn sắp dựng (25 phút)
+
+Ở Việc 1 bạn vừa đi qua một vòng kiểm thử hoàn chỉnh, chỉ là làm hết bằng tay. Vẽ nó ra:
+
+```
+Requirement          ← bạn đọc spec.md
+   ↓
+Phân tích scope      ← bạn chọn kiểm 4 luật BR-02..BR-05
+   ↓
+Thiết kế testcase    ← bạn viết ra bộ dữ liệu và con số kỳ vọng
+   ↓
+QA review            ← (chưa có, bạn tự làm tự duyệt)
+   ↓
+Quản lý testcase     ← (chưa có, nó nằm trên giấy)
+   ↓
+Automation execution ← (chưa có, bạn tự bấm)
+   ↓
+Evidence + Report    ← (chưa có, kết quả nằm trong đầu bạn)
+   ↓
+Triage               ← bạn đi từng khâu tìm chỗ lệch
+   ↓
+Bug                  ← (chưa có, chưa báo cho ai)
+   ↓
+Dev fix              ← (chưa có)
+   ↓
+Rerun                ← (chưa có)
+```
+
+Bốn chặng bạn đã làm. Bảy chặng còn để trống.
+
+Đó là bản đồ của cả tài liệu này, và nó cũng trả lời câu *"bao giờ thì dùng được"*:
+
+| Tới bài | Lấp được chặng nào |
+|---|---|
+| Bài 4 | Automation execution, ở mức thô |
+| Bài 11 | Evidence + Report |
+| Bài 17 | Triage |
+| Bài 19 | Bug, Dev fix, Rerun |
+| Bài 18 | Quản lý testcase |
+| Bài 15 | QA review |
+
+Để ý thứ tự: chặng **Quản lý testcase** và **QA review** nằm ở giữa dây chuyền nhưng học sau cùng. Đó
+là cố ý. Chúng chỉ có nghĩa khi đã có nhiều người cùng làm, và học chúng khi bạn còn đang một mình
+thì chỉ là thêm thủ tục.
+
+### Việc phụ — ghi lại điểm xuất phát
+
+Tạo `docs/xuat-phat.md` trong thư mục bạn sẽ làm việc, và trả lời ba câu:
+
+```markdown
+# Điểm xuất phát — <ngày>
+
+## Hiện tại tôi kiểm thử thế nào
+(viết thật, kể cả nếu câu trả lời là "bấm tay và ghi vào Excel")
+
+## Chặng nào trong 11 chặng đang tốn nhiều thời gian nhất
+## Nếu chỉ tự động hoá được MỘT chặng, tôi chọn chặng nào, vì sao
+```
+
+Nghe hình thức, nhưng nó có tác dụng thật: đến Bài 29 bạn mở lại file này và đối chiếu. Không có nó
+thì bạn không có cách nào đo mình đã đi được bao xa, vì trí nhớ về "hồi đó khổ thế nào" mờ rất nhanh.
 
 ## Cây thư mục sau bài này
 
 ```
 kit-cua-toi/
-├── scripts/
-│   └── qa/
-│       └── kiem-so-mong-doi.js      ← MỚI · máy chặn đầu tiên (Việc 5)
-└── tests/
-    └── api/
-        └── don-hang-bac.js          ← MỚI · test đầu tiên (Việc 1)
+└── docs/
+    └── xuat-phat.md              ← MỚI · điểm xuất phát, mở lại ở Bài 29
 ```
 
-Hai file, hai vai khác nhau. Phân biệt được hai vai này là nền của mọi bài sau:
-
-| File | Vai | Trả lời câu gì |
-|---|---|---|
-| `tests/api/don-hang-bac.js` | test | App có đúng không? |
-| `scripts/qa/kiem-so-mong-doi.js` | máy chặn | Cái test kia có đáng tin không? |
-
-Người mới thường chỉ có file thứ nhất. Cả tài liệu này là chuyện dựng file thứ hai.
+Đúng một file, và nó không phải code. Bài 2 mới bắt đầu dựng repo thật.
 
 ## Tự kiểm
 
-Trả lời bằng lời của mình:
+1. Vì sao phải viết con số kỳ vọng ra giấy **trước** khi bấm?
+2. Bước thứ tư trong phương pháp ở Việc 1 là gì, và bỏ nó thì bạn thiếu cái gì?
+3. Vì sao app thực hành cố tình có bug?
+4. Ba mức: bộ test, automation project, test kit. Ranh giới thật nằm ở đâu?
+5. Hai tầng của một kit, và tầng nào được mang đi không sửa?
+6. Oracle khác "kết quả mong đợi" ở chỗ nào?
+7. Vì sao "không phán được" không được ghi thành PASS?
+8. Vì sao hai màn hình cùng hiện một con số vẫn chưa chứng minh được gì?
+9. Trong 11 chặng, bạn đã làm được mấy chặng bằng tay ở Việc 1?
+10. Vì sao "Quản lý testcase" nằm giữa dây chuyền nhưng học gần cuối?
 
-1. Agent làm test của bạn xanh bằng cách nào? Kiểu A, B hay C?
-2. Câu hỏi một dòng nào phát hiện được Kiểu B? Áp thử vào code của bạn xem.
-3. `485000` và `515000`, số nào tính từ spec? Vì sao số kia không được xuất hiện trong test?
-4. Ba mã thoát `0`, `1`, `2` khác nhau ở đâu? Vì sao không được gộp `2` vào `0`?
-5. Vì sao viết "hãy trung thực" vào prompt là chưa đủ, dù có lần nó vẫn có tác dụng?
-6. Máy chặn của bạn hiện chưa bắt được kiểu gian lận nào? Có hai kiểu.
+## Bài tập về nhà
 
-## Bài tập về nhà (20 phút)
+Lấy một chức năng của sản phẩm bạn đang test thật, và làm đúng Việc 1 lên nó: đọc tài liệu, viết ra
+kết quả kỳ vọng, rồi mới thao tác.
 
-Máy chặn hiện tại không nhìn thấy Kiểu B. Vá nó:
+Đếm hai con số:
 
-1. Sửa file test theo Kiểu B, tức là tính `KY_VONG` từ `j.data.*`.
-2. Chạy máy chặn. Nó báo ĐẠT. Vậy là máy chặn đang nói dối, và bạn vừa chứng minh được điều đó.
-3. Thêm một phép kiểm: dòng nào chứa cả chữ `KY_VONG` lẫn chữ `j.data` thì chặn.
-4. Chạy lại. Phải ra mã `1`.
-5. Rồi chạy trên file đúng ở Việc 1. Phải vẫn ra mã `0`.
+1. Bao nhiêu chỗ bạn **không viết ra được** kết quả kỳ vọng vì tài liệu không nói?
+2. Bao nhiêu chỗ bạn viết ra được, nhưng bằng cách nhớ *"lâu nay nó chạy thế"*?
 
-Bước 5 hay bị bỏ, mà nó lại quan trọng nhất. Một máy chặn bắt oan còn tệ hơn không có máy nào, vì người ta
-sẽ tìm cách tắt nó đi. Bài 17 và Bài 24 nói kỹ chuyện này.
-
----
-
-## Đào sâu (đọc thêm, không bắt buộc)
-
-Ba mục dưới đây là bối cảnh. Bỏ qua được nếu bạn muốn sang Bài 5 luôn.
-
-### Ba mức dùng AI trong kiểm thử
-
-| Mức | Bạn làm gì | AI làm gì | Ai chịu trách nhiệm |
-|---|---|---|---|
-| 1. Hỏi đáp | Gõ câu hỏi | Trả lời | Bạn, hoàn toàn |
-| 2. Hỗ trợ từng việc | Giao một việc rõ, kiểm ngay | Sinh nháp: case, script, mô tả bug | Bạn, vì bạn đọc từng dòng |
-| 3. Agent chạy cả chặng | Giao cả chặng, xem báo cáo cuối | Đọc tài liệu, sinh case, chạy, thu bằng chứng, báo cáo | Không rõ. Và đó là vấn đề |
-
-Việc 2 vừa rồi là mức 3 thu nhỏ. Bạn giao một chặng, không đọc từng dòng, và nhận một chữ `PASS` sai.
-
-Bộ kit làm cho mức 3 an toàn. Không phải bằng cách làm agent thông minh hơn, mà bằng cách đảm bảo khi nó làm
-sai thì có thứ chặn lại trước khi kết quả đi ra ngoài.
-
-### Vấn đề thứ hai: agent không có ký ức
-
-Phiên hôm nay không biết phiên tuần trước đã kết luận gì. Hệ quả thấy ngay: cùng một bug bị log lại sau khi
-dev đã từ chối; cùng một cách dựng dữ liệu bị thử lại sau khi đã thất bại; cùng một câu hỏi được hỏi lại BA.
-Bài 26 dựng bộ nhớ trên đĩa để chữa chuyện này.
-
-### Ba thứ một bộ kit phải giải
-
-| | Vấn đề | Giải bằng | Học ở |
-|---|---|---|---|
-| Kỷ luật | Agent làm cho nó xanh | Máy chặn đọc kết quả và chặn khi sai chuẩn | Bài 15, 11, 13 |
-| Bộ nhớ | Không có ký ức giữa các phiên | Kho trên đĩa: luật đã xác nhận, quyết định đã chốt | Bài 26, 18 |
-| Bằng chứng | Không kiểm chứng lại được | Ảnh và video bắt buộc, khoanh đúng chỗ, che thông tin cá nhân | Bài 17 |
+Con số thứ hai là phần nguy hiểm. Đó là chỗ bạn đang lấy chính sản phẩm làm chuẩn đối chiếu, và Bài 13
+sẽ dựng một máy chặn đúng chuyện đó.
 
 ## Bài sau
 
-Bài 5 dựng khung: kit có những lớp nào, file luật nào agent thật sự đọc, và vì sao file đó phải ngắn dưới
-20 dòng thay vì 500 dòng.
+Bài 2 dựng repo. Ngắn, và có một chi tiết nghe nhỏ mà đắt: `.gitignore` được viết trước cả README, vì
+chỉ cần một lần `git add .` sai là đủ đẩy thứ không nên đẩy lên.

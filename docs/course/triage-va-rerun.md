@@ -1,6 +1,6 @@
 # Bài 17 — Triage lỗi và rerun
 
-> **2 giờ 30 phút** · Có gì trong tay: test chạy được, có dữ liệu dựng đúng luồng · Sau bài này: `phan-quyet.json` và `testcase-status.json` — hai file mà Phần 4 sẽ đọc
+> **2 giờ** · Có gì trong tay: một lượt chạy có case đỏ · Sau bài này: `phan-quyet.json` và `testcase-status.json` — hai file mà Phần 4 sẽ đọc
 
 **Tóm tắt bài này**
 
@@ -20,16 +20,30 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Một testcase Failed chưa đồng nghĩa với một Bug. Giữa hai thứ đó có một chặng, và bỏ chặng này là lý do
+phần lớn bug bị trả về. Năm câu hỏi phải trả lời được trước khi tạo defect:
 
-1. Khai một file duy nhất cho mọi trạng thái kết quả và ngưỡng chạy lại (35 phút).
-2. Phân tầng lỗi, và biết chỉ hai tầng nào mới đáng log cho dev (40 phút).
-3. Nhận ra hai trạng thái hay bị bỏ qua, cả hai đều đang chôn bug thật (30 phút).
-4. Viết máy sinh trạng thái từ kết quả chạy (45 phút).
+| # | Câu hỏi | Trả lời "không" thì |
+|---|---|---|
+| 1 | Kết quả mong đợi có đúng không? | Sửa testcase |
+| 2 | Dữ liệu test có hợp lệ không? | Sửa fixture |
+| 3 | Môi trường có ổn định không? | Chờ rồi chạy lại |
+| 4 | Có phải test chập chờn không? | Sửa test |
+| 5 | Chạy lại có tái hiện không? | Chưa đủ căn cứ |
+
+Bài này biến năm câu đó thành thứ máy đọc được. Bảy việc:
+
+1. Khai một file duy nhất cho mọi trạng thái kết quả và ngưỡng chạy lại (25 phút).
+2. Phân tầng lỗi, và biết chỉ hai tầng nào mới đáng log cho dev (25 phút).
+3. Chạy lại 2–3 lần để loại chập chờn (15 phút).
+4. `script_error`: loại dễ log nhầm nhất (15 phút).
+5. Hai trạng thái hay bị bỏ qua, cả hai đều đang chôn bug thật (15 phút).
+6. Viết máy sinh trạng thái từ kết quả chạy (20 phút).
+7. Khi nào thì được sang bước tạo bug (5 phút).
 
 ---
 
-## 1. Vì sao phải khai trạng thái ra một file
+## Việc 1 — Vì sao phải khai trạng thái ra một file
 
 Phản xạ tự nhiên: ghi `PASS`/`FAIL` trong báo cáo, xong. Nhưng ngay tuần sau bạn cần thêm `SKIP`. Rồi cần
 phân biệt *skip vì chưa dựng được dữ liệu* với *skip vì không tự động hoá được*. Rồi Bài 15 cần biết trạng thái
@@ -126,7 +140,7 @@ module.exports = { TAXONOMY, DA_CHAY, LOG_JIRA };
 > để học. Bản đúng là đọc từ file này. Vì khi bạn thêm `PASS_WITH_DEVIATION`, gate viết tay sẽ **bỏ sót**
 > nó (nó đã chạy nhưng gate không đòi bằng chứng), mà bỏ sót thì không có tín hiệu nào báo.
 
-## 2. Bảy tầng lỗi, và chỉ hai đáng log
+## Việc 2 — Bảy tầng lỗi, và chỉ hai đáng log
 
 Khi test đỏ, câu hỏi không phải "bug gì" mà là "lỗi ở tầng nào".
 
@@ -174,7 +188,7 @@ test('bắt response để khoanh tầng lỗi', async ({ page }) => {
 });
 ```
 
-## 3. Chạy lại 2–3 lần
+## Việc 3 — Chạy lại 2–3 lần
 
 Case đỏ thì chạy lại tối thiểu 2 lần, tối đa 3 trước khi kết luận.
 
@@ -192,7 +206,7 @@ mà không thêm thông tin. Con số này khai trong taxonomy để đổi ở 
 > 30 phút vì có bản triển khai chen vào. Cách phòng: xác nhận lại sát giờ** viết báo cáo, và giữ một case
 > đối chứng đã biết kết quả để phát hiện môi trường vừa đổi.
 
-## 4. `script_error`: loại dễ log nhầm nhất
+## Việc 4 — `script_error`: loại dễ log nhầm nhất
 
 Đây là tầng lỗi tốn kém nhất vì nó trông giống bug thật: fail ổn định, tái hiện được 100%.
 
@@ -211,7 +225,7 @@ Ba nguyên nhân hay gặp, cả ba đều từ Bài 9:
 | Đọc sai vùng | Regex trên cả trang bắt trúng con số ở khu vực khác → báo "tổng tiền sai" |
 | Thao tác khi chưa đúng màn | Click trước khi modal đóng xong → click vào element phía sau |
 
-## 5. Hai trạng thái dễ bỏ qua
+## Việc 5 — Hai trạng thái dễ bỏ qua
 
 Hai trạng thái này không có trong sách giáo khoa, nhưng chúng chặn hai đường mà bug thật hay lọt qua.
 
@@ -247,7 +261,7 @@ Luật: chỉ được đổi sang `flaky` khi nêu được cơ chế cụ th�
 | "Chắc do mạng" | "Response chậm hơn 2s ở 1/5 lần, đo bằng log timing" |
 | "Môi trường không ổn định" | "Job đồng bộ chạy mỗi 5 phút, ghi đè dữ liệu test — trùng khung giờ fail" |
 
-## 6. Sinh `testcase-status.json`
+## Việc 6 — Sinh `testcase-status.json`
 
 Đây là file Phần 4 sẽ đọc. Sinh nó từ kết quả Playwright, không viết tay.
 
@@ -358,33 +372,24 @@ Hai quyết định thiết kế đáng để ý:
 | Pass sau retry → `PASS_WITH_DEVIATION`, không phải `PASS` | Retry **là** một deviation. Ghi PASS trơn là mất tín hiệu |
 | `tangLoi = null` cho FAIL, không suy tự động | Máy không biết lỗi ở tầng nào. Để `null` thì nó hiện ra là việc chưa làm, thay vì đoán bừa |
 
-## 7. Log bug: bốn phần, không hơn không kém
+## Việc 7 — Khi nào thì được sang bước tạo bug
 
-Chỉ log khi tầng lỗi là `product_bug` hoặc `api_bug`, và đã rerun.
+Chỉ khi tầng lỗi là `product_bug` hoặc `api_bug`, và đã rerun đủ số lần.
 
-```markdown
-**Môi trường:** UAT · bản build <hash hoặc thời điểm> · Chrome 120
+Năm phán quyết còn lại đều KHÔNG được tạo bug, và mỗi cái đi một đường khác:
 
-**Bước tái hiện**
-1. Đăng nhập `user_sales_01`
-2. Mở `/orders/create`
-3. Chọn khách `IT test PROJ-1234 KH 1712...` (hạng Bạc)
-4. Thêm `SP_A`, số lượng 3
-5. Đọc ô Tổng cộng ở khối Tổng kết
+| Phán quyết | Việc tiếp theo | Ai làm |
+|---|---|---|
+| `setup_failure` | Sửa fixture hoặc factory | Bạn |
+| `script_error` | Sửa testcase hoặc locator | Bạn |
+| `flaky` | Đưa vào danh sách theo dõi, đo ở Bài 25 | Bạn |
+| `blocked` | Ghi lý do, báo người chặn đường | Bạn, rồi chờ |
+| `not_evaluated` | Chưa đo được. KHÔNG được chuyển thành PASS | Bạn |
 
-**Kết quả mong đợi**
-Tổng cộng = `321.000` (Tạm tính 300.000 − Giảm giá 9.000 + Phí 30.000) — theo FSD mục 2 và 3, `BR-03`
+Dòng cuối là dòng hay bị phá nhất, và phá nó thì không ai biết. Một case không đo được mà ghi PASS thì bảng
+kết quả đẹp hơn, trong khi độ phủ thực tế giảm đi.
 
-**Kết quả thực tế**
-Tổng cộng = `330.000`. API `POST /api/orders` trả `tongCong: 330000` ⇒ **tầng BE**: giảm giá không được trừ.
-Rerun 3/3 lần cùng kết quả.
-
-**Bằng chứng:** `evidence/TC_012-tong-cong-sai.png` (đã khoanh ô Tổng cộng và ô Giảm giá)
-```
-
-Bốn đặc điểm khiến bug này được nhận ngay: bước tái hiện khớp fixture thật (mã dữ liệu cụ thể, không
-"một khách hạng Bạc") · mong đợi trích nguồn · thực tế nêu cả dữ liệu API nên tầng đã được khoanh ·
-**đã rerun**.
+Bài 19 làm tiếp từ đây: bốn phần bắt buộc của một bug report, và cách gán đúng người theo tầng lỗi.
 
 ---
 

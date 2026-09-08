@@ -1,16 +1,14 @@
 # Bài 11 — Evidence và Reporting
 
-> **2 giờ** · Có gì trong tay: kết quả chạy có verdict và tầng lỗi · Sau bài này: ảnh có khoanh đỏ, video có banner, PII đã che — và file trạng thái đã đủ bằng chứng
->
-> *Bài này không đánh số, nó là phần đào sâu của **Bài 17**. Đọc kèm **Bài 17**.*
+> **2 giờ 30 phút** · Có gì trong tay: FE và API đều chạy, kết quả vẫn chỉ có trong console · Sau bài này: ảnh có khoanh đỏ, video có banner, PII đã che, và một report người ngoài đọc được
 
 **Tóm tắt bài này**
 
 | | |
 |---|---|
-| **Bạn đang khổ vì** | Bạn nói case đã chạy và đúng. Ba tuần sau không ai kiểm lại được nữa. |
-| **Bài này bạn gõ gì** | Viết hàm chụp ảnh có khoanh đỏ và che thông tin cá nhân, rồi hàm quay video có chú thích từng bước. |
-| **Xong thì được gì** | Case nào đã chạy cũng có ảnh hoặc video, mở ra là thấy ngay chỗ cần nhìn. |
+| **Bạn đang khổ vì** | Bộ test chạy xong, xanh đỏ nằm trong terminal của bạn. Người không ngồi cạnh thì không thấy gì, và ba tuần sau chính bạn cũng không kiểm lại được. |
+| **Bài này bạn gõ gì** | Hàm chụp có khoanh đỏ và che dữ liệu khách, hàm quay video, rồi ráp tất cả thành một report. |
+| **Xong thì được gì** | Một thư mục kết quả tự nó kể lại được lượt chạy, không cần bạn ngồi giải thích. |
 
 ## Từ mới của bài này
 
@@ -22,16 +20,20 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Tám việc:
 
-1. Chốt định dạng: chỉ ảnh hoặc video, không nhận file text (15 phút).
-2. Viết hàm chụp có khoanh đỏ và có nhãn (45 phút).
-3. Che thông tin cá nhân, kèm cái bẫy ô nhập liệu (30 phút).
-4. Quay video cho case nhiều bước (30 phút).
+1. Chốt định dạng: chỉ ảnh hoặc video, không nhận file text (10 phút).
+2. Vì sao case PASS cũng phải có bằng chứng (10 phút).
+3. Viết hàm chụp có khoanh đỏ và có nhãn (30 phút).
+4. Che dữ liệu khách, kèm cái bẫy ô nhập liệu (20 phút).
+5. Quay video cho case nhiều bước (20 phút).
+6. Đường dẫn: đừng để công cụ xoá mất bằng chứng của bạn (15 phút).
+7. Bốn thứ làm một tấm ảnh mất giá trị (5 phút).
+8. Ráp thành report, và **xây gate** chặn case chạy rồi mà không có bằng chứng (40 phút).
 
 ---
 
-## 1. Chỉ ảnh hoặc video
+## Việc 1 — Chỉ ảnh hoặc video (10 phút)
 
 | Được chấp nhận | KHÔNG được |
 |---|---|
@@ -46,7 +48,7 @@ Vì sao trace và log không phải bằng chứng dù chúng chứa nhiều th�
 
 Trace và log vẫn hữu ích. Chúng là công cụ điều tra tại chỗ, không phải bằng chứng để nộp.
 
-## 2. Vì sao case PASS cũng phải có evidence
+## Việc 2 — Vì sao case PASS cũng phải có evidence (10 phút)
 
 Đây là phần hay bị phản đối nhất: *"pass thì có gì mà chụp?"*
 
@@ -59,7 +61,7 @@ giá trị cho Bài 25).
 
 Đây là mục 4 trong `CLAUDE.md` bạn viết ở Bài 5, và là luật mà `gate-bang-chung.js` ở Bài 15 canh.
 
-## 3. Khoanh đỏ: vì sao ảnh chụp trơn bị trả bug
+## Việc 3 — Khoanh đỏ: vì sao ảnh chụp trơn bị trả bug
 
 Ảnh chụp trơn của một màn dày đặc dữ liệu thì Dev không biết nhìn vào đâu. Kết quả thực tế: bug bị trả về
 với lý do *"không thấy lỗi"* — trong khi lỗi có ở đó thật.
@@ -201,7 +203,7 @@ test('TC_020 [Display] ngày sinh lệch định dạng giữa hai tab', async (
 
 Ảnh này nói được toàn bộ vấn đề mà người xem không cần đọc mô tả. Đó là mức nên nhắm tới.
 
-## 4. Bẫy PII: che chữ không che được ô nhập
+## Việc 4 — Bẫy PII: che chữ không che được ô nhập
 
 Đây là bẫy đã gặp thật, và nó im lặng hoàn toàn.
 
@@ -223,7 +225,7 @@ el.setAttribute('value', '••••');
 việc năm giây, và nó là lớp bảo vệ cuối cùng. Bạn không thể tự động hoá việc *nhìn thấy* một thông tin chưa
 che nằm ở chỗ bạn không nghĩ tới.
 
-## 5. Khi nào buộc phải quay video
+## Việc 5 — Khi nào buộc phải quay video
 
 Ảnh tĩnh chỉ hợp bug về **trạng thái**. Với bug thể hiện qua chuỗi tương tác, ảnh cuối không nói được gì.
 
@@ -307,7 +309,7 @@ test('TC_030 [E2E] tick sản phẩm → thu gọn → mở lại: tick còn ngu
 });
 ```
 
-## 6. Đường dẫn: đừng để Playwright xoá bằng chứng của bạn
+## Việc 6 — Đường dẫn: đừng để Playwright xoá bằng chứng của bạn
 
 Bẫy thật, và nó làm mất bằng chứng **im lặng**:
 
@@ -342,7 +344,7 @@ báo không tồn tại).
 
 Đây chính là hình dạng mà `gate-bang-chung.js` ở Bài 15 đọc.
 
-## 7. Bốn thứ làm ảnh mất giá trị
+## Việc 7 — Bốn thứ làm ảnh mất giá trị
 
 | Vấn đề | Cách phát hiện | Cách chữa |
 |---|---|---|
@@ -354,6 +356,117 @@ báo không tồn tại).
 Ảnh trắng là thứ hay xảy ra nhất: khi test đỏ, Playwright vẫn chụp, chỉ là chụp **sau khi** trang đã hỏng
 hoặc chưa render. File vẫn được tạo, đường dẫn vẫn có. Nên `gate-bang-chung.js` ở Bài 15 kiểm cả **kích thước
 file**, không chỉ kiểm sự tồn tại.
+
+---
+
+## Việc 8 — Ráp thành report, và xây gate (40 phút)
+
+Năm việc trên cho bạn một thư mục đầy ảnh và video. Nhưng một thư mục đầy ảnh chưa phải một report.
+
+Người đọc report có đúng bốn câu hỏi, và họ hỏi theo thứ tự này:
+
+| # | Câu hỏi | Trả lời bằng |
+|---|---|---|
+| 1 | Chạy bao nhiêu case, bao nhiêu đỏ? | Con số ở đầu |
+| 2 | Case nào đỏ? | Danh sách, không phải cả bảng 200 dòng |
+| 3 | Đỏ ở bước nào? | Tên bước + ảnh của đúng bước đó |
+| 4 | Chỗ đó đáng lẽ phải thế nào? | Mã luật, ví dụ `BR-04` |
+
+Câu 4 là câu hay thiếu nhất, và thiếu nó thì report chỉ nói *"cái này khác cái kia"* chứ chưa nói được
+*"cái này sai"*.
+
+### Cấu trúc thư mục kết quả
+
+```
+outputs/tasks/<MÃ-TASK>/
+├── test-results/
+│   └── ket-qua.json              # máy đọc
+├── evidence/
+│   ├── BR-03-buoc-2.png
+│   └── BR-07-toan-luong.webm
+└── reports/
+    └── bao-cao.html              # người đọc
+```
+
+Tách hai định dạng là cố ý. `ket-qua.json` cho máy: gate đọc nó, Bài 18 đẩy nó lên hệ quản lý test.
+`bao-cao.html` cho người, và nó chỉ là một lớp trình bày trên cùng dữ liệu.
+
+> Bản HTML phải **tự chứa**: ảnh nhúng thẳng vào file, không gọi ra host ngoài. Lý do rất thực dụng:
+> report được gửi qua chat, được lưu vào Jira, được mở lại sau ba tháng. Mọi đường dẫn tới máy bạn
+> đều sẽ chết. Cách làm cụ thể nằm ở bài [Dashboard và báo cáo](dashboard-va-bao-cao.md).
+
+### Xây gate: chạy rồi mà không có bằng chứng thì chặn
+
+`scripts/qa/gate-bang-chung.js`:
+
+```js
+#!/usr/bin/env node
+'use strict';
+const fs = require('fs');
+const path = require('path');
+
+/*
+ * ĐO CÁI GÌ: với mỗi case có trạng thái đã-chạy (PASS hoặc FAIL), tệp bằng chứng có TỒN TẠI trên đĩa
+ * và có đúng định dạng ảnh/video không.
+ *
+ * Đo sự tồn tại của TỆP, không đo trường "evidence" trong JSON có khác rỗng hay không. Một chuỗi
+ * đường dẫn trỏ vào hư không vẫn là một chuỗi khác rỗng, và đó chính là cách hỏng hay gặp nhất:
+ * Playwright xoá sạch thư mục outputDir ở đầu mỗi lượt chạy, nên đường dẫn ghi từ lượt trước vẫn
+ * nằm nguyên trong JSON trong khi tệp đã biến mất.
+ */
+const ANH_VIDEO = /\.(png|jpg|jpeg|webp|mp4|webm)$/i;
+const DA_CHAY = new Set(['PASS', 'FAIL', 'PASS_WITH_DEVIATION']);
+
+const fKetQua = process.argv[2];
+if (!fKetQua) {
+  console.error('Dùng: node gate-bang-chung.js <ket-qua.json>');
+  process.exit(2);
+}
+if (!fs.existsSync(fKetQua)) {
+  console.error('[bang-chung] ? KHÔNG ĐO ĐƯỢC — không thấy ' + fKetQua);
+  process.exit(2);
+}
+
+const kq = JSON.parse(fs.readFileSync(fKetQua, 'utf8'));
+const goc = path.resolve(path.dirname(fKetQua), '..');
+const thieu = [];
+
+for (const c of kq.cases || []) {
+  if (!DA_CHAY.has(c.verdict)) continue;
+  const ds = [].concat(c.evidence || []);
+  const hopLe = ds.filter((f) => ANH_VIDEO.test(f) && fs.existsSync(path.join(goc, f)));
+  if (!hopLe.length) thieu.push({ id: c.id, verdict: c.verdict, khai: ds });
+}
+
+if (thieu.length) {
+  console.error(`[bang-chung] ✗ CHẶN — ${thieu.length} case đã chạy mà không có bằng chứng dùng được:`);
+  for (const t of thieu.slice(0, 10)) {
+    const vi = t.khai.length ? 'khai "' + t.khai.join(', ') + '" nhưng tệp không có hoặc sai định dạng'
+                             : 'không khai gì';
+    console.error(`  ${t.id} (${t.verdict}): ${vi}`);
+  }
+  process.exit(1);
+}
+
+console.log(`[bang-chung] ✓ ${(kq.cases || []).length} case, case nào đã chạy cũng có bằng chứng.`);
+```
+
+### Đối chứng — ba ca, không phải hai
+
+```bash
+# Ca phải CHO QUA
+node scripts/qa/gate-bang-chung.js outputs/tasks/DEMO-1/test-results/ket-qua.json   # ✓  mã 0
+
+# Ca phải CHẶN — xoá một tệp ảnh đi, giữ nguyên đường dẫn trong JSON
+rm outputs/tasks/DEMO-1/evidence/BR-03-buoc-2.png
+node scripts/qa/gate-bang-chung.js outputs/tasks/DEMO-1/test-results/ket-qua.json   # ✗  mã 1
+
+# Ca phải báo KHÔNG ĐO ĐƯỢC
+node scripts/qa/gate-bang-chung.js outputs/tasks/KHONG-CO/test-results/ket-qua.json # ?  mã 2
+```
+
+Ca thứ hai là ca đáng giá nhất, vì nó là kiểu hỏng thật: JSON trông đầy đủ, đường dẫn trông hợp lý,
+và tệp thì không còn. Một gate chỉ kiểm *"trường evidence có khác rỗng không"* sẽ báo đạt.
 
 ---
 

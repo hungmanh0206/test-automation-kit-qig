@@ -379,7 +379,7 @@ kit-cua-toi/
 │   └── tu-soi.js                ← SỬA · gọi thêm gate-mo-rong
 └── outputs/tasks/<MÃ>/
     ├── test-results/
-    │   ├── testcase-status.json      ·  từ Bài 17
+    │   ├── testcase-status.json      ← MỚI (thô) · Bài 17 mới phân tầng lỗi tử tế
     │   ├── mo-rong.json              ← MỚI · phát hiện mở rộng, có trục + neo + kết luận
     │   └── spec-gaps.json            ← MỚI · trục 7 — câu hỏi cho BA, KHÔNG log bug
     └── evidence/

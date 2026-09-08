@@ -1,6 +1,6 @@
 # Bài 18 — Test Management
 
-> **2 giờ 30 phút** · Có gì trong tay: kit chạy trọn vòng trên máy cá nhân · Sau bài này: cả team thấy được kết quả, và quy trình gõ được một dòng
+> **2 giờ** · Có gì trong tay: testcase và kết quả vẫn đang nằm local · Sau bài này: cả team đọc chung một nguồn, và giữ được đường truy ngược về requirement
 
 **Tóm tắt bài này**
 
@@ -26,11 +26,16 @@ Năm việc:
 2. Viết lệnh publish, mặc định chạy thử chứ không ghi thật (35 phút).
 3. Viết máy đối soát từng ô sau khi publish (35 phút).
 4. Đẩy kết quả thành một lượt chạy có lịch sử (30 phút).
-5. Gói cả trình tự thành một lệnh gõ được (30 phút).
+5. Đối soát độ tươi trước khi execute, để không chấm theo bản cũ (20 phút).
+
+> **Bộ kit này dùng AIO Tests làm bản hiện thực mẫu.** Team bạn dùng Xray, Zephyr hay một hệ khác
+> thì các lời gọi API khác đi, còn bốn nguyên tắc ở Việc 2 và ba máy ở Việc 4–6 thì giữ nguyên. Đừng
+> đọc bài này như hướng dẫn dùng một sản phẩm. Một kit để dùng cho nhiều dự án thì không được khoá
+> vào một nhà cung cấp.
 
 ---
 
-## 1. Vấn đề: kit đang chỉ chạy trên máy bạn
+## Việc 1 — Vấn đề: kit đang chỉ chạy trên máy bạn
 
 Bộ case nằm trong repo. Kết quả nằm ở `outputs/`. Bằng chứng nằm trên đĩa của bạn.
 
@@ -44,7 +49,7 @@ Ba hệ quả:
 
 Tích hợp là để cả team đọc cùng một nguồn, và để lịch sử không mất.
 
-## 2. Nguyên tắc trước khi nối bất cứ hệ thống nào
+## Việc 2 — Nguyên tắc trước khi nối bất cứ hệ thống nào
 
 Bốn nguyên tắc, và mỗi cái đến từ một lần mất mát:
 
@@ -59,7 +64,7 @@ Bốn nguyên tắc, và mỗi cái đến từ một lần mất mát:
 > chuyển trạng thái sang `Deprecated`, không phải xoá. Hoá ra điều đó **tốt hơn**: giữ case nghĩa là giữ nguyên
 > lịch sử các lượt chạy đã gắn vào nó. Nhưng nó cũng nghĩa là đẩy nhầm thì sống với nó mãi.
 
-## 3. Publish: một chiều, có dry-run
+## Việc 3 — Publish: một chiều, có dry-run
 
 ```js
 #!/usr/bin/env node
@@ -167,7 +172,7 @@ async function main() {
 main().catch((e) => { console.error('[publish] lỗi: ' + e.message); process.exit(1); });
 ```
 
-## 4. Đối soát từng trường: 2xx không chứng minh gì
+## Việc 4 — Đối soát từng trường: 2xx không chứng minh gì
 
 Đây là mục quan trọng nhất của bài.
 
@@ -258,7 +263,7 @@ main().catch((e) => { console.error('[doi-soat] lỗi: ' + e.message); process.e
 Câu cuối trong thông báo lỗi là câu đáng nhớ: sửa mapping, đừng sửa nguồn cho vừa công cụ. Nguồn là
 canonical; nếu bạn đổi `Critical` thành `Highest` cho công cụ nhận thì bạn vừa làm hỏng canonical.
 
-## 5. Đẩy kết quả: một lượt chạy = một cycle
+## Việc 5 — Đẩy kết quả: một lượt chạy = một cycle
 
 Kết quả cần giữ lịch sử. Mỗi lượt chạy tạo một cycle mới; chạy lại cùng tên thì **dùng lại** cycle cũ và
 bỏ qua evidence đã có, thay vì đẻ cycle trùng.
@@ -364,7 +369,7 @@ main().catch((e) => { console.error('[day-ket-qua] lỗi: ' + e.message); proces
 > bỏ qua lệnh tự soi rồi đẩy thẳng, và nếu gate chỉ ở một cửa thì không gì cản. Cùng một luật, hai cửa,
 > và luật dùng chung một module để không trôi.
 
-## 6. Đối soát độ tươi trước khi execute
+## Việc 6 — Đối soát độ tươi trước khi execute
 
 Bài 13 mục 5 đã chốt: khi execute thì công cụ test-management là canonical. Nên trước khi chạy, kéo bản mới
 nhất về, và **kiểm** bản sao đang có có cũ không.
@@ -408,80 +413,6 @@ async function main() {
 }
 main().catch((e) => { console.error('[do-tuoi] lỗi: ' + e.message); process.exit(1); });
 ```
-
-## 7. MCP server: cửa vào cho dữ liệu ngoài
-
-Agent cần đọc Jira, tài liệu, thiết kế. Đừng để mỗi chỗ tự gọi API — gom vào một cửa vào.
-
-`.agent/config/mcp_config.md`:
-
-```markdown
-# MCP server của dự án
-
-| Server | Dùng để | Biến môi trường | Quyền |
-|---|---|---|---|
-| Jira / Confluence | Đọc yêu cầu, đọc tài liệu, tạo bug | `JIRA_BASE_URL` `JIRA_TOKEN` | Đọc + tạo bug. **Không** xoá |
-| Google Drive/Docs | Đọc tài liệu đặc tả | `GOOGLE_*` | **Chỉ đọc** |
-| Figma | Đọc thiết kế, lấy chữ hiển thị và token | `FIGMA_TOKEN` | **Chỉ đọc** |
-
-## Quy tắc
-
-1. Quyền **tối thiểu**: chỉ đọc, trừ đường tạo bug.
-2. Token nằm ở `.env` hoặc `profiles/<TASK>/task.env` — **không** khai trong file này.
-3. Tài liệu nhiều tab: PHẢI bật tuỳ chọn đọc hết tab. Không bật thì chỉ được tab đầu và
-   **không có thông báo nào** (Bài 15 mục 4).
-4. Đo cỡ tài liệu trước khi đọc (Bài 15). Vượt ngưỡng thì giao subagent trích.
-```
-
-Nguyên tắc "một cửa vào" rất thực dụng: mỗi chỗ tự gọi API thì mỗi chỗ tự xử lý token, phân trang và lỗi theo
-một kiểu, và khi API đổi thì phải sửa mười chỗ.
-
-## 8. Slash command: biến trình tự thành một dòng
-
-Bạn giờ có hơn mười lệnh, và một **trình tự** phải đúng. Trước đó trình tự đó nằm trong đầu bạn.
-
-`.claude/commands/phase2.md`:
-
-```markdown
----
-description: Execute testcase của một task — dựng automation, chạy thật, chấm verdict, thu bằng chứng.
----
-
-Task: **$ARGUMENTS**
-
-Đọc theo thứ tự, làm đúng những gì file nói:
-
-1. `.agent/rules/core_rules.md`
-2. `prompt_templates/run_phase2.md`
-
-Gate BẮT BUỘC, theo đúng thứ tự này:
-
-```bash
-npm run kiem-dau-vao -- --task $ARGUMENTS          # đủ input chưa
-npm run tms:verify -- --enforce                 # bản sao testcase còn tươi chưa
-npx playwright test                             # chạy thật
-node scripts/qa/sinh-status.js test-results/results.json \
-  outputs/<PROJECT>/tasks/$ARGUMENTS/test-results/testcase-status.json
-npm run tu-soi -- --task $ARGUMENTS \
-  --status outputs/<PROJECT>/tasks/$ARGUMENTS/test-results/testcase-status.json
-```
-
-Chỉ khi cả bộ gate ĐẠT mới đẩy kết quả:
-
-```bash
-npm run tms:push-exec -- --status <...> --folder "<Sprint>" --apply
-```
-
-Nếu có case FAIL: rerun 2–3 lần, đọc response để khoanh tầng, điền `tangLoi`, rồi mới log bug.
-```
-
-Chín lệnh nên có: `/phase1` `/phase2` `/rerun` `/publish` `/kiem-dau-vao` `/gates` `/explore` `/ui-debug`
-`/partial-rerun`.
-
-> Slash command KHÔNG thay thế gate, nó chỉ dẫn đúng đường. Gate vẫn là thứ chặn. Nhưng nó xoá được một
-> lớp lỗi thật: *"tôi không biết phải chạy gì"*.
-
----
 
 ## Thực hành (75 phút)
 
