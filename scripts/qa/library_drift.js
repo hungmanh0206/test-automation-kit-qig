@@ -315,6 +315,27 @@ if (!exists(COURSE_MD)) {
       ok.push(`${treeLeaves.length} lá trong cây khớp tên file với bài giảng`);
     }
 
+    /* XƯNG HÔ: tài liệu này nói THẲNG với người đọc ("bạn"), không gọi họ là "học viên"/"người học".
+     * Vì sao thành máy chứ không phải lời dặn: hai từ đó rất dễ lọt lại khi thêm bài mới, và mỗi lần
+     * lọt là một chỗ giọng văn đổi từ "hướng dẫn" sang "giáo án" — thứ người đọc cảm được ngay. */
+    const XUNG_HO_CAM = /học viên|người học|Học viên|Người học/;
+    const viPhamXungHo = [];
+    for (const rel of lessonFiles.concat(['COURSE.md'])) {
+      const f = rel === 'COURSE.md' ? COURSE_MD : path.join(ROOT, 'docs', rel);
+      const noi = rd(f);
+      noi.split('\n').forEach((dong, i) => {
+        if (XUNG_HO_CAM.test(dong)) {
+          viPhamXungHo.push(`${path.basename(f)}:${i + 1} — "${dong.trim().slice(0, 70)}"`);
+        }
+      });
+    }
+    if (viPhamXungHo.length) {
+      problems.push(`${viPhamXungHo.length} chỗ còn gọi người đọc là "học viên"/"người học" — ` +
+        `xưng "bạn":\n      ${viPhamXungHo.slice(0, 12).join('\n      ')}`);
+    } else {
+      ok.push('xưng hô nhất quán: nói thẳng với "bạn", không có "học viên"/"người học"');
+    }
+
     /* MỌI bài giảng phải có khối "Cây thư mục sau bài này".
        Lý do: người học từ số 0 không hình dung được file mới nằm ở đâu và cạnh cái gì — thiếu khối này
        thì bài giảng thành một chuỗi lệnh rời, không thành một bộ kit. */

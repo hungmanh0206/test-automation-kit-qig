@@ -108,9 +108,9 @@ Giảm giá tính trên **Tạm tính**, làm tròn xuống đến đơn vị đ
 
 ## Dành cho giảng viên — những chỗ cài cắm cố ý
 
-*(Học viên nên đọc phần này SAU khi đã tự làm bài thực hành.)*
+*(Đọc phần này SAU khi đã tự làm bài thực hành.)*
 
-| # | Loại | Nằm ở đâu | Điều học viên cần nhận ra |
+| # | Loại | Nằm ở đâu | Điều cần nhận ra |
 |---|---|---|---|
 | 1 | **Mâu thuẫn số** | Ghi chú 2 vs mục 2 | Hai mốc phí giao hàng khác nhau ⇒ **phải hỏi**, không được chọn bừa một con |
 | 2 | **Rule nằm ngoài luồng chính** | Ghi chú 1 | Rule duyệt-ngay không có trong mục 4 ⇒ đọc mục 4 mà bỏ ghi chú là mất hẳn một nhánh |
@@ -123,7 +123,7 @@ Giảm giá tính trên **Tạm tính**, làm tròn xuống đến đơn vị đ
 | 9 | **Chuỗi lưu trữ** | Mục 4 bước 5 | Lưu xong chuyển màn ⇒ giá trị nhập có sống sót qua chuỗi không (dùng ở Bài 19) |
 | 10 | **Chữ hiển thị chính xác** | Mục 5 | Bốn thông báo lỗi có chữ cụ thể ⇒ kiểm đúng từng chữ, không kiểm "có thông báo là được" |
 
-**Cách dùng ở Bài 4.** Cho học viên chạy hai prompt trên cùng tài liệu này. Prompt sơ sài (*"đọc file này và
+**Cách dùng ở Bài 4.** Chạy hai prompt trên cùng tài liệu này. Prompt sơ sài (*"đọc file này và
 viết testcase"*) thường bỏ hết ba ghi chú và không hỏi gì. Prompt có ràng buộc — buộc liệt kê chỗ mơ hồ
 trước khi sinh case — thường bắt được ít nhất mâu thuẫn ở Ghi chú 2.
 

@@ -54,7 +54,7 @@ thuần, `node server.js` là chạy, không cài gì.
 
 Nó **có đúng 3 bug cài sẵn, cố ý**, mỗi bug đại diện một loại điểm mù:
 
-| Bug | Tầng | Bộ kiểm mù vì | Học viên bắt được ở |
+| Bug | Tầng | Bộ kiểm mù vì | Bạn bắt được ở |
 |---|---|---|---|
 | Phí giao hàng so mốc trên số sai | backend | chỉ test dữ liệu đẹp, không test **biên** | Bài 0 (bằng tay) · Bài 9 |
 | Các số trên màn hình không cộng đúng | frontend | kiểm từng trường, không kiểm **quan hệ** giữa các trường | Bài 10 · Bài 13 |
@@ -67,6 +67,24 @@ Biết trước "có 3 bug" nghĩa là bắt được 0/3 thì **lỗi ở bộ 
 
 Nguồn phán đúng/sai là [`spec.md`](course/assets/app-thuc-hanh/spec.md) — mọi luật có mã (`BR-01`…`UI-04`).
 Nói "chỗ này sai" mà không chỉ được mã luật thì chưa chứng minh được gì.
+
+---
+
+## Một vòng làm việc trông thế nào
+
+Sáu chặng, đi một chiều, và **mỗi chặng có một cổng chặn**. Không qua cổng thì không sang chặng sau —
+đó là toàn bộ khác biệt giữa một bộ kit và một đống script.
+
+| # | Chặng | Bạn đưa vào | Ra được gì | Cổng chặn ở cuối chặng | Học ở |
+|---|---|---|---|---|---|
+| 1 | Đọc yêu cầu | tài liệu, Figma, API | bảng luật `BR-` + danh sách chỗ mơ hồ | **Ambiguity Gate** — còn mơ hồ chặn thì dừng | Bài 7–8 |
+| 2 | Sinh testcase | bảng `BR-` đã chốt | bộ case canonical | **Oracle Gate** — expected không trỏ nguồn thì chặn | Bài 9–11 |
+| 3 | Chạy thật | bộ case + môi trường | kết quả từng case | **Evidence Gate** — chạy rồi mà không ảnh/video thì chặn | Bài 12–13 |
+| 4 | Mở rộng quanh case | case đã chạy | phát hiện ngoài kịch bản | **Gate mở rộng** — không neo mã luật thì hạ xuống `OBSERVATION` | Bài 14–15 |
+| 5 | Báo lỗi | phát hiện có bằng chứng | bug có tầng lỗi | **Human gate** — người bấm, không phải máy | Bài 16 |
+| 6 | Học lại | bug + kết quả lượt chạy | tri thức + điểm rủi ro mới | **Gate tri thức** — bản ghi không nguồn thì cấm ghi | Bài 17–19 |
+
+Chặng 6 quay về chặng 1 của task sau — đó là chỗ kit **tốt lên** thay vì chỉ chạy.
 
 ---
 
@@ -551,7 +569,7 @@ kit-cua-toi/
 
 ---
 
-## Học viên nhận được
+## Bạn có gì sau khi làm hết
 
 - **Kit tự xây** — khoảng 10 gate cốt lõi, chạy được, hiểu từng dòng
 - **Kit đầy đủ làm tham chiếu** — bản chuẩn hoá để đối chiếu và học thêm
@@ -588,7 +606,7 @@ có số trỏ tới. Tách ra để bài chính không phình, nhưng nội dun
 ## Quyết định thiết kế khoá học — đọc trước khi triển khai
 
 **1. KHÔNG dạy xây cả 59 gate.** Dạy ~10 gate cốt lõi + **mẫu hình chung**, rồi tặng kit đầy đủ.
-Học viên xây được thứ của mình, hiểu vì sao, và có bản xịn để lớn dần. Dạy xây hết = học viên bỏ giữa đường.
+Bạn xây được thứ của mình, hiểu vì sao, và có bản xịn để lớn dần. Dạy xây hết thì bỏ dở giữa chừng.
 
 **2. Mỗi bài phải trả lời "cơ chế này chặn kiểu sai nào".** Đây là khác biệt lớn nhất so với các khoá
 khác: họ dạy *cách làm*, khoá này dạy *vì sao phải làm thế và không làm thì hỏng ra sao*. Kiến thức
@@ -600,11 +618,11 @@ chính nó · lỗi độ ưu tiên toán tử làm một phép kiểm **không 
 không có trong sách, và chúng làm khoá học đáng tin.
 
 **4. Nói thẳng giới hạn.** Khoá này khó, cần đọc code, không phải "AI làm hộ". Nói trước sẽ lọc đúng
-học viên và giảm tỷ lệ bỏ ngang.
+đúng người và giảm tỷ lệ bỏ ngang.
 
 **5. Nếu ~59 giờ quá dài:** tách thành hai khoá — **Cơ bản** (Phần 1–4, ~35h, ra được kit chạy được) và
 **Nâng cao** (Phần 5–8, ~24h, knowledge + chứng minh + CI/CD + phát hành).
 
 **6. Bổ sung so với bản khung gốc: app thực hành và Bài 0.** Lý do: đối tượng "không bắt buộc biết code,
 không bắt buộc có dự án thật" thì đến Bài 1 đã không có gì để gõ. App có **3 bug biết trước** biến mọi
-phép đo trong khoá thành phép đo có **đối chứng** — học viên bắt 0/3 thì biết lỗi ở bộ kiểm, không ở app.
+phép đo trong tài liệu này thành phép đo có **đối chứng** — bắt 0/3 thì biết lỗi ở bộ kiểm, không ở app.

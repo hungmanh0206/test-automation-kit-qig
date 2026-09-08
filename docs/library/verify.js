@@ -147,13 +147,28 @@ const ok = (name, cond, got) => {
   /* Bullet "phải gõ" khác bullet "chỉ đọc" — đây là thứ phân biệt khoá học với mục lục. */
   ok('có callout Thực hành', await p.locator('.cgoals li.cpractice').count() >= 5);
   ok('có callout XÂY gate', await p.locator('.cgoals li.cgate').count() >= 5);
+  /* Hai khối TRỰC QUAN: lộ trình có thanh giờ theo tỉ lệ, và vòng làm việc 6 chặng.
+     Kiểm quan hệ chứ không kiểm con số cứng — thêm/bớt phần là phép kiểm đỏ oan. */
+  const soPhan = await p.locator('#cParts .subhead').count();
+  ok('lộ trình có đủ phần', await p.locator('#cRoad .rdpart').count() === soPhan);
+  ok('mỗi phần trong lộ trình có thanh giờ', await p.locator('#cRoad .rdbar i').count() === soPhan);
+  ok('thanh giờ có bề rộng khác nhau',
+     (await p.$$eval('#cRoad .rdbar i', (ns) => new Set(ns.map((n) => n.style.width)).size)) > 1);
+  ok('mỗi bài có một chấm trong lộ trình', await p.locator('#cRoad .rddot').count() === lessons);
+  /* Bấm chấm phải nhảy tới đúng thẻ bài — nếu không thì lộ trình chỉ là hình trang trí. */
+  await p.locator('#cRoad .rddot').nth(3).click(); await p.waitForTimeout(400);
+  ok('bấm chấm thì làm nổi đúng thẻ bài', await p.locator('.clesson.nhay').count() === 1);
+  const chang = await p.locator('#cFlow .wfstep').count();
+  ok('vòng làm việc có các chặng', chang >= 4, chang);
+  ok('MỌI chặng đều có cổng chặn', await p.locator('#cFlow .wfgate').count() === chang);
+  ok('có ghi chú vòng lặp quay lại', await p.locator('#cFlow .wfloop').count() === 1);
   ok('có bảng so sánh với khoá khác', await p.locator('#cCompare .ccmp').count() >= 4);
   ok('có 3 bug đối chứng của app thực hành', await p.locator('#cBugs .cbug').count() === 3);
   ok('có mục tiêu cấp khoá', await p.locator('#cOutcomes li').count() >= 8);
   ok('có quyết định thiết kế khoá', await p.locator('#cDecisions .cdec').count() >= 5);
-  ok('có mục học viên nhận được', await p.locator('#cDeliver li').count() >= 5);
+  ok('có mục bạn-có-gì-sau-khi-làm-hết', await p.locator('#cDeliver li').count() >= 5);
   /* Bài chi tiết bổ trợ (không đánh số) phải NÊU RA — bài giảng tồn tại mà không ai dẫn tới thì
-     bằng không tồn tại, và học viên không có đường nào tìm ra nó. */
+     bằng không tồn tại, và người đọc không có đường nào tìm ra nó. */
   ok('bài chi tiết bổ trợ được nêu', await p.locator('#cOrphans .corphan').count() >= 4);
   await shot('05a-course.png');
 
@@ -198,10 +213,16 @@ const ok = (name, cond, got) => {
   const noHScroll = async () => !(await mp.evaluate(() =>
     document.documentElement.scrollWidth > document.documentElement.clientWidth + 1));
   ok('mobile: bản đồ không tràn ngang', await noHScroll());
-  for (const m of ['az', 'guide', 'readme']) {
-    await mp.locator('.mode[data-mode="' + m + '"]').click(); await mp.waitForTimeout(400);
+  /* Tab course có lộ trình cuộn NGANG và cây thư mục monospace — hai thứ hay đẩy tràn cả trang.
+     Cuộn ngang trong KHUNG RIÊNG thì được; đẩy body tràn thì không. */
+  for (const m of ['az', 'guide', 'readme', 'course']) {
+    await mp.locator('.mode[data-mode="' + m + '"]').click(); await mp.waitForTimeout(500);
     ok('mobile: tab ' + m + ' không tràn ngang', await noHScroll());
   }
+  ok('mobile: lộ trình cuộn ngang trong khung riêng', await mp.evaluate(() => {
+    const r = document.querySelector('#cRoad');
+    return !!r && r.scrollWidth > r.clientWidth && getComputedStyle(r).overflowX === 'auto';
+  }));
 
   console.log('\n[8] Tự chứa (CSP của Artifact chặn mọi host ngoài)');
   const html = require('fs').readFileSync(path.join(__dirname, 'index.html'), 'utf8');

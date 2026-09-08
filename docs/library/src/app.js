@@ -395,6 +395,83 @@
     });
   }
 
+  /* Lộ trình 8 phần: thanh giờ theo TỈ LỆ để thấy ngay phần nào nặng — bảng số không cho thấy điều đó. */
+  function renderRoadmap() {
+    var wrap = $('#cRoad');
+    var gioMax = Math.max.apply(null, COURSE.parts.map(function (p) { return parseFloat(p.hours) || 0; }));
+    COURSE.parts.forEach(function (p, i) {
+      var gio = parseFloat(p.hours) || 0;
+      var sao = p.lessons.filter(function (l) { return l.star; }).length;
+
+      var box = el('div', 'rdpart');
+      var head = el('div', 'rdhead');
+      head.appendChild(el('span', 'rdnum', p.n));
+      head.appendChild(el('b', null, p.title));
+      box.appendChild(head);
+
+      /* Thanh giờ: rộng theo tỉ lệ với phần nặng nhất. */
+      var bar = el('div', 'rdbar');
+      var fill = el('i');
+      fill.style.width = (gioMax ? (gio / gioMax) * 100 : 0).toFixed(1) + '%';
+      bar.appendChild(fill);
+      box.appendChild(bar);
+
+      var meta = el('div', 'rdmeta');
+      meta.appendChild(el('span', null, gio + ' giờ'));
+      meta.appendChild(el('span', null, p.lessons.length + ' bài'));
+      if (sao) meta.appendChild(el('span', 'rdstar', '★ ' + sao + ' bài trọng tâm'));
+      box.appendChild(meta);
+
+      /* Chấm bài: mỗi bài một chấm, bấm được để nhảy tới. Nhìn một cái là thấy phần dài ngắn. */
+      var dots = el('div', 'rddots');
+      p.lessons.forEach(function (l) {
+        var d = el('button', 'rddot' + (l.star ? ' star' : ''), l.n);
+        d.title = 'Bài ' + l.n + ' — ' + l.title + ' (' + l.dur + ')';
+        d.addEventListener('click', function () {
+          var t = document.getElementById('bai-' + l.n);
+          if (t) { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.classList.add('nhay');
+                   setTimeout(function () { t.classList.remove('nhay'); }, 1600); }
+        });
+        dots.appendChild(d);
+      });
+      box.appendChild(dots);
+
+      wrap.appendChild(box);
+      if (i < COURSE.parts.length - 1) wrap.appendChild(el('div', 'rdarrow', '→'));
+    });
+  }
+
+  /* Vòng làm việc: 6 chặng nối nhau, mỗi chặng gắn CỔNG CHẶN của nó. Chặng cuối quay về chặng đầu. */
+  function renderFlow() {
+    var wrap = $('#cFlow');
+    COURSE.workflow.forEach(function (w) {
+      var box = el('div', 'wfstep');
+      var h = el('div', 'wfhead');
+      h.appendChild(el('span', 'wfnum', w.n));
+      h.appendChild(el('b', null, w.stage));
+      box.appendChild(h);
+
+      var io = el('div', 'wfio');
+      io.appendChild(el('span', 'wfin', w.input));
+      io.appendChild(el('span', 'wfar', '↓'));
+      io.appendChild(el('span', 'wfout', w.output));
+      box.appendChild(io);
+
+      var g = el('div', 'wfgate');
+      g.appendChild(el('b', null, 'CỔNG'));
+      g.appendChild(el('span', null, w.gate));
+      box.appendChild(g);
+
+      if (w.lessons) box.appendChild(el('span', 'cfile', w.lessons));
+      wrap.appendChild(box);
+    });
+    var vong = el('p', 'wfloop');
+    vong.appendChild(el('b', null, '↻ '));
+    vong.appendChild(document.createTextNode(
+      'Chặng ' + COURSE.workflow.length + ' quay về chặng 1 của task sau — đó là chỗ kit tốt lên thay vì chỉ chạy.'));
+    wrap.appendChild(vong);
+  }
+
   /* ─────────── Tab Khoá học (dữ liệu sinh từ docs/COURSE.md) ─────────── */
   function renderCourse() {
     var allLessons = COURSE.parts.reduce(function (a, p) { return a.concat(p.lessons); }, []);
@@ -464,6 +541,9 @@
       });
     }
 
+    renderRoadmap();
+    renderFlow();
+
     /* Cây thư mục: in NGUYÊN VĂN trong <pre> để giữ thụt lề — dùng textContent, không innerHTML,
        vì cây có ký tự │ ├ └ và chú thích do người viết, không được coi là markup. */
     if (COURSE.kitTree) {
@@ -499,9 +579,10 @@
 
       var grid = el('div', 'clessons');
       part.lessons.forEach(function (l) {
-        /* Bài đã có bài giảng chi tiết thì viền vàng — người học biết ngay chỗ nào đọc được ngay.
+        /* Bài đã có bài giảng chi tiết thì viền vàng — người đọc thấy ngay chỗ nào mở được luôn.
            KHÔNG đặt thẻ <a>: trang là một file rời, đường dẫn tương đối tới repo sẽ chết. */
         var c = el('div', 'clesson' + (l.href ? ' ready' : '') + (l.star ? ' star' : ''));
+        c.id = 'bai-' + l.n;
         var head = el('div', 'chead');
         head.appendChild(el('span', 'cnum', l.n));
         var t = el('h4', null, l.title);

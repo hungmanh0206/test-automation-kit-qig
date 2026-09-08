@@ -244,3 +244,45 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
   background:var(--goldWash);color:var(--gold800)}
 .csort p{margin:0 0 8px;font-size:13px;color:var(--t2);line-height:1.55}
 .csortq{color:var(--t1) !important}
+
+/* ── Lộ trình 8 phần: thanh giờ theo tỉ lệ + chấm bài bấm được ── */
+.roadmap{display:flex;gap:8px;align-items:stretch;overflow-x:auto;padding:4px 2px 10px;margin:12px 0 4px}
+.rdpart{flex:1 0 210px;min-width:210px;background:var(--card);border:1px solid var(--bSubtle);
+  border-radius:12px;padding:13px 14px}
+.rdhead{display:flex;gap:9px;align-items:flex-start;margin-bottom:9px}
+.rdnum{flex:none;width:24px;height:24px;border-radius:7px;background:var(--t1);color:var(--card);
+  display:grid;place-items:center;font-size:12px;font-weight:800}
+.rdhead b{font-size:13.5px;line-height:1.4}
+.rdbar{height:7px;border-radius:999px;background:var(--wash);border:1px solid var(--bSoft);overflow:hidden}
+.rdbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold600))}
+.rdmeta{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;font-size:11.5px;color:var(--t3)}
+.rdmeta .rdstar{color:var(--gold800);font-weight:700}
+.rddots{display:flex;gap:4px;flex-wrap:wrap;margin-top:10px}
+.rddot{width:24px;height:24px;border-radius:7px;border:1px solid var(--bSubtle);background:var(--wash);
+  color:var(--t2);font:600 11px/1 inherit;cursor:pointer;padding:0}
+.rddot:hover{background:var(--goldWash);border-color:var(--gold);color:var(--gold800)}
+.rddot.star{border-color:var(--gold);color:var(--gold800);font-weight:800}
+.rdarrow{flex:none;align-self:center;color:var(--t3);font-size:17px;padding:0 1px}
+@media (max-width:640px){.rdarrow{display:none}}
+.clesson.nhay{outline:3px solid var(--gold);outline-offset:2px}
+
+/* ── Vòng làm việc 6 chặng ── */
+.wfgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin:12px 0 4px}
+.wfstep{background:var(--card);border:1px solid var(--bSubtle);border-radius:12px;padding:13px 14px;
+  display:flex;flex-direction:column}
+.wfhead{display:flex;gap:9px;align-items:center;margin-bottom:9px}
+.wfnum{flex:none;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#1A1916;
+  display:grid;place-items:center;font-size:12px;font-weight:800}
+.wfhead b{font-size:14px}
+.wfio{display:grid;gap:2px;margin-bottom:10px}
+.wfin{font-size:12px;color:var(--t3)}
+.wfar{font-size:12px;color:var(--gold600);line-height:1}
+.wfout{font-size:13px;color:var(--t1);font-weight:600}
+.wfgate{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:9px;
+  background:var(--goldWash);border:1px solid var(--gold);margin-top:auto}
+.wfgate b{flex:none;font-size:10px;letter-spacing:.1em;color:var(--gold800);padding-top:2px}
+.wfgate span:last-child{font-size:12.5px;color:var(--t1);line-height:1.5}
+.wfstep .cfile{margin-top:8px}
+.wfloop{grid-column:1/-1;margin:2px 0 0;padding:11px 13px;border-radius:10px;background:var(--wash);
+  border:1px dashed var(--bSubtle);font-size:13px;color:var(--t2)}
+.wfloop b{color:var(--gold600);font-size:15px}

@@ -69,6 +69,22 @@ function parseCourse(mdPath) {
     .map((r) => ({ bug: stripMd(r[1]), layer: stripMd(r[2]), blind: stripMd(r[3]), where: stripMd(r[4]) }))
     .filter((r) => r.bug && !/^-+$/.test(r.layer) && !/^Bug$/i.test(r.bug));
 
+  /* Vòng làm việc 6 chặng — nguồn của sơ đồ trên trang. Mỗi chặng PHẢI có cổng chặn:
+     chặng không có cổng là chặng đi qua được mà không ai kiểm. */
+  const flowBlock = (md.match(/## Một vòng làm việc trông thế nào[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
+  const workflow = [...flowBlock.matchAll(
+    /^\|\s*(\d+)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*$/gm)]
+    .map((r) => ({ n: r[1], stage: stripMd(r[2]), input: stripMd(r[3]), output: stripMd(r[4]),
+                   gate: stripMd(r[5]), lessons: stripMd(r[6]) }));
+  if (workflow.length < 4) {
+    throw new Error(`COURSE.md: mục "Một vòng làm việc" chỉ đọc được ${workflow.length} chặng — cần ít nhất 4`);
+  }
+  const thieuCong = workflow.filter((w) => !w.gate).map((w) => w.n);
+  if (thieuCong.length) {
+    throw new Error('COURSE.md: chặng ' + thieuCong.join(', ') + ' không khai cổng chặn — ' +
+      'chặng không có cổng là chặng đi qua được mà không ai kiểm');
+  }
+
   /* Cây thư mục của kit — lấy NGUYÊN VĂN khối ``` để trang hiển thị đúng thụt lề.
      Mỗi dòng có "← Bài N" là một mốc: file này do bài nào tạo ra. */
   const treeBlock = (md.match(/## Cấu trúc thư mục của bộ kit[\s\S]*?```\n([\s\S]*?)```/) || [, ''])[1];
@@ -77,7 +93,7 @@ function parseCourse(mdPath) {
   const treeLessonRefs = [...kitTree.matchAll(/←\s*Bài\s+(\d+)/g)].map((x) => Number(x[1]));
   if (treeLessonRefs.length < 10) {
     throw new Error(`COURSE.md: cây thư mục chỉ chú thích ${treeLessonRefs.length} nhánh theo bài — ` +
-      'người học không biết nhánh nào do bài nào tạo');
+      'người đọc không biết nhánh nào do bài nào tạo');
   }
 
   // Ba chỗ hay xếp sai + ba thư mục không commit — hai bảng ngay sau cây
@@ -173,7 +189,7 @@ function parseCourse(mdPath) {
   }
 
   /* Cây thư mục chú thích "← Bài N" thì bài N phải TỒN TẠI. Không kiểm thì đổi giáo trình một lần
-     là cây trỏ vào bài đã biến mất, và người học đi tìm một bài không có. */
+     là cây trỏ vào bài đã biến mất, và người đọc đi tìm một bài không có. */
   const soBaiCo = new Set(nums);
   const treeSai = [...new Set(treeLessonRefs)].filter((n) => !soBaiCo.has(n));
   if (treeSai.length) {
@@ -184,8 +200,8 @@ function parseCourse(mdPath) {
   const noHours = parts.filter((p) => !p.hours).map((p) => p.n);
   if (noHours.length) throw new Error('COURSE.md: PHẦN ' + noHours.join(', ') + ' không có số giờ');
 
-  // "Học viên nhận được"
-  const deliverBlock = (md.match(/## Học viên nhận được([\s\S]*?)\n---/) || [, ''])[1];
+  // "Bạn có gì sau khi làm hết"
+  const deliverBlock = (md.match(/## Bạn có gì sau khi làm hết([\s\S]*?)\n---/) || [, ''])[1];
   const deliverables = [...deliverBlock.matchAll(/^-\s+(.+)$/gm)].map((x) => stripMd(x[1]));
 
   // "Quyết định thiết kế khoá học" — N. **tiêu đề** nội dung
@@ -207,7 +223,7 @@ function parseCourse(mdPath) {
 
   return {
     total, positioning, coreQuestion, outcomes, required, notRequired, warning,
-    compare, practiceBugs, kitTree, sortRules, parts, deliverables, decisions, orphans,
+    compare, practiceBugs, workflow, kitTree, sortRules, parts, deliverables, decisions, orphans,
     lessonCount: totalLessons
   };
 }
