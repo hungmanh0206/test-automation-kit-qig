@@ -5,6 +5,53 @@
 
 ---
 
+## Bạn sẽ dựng cái gì
+
+Một **bộ kit** — tập hợp luật + máy kiểm để bạn giao việc kiểm thử cho AI mà vẫn tin được kết quả.
+
+Cụ thể là thế này. Bạn bảo agent sửa cho test pass; nó sửa xong; và **máy của bạn chặn lại**:
+
+```console
+$ node scripts/qa/kiem-so-mong-doi.js tests/api/don-hang-bac.js
+[kiem] ✗ CHẶN — file chứa 515000, đây là số APP đang trả, không phải số spec.
+        Số mong đợi phải tính từ spec.md, không phải copy từ app.
+$ echo "mã thoát = $?"
+mã thoát = 1
+```
+
+Ba dòng đó là toàn bộ ý tưởng: **agent không cố ý gian lận**, nó chỉ đang làm cho test xanh theo cách nhanh
+nhất. Máy chặn là thứ đứng giữa.
+
+Hết tài liệu này bạn có ba thứ:
+
+| Thứ | Nghĩa là |
+|---|---|
+| **~10 máy chặn tự viết** | Bạn hiểu từng dòng, sửa được khi nó chặn sai |
+| **Một quy trình gõ được một dòng** | `/phase2 PROJ-1234` chạy đúng thứ tự, không phải nhớ 6 lệnh |
+| **Con số chứng minh nó hoạt động** | Không phải "tôi thấy ổn" mà là "suite bắt được 4/5 lỗi tiêm vào" |
+
+Và quan trọng nhất cho câu hỏi *"tôi test nhiều dự án thì sao?"*: kit tách làm **hai tầng** — tầng **chung**
+mang đi mọi dự án không sửa một chữ, tầng **dự án** thì mỗi nơi khai lại một file cấu hình. Sang dự án mới
+mất một buổi, không phải viết lại từ đầu.
+
+---
+
+## Bốn mốc dừng được
+
+Đừng nhìn 59 giờ rồi nản. Tài liệu chia thành **bốn mốc**, và **dừng ở mốc nào cũng đã có thứ dùng được**.
+
+| Mốc | Tới bài | Cộng dồn | Dừng ở đây bạn đã có |
+|---|---|---|---|
+| **① Biết nghi ngờ** | hết Bài 5 | ~9.5 giờ | Repo có máy canh · một test đỏ **đúng chỗ** · và bạn đã tận mắt thấy agent làm cho test xanh sai |
+| **② Dùng được thật** ⭐ | hết Bài 13 | ~27.5 giờ | Bộ case có kết quả mong đợi truy về tài liệu · chạy tự động · có ảnh/video · mỗi lỗi biết thuộc tầng nào. **Đây là điểm áp được vào dự án thật** |
+| **③ Đo được chính mình** | hết Bài 21 | ~45.5 giờ | Kit nhớ được việc đã làm, tự chấm rủi ro, và **chứng minh bằng số** rằng bộ kiểm bắt được bug |
+| **④ Mang đi được** | hết Bài 29 | ~59 giờ | CI gác cổng · bản phát hành nghiệm thu được · kit chạy trên dự án thứ hai |
+
+**Mốc ② là mốc quan trọng nhất.** Nhiều người dừng ở đó và dùng cả năm — hoàn toàn hợp lý. Mốc ③ và ④ là
+khi bạn muốn *chứng minh* kit tốt lên, và muốn người khác dùng được nó.
+
+---
+
 ## Khác gì các khoá AI Testing hiện có
 
 | | Khoá phổ biến trên thị trường | Tài liệu này |
@@ -203,7 +250,9 @@ kit-cua-toi/
 
 ## PHẦN 1 — Nền tảng tư duy (5.5 giờ)
 
-### [Bài 0 — Trước khi bắt đầu](course/truoc-khi-bat-dau.md) *(1h)*
+> **Xong phần này bạn có:** một máy chặn 12 dòng chạy được — và bạn đã tận mắt thấy agent làm cho test xanh trong khi app vẫn sai
+
+### [Bài 0 — Trước khi bắt đầu](course/truoc-khi-bat-dau.md) *(1h · dễ)*
 
 *Có gì trong tay: chưa có gì.*
 
@@ -215,7 +264,7 @@ kit-cua-toi/
 - Phân biệt `scripts/lib` (thư viện) · `scripts/qa` (máy chặn) · `tests/support` (hạ tầng test) bằng một câu hỏi
 - Ba thư mục không bao giờ commit và vì sao
 
-### [Bài 1 — Vì sao "prompt giỏi" là không đủ](course/vi-sao-can-bo-kit.md) *(1.5h)*
+### [Bài 1 — Vì sao "prompt giỏi" là không đủ](course/vi-sao-can-bo-kit.md) *(1.5h · dễ)*
 
 *Có gì trong tay: app thực hành đang chạy, 10 từ vựng.*
 
@@ -229,7 +278,7 @@ kit-cua-toi/
 - Nguyên tắc xuyên suốt tài liệu: **rule không phải lời dặn — sai chuẩn thì phải chặn được**
 - Phân biệt: AI hỗ trợ tester → AI agent thực thi → nền tảng có gate
 
-### [Bài 2 — Kiến trúc một QA platform](course/khung-kit-toi-thieu.md) *(1.5h)*
+### [Bài 2 — Kiến trúc một QA platform](course/khung-kit-toi-thieu.md) *(1.5h · dễ)*
 
 *Có gì trong tay: một máy chặn 12 dòng, kinh nghiệm thấy agent gian lận.*
 
@@ -240,7 +289,7 @@ kit-cua-toi/
 - Quy ước cô lập ngay từ đầu: mã task · thư mục output theo task · file credentials riêng theo task
 - **Thực hành:** vẽ kiến trúc cho dự án của chính bạn
 
-### [Bài 3 — Chi phí và giới hạn thật](course/chi-phi-va-gioi-han.md) *(1h)*
+### [Bài 3 — Chi phí và giới hạn thật](course/chi-phi-va-gioi-han.md) *(1h · dễ)*
 
 *Có gì trong tay: khung kit, một rule canonical.*
 
@@ -253,7 +302,9 @@ kit-cua-toi/
 
 ## PHẦN 2 — Dựng môi trường (6 giờ)
 
-### [Bài 4 — Claude Code: cài đặt và chế độ an toàn](course/moi-truong.md) *(2h)*
+> **Xong phần này bạn có:** repo trên GitHub, agent chạy có kiểm soát, và một máy canh không cho dữ liệu nhạy cảm lọt lên repo
+
+### [Bài 4 — Claude Code: cài đặt và chế độ an toàn](course/moi-truong.md) *(2h · dễ)*
 
 *Có gì trong tay: kiến trúc đã vẽ, chưa có repo.*
 
@@ -262,7 +313,7 @@ kit-cua-toi/
 - Hook: bơm context đầu phiên · chặn khi ghi file sai chuẩn
 - **Thực hành:** bảo agent xoá thư mục `docs/` và **kiểm quyền có chặn nó lại** — thí nghiệm này quan trọng hơn nó nghe
 
-### [Bài 5 — Git, GitHub/GitLab cho người mới](course/git-tu-so-0.md) *(2h)*
+### [Bài 5 — Git, GitHub/GitLab cho người mới](course/git-tu-so-0.md) *(2h · dễ)*
 
 *Có gì trong tay: agent chạy được, có quyền đã cấu hình.*
 
@@ -271,7 +322,7 @@ kit-cua-toi/
 - `.gitignore` và **bài học đắt nhất**: dữ liệu học chứa tên bug thật — chính đường dẫn file đã tiết lộ lỗi sản phẩm
 - **Thực hành:** đưa kit của bạn lên repo, và chứng minh ba thư mục cấm không đi theo
 
-### [Bài 6 — Prompt, Skill, Rule, Command: phân biệt và dùng đúng](course/prompt-va-token.md) *(2h)*
+### [Bài 6 — Prompt, Skill, Rule, Command: phân biệt và dùng đúng](course/prompt-va-token.md) *(2h · dễ)*
 
 *Có gì trong tay: repo có kit tối thiểu.*
 
@@ -286,7 +337,9 @@ kit-cua-toi/
 
 ## PHẦN 3 — Phase 1: Requirement → Test Case (10.5 giờ)
 
-### [Bài 7 — Phân tích requirement đa nguồn](course/tu-requirement-ra-testcase.md) *(2.5h)*
+> **Xong phần này bạn có:** bộ testcase mà kết quả mong đợi **truy được về tài liệu**, không phải lấy từ chính app
+
+### [Bài 7 — Phân tích requirement đa nguồn](course/tu-requirement-ra-testcase.md) *(2.5h · vừa)*
 
 *Có gì trong tay: rule, skill, prompt template.*
 
@@ -297,7 +350,7 @@ kit-cua-toi/
 - Ba dấu hiệu testcase **không execute được**: thiếu dữ liệu cụ thể · expected không đo được · tiền điều kiện mơ hồ
 - **Thực hành:** phân tích một requirement thật của bạn, hoặc [tài liệu đặc tả mẫu](course/assets/sample-requirement.md) có **10 vấn đề cài sẵn**
 
-### [Bài 8 — Ambiguity Gate: dừng đúng lúc](course/ambiguity-gate.md) *(1.5h)*
+### [Bài 8 — Ambiguity Gate: dừng đúng lúc](course/ambiguity-gate.md) *(1.5h · vừa)*
 
 *Có gì trong tay: một requirement đã bóc thành BR-.*
 
@@ -306,7 +359,7 @@ kit-cua-toi/
 - **XÂY gate:** chặn không cho sang bước sinh test case khi chưa chốt
 - **Thực hành:** dựng Ambiguity Gate cho dự án bạn
 
-### [Bài 9 — Kỹ thuật thiết kế test case](course/mo-hinh-testcase-canonical.md) *(3h)*
+### [Bài 9 — Kỹ thuật thiết kế test case](course/mo-hinh-testcase-canonical.md) *(3h · vừa)*
 
 *Có gì trong tay: requirement đã chốt, không còn mơ hồ blocking.*
 
@@ -319,7 +372,7 @@ kit-cua-toi/
 - Chia thành **chiều phủ** (dimension) để kiểm được bằng máy
 - **Thực hành:** sinh test case theo 8 chiều cho màn Tạo đơn hàng của app thực hành — bộ này sẽ bắt được BUG-1 nếu bạn phủ đúng biên
 
-### [Bài 10 — Kỷ luật Oracle: bài học quan trọng nhất](course/oracle.md) *(2h)* ⭐
+### [Bài 10 — Kỷ luật Oracle: bài học quan trọng nhất](course/oracle.md) *(2h · khó)* ⭐
 
 *Có gì trong tay: một bộ testcase do agent sinh.*
 
@@ -332,7 +385,7 @@ kit-cua-toi/
 - **XÂY gate:** chặn test case có giá trị tính toán mà không trỏ nguồn
 - **Thực hành:** sửa 5 expected yếu trong bộ của bạn thành expected có neo về tài liệu
 
-### [Bài 11 — Gate chất lượng và đo độ phủ](course/coverage-theo-chieu.md) *(1.5h)*
+### [Bài 11 — Gate chất lượng và đo độ phủ](course/coverage-theo-chieu.md) *(1.5h · vừa)*
 
 *Có gì trong tay: bộ testcase có oracle neo được.*
 
@@ -347,7 +400,9 @@ kit-cua-toi/
 
 ## PHẦN 4 — Phase 2: Thực thi có kiểm soát (13 giờ)
 
-### [Bài 12 — Playwright từ số 0](course/playwright-va-locator-ben.md) *(3h)*
+> **Xong phần này bạn có:** test tự chạy được, có ảnh/video làm bằng chứng, và mỗi lỗi biết nó thuộc tầng nào
+
+### [Bài 12 — Playwright từ số 0](course/playwright-va-locator-ben.md) *(3h · vừa)*
 
 *Có gì trong tay: bộ testcase đã qua gate độ phủ.*
 
@@ -358,7 +413,7 @@ kit-cua-toi/
 - Tiền điều kiện: dựng state qua API/factory/hook, **không** bằng DB — xem [bài chi tiết về tiền điều kiện](course/tien-dieu-kien.md) (factory, janitor 3 lớp an toàn, và **bug ma**)
 - **Thực hành:** automate case Bài 9 trên app thực hành, chạy thật, thấy nó đỏ vì BUG-1
 
-### [Bài 13 — Bằng chứng và phân tầng lỗi](course/verdict-va-phan-tang-loi.md) *(2.5h)*
+### [Bài 13 — Bằng chứng và phân tầng lỗi](course/verdict-va-phan-tang-loi.md) *(2.5h · vừa)*
 
 *Có gì trong tay: suite Playwright chạy được.*
 
@@ -370,7 +425,7 @@ kit-cua-toi/
 - **XÂY gate:** không cho đẩy kết quả nếu lỗi chưa phân tầng, hoặc case đã execute mà không có ảnh/video
 - **Thực hành:** BUG-2 của app thực hành chỉ hiện ra khi bạn chụp có khoanh đỏ và cộng thử các số trên màn
 
-### [Bài 14 — Chống lọt bug: mở rộng quanh mỗi case](course/chong-lot-bug-7-truc.md) *(2.5h)*
+### [Bài 14 — Chống lọt bug: mở rộng quanh mỗi case](course/chong-lot-bug-7-truc.md) *(2.5h · khó)*
 
 *Có gì trong tay: kết quả đã phân tầng, có bằng chứng.*
 
@@ -381,7 +436,7 @@ kit-cua-toi/
 - Chiều ngược `spec:gap`: thấy thứ **spec không nói gì** — không phải bug, là lỗ hổng đặc tả
 - **XÂY gate:** gate độ sâu theo mức rủi ro để không nổ thời gian chạy
 
-### [Bài 15 — Kiểm song song UI ↔ Database](course/ui-va-tang-luu-tru.md) *(2.5h)*
+### [Bài 15 — Kiểm song song UI ↔ Database](course/ui-va-tang-luu-tru.md) *(2.5h · khó)*
 
 *Có gì trong tay: bộ case đã mở rộng 7 trục.*
 
@@ -392,7 +447,7 @@ kit-cua-toi/
 - Tiền điều kiện **không** được dựng bằng DB, dù DB đang mở
 - **Thực hành:** BUG-3 của app thực hành — luật "không được sửa" chỉ thực thi được ở tầng dưới, giao diện ẩn nút không phải thực thi
 
-### [Bài 16 — Bug report và tích hợp](course/tich-hop.md) *(2.5h)*
+### [Bài 16 — Bug report và tích hợp](course/tich-hop.md) *(2.5h · vừa)*
 
 *Có gì trong tay: kết quả có bằng chứng, đã phân tầng, đã mở rộng.*
 
@@ -408,7 +463,9 @@ kit-cua-toi/
 
 ## PHẦN 5 — Knowledge & vòng học (8 giờ)
 
-### [Bài 17 — Một QA agent cần học những gì](course/bo-nho-du-an.md) *(2h)*
+> **Xong phần này bạn có:** kit nhớ được việc đã làm, và tự chấm chỗ nào rủi ro cao để test sâu hơn ở đó
+
+### [Bài 17 — Một QA agent cần học những gì](course/bo-nho-du-an.md) *(2h · vừa)*
 
 *Có gì trong tay: một task đã đi trọn vòng, có bug đã log.*
 
@@ -418,7 +475,7 @@ kit-cua-toi/
 - **Câu trả lời cho "từ số 0 thì học từ đâu":** 4 nguồn — bảng `BR-` đã có từ Bài 7 · câu trả lời BA từ Ambiguity Gate · seed từ lịch sử Jira · **rỗng có kiểm soát**
 - **XÂY gate:** chặn rule không có `nguồn`, cảnh báo khi nghi có PII
 
-### [Bài 18 — Thiết kế knowledge base có kỷ luật](course/knowledge-base-co-ky-luat.md) *(2.5h)*
+### [Bài 18 — Thiết kế knowledge base có kỷ luật](course/knowledge-base-co-ky-luat.md) *(2.5h · vừa)*
 
 *Có gì trong tay: knowledge base đã có vài chục bản ghi.*
 
@@ -428,7 +485,7 @@ kit-cua-toi/
 - **Bảo mật:** vì sao knowledge không được commit lên repo công khai
 - **XÂY gate:** kiểm tính nhất quán của knowledge trước khi agent được đọc nó
 
-### [Bài 19 — Vòng học khép kín](course/risk-based-testing.md) *(2h)*
+### [Bài 19 — Vòng học khép kín](course/risk-based-testing.md) *(2h · khó)*
 
 *Có gì trong tay: knowledge base có kỷ luật, lịch sử vài lượt chạy.*
 
@@ -439,7 +496,7 @@ kit-cua-toi/
 - Vì sao suy luận bug→module **không có** chế độ `--apply`: đo được đúng 40%
 - **Điều không tự động hoá được:** xác nhận của con người — và vì sao đó là cố ý
 
-### [Bài 20 — Sao lưu và vòng đời dữ liệu](course/sao-luu-va-vong-doi-du-lieu.md) *(1.5h)*
+### [Bài 20 — Sao lưu và vòng đời dữ liệu](course/sao-luu-va-vong-doi-du-lieu.md) *(1.5h · dễ)*
 
 *Có gì trong tay: vòng học đã chạy ít nhất một chu kỳ.*
 
@@ -452,7 +509,9 @@ kit-cua-toi/
 
 ## PHẦN 6 — Chứng minh hiệu quả (5 giờ)
 
-### [Bài 21 — Mutation Testing: đo suite có bắt được bug không](course/do-chinh-bo-kiem.md) *(2.5h)* ⭐
+> **Xong phần này bạn có:** con số chứng minh bộ kiểm của bạn bắt được bug — thay cho câu "tôi thấy ổn"
+
+### [Bài 21 — Mutation Testing: đo suite có bắt được bug không](course/do-chinh-bo-kiem.md) *(2.5h · khó)* ⭐
 
 *Có gì trong tay: suite đã chạy nhiều lượt, có lịch sử.*
 
@@ -464,7 +523,7 @@ kit-cua-toi/
 - Đọc **điểm 5/5** cho đúng: nó chỉ nói về tập mutant của bạn
 - **Thực hành:** chạy mutation trên module của bạn, đọc mutation score, sửa một oracle rồi **đo lại để chứng minh** nó có tác dụng
 
-### [Bài 22 — Metrics và độ tin cậy](course/metrics-va-do-tin-cay.md) *(1.5h)*
+### [Bài 22 — Metrics và độ tin cậy](course/metrics-va-do-tin-cay.md) *(1.5h · vừa)*
 
 *Có gì trong tay: mutation score gốc đã chốt.*
 
@@ -473,7 +532,7 @@ kit-cua-toi/
 - Vì sao flaky triage có thể **chôn bug thật**, và cách phân biệt
 - Phép đo phải liêm chính: `forbidOnly` · bỏ record `skipped` khỏi lịch sử · độ phủ theo ngưỡng tối thiểu mỗi chiều
 
-### [Bài 23 — Dashboard và báo cáo](course/dashboard-va-bao-cao.md) *(1h)*
+### [Bài 23 — Dashboard và báo cáo](course/dashboard-va-bao-cao.md) *(1h · dễ)*
 
 *Có gì trong tay: nhiều lượt chạy đã ghi metrics.*
 
@@ -485,7 +544,9 @@ kit-cua-toi/
 
 ## PHẦN 7 — CI/CD và phát hành kit (6 giờ)
 
-### [Bài 24 — CI: biến rule thành cổng chặn thật](course/ci-dong-goi-giao-kit.md) *(2.5h)*
+> **Xong phần này bạn có:** gate tự chạy mỗi lần push, và một bản kit đóng gói được để đưa cho người khác
+
+### [Bài 24 — CI: biến rule thành cổng chặn thật](course/ci-dong-goi-giao-kit.md) *(2.5h · khó)*
 
 *Có gì trong tay: kit đầy đủ, chạy tay được trọn vòng.*
 
@@ -498,7 +559,7 @@ kit-cua-toi/
 - Bẫy đắt nhất: test xanh trên máy dev vì **thừa hưởng biến môi trường** của shell, đỏ trên CI
 - **XÂY gate:** đo **độ với tới** — máy đúng mà không điểm vào nào gọi thì bằng không có
 
-### [Bài 25 — MCP Server và tự động hoá quanh công việc](course/mcp-va-tu-dong-hoa.md) *(1.5h)*
+### [Bài 25 — MCP Server và tự động hoá quanh công việc](course/mcp-va-tu-dong-hoa.md) *(1.5h · vừa)*
 
 *Có gì trong tay: CI đang gác cổng.*
 
@@ -507,7 +568,7 @@ kit-cua-toi/
 - Quyền **tối thiểu**: chỉ đọc, trừ đường tạo bug
 - **Ranh giới:** cái gì tự động được, cái gì bắt buộc người duyệt
 
-### [Bài 26 — Đóng gói và phát hành kit](course/dong-goi-va-phat-hanh.md) *(2h)*
+### [Bài 26 — Đóng gói và phát hành kit](course/dong-goi-va-phat-hanh.md) *(2h · vừa)*
 
 *Có gì trong tay: kit có CI, có tích hợp.*
 
@@ -521,7 +582,9 @@ kit-cua-toi/
 
 ## PHẦN 8 — Áp vào dự án thật (5 giờ)
 
-### [Bài 27 — Mang kit sang dự án mới](course/mang-kit-sang-du-an-moi.md) *(2h)*
+> **Xong phần này bạn có:** kit chạy trên dự án thật của bạn, và bạn biết phải làm gì khi nó chặn sai
+
+### [Bài 27 — Mang kit sang dự án mới](course/mang-kit-sang-du-an-moi.md) *(2h · vừa)*
 
 *Có gì trong tay: bản phát hành đã nghiệm thu.*
 
@@ -529,7 +592,7 @@ kit-cua-toi/
 - Việc tốn công nhất: khớp cơ chế đăng nhập
 - **Thực hành:** dựng kit cho dự án bạn đang làm — đây là lần đầu bạn rời app thực hành
 
-### [Bài 28 — Khi kit chặn sai](course/mot-nguon-va-may-chong-troi.md) *(1.5h)*
+### [Bài 28 — Khi kit chặn sai](course/mot-nguon-va-may-chong-troi.md) *(1.5h · vừa)*
 
 *Có gì trong tay: kit đang chạy trên dự án thật.*
 
@@ -540,7 +603,7 @@ kit-cua-toi/
 - Chống trôi: máy đọc chính khai báo của mình, và danh sách cho phép **chặn khối lạ**
 - Cách đo và tinh chỉnh ngưỡng theo va chạm thực tế
 
-### [Bài 29 — Đi tiếp sau khi làm hết](course/lo-trinh-sau-khoa.md) *(1.5h)*
+### [Bài 29 — Đi tiếp sau khi làm hết](course/lo-trinh-sau-khoa.md) *(1.5h · dễ)*
 
 *Có gì trong tay: kit chạy trên dự án thật, đã va chạm và tinh chỉnh.*
 

@@ -147,6 +147,17 @@ const ok = (name, cond, got) => {
   /* Bullet "phải gõ" khác bullet "chỉ đọc" — đây là thứ phân biệt khoá học với mục lục. */
   ok('có callout Thực hành', await p.locator('.cgoals li.cpractice').count() >= 5);
   ok('có callout XÂY gate', await p.locator('.cgoals li.cgate').count() >= 5);
+  /* Ba thứ người mới cần THẤY trước khi đọc: kit chặn trông ra sao · dừng ở đâu vẫn có thứ
+     dùng được · bài nào phải ngồi kỹ. Thiếu một trong ba là quay lại tình trạng 'bức tường 59 giờ'. */
+  ok('có ảnh terminal cho thấy kit chặn', await p.locator('#cDemo .dchan').count() >= 1);
+  const soMoc = await p.locator('#cMoc .mcbox').count();
+  ok('có các mốc dừng được', soMoc >= 3, soMoc);
+  ok('có đúng MỘT mốc trọng tâm', await p.locator('#cMoc .mcbox.key').count() === 1);
+  ok('mỗi phần có dòng xong-phần-này-bạn-có',
+     await p.locator('#cParts .pxong').count() === await p.locator('#cParts .subhead').count());
+  ok('mỗi bài có huy hiệu mức khó', await p.locator('.clesson .cmuc').count() === lessons);
+  ok('mức khó có đủ 3 bậc',
+     (await p.$$eval('.clesson .cmuc', (ns) => new Set(ns.map((n) => n.textContent)).size)) === 3);
   /* Hai khối TRỰC QUAN: lộ trình có thanh giờ theo tỉ lệ, và vòng làm việc 6 chặng.
      Kiểm quan hệ chứ không kiểm con số cứng — thêm/bớt phần là phép kiểm đỏ oan. */
   const soPhan = await p.locator('#cParts .subhead').count();

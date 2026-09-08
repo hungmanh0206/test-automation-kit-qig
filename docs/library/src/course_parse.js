@@ -85,6 +85,24 @@ function parseCourse(mdPath) {
       'chặng không có cổng là chặng đi qua được mà không ai kiểm');
   }
 
+  /* Bốn mốc dừng được — thứ giúp người mới không nản khi thấy 59 giờ.
+     Mỗi mốc phải nói DỪNG Ở ĐÂY CÓ GÌ, không chỉ nói tới bài mấy. */
+  const mocBlock = (md.match(/## Bốn mốc dừng được[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
+  const milestones = [...mocBlock.matchAll(
+    /^\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*$/gm)]
+    .map((r) => ({ ten: stripMd(r[1]), toiBai: stripMd(r[2]), congDon: stripMd(r[3]), coGi: stripMd(r[4]),
+                   trongTam: r[1].indexOf('⭐') >= 0 }))
+    .filter((r) => r.ten && !/^-+$/.test(r.toiBai) && !/^Mốc$/i.test(r.ten));
+  if (milestones.length < 3) {
+    throw new Error(`COURSE.md: mục "Bốn mốc dừng được" chỉ đọc được ${milestones.length} mốc — cần ít nhất 3`);
+  }
+
+  /* "Bạn sẽ dựng cái gì" — khối console cho thấy kit CHẶN trông ra sao. Người mới cần thấy
+     một lần trước khi đọc lý thuyết. */
+  const demoBlock = (md.match(/## Bạn sẽ dựng cái gì[\s\S]*?```console\n([\s\S]*?)```/) || [, ''])[1];
+  if (!demoBlock) throw new Error('COURSE.md: mục "Bạn sẽ dựng cái gì" thiếu khối ```console``` minh hoạ');
+  const demo = demoBlock.replace(/\s+$/, '');
+
   /* Cây thư mục của kit — lấy NGUYÊN VĂN khối ``` để trang hiển thị đúng thụt lề.
      Mỗi dòng có "← Bài N" là một mốc: file này do bài nào tạo ra. */
   const treeBlock = (md.match(/## Cấu trúc thư mục của bộ kit[\s\S]*?```\n([\s\S]*?)```/) || [, ''])[1];
@@ -122,6 +140,11 @@ function parseCourse(mdPath) {
     const hm = head.match(/^(\d+)\s*—\s*(.+?)(?:\s*\(([^)]*giờ)\))?$/);
     if (!hm) throw new Error('COURSE.md: tiêu đề phần sai quy ước "N — tên (X giờ)": ' + head);
 
+    /* Tên phần trừu tượng ('Nền tảng tư duy') không nói người mới biết họ CÓ GÌ.
+       Dòng này là bắt buộc, và phải nói bằng lời thường. */
+    const xong = stripMd((chunk.match(/^>\s*\*\*Xong phần này bạn có:\*\*(.+)$/m) || [, ''])[1]);
+    if (!xong) throw new Error(`COURSE.md: PHẦN ${hm[1]} thiếu dòng "> **Xong phần này bạn có:** …"`);
+
     const lessons = [];
     for (const lc of chunk.split(/^### /m).slice(1)) {
       const lnl = lc.indexOf('\n');
@@ -133,8 +156,11 @@ function parseCourse(mdPath) {
       lhead = lhead.replace(/⭐/g, '').trim();
 
       // *(2.5h)* ở cuối tiêu đề
-      const dm = lhead.match(/\*\((\d+(?:\.\d+)?h)\)\*\s*$/);
+      /* *(2.5h · khó)* — thời lượng + MỨC KHÓ. Mức khó gán tay theo nội dung, KHÔNG suy từ
+         thời lượng: bài dài chưa chắc khó, và bài ngắn có thể rất dễ làm sai (vd Bài 10 oracle). */
+      const dm = lhead.match(/\*\((\d+(?:\.\d+)?h)(?:\s*·\s*(dễ|vừa|khó))?\)\*\s*$/);
       const dur = dm ? dm[1] : null;
+      const muc = dm ? (dm[2] || null) : null;
       if (dm) lhead = lhead.slice(0, dm.index).trim();
 
       // "[Bài 1 — Tên](course/slug.md)" hoặc "Bài 1 — Tên"
@@ -148,7 +174,9 @@ function parseCourse(mdPath) {
       if (href && !fs.existsSync(path.join(root, href))) {
         throw new Error(`COURSE.md: Bài ${lm[1]} trỏ tới file KHÔNG tồn tại — ${href}`);
       }
-      if (!dur) throw new Error(`COURSE.md: Bài ${lm[1]} thiếu thời lượng "*(Xh)*" ở cuối tiêu đề`);
+      if (!dur) throw new Error(`COURSE.md: Bài ${lm[1]} thiếu thời lượng "*(Xh · mức)*" ở cuối tiêu đề`);
+      if (!muc) throw new Error(`COURSE.md: Bài ${lm[1]} thiếu MỨC KHÓ — viết "*(${dur} · dễ|vừa|khó)*". `
+        + 'Không có mức thì người mới không biết bài nào lướt được, bài nào phải ngồi kỹ.');
 
       const have = plain((body.match(/^\*Có gì trong tay:([^*]+)\*/m) || [, ''])[1]);
       if (!have) throw new Error(`COURSE.md: Bài ${lm[1]} thiếu dòng "*Có gì trong tay: …*"`);
@@ -168,13 +196,13 @@ function parseCourse(mdPath) {
       }
 
       lessons.push({
-        n: lm[1], title: stripMd(lm[2]), have: have, dur: dur,
+        n: lm[1], title: stripMd(lm[2]), have: have, dur: dur, muc: muc,
         href: href, extraHrefs: extraHrefs, star: star, bullets: bullets
       });
       totalLessons++;
     }
     if (!lessons.length) throw new Error(`COURSE.md: PHẦN ${hm[1]} không có bài nào`);
-    parts.push({ n: hm[1], title: hm[2].trim(), hours: hm[3] || partHours[hm[1]] || null, lessons: lessons });
+    parts.push({ n: hm[1], title: hm[2].trim(), xong: xong, hours: hm[3] || partHours[hm[1]] || null, lessons: lessons });
   }
 
   // Số bài phải LIÊN TỤC, bắt đầu ở 0 (bài chuẩn bị) hoặc 1 — bắt đầu ở số khác nghĩa là
@@ -223,7 +251,7 @@ function parseCourse(mdPath) {
 
   return {
     total, positioning, coreQuestion, outcomes, required, notRequired, warning,
-    compare, practiceBugs, workflow, kitTree, sortRules, parts, deliverables, decisions, orphans,
+    compare, practiceBugs, demo, milestones, workflow, kitTree, sortRules, parts, deliverables, decisions, orphans,
     lessonCount: totalLessons
   };
 }

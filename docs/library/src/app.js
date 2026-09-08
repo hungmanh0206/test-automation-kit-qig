@@ -395,6 +395,41 @@
     });
   }
 
+  /* "Bạn sẽ dựng cái gì": cho thấy MỘT LẦN kit chặn trông ra sao, trước mọi lý thuyết.
+     Người mới cần một hình ảnh cụ thể để bám vào, không cần thêm một đoạn định nghĩa. */
+  function renderDemo() {
+    var pre = $('#cDemo');
+    if (!pre || !COURSE.demo) return;
+    /* Tô màu theo dòng, KHÔNG dùng innerHTML trên nội dung gốc — nội dung do người viết,
+       không được coi là markup. */
+    COURSE.demo.split('\n').forEach(function (dong) {
+      var lop = dong.indexOf('$ ') === 0 ? 'dlenh'
+        : (dong.indexOf('✗') >= 0 || dong.indexOf('CHẶN') >= 0) ? 'dchan'
+          : dong.indexOf('mã thoát') >= 0 ? 'dma' : 'dthuong';
+      var l = el('span', lop, dong || ' ');
+      pre.appendChild(l);
+      pre.appendChild(document.createTextNode('\n'));
+    });
+  }
+
+  /* Bốn mốc dừng được: thứ giữ người mới khỏi nản khi thấy 59 giờ.
+     Mốc trọng tâm (⭐) tô nổi — đó là điểm dừng mà nhiều người sẽ dùng cả năm. */
+  function renderMilestones() {
+    var wrap = $('#cMoc');
+    if (!wrap) return;
+    COURSE.milestones.forEach(function (m, i) {
+      var box = el('div', 'mcbox' + (m.trongTam ? ' key' : ''));
+      var h = el('div', 'mchead');
+      h.appendChild(el('b', null, m.ten));
+      h.appendChild(el('span', 'mcdur', m.congDon));
+      box.appendChild(h);
+      box.appendChild(el('span', 'mcto', m.toiBai));
+      box.appendChild(el('p', null, m.coGi));
+      wrap.appendChild(box);
+      if (i < COURSE.milestones.length - 1) wrap.appendChild(el('div', 'mcar', '→'));
+    });
+  }
+
   /* Lộ trình 8 phần: thanh giờ theo TỈ LỆ để thấy ngay phần nào nặng — bảng số không cho thấy điều đó. */
   function renderRoadmap() {
     var wrap = $('#cRoad');
@@ -541,6 +576,8 @@
       });
     }
 
+    renderDemo();
+    renderMilestones();
     renderRoadmap();
     renderFlow();
 
@@ -576,6 +613,12 @@
       h.appendChild(document.createTextNode(part.title));
       if (part.hours) h.appendChild(el('span', 'cphours', part.hours));
       wrap.appendChild(h);
+      if (part.xong) {
+        var xg = el('p', 'pxong');
+        xg.appendChild(el('b', null, 'Xong phần này bạn có: '));
+        xg.appendChild(document.createTextNode(part.xong));
+        wrap.appendChild(xg);
+      }
 
       var grid = el('div', 'clessons');
       part.lessons.forEach(function (l) {
@@ -589,6 +632,9 @@
         if (l.star) t.appendChild(el('span', 'cstar', '★'));
         head.appendChild(t);
         head.appendChild(el('span', 'cdur', l.dur));
+        /* Class không dấu để selector CSS khỏi phải escape; chữ hiển thị vẫn giữ nguyên dấu. */
+        var MA_MUC = { 'dễ': 'de', 'vừa': 'vua', 'khó': 'kho' };
+        if (l.muc) head.appendChild(el('span', 'cmuc m-' + (MA_MUC[l.muc] || 'vua'), l.muc));
         c.appendChild(head);
 
         var have = el('p', 'chave');
