@@ -293,7 +293,7 @@ git log --all --name-only --pretty=format: | sort -u | grep -iE '\.env|secret|to
 
 Tìm xem có file nào đáng lẽ không nên nằm đó không.
 
-Chưa cần sửa — gỡ một tệp khỏi lịch sử git là việc lớn và phải bàn với cả team. Chỉ cần biết, và hiểu
+Chưa cần sửa. Gỡ một tệp khỏi lịch sử git là việc lớn và phải bàn với cả team. Chỉ cần biết, và hiểu
 vì sao chặn ở cổng rẻ hơn dọn sau rất nhiều.
 
 ## Bài sau

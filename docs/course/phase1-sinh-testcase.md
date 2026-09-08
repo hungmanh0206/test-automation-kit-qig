@@ -325,7 +325,7 @@ khỏi việc sinh** và **cấm nó đi tiếp**. Đây là lý do Bài 12 và 
 ## Agent đọc luật ở đâu
 
 Bốn việc trên cho bạn một gate chặn agent đoán bừa. Nhưng gate chỉ đứng ở MỘT cửa. Còn những luật
-khác — không commit secret, không sửa dữ liệu thật, evidence phải che PII — thì agent biết từ đâu.
+khác, ví dụ không commit secret hay evidence phải che PII, thì agent biết từ đâu.
 
 Hai việc cuối bài trả lời câu đó, và việc thứ hai quan trọng hơn: **kiểm xem nó có thật sự đọc không.**
 

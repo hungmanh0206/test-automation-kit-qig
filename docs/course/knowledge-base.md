@@ -1,6 +1,6 @@
 # Bài 26 — Knowledge Base
 
-> **2 giờ 30 phút** · Có gì trong tay: đã chạy hàng trăm testcase qua nhiều sprint · Sau bài này: tri thức có phiên bản, truy được nguồn, và không âm thầm dạy sai cho agent
+> **3 giờ** · Có gì trong tay: đã chạy hàng trăm testcase qua nhiều sprint · Sau bài này: tri thức có phiên bản, truy được nguồn, và không âm thầm dạy sai cho agent
 
 **Tóm tắt bài này**
 
@@ -21,16 +21,71 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Năm việc:
 
-1. Thấy tri thức không có nguồn dạy sai agent thế nào (20 phút).
-2. Thiết kế schema: `source` rỗng thì **cấm ghi** (30 phút).
-3. Hiểu 4 trạng thái vòng đời, và khác biệt tinh giữa `superseded` và `invalid` (30 phút).
-4. **Xây gate** chống học sai: mâu thuẫn · quá cũ · thiếu nguồn, chạy **trước khi** agent được đọc (40 phút).
+1. Sáu loại tri thức đáng giữ, và loại nào giá trị nhất theo số đo (25 phút).
+2. Tri thức không nguồn dạy sai thế nào (20 phút).
+3. Schema: `source` rỗng thì cấm ghi (30 phút).
+4. Bốn trạng thái của một bản ghi, và khác biệt tinh giữa hai cái giữa (30 phút).
+5. **Xây gate** chống học sai, chặn ở cửa ĐỌC chứ không chỉ cửa ghi (45 phút).
 
 ---
 
-## Việc 1 — Tri thức không nguồn dạy sai thế nào (20 phút)
+## Việc 1 — Suite chỉ biết chạy lại (25 phút)
+
+Bạn có bộ test chạy hàng đêm, vài trăm case, qua sáu sprint. Tổng cộng vài nghìn lượt chạy.
+
+Giờ trả lời câu này: **nó học được gì từ vài nghìn lượt đó?**
+
+Câu trả lời thường là không gì cả. Lượt chạy tối nay không khác lượt chạy sprint đầu tiên: cùng những
+case đó, cùng thứ tự đó, cùng độ sâu đó. Mọi thứ nó "biết" đều nằm trong đầu người viết.
+
+### Sáu loại tri thức đáng giữ
+
+Phân loại theo **câu hỏi mà nó trả lời**, không theo nơi nó đến. Cách này quan trọng, vì nó cho bạn
+tiêu chí quyết định một thông tin có đáng ghi hay không: nếu bạn không viết ra được câu hỏi mà nó trả
+lời, thì đừng ghi.
+
+| Loại | Trả lời câu hỏi | Ví dụ một bản ghi |
+|---|---|---|
+| Quy tắc nghiệp vụ | *"Giá trị đúng là bao nhiêu?"* | `BR-04`: mốc miễn phí giao hàng so trên tạm tính |
+| Cách dựng trạng thái | *"Làm sao có được trạng thái này?"* | Đơn `Pending` cần tạo qua API rồi **không** confirm |
+| Bản đồ hệ thống | *"Trường này ở tầng dưới tên gì?"* | `giamGia` ở giao diện là `discount_amount` ở tầng lưu trữ |
+| Quyết định đã chốt | *"Vì sao hồi đó chọn thế?"* | Bỏ kiểm màn X vì BA xác nhận sẽ xoá trong sprint sau |
+| Bug đã gặp | *"Chỗ này từng vỡ chưa?"* | Module thanh toán: 7 bug trong 3 sprint |
+| Điểm định vị đã sửa | *"Nút này định vị bằng gì cho bền?"* | Nút Lưu đổi từ `.btn-primary` sang `getByRole` |
+
+### Loại nào giá trị nhất
+
+Đếm trên một bộ kit đã dùng thật qua nhiều sprint thì tỉ lệ không đều chút nào: **quá nửa** số bản ghi
+tích luỹ được thuộc loại thứ hai, *cách dựng trạng thái*.
+
+Đó là loại trước đây không có chỗ chứa, nên nó biến mất sau mỗi task. Người làm task sau phải mò lại
+từ đầu đúng cái chuỗi bước mà người trước đã mò ra.
+
+Vì sao nó là loại đắt nhất:
+
+- Nó không nằm trong tài liệu nào. Tài liệu nói trạng thái `Pending` **là gì**, không nói làm sao **có** nó.
+- Nó chỉ biết được sau khi đã vấp. Bạn thử ba cách, hai cách sai, cách thứ ba đúng.
+- Nó hết hạn. Sản phẩm đổi luồng là cách dựng cũ không còn đúng.
+
+Ba đặc điểm đó cũng giải thích luôn ba thứ mỗi bản ghi phải có, và ba việc sau của bài này dựng đúng
+chúng: **nguồn** (biết tin ai), **trạng thái** (biết còn dùng được không), **hạn tái xác nhận** (biết
+khi nào phải kiểm lại).
+
+### Cái gì KHÔNG đáng ghi
+
+| Đừng ghi | Vì sao |
+|---|---|
+| Thứ đọc được từ code trong 30 giây | Bản ghi sẽ cũ trước code, và người đọc tin bản ghi |
+| Thứ chỉ đúng cho một lượt chạy | Mã lượt chạy, đường dẫn tạm, id bản ghi vừa tạo |
+| Cảm nhận không có số | *"Module này hay lỗi"* — bao nhiêu bug, sprint nào? |
+| Dữ liệu khách | Email, số điện thoại, tên. Đây là kho của công ty, không phải sổ tay cá nhân |
+
+Dòng đầu là dòng hay bị vi phạm nhất, và nó tạo ra thứ tệ hơn không có gì: một bản ghi **từng đúng**.
+Người đọc không có cách nào biết nó đã cũ, nên họ tin nó. Việc 2 nói kỹ về chuyện này.
+
+## Việc 2 — Tri thức không nguồn dạy sai thế nào (20 phút)
 
 Bài 26 dựng kho tri thức. Giờ nó có vài chục bản ghi, và một bản ghi trông thế này:
 
@@ -52,7 +107,7 @@ Ai nói `450.000`? Không biết. Nhưng agent sẽ đọc và tin. Rồi:
 > Bài 13 dạy: kết luận phải neo được vào tài liệu. Bài này là cùng luật đó áp cho tri thức: một bản ghi
 > không neo được thì nó là phỏng đoán được cất giữ trang trọng.
 
-## Việc 2 — Schema: `source` rỗng thì cấm ghi (30 phút)
+## Việc 3 — Schema: `source` rỗng thì cấm ghi (30 phút)
 
 `.agent/config/knowledge-schema.json`:
 
@@ -120,7 +175,7 @@ Ba kiểu nguồn, mỗi kiểu đòi một thứ khác nhau, và đòi đúng c
 
 Cột phải là những câu không truy được, và chúng chiếm phần lớn tri thức viết vội.
 
-## Việc 3 — Bốn trạng thái, và khác biệt tinh (30 phút)
+## Việc 4 — Bốn trạng thái, và khác biệt tinh (30 phút)
 
 Đây là mục dễ làm sai nhất, và làm sai thì hậu quả rất cụ thể.
 
@@ -184,7 +239,7 @@ Tri thức không sai, nó **cũ đi**. `hanTaiXacNhan` trong schema nói mỗi 
 Quá hạn thì chuyển `cho-xac-nhan`. Không tự chuyển `invalid`. Quá hạn nghĩa là *"chưa ai kiểm lại"*,
 không phải *"đã sai"*. Đây lại đúng luật KHÔNG ĐO ĐƯỢC ≠ VI PHẠM của Bài 14.
 
-## Việc 4 — Gate chống học sai (40 phút)
+## Việc 5 — Gate chống học sai (40 phút)
 
 Áp công thức 5 câu hỏi (Bài 15):
 

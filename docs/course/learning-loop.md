@@ -1,6 +1,6 @@
 # Bài 27 — Learning Loop
 
-> **2 giờ** · Có gì trong tay: knowledge base có dữ liệu của vài sprint · Sau bài này: bảng rủi ro chấm được ngay từ tuần đầu
+> **2 giờ 30 phút** · Có gì trong tay: knowledge base có dữ liệu của vài sprint · Sau bài này: bảng rủi ro chấm được ngay từ tuần đầu
 
 **Tóm tắt bài này**
 
@@ -20,12 +20,16 @@
 
 ## Bài này bạn sẽ làm gì
 
-Bốn việc:
+Tám việc:
 
-1. Chốt công thức tính điểm rủi ro, và mỗi vế lấy số từ đâu (30 phút).
-2. Giải tình huống chưa có bug nào: năm tín hiệu thay thế (35 phút).
-3. Viết máy chấm điểm, và một bẫy đo được: tên module lệch làm bảng đầy dòng ma (40 phút).
-4. Viết gate ép độ sâu theo band, mặc định chỉ cảnh báo (35 phút).
+1. Vì sao thời gian test luôn ít hơn thứ cần test (10 phút).
+2. Công thức chấm rủi ro, và hai vế của nó lấy từ đâu (25 phút).
+3. Cold start: chấm khi chưa có bug nào trong lịch sử (25 phút).
+4. Bẫy dòng ma: tên module lệch làm cả bảng thành vô nghĩa (15 phút).
+5. Bug thiếu nhãn module, và vì sao không được đoán (10 phút).
+6. **Xây gate** ép độ sâu testcase theo band (25 phút).
+7. Người override được, nhưng phải ghi lý do (15 phút).
+8. Vòng đời dữ liệu: giữ bao lâu, tỉa thế nào, mỗi mốc kèm lý do (25 phút).
 
 ---
 
@@ -491,6 +495,80 @@ Máy bắt bẫy lệch tên module (nghiệm thu: đổi 1 tên sang tiếng An
 
 ---
 
+## Việc 8 — Vòng đời dữ liệu: giữ bao lâu, tỉa thế nào (25 phút)
+
+Bảy việc trên làm kho tri thức **hữu ích**. Việc này làm nó **không phình**.
+
+Sau một năm, kho của bạn có vài nghìn bản ghi. Phần lớn nói về những màn hình không còn tồn tại. Và
+đây là chỗ nguy hiểm: một kho phình không chỉ chậm, nó **giảm độ tin**. Người đọc gặp ba bản ghi cũ
+liên tiếp là lần thứ tư họ không đọc nữa.
+
+### Bốn nhóm, bốn vòng đời khác nhau
+
+| Nhóm | Giữ bao lâu | Vì sao đúng con số đó |
+|---|---|---|
+| Quy tắc nghiệp vụ | Tới khi sản phẩm đổi luật | Không có hạn theo thời gian. Nó hết hạn theo **sự kiện** |
+| Cách dựng trạng thái | 90 ngày rồi bắt tái xác nhận | Luồng sản phẩm đổi vài tháng một lần |
+| Bug đã gặp | Giữ mãi, nhưng có nhãn "đã fix" | Lịch sử bug là đầu vào của chấm rủi ro. Xoá là mất trọng số |
+| Kết quả từng lượt chạy | 30 ngày | Sau đó chỉ còn số tổng hợp là có ích, chi tiết thì không |
+
+Cột thứ ba là cột quan trọng nhất, và nó là điểm khác biệt giữa một chính sách và một con số tuỳ hứng.
+
+### Khai ngưỡng TRƯỚC, không tỉa theo cảm giác
+
+Con số phải nằm trong một tệp cấu hình, kèm lý do:
+
+```json
+{
+  "moTa": "Giữ bao lâu, và VÌ SAO đúng con số đó. Không có lý do thì lần sau không ai dám sửa.",
+  "nhom": {
+    "nghiepVu":   { "giu": null,  "lyDo": "hết hạn theo sự kiện sản phẩm đổi luật, không theo ngày" },
+    "dungState":  { "giu": 90,    "lyDo": "đo thật: luồng sản phẩm đổi trung bình 2-3 tháng một lần" },
+    "bugDaGap":   { "giu": null,  "lyDo": "là đầu vào chấm rủi ro ở Việc 2; xoá là mất trọng số" },
+    "ketQuaChay": { "giu": 30,    "lyDo": "quá 30 ngày thì chỉ số tổng hợp còn ích, chi tiết thì không" }
+  }
+}
+```
+
+Vì sao phải khai trước khi kho phình, chứ không khai lúc cần tỉa: vì lúc kho đã phình thì bạn quyết
+định dưới áp lực, và quyết định dưới áp lực luôn là **xoá cho nhanh**. Ba tháng sau bạn cần đúng bản
+ghi vừa xoá.
+
+Và vì sao bắt buộc có cột lý do: không có nó thì con số `90` trở thành thứ không ai dám sửa. Người sau
+nhìn vào không biết nó là kết quả đo hay là số bốc ra, nên họ để nguyên. Một con số không ai dám sửa
+là một con số đã chết.
+
+### Tỉa không phải xoá
+
+Ba mức, và chỉ mức cuối mới là xoá thật:
+
+| Mức | Làm gì | Khi nào |
+|---|---|---|
+| Hạ trạng thái | Đổi sang `cho-xac-nhan` | Quá hạn tái xác nhận |
+| Gộp | Nhiều bản ghi cùng chủ đề thành một, giữ nguồn của tất cả | Kho có 5 bản ghi nói cùng một luật |
+| Xoá | Bỏ hẳn | Chỉ khi thứ nó nói tới **không còn tồn tại** trong sản phẩm |
+
+Mức thứ nhất là mức quan trọng nhất, và nó là chỗ hay bị làm sai. Quá hạn **không** nghĩa là sai. Nó
+nghĩa là *"chưa ai kiểm lại"*. Chuyển thẳng bản ghi quá hạn sang `khong-hop-le` là kết luận thay cho
+một phép kiểm chưa ai làm.
+
+### Một chỗ tuyệt đối không được nhầm
+
+Kho tri thức **không nằm trong repo** — nó là dữ liệu công ty, và Bài 26 đã nói vì sao. Nghĩa là git
+không giữ nó, nên **không có bản lùi**. Tỉa sai là mất thật.
+
+Nên trước khi tỉa lần đầu, hai việc, theo đúng thứ tự này:
+
+1. Sao lưu ra ngoài repo, và **thử khôi phục một lần** ngay lúc đó. Bản sao lưu chưa từng được khôi
+   phục thì bạn chưa biết nó có dùng được không, bạn chỉ đang tin là được.
+2. Chạy phần tỉa ở chế độ in-ra-chứ-không-xoá, đọc danh sách nó định xoá, rồi mới cho chạy thật.
+
+Cách dựng máy sao lưu nằm ở bài [Sao lưu và vòng đời dữ liệu](sao-luu-va-vong-doi-du-lieu.md). Trong
+đó có một luật nghe lạ mà đáng nhớ: nếu đích sao lưu nằm **trong** repo thì máy phải từ chối chạy. Vì
+sao lưu vào chính chỗ bạn đang lo mất thì không phải sao lưu.
+
+---
+
 ## Cây thư mục sau bài này
 
 ```
@@ -527,7 +605,7 @@ từng cái.
 
 ## Đọc thêm
 
-- Bài 25 sẽ dùng band rủi ro để quyết độ sâu mở rộng — mở 5 trục cho mọi case thì evidence nhân lên tới
+- Bài 25 sẽ dùng band rủi ro để quyết độ sâu mở rộng. Mở 5 trục cho mọi case thì evidence nhân lên tới
   mức không ai đọc báo cáo nữa.
 - [`scripts/qa/risk_score.js`](../../scripts/qa/risk_score.js) của kit này, bản đầy đủ, dựa trên lịch sử thật.
 

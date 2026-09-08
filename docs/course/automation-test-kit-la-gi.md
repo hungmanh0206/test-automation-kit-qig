@@ -1,6 +1,6 @@
 # Bài 1 — Automation Test Kit là gì
 
-> **2 giờ** · Có gì trong tay: chưa có gì · Sau bài này: bạn đã tự tìm ra một bug bằng tay, và biết mình sắp dựng cái gì trong 63 giờ tới
+> **2 giờ** · Có gì trong tay: chưa có gì · Sau bài này: bạn đã tự tìm ra một bug bằng tay, và biết mình sắp dựng cái gì trong 64 giờ tới
 
 **Tóm tắt bài này**
 
@@ -124,7 +124,7 @@ App này có đúng 3 bug, biết trước. Nên nếu bộ kiểm của bạn b
 ở app. Đó gọi là **đối chứng**, và nó là ý tưởng trung tâm của mọi phép đo trong tài liệu này.
 
 Hai bug còn lại bạn sẽ gặp ở Bài 9 và Bài 10. Đừng mở [`BUGS.md`](assets/app-thuc-hanh/BUGS.md) trước
-khi làm hết Phần 2 — mở sớm thì mất luôn phép đối chứng.
+khi làm hết Phần 2. Mở sớm thì mất luôn phép đối chứng.
 
 ## Việc 2 — Bộ test, project, và kit (25 phút)
 
