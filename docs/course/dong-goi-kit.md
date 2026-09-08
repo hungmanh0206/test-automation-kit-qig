@@ -1,4 +1,4 @@
-# Bài 28 — Đóng gói thành kit dùng lại được
+# Bài 28 — Tách thứ thuộc Kit khỏi thứ thuộc Project
 
 > **2 giờ 30 phút** · Có gì trong tay: kit đầy đủ, chạy tốt trên máy bạn · Sau bài này: một bản phát hành đã được chứng minh là chạy được, không phải một tệp zip hy vọng
 

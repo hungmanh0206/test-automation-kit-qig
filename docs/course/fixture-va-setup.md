@@ -1,4 +1,4 @@
-# Bài 8 — Fixture và Setup
+# Bài 8 — Dựng precondition ổn định với Fixture
 
 > **2 giờ** · Có gì trong tay: factory tạo được dữ liệu, mỗi test vẫn tự gọi tay · Sau bài này: dữ liệu dựng đúng luồng, dọn được, và không phá môi trường của ai
 >

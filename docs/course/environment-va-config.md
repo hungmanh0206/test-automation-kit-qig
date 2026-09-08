@@ -1,4 +1,4 @@
-# Bài 6 — Environment và Configuration
+# Bài 6 — Tách môi trường khỏi testcase
 
 > **2 giờ** · Có gì trong tay: cấu trúc thư mục đã dựng, URL và tài khoản vẫn nằm trong code · Sau bài này: testcase không cần biết nó đang chạy ở dự án nào
 

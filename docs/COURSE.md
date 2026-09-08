@@ -139,10 +139,34 @@ Bạn không cần học hết toàn bộ tài liệu mới có thứ sử dụn
 | ③ Thành QA Workflow | hết Bài 17 | ~38 giờ | Automation không còn bắt đầu bằng locator mà bắt đầu từ requirement. Testcase truy được nguồn của expected, và một lần Failed phải được phân loại trước khi trở thành Bug |
 | ④ Thành Reusable QA Kit | hết Bài 29 | ~65.5 giờ | Kit vào CI, đo được reliability, tích luỹ knowledge, và được đóng gói. Bài cuối không dùng lại project cũ: bạn mang kit sang dự án thứ hai với requirement, UI, API và dữ liệu khác |
 
-Mốc ② là mốc quan trọng nhất, và nhiều người dừng ở đó rồi dùng cả năm. Hoàn toàn hợp lý.
+Mốc ② là mốc quan trọng nhất. Dừng ở đó là một lựa chọn hợp lý, không phải làm dở: bộ kit lúc đó đã
+đủ cấu trúc để dùng trong dự án thật, và ba phần sau giải quyết những câu hỏi chỉ xuất hiện khi kit
+đã chạy được một thời gian.
 
 Về mốc ④, có một tiêu chí nghiệm thu thẳng thắn: nếu sang dự án thứ hai mà vẫn phải sửa phần lớn tầng
 chung, thì kit của bạn chưa thực sự dùng lại được.
+
+---
+
+## Bốn cấp độ
+
+Năm phần ở mục lục là cách chia để tra. Còn thứ nên nằm trong đầu bạn khi học thì đơn giản hơn nhiều,
+chỉ bốn chữ:
+
+**Automate → Build → Control → Evolve**
+
+| Cấp độ | Bài | Câu bạn nói được sau cấp độ này |
+|---|---|---|
+| **1 · AUTOMATE** | 1–4 | Tôi chạy được test và tôi hiểu kết quả của nó |
+| **2 · BUILD** | 5–11 | Tôi có một Test Kit |
+| **3 · CONTROL** | 12–20 | Tôi có một QA workflow được enforce trong team |
+| **4 · EVOLVE** | 21–29 | Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse |
+
+Và một điều cần nói thẳng ngay đây, để bạn không tự đặt cho mình một cái đích sai:
+
+> **Hết cấp độ 3 là đã đủ dùng trong một team thật.** Cấp độ 4 không phải phần "làm cho kit chạy
+> được", nó trả lời một câu khó hơn: kit có tự đo được độ tin cậy của chính nó, mở rộng được tới đâu,
+> và có tốt lên sau mỗi sprint không.
 
 ---
 
@@ -351,12 +375,14 @@ kit-cua-toi/
 
 ## PHẦN 1 — Từ Manual QA đến Automation đầu tiên (7.5 giờ)
 
+`CẤP ĐỘ 1 · AUTOMATE`
+
 > **Xong phần này bạn có:** một testcase thực sự chạy, và bạn hiểu dấu xanh hay đỏ của nó có ý nghĩa gì
 
 Bạn bắt đầu từ requirement và manual testing, sau đó tự tạo repository, cài Playwright và viết
 testcase automation đầu tiên.
 
-### [Bài 1 — Automation Test Kit là gì](course/automation-test-kit-la-gi.md) *(2h · dễ)*
+### [Bài 1 — Trước khi automate: một testcase đúng trông như thế nào?](course/automation-test-kit-la-gi.md) *(2h · dễ)* ⭐
 
 *Có gì trong tay: chưa có gì.*
 
@@ -366,7 +392,7 @@ testcase automation đầu tiên.
 - Vẽ dây chuyền 11 chặng và tự đánh dấu chặng nào bạn đang làm bằng tay
 - Đào sâu: [chi phí và giới hạn thật](course/chi-phi-va-gioi-han.md) của việc dựng kit, đọc trước khi quyết đầu tư thời gian
 
-### [Bài 2 — Cài môi trường và tạo repo](course/moi-truong.md) *(1.5h · dễ)*
+### [Bài 2 — Dựng môi trường làm việc cho Automation](course/moi-truong.md) *(1.5h · dễ)*
 
 *Có gì trong tay: đã chơi với app thực hành, chưa có repo.*
 
@@ -376,7 +402,7 @@ testcase automation đầu tiên.
 - **Xây gate:** `kiem-file-cam.js` chặn tệp cấm bị git track
 - Đào sâu: [git từ số 0](course/git-tu-so-0.md) cho người chưa từng dùng commit và nhánh
 
-### [Bài 3 — Dự án Playwright đầu tiên](course/playwright-du-an-dau-tien.md) *(2h · dễ)*
+### [Bài 3 — Cho Playwright chạy testcase đầu tiên](course/playwright-du-an-dau-tien.md) *(2h · dễ)*
 
 *Có gì trong tay: repo rỗng có `.gitignore` và `package.json`.*
 
@@ -385,7 +411,7 @@ testcase automation đầu tiên.
 - Ba tuỳ chọn khiến CI xanh giả nếu đặt sai, và cách đặt đúng
 - Chạy có giao diện và chạy không giao diện, khi nào dùng cái nào
 
-### [Bài 4 — Testcase automation đầu tiên](course/testcase-automation-dau-tien.md) *(2h · vừa)* ⭐
+### [Bài 4 — Viết testcase automation đầu tiên có khả năng bắt lỗi](course/testcase-automation-dau-tien.md) *(2h · vừa)* ⭐
 
 *Có gì trong tay: Playwright đã cài, `playwright.config.js` đã cấu hình.*
 
@@ -398,12 +424,14 @@ testcase automation đầu tiên.
 
 ## PHẦN 2 — Từ Automation Project đến Test Kit (15 giờ)
 
+`CẤP ĐỘ 2 · BUILD`
+
 > **Xong phần này bạn có:** một Automation Test Kit có cấu trúc đủ để sử dụng trong dự án thật
 
 Bạn giải quyết từng vấn đề xuất hiện khi số lượng testcase bắt đầu tăng: configuration, test data,
 fixture, FE, API, evidence và reporting.
 
-### [Bài 5 — Cấu trúc một automation project](course/cau-truc-project.md) *(1.5h · dễ)*
+### [Bài 5 — Khi một testcase bắt đầu trở thành một project](course/cau-truc-project.md) *(1.5h · dễ)*
 
 *Có gì trong tay: một test chạy được, mọi thứ nằm trong một file.*
 
@@ -412,7 +440,7 @@ fixture, FE, API, evidence và reporting.
 - Đặt tên file test sao cho sáu tháng sau vẫn tìm được
 - **Cây thư mục sau bài này** là bộ khung mọi bài sau sẽ lấp đầy
 
-### [Bài 6 — Environment và Configuration](course/environment-va-config.md) *(2h · vừa)*
+### [Bài 6 — Tách môi trường khỏi testcase](course/environment-va-config.md) *(2h · vừa)*
 
 *Có gì trong tay: cấu trúc thư mục đã dựng, URL và tài khoản vẫn nằm trong code.*
 
@@ -421,7 +449,7 @@ fixture, FE, API, evidence và reporting.
 - Một hàm nạp cấu hình duy nhất, để testcase không cần biết mình đang chạy ở dự án nào
 - **Xây gate:** khai `env-allow.json`, biến môi trường lạ thì chặn thay vì im lặng chạy sai
 
-### [Bài 7 — Test Data](course/test-data.md) *(2h · vừa)*
+### [Bài 7 — Để testcase tự sở hữu dữ liệu của nó](course/test-data.md) *(2h · vừa)* ⭐
 
 *Có gì trong tay: config đã tách, dữ liệu test vẫn gõ tay trong từng test.*
 
@@ -430,7 +458,7 @@ fixture, FE, API, evidence và reporting.
 - Dọn dữ liệu sau khi chạy, và ba lớp an toàn để không xoá nhầm
 - Dữ liệu ngẫu nhiên đến đâu thì dừng, vì sao random hoàn toàn làm test không lặp lại được
 
-### [Bài 8 — Fixture và Setup](course/fixture-va-setup.md) *(2h · vừa)*
+### [Bài 8 — Dựng precondition ổn định với Fixture](course/fixture-va-setup.md) *(2h · vừa)*
 
 *Có gì trong tay: factory tạo được dữ liệu, mỗi test vẫn tự gọi tay.*
 
@@ -439,16 +467,16 @@ fixture, FE, API, evidence và reporting.
 - Bốn cách dựng tiền điều kiện xếp theo thứ tự ưu tiên, và vì sao dựng bằng database là cách tệ nhất
 - **Bug ma:** khi tiền điều kiện dựng sai, sản phẩm xử lý sai theo, và bạn log một bug không tồn tại
 
-### [Bài 9 — FE Automation](course/fe-automation.md) *(2.5h · vừa)*
+### [Bài 9 — Viết UI automation ít gãy hơn](course/fe-automation.md) *(2.5h · vừa)*
 
 *Có gì trong tay: fixture dựng được state, test vẫn hay đỏ vì không tìm thấy element.*
 
-- Sáu mẫu định vị element ẩu, đo trên một dự án thật: `.first()` 2052 lần, `force:true` 1011 lần
+- Sáu mẫu định vị element ẩu, và vì sao mỗi mẫu là dấu hiệu bạn không thật sự biết mình đang chạm vào element nào
 - Thang ưu tiên khi chọn locator, và vì sao `data-testid` không phải lúc nào cũng đứng đầu
 - Chờ đúng cách: chờ điều kiện chứ không chờ thời gian
 - **Xây gate:** `lint-locator` chặn mẫu ẩu mới, không bắt sửa hết lịch sử
 
-### [Bài 10 — API Automation](course/api-automation.md) *(2.5h · vừa)*
+### [Bài 10 — Kiểm rule phía sau giao diện bằng API](course/api-automation.md) *(2.5h · vừa)*
 
 *Có gì trong tay: bộ test FE chạy được, mọi kiểm tra đều đi qua giao diện.*
 
@@ -458,7 +486,7 @@ fixture, FE, API, evidence và reporting.
 - **Xây gate:** `doi-chieu-luu-tru.js` so cái UI hiện với cái tầng lưu trữ giữ, để khoanh tầng lỗi
 - Đào sâu: [UI và tầng lưu trữ](course/ui-va-tang-luu-tru.md) cho trường hợp báo thành công nhưng lưu sai
 
-### [Bài 11 — Evidence và Reporting](course/evidence-va-report.md) *(2.5h · vừa)* ⭐
+### [Bài 11 — Khi test Fail, bằng chứng của bạn ở đâu?](course/evidence-va-report.md) *(2.5h · vừa)* ⭐
 
 *Có gì trong tay: FE và API đều chạy, kết quả vẫn chỉ có trong console.*
 
@@ -472,13 +500,15 @@ fixture, FE, API, evidence và reporting.
 
 ## PHẦN 3 — Từ Testcase đến QA Workflow (15.5 giờ)
 
+`CẤP ĐỘ 3 · CONTROL`
+
 > **Xong phần này bạn có:** automation trở thành một phần của quy trình QA, thay vì một tập script độc lập
 
 Bạn quay lại thứ đáng lẽ phải đứng trước automation: **requirement**. Bóc business rule, thiết kế
 testcase có nguồn, đánh giá coverage, giao một phần công việc cho AI Agent, và triage failure trước
 khi tạo bug.
 
-### [Bài 12 — Đừng bắt đầu automation bằng code](course/dung-bat-dau-bang-code.md) *(2h · vừa)*
+### [Bài 12 — Trước khi viết test: expected của bạn đến từ đâu?](course/dung-bat-dau-bang-code.md) *(2h · vừa)*
 
 *Có gì trong tay: bộ automation chạy được, nhưng chưa ai hỏi nó đang kiểm cái gì.*
 
@@ -487,7 +517,7 @@ khi tạo bug.
 - Xử lý khi tài liệu, Figma và API nói ba thứ khác nhau
 - **Xây máy tư vấn:** `do-tai-lieu.js` đo tài liệu rồi khuyến nghị chiến lược, cảnh báo chứ không chặn
 
-### [Bài 13 — Thiết kế testcase](course/thiet-ke-testcase.md) *(2.5h · vừa)* ⭐
+### [Bài 13 — Thiết kế testcase có nguồn đáng tin](course/thiet-ke-testcase.md) *(2.5h · vừa)* ⭐
 
 *Có gì trong tay: bảng luật `BR-` đã bóc từ requirement.*
 
@@ -497,7 +527,7 @@ khi tạo bug.
 - **Thực hành:** bảo agent sửa cho test pass, xem nó lấy số của app làm chuẩn, và xem máy chặn lại
 - Đào sâu: [kỷ luật oracle](course/oracle.md), bài quan trọng nhất của cả tài liệu
 
-### [Bài 14 — Coverage và Risk](course/coverage-va-risk.md) *(3h · vừa)*
+### [Bài 14 — Đừng đếm testcase, hãy đo những gì bạn đã phủ](course/coverage-va-risk.md) *(3h · vừa)*
 
 *Có gì trong tay: bộ testcase có oracle, chưa biết đủ hay thiếu.*
 
@@ -506,7 +536,7 @@ khi tạo bug.
 - Band rủi ro: cách đọc, và vì sao độ sâu testcase phải theo band (máy chấm điểm dựng ở Bài 27)
 - **Xây gate:** `dem_chieu.js` chặn khi chiều bắt buộc chưa đủ ngưỡng
 
-### [Bài 15 — Phase 1: sinh testcase từ requirement](course/phase1-sinh-testcase.md) *(3h · khó)*
+### [Bài 15 — Giao việc sinh testcase cho AI mà không để AI tự đoán](course/phase1-sinh-testcase.md) *(3h · khó)*
 
 *Có gì trong tay: quy tắc thiết kế và đo phủ đã có, làm tay vẫn chậm.*
 
@@ -516,7 +546,7 @@ khi tạo bug.
 - Công thức 5 câu hỏi để viết mọi gate về sau, dùng lại suốt phần còn lại
 - Đào sâu: [viết gate đầu tiên](course/viet-gate-dau-tien.md) · [prompt, skill, rule, command](course/prompt-va-token.md)
 
-### [Bài 16 — Phase 2: chạy automation có kiểm soát](course/phase2-chay-automation.md) *(3h · khó)*
+### [Bài 16 — Cho AI chạy automation nhưng không được tự kết luận](course/phase2-chay-automation.md) *(3h · khó)*
 
 *Có gì trong tay: bộ testcase đã sinh và đã chốt.*
 
@@ -526,7 +556,7 @@ khi tạo bug.
 - **Xây gate:** `gate-mo-rong.js` hạ phát hiện không neo xuống `OBSERVATION`
 - Gộp cả chuỗi vào một lệnh `/phase2 <MÃ>` thay vì nhớ sáu lệnh
 
-### [Bài 17 — Triage lỗi và rerun](course/triage-va-rerun.md) *(2h · vừa)* ⭐
+### [Bài 17 — Test đỏ chưa có nghĩa là Bug](course/triage-va-rerun.md) *(2h · vừa)* ⭐
 
 *Có gì trong tay: một lượt chạy có case đỏ.*
 
@@ -539,12 +569,14 @@ khi tạo bug.
 
 ## PHẦN 4 — Đưa Kit vào Team và CI (6 giờ)
 
+`CẤP ĐỘ 3 · CONTROL`
+
 > **Xong phần này bạn có:** kit bắt đầu hoạt động trong workflow của cả team
 
 Testcase và kết quả được đưa ra khỏi máy cá nhân. Bạn tích hợp test management, bug workflow và CI để
 các rule quan trọng không phụ thuộc vào việc một QA có nhớ chạy chúng hay không.
 
-### [Bài 18 — Test Management](course/test-management.md) *(2h · vừa)*
+### [Bài 18 — Đưa testcase ra khỏi máy cá nhân](course/test-management.md) *(2h · vừa)*
 
 *Có gì trong tay: testcase và kết quả vẫn đang nằm local.*
 
@@ -553,7 +585,7 @@ các rule quan trọng không phụ thuộc vào việc một QA có nhớ chạ
 - Đẩy testcase lên, đẩy kết quả execution lên, và giữ được đường truy ngược về requirement
 - **Xây gate:** `doi-soat-truong.js`, vì mã 2xx không chứng minh trường được map đúng
 
-### [Bài 19 — Quy trình bug trên Jira](course/bug-workflow-jira.md) *(2h · vừa)*
+### [Bài 19 — Khi nào một lần Fail thực sự trở thành Bug?](course/bug-workflow-jira.md) *(2h · vừa)*
 
 *Có gì trong tay: một phát hiện đã qua triage và xác nhận là lỗi sản phẩm.*
 
@@ -562,7 +594,7 @@ các rule quan trọng không phụ thuộc vào việc một QA có nhớ chạ
 - Gán đúng người theo tầng lỗi, vì bug giao diện và bug backend đi hai đường khác nhau
 - Rerun sau khi Dev fix, và một cái bẫy: kết quả rerun hết hạn sau lần deploy kế tiếp
 
-### [Bài 20 — CI/CD](course/ci-cd.md) *(2h · vừa)*
+### [Bài 20 — Đừng dựa vào trí nhớ, hãy đưa Gate vào CI](course/ci-cd.md) *(2h · vừa)*
 
 *Có gì trong tay: mọi gate chạy được trên máy bạn, và chỉ khi bạn nhớ chạy.*
 
@@ -576,15 +608,27 @@ các rule quan trọng không phụ thuộc vào việc một QA có nhớ chạ
 
 ## PHẦN 5 — Mở rộng, đo độ tin cậy và tái sử dụng (21.5 giờ)
 
+`CẤP ĐỘ 4 · EVOLVE`
+
 > **Xong phần này bạn có:** bằng chứng rằng bộ automation vừa xây là một kit dùng lại được, không chỉ là automation của một website
 
-Bạn bổ sung những capability không phải dự án nào cũng cần giống nhau: Mobile Web · Accessibility ·
-Performance và Load · Quality Gates · Flaky và Reliability · Knowledge Base · Learning Loop.
+Phần này không phải một khối. Ba nhóm bài, ba loại câu hỏi khác nhau, và **không nhóm nào là điều
+kiện để bạn được coi là "biết automation"**:
+
+| Nhóm | Bài | Nhãn | Câu hỏi nó trả lời |
+|---|---|---|---|
+| Mở rộng bề mặt kiểm thử | 21–23 | `MỞ RỘNG · chọn theo dự án` | Kit còn nhìn được những loại rủi ro nào nữa? |
+| Kiểm chính bộ kiểm | 24–25 | `NÂNG CAO` | Tôi có tin chính bộ test của mình không? |
+| Tích luỹ learning | 26–27 | `NÂNG CAO` | Kit có nhớ những gì team đã học không? |
+| Đóng gói và chứng minh | 28–29 | `KẾT` | Đây là kit dùng lại được, hay chỉ là automation của một website? |
+
+Nhóm đầu phụ thuộc dự án: không phải sản phẩm nào cũng cần cùng một độ sâu về mobile, khả năng tiếp
+cận hay hiệu năng. Ba nhóm sau thì gần với độ chín của chính bộ kit hơn.
 
 Cuối cùng, bạn tách phần **CHUNG** khỏi phần **DỰ ÁN**, đóng gói kit và mang sang một sản phẩm hoàn
 toàn mới.
 
-### [Bài 21 — Mobile Web](course/mobile-web.md) *(1.5h · dễ)*
+### [Bài 21 — Desktop xanh chưa có nghĩa Mobile cũng xanh](course/mobile-web.md) *(1.5h · dễ)*
 
 *Có gì trong tay: bộ test chạy trên desktop.*
 
@@ -593,7 +637,7 @@ toàn mới.
 - Khai thiết bị trong config thay vì đặt kích thước tay
 - Chọn cái gì chạy trên mobile, vì chạy hết là nhân đôi thời gian mà không nhân đôi giá trị
 
-### [Bài 22 — Accessibility](course/accessibility.md) *(1.5h · dễ)*
+### [Bài 22 — Máy click được chưa có nghĩa người dùng chạm tới được](course/accessibility.md) *(1.5h · dễ)*
 
 *Có gì trong tay: bộ test FE ổn định.*
 
@@ -602,7 +646,7 @@ toàn mới.
 - **Thực hành:** rút chuột ra, đi hết một luồng chính bằng bàn phím, ghi lại mọi chỗ bị kẹt
 - Ngưỡng chặn và ngưỡng cảnh báo, vì bật hết mức là bị tắt sau một tuần
 
-### [Bài 23 — Performance và Load](course/performance-va-load.md) *(2h · vừa)*
+### [Bài 23 — "Thấy nhanh" không phải là một phép đo](course/performance-va-load.md) *(2h · vừa)*
 
 *Có gì trong tay: bộ test chức năng đầy đủ.*
 
@@ -611,7 +655,7 @@ toàn mới.
 - Kịch bản tải: dựng, chạy, và đọc kết quả mà không kết luận quá tay
 - Đừng bịa ngưỡng: chưa có SLA thì báo cáo là tư vấn, không phải phán quyết
 
-### [Bài 24 — Quality Gates](course/quality-gates.md) *(2.5h · khó)*
+### [Bài 24 — Ai kiểm chính các Quality Gate?](course/quality-gates.md) *(2.5h · khó)*
 
 *Có gì trong tay: khoảng mười gate rời rạc, viết theo từng bài.*
 
@@ -621,7 +665,7 @@ toàn mới.
 - **Xây gate:** `tu-soi.js` gọi mọi máy một lượt · `chong-troi.js` chặn luật bị trôi
 - Đào sâu: [viết gate đầu tiên](course/viet-gate-dau-tien.md) · [một nguồn và máy chống trôi](course/mot-nguon-va-may-chong-troi.md)
 
-### [Bài 25 — Flaky và đo chính bộ kiểm](course/flaky-va-do-tin-cay.md) *(3.5h · khó)* ⭐
+### [Bài 25 — Bộ test của bạn đáng tin đến mức nào?](course/flaky-va-do-tin-cay.md) *(3.5h · khó)* ⭐
 
 *Có gì trong tay: bộ test khá lớn, thỉnh thoảng đỏ không rõ lý do.*
 
@@ -631,7 +675,7 @@ toàn mới.
 - Bắt được 4/5 lỗi tiêm vào là một con số. "Tôi thấy ổn" thì không
 - Đào sâu: [đo chính bộ kiểm](course/do-chinh-bo-kiem.md)
 
-### [Bài 26 — Knowledge Base](course/knowledge-base.md) *(3h · vừa)*
+### [Bài 26 — Bộ automation có nhớ những gì team đã học không?](course/knowledge-base.md) *(3h · vừa)*
 
 *Có gì trong tay: đã chạy hàng trăm testcase qua nhiều sprint.*
 
@@ -641,7 +685,7 @@ toàn mới.
 - **Xây gate:** chặn ở cửa ĐỌC chứ không chỉ cửa ghi, vì tri thức sai còn tệ hơn không có
 - Đào sâu: [một QA agent cần học những gì](course/bo-nho-du-an.md)
 
-### [Bài 27 — Learning Loop](course/learning-loop.md) *(2.5h · vừa)*
+### [Bài 27 — Dùng lịch sử để quyết định lần test tiếp theo](course/learning-loop.md) *(2.5h · vừa)*
 
 *Có gì trong tay: knowledge base có dữ liệu của vài sprint.*
 
@@ -650,7 +694,7 @@ toàn mới.
 - Bẫy dòng ma: tên module lệch làm cả bảng rủi ro thành vô nghĩa. Và vòng đời dữ liệu: giữ bao lâu, tỉa thế nào, mỗi mốc kèm lý do
 - Đào sâu: [sao lưu và vòng đời dữ liệu](course/sao-luu-va-vong-doi-du-lieu.md)
 
-### [Bài 28 — Đóng gói thành kit dùng lại được](course/dong-goi-kit.md) *(2.5h · vừa)*
+### [Bài 28 — Tách thứ thuộc Kit khỏi thứ thuộc Project](course/dong-goi-kit.md) *(2.5h · vừa)*
 
 *Có gì trong tay: kit đầy đủ, chạy tốt trên máy bạn.*
 
@@ -659,7 +703,7 @@ toàn mới.
 - **Nghiệm thu gói:** giải nén vào thư mục sạch rồi chạy, đúng trải nghiệm người nhận
 - README và CHANGELOG viết cho người chưa từng thấy kit
 
-### [Bài 29 — Mang kit sang một dự án hoàn toàn mới](course/mang-kit-sang-du-an-moi.md) *(2.5h · vừa)* ⭐
+### [Bài 29 — Final Challenge: mang Kit sang một dự án hoàn toàn mới](course/mang-kit-sang-du-an-moi.md) *(2.5h · vừa)* ⭐
 
 *Có gì trong tay: một bản phát hành đã nghiệm thu.*
 

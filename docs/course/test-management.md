@@ -1,4 +1,4 @@
-# Bài 18 — Test Management
+# Bài 18 — Đưa testcase ra khỏi máy cá nhân
 
 > **2 giờ** · Có gì trong tay: testcase và kết quả vẫn đang nằm local · Sau bài này: cả team đọc chung một nguồn, và giữ được đường truy ngược về requirement
 

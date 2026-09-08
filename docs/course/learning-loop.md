@@ -1,4 +1,4 @@
-# Bài 27 — Learning Loop
+# Bài 27 — Dùng lịch sử để quyết định lần test tiếp theo
 
 > **2 giờ 30 phút** · Có gì trong tay: knowledge base có dữ liệu của vài sprint · Sau bài này: bảng rủi ro chấm được ngay từ tuần đầu
 

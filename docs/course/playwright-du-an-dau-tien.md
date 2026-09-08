@@ -1,4 +1,4 @@
-# Bài 3 — Dự án Playwright đầu tiên
+# Bài 3 — Cho Playwright chạy testcase đầu tiên
 
 > **2 giờ** · Có gì trong tay: repo rỗng có `.gitignore` và `package.json` · Sau bài này: Playwright chạy được, và bạn hiểu từng dòng trong file cấu hình
 

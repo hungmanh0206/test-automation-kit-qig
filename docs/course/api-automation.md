@@ -1,4 +1,4 @@
-# Bài 10 — API Automation
+# Bài 10 — Kiểm rule phía sau giao diện bằng API
 
 > **2 giờ 30 phút** · Có gì trong tay: bộ test FE chạy được, mọi kiểm tra đều đi qua giao diện · Sau bài này: bắt được lỗi mà giao diện không thể lộ ra
 

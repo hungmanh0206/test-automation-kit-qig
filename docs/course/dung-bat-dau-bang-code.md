@@ -1,4 +1,4 @@
-# Bài 12 — Đừng bắt đầu automation bằng code
+# Bài 12 — Trước khi viết test: expected của bạn đến từ đâu?
 
 > **2 giờ** · Có gì trong tay: bộ automation chạy được, nhưng chưa ai hỏi nó đang kiểm cái gì · Sau bài này: bộ case do agent sinh, đã qua Ambiguity Gate
 

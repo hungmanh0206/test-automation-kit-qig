@@ -1,4 +1,4 @@
-# Bài 4 — Testcase automation đầu tiên
+# Bài 4 — Viết testcase automation đầu tiên có khả năng bắt lỗi
 
 > **2 giờ** · Có gì trong tay: Playwright đã cài, `playwright.config.js` đã cấu hình · Sau bài này: một test chạy thật trên app thực hành, và bạn biết nó đang kiểm cái gì
 

@@ -1,4 +1,4 @@
-# Bài 14 — Coverage và Risk
+# Bài 14 — Đừng đếm testcase, hãy đo những gì bạn đã phủ
 
 > **3 giờ** · Có gì trong tay: bộ testcase có oracle, chưa biết đủ hay thiếu · Sau bài này: biết bộ của mình trống hẳn loại câu hỏi nào
 

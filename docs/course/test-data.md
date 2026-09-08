@@ -1,4 +1,4 @@
-# Bài 7 — Test Data
+# Bài 7 — Để testcase tự sở hữu dữ liệu của nó
 
 > **2 giờ** · Có gì trong tay: config đã tách, dữ liệu test vẫn gõ tay trong từng test · Sau bài này: mỗi test tự dựng dữ liệu của nó và tự dọn sau khi chạy
 

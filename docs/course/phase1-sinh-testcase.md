@@ -1,4 +1,4 @@
-# Bài 15 — Phase 1: sinh testcase từ requirement
+# Bài 15 — Giao việc sinh testcase cho AI mà không để AI tự đoán
 
 > **3 giờ** · Có gì trong tay: quy tắc thiết kế và đo phủ đã có, làm tay vẫn chậm · Sau bài này: agent không còn đoán khi gặp mơ hồ, và bạn biết công thức viết mọi gate về sau
 

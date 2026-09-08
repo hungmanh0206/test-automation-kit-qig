@@ -1,4 +1,4 @@
-# Bài 25 — Flaky và đo chính bộ kiểm
+# Bài 25 — Bộ test của bạn đáng tin đến mức nào?
 
 > **3 giờ 30 phút** · Có gì trong tay: bộ test khá lớn, thỉnh thoảng đỏ không rõ lý do · Sau bài này: đo được suite của bạn lệ thuộc retry bao nhiêu, và biết vì sao dọn flaky có thể chôn bug thật
 

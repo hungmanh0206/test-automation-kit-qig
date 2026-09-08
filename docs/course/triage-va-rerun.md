@@ -1,4 +1,4 @@
-# Bài 17 — Triage lỗi và rerun
+# Bài 17 — Test đỏ chưa có nghĩa là Bug
 
 > **2 giờ** · Có gì trong tay: một lượt chạy có case đỏ · Sau bài này: `phan-quyet.json` và `testcase-status.json` — hai file mà Phần 4 sẽ đọc
 

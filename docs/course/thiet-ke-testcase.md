@@ -1,4 +1,4 @@
-# Bài 13 — Thiết kế testcase
+# Bài 13 — Thiết kế testcase có nguồn đáng tin
 
 > **2 giờ 30 phút** · Có gì trong tay: bảng luật `BR-` đã bóc từ requirement · Sau bài này: template 7 cột, một parser, và 10 case viết tay để đối chứng
 

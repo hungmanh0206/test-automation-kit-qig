@@ -1,4 +1,4 @@
-# Bài 21 — Mobile Web
+# Bài 21 — Desktop xanh chưa có nghĩa Mobile cũng xanh
 
 > **1 giờ 30 phút** · Có gì trong tay: bộ test chạy trên desktop · Sau bài này: cùng suite chạy trên viewport điện thoại, và bạn biết chọn cái gì đáng chạy
 

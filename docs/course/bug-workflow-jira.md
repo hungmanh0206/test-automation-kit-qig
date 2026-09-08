@@ -1,4 +1,4 @@
-# Bài 19 — Quy trình bug trên Jira
+# Bài 19 — Khi nào một lần Fail thực sự trở thành Bug?
 
 > **2 giờ** · Có gì trong tay: một phát hiện đã qua triage và xác nhận là lỗi sản phẩm · Sau bài này: bug đi đúng người, đủ thông tin, và Dev không phải hỏi lại
 

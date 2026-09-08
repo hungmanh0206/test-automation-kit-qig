@@ -1,4 +1,4 @@
-# Bài 22 — Accessibility
+# Bài 22 — Máy click được chưa có nghĩa người dùng chạm tới được
 
 > **1 giờ 30 phút** · Có gì trong tay: bộ test FE ổn định · Sau bài này: một phép quét cắm vào test có sẵn, và bạn biết nó phủ được tới đâu
 

@@ -1,4 +1,4 @@
-# Bài 24 — Quality Gates
+# Bài 24 — Ai kiểm chính các Quality Gate?
 
 > **2 giờ 30 phút** · Có gì trong tay: khoảng mười gate rời rạc, viết theo từng bài · Sau bài này: một khung chung, một lệnh gộp, và cách chứng minh gate có răng
 

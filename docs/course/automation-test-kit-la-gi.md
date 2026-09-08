@@ -1,4 +1,4 @@
-# Bài 1 — Automation Test Kit là gì
+# Bài 1 — Trước khi automate: một testcase đúng trông như thế nào?
 
 > **2 giờ** · Có gì trong tay: chưa có gì · Sau bài này: bạn đã tự tìm ra một bug bằng tay, và biết mình sắp dựng cái gì trong 64 giờ tới
 

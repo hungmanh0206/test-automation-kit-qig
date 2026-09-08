@@ -1,4 +1,4 @@
-# Bài 20 — CI/CD
+# Bài 20 — Đừng dựa vào trí nhớ, hãy đưa Gate vào CI
 
 > **2 giờ** · Có gì trong tay: mọi gate chạy được trên máy bạn, và chỉ khi bạn nhớ chạy · Sau bài này: kit chạy không cần bạn, và người khác dùng được nó
 

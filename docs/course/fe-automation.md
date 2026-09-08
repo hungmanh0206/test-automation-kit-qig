@@ -1,4 +1,4 @@
-# Bài 9 — FE Automation
+# Bài 9 — Viết UI automation ít gãy hơn
 
 > **2 giờ 30 phút** · Có gì trong tay: fixture dựng được state, test vẫn hay đỏ vì không tìm thấy element · Sau bài này: locator không gãy khi giao diện đổi, và test hết chập chờn
 
@@ -145,7 +145,8 @@ và tiết kiệm rất nhiều cho bạn.
 | `mouse.click(x, y)` | "Tôi không tìm được element" | Đổi layout hoặc zoom là click vào chỗ trống |
 | Regex trên `body.innerText` | "Tôi tìm con số ở đâu đó trên trang" | Bắt trúng con số ở khu vực khác |
 
-Đo thật trên một task lớn ở kit này: `.first()` **2052 lần** · `force: true` **1011** · regex trên
+Con số dưới đây đo bằng `npm run lint:locator` (bạn dựng nó ở cuối bài) trên **một bộ test thật của
+một dự án đang chạy**, khoảng 900 tệp. Nó là số của repo đó, không phải một mức trung bình của ngành: `.first()` **2052 lần** · `force: true` **1011** · regex trên
 `body.innerText` **204** · `querySelectorAll('*')` **166** · `.nth(N)` 141 · click theo toạ độ 31.
 
 > Điểm chung của cả bốn: chúng không làm test đỏ. Chúng làm test đọc nhầm giá trị, click nhầm nút, rồi

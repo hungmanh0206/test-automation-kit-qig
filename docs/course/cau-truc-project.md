@@ -1,4 +1,4 @@
-# Bài 5 — Cấu trúc một automation project
+# Bài 5 — Khi một testcase bắt đầu trở thành một project
 
 > **1 giờ 30 phút** · Có gì trong tay: một test chạy được, mọi thứ nằm trong một file · Sau bài này: bộ khung thư mục mà mọi bài sau sẽ lấp đầy
 

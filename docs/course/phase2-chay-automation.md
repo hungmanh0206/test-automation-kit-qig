@@ -1,4 +1,4 @@
-# Bài 16 — Phase 2: chạy automation có kiểm soát
+# Bài 16 — Cho AI chạy automation nhưng không được tự kết luận
 
 > **3 giờ** · Có gì trong tay: bộ testcase đã sinh và đã chốt · Sau bài này: bắt được bug ở chỗ testcase không hề nói tới — mà không biến mở rộng thành tautology nhân 7 lần
 

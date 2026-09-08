@@ -1,4 +1,4 @@
-# Bài 26 — Knowledge Base
+# Bài 26 — Bộ automation có nhớ những gì team đã học không?
 
 > **3 giờ** · Có gì trong tay: đã chạy hàng trăm testcase qua nhiều sprint · Sau bài này: tri thức có phiên bản, truy được nguồn, và không âm thầm dạy sai cho agent
 

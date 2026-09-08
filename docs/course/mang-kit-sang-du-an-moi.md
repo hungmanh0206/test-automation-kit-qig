@@ -1,4 +1,4 @@
-# Bài 29 — Mang kit sang một dự án hoàn toàn mới
+# Bài 29 — Final Challenge: mang Kit sang một dự án hoàn toàn mới
 
 > **2 giờ 30 phút** · Có gì trong tay: một bản phát hành đã nghiệm thu · Sau bài này: kit chạy trên dự án thật của bạn — lần đầu rời app thực hành
 

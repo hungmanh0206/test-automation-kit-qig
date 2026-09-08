@@ -1,4 +1,4 @@
-# Bài 2 — Cài môi trường và tạo repo
+# Bài 2 — Dựng môi trường làm việc cho Automation
 
 > **1 giờ 30 phút** · Có gì trong tay: đã chơi với app thực hành, chưa có repo · Sau bài này: repo chạy được, và có máy canh không cho tệp cấm lọt lên
 

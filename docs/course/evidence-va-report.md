@@ -1,4 +1,4 @@
-# Bài 11 — Evidence và Reporting
+# Bài 11 — Khi test Fail, bằng chứng của bạn ở đâu?
 
 > **2 giờ 30 phút** · Có gì trong tay: FE và API đều chạy, kết quả vẫn chỉ có trong console · Sau bài này: ảnh có khoanh đỏ, video có banner, PII đã che, và một report người ngoài đọc được
 

@@ -1,4 +1,4 @@
-# Bài 23 — Performance và Load
+# Bài 23 — "Thấy nhanh" không phải là một phép đo
 
 > **2 giờ** · Có gì trong tay: bộ test chức năng đầy đủ · Sau bài này: đo được tốc độ bằng số, và biết chỗ nào không được kết luận
 
