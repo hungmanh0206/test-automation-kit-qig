@@ -7,7 +7,7 @@ Còn nếu bạn đã làm hết Phần 3 (hoặc đang bí thật), đọc ti�
 
 ---
 
-## BUG-1 — Phí giao hàng so mốc trên số sai
+## BUG-1 — Phí dịch vụ so mốc trên số sai
 
 **Tầng lỗi:** backend (logic tính toán)
 **Vi phạm:** `BR-03`
@@ -15,21 +15,21 @@ Còn nếu bạn đã làm hết Phần 3 (hoặc đang bí thật), đọc ti�
 
 ```js
 // Đang là:
-const phiGiaoHang = (tamTinh - giamGia) >= 500000 ? 0 : 30000;
+const phiDichVu = (tamTinh - giamGia) >= 500000 ? 0 : 30000;
 // BR-03 nói mốc so trên TẠM TÍNH:
-const phiGiaoHang = tamTinh >= 500000 ? 0 : 30000;
+const phiDichVu = tamTinh >= 500000 ? 0 : 30000;
 ```
 
-**Tái hiện:** khách `KH02` (hạng Bạc, giảm 3%), thêm `SP01` số lượng **2**.
+**Tái hiện:** khách `HV02` (chương trình Pro, giảm 3%), thêm `KH01` số suất **2**.
 
-| | Tạm tính | Giảm giá | Phí giao hàng | Tổng cộng |
+| | Tạm tính | Giảm giá | Phí dịch vụ | Tổng cộng |
 |---|---|---|---|---|
 | App trả | 500.000 | 15.000 | **30.000** | **515.000** |
 | Spec `BR-03` + `BR-04` | 500.000 | 15.000 | **0** | **485.000** |
 
 **Vì sao nó dễ lọt:** chỉ sai trong một **dải hẹp** — khi tạm tính vừa đủ mốc nhưng trừ giảm giá thì tụt
-xuống dưới mốc. Với hạng Thường (giảm 0%) thì hai công thức cho **cùng** kết quả, nên nếu bạn chỉ test
-khách hạng Thường thì không bao giờ thấy. Đây là lý do Bài 8 bắt bạn phủ **giá trị biên × hạng khách**,
+xuống dưới mốc. Với chương trình Standard (giảm 0%) thì hai công thức cho **cùng** kết quả, nên nếu bạn chỉ test
+khách chương trình Standard thì không bao giờ thấy. Đây là lý do Bài 8 bắt bạn phủ **giá trị biên × chương trình**,
 không phải chỉ một ca "happy path".
 
 **Bài học:** một bug ở biên chỉ hiện ra khi bạn **cố tình** chọn dữ liệu ở biên. Nó không tự hiện ra khi
@@ -50,7 +50,7 @@ q('giam-gia').textContent = tien(Math.floor(t.giamGia / 1000) * 1000);
 q('giam-gia').textContent = tien(t.giamGia);
 ```
 
-**Tái hiện:** khách `KH03` (hạng Vàng, giảm 5%), thêm `SP03` số lượng **1**.
+**Tái hiện:** khách `HV03` (chương trình Elite, giảm 5%), thêm `KH03` số suất **1**.
 
 Màn hình hiện:
 
@@ -58,7 +58,7 @@ Màn hình hiện:
 |---|---|
 | Tạm tính | 175.000 đ |
 | Giảm giá | **8.000 đ** |
-| Phí giao hàng | 30.000 đ |
+| Phí dịch vụ | 30.000 đ |
 | **Tổng cộng** | **196.250 đ** |
 
 Cộng thử các số đang hiện: `175.000 − 8.000 + 30.000 = 197.000`. Nhưng Tổng cộng hiện **196.250**.
@@ -69,7 +69,7 @@ nằm ở chỗ hiển thị: giao diện làm tròn xuống nghìn *chỉ riên
 
 **Vì sao nó dễ lọt:** nếu kết quả mong đợi của bạn chỉ nói "Tổng cộng = 196.250" thì test **xanh** — vì
 tổng cộng đúng thật. Bug chỉ hiện ra khi bạn kiểm **quan hệ giữa các số đang hiện**, không phải kiểm từng
-số riêng lẻ. Nó cũng chỉ hiện với hạng Vàng ở những số tiền mà 5% không chia hết 1.000.
+số riêng lẻ. Nó cũng chỉ hiện với chương trình Elite ở những số tiền mà 5% không chia hết 1.000.
 
 **Bài học:** kiểm từng trường một không đủ. Có loại bug chỉ sống ở **quan hệ** giữa các trường.
 
@@ -97,7 +97,7 @@ if (d.status !== 'CHO_XAC_NHAN') {
 ```bash
 # 1. Tạo đơn
 curl -s -X POST http://localhost:4010/api/orders -H 'Content-Type: application/json' \
-  -d '{"customerId":"KH01","items":[{"productId":"SP02","qty":1}]}'
+  -d '{"customerId":"HV01","items":[{"productId":"KH02","qty":1}]}'
 #    → tổng cộng 130.000, trạng thái CHO_XAC_NHAN, mã ví dụ DH0001
 
 # 2. Xác nhận nó
@@ -105,7 +105,7 @@ curl -s -X POST http://localhost:4010/api/orders/DH0001/confirm
 
 # 3. Sửa đơn ĐÃ XÁC NHẬN — spec BR-08 nói phải bị chặn
 curl -s -X PATCH http://localhost:4010/api/orders/DH0001 -H 'Content-Type: application/json' \
-  -d '{"items":[{"productId":"SP01","qty":9}]}'
+  -d '{"items":[{"productId":"KH01","qty":9}]}'
 #    → HTTP 200, và đơn đã xác nhận giờ có tổng cộng 2.250.000
 ```
 

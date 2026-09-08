@@ -52,7 +52,7 @@ Bộ testcase có hai trục độc lập:
 Và đây là bẫy trung tâm của cả bài:
 
 > Một bộ case phủ kín **mọi module** mà trống hẳn **một chiều** thì vẫn TRÔNG đầy đủ. Bảng coverage theo
-> module xanh hết. Số lượng case lớn. Không có tín hiệu nào báo là thiếu.
+> module xanh hết. Số suất case lớn. Không có tín hiệu nào báo là thiếu.
 
 Con số thật ở kit này, đo trên một bộ **530 case** đã review và đã publish:
 
@@ -92,7 +92,7 @@ trống đúng ba chiều đó. Không phải vì nó kém, mà vì nguồn nó 
 | Chiều | Tài liệu mẫu có nói? | Case cần có |
 |---|---|---|
 | `Calc` | Có, mục 3 rất rõ | Giảm giá từng hạng, trần, làm tròn xuống |
-| `Validation` | Có, mục 5 | Số lượng 0, 1, 999, 1000, để trống |
+| `Validation` | Có, mục 5 | Số suất 0, 1, 999, 1000, để trống |
 | `Display` | **Có nhưng dễ bỏ** — bảng khối B liệt kê 4 trường | Khối B đủ 4 cột, đúng thứ tự, đúng nhãn; Đơn giá không sửa được |
 | `Guard` | **Không nói rõ** | Kế toán gọi thẳng API lưu đơn → phải **403**, không chỉ ẩn nút |
 | `E2E` | **Không** | Tạo đơn → lưu nháp → mở màn chi tiết → mọi giá trị còn nguyên |
@@ -105,7 +105,7 @@ Bốn chiều cuối là chỗ bug thật hay nằm, và cũng là chỗ tài li
 Chiều là thứ vô hình cho tới khi bạn **gắn nhãn**. Quy ước đơn giản nhất: tag ở đầu tiêu đề case.
 
 ```markdown
-| TC_012 | Tạo đơn hàng | [Calc] Giảm giá hạng Vàng vượt trần 300.000 | … |
+| TC_012 | Tạo đơn hàng | [Calc] Giảm giá chương trình Elite vượt trần 300.000 | … |
 | TC_013 | Tạo đơn hàng | [Display] Khối B đủ 4 cột, đúng thứ tự và nhãn | … |
 | TC_014 | Tạo đơn hàng | [Guard] Kế toán gọi API lưu đơn → 403 | … |
 | TC_015 | Tạo đơn hàng | [E2E] Tạo → lưu nháp → chi tiết, giá trị còn nguyên | … |
@@ -356,15 +356,15 @@ Chọn **hai** chiều đang 0 case và viết case thật. Gợi ý cho tài li
 | Tiêu đề | `[Guard][Perm]` Kế toán gọi API lưu đơn nháp → bị chặn ở tầng dưới |
 | Tiền điều kiện | Đăng nhập `user_ketoan_01` (vai trò Kế toán); có sẵn payload đơn hợp lệ |
 | Các bước | 1. Lấy token của `user_ketoan_01`<br>2. Gọi thẳng API lưu đơn nháp với payload hợp lệ |
-| Kết quả mong đợi | 1. Mã trạng thái = **403**<br>2. Đơn không được tạo (kiểm lại danh sách đơn: số lượng không đổi) — `BR-06` |
+| Kết quả mong đợi | 1. Mã trạng thái = **403**<br>2. Đơn không được tạo (kiểm lại danh sách đơn: số suất không đổi) — `BR-06` |
 
 **`[E2E]`** — luồng đầu-cuối, và giá trị phải sống sót qua chuyển màn:
 
 | Trường | Nội dung |
 |---|---|
 | Tiêu đề | `[E2E]` Tạo đơn → lưu nháp → màn chi tiết: mọi giá trị còn nguyên |
-| Tiền điều kiện | Khách `KH_BAC_01` hạng Bạc; `SP_A` giá 100.000 |
-| Các bước | 1. Tạo đơn với `SP_A` số lượng 3<br>2. Bấm Lưu nháp<br>3. Ở màn chi tiết, đọc lại 4 giá trị của khối C |
+| Tiền điều kiện | Khách `KH_BAC_01` chương trình Pro; `SP_A` giá 100.000 |
+| Các bước | 1. Tạo đơn với `SP_A` số suất 3<br>2. Bấm Lưu nháp<br>3. Ở màn chi tiết, đọc lại 4 giá trị của khối C |
 | Kết quả mong đợi | 1. Hiện đúng chữ `Đã lưu đơn nháp`<br>2. URL khớp `/orders/{id}`<br>3. Tạm tính 300.000 · Giảm giá 9.000 · Phí 30.000 · **Tổng cộng 321.000** — giống hệt trước khi lưu — `BR-01` `BR-02` `BR-03` |
 
 Chạy lại `dim:coverage`, xác nhận hai chiều đó không còn 0.

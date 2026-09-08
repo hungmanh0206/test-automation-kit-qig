@@ -58,6 +58,11 @@ jobs:
       - name: Chỉ báo độ chín từng bài khớp giáo trình (course:maturity:check)
         run: npm run course:maturity:check
 
+      # CHẠY sản phẩm thực hành rồi so con số. Ví dụ trụ cột ở Bài 1 từng lệch app ở năm chỗ và
+      # không phép kiểm nào bắt, vì mọi phép kiểm cũ đọc văn bản.
+      - name: Con số bài giảng khớp app thực hành (course:numbers)
+        run: npm run course:numbers
+
       - name: Mục lục RULE_GLOBAL khớp nội dung (bảng tra sai = agent đọc sai khối luật)
         run: npm run rule -- --check
 

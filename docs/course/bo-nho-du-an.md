@@ -143,7 +143,7 @@ Trường `chuaKhaoSat` là thứ làm file này trung thực. Nó cũng là dan
 ```json
 {
   "ma": "BR-01",
-  "phatBieu": "Giảm giá tính trên Tạm tính theo hạng khách: Thường 0%, Bạc 3% (trần 100.000), Vàng 5% (trần 300.000). Làm tròn XUỐNG đến đồng.",
+  "phatBieu": "Giảm giá tính trên Tạm tính theo chương trình: Thường 0%, Bạc 3% (trần 100.000), Vàng 5% (trần 300.000). Làm tròn XUỐNG đến đồng.",
   "nguon": "FSD Tạo đơn hàng mục 3; BA xác nhận ngày 2026-xx-xx",
   "viDu": [
     { "input": "hang=Bạc, tamTinh=300000", "expected": "giamGia=9000" },
@@ -470,7 +470,7 @@ nhất, đó là thứ chỉ biết sau khi đã vấp:
   "mucTieu": "Có đơn hàng ở trạng thái CHO_DUYET",
   "cach": "factory",
   "buoc": [
-    "POST /api/customers tạo khách (nhớ tiền tố IT test)",
+    "POST /api/students tạo học viên (nhớ tiền tố IT test)",
     "POST /api/orders với trangThai NHAP",
     "POST /api/orders/{id}/submit để chuyển sang CHO_DUYET"
   ],

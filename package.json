@@ -81,6 +81,7 @@
     "decisions:index": "node scripts/qa/decisions.js --index",
     "skills:index": "node scripts/qa/skills_index.js --write",
     "skills:index:check": "node scripts/qa/skills_index.js --check",
+    "course:numbers": "node scripts/qa/course_numbers.js",
     "course:maturity": "node scripts/qa/course_maturity.js",
     "course:maturity:check": "node scripts/qa/course_maturity.js --check",
     "writing:lint": "node scripts/qa/writing_lint.js",

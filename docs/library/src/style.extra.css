@@ -329,45 +329,45 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .copen{color:var(--gold)} }
 :root[data-theme="dark"] .copen{color:var(--gold)}
 
-.rdscrim{position:fixed; inset:0; background:rgba(10,9,8,.55); backdrop-filter:blur(2px);
+.lrscrim{position:fixed; inset:0; background:rgba(10,9,8,.55); backdrop-filter:blur(2px);
   opacity:0; pointer-events:none; transition:opacity .16s; z-index:60}
-.rdscrim.on{opacity:1; pointer-events:auto}
-body.rdopen{overflow:hidden}
+.lrscrim.on{opacity:1; pointer-events:auto}
+body.lropen{overflow:hidden}
 
 .reader{position:fixed; inset:24px; max-width:1180px; margin:0 auto; z-index:61;
   background:var(--card); border:1px solid var(--bSubtle); border-radius:var(--radius);
   box-shadow:0 24px 60px rgba(0,0,0,.35); display:flex; flex-direction:column; overflow:hidden}
-.rdbar{display:flex; align-items:flex-start; gap:14px; padding:16px 18px;
+.lrbar{display:flex; align-items:flex-start; gap:14px; padding:16px 18px;
   border-bottom:1px solid var(--bSubtle); background:var(--wash)}
-.rdclose{flex:none; width:34px; height:34px; border-radius:10px; border:1px solid var(--bSubtle);
+.lrclose{flex:none; width:34px; height:34px; border-radius:10px; border:1px solid var(--bSubtle);
   background:var(--card); color:var(--t2); font-size:15px; cursor:pointer; line-height:1}
-.rdclose:hover{border-color:var(--gold600); color:var(--t1)}
-.rdmeta{flex:1; min-width:0}
-.rdkicker{display:block; font-size:11.5px; font-weight:800; letter-spacing:.09em;
+.lrclose:hover{border-color:var(--gold600); color:var(--t1)}
+.lrmeta{flex:1; min-width:0}
+.lrkicker{display:block; font-size:11.5px; font-weight:800; letter-spacing:.09em;
   text-transform:uppercase; color:var(--gold800)}
-:root[data-theme="dark"] .rdkicker{color:var(--gold)}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .rdkicker{color:var(--gold)} }
-.rdbar h2{margin:3px 0 0; font-size:19px; font-weight:800; line-height:1.25; color:var(--t1)}
-.rdnav{flex:none; display:flex; gap:7px}
-.rdnav button{border:1px solid var(--bSubtle); background:var(--card); color:var(--t2);
+:root[data-theme="dark"] .lrkicker{color:var(--gold)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .lrkicker{color:var(--gold)} }
+.lrbar h2{margin:3px 0 0; font-size:19px; font-weight:800; line-height:1.25; color:var(--t1)}
+.lrnav{flex:none; display:flex; gap:7px}
+.lrnav button{border:1px solid var(--bSubtle); background:var(--card); color:var(--t2);
   border-radius:999px; padding:7px 13px; font:inherit; font-size:12.5px; font-weight:600; cursor:pointer}
-.rdnav button:hover:not(:disabled){border-color:var(--gold600); color:var(--t1)}
-.rdnav button:disabled{opacity:.35; cursor:default}
+.lrnav button:hover:not(:disabled){border-color:var(--gold600); color:var(--t1)}
+.lrnav button:disabled{opacity:.35; cursor:default}
 
-.rdbody{flex:1; display:flex; min-height:0}
-.rdtoc{flex:none; width:236px; border-right:1px solid var(--bSubtle); padding:16px 12px;
+.lrbody{flex:1; display:flex; min-height:0}
+.lrtoc{flex:none; width:236px; border-right:1px solid var(--bSubtle); padding:16px 12px;
   overflow-y:auto; background:var(--wash)}
-.rdtoch{font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+.lrtoch{font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
   color:var(--t3); padding:0 8px 8px}
-.rdtocl{display:block; padding:6px 8px; border-radius:8px; font-size:12.5px; color:var(--t2);
+.lrtocl{display:block; padding:6px 8px; border-radius:8px; font-size:12.5px; color:var(--t2);
   text-decoration:none; line-height:1.35}
-.rdtocl:hover{background:var(--goldWash); color:var(--t1)}
-.rdart{flex:1; min-width:0; overflow-y:auto; padding:24px 34px 60px}
+.lrtocl:hover{background:var(--goldWash); color:var(--t1)}
+.lrart{flex:1; min-width:0; overflow-y:auto; padding:24px 34px 60px}
 
 /* ── Kiểu chữ của nội dung bài ── */
 .mdh{color:var(--t1); font-weight:800; line-height:1.3; scroll-margin-top:10px}
 .mdh2{font-size:20px; margin:32px 0 12px; padding-top:18px; border-top:1px solid var(--bSubtle)}
-.mdart-first, .rdart > .mdh2:first-child{border-top:0; padding-top:0; margin-top:4px}
+.mdart-first, .lrart > .mdh2:first-child{border-top:0; padding-top:0; margin-top:4px}
 .mdh3{font-size:16px; margin:22px 0 8px}
 .mdh4{font-size:14.5px; margin:18px 0 6px; color:var(--t2)}
 .mdp{margin:0 0 13px; color:var(--t2); font-size:14.5px; line-height:1.72; max-width:74ch}
@@ -379,7 +379,7 @@ body.rdopen{overflow:hidden}
 .mdquote{margin:0 0 16px; padding:12px 16px; border-left:3px solid var(--gold);
   background:var(--goldWash); border-radius:0 10px 10px 0}
 .mdquote .mdp:last-child, .mdquote .mdlist:last-child{margin-bottom:0}
-.rdart code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.9em;
+.lrart code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.9em;
   background:color-mix(in srgb, var(--t3) 14%, transparent); padding:1px 5px; border-radius:5px}
 .mdpre{margin:0 0 16px; padding:14px 16px; overflow-x:auto; border-radius:10px;
   background:#171613; border:1px solid var(--bSubtle)}
@@ -400,51 +400,51 @@ body.rdopen{overflow:hidden}
    tệ hơn một chữ được đánh dấu là "đây là đường dẫn". */
 .mdfile{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.9em; color:var(--t3);
   border-bottom:1px dotted var(--t3); cursor:help}
-.rdart details{margin:0 0 16px; border:1px solid var(--bSubtle); border-radius:10px; padding:0 14px}
-.rdart summary{cursor:pointer; padding:12px 0; font-size:14px; font-weight:600; color:var(--t1)}
-.rdart details[open] summary{border-bottom:1px solid var(--bSoft); margin-bottom:12px}
+.lrart details{margin:0 0 16px; border:1px solid var(--bSubtle); border-radius:10px; padding:0 14px}
+.lrart summary{cursor:pointer; padding:12px 0; font-size:14px; font-weight:600; color:var(--t1)}
+.lrart details[open] summary{border-bottom:1px solid var(--bSoft); margin-bottom:12px}
 
 @media (max-width: 900px){
   .reader{inset:0; max-width:none; border-radius:0; border:0}
-  .rdtoc{display:none}
-  .rdart{padding:18px 18px 50px}
-  .rdbar{flex-wrap:wrap}
-  .rdnav{width:100%; order:3}
+  .lrtoc{display:none}
+  .lrart{padding:18px 18px 50px}
+  .lrbar{flex-wrap:wrap}
+  .lrnav{width:100%; order:3}
 }
 
 /* ── Dải metadata và khối Vấn đề trong khung đọc ──
    Dòng metadata trong markdown là một trích dẫn, nên bản đầu dựng ra một khối viền vàng đặt ngay
    dưới thanh tiêu đề: hai khối nhấn mạnh chồng nhau, mà khối dưới chỉ chứa dữ liệu. */
-.rdmain{flex:1; min-width:0; display:flex; flex-direction:column; min-height:0}
-.rdstrip{flex:none; display:flex; flex-wrap:wrap; gap:0; padding:14px 34px;
+.lrmain{flex:1; min-width:0; display:flex; flex-direction:column; min-height:0}
+.lrstrip{flex:none; display:flex; flex-wrap:wrap; gap:0; padding:14px 34px;
   border-bottom:1px solid var(--bSubtle); background:var(--wash)}
-.rdmi{padding:0 20px; border-left:1px solid var(--bSubtle); min-width:0}
-.rdmi:first-child{padding-left:0; border-left:0}
-.rdmk{display:block; font-size:10.5px; font-weight:800; letter-spacing:.08em;
+.lrmi{padding:0 20px; border-left:1px solid var(--bSubtle); min-width:0}
+.lrmi:first-child{padding-left:0; border-left:0}
+.lrmk{display:block; font-size:10.5px; font-weight:800; letter-spacing:.08em;
   text-transform:uppercase; color:var(--t3); margin-bottom:3px}
-.rdmv{display:block; font-size:13px; color:var(--t2); line-height:1.5; max-width:46ch}
-.rdmi-dur .rdmv{color:var(--t1); font-weight:700; white-space:nowrap}
+.lrmv{display:block; font-size:13px; color:var(--t2); line-height:1.5; max-width:46ch}
+.lrmi-dur .lrmv{color:var(--t1); font-weight:700; white-space:nowrap}
 
-.rdhook{margin:0 0 26px; padding:18px 20px; border-radius:12px;
+.lrhook{margin:0 0 26px; padding:18px 20px; border-radius:12px;
   background:var(--goldWash); border:1px solid color-mix(in srgb, var(--gold) 34%, transparent)}
-.rdhookk{font-size:10.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+.lrhookk{font-size:10.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
   color:var(--gold800); margin-bottom:10px}
-:root[data-theme="dark"] .rdhookk{color:var(--gold)}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .rdhookk{color:var(--gold)} }
-.rdhook .mdp{color:var(--t1); font-size:15px; margin-bottom:10px}
-.rdhook .mdp:last-child, .rdhook .mdpre:last-child, .rdhook .mdtablewrap:last-child{margin-bottom:0}
-.rdhook .mdpre{background:color-mix(in srgb, var(--ink) 92%, transparent)}
+:root[data-theme="dark"] .lrhookk{color:var(--gold)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .lrhookk{color:var(--gold)} }
+.lrhook .mdp{color:var(--t1); font-size:15px; margin-bottom:10px}
+.lrhook .mdp:last-child, .lrhook .mdpre:last-child, .lrhook .mdtablewrap:last-child{margin-bottom:0}
+.lrhook .mdpre{background:color-mix(in srgb, var(--ink) 92%, transparent)}
 
 @media (max-width: 900px){
-  .rdstrip{padding:12px 18px}
-  .rdmi{padding:0 12px}
+  .lrstrip{padding:12px 18px}
+  .lrmi{padding:0 12px}
 }
 
 /* Trích dẫn THƯỜNG dùng viền xám, vàng chỉ dành cho khối "Vấn đề".
    Trước đây cả ba khối đầu bài (metadata, Vấn đề, ghi chú từ mới) đều viền vàng nền vàng, xếp liền
    nhau — ba thứ cùng đòi được chú ý thì không thứ nào được chú ý. */
-.rdart .mdquote{border-left-color:var(--bSubtle); background:var(--wash)}
-.rdart .rdhook .mdquote{border-left-color:var(--gold); background:transparent}
+.lrart .mdquote{border-left-color:var(--bSubtle); background:var(--wash)}
+.lrart .lrhook .mdquote{border-left-color:var(--gold); background:transparent}
 
 /* Bảng nhãn ↔ giá trị: cột đầu là nhãn, cho nó chữ đậm và bề rộng vừa phải. */
 .mdtable.nohead td:first-child{color:var(--t1); font-weight:600; white-space:nowrap; width:1%}

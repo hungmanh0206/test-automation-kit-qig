@@ -43,7 +43,7 @@ Xếp theo độ bền giảm dần:
 | Tầng | Cách | Bền vì | Ví dụ |
 |---|---|---|---|
 | 1 | **Vai trò + tên hiển thị** | Đổi CSS không ảnh hưởng; khớp cách người dùng nhìn | `getByRole('button', { name: 'Lưu nháp', exact: true })` |
-| 2 | **Nhãn của ô nhập** | Nhãn là hợp đồng với người dùng | `getByLabel('Số lượng')` |
+| 2 | **Nhãn của ô nhập** | Nhãn là hợp đồng với người dùng | `getByLabel('Số suất')` |
 | 3 | **Chữ hiển thị** | Chữ đổi thì test **nên** đỏ | `getByText('Đã lưu đơn nháp', { exact: true })` |
 | 4 | **Selector có ngữ nghĩa** | Ổn nếu neo vào cấu trúc, không vào class trang trí | `locator('table thead th')` |
 | 5 | **Test id** | Bền nhất — nếu app có phát | `getByTestId('tong-cong')` |
@@ -193,7 +193,7 @@ const { test, expect } = require('@playwright/test');
 
 test('chờ trạng thái, không chờ thời gian', async ({ page }) => {
   await page.goto('/orders/create');
-  await page.getByLabel('Số lượng').fill('3');
+  await page.getByLabel('Số suất').fill('3');
 
   // ✗ SAI: đoán 500ms là đủ. Máy chậm hơn thì đỏ, máy nhanh hơn thì chậm vô ích.
   // await page.waitForTimeout(500);

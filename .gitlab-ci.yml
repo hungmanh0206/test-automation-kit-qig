@@ -36,6 +36,7 @@ static-check:
       # nhớ gõ lệnh, tức là chưa gác cổng. Rẻ và tất định: chỉ đọc file trong repo.
       t "library:drift" npm run library:drift
       t "course:maturity:check" npm run course:maturity:check
+      t "course:numbers" npm run course:numbers
       t "rule:toc" npm run rule -- --check
       t "secret:scan" npm run secret:scan
       # KHÔNG có bước audit ở job này nữa (04/09/2026). Hai lần cắt, hai lý do khác nhau:

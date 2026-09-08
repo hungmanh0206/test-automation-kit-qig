@@ -52,7 +52,7 @@ một quyết định đã chốt. Hai là nó cụ thể: một con số, một
 |---|---|
 | "Tổng tiền hiển thị đúng" | "Tổng cộng = 321.000, theo BR-03: 300.000 − 9.000 + 30.000" |
 | "Chuyển sang màn chi tiết" | "URL khớp `/orders/{id}` và tiêu đề trang là `Chi tiết đơn hàng`" |
-| "Có thông báo lỗi" | "Hiện đúng chữ `Số lượng phải từ 1 đến 999`, theo mục 5" |
+| "Có thông báo lỗi" | "Hiện đúng chữ `Số suất phải từ 1 đến 999`, theo mục 5" |
 
 Không có oracle thì test chỉ mô tả app đang làm gì. Nó không nói được app làm có đúng không. Đó là ranh giới
 giữa kiểm thử và chụp ảnh hiện trạng.
@@ -121,8 +121,8 @@ Thử bằng một câu: nếu công thức tính sai, test này có đỏ khôn
 ```js
 test('đọc kỳ vọng từ chính màn hình', async ({ page }) => {
   const donGia = await page.locator('#don-gia').innerText();     // 100.000
-  const soLuong = await page.locator('#so-luong').inputValue();  // 3
-  const mongDoi = Number(donGia) * Number(soLuong);              // ← kỳ vọng lấy TỪ MÀN HÌNH
+  const soSuat = await page.locator('#so-luong').inputValue();  // 3
+  const mongDoi = Number(donGia) * Number(soSuat);              // ← kỳ vọng lấy TỪ MÀN HÌNH
   expect(await page.locator('#thanh-tien').innerText()).toBe(dinhDang(mongDoi));
 });
 ```
@@ -147,7 +147,7 @@ Nhưng hai màn đó cùng đọc một API. Nếu API trả sai thì cả hai c
 ```markdown
 | Kết quả mong đợi |
 |---|
-| 1. Tạm tính = 300.000<br>2. Giảm giá = 9.000 — `BR-01` (Bạc 3%, chưa tới trần 100.000)<br>3. Phí giao hàng = 30.000 — `BR-02` (tạm tính < 500.000)<br>4. **Tổng cộng = 321.000** — `BR-03` |
+| 1. Tạm tính = 300.000<br>2. Giảm giá = 9.000 — `BR-01` (Bạc 3%, chưa tới trần 100.000)<br>3. Phí dịch vụ = 30.000 — `BR-02` (tạm tính < 500.000)<br>4. **Tổng cộng = 321.000** — `BR-03` |
 ```
 
 Bạn được ngay ba thứ.
@@ -183,8 +183,8 @@ Và kiểm đúng từng chữ, đừng kiểm kiểu "có thông báo là đư�
 
 | Yếu | Đủ |
 |---|---|
-| `expect(loi).toBeVisible()` | `expect(loi).toHaveText('Số lượng phải từ 1 đến 999')` |
-| `expect(text).toContain('Số lượng')` | so khớp toàn chuỗi |
+| `expect(loi).toBeVisible()` | `expect(loi).toHaveText('Số suất phải từ 1 đến 999')` |
+| `expect(text).toContain('Số suất')` | so khớp toàn chuỗi |
 
 `toContain` bỏ qua đúng những thứ hay sai nhất: thiếu chữ, sai số, sai hoa thường, thừa dấu cách.
 
@@ -201,7 +201,7 @@ Yêu cầu: cái mới phải nêu giá trị cụ thể, và trỏ về một m
 
 Có một loại case rất hay sai mà không ai nhận ra: case kiểm "trường này lấy từ nguồn nào".
 
-Ví dụ. Trường `Hạng khách hàng` ở khối A, tài liệu nói lấy từ hệ thống CRM. Bạn muốn kiểm điều đó.
+Ví dụ. Trường `Chương trình hàng` ở khối A, tài liệu nói lấy từ hệ thống CRM. Bạn muốn kiểm điều đó.
 
 **Cách hay làm và nó sai.** Chọn một khách có hạng `Bạc` ở CRM. Trong hệ thống nội bộ cũng `Bạc`. Màn hiện
 `Bạc`, bạn ghi PASS.
@@ -224,7 +224,7 @@ nhau. Nếu cả hai cho cùng một kết quả thì chạy xong bạn vẫn kh
 Áp rộng ra:
 
 - Kiểm "giá lấy từ danh mục chứ không phải nhập tay" thì đặt hai giá khác nhau.
-- Kiểm "phí giao hàng tính theo Tạm tính chứ không theo Tổng cộng" thì dựng ca mà hai số đó nằm hai bên mốc.
+- Kiểm "phí dịch vụ tính theo Tạm tính chứ không theo Tổng cộng" thì dựng ca mà hai số đó nằm hai bên mốc.
 - Kiểm "làm tròn xuống chứ không làm tròn thường" thì dùng số lẻ ra `.5`.
 
 Giờ tự viết một case. Chọn một trong hai tình huống trên, rồi viết đủ ba phần: tiền điều kiện nêu cả hai giá
@@ -314,7 +314,7 @@ kit-cua-toi/
 3. Câu hỏi một dòng nào phát hiện được cả ba kiểu đó?
 4. Vì sao `toContain` yếu hơn so khớp toàn chuỗi? Nó bỏ qua những lỗi nào?
 5. Chữ hiển thị thì neo vào nguồn nào trước? Vì sao không neo vào file tổng hợp yêu cầu?
-6. Bạn kiểm "hạng khách lấy từ CRM" mà cả hai nguồn đều là `Bạc`. Chạy xong bạn biết thêm được gì?
+6. Bạn kiểm "chương trình lấy từ CRM" mà cả hai nguồn đều là `Bạc`. Chạy xong bạn biết thêm được gì?
 7. Thấy điều đáng nghi mà không có tài liệu nào nói thì ghi gì? Vì sao không ghi PASS?
 
 ## Bài tập về nhà

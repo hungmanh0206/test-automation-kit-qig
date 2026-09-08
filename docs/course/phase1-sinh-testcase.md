@@ -74,7 +74,7 @@ Mở phiên agent và gõ đúng câu này, câu mà 90% người sẽ gõ:
 |---|---|
 | **Số cụ thể xuất hiện từ đâu không rõ** | Case ghi *"Giảm giá = 5%"* trong khi tài liệu có hai chỗ nói hai số khác nhau |
 | **Case cho nhánh tài liệu không nói** | Có case cho "khách hạng Kim cương" — tài liệu chưa từng nhắc hạng này |
-| **Mâu thuẫn bị làm phẳng** | Tài liệu nói mốc `500.000`, ghi chú BA nói `450.000`. Bộ case chọn một số và không nói gì |
+| **Mâu thuẫn bị làm phẳng** | Tài liệu nói mốc `500.000`, ghi chú BA nói `520.000`. Bộ case chọn một số và không nói gì |
 
 Để ý là agent không hỏi bạn câu nào. Nó tự đoán, mà đoán khá hợp lý. Nhưng nếu đoán sai thì cả bộ testcase
 sai theo, và sai theo kiểu khó thấy nhất: từng case đọc lên đều thấy ổn.
@@ -102,12 +102,12 @@ Không phải mơ hồ nào cũng phải dừng. Dừng hết thì bạn không 
 
 | Mơ hồ | Mức | Vì sao |
 |---|---|---|
-| Mốc miễn phí giao hàng: `500.000` hay `450.000`? | **CHẶN** | Kết quả mong đợi của mọi case tính tiền phụ thuộc số này |
+| Mốc miễn phí dịch vụ: `500.000` hay `520.000`? | **CHẶN** | Kết quả mong đợi của mọi case tính tiền phụ thuộc số này |
 | Giảm giá tính trên tạm tính hay trên tổng? | **CHẶN** | Đổi cả công thức |
-| Số lượng tối đa là `99` hay `100`? | **CHẶN** | Case biên đúng/sai lệch hẳn |
+| Số suất tối đa là `99` hay `100`? | **CHẶN** | Case biên đúng/sai lệch hẳn |
 | Thông báo lỗi ghi chữ gì chính xác? | không chặn | Đoán được; assert theo mã lỗi, chữ hiển thị kiểm sau khi có Figma |
 | Danh sách sắp thứ tự theo gì? | không chặn | Đoán "mới nhất trước", ghi rõ đã đoán |
-| Có hạng khách "Kim cương" không? | **CHẶN** | Nếu có thì thiếu hẳn một nhánh; nếu không thì đừng sinh case cho nó |
+| Có chương trình "Kim cương" không? | **CHẶN** | Nếu có thì thiếu hẳn một nhánh; nếu không thì đừng sinh case cho nó |
 
 ### Bộ câu hỏi viết thế nào để BA trả lời trong 2 phút
 
@@ -121,18 +121,18 @@ Sai: *"Anh cho em hỏi về phần giảm giá ạ, em thấy hơi mơ hồ."*
 
 ## CHẶN — không trả lời thì không sinh được testcase
 
-### Q1. Mốc miễn phí giao hàng là 500.000 hay 450.000?
-- FSD mục 2.3 ghi **500.000**; ghi chú BA ngày 12/08 ghi **450.000**.
+### Q1. Mốc miễn phí dịch vụ là 500.000 hay 520.000?
+- FSD mục 2.3 ghi **500.000**; ghi chú BA ngày 12/08 ghi **520.000**.
 - **Giả định đề xuất:** 500.000 (theo FSD, vì ghi chú không nói là thay đổi).
 - Nếu sai: **mọi** case tính tiền có kết quả mong đợi sai.
 
-### Q2. Giảm giá theo hạng tính trên Tạm tính hay trên (Tạm tính + Phí giao hàng)?
-- FSD chỉ ghi "giảm theo hạng khách", không nói tính trên gì.
+### Q2. Giảm giá theo hạng tính trên Tạm tính hay trên (Tạm tính + Phí dịch vụ)?
+- FSD chỉ ghi "giảm theo chương trình", không nói tính trên gì.
 - **Giả định đề xuất:** trên Tạm tính.
 - Nếu sai: sai công thức, và sai theo hướng khó thấy vì hai cách cho cùng kết quả khi phí = 0.
 
-### Q3. Có hạng khách "Kim cương" không?
-- FSD liệt kê Thường/Bạc/Vàng. Ghi chú BA nhắc "khách Kim cương" một lần.
+### Q3. Có chương trình "Kim cương" không?
+- FSD liệt kê Standard/Pro/Elite. Ghi chú BA nhắc "khách Kim cương" một lần.
 - **Giả định đề xuất:** KHÔNG có (chỉ 3 hạng).
 - Nếu sai: thiếu hẳn một nhánh, và không chiều nào của độ phủ chỉ ra được chỗ thiếu.
 
@@ -140,14 +140,14 @@ Sai: *"Anh cho em hỏi về phần giảm giá ạ, em thấy hơi mơ hồ."*
 
 | # | Chỗ mơ hồ | Em đoán | Ảnh hưởng nếu đoán sai |
 |---|---|---|---|
-| A1 | Chữ trong thông báo lỗi số lượng | assert theo **mã lỗi**, không theo chữ | phải sửa 3 case khi có Figma |
+| A1 | Chữ trong thông báo lỗi số suất | assert theo **mã lỗi**, không theo chữ | phải sửa 3 case khi có Figma |
 | A2 | Thứ tự danh sách đơn | mới nhất trước | 1 case |
 ```
 
 Ba thứ làm bộ câu hỏi này khác:
 
 1. Trích được nguồn của mâu thuẫn: "FSD 2.3 vs ghi chú 12/08". BA không phải đi tìm.
-2. Có giả định đề xuất — BA chỉ cần trả lời *"đúng"* / *"không, là 450.000"*.
+2. Có giả định đề xuất — BA chỉ cần trả lời *"đúng"* / *"không, là 520.000"*.
 3. Nói hậu quả — BA biết vì sao phải trả lời câu này trước.
 
 ## Việc 3 — Xây gate, và công thức viết mọi gate (30 phút)
@@ -178,13 +178,13 @@ Máy không đọc được văn xuôi. Nên câu hỏi cần một bản máy-�
   "task": "DEMO-1",
   "ngayHoi": "2026-09-07",
   "cauHoi": [
-    { "id": "Q1", "muc": "blocking", "hoi": "Mốc miễn phí giao hàng 500.000 hay 450.000?",
+    { "id": "Q1", "muc": "blocking", "hoi": "Mốc miễn phí dịch vụ 500.000 hay 520.000?",
       "nguon": "FSD 2.3 vs ghi chú BA 12/08", "giaDinh": "500.000", "traLoi": "", "aiTraLoi": "" },
     { "id": "Q2", "muc": "blocking", "hoi": "Giảm giá tính trên Tạm tính hay trên tổng?",
       "nguon": "FSD không nói", "giaDinh": "trên Tạm tính", "traLoi": "", "aiTraLoi": "" },
-    { "id": "Q3", "muc": "blocking", "hoi": "Có hạng khách Kim cương không?",
+    { "id": "Q3", "muc": "blocking", "hoi": "Có chương trình Kim cương không?",
       "nguon": "FSD liệt kê 3 hạng; ghi chú BA nhắc hạng thứ 4", "giaDinh": "không có", "traLoi": "", "aiTraLoi": "" },
-    { "id": "A1", "muc": "non-blocking", "hoi": "Chữ trong thông báo lỗi số lượng?",
+    { "id": "A1", "muc": "non-blocking", "hoi": "Chữ trong thông báo lỗi số suất?",
       "nguon": "chưa có Figma", "giaDinh": "assert theo mã lỗi", "traLoi": "", "aiTraLoi": "" }
   ]
 }
@@ -311,7 +311,7 @@ mâu thuẫn.
 **Lần 3 — trả lời đủ** (phải cho qua):
 
 ```json
-{ "id": "Q1", "muc": "blocking", "hoi": "Mốc miễn phí giao hàng 500.000 hay 450.000?",
+{ "id": "Q1", "muc": "blocking", "hoi": "Mốc miễn phí dịch vụ 500.000 hay 520.000?",
   "nguon": "FSD 2.3 vs ghi chú BA 12/08", "giaDinh": "500.000",
   "traLoi": "500.000 — ghi chú 12/08 là bản nháp, bỏ", "aiTraLoi": "BA Hương, 07/09" }
 ```
@@ -401,7 +401,7 @@ Sáu điều dưới đây là bộ tối thiểu tôi khuyên. Sửa cho khớp
 > Chi tiết ở `LUAT-DAY-DU.md`. Hai bên nói khác nhau thì theo file đó.
 
 1. **Bảo mật** — Không commit token, mật khẩu, cookie, khoá API. Mọi bằng chứng và báo cáo
-   phải che thông tin khách hàng: email, số điện thoại, tên, địa chỉ.
+   phải che thông tin học viên: email, số điện thoại, tên, địa chỉ.
 2. **Không phá môi trường** — Không sửa dữ liệu ở môi trường dùng chung. Xác nhận trước mỗi
    lần chạm vào. Không dựng dữ liệu test bằng câu lệnh database.
 3. **Chạy thật rồi mới kết luận** — Kết quả sai phải chạy lại 2 đến 3 lần trước khi gọi là
@@ -427,7 +427,7 @@ File này quyết. Tài liệu nào nói khác thì theo file này.
 
 - Không ghi hoặc commit: token, mật khẩu, cookie, khoá API, file khoá dịch vụ.
 - Bằng chứng, báo cáo và mọi thứ đẩy lên hệ thống quản lý việc phải che email, số điện thoại,
-  họ tên và địa chỉ khách hàng.
+  họ tên và địa chỉ học viên.
 - Che chữ hiển thị không che được giá trị trong ô nhập liệu. Với ô nhập thì phải đặt lại giá trị.
 - Dữ liệu lấy từ hệ thống CRM: chỉ xem trong phiên làm việc, không xuất ra file.
 ```
@@ -541,9 +541,9 @@ làm việc của máy, và lần sau vẫn sai.
 
 | Không đo được | Đo được |
 |---|---|
-| "Hiển thị đúng thông tin khách hàng" | "Tên khách hàng = `Công ty A`, SĐT = `0901234567`" |
+| "Hiển thị đúng thông tin học viên" | "Tên học viên = `Công ty A`, SĐT = `0901234567`" |
 | "Tính toán chính xác" | "Tổng cộng = `321.000` (300.000 − 9.000 + 30.000)" |
-| "Thông báo lỗi xuất hiện" | "Hiện đúng chữ `Số lượng phải từ 1 đến 999`" |
+| "Thông báo lỗi xuất hiện" | "Hiện đúng chữ `Số suất phải từ 1 đến 999`" |
 
 Phép thử một câu: hai người đọc expected này có phán cùng kết quả không? Không thì nó không đo được.
 
@@ -551,7 +551,7 @@ Phép thử một câu: hai người đọc expected này có phán cùng kết 
 
 | Không dựng được | Dựng được |
 |---|---|
-| "Có một khách hàng hạng Bạc" | "Khách `KH_BAC_01`, hạng Bạc, đã có trong hệ thống" |
+| "Có một học viên chương trình Pro" | "Khách `KH_BAC_01`, chương trình Pro, đã có trong hệ thống" |
 | "Đơn hàng ở trạng thái phù hợp" | "Đơn `DH_NHAP_01` trạng thái Nháp, có 2 dòng sản phẩm" |
 | "Người dùng có quyền" | "Đăng nhập bằng `user_sales_01` (vai trò Nhân viên bán hàng)" |
 
@@ -561,7 +561,7 @@ Phép thử: đọc xong bạn biết phải làm gì để có trạng thái đ
 
 | Gộp | Tách |
 |---|---|
-| "Tạo đơn hàng và kiểm tra tổng tiền" | "1. Chọn khách `KH_BAC_01`<br>2. Thêm `SP_A` số lượng 3<br>3. Đọc ô Tổng cộng" |
+| "Tạo đơn hàng và kiểm tra tổng tiền" | "1. Chọn học viên `KH_BAC_01`<br>2. Thêm `SP_A` số suất 3<br>3. Đọc ô Tổng cộng" |
 
 Bước gộp thì khi FAIL bạn không biết hỏng ở bước nào, và đó là nửa công việc điều tra.
 

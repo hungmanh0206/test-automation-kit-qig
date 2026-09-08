@@ -42,7 +42,7 @@ Mở app thực hành ở một cửa sổ terminal:
 node docs/course/assets/app-thuc-hanh/server.js
 ```
 
-Nó chạy ở `http://localhost:4010`. Mở trình duyệt xem qua một lượt: chọn khách, chọn sản phẩm, bấm
+Nó chạy ở `http://localhost:4010`. Mở trình duyệt xem qua một lượt: chọn học viên, chọn khoá học, bấm
 tạo đơn. Bạn đã làm việc này bằng tay ở Bài 1 rồi, giờ là lúc bảo máy làm.
 
 Tạo `tests/e2e/tao-don-hang.spec.js`:
@@ -50,12 +50,12 @@ Tạo `tests/e2e/tao-don-hang.spec.js`:
 ```js
 const { test, expect } = require('@playwright/test');
 
-test('tạo đơn cho khách hạng Bạc, 2 sản phẩm SP01', async ({ page }) => {
+test('tạo đơn cho học viên chương trình Pro, 2 sản phẩm KH01', async ({ page }) => {
   await page.goto('/');
 
-  await page.getByLabel('Khách hàng').selectOption('KH02');
-  await page.getByLabel('Sản phẩm').selectOption('SP01');
-  await page.getByLabel('Số lượng').fill('2');
+  await page.getByLabel('Học viên').selectOption('HV02');
+  await page.getByLabel('Khoá học').selectOption('KH01');
+  await page.getByLabel('Số suất').fill('2');
   await page.getByRole('button', { name: 'Tạo đơn' }).click();
 
   await expect(page.getByTestId('tong-tien')).toHaveText('485.000');
@@ -73,7 +73,7 @@ npx playwright test tests/e2e/tao-don-hang.spec.js
 ```
 Error: expect(locator).toHaveText(expected)
   Expected string: "485.000"
-  Received string: "515.000"
+  Received string: "544.000"
 ```
 
 Chưa vội sửa. Đây là bug thứ nhất của app thực hành, cái bạn đã tìm ra bằng tay ở Bài 1: phí giao
@@ -83,7 +83,7 @@ nó tính từ [`spec.md`](assets/app-thuc-hanh/spec.md) mục `BR-04`.
 | Thấy khác | Nghĩa là | Làm gì |
 |---|---|---|
 | `net::ERR_CONNECTION_REFUSED` | app chưa chạy | Mở terminal thứ hai, chạy `node server.js` |
-| `Timeout ... waiting for getByLabel('Khách hàng')` | tên nhãn không khớp | Mở DevTools, xem `<label>` thật ghi gì |
+| `Timeout ... waiting for getByLabel('Học viên')` | tên nhãn không khớp | Mở DevTools, xem `<label>` thật ghi gì |
 | Test **xanh** ngay lần đầu | bạn đang chạy trên app đã sửa bug, hoặc assertion không kiểm gì | Đọc Việc 2, phần "test xanh giả" |
 
 Ghi lại điều này, vì nó là thói quen của cả tài liệu: **một test đỏ đúng chỗ có giá trị hơn một test
@@ -130,9 +130,9 @@ expect(text).toBe('485.000');
 await expect(page.getByTestId('tong-tien')).toHaveText('485.000');
 
 // Cách C — so cả cụm liên quan
-await expect(page.getByTestId('tam-tinh')).toHaveText('450.000');
+await expect(page.getByTestId('tam-tinh')).toHaveText('520.000');
 await expect(page.getByTestId('giam-gia')).toHaveText('-15.000');
-await expect(page.getByTestId('phi-giao-hang')).toHaveText('50.000');
+await expect(page.getByTestId('phi-dich-vu')).toHaveText('50.000');
 await expect(page.getByTestId('tong-tien')).toHaveText('485.000');
 }
 ```
@@ -149,12 +149,12 @@ Cách A là nguồn của phần lớn test chập chờn: trang chưa kịp ren
 trừ khi bạn thật sự cần giá trị đó để tính tiếp.
 
 Cách C dài hơn nhưng trả lời được câu hỏi mà người đọc report sẽ hỏi ngay: *"sai ở khâu nào"*. Với
-ví dụ này, cách C cho thấy tạm tính đúng, giảm giá đúng, **phí giao hàng sai**, tổng sai theo. Cách
+ví dụ này, cách C cho thấy tạm tính đúng, giảm giá đúng, **phí dịch vụ sai**, tổng sai theo. Cách
 B chỉ nói tổng sai, và Dev sẽ phải tự dò.
 
 Đổi test của bạn sang cách C rồi chạy lại.
 
-**Bạn sẽ thấy** nó vẫn đỏ, nhưng đỏ ở đúng dòng `phi-giao-hang`. Ba dòng trên xanh. Đó là khác biệt
+**Bạn sẽ thấy** nó vẫn đỏ, nhưng đỏ ở đúng dòng `phi-dich-vu`. Ba dòng trên xanh. Đó là khác biệt
 giữa một test báo lỗi và một test **chỉ được chỗ lỗi**.
 
 > Đây cũng là lần đầu bạn chạm vào một ý sẽ quay lại suốt tài liệu: kiểm từng trường riêng lẻ thì bỏ
@@ -179,14 +179,14 @@ Ba loại lỗi hay gặp nhất ở tuần đầu:
 |---|---|---|
 | `Timeout 5000ms exceeded` + `waiting for locator` | Locator không khớp element nào | Locator, không phải app |
 | `Received: ""` | Element có, nội dung chưa có | Chờ điều kiện, xem Bài 9 |
-| `Expected "485.000" Received "515.000"` | Cả hai bên đều đọc được, số lệch | **App sai**, hoặc số mong đợi của bạn sai |
+| `Expected "485.000" Received "544.000"` | Cả hai bên đều đọc được, số lệch | **App sai**, hoặc số mong đợi của bạn sai |
 
 Dòng cuối bảng là chỗ dễ nhầm nhất. Test đỏ **không tự động nghĩa là app sai**. Nó chỉ nghĩa là hai
 con số khác nhau, và một trong hai sai. Bài 17 dành cả bài cho câu hỏi này, còn ở đây thì cách kiểm
 rẻ nhất là: mở `spec.md`, tính lại bằng tay, xem con số nào đúng.
 
-Với ví dụ này, `spec.md` mục `BR-04` nói phí giao hàng miễn phí khi **tạm tính** đạt `500.000`. Tạm
-tính là `450.000`, chưa đạt, nên phí `50.000` là đúng. Nhưng app lại tính miễn phí dựa trên số sau
+Với ví dụ này, `spec.md` mục `BR-04` nói phí dịch vụ miễn phí khi **tạm tính** đạt `500.000`. Tạm
+tính là `520.000`, chưa đạt, nên phí `50.000` là đúng. Nhưng app lại tính miễn phí dựa trên số sau
 giảm giá. Vậy app sai. Bạn vừa xác nhận bug thứ nhất bằng automation.
 
 ## Gọi tên những gì bạn vừa làm
@@ -232,13 +232,13 @@ cả tài liệu           bài 4/29
 2. Ba nguyên nhân làm một test xanh giả là gì?
 3. Vì sao cách A (đọc rồi so bằng JavaScript) hay gây test chập chờn?
 4. Cách C dài hơn cách B. Nó đổi lại được gì?
-5. Test đỏ với `Expected 485.000 / Received 515.000`. Kết luận "app sai" đã đủ căn cứ chưa?
+5. Test đỏ với `Expected 485.000 / Received 544.000`. Kết luận "app sai" đã đủ căn cứ chưa?
 6. `Received: ""` khác `Timeout` ở chỗ nào?
 7. Bạn chứng minh assertion của mình có tác dụng bằng cách nào?
 
 ## Bài tập về nhà
 
-Viết thêm một test cho khách hạng Vàng, 1 sản phẩm SP03. Tự tính kết quả mong đợi từ `spec.md` trước
+Viết thêm một test cho học viên chương trình Elite, 1 sản phẩm KH03. Tự tính kết quả mong đợi từ `spec.md` trước
 khi chạy, ghi con số đó ra giấy.
 
 Rồi chạy. Nếu số của bạn khác số app trả, đừng sửa test cho khớp app. Ghi lại cả hai số và đi tiếp,

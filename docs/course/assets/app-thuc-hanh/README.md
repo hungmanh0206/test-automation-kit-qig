@@ -1,4 +1,4 @@
-# Cửa hàng mini — app thực hành của khoá học
+# Cổng đăng ký khoá học — app thực hành của khoá học
 
 Một app bán hàng bé xíu, chạy trên máy bạn. Cả khoá học dùng **app này** để thực hành, nên bạn
 không cần xin quyền vào hệ thống của công ty, không sợ phá dữ liệu ai, và không phải đợi ai.
@@ -14,11 +14,11 @@ node docs/course/assets/app-thuc-hanh/server.js
 Bạn sẽ thấy đúng hai dòng này:
 
 ```
-Cửa hàng mini đang chạy: http://localhost:4010
+Cổng đăng ký khoá học đang chạy: http://localhost:4010
 Dừng: Ctrl + C
 ```
 
-Mở `http://localhost:4010` trên trình duyệt. Bạn thấy màn **Tạo đơn hàng**: chọn khách, chọn sản phẩm,
+Mở `http://localhost:4010` trên trình duyệt. Bạn thấy màn **Tạo đơn hàng**: chọn học viên, chọn khoá học,
 bấm **Thêm**, rồi bấm **Tạo đơn**. Đơn hiện ở bảng dưới.
 
 Dừng server: bấm `Ctrl + C` ở cửa sổ terminal đang chạy nó.

@@ -57,7 +57,7 @@ node docs/course/assets/app-thuc-hanh/server.js
 **Bạn sẽ thấy:**
 
 ```
-Cửa hàng mini đang chạy ở http://localhost:4010
+Cổng đăng ký khoá học đang chạy ở http://localhost:4010
 ```
 
 | Thấy khác | Nghĩa là | Làm gì |
@@ -66,7 +66,7 @@ Cửa hàng mini đang chạy ở http://localhost:4010
 | `EADDRINUSE: address already in use` | Cổng 4010 đang bận | `PORT=4011 node server.js` |
 | Không in gì, con trỏ đứng im | Bình thường. Nó đang chạy | Mở trình duyệt |
 
-Mở `http://localhost:4010`. Bạn có một trang tạo đơn: chọn khách, chọn sản phẩm, nhập số lượng.
+Mở `http://localhost:4010`. Bạn có một trang tạo đơn: chọn học viên, chọn khoá học, nhập số suất.
 
 Bấm thử một lần cho quen tay. Chưa cần kết luận gì.
 
@@ -77,10 +77,10 @@ bốn luật:
 
 | Mã | Luật |
 |---|---|
-| `BR-02` | Tạm tính = tổng (đơn giá × số lượng) |
-| `BR-03` | Giảm giá theo hạng khách: Thường 0%, Bạc 3%, Vàng 5% |
-| `BR-04` | Phí giao hàng 50.000. Miễn phí khi **tạm tính** đạt 500.000 |
-| `BR-05` | Tổng tiền = Tạm tính − Giảm giá + Phí giao hàng |
+| `BR-02` | Tạm tính = tổng (đơn giá × số suất) |
+| `BR-03` | Giảm giá theo chương trình: Standard 0%, Pro 3%, Elite 5% |
+| `BR-04` | Phí dịch vụ 50.000. Miễn phí khi **tạm tính** đạt 500.000 |
+| `BR-05` | Tổng tiền = Tạm tính − Giảm giá + Phí dịch vụ |
 
 Để ý chữ **tạm tính** ở `BR-04`. Nó sẽ quan trọng trong hai mươi phút nữa.
 
@@ -107,18 +107,22 @@ Thứ tự đó quan trọng. Nhìn trước rồi mới tính thì bạn sẽ v
 
 ### Tính bằng tay
 
-Lấy giấy. Khách `KH02` (hạng Bạc), sản phẩm `SP01` (đơn giá 225.000), số lượng 2:
+Lấy giấy. Học viên `HV03` (chương trình Elite, giảm 5%), khoá học `KH01` (đơn giá 260.000), số
+suất 2:
 
 ```
-Tạm tính     = 225.000 × 2         = 450.000     (BR-02)
-Giảm giá     = 450.000 × 3%        =  13.500     (BR-03)
-Phí giao hàng: tạm tính 450.000 < 500.000
-                                   =  50.000     (BR-04)
-Tổng tiền    = 450.000 − 13.500 + 50.000
-                                   = 486.500     (BR-05)
+Tạm tính      = 260.000 × 2            = 520.000     (BR-02)
+Giảm giá      = 520.000 × 5%           =  26.000     (BR-03)
+Phí dịch vụ   : tạm tính 520.000 đã ĐẠT mốc 500.000
+                nên theo BR-04 phải MIỄN
+                                       =       0     (BR-04)
+Tổng phải thu = 520.000 − 26.000 + 0   = 494.000     (BR-05)
 ```
 
-Khoanh con số `486.500` lại. Đó là thứ bạn mang đi so.
+Khoanh con số `494.000` lại. Đó là thứ bạn mang đi so.
+
+Để ý dòng phí dịch vụ. Tạm tính đã vượt mốc, nên theo `BR-04` con số đó phải là **0**. Đây là chỗ
+đáng nhìn kỹ nhất trong cả phép tính.
 
 ### Giờ mới bấm
 
@@ -130,52 +134,79 @@ Nhập đúng bộ đó trên trang, bấm Tạo đơn.
 
 | Khâu | Bạn tính | Sản phẩm trả | Khớp? |
 |---|---|---|---|
-| Tạm tính | 450.000 | | |
-| Giảm giá | 13.500 | | |
-| Phí giao hàng | 50.000 | | |
-| Tổng tiền | 486.500 | | |
+| Tạm tính | 520.000 | | |
+| Giảm giá | 26.000 | | |
+| Phí dịch vụ | **0** | | |
+| Tổng phải thu | 494.000 | | |
 
-Điền cột thứ ba vào từ màn hình. Ba dòng đầu thường khớp. Dòng phí giao hàng thì không.
+Điền cột thứ ba vào từ màn hình. Hai dòng đầu khớp. Dòng phí dịch vụ thì không: nó hiện `50.000`,
+nên tổng thành `544.000` thay vì `494.000`. Lệch đúng bằng tiền phí.
 
 | Thấy khác | Nghĩa là | Làm gì |
 |---|---|---|
-| Cả bốn dòng đều khớp | Bạn nhập khác bộ dữ liệu ở trên | Kiểm lại mã khách và số lượng |
-| Tạm tính đã lệch | Đơn giá `SP01` khác con số bạn dùng | Mở lại `spec.md` phần bảng giá |
+| Cả bốn dòng đều khớp | Bạn nhập khác bộ dữ liệu ở trên | Kiểm lại mã học viên và số suất |
+| Tạm tính đã lệch | Đơn giá `KH01` khác con số bạn dùng | Mở lại `spec.md` phần bảng giá |
 | Màn hình không hiện đủ bốn dòng | Bạn đang xem màn danh sách, không phải màn chi tiết | Bấm vào đơn vừa tạo |
 
 ### Vì sao nó lệch
 
-Sản phẩm đang tính miễn phí giao hàng dựa trên số **sau khi trừ giảm giá**, chứ không phải tạm tính.
-Mà `BR-04` nói rõ là tạm tính.
+Sản phẩm đang so mốc `500.000` với số **sau khi trừ giảm giá**, chứ không phải với tạm tính:
+
+```
+tạm tính               520.000  ≥ 500.000   → BR-04 nói MIỄN phí
+sau khi trừ giảm giá   494.000  < 500.000   → sản phẩm thu 50.000
+```
+
+Mà `BR-04` nói rõ mốc so trên **tạm tính**. Chọn sai một trong hai số đó là chọn sai cả kết quả, và
+với phần lớn bộ dữ liệu khác thì hai cách so cho **cùng một đáp án** nên không ai thấy gì.
 
 Đến đây bạn có một nghi ngờ có cơ sở. Chưa phải bằng chứng. Việc 3 lo phần đó.
 
 ## Việc 3 — Biến nghi ngờ thành bằng chứng (20 phút)
 
-Nghi ngờ của bạn là: *"nó so mốc trên số sau giảm giá"*. Nhưng còn một giải thích khác cũng khớp với
-những gì bạn vừa thấy: *"nó cộng phí sai ở một chỗ khác"*.
+Bạn đang có một nghi ngờ: *"nó so mốc trên số sau giảm giá."*
 
-Với bộ dữ liệu vừa rồi, cả hai giải thích cho **cùng một kết quả**. Nên bạn chưa phân biệt được.
+Nhưng có một giải thích thứ hai cũng khớp hoàn hảo với những gì bạn vừa thấy: *"nó luôn thu phí dịch
+vụ, bất kể mốc nào."*
 
-Cách phân biệt là dựng một bộ dữ liệu mà hai giải thích cho **hai kết quả khác nhau**:
+Với bộ dữ liệu vừa rồi, **cả hai giải thích cho cùng một con số** `544.000`. Nên bạn chưa phân biệt
+được cái nào đúng. Và mang một nghi ngờ chưa phân biệt được sang cho Dev thì họ sẽ tự phân biệt hộ
+bạn, thường là theo hướng "không tái hiện được".
 
-| Cần một bộ mà | Vì sao nó phân biệt được |
-|---|---|
-| Tạm tính **trên** mốc 500.000 | Theo `BR-04` thì phải miễn phí |
-| Nhưng sau giảm giá lại **dưới** mốc | Nếu nó so sai chỗ thì sẽ thu phí |
+### Dựng một bộ dữ liệu mà hai giải thích cho hai đáp án khác nhau
 
-Khách hạng Vàng (giảm 5%), tạm tính đúng `520.000`:
+Điều kiện cần: **cả tạm tính và số sau giảm giá đều vượt mốc**. Lúc đó:
+
+| Giải thích | Nó sẽ làm gì | Phí dịch vụ |
+|---|---|---|
+| A. So mốc trên số sau giảm giá | Số sau giảm cũng vượt mốc, nên vẫn miễn | 0 |
+| B. Luôn thu phí bất kể mốc | Vẫn thu | 50.000 |
+
+Hai đáp án khác nhau. Đó là điều kiện của một phép thử phân biệt được.
+
+Vẫn học viên `HV03` (Elite, giảm 5%), nhưng **3 suất** thay vì 2:
 
 ```
-Tạm tính            = 520.000     → trên mốc 500.000, BR-04 nói MIỄN PHÍ
-Sau giảm giá        = 494.000     → dưới mốc
-   nếu so đúng chỗ  → phí = 0
-   nếu so sai chỗ   → phí = 50.000
+Tạm tính              = 260.000 × 3   = 780.000    ≥ 500.000
+Giảm giá              = 780.000 × 5%  =  39.000
+Sau khi trừ giảm giá  = 741.000                    ≥ 500.000  ← cả hai đều vượt mốc
+
+nếu giải thích A đúng → phí = 0        → tổng 741.000
+nếu giải thích B đúng → phí = 50.000   → tổng 791.000
 ```
 
 Bấm thử bộ đó.
 
-**Bạn sẽ thấy** nó thu `50.000`. Giờ bạn đã chứng minh được chỗ sai, không còn là đoán.
+**Bạn sẽ thấy** nó trả về `741.000`. Phí dịch vụ bằng 0.
+
+Vậy giải thích B **bị loại**: sản phẩm không hề luôn thu phí, nó biết miễn khi số nó đang so vượt
+mốc. Chỉ có điều nó so sai số.
+
+Giờ bạn có một bằng chứng, không còn là nghi ngờ. Và bạn nói được thành một câu Dev đọc là sửa được:
+
+> Với `HV03` + `KH01` × 2: `BR-04` nói miễn phí vì tạm tính `520.000` đã đạt mốc `500.000`, nhưng
+> sản phẩm thu `50.000`. Với × 3 thì nó miễn đúng. Nên mốc đang được so với số **sau giảm giá**
+> (`494.000`) thay vì với tạm tính.
 
 > Ghi lại bốn bước bạn vừa làm, vì đó là phương pháp của cả tài liệu này:
 >
@@ -204,7 +235,7 @@ Bạn vừa hoàn thành một vòng kiểm thử đầy đủ. Không dùng cô
 
 Giờ đếm thời gian: bốn mươi phút cho **một** bộ dữ liệu.
 
-Mà bốn luật `BR-02` tới `BR-05` có nhiều bộ đáng kiểm hơn thế. Hạng khách có ba mức. Mốc 500.000 có
+Mà bốn luật `BR-02` tới `BR-05` có nhiều bộ đáng kiểm hơn thế. Chương trình có ba mức. Mốc 500.000 có
 ba điểm đáng thử là ngay dưới, đúng bằng, ngay trên. Nhân lên là chín bộ, và đó chỉ là một màn hình.
 
 Rồi tuần sau Dev sửa một chỗ khác, và bạn phải làm lại cả chín bộ.
@@ -220,12 +251,12 @@ Requirement  →  Prepare  →  Execute  →  Compare  →  Report
 | Chặng | Bạn vừa làm gì | Máy làm được không |
 |---|---|---|
 | **Requirement** | Đọc `spec.md`, chốt bốn luật, chốt ba câu hỏi | **Không.** Đây là việc của bạn |
-| **Prepare** | Chọn khách `KH02`, sản phẩm `SP01`, số lượng 2 | Được, và nhanh hơn nhiều |
+| **Prepare** | Chọn học viên `HV02`, khoá học `KH01`, số suất 2 | Được, và nhanh hơn nhiều |
 | **Execute** | Bấm qua ba ô rồi bấm Tạo đơn | Được. Đây là chặng máy giỏi nhất |
-| **Compare** | Tính `486.500` rồi so với màn hình | Được, **nếu** bạn nói cho nó số nào là đúng |
+| **Compare** | Tính `494.000` rồi so với màn hình | Được, **nếu** bạn nói cho nó số nào là đúng |
 | **Report** | Chưa làm. Con số đang nằm trong đầu bạn | Được, và làm tốt hơn bạn |
 
-Dòng đầu là dòng đáng để ý nhất. Máy không đọc được đặc tả để tự biết `486.500` là đúng. Nó chỉ biết
+Dòng đầu là dòng đáng để ý nhất. Máy không đọc được đặc tả để tự biết `494.000` là đúng. Nó chỉ biết
 con số bạn đưa cho nó.
 
 Nghĩa là nếu bạn đưa sai, nó sẽ xanh và sai cùng bạn. Cả tài liệu này xoay quanh việc chặn đúng
@@ -278,7 +309,7 @@ không phải chuyện gọn gàng mà là chuyện an toàn.
 Một thư mục có 200 file test mà không ai dám xoá cái nào. Một bộ test mà cách duy nhất để biết nó còn
 đúng là chạy lên xem có đỏ không. Một quy trình nằm trong đầu một người.
 
-Ba thứ đó rất phổ biến, và chúng đều là một đống script. Khác biệt không nằm ở số lượng test.
+Ba thứ đó rất phổ biến, và chúng đều là một đống script. Khác biệt không nằm ở số suất test.
 
 ## Gọi tên những gì bạn vừa làm
 
@@ -287,9 +318,9 @@ Giờ mới đặt tên, vì bạn đã chạm vào từng thứ rồi. Cột th
 | Từ | Nghĩa gọn | Bạn vừa gặp nó ở đâu |
 |---|---|---|
 | **Đặc tả** | Tài liệu nói sản phẩm phải làm gì | `spec.md`, bốn luật ở Việc 1 |
-| **Test Data** | Dữ liệu bạn đưa vào trước khi chạy | Khách `KH02`, sản phẩm `SP01`, số lượng 2 |
-| **Precondition** | Trạng thái phải có trước khi kiểm | Phải tồn tại một khách hạng Bạc và một sản phẩm còn hàng |
-| **Expected Result** | Con số bạn viết ra **trước** khi bấm | `486.500` bạn tính trên giấy ở Việc 2 |
+| **Test Data** | Dữ liệu bạn đưa vào trước khi chạy | Học viên `HV02`, khoá học `KH01`, số suất 2 |
+| **Precondition** | Trạng thái phải có trước khi kiểm | Phải tồn tại một học viên chương trình Pro và một sản phẩm còn hàng |
+| **Expected Result** | Con số bạn viết ra **trước** khi bấm | `494.000` bạn tính trên giấy ở Việc 2 |
 | **Actual Result** | Con số sản phẩm trả về | Con số bạn điền vào cột thứ ba của bảng |
 | **Oracle** | Căn cứ để nói cái nào đúng | `BR-04`, chỗ nói mốc so trên *tạm tính* |
 | **Triage** | Việc tìm xem hai số lệch nhau vì đâu | Việc bạn làm khi đi từng khâu ở Việc 2 |
@@ -299,8 +330,8 @@ Giờ mới đặt tên, vì bạn đã chạm vào từng thứ rồi. Cột th
 
 Ba từ hay bị dùng sai nhất, nói rõ luôn:
 
-**Oracle không phải Expected Result.** Expected Result là con số `486.500`. Oracle là **lý do** con
-số đó là `486.500`, tức là `BR-02` cộng `BR-03` cộng `BR-04`. Viết được con số mà không chỉ được mã
+**Oracle không phải Expected Result.** Expected Result là con số `494.000`. Oracle là **lý do** con
+số đó là `494.000`, tức là `BR-02` cộng `BR-03` cộng `BR-04`. Viết được con số mà không chỉ được mã
 luật thì bạn đang đoán, và Bài 13 dựng một máy chặn đúng chuyện đó.
 
 **"Không phán được" không phải là Pass.** Nếu bạn không đọc được con số vì trang lỗi, kết quả là

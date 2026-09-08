@@ -107,9 +107,9 @@ Với tài liệu mẫu, bảng business rule nên có ít nhất:
 | Mã | Quy tắc | Trích từ |
 |---|---|---|
 | BR-01 | Giảm giá: Thường 0% · Bạc 3% trần 100.000 · Vàng 5% trần 300.000, tính trên Tạm tính, làm tròn xuống | Mục 3 |
-| BR-02 | Phí giao hàng = 30.000 nếu Tạm tính < mốc, ngược lại 0 | Mục 2 khối C |
-| BR-03 | Tổng cộng = Tạm tính − Giảm giá + Phí giao hàng | Mục 2 khối C |
-| BR-04 | Số lượng: số nguyên 1–999, ngoài khoảng thì chặn tại dòng | Mục 2 khối B, mục 5 |
+| BR-02 | Phí dịch vụ = 30.000 nếu Tạm tính < mốc, ngược lại 0 | Mục 2 khối C |
+| BR-03 | Tổng cộng = Tạm tính − Giảm giá + Phí dịch vụ | Mục 2 khối C |
+| BR-04 | Số suất: số nguyên 1–999, ngoài khoảng thì chặn tại dòng | Mục 2 khối B, mục 5 |
 | BR-05 | Tối đa 20 dòng sản phẩm; đủ 20 thì nút Thêm dòng vô hiệu | Mục 2 khối B |
 | BR-06 | Ma trận phân quyền 4 vai trò | Mục 6 |
 
@@ -117,7 +117,7 @@ Và bảng chỗ chưa rõ phải bắt được **cả ba** thứ này:
 
 | # | Chỗ chưa rõ | Mức |
 |---|---|---|
-| 1 | Mốc phí giao hàng: mục 2 ghi 500.000, Ghi chú 2 ghi 700.000 | **chặn** |
+| 1 | Mốc phí dịch vụ: mục 2 ghi 500.000, Ghi chú 2 ghi 700.000 | **chặn** |
 | 2 | Rule "Vàng trên 10 triệu phải duyệt ngay" (Ghi chú 1) không có trong luồng chính mục 4 | **chặn** |
 | 3 | Khách chưa được phân hạng thì hiển thị gì và tính giảm giá thế nào (Ghi chú 3) | **chặn** |
 
@@ -182,7 +182,7 @@ Không đủ ba thì sửa prompt rồi chạy lại **phiên mới**, ghi lại
 
 Bạn đóng vai BA, trả lời ba câu. Với tài liệu mẫu, dùng đáp án này để cả lớp có cùng nền:
 
-1. Mốc phí giao hàng: **500.000** (bảng giá mới chưa hiệu lực).
+1. Mốc phí dịch vụ: **500.000** (bảng giá mới chưa hiệu lực).
 2. Rule Vàng trên 10 triệu: còn hiệu lực, cần trưởng nhóm duyệt ngay ở bước lưu nháp.
 3. Khách chưa phân hạng: hiển thị `Chưa phân hạng`, giảm giá 0%.
 

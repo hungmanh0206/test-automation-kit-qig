@@ -177,7 +177,7 @@ Dùng trong test:
 const { test, expect } = require('../support/fixtures');
 const { chupCoHighlight } = require('../support/evidence');
 
-test('TC_012 [Calc] giảm giá hạng Bạc', async ({ page, duLieu }, testInfo) => {
+test('TC_012 [Calc] giảm giá chương trình Pro', async ({ page, duLieu }, testInfo) => {
   const kh = await duLieu.khachHang({ hang: 'Bạc' });
   await page.goto('/orders/create');
   // … thao tác …
@@ -604,7 +604,7 @@ Mở **năm** bug gần nhất team bạn log lên hệ thống quản lý việ
 
 1. Có ảnh hoặc video không? (hay chỉ có mô tả chữ)
 2. Ảnh có **khoanh** chỗ sai không?
-3. Có thông tin khách hàng chưa che không?
+3. Có thông tin học viên chưa che không?
 4. Với bug chuỗi thao tác, có video không, hay chỉ ảnh cuối?
 
 Nếu có bug từng bị trả về với lý do *"không tái hiện được"* hoặc *"không thấy lỗi"*, xem lại bằng chứng của

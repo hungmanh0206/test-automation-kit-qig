@@ -132,7 +132,7 @@ async function motNguoi(ctx) {
   for (let i = 0; i < SO_LUOT_MOI_NGUOI; i++) {
     const t0 = Date.now();
     const res = await ctx.post('/api/quote', {
-      data: { khachId: 'KH02', items: [{ sanPhamId: 'SP01', soLuong: 2 }] },
+      data: { hocVienId: 'HV02', items: [{ khoaHocId: 'KH01', soSuat: 2 }] },
     });
     doTre.push({ ms: Date.now() - t0, ok: res.ok() });
   }

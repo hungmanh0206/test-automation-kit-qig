@@ -139,7 +139,7 @@ Ba nhóm đáng chạy trên mobile, và một nhóm không:
 Đánh dấu bằng tag thay vì tách thư mục riêng, để một case không phải tồn tại hai bản:
 
 ```js
-test('tạo đơn cho khách hạng Bạc @mobile', async ({ page }) => { /* ... */ });
+test('tạo đơn cho học viên chương trình Pro @mobile', async ({ page }) => { /* ... */ });
 ```
 
 ```js

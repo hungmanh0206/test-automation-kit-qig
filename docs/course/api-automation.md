@@ -67,18 +67,18 @@ Playwright có sẵn một context để gọi HTTP, không cần thư viện th
 ```js
 const { test, expect } = require('@playwright/test');
 
-test('BR-04: phí giao hàng so mốc trên TẠM TÍNH', async ({ request }) => {
+test('BR-04: phí dịch vụ so mốc trên TẠM TÍNH', async ({ request }) => {
   const res = await request.post('/api/quote', {
-    data: { khachId: 'KH02', items: [{ sanPhamId: 'SP01', soLuong: 2 }] },
+    data: { hocVienId: 'HV02', items: [{ khoaHocId: 'KH01', soSuat: 2 }] },
   });
 
   expect(res.status()).toBe(200);
   const bao = await res.json();
 
   /* Số mong đợi tính từ spec.md BR-02, BR-03, BR-04. KHÔNG lấy từ phản hồi của app. */
-  expect(bao.tamTinh).toBe(450000);      // BR-02: 225.000 × 2
-  expect(bao.giamGia).toBe(-15000);      // BR-03: hạng Bạc, 
-  expect(bao.phiGiaoHang).toBe(50000);   // BR-04: tạm tính 450.000 < mốc 500.000
+  expect(bao.tamTinh).toBe(520000);      // BR-02: 260.000 × 2
+  expect(bao.giamGia).toBe(-15000);      // BR-03: chương trình Pro, 
+  expect(bao.phiDichVu).toBe(50000);   // BR-04: tạm tính 520.000 < mốc 500.000
   expect(bao.tongTien).toBe(485000);
 });
 ```
@@ -89,11 +89,11 @@ Tạo `tests/api/bao-gia.spec.js` với nội dung trên rồi chạy:
 npx playwright test tests/api/
 ```
 
-**Bạn sẽ thấy** nó đỏ ở dòng `phiGiaoHang`, và đỏ nhanh hơn hẳn UI test vì không phải mở trình duyệt.
+**Bạn sẽ thấy** nó đỏ ở dòng `phiDichVu`, và đỏ nhanh hơn hẳn UI test vì không phải mở trình duyệt.
 
 | Thấy khác | Nghĩa là | Làm gì |
 |---|---|---|
-| `expect(received).toBe(expected)` ở `tamTinh` | Giá sản phẩm khác `spec.md` | Đọc lại `spec.md`, có thể bạn nhớ nhầm mã sản phẩm |
+| `expect(received).toBe(expected)` ở `tamTinh` | Giá sản phẩm khác `spec.md` | Đọc lại `spec.md`, có thể bạn nhớ nhầm mã khoá học |
 | `res.status()` là `404` | Đường dẫn API sai | Xem phần API trong `spec.md` |
 | `res.status()` là `401` | Cần đăng nhập | Phần dưới |
 
@@ -147,7 +147,7 @@ Viết test:
 test('BR-07: đơn đã xác nhận thì KHÔNG sửa được', async ({ request }) => {
   // dựng: tạo đơn rồi xác nhận
   const tao = await request.post('/api/orders', {
-    data: { khachId: 'KH02', items: [{ sanPhamId: 'SP01', soLuong: 1 }] },
+    data: { hocVienId: 'HV02', items: [{ khoaHocId: 'KH01', soSuat: 1 }] },
   });
   const don = await tao.json();
 
@@ -155,7 +155,7 @@ test('BR-07: đơn đã xác nhận thì KHÔNG sửa được', async ({ reques
 
   // hành động: thử sửa
   const sua = await request.patch(`/api/orders/${don.id}`, {
-    data: { items: [{ sanPhamId: 'SP01', soLuong: 99 }] },
+    data: { items: [{ khoaHocId: 'KH01', soSuat: 99 }] },
   });
 
   // oracle: BR-07 nói phải bị từ chối
@@ -197,7 +197,7 @@ Khai bản đồ tên trong `.agent/config/anh-xa-luu-tru.json`:
   "truong": {
     "giamGia": { "ui": "giam-gia", "api": "giamGia", "luuTru": "discount_amount" },
     "tongTien": { "ui": "tong-tien", "api": "tongTien", "luuTru": "total_amount" },
-    "phiGiaoHang": { "ui": "phi-giao-hang", "api": "phiGiaoHang", "luuTru": "shipping_fee" }
+    "phiDichVu": { "ui": "phi-dich-vu", "api": "phiDichVu", "luuTru": "service_fee" }
   }
 }
 ```

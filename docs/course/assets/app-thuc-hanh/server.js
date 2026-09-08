@@ -1,5 +1,5 @@
 /*
- * Cửa hàng mini — app thực hành cho khoá học.
+ * Cổng đăng ký khoá học — app thực hành cho khoá học.
  *
  * Chạy:  node docs/course/assets/app-thuc-hanh/server.js
  * Mở:    http://localhost:4010
@@ -22,38 +22,38 @@ const GOC = __dirname;
 
 /* ── Dữ liệu ────────────────────────────────────────────────────────────────── */
 
-const KHACH = [
-  { id: 'KH01', ten: 'Nguyễn Văn A', hang: 'THUONG' },
-  { id: 'KH02', ten: 'Trần Thị B', hang: 'BAC' },
-  { id: 'KH03', ten: 'Lê Văn C', hang: 'VANG' }
+const HOC_VIEN = [
+  { id: 'HV01', ten: 'Nguyễn Văn A', chuongTrinh: 'STANDARD' },
+  { id: 'HV02', ten: 'Trần Thị B', chuongTrinh: 'PRO' },
+  { id: 'HV03', ten: 'Lê Văn C', chuongTrinh: 'ELITE' }
 ];
 
-const SAN_PHAM = [
-  { id: 'SP01', ten: 'Bàn gỗ', gia: 250000 },
-  { id: 'SP02', ten: 'Ghế nhựa', gia: 100000 },
-  { id: 'SP03', ten: 'Đèn bàn', gia: 175000 }
+const KHOA_HOC = [
+  { id: 'KH01', ten: 'Ôn thi CFA Level 1', gia: 260000 },
+  { id: 'KH02', ten: 'Ôn thi ACCA F2', gia: 100000 },
+  { id: 'KH03', ten: 'Ôn thi CMA Part 1', gia: 175000 }
 ];
 
-const GIAM_THEO_HANG = { THUONG: 0, BAC: 0.03, VANG: 0.05 };
+const GIAM_THEO_CHUONG_TRINH = { STANDARD: 0, PRO: 0.03, ELITE: 0.05 };
 
 let donHang = [];
 let demId = 0;
 
 /* ── Tính tiền ──────────────────────────────────────────────────────────────── */
 
-function tinhTien(khach, items) {
+function tinhTien(hocVien, items) {
   const tamTinh = items.reduce((s, it) => {
-    const sp = SAN_PHAM.find((p) => p.id === it.productId);
-    return s + (sp ? sp.gia * it.qty : 0);
+    const sp = KHOA_HOC.find((p) => p.id === it.khoaHocId);
+    return s + (sp ? sp.gia * it.soSuat : 0);
   }, 0);
 
-  const giamGia = Math.round(tamTinh * (GIAM_THEO_HANG[khach.hang] || 0));
+  const giamGia = Math.round(tamTinh * (GIAM_THEO_CHUONG_TRINH[hocVien.chuongTrinh] || 0));
 
-  // BR-03: miễn phí giao hàng khi TẠM TÍNH từ 500.000 trở lên.
-  const phiGiaoHang = (tamTinh - giamGia) >= 500000 ? 0 : 30000;
+  // BR-03: miễn phí dịch vụ khi TẠM TÍNH từ 500.000 trở lên.
+  const phiDichVu = (tamTinh - giamGia) >= 500000 ? 0 : 50000;
 
-  const tongCong = tamTinh - giamGia + phiGiaoHang;
-  return { tamTinh, giamGia, phiGiaoHang, tongCong };
+  const tongCong = tamTinh - giamGia + phiDichVu;
+  return { tamTinh, giamGia, phiDichVu, tongCong };
 }
 
 /* ── Tiện ích HTTP ──────────────────────────────────────────────────────────── */
@@ -91,22 +91,22 @@ const server = http.createServer(async (req, res) => {
     if (cach === 'GET' && (duong === '/' || duong === '/index.html')) return traFile(res, 'index.html', 'text/html');
     if (cach === 'GET' && duong === '/app.js') return traFile(res, 'app.js', 'text/javascript');
 
-    if (cach === 'GET' && duong === '/api/customers') return traJson(res, 200, { data: KHACH });
-    if (cach === 'GET' && duong === '/api/products') return traJson(res, 200, { data: SAN_PHAM });
+    if (cach === 'GET' && duong === '/api/students') return traJson(res, 200, { data: HOC_VIEN });
+    if (cach === 'GET' && duong === '/api/courses') return traJson(res, 200, { data: KHOA_HOC });
 
     // Báo giá: tính tiền mà chưa tạo đơn. Màn tạo đơn gọi API này mỗi lần bạn đổi gì đó.
     if (cach === 'POST' && duong === '/api/quote') {
       const b = await docBody(req);
-      const khach = KHACH.find((k) => k.id === b.customerId);
-      if (!khach) return traJson(res, 400, { error: 'khách không tồn tại' });
+      const hocVien = HOC_VIEN.find((k) => k.id === b.hocVienId);
+      if (!hocVien) return traJson(res, 400, { error: 'học viên không tồn tại' });
       const items = Array.isArray(b.items) ? b.items : [];
       for (const it of items) {
-        // BR-05: số lượng phải trong khoảng 1..99
-        if (!Number.isInteger(it.qty) || it.qty < 1 || it.qty > 99) {
-          return traJson(res, 400, { error: 'Số lượng phải từ 1 đến 99' });
+        // BR-05: số suất phải trong khoảng 1..99
+        if (!Number.isInteger(it.soSuat) || it.soSuat < 1 || it.soSuat > 99) {
+          return traJson(res, 400, { error: 'Số suất phải từ 1 đến 99' });
         }
       }
-      return traJson(res, 200, { data: tinhTien(khach, items) });
+      return traJson(res, 200, { data: tinhTien(hocVien, items) });
     }
 
     if (cach === 'GET' && duong === '/api/orders') {
@@ -122,21 +122,21 @@ const server = http.createServer(async (req, res) => {
 
     if (cach === 'POST' && duong === '/api/orders') {
       const b = await docBody(req);
-      const khach = KHACH.find((k) => k.id === b.customerId);
-      if (!khach) return traJson(res, 400, { error: 'khách không tồn tại' });
+      const hocVien = HOC_VIEN.find((k) => k.id === b.hocVienId);
+      if (!hocVien) return traJson(res, 400, { error: 'học viên không tồn tại' });
       const items = Array.isArray(b.items) ? b.items : [];
       if (!items.length) return traJson(res, 400, { error: 'đơn phải có ít nhất 1 sản phẩm' });
       for (const it of items) {
-        if (!Number.isInteger(it.qty) || it.qty < 1 || it.qty > 99) {
-          return traJson(res, 400, { error: 'Số lượng phải từ 1 đến 99' });
+        if (!Number.isInteger(it.soSuat) || it.soSuat < 1 || it.soSuat > 99) {
+          return traJson(res, 400, { error: 'Số suất phải từ 1 đến 99' });
         }
       }
-      const tien = tinhTien(khach, items);
+      const tien = tinhTien(hocVien, items);
       const don = {
         id: 'DH' + String(++demId).padStart(4, '0'),
-        customerId: khach.id,
-        customerName: khach.ten,
-        hang: khach.hang,
+        hocVienId: hocVien.id,
+        hocVienTen: hocVien.ten,
+        chuongTrinh: hocVien.chuongTrinh,
         items,
         ...tien,
         status: 'CHO_XAC_NHAN',
@@ -162,9 +162,9 @@ const server = http.createServer(async (req, res) => {
       if (!d) return traJson(res, 404, { error: 'không thấy đơn' });
       const b = await docBody(req);
       if (Array.isArray(b.items) && b.items.length) {
-        const khach = KHACH.find((k) => k.id === d.customerId);
+        const hocVien = HOC_VIEN.find((k) => k.id === d.customerId);
         d.items = b.items;
-        Object.assign(d, tinhTien(khach, b.items));
+        Object.assign(d, tinhTien(hocVien, b.items));
       }
       return traJson(res, 200, { data: d });
     }
@@ -181,11 +181,11 @@ const server = http.createServer(async (req, res) => {
       return traJson(res, 200, {
         data: donHang.map((d) => ({
           id: d.id,
-          customer_id: d.customerId,
-          rank: d.hang,
+          student_id: d.customerId,
+          rank: d.chuongTrinh,
           subtotal_amount: d.tamTinh,
           discount_amount: d.giamGia,       // giá trị THẬT, chưa qua làm tròn của giao diện
-          shipping_fee: d.phiGiaoHang,
+          service_fee: d.phiDichVu,
           total_amount: d.tongCong,
           status: d.status,
           item_count: d.items.reduce((s, i) => s + i.qty, 0),
@@ -208,6 +208,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Cửa hàng mini đang chạy: http://localhost:${PORT}`);
+  console.log(`Cổng đăng ký khoá học đang chạy: http://localhost:${PORT}`);
   console.log('Dừng: Ctrl + C');
 });

@@ -42,13 +42,13 @@ Nhìn lại `TC_015`:
 
 ```js
 test('TC_015 …', async ({ page }) => {
-  await page.getByLabel('Tìm khách hàng').fill('KH_BAC_01');   // ← mã dữ liệu GÁN CỨNG
+  await page.getByLabel('Tìm học viên').fill('KH_BAC_01');   // ← mã dữ liệu GÁN CỨNG
   // …
 });
 ```
 
-Test này chỉ chạy được nếu `KH_BAC_01` **tồn tại** và đang hạng Bạc. Ai làm điều đó? Hiện tại: không ai.
-Nó chạy được vì tình cờ dữ liệu đó có trên môi trường. Và nó sẽ đỏ vào ngày ai đó xoá hoặc đổi hạng khách đó.
+Test này chỉ chạy được nếu `KH_BAC_01` **tồn tại** và đang chương trình Pro. Ai làm điều đó? Hiện tại: không ai.
+Nó chạy được vì tình cờ dữ liệu đó có trên môi trường. Và nó sẽ đỏ vào ngày ai đó xoá hoặc đổi chương trình đó.
 
 Test phụ thuộc dữ liệu tình cờ không phải test. Nó là một quan sát may mắn.
 
@@ -123,23 +123,23 @@ function tenDuyNhat(mo_ta) {
 }
 
 /**
- * Tạo khách hàng ở hạng cho trước.
+ * Tạo học viên ở hạng cho trước.
  * @param {import('@playwright/test').APIRequestContext} api
  */
-async function taoKhachHang(api, { hang = 'Thường' } = {}) {
+async function taoHocVienHang(api, { hang = 'Thường' } = {}) {
   const body = { ten: tenDuyNhat('KH'), hang, sdt: '0900000000' };
-  const r = await api.post('/api/customers', { data: body });
+  const r = await api.post('/api/students', { data: body });
   if (!r.ok()) {
     // Ném lỗi RÕ RÀNG: đây là setup_failure, không phải bug sản phẩm (Bài 17).
-    throw new Error(`SETUP: tạo khách hàng thất bại ${r.status()} — ${await r.text()}`);
+    throw new Error(`SETUP: tạo học viên thất bại ${r.status()} — ${await r.text()}`);
   }
   return r.json();
 }
 
 /** Tạo đơn nháp có sẵn dòng sản phẩm. */
-async function taoDonNhap(api, { khachHangId, sanPhamId, soLuong = 1 } = {}) {
+async function taoDonNhap(api, { khachHangId, khoaHocId, soSuat = 1 } = {}) {
   const r = await api.post('/api/orders', {
-    data: { khachHangId, dong: [{ sanPhamId, soLuong }], trangThai: 'NHAP' }
+    data: { khachHangId, dong: [{ khoaHocId, soSuat }], trangThai: 'NHAP' }
   });
   if (!r.ok()) throw new Error(`SETUP: tạo đơn nháp thất bại ${r.status()} — ${await r.text()}`);
   return r.json();
@@ -151,11 +151,11 @@ async function don(api, { customers = [], orders = [] } = {}) {
     try { await api.delete(`/api/orders/${id}`); } catch (e) { console.warn('dọn đơn ' + id + ' lỗi'); }
   }
   for (const id of customers) {
-    try { await api.delete(`/api/customers/${id}`); } catch (e) { console.warn('dọn KH ' + id + ' lỗi'); }
+    try { await api.delete(`/api/students/${id}`); } catch (e) { console.warn('dọn KH ' + id + ' lỗi'); }
   }
 }
 
-module.exports = { TIEN_TO, tenDuyNhat, taoKhachHang, taoDonNhap, don };
+module.exports = { TIEN_TO, tenDuyNhat, taoHocVienHang, taoDonNhap, don };
 ```
 
 Bốn quyết định trong đoạn trên, mỗi cái chặn một vấn đề:
@@ -173,10 +173,10 @@ Bốn quyết định trong đoạn trên, mỗi cái chặn một vấn đề:
 
 ```js
 const base = require('@playwright/test');
-const { taoKhachHang, taoDonNhap, don } = require('./setup/factory');
+const { taoHocVienHang, taoDonNhap, don } = require('./setup/factory');
 
 /*
- * Fixture bọc factory lại: test chỉ khai "tôi cần khách hạng Bạc", không cần biết dựng thế nào.
+ * Fixture bọc factory lại: test chỉ khai "tôi cần học viên chương trình Pro", không cần biết dựng thế nào.
  * Phần dọn chạy SAU mỗi test, kể cả khi test đỏ — đó là lý do dùng fixture chứ không gọi factory trực tiếp.
  */
 const test = base.test.extend({
@@ -185,7 +185,7 @@ const test = base.test.extend({
 
     const api = {
       async khachHang(opts) {
-        const kh = await taoKhachHang(request, opts);
+        const kh = await taoHocVienHang(request, opts);
         daTao.customers.push(kh.id);
         return kh;
       },
@@ -216,7 +216,7 @@ test('TC_015 [E2E] tạo đơn → lưu nháp → chi tiết, giá trị còn ng
   const kh = await duLieu.khachHang({ hang: 'Bạc' });
 
   await page.goto('/orders/create');
-  await page.getByLabel('Tìm khách hàng').fill(kh.ma);
+  await page.getByLabel('Tìm học viên').fill(kh.ma);
   await page.getByRole('option', { name: kh.ma, exact: true }).click();
   // … phần còn lại như Bài 9
 });
@@ -245,14 +245,14 @@ capability"* chung chung cũng vô dụng, phải ghi thiếu hook nào, thiếu
 Với mỗi tiền điều kiện, ghi bốn thứ. Đặt trong `requirements/setup-strategy.md`:
 
 ```markdown
-## PRE-01 — Khách hàng hạng Bạc
+## PRE-01 — Học viên chương trình Pro
 
 | | |
 |---|---|
 | **Loại** | Dữ liệu nghiệp vụ |
-| **Cách dựng** | Factory — `POST /api/customers` với `hang: "Bạc"` |
-| **Verify** | Đọc lại `GET /api/customers/{id}`, khẳng định `hang === "Bạc"` |
-| **Dọn** | `DELETE /api/customers/{id}` sau mỗi test (fixture tự chạy) |
+| **Cách dựng** | Factory — `POST /api/students` với `hang: "Bạc"` |
+| **Verify** | Đọc lại `GET /api/students/{id}`, khẳng định `hang === "Bạc"` |
+| **Dọn** | `DELETE /api/students/{id}` sau mỗi test (fixture tự chạy) |
 | **Sẵn sàng** | Ready |
 
 ## PRE-02 — Đơn đã thanh toán rồi bị hủy
@@ -273,7 +273,7 @@ Ba lý do hợp đồng này đáng viết:
 3. **Phần dọn** viết ra thì mới có người làm.
 
 > Vì sao phải kiểm lại sau khi dựng. Hàm tạo dữ liệu trả về `200` không có nghĩa dữ liệu đúng như bạn muốn. API có thể bỏ
-> qua field `hang` (không có trong danh sách cho phép ghi) và tạo khách hạng `Thường`. Test sau đó kiểm giảm
+> qua field `hang` (không có trong danh sách cho phép ghi) và tạo học viên hạng `Thường`. Test sau đó kiểm giảm
 > giá 3% và đỏ. Bạn tưởng công thức sai, thực ra khách sai hạng. **Verify bắt được ngay.**
 
 ## Việc 8 — Non-destructive: đừng phá việc của người khác
@@ -313,7 +313,7 @@ async function main() {
     process.exit(2);
   }
 
-  const r = await fetch(`${base}/api/customers?q=${encodeURIComponent(TIEN_TO)}`, {
+  const r = await fetch(`${base}/api/students?q=${encodeURIComponent(TIEN_TO)}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   if (!r.ok) { console.error('[janitor] KHÔNG ĐO ĐƯỢC: API trả ' + r.status); process.exit(2); }
@@ -332,7 +332,7 @@ async function main() {
   }
   let ok = 0;
   for (const c of canDon) {
-    const d = await fetch(`${base}/api/customers/${c.id}`,
+    const d = await fetch(`${base}/api/students/${c.id}`,
       { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     if (d.ok) ok++;
   }

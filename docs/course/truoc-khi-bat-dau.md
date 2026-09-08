@@ -88,12 +88,12 @@ node docs/course/assets/app-thuc-hanh/server.js
 Bạn sẽ thấy đúng hai dòng:
 
 ```
-Cửa hàng mini đang chạy: http://localhost:4010
+Cổng đăng ký khoá học đang chạy: http://localhost:4010
 Dừng: Ctrl + C
 ```
 
-Mở trình duyệt vào `http://localhost:4010`. Trang có chữ Cửa hàng mini ở trên. Bên dưới là khung
-**Tạo đơn hàng** với ô chọn khách, ô chọn sản phẩm, ô số lượng và nút **Thêm**.
+Mở trình duyệt vào `http://localhost:4010`. Trang có chữ Cổng đăng ký khoá học ở trên. Bên dưới là khung
+**Tạo đơn hàng** với ô chọn học viên, ô chọn khoá học, ô số suất và nút **Thêm**.
 
 | Bạn thấy gì | Nghĩa là | Làm gì |
 |---|---|---|
@@ -113,9 +113,9 @@ Trước khi tự động hoá cái gì, hãy làm bằng tay một lần. Khôn
 
 Trên trang web:
 
-1. Ô **Khách hàng**, chọn `Trần Thị B — hạng Bạc`.
+1. Ô **Học viên**, chọn `Trần Thị B — chương trình Pro`.
 2. Ô **Sản phẩm**, chọn `Bàn gỗ — 250.000 đ`.
-3. Ô **Số lượng**, sửa thành `2`.
+3. Ô **Số suất**, sửa thành `2`.
 4. Bấm **Thêm**.
 
 Một dòng hiện ra trong bảng giỏ hàng, và bốn con số hiện ra bên dưới. Ghi lại đã:
@@ -124,20 +124,20 @@ Một dòng hiện ra trong bảng giỏ hàng, và bốn con số hiện ra bê
 |---|---|
 | Tạm tính | |
 | Giảm giá | |
-| Phí giao hàng | |
+| Phí dịch vụ | |
 | Tổng cộng | |
 
 Giờ mở file [`spec.md`](assets/app-thuc-hanh/spec.md). Đây là đặc tả, tức là bản mô tả app *phải* làm gì.
 Đọc bốn luật `BR-01` đến `BR-04`, rồi tự tính bốn con số đó bằng máy tính tay:
 
 - `BR-01` Tạm tính = 250.000 × 2 = **500.000**
-- `BR-02` Giảm giá cho hạng Bạc là 3% = 500.000 × 3% = **15.000**
-- `BR-03` Tạm tính là 500.000, từ 500.000 trở lên thì miễn phí giao hàng, nên phí = **0**
+- `BR-02` Giảm giá cho chương trình Pro là 3% = 500.000 × 3% = **15.000**
+- `BR-03` Tạm tính là 500.000, từ 500.000 trở lên thì miễn phí dịch vụ, nên phí = **0**
 - `BR-04` Tổng cộng = 500.000 − 15.000 + 0 = **485.000**
 
 So với bảng bạn vừa ghi.
 
-Hai bên không khớp. Màn hình hiện Phí giao hàng **30.000 đ** và Tổng cộng **515.000 đ**.
+Hai bên không khớp. Màn hình hiện Phí dịch vụ **30.000 đ** và Tổng cộng **544.000 đ**.
 
 Bạn vừa tìm ra một trong ba bug, bằng tay, ở phút thứ 40. Nhưng cách bạn tìm ra nó mới là chỗ đáng nhớ:
 
@@ -163,7 +163,7 @@ Việc 3 vừa rồi là một testcase, chỉ là bạn chưa viết nó ra gi�
 
 Con số hoặc trạng thái đúng, tính ra mà không dùng tới app.
 
-`485.000` là kết quả mong đợi độc lập, vì bạn tính nó từ `spec.md` bằng máy tính tay. Còn `515.000` thì
+`485.000` là kết quả mong đợi độc lập, vì bạn tính nó từ `spec.md` bằng máy tính tay. Còn `544.000` thì
 không, vì đó là app tự nói về chính nó.
 
 Giống đi mua gạo. Bạn không cân gạo bằng cân của người bán rồi hỏi người bán xem cân có đúng không. Bạn mang
@@ -216,7 +216,7 @@ Kết luận về một case sau khi chạy. Không chỉ có PASS với FAIL:
 
 Ảnh hoặc video chứng minh case đã chạy thật, và kết quả đúng như bạn nói.
 
-Ví dụ: ảnh chụp lúc Tổng cộng hiện `515.000`, có khoanh đỏ vào đúng con số đó.
+Ví dụ: ảnh chụp lúc Tổng cộng hiện `544.000`, có khoanh đỏ vào đúng con số đó.
 
 File `.txt` ghi "đã test, pass" thì không tính. Đó chỉ là bạn nói lại lần nữa thôi. Bài 17 dạy cách chụp có
 khoanh đỏ và che thông tin cá nhân.
@@ -318,7 +318,7 @@ Trả lời được bằng lời của mình thì đi tiếp. Không trả lờ
 
 1. App thực hành chạy ở địa chỉ nào? Dừng nó thế nào?
 2. Vì sao tài liệu này đưa cho bạn một app có bug cài sẵn, thay vì một app đúng?
-3. Ở Việc 3, `485.000` và `515.000`, số nào là kết quả mong đợi độc lập? Số kia sai ở chỗ nào?
+3. Ở Việc 3, `485.000` và `544.000`, số nào là kết quả mong đợi độc lập? Số kia sai ở chỗ nào?
 4. Máy kiểm khác lời dặn ở chỗ nào? Cho một ví dụ ngoài đời.
 5. Case chạy được nhưng app trả số khác spec thì ghi phán quyết gì? Case không đăng nhập được nên không chạy
    nổi thì ghi gì?
@@ -326,11 +326,11 @@ Trả lời được bằng lời của mình thì đi tiếp. Không trả lờ
 
 ## Bài tập về nhà (15 phút)
 
-Làm lại Việc 3, nhưng đổi khách sang `Lê Văn C — hạng Vàng`, sản phẩm sang `Đèn bàn — 175.000 đ`, số lượng `1`.
+Làm lại Việc 3, nhưng đổi khách sang `Lê Văn C — chương trình Elite`, sản phẩm sang `Đèn bàn — 175.000 đ`, số suất `1`.
 
 1. Ghi lại bốn số trên màn hình.
 2. Tự tính bốn số đó từ `spec.md`.
-3. Lấy máy tính cộng thử các số đang hiện: Tạm tính trừ Giảm giá cộng Phí giao hàng. Có ra đúng số Tổng cộng
+3. Lấy máy tính cộng thử các số đang hiện: Tạm tính trừ Giảm giá cộng Phí dịch vụ. Có ra đúng số Tổng cộng
    đang hiện không?
 
 Câu 3 mới là câu chính. Nếu thấy có gì lạ thì ghi vào một file `ghi-chu.md`, đừng vội kết luận. Bài 13 sẽ dạy

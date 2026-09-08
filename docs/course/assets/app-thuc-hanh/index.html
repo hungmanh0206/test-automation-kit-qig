@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cửa hàng mini</title>
+<title>Cổng đăng ký khoá học</title>
 <style>
   :root { --ink:#1A1916; --wash:#FAF8F3; --line:#E6E0D5; --gold:#FFB700; --mo:#79736A; }
   * { box-sizing:border-box }
@@ -40,13 +40,13 @@
 </style>
 </head>
 <body>
-<header>Cửa hàng mini · app thực hành</header>
+<header>Cổng đăng ký khoá học · app thực hành</header>
 <main>
 
   <section class="the">
     <h2>Tạo đơn hàng</h2>
 
-    <label for="khach">Khách hàng</label>
+    <label for="khach">Học viên</label>
     <select id="khach" data-testid="khach"></select>
 
     <div class="hang">
@@ -55,7 +55,7 @@
         <select id="sanpham" data-testid="sanpham"></select>
       </div>
       <div style="max-width:110px">
-        <label for="soluong">Số lượng</label>
+        <label for="soluong">Số suất</label>
         <input id="soluong" data-testid="soluong" type="number" value="1" min="1" max="99">
       </div>
       <button id="them" class="phu" data-testid="them">Thêm</button>
@@ -72,7 +72,7 @@
     <div class="tien">
       <div><span>Tạm tính</span><span data-testid="tam-tinh">—</span></div>
       <div><span>Giảm giá</span><span data-testid="giam-gia">—</span></div>
-      <div><span>Phí giao hàng</span><span data-testid="phi-giao-hang">—</span></div>
+      <div><span>Phí dịch vụ</span><span data-testid="phi-dich-vu">—</span></div>
       <div class="tong"><span>Tổng cộng</span><span data-testid="tong-cong">—</span></div>
     </div>
 

@@ -50,8 +50,8 @@ không chuyện nào lộ ra ngay:
 
 Để thấy tận mắt, làm thử: copy file test của Bài 4 thành ba bản, mỗi bản đổi một chút dữ liệu.
 
-**Bạn sẽ thấy** ba file giống nhau tới 80%. Ba dòng mở trang, ba đoạn chọn khách, ba đoạn chọn sản
-phẩm. Giờ đổi nhãn ô "Khách hàng" trên giao diện thành "Người mua" và đếm xem bạn phải sửa mấy chỗ.
+**Bạn sẽ thấy** ba file giống nhau tới 80%. Ba dòng mở trang, ba đoạn chọn học viên, ba đoạn chọn sản
+phẩm. Giờ đổi nhãn ô "Học viên" trên giao diện thành "Người mua" và đếm xem bạn phải sửa mấy chỗ.
 
 Đó là toàn bộ lý do của bài này. Không phải để gọn gàng, mà để **một thay đổi chỉ phải sửa ở một chỗ**.
 
@@ -87,7 +87,7 @@ printf '# Bộ nhớ dự án\n\nKhông đưa lên git. Đây là dữ liệu c�
 
 ## Việc 3 — Đặt tên file test (25 phút)
 
-Sáu tháng sau, ai đó hỏi *"case kiểm giảm giá theo hạng khách nằm ở đâu"*. Bạn có 200 file.
+Sáu tháng sau, ai đó hỏi *"case kiểm giảm giá theo chương trình nằm ở đâu"*. Bạn có 200 file.
 
 Ba cách đặt tên, và cách thứ ba trả lời được câu trên:
 
@@ -108,7 +108,7 @@ Và bên trong file, tên test mang luôn mã luật:
 ```js
 const { test } = require('@playwright/test');
 
-test('BR-03: khách hạng Bạc được giảm 3% trên tạm tính', async ({ page }) => {
+test('BR-03: học viên chương trình Pro được giảm 3% trên tạm tính', async ({ page }) => {
   // ...
 });
 ```

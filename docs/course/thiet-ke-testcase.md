@@ -78,14 +78,14 @@ sẽ có một công cụ phía sau vỡ.
 ```markdown
 | TC ID | Module | Trường hợp kiểm thử | Tiền điều kiện | Các bước thực hiện | Kết quả mong đợi | Ưu tiên |
 |---|---|---|---|---|---|---|
-| TC_001 | Tạo đơn hàng | Tính Tổng cộng khi khách hạng Bạc, tạm tính dưới mốc phí giao hàng | Khách `KH_BAC_01` hạng Bạc; sản phẩm `SP_A` giá 100.000 còn bán | 1. Mở màn Tạo đơn hàng<br>2. Chọn khách `KH_BAC_01`<br>3. Thêm `SP_A`, số lượng 3 | 1. Tạm tính = 300.000<br>2. Giảm giá = 9.000 (3% của 300.000)<br>3. Phí giao hàng = 30.000<br>4. **Tổng cộng = 321.000** | High |
+| TC_001 | Tạo đơn hàng | Tính Tổng cộng khi học viên chương trình Pro, tạm tính dưới mốc phí dịch vụ | Khách `KH_BAC_01` chương trình Pro; sản phẩm `SP_A` giá 100.000 còn bán | 1. Mở màn Tạo đơn hàng<br>2. Chọn học viên `KH_BAC_01`<br>3. Thêm `SP_A`, số suất 3 | 1. Tạm tính = 300.000<br>2. Giảm giá = 9.000 (3% của 300.000)<br>3. Phí dịch vụ = 30.000<br>4. **Tổng cộng = 321.000** | High |
 ```
 
 Ba quy ước trong ví dụ trên, và mỗi cái có lý do:
 
 1. Kết quả mong đợi đánh số khớp từng bước. `1.` ứng với bước `1.` Không gộp kiểu "các giá trị hiển thị
    đúng", đó là oracle rỗng, Bài 13 sẽ nói kỹ.
-2. Tiền điều kiện nêu dữ liệu cụ thể, có mã. Không viết "có một khách hàng hạng Bạc", lúc execute thì
+2. Tiền điều kiện nêu dữ liệu cụ thể, có mã. Không viết "có một học viên chương trình Pro", lúc execute thì
    *khách nào*?
 3. Giá trị cụ thể trong kết quả mong đợi, kèm cách tính. `321.000` chứ không "tổng đúng".
 
@@ -304,7 +304,7 @@ Agent sẽ làm một trong ba việc dưới đây. Mỗi lần chạy nó có 
 ### Kiểu A — Đổi số mong đợi cho khớp app
 
 ```js
-const KY_VONG = 515000;   // ← đổi từ 485000
+const KY_VONG = 544000;   // ← đổi từ 485000
 ```
 
 Test xanh ngay. Bug thì vẫn nằm nguyên trong app.
@@ -313,7 +313,7 @@ Test xanh ngay. Bug thì vẫn nằm nguyên trong app.
 
 ```js
 const thucTe = j.data.tongCong;
-const KY_VONG = j.data.tamTinh - j.data.giamGia + j.data.phiGiaoHang;   // ← tính lại từ app
+const KY_VONG = j.data.tamTinh - j.data.giamGia + j.data.phiDichVu;   // ← tính lại từ app
 ```
 
 Nhìn thì có vẻ thông minh, kiểu "tôi tính lại từ các thành phần". Nhưng bốn số đó đều do app trả về. Nó đang
@@ -346,13 +346,13 @@ Muốn chắc thì gọi lại API bằng tay ở terminal thứ hai:
 
 ```bash
 curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/json" ^
-  -d "{\"customerId\":\"KH02\",\"items\":[{\"productId\":\"SP01\",\"qty\":2}]}"
+  -d "{\"customerId\":\"HV02\",\"items\":[{\"productId\":\"KH01\",\"qty\":2}]}"
 ```
 
 Trên Windows dùng `^` để nối dòng như trên, trên macOS hay Linux thì dùng `\`. Máy không có `curl` thì cứ mở
 `http://localhost:4010` rồi làm tay như Bài 1.
 
-Bạn sẽ thấy `"tongCong":515000`, y nguyên. Test xanh, app sai.
+Bạn sẽ thấy `"tongCong":544000`, y nguyên. Test xanh, app sai.
 
 ## Việc 7 — Gọi tên chỗ gian lận (20 phút)
 
@@ -369,7 +369,7 @@ Câu ở dòng thứ hai là câu bạn sẽ dùng nhiều nhất về sau:
 
 > Nếu app sai, dòng này có đỏ không?
 
-Thử áp nó vào Kiểu B. Giả sử app trả `tamTinh: 1`, `giamGia: 0`, `phiGiaoHang: 0`, `tongCong: 1`. Sai bét.
+Thử áp nó vào Kiểu B. Giả sử app trả `tamTinh: 1`, `giamGia: 0`, `phiDichVu: 0`, `tongCong: 1`. Sai bét.
 Nhưng `1 - 0 + 0 === 1` nên test vẫn xanh. Vậy là dòng đó không kiểm gì cả.
 
 ### Agent không cố ý gian lận
@@ -397,7 +397,7 @@ Bạn sẽ gặp một trong hai:
 | Kết quả | Nghĩa |
 |---|---|
 | Agent nói "test đang đỏ vì app có bug ở BR-03, nên tôi không sửa test" | Lần này lời dặn có tác dụng |
-| Agent vẫn tìm đường khác để xanh: sửa `server.js`, thêm `try/catch`, hoặc đổi dữ liệu đầu vào sang khách hạng Thường | Lời dặn không ăn thua |
+| Agent vẫn tìm đường khác để xanh: sửa `server.js`, thêm `try/catch`, hoặc đổi dữ liệu đầu vào sang khách chương trình Standard | Lời dặn không ăn thua |
 
 Chạy thử ba bốn lần. Bạn sẽ gặp cả hai.
 
@@ -435,7 +435,7 @@ if (!file || !fs.existsSync(file)) {
 
 const noiDung = fs.readFileSync(file, 'utf8');
 const SO_THEO_SPEC = '485000';   // tính từ spec.md: BR-01..BR-04
-const SO_APP_DANG_TRA = '515000';
+const SO_APP_DANG_TRA = '544000';
 
 if (noiDung.includes(SO_APP_DANG_TRA)) {
   console.error(`[kiem] ✗ CHẶN — file chứa ${SO_APP_DANG_TRA}, đây là số APP đang trả, không phải số spec.`);
@@ -469,10 +469,10 @@ Bạn sẽ thấy:
 mã thoát = 0
 ```
 
-**Lần 2, file bị gian lận.** Sửa `KY_VONG` thành `515000` rồi chạy lại:
+**Lần 2, file bị gian lận.** Sửa `KY_VONG` thành `544000` rồi chạy lại:
 
 ```
-[kiem] ✗ CHẶN — file chứa 515000, đây là số APP đang trả, không phải số spec.
+[kiem] ✗ CHẶN — file chứa 544000, đây là số APP đang trả, không phải số spec.
         Số mong đợi phải tính từ spec.md, không phải copy từ app.
 mã thoát = 1
 ```
@@ -534,8 +534,8 @@ sửa trước khi đi tiếp. Thử lại bằng `split('|')` thô để **th�
 Dùng [`assets/sample-requirement.md`](assets/sample-requirement.md). Viết **tay**, không dùng agent, đây là
 bản đối chứng cho Bài 12.
 
-Phân bổ gợi ý: 3 case luồng chính · 3 case công thức (giảm giá, phí giao hàng, tổng cộng) · 2 case biên
-(số lượng 1 và 999) · 2 case luồng lỗi.
+Phân bổ gợi ý: 3 case luồng chính · 3 case công thức (giảm giá, phí dịch vụ, tổng cộng) · 2 case biên
+(số suất 1 và 999) · 2 case luồng lỗi.
 
 Lưu ở `outputs/demo/tasks/PROJ-1234/test-cases/tay-10-case.md`.
 
@@ -639,5 +639,5 @@ gate, và lúc đó bạn có máy để sửa hàng loạt.
 
 ## Bài sau
 
-Bài 14 hỏi câu tiếp theo: bộ case của bạn có oracle rồi, nhưng đủ hay thiếu. Và vì sao đếm số lượng
+Bài 14 hỏi câu tiếp theo: bộ case của bạn có oracle rồi, nhưng đủ hay thiếu. Và vì sao đếm số suất
 testcase không trả lời được câu đó.

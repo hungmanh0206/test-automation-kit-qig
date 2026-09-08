@@ -1,5 +1,5 @@
 /*
- * Giao diện của Cửa hàng mini. Chạy trong trình duyệt.
+ * Giao diện của Cổng đăng ký khoá học. Chạy trong trình duyệt.
  *
  * Đọc được file này là một phần của bài học: khi test đỏ, bạn cần biết
  * chữ trên màn hình đến từ đâu.
@@ -52,7 +52,7 @@ function veGio() {
 
 async function capNhatTien() {
   if (!gio.length) {
-    for (const t of ['tam-tinh', 'giam-gia', 'phi-giao-hang', 'tong-cong']) q(t).textContent = '—';
+    for (const t of ['tam-tinh', 'giam-gia', 'phi-dich-vu', 'tong-cong']) q(t).textContent = '—';
     return;
   }
   try {
@@ -64,7 +64,7 @@ async function capNhatTien() {
     q('tam-tinh').textContent = tien(t.tamTinh);
     // Làm tròn xuống nghìn cho gọn mắt
     q('giam-gia').textContent = tien(Math.floor(t.giamGia / 1000) * 1000);
-    q('phi-giao-hang').textContent = t.phiGiaoHang === 0 ? 'Miễn phí' : tien(t.phiGiaoHang);
+    q('phi-dich-vu').textContent = t.phiDichVu === 0 ? 'Miễn phí' : tien(t.phiDichVu);
     q('tong-cong').textContent = tien(t.tongCong);
   } catch (e) {
     hienLoi(e.message);
@@ -90,8 +90,8 @@ async function veDsDon() {
 }
 
 async function khoiDong() {
-  khachDs = await goi('/api/customers');
-  sanPhamDs = await goi('/api/products');
+  khachDs = await goi('/api/students');
+  sanPhamDs = await goi('/api/courses');
 
   const tenHang = { THUONG: 'Thường', BAC: 'Bạc', VANG: 'Vàng' };
   q('khach').innerHTML = khachDs
@@ -106,7 +106,7 @@ async function khoiDong() {
 
 $('#them').addEventListener('click', async () => {
   const sl = Number(q('soluong').value);
-  if (!Number.isInteger(sl) || sl < 1 || sl > 99) { hienLoi('Số lượng phải từ 1 đến 99'); return; }
+  if (!Number.isInteger(sl) || sl < 1 || sl > 99) { hienLoi('Số suất phải từ 1 đến 99'); return; }
   const pid = q('sanpham').value;
   const co = gio.find((x) => x.productId === pid);
   if (co) co.qty += sl; else gio.push({ productId: pid, qty: sl });

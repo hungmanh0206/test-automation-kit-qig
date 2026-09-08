@@ -159,7 +159,7 @@ Tỉ lệ toàn bộ suite không nói test **nào** yếu. Cần điểm theo t
 
 ```json
 {
-  "test": "tao-don.spec.js > tính tổng cộng khách hạng Bạc",
+  "test": "tao-don.spec.js > tính tổng cộng học viên chương trình Pro",
   "soLuot": 40,
   "xanhNgay": 31,
   "xanhSauRetry": 38,
@@ -230,7 +230,7 @@ Trước khi gắn nhãn `flaky` cho bất cứ test nào, bắt buộc ghi:
 
 ```json
 {
-  "test": "tao-don.spec.js > tính tổng cộng khách hạng Bạc",
+  "test": "tao-don.spec.js > tính tổng cộng học viên chương trình Pro",
   "nhan": "flaky",
   "daThu": {
     "chayMotMinhTuanTu": "xanh 5/5 lượt",
@@ -313,7 +313,7 @@ Bạn không sửa source của sản phẩm. Bạn chặn ở giữa và đổi
  */
 const MUTANTS = {
   'giam-gia-bang-0':    (d) => ({ ...d, giamGia: 0 }),
-  'phi-giao-hang-mien': (d) => ({ ...d, phiGiaoHang: 0 }),
+  'phi-dich-vu-mien': (d) => ({ ...d, phiDichVu: 0 }),
   'tong-lech-1000':     (d) => ({ ...d, tongTien: d.tongTien + 1000 }),
   'thieu-truong':       (d) => { const x = { ...d }; delete x.giamGia; return x; },
   'trang-thai-sai':     (d) => ({ ...d, trangThai: 'CONFIRMED' }),
@@ -336,7 +336,7 @@ module.exports = { MUTANTS, gan };
 Rồi chạy cả suite một lần cho **mỗi** mutant:
 
 ```bash
-for m in giam-gia-bang-0 phi-giao-hang-mien tong-lech-1000 thieu-truong trang-thai-sai; do
+for m in giam-gia-bang-0 phi-dich-vu-mien tong-lech-1000 thieu-truong trang-thai-sai; do
   MUTANT=$m npx playwright test --reporter=json > "outputs/mutant-$m.json" || true
 done
 ```
@@ -349,7 +349,7 @@ gian. Đó là lý do phép đo này chạy hằng tuần chứ không chạy m�
 | Mutant | Suite có đỏ không | Nghĩa là |
 |---|---|---|
 | `giam-gia-bang-0` | ✓ đỏ | Có case kiểm giảm giá thật |
-| `phi-giao-hang-mien` | ✓ đỏ | Có case kiểm phí giao hàng |
+| `phi-dich-vu-mien` | ✓ đỏ | Có case kiểm phí dịch vụ |
 | `tong-lech-1000` | ✓ đỏ | Có case kiểm tổng |
 | `thieu-truong` | ✗ **xanh** | Không case nào kiểm trường này có tồn tại hay không |
 | `trang-thai-sai` | ✗ **xanh** | Không case nào kiểm trạng thái đơn |

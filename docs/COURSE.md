@@ -52,9 +52,9 @@ có thể làm nền tảng cho dự án khác.
 
 > **Một testcase chạy xanh thực sự chứng minh được điều gì?**
 
-Application hiển thị `515000`. Test của bạn expected `515000`. Test chạy xanh.
+Application hiển thị `544000`. Test của bạn expected `544000`. Test chạy xanh.
 
-Nhưng `515000` có thực sự đúng không?
+Nhưng `544000` có thực sự đúng không?
 
 Nếu expected được lấy từ chính giá trị application đang trả thì testcase đó chỉ chứng minh một điều:
 **application bằng chính nó.** Nó chưa chứng minh application đúng requirement.
@@ -106,13 +106,13 @@ Requirement → Test Design → Automation → Execution → Evidence → Triage
 Ở từng điểm quan trọng, chúng ta sẽ dần xây các **Quality Gate**: những kiểm tra tự động giúp ngăn một
 số kết luận sai trước khi chúng đi sang bước tiếp theo.
 
-Ví dụ. Bạn yêu cầu AI Agent sửa một testcase đang Fail. Agent thấy application trả `515000`, nên nó
-đổi expected thành `515000`. Test lập tức xanh. Nhưng bộ kit chặn lại:
+Ví dụ. Bạn yêu cầu AI Agent sửa một testcase đang Fail. Agent thấy application trả `544000`, nên nó
+đổi expected thành `544000`. Test lập tức xanh. Nhưng bộ kit chặn lại:
 
 ```console
 $ node scripts/qa/kiem-so-mong-doi.js tests/api/don-hang-bac.js
 [kiem] ✗ CHẶN
-        File chứa 515000 — đây là số application đang trả,
+        File chứa 544000 — đây là số application đang trả,
         không phải số được suy ra từ requirement.
         Expected phải có nguồn độc lập với application.
 $ echo "mã thoát = $?"
@@ -180,7 +180,7 @@ Làm hết tài liệu này, bạn có thể:
 ✅ Viết automation cho cả giao diện lẫn API, và biết khi nào nên dùng cái nào
 ✅ Chụp ảnh có khoanh đỏ, quay video từng bước, che dữ liệu khách, rồi ráp thành report đọc được
 ✅ Đi từ requirement ra test scenario trước khi mở trình soạn thảo
-✅ Đo độ phủ theo chiều và theo rủi ro, thay vì đếm số lượng testcase
+✅ Đo độ phủ theo chiều và theo rủi ro, thay vì đếm số suất testcase
 ✅ Phân loại một lượt fail trước khi tạo bug: sản phẩm, test, dữ liệu, hay môi trường
 ✅ Đưa testcase và kết quả lên hệ quản lý test dùng chung cho cả team
 ✅ Dựng CI chạy gate mỗi lần push, và regression hằng đêm
@@ -235,14 +235,14 @@ Playwright vẫn quan trọng. AI Agent cũng quan trọng. Nhưng cả hai đ�
 
 ## App thực hành: bạn có gì để test ngay từ Bài 1
 
-Cả tài liệu thực hành trên một app duy nhất. [Cửa hàng mini](course/assets/app-thuc-hanh/README.md), Node
+Cả tài liệu thực hành trên một app duy nhất. [Cổng đăng ký khoá học](course/assets/app-thuc-hanh/README.md), Node
 thuần, `node server.js` là chạy, không cài gì.
 
 Nó có đúng 3 bug cài sẵn, cố ý, mỗi bug đại diện một loại điểm mù:
 
 | Bug | Tầng | Bộ kiểm mù vì | Bạn bắt được ở |
 |---|---|---|---|
-| Phí giao hàng so mốc trên số sai | backend | chỉ test dữ liệu đẹp, không test biên | Bài 1 (bằng tay) · Bài 10 |
+| Phí dịch vụ so mốc trên số sai | backend | chỉ test dữ liệu đẹp, không test biên | Bài 1 (bằng tay) · Bài 10 |
 | Các số trên màn hình không cộng đúng | frontend | kiểm từng trường, không kiểm quan hệ giữa các trường | Bài 9 · Bài 13 |
 | Sửa được đơn đã xác nhận qua API | backend | chỉ test một tầng, giao diện đã ẩn nút | Bài 10 · Bài 16 |
 
@@ -430,7 +430,7 @@ testcase automation đầu tiên.
 
 > **Xong phần này bạn có:** một Automation Test Kit có cấu trúc đủ để sử dụng trong dự án thật
 
-Bạn giải quyết từng vấn đề xuất hiện khi số lượng testcase bắt đầu tăng: configuration, test data,
+Bạn giải quyết từng vấn đề xuất hiện khi số suất testcase bắt đầu tăng: configuration, test data,
 fixture, FE, API, evidence và reporting.
 
 ### [Bài 5 — Khi một testcase bắt đầu trở thành một project](course/cau-truc-project.md) *(1.5h · dễ)*

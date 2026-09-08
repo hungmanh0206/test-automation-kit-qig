@@ -48,10 +48,10 @@ Chạy app, rồi ở cửa sổ terminal thứ hai:
 ```bash
 curl -s -X POST http://localhost:4010/api/reset
 curl -s -X POST http://localhost:4010/api/orders -H "Content-Type: application/json" \
-  -d "{\"customerId\":\"KH03\",\"items\":[{\"productId\":\"SP03\",\"qty\":1}]}"
+  -d "{\"customerId\":\"HV03\",\"items\":[{\"productId\":\"KH03\",\"qty\":1}]}"
 ```
 
-Giờ mở `http://localhost:4010`, tạo đúng đơn đó bằng tay (khách `Lê Văn C — hạng Vàng`, `Đèn bàn`, số
+Giờ mở `http://localhost:4010`, tạo đúng đơn đó bằng tay (khách `Lê Văn C — chương trình Elite`, `Đèn bàn`, số
 lượng `1`) và ghi lại bốn số trên màn hình. Rồi gọi cửa tầng lưu trữ:
 
 ```bash
@@ -61,8 +61,8 @@ curl -s http://localhost:4010/api/_store/orders
 **Bạn sẽ thấy:**
 
 ```json
-{"data":[{"id":"DH0001","customer_id":"KH03","rank":"VANG","subtotal_amount":175000,
-"discount_amount":8750,"shipping_fee":30000,"total_amount":196250,
+{"data":[{"id":"DH0001","student_id":"HV03","rank":"VANG","subtotal_amount":175000,
+"discount_amount":8750,"service_fee":30000,"total_amount":196250,
 "status":"CHO_XAC_NHAN","item_count":1,"created_at_utc":"2026-09-07T11:12:41.432Z"}]}
 ```
 
@@ -72,8 +72,8 @@ curl -s http://localhost:4010/api/_store/orders
 |---|---|---|---|
 | Tạm tính | 175.000 đ | `175000` | ✓ |
 | Giảm giá | **8.000 đ** | **`8750`** | ✗ **lệch 750** |
-| Phí giao hàng | 30.000 đ | `30000` | ✓ |
-| Tổng cộng | 196.250 đ | `196250` | ✓ |
+| Phí dịch vụ | 30.000 đ | `30000` | ✓ |
+| Tổng cộng | 216.250 đ | `196250` | ✓ |
 
 Bạn vừa bắt được BUG-2 theo một con đường khác hẳn Bài 17. Ở đó bạn tìm ra nó bằng cách cộng thử các số
 trên màn hình. Ở đây bạn tìm ra nó bằng cách so với nơi lưu. Cùng một bug mà hai đường đều bắt được. Đó là
@@ -176,7 +176,7 @@ giữa hai bên.
     "truong": [
       { "y": "Tạm tính", "oracleRef": "BR-01", "ui": "tam-tinh", "store": "subtotal_amount", "kieu": "tien" },
       { "y": "Giảm giá", "oracleRef": "BR-02", "ui": "giam-gia", "store": "discount_amount", "kieu": "tien" },
-      { "y": "Phí giao hàng", "oracleRef": "BR-03", "ui": "phi-giao-hang", "store": "shipping_fee", "kieu": "tien", "uiCoTheLaChu": ["Miễn phí"] },
+      { "y": "Phí dịch vụ", "oracleRef": "BR-03", "ui": "phi-dich-vu", "store": "service_fee", "kieu": "tien", "uiCoTheLaChu": ["Miễn phí"] },
       { "y": "Tổng cộng", "oracleRef": "BR-04", "ui": "tong-cong", "store": "total_amount", "kieu": "tien" },
       { "y": "Trạng thái", "oracleRef": "BR-06", "ui": "trang-thai", "store": "status", "kieu": "enum",
         "banDo": { "Chờ xác nhận": "CHO_XAC_NHAN", "Đã xác nhận": "DA_XAC_NHAN" } }
@@ -213,7 +213,7 @@ if (!fs.existsSync(CAU_HINH)) {
 }
 const anhXa = JSON.parse(fs.readFileSync(CAU_HINH, 'utf8'));
 
-/** Bỏ mọi thứ không phải chữ số. "196.250 đ" → 196250 */
+/** Bỏ mọi thứ không phải chữ số. "216.250 đ" → 196250 */
 function soTuChu(s) {
   const t = String(s == null ? '' : s).replace(/[^\d-]/g, '');
   return t === '' ? null : Number(t);
@@ -299,9 +299,9 @@ module.exports = { soMotBanGhi, soTuChu };
 ```json
 [{ "bang": "orders",
    "ui": { "ma-don": "DH0001", "tam-tinh": "175.000 đ", "giam-gia": "8.000 đ",
-           "phi-giao-hang": "30.000 đ", "tong-cong": "196.250 đ", "trang-thai": "Chờ xác nhận" },
+           "phi-dich-vu": "30.000 đ", "tong-cong": "216.250 đ", "trang-thai": "Chờ xác nhận" },
    "store": { "id": "DH0001", "subtotal_amount": 175000, "discount_amount": 8750,
-              "shipping_fee": 30000, "total_amount": 196250, "status": "CHO_XAC_NHAN" } }]
+              "service_fee": 30000, "total_amount": 196250, "status": "CHO_XAC_NHAN" } }]
 ```
 
 ```bash
@@ -323,7 +323,7 @@ mã thoát = 1
 Bước này bắt buộc. Một cái máy chỉ toàn báo đỏ mà chưa bao giờ báo xanh thì bạn không biết nó đang so, hay
 nó chê tất.
 
-**Lần 3 — ca "Miễn phí".** Đổi `"phi-giao-hang"` thành `"Miễn phí"` và `shipping_fee` thành `0`. Phải ra
+**Lần 3 — ca "Miễn phí".** Đổi `"phi-dich-vu"` thành `"Miễn phí"` và `service_fee` thành `0`. Phải ra
 `0`. Nếu ra `1` thì `uiCoTheLaChu` khai chưa đúng, và bạn vừa tránh được một gate bắt oan.
 
 ## Việc 5 — Nối database thật mà không phá gì (30 phút)

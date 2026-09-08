@@ -64,7 +64,7 @@ Bảy dòng trên chính là 7 trục. Chúng không phải danh sách đẹp, m
 
 ## Việc 2 — Mở 7 trục quanh một case (50 phút)
 
-Lấy một case đã PASS trên app thực hành: *"Tạo đơn cho khách hạng Thường, 1 Ghế nhựa, tổng cộng 130.000"*.
+Lấy một case đã PASS trên app thực hành: *"Tạo đơn cho khách chương trình Standard, 1 Ghế nhựa, tổng cộng 130.000"*.
 
 Chạy app, rồi mở từng trục. Mỗi trục có một **câu hỏi** — hỏi đúng câu là ra việc.
 
@@ -72,14 +72,14 @@ Chạy app, rồi mở từng trục. Mỗi trục có một **câu hỏi** — 
 
 > *Các trường khác trong cùng khối có đúng không?*
 
-Case chỉ kiểm `Tổng cộng`. Cùng khối còn `Tạm tính`, `Giảm giá`, `Phí giao hàng`.
+Case chỉ kiểm `Tổng cộng`. Cùng khối còn `Tạm tính`, `Giảm giá`, `Phí dịch vụ`.
 
 ```bash
 curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/json" \
-  -d "{\"customerId\":\"KH01\",\"items\":[{\"productId\":\"SP02\",\"qty\":1}]}"
+  -d "{\"customerId\":\"HV01\",\"items\":[{\"productId\":\"KH02\",\"qty\":1}]}"
 ```
 
-**Bạn sẽ thấy** `{"tamTinh":100000,"giamGia":0,"phiGiaoHang":30000,"tongCong":130000}`, cả bốn khớp
+**Bạn sẽ thấy** `{"tamTinh":100000,"giamGia":0,"phiDichVu":30000,"tongCong":130000}`, cả bốn khớp
 `BR-01`…`BR-04`. Trục này **PASS**, có neo.
 
 ### Trục 2 — Cùng giá trị, khác nơi hiển thị
@@ -88,7 +88,7 @@ curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/js
 
 `Tổng cộng` hiện ở màn Tạo đơn **và** ở bảng Danh sách đơn hàng. Tạo đơn qua giao diện rồi so hai chỗ.
 
-Đây là trục tìm ra **BUG-2** nếu bạn chọn khách hạng Vàng: màn Tạo đơn hiện `Giảm giá 8.000` mà tầng lưu trữ
+Đây là trục tìm ra **BUG-2** nếu bạn chọn học viên chương trình Elite: màn Tạo đơn hiện `Giảm giá 8.000` mà tầng lưu trữ
 ghi `8750`. Neo: `UI-04`. ⇒ **FAIL**, tầng `frontend`.
 
 ### Trục 3 — Chuỗi form → API → nơi lưu → UI
@@ -105,14 +105,14 @@ curl -s http://localhost:4010/api/_store/orders
 
 > *Nhánh khác của cùng luật thì sao?*
 
-Case dùng hạng Thường (giảm 0%). Còn Bạc 3%, Vàng 5%. Và ở đúng mốc `500.000`:
+Case dùng chương trình Standard (giảm 0%). Còn Bạc 3%, Vàng 5%. Và ở đúng mốc `500.000`:
 
 ```bash
 curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/json" \
-  -d "{\"customerId\":\"KH02\",\"items\":[{\"productId\":\"SP01\",\"qty\":2}]}"
+  -d "{\"customerId\":\"HV02\",\"items\":[{\"productId\":\"KH01\",\"qty\":2}]}"
 ```
 
-**Bạn sẽ thấy** `phiGiaoHang: 30000` trong khi `BR-03` nói tạm tính `500.000` thì **miễn phí**. Đây là
+**Bạn sẽ thấy** `phiDichVu: 30000` trong khi `BR-03` nói tạm tính `500.000` thì **miễn phí**. Đây là
 **BUG-1**. Neo: `BR-03`. ⇒ **FAIL**, tầng `backend`.
 
 Để ý: với hạng **Thường** (giảm 0%) hai công thức cho **cùng** kết quả, nên nếu chỉ mở trục 4 theo hạng mà
@@ -126,7 +126,7 @@ không đi tới mốc biên, bạn vẫn không thấy. Trục 4 phải giao v�
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" -X PATCH http://localhost:4010/api/orders/DH0001 \
-  -H "Content-Type: application/json" -d "{\"items\":[{\"productId\":\"SP01\",\"qty\":9}]}"
+  -H "Content-Type: application/json" -d "{\"items\":[{\"productId\":\"KH01\",\"qty\":9}]}"
 ```
 
 Với đơn đã xác nhận, bạn sẽ thấy `200` trong khi `BR-08` nói phải chặn bằng mọi đường. Đây là
@@ -140,7 +140,7 @@ Với đơn đã xác nhận, bạn sẽ thấy `200` trong khi `BR-08` nói ph�
 curl -s -X POST http://localhost:4010/api/reset > /dev/null
 for i in 1 2; do
   curl -s -X POST http://localhost:4010/api/orders -H "Content-Type: application/json" \
-    -d "{\"customerId\":\"KH01\",\"items\":[{\"productId\":\"SP02\",\"qty\":1}]}" -o /dev/null &
+    -d "{\"customerId\":\"HV01\",\"items\":[{\"productId\":\"KH02\",\"qty\":1}]}" -o /dev/null &
 done; wait
 curl -s http://localhost:4010/api/_store/orders
 ```
@@ -184,7 +184,7 @@ người ta tin bạn ít hơn.
 | 1 · field cùng khối | 4 số đều khớp | `BR-01`…`BR-04` | PASS |
 | 2 · cùng giá trị khác nơi hiển thị | UI 8.000 ≠ lưu 8.750 | `UI-04` | **FAIL** · frontend |
 | 3 · chuỗi 4 tầng | thấy chỗ giá trị đổi được | — | (dẫn sang Bài 10) |
-| 4 · biến thể | mốc 500.000 hạng Bạc sai phí | `BR-03` | **FAIL** · backend |
+| 4 · biến thể | mốc 500.000 chương trình Pro sai phí | `BR-03` | **FAIL** · backend |
 | 5 · trạng thái kế cận | sửa được đơn đã xác nhận | `BR-08` | **FAIL** · backend |
 | 6 · đồng thời | 2 request ⇒ 2 đơn | **không có** | `OBSERVATION` |
 | 7 · chiều ngược | spec không nói gì về chống trùng | — | **`spec:gap`** |
@@ -481,7 +481,7 @@ Cấp độ này còn 4 bài nữa.
 
 1. Kể 7 trục. Trục nào đi **ngược** chiều với sáu trục kia?
 2. Trên app thực hành, trục nào tìm ra BUG-1? BUG-2? BUG-3?
-3. Vì sao mở trục 4 theo hạng khách mà không đi tới mốc biên thì vẫn không thấy BUG-1?
+3. Vì sao mở trục 4 theo chương trình mà không đi tới mốc biên thì vẫn không thấy BUG-1?
 4. Hai màn cùng hiện `1.000.000` ⇒ kết luận được PASS chưa? Nêu bằng một câu.
 5. Trục 6 tìm ra 2 đơn trùng. Vì sao đó không phải FAIL? Nó là gì?
 6. Vì sao `OBSERVATION` không neo phải đi qua gate? Chặn nó thì hậu quả gì?

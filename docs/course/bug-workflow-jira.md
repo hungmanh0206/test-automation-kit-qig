@@ -69,15 +69,15 @@ Một bug report Dev không phải hỏi lại gồm đúng bốn phần. Không
 Đơn hàng ở trạng thái CONFIRMED vẫn sửa được qua API. Vi phạm BR-07.
 
 ## Các bước tái hiện
-1. Tạo đơn: POST /api/orders  { khachId: "KH02", items: [{ sanPhamId: "SP01", soLuong: 1 }] }
+1. Tạo đơn: POST /api/orders  { hocVienId: "HV02", items: [{ khoaHocId: "KH01", soSuat: 1 }] }
 2. Xác nhận đơn: POST /api/orders/<id>/confirm
-3. Sửa đơn: PATCH /api/orders/<id>  { items: [{ sanPhamId: "SP01", soLuong: 99 }] }
+3. Sửa đơn: PATCH /api/orders/<id>  { items: [{ khoaHocId: "KH01", soSuat: 99 }] }
 
 ## Kết quả mong đợi
 Bước 3 bị từ chối với mã 4xx. Nguồn: spec.md BR-07 — "Đơn ở trạng thái CONFIRMED không được sửa."
 
 ## Kết quả thực tế
-Bước 3 trả về HTTP 200. Đơn đã đổi số lượng thành 99.
+Bước 3 trả về HTTP 200. Đơn đã đổi số suất thành 99.
 ```
 
 Bốn quy tắc, mỗi cái đến từ một lần bị trả về:

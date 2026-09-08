@@ -54,7 +54,7 @@ lời, thì đừng ghi.
 
 | Loại | Trả lời câu hỏi | Ví dụ một bản ghi |
 |---|---|---|
-| Quy tắc nghiệp vụ | *"Giá trị đúng là bao nhiêu?"* | `BR-04`: mốc miễn phí giao hàng so trên tạm tính |
+| Quy tắc nghiệp vụ | *"Giá trị đúng là bao nhiêu?"* | `BR-04`: mốc miễn phí dịch vụ so trên tạm tính |
 | Cách dựng trạng thái | *"Làm sao có được trạng thái này?"* | Đơn `Pending` cần tạo qua API rồi **không** confirm |
 | Bản đồ hệ thống | *"Trường này ở tầng dưới tên gì?"* | `giamGia` ở giao diện là `discount_amount` ở tầng lưu trữ |
 | Quyết định đã chốt | *"Vì sao hồi đó chọn thế?"* | Bỏ kiểm màn X vì BA xác nhận sẽ xoá trong sprint sau |
@@ -96,14 +96,14 @@ Người đọc không có cách nào biết nó đã cũ, nên họ tin nó. Vi
 Bài 26 dựng kho tri thức. Giờ nó có vài chục bản ghi, và một bản ghi trông thế này:
 
 ```json
-{ "id": "R-014", "luat": "Phí giao hàng miễn khi tạm tính từ 450.000" }
+{ "id": "R-014", "luat": "Phí dịch vụ miễn khi tạm tính từ 520.000" }
 ```
 
-Ai nói `450.000`? Không biết. Nhưng agent sẽ đọc và tin. Rồi:
+Ai nói `520.000`? Không biết. Nhưng agent sẽ đọc và tin. Rồi:
 
 | Hệ quả | Cụ thể |
 |---|---|
-| Testcase mới sinh ra sai | Kết quả mong đợi lấy mốc `450.000` |
+| Testcase mới sinh ra sai | Kết quả mong đợi lấy mốc `520.000` |
 | Case **cũ** đúng bị coi là sai | Agent thấy case ghi `500.000` và "sửa cho khớp tri thức" |
 | Không ai truy được | Sáu tháng sau không biết con số đó từ đâu ra để mà bác |
 
@@ -149,7 +149,7 @@ Một bản ghi đúng chuẩn:
 {
   "id": "R-014",
   "loai": "domain",
-  "noiDung": "Phí giao hàng = 0 khi Tạm tính ≥ 500.000; ngược lại 30.000",
+  "noiDung": "Phí dịch vụ = 0 khi Tạm tính ≥ 500.000; ngược lại 30.000",
   "source": { "kieu": "tai-lieu", "tro": "spec.md § BR-03" },
   "covered_by": ["TC_012", "TC_013"],
   "trangThai": "active",
@@ -177,7 +177,7 @@ Ba kiểu nguồn, mỗi kiểu đòi một thứ khác nhau, và đòi đúng c
 |---|---|---|
 | `tai-lieu` | `spec.md § BR-03` | `"theo tài liệu"` |
 | `nguoi` | `"BA Hương, 07/09/2026"` | `"BA xác nhận"` |
-| `do-duoc` | `"curl POST /api/quote KH02×2 ⇒ phiGiaoHang=30000"` | `"đã test thấy vậy"` |
+| `do-duoc` | `"curl POST /api/quote HV02×2 ⇒ phiDichVu=30000"` | `"đã test thấy vậy"` |
 
 Cột phải là những câu không truy được, và chúng chiếm phần lớn tri thức viết vội.
 
@@ -198,7 +198,7 @@ active ──(nghiệp vụ đổi)──▶ superseded      kết quả cũ V�
 | | `superseded` | `invalid` |
 |---|---|---|
 | Chuyện gì xảy ra | Nghiệp vụ **đổi** từ ngày X | Bản ghi sai từ đầu |
-| Ví dụ | Mốc miễn phí đổi từ `500.000` thành `450.000` từ 01/10 | Ai đó ghi `450.000` trong khi spec luôn là `500.000` |
+| Ví dụ | Mốc miễn phí đổi từ `500.000` thành `520.000` từ 01/10 | Ai đó ghi `520.000` trong khi spec luôn là `500.000` |
 | Kết quả chạy trước đó | **vẫn đúng** — lúc đó luật là thế | **mất giá trị** — chạy trên luật sai |
 | Phải làm gì | không phải chạy lại | **chạy lại** mọi case liên quan |
 | Bug đã log theo nó | vẫn hợp lệ | phải rà lại, có thể phải rút |
@@ -209,7 +209,7 @@ chọn nhầm cái rẻ.
 ```json
 {
   "id": "R-014", "version": 2,
-  "noiDung": "Phí giao hàng = 0 khi Tạm tính ≥ 450.000",
+  "noiDung": "Phí dịch vụ = 0 khi Tạm tính ≥ 520.000",
   "source": { "kieu": "nguoi", "tro": "BA Hương, 25/09/2026 — đổi chính sách từ 01/10" },
   "supersedes": "R-014@v1",
   "hieuLucTu": "2026-10-01",
@@ -222,7 +222,7 @@ Và bản cũ **không xoá**:
 
 ```json
 { "id": "R-014", "version": 1, "trangThai": "superseded", "supersededBy": "R-014@v2",
-  "noiDung": "Phí giao hàng = 0 khi Tạm tính ≥ 500.000",
+  "noiDung": "Phí dịch vụ = 0 khi Tạm tính ≥ 500.000",
   "source": { "kieu": "tai-lieu", "tro": "spec.md § BR-03" },
   "hieuLucTu": "2026-01-01", "hieuLucDen": "2026-09-30",
   "ngayGhi": "2026-09-07", "covered_by": ["TC_012", "TC_013"] }

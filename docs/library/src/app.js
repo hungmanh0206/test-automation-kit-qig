@@ -567,9 +567,9 @@
         than = than.slice(mMeta[0].length);
         [['Thời lượng', mMeta[1]], ['Có gì trong tay', mMeta[2]], ['Sau bài này', mMeta[3].replace(/\n>?\s*/g, ' ').trim()]]
           .forEach(function (pair, i) {
-            var o = el('div', 'rdmi' + (i === 0 ? ' rdmi-dur' : ''));
-            o.appendChild(el('span', 'rdmk', pair[0]));
-            o.appendChild(el('span', 'rdmv', pair[1]));
+            var o = el('div', 'lrmi' + (i === 0 ? ' lrmi-dur' : ''));
+            o.appendChild(el('span', 'lrmk', pair[0]));
+            o.appendChild(el('span', 'lrmv', pair[1]));
             strip.appendChild(o);
           });
       }
@@ -584,8 +584,8 @@
         for (var i = 0; i < ps.length; i++) {
           var s = ps[i].textContent.trim();
           if (s !== 'Vấn đề') continue;
-          var box = el('div', 'rdhook');
-          box.appendChild(el('div', 'rdhookk', 'Vấn đề'));
+          var box = el('div', 'lrhook');
+          box.appendChild(el('div', 'lrhookk', 'Vấn đề'));
           var n = ps[i].nextElementSibling;
           ps[i].parentNode.insertBefore(box, ps[i]);
           ps[i].remove();
@@ -602,9 +602,9 @@
       toc.innerHTML = '';
       var muc = MD.mucLuc(than);
       if (muc.length > 2) {
-        toc.appendChild(el('div', 'rdtoch', 'Trong bài này'));
+        toc.appendChild(el('div', 'lrtoch', 'Trong bài này'));
         muc.forEach(function (m) {
-          var a = el('a', 'rdtocl', m.chu);
+          var a = el('a', 'lrtocl', m.chu);
           a.href = '#';
           a.onclick = function (e) {
             e.preventDefault();
@@ -629,7 +629,7 @@
 
       $('#reader').hidden = false;
       $('#rdScrim').classList.add('on');
-      document.body.classList.add('rdopen');
+      document.body.classList.add('lropen');
       $('#rdArt').scrollTop = 0;
       $('#rdClose').focus();
     }
@@ -637,7 +637,7 @@
     function dong() {
       $('#reader').hidden = true;
       $('#rdScrim').classList.remove('on');
-      document.body.classList.remove('rdopen');
+      document.body.classList.remove('lropen');
       if (dangMo) {
         var c = document.getElementById('bai-' + soCuaBai[dangMo]);
         if (c) c.focus({ preventScroll: true });

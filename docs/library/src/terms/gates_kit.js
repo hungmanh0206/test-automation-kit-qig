@@ -26,6 +26,16 @@ const TERMS_GATE3 = [
   trap:'Gate so theo VĂN BẢN, nên viết lại một con số cũ để kể lịch sử cũng bị bắt (đã xảy ra với đúng mục này). Diễn đạt tránh con số thay vì nới luật, cùng cách xử lý như luật một-công-cụ. Và nhớ: nguồn quyết luôn là repo, sửa trang cho khớp chứ đừng sửa ngược.',
   src:'scripts/qa/library_drift.js', rel:['c-canonical','g-gate_index','c-forcing-function','c-gate-real-content','g-skills_index'] },
 
+{ id:'g-course_numbers', t:'course:numbers', cat:'gate',
+  def:'CHẠY sản phẩm thực hành rồi so con số trong bài giảng với con số nó trả về.',
+  detail:'Khởi động app thực hành ở một cổng riêng, gọi API báo giá cho các ca canonical, và so với bảng số khai trong gate. Ngoài ra quét bài giảng tìm những con số của BẢN CŨ. Một ca được khai là bug-phải-lộ thì app BẮT BUỘC khác spec: sản phẩm thực hành mà bug không lộ ra thì cả tài liệu mất phép đối chứng.',
+  why:'Ví dụ trụ cột của tài liệu nằm ở Bài 1 và nó KHÔNG chạy được. Năm chỗ lệch cùng lúc: app đặt giá 250.000 còn bài tính theo 225.000 · app thu phí 30.000 còn bài viết 50.000 · app nhận trường customerId/qty còn bài viết hocVienId/soSuat nên ai copy cũng lỗi · ví dụ tạm tính 520.000 KHÔNG dựng được từ bảng giá · và nặng nhất là với bộ dữ liệu bài dùng thì bug cài sẵn không hề lộ ra. Không gate nào bắt được vì mọi phép kiểm cũ đọc VĂN BẢN.',
+  how:['npm run course:numbers trước khi sửa bất cứ con số nào trong bài giảng.','Đổi app thì đổi bảng canonical trong gate, và ngược lại.'],
+  cmd:'npm run course:numbers',
+  ex:'HV03 + KH01 ×2: spec nói phí 0 vì tạm tính 520.000 đã đạt mốc, app thu 50.000 nên tổng 544.000 thay vì 494.000. Lệch đúng bằng tiền phí.',
+  trap:'Bản đầu của gate xếp 8.750 vào danh sách số cũ và báo oan 3 chỗ — con số đó vẫn đúng, đã gọi app xác nhận. Danh sách số cũ phải khai tường minh, đừng đoán bằng regex tiền tệ.',
+  src:'scripts/qa/course_numbers.js', rel:['c-gate-real-content','g-library_drift','g-course_maturity'] },
+
 { id:'g-course_maturity', t:'course:maturity', cat:'gate',
   def:'Sinh khối "Bộ kit của bạn đang ở đâu" cho từng bài giảng, từ chính giáo trình.',
   detail:'Khối này nhắc số bài, số cấp độ và tên bài kế tiếp. Toàn những thứ đã đổi ba lần trong một tuần. Viết tay thì nó trôi khỏi giáo trình mà không ai biết, nên nó là lớp DẪN XUẤT của docs/COURSE.md, y như trang thư viện.',

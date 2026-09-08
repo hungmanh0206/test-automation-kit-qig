@@ -1,4 +1,4 @@
-# Đặc tả — Cửa hàng mini
+# Đặc tả — Cổng đăng ký khoá học
 
 > Đây là **spec**: bản mô tả app *phải* làm gì. Cả khoá học sẽ neo mọi kết luận đúng/sai vào file này.
 >
@@ -7,44 +7,46 @@
 
 ## 1. Màn Tạo đơn hàng
 
-Người dùng chọn **một** khách hàng, thêm sản phẩm vào giỏ, rồi bấm **Tạo đơn**.
+Người dùng chọn **một** học viên, thêm sản phẩm vào giỏ, rồi bấm **Tạo đơn**.
 
-### Khách hàng
+### Học viên
 
 | Mã | Tên | Hạng |
 |---|---|---|
-| `KH01` | Nguyễn Văn A | Thường |
-| `KH02` | Trần Thị B | Bạc |
-| `KH03` | Lê Văn C | Vàng |
+| `HV01` | Nguyễn Văn A | Thường |
+| `HV02` | Trần Thị B | Bạc |
+| `HV03` | Lê Văn C | Vàng |
 
-### Sản phẩm
+### Khoá học
 
 | Mã | Tên | Đơn giá |
 |---|---|---|
-| `SP01` | Bàn gỗ | 250.000 đ |
-| `SP02` | Ghế nhựa | 100.000 đ |
-| `SP03` | Đèn bàn | 175.000 đ |
+| `KH01` | Ôn thi CFA Level 1 | 260.000 đ |
+| `KH02` | Ôn thi ACCA F2 | 100.000 đ |
+| `KH03` | Ôn thi CMA Part 1 | 175.000 đ |
 
 ## 2. Luật tính tiền
 
 | Mã | Luật |
 |---|---|
-| **BR-01** | **Tạm tính** = tổng của (đơn giá × số lượng) trên mọi dòng trong giỏ |
-| **BR-02** | **Giảm giá** = Tạm tính × tỉ lệ theo hạng khách. Thường **0%** · Bạc **3%** · Vàng **5%**. Làm tròn đến đồng |
-| **BR-03** | **Phí giao hàng**: nếu **Tạm tính** từ **500.000 đ** trở lên thì **0 đ** (miễn phí); ngược lại **30.000 đ** |
-| **BR-04** | **Tổng cộng** = Tạm tính − Giảm giá + Phí giao hàng |
-| **BR-05** | **Số lượng** phải là số nguyên trong khoảng **1–99**. Ngoài khoảng thì chặn, hiện thông báo *"Số lượng phải từ 1 đến 99"* |
+| **BR-01** | Đơn phải có ít nhất một dòng khoá học. Đơn rỗng thì chặn |
+| **BR-02** | **Tạm tính** = tổng của (đơn giá × số suất) trên mọi dòng trong đơn |
+| **BR-03** | **Giảm giá** = Tạm tính × tỉ lệ theo chương trình. Standard **0%** · Pro **3%** · Elite **5%**. Làm tròn đến đồng |
+| **BR-04** | **Phí dịch vụ**: nếu **Tạm tính** từ **500.000 đ** trở lên thì **0 đ** (miễn phí); ngược lại **50.000 đ** |
+| **BR-05** | **Tổng phải thu** = Tạm tính − Giảm giá + Phí dịch vụ |
+| **BR-06** | **Số suất** phải là số nguyên trong khoảng **1–99**. Ngoài khoảng thì chặn, hiện thông báo *"Số suất phải từ 1 đến 99"* |
+| **BR-07** | Đơn ở trạng thái **đã xác nhận** thì **không được sửa**. Mọi yêu cầu sửa phải bị từ chối |
 
-> **BR-03 nói rõ mốc so trên _Tạm tính_**, không phải trên số nào khác. Đọc kỹ dòng này.
+> **BR-04 nói rõ mốc so trên _Tạm tính_**, không phải trên số nào khác. Đọc kỹ dòng này.
 
 ## 3. Luật hiển thị
 
 | Mã | Luật |
 |---|---|
-| **UI-01** | Bốn số Tạm tính · Giảm giá · Phí giao hàng · Tổng cộng đều hiện trên màn Tạo đơn hàng |
-| **UI-02** | Số tiền định dạng kiểu Việt Nam, phân cách nghìn bằng dấu chấm, kèm `đ`. Ví dụ `250.000 đ` |
-| **UI-03** | Phí giao hàng bằng 0 thì hiện chữ **"Miễn phí"** thay cho số |
-| **UI-04** | **Các số hiển thị phải cộng đúng với nhau**: số Tạm tính trừ số Giảm giá cộng số Phí giao hàng đang hiện trên màn hình phải bằng đúng số Tổng cộng đang hiện |
+| **UI-01** | Bốn số Tạm tính · Giảm giá · Phí dịch vụ · Tổng cộng đều hiện trên màn Tạo đơn hàng |
+| **UI-02** | Số tiền định dạng kiểu Việt Nam, phân cách nghìn bằng dấu chấm, kèm `đ`. Ví dụ `260.000 đ` |
+| **UI-03** | Phí dịch vụ bằng 0 thì hiện chữ **"Miễn phí"** thay cho số |
+| **UI-04** | **Các số hiển thị phải cộng đúng với nhau**: số Tạm tính trừ số Giảm giá cộng số Phí dịch vụ đang hiện trên màn hình phải bằng đúng số Tổng cộng đang hiện |
 
 > **UI-04 là một luật về _màn hình_, không phải về tính toán.** Backend tính đúng mà màn hình hiện các số
 > không cộng lại thành tổng thì vẫn là vi phạm — vì người dùng nhìn màn hình, không nhìn backend.
@@ -66,8 +68,8 @@ Máy chủ chạy ở `http://localhost:4010`.
 
 | Cách | Đường | Làm gì |
 |---|---|---|
-| `GET` | `/api/customers` | Danh sách khách |
-| `GET` | `/api/products` | Danh sách sản phẩm |
+| `GET` | `/api/students` | Danh sách khách |
+| `GET` | `/api/courses` | Danh sách sản phẩm |
 | `POST` | `/api/quote` | Tính tiền mà chưa tạo đơn. Body `{customerId, items:[{productId,qty}]}` |
 | `GET` | `/api/orders` | Danh sách đơn |
 | `GET` | `/api/orders/:id` | Một đơn |
@@ -90,12 +92,12 @@ App đã gắn sẵn `data-testid` — bạn sẽ dùng chúng ở Bài 9 để 
 
 | `data-testid` | Là gì |
 |---|---|
-| `khach` | Ô chọn khách hàng |
-| `sanpham` | Ô chọn sản phẩm |
-| `soluong` | Ô nhập số lượng |
+| `khach` | Ô chọn học viên |
+| `sanpham` | Ô chọn khoá học |
+| `soluong` | Ô nhập số suất |
 | `them` | Nút Thêm |
 | `gio` | Bảng giỏ hàng (`tbody`) |
-| `tam-tinh` `giam-gia` `phi-giao-hang` `tong-cong` | Bốn số tiền |
+| `tam-tinh` `giam-gia` `phi-dich-vu` `tong-cong` | Bốn số tiền |
 | `loi` | Khung thông báo lỗi |
 | `tao-don` | Nút Tạo đơn |
 | `ds-don` | Bảng danh sách đơn (`tbody`) |

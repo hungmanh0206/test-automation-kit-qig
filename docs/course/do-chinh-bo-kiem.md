@@ -52,7 +52,7 @@ Câu đó có thể nghĩa là một trong hai điều. Và bạn không phân b
 Cả hai đều cho ra màu xanh. Đây là đúng vấn đề của Bài 13, chỉ ở quy mô cả bộ: bạn không đo được năng lực
 phát hiện của một bộ kiểm bằng cách chạy nó trên một app đang đúng.
 
-Chuyện quen thuộc: suite xanh suốt sprint, rồi một QA khác hoặc khách hàng tìm ra bug ở đúng luồng mà suite
+Chuyện quen thuộc: suite xanh suốt sprint, rồi một QA khác hoặc học viên tìm ra bug ở đúng luồng mà suite
 đã "phủ". Lúc đó câu hỏi không phải "sao dev để lọt", mà là:
 
 > Case nào lẽ ra phải đỏ mà lại xanh, và vì sao nó xanh?
@@ -611,7 +611,7 @@ vì đó chính là chỗ bug sẽ sinh ra ở sprint sau.
 
 Đây là luật khép lại cả tài liệu.
 
-Có bug lọt ra ngoài. QA khác tìm ra, hoặc khách hàng báo. Phản xạ tự nhiên là nói "case của tôi không phủ
+Có bug lọt ra ngoài. QA khác tìm ra, hoặc học viên báo. Phản xạ tự nhiên là nói "case của tôi không phủ
 chỗ đó". Luật này bác bỏ phản xạ đó, và bắt bạn trả lời câu khác:
 
 > Máy nào lẽ ra phải bắt được nó, và vì sao nó không bắt?

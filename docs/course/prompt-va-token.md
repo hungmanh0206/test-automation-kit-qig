@@ -157,8 +157,8 @@ Tài liệu mẫu cài ba chỗ mơ hồ có chủ ý, tất cả nằm ở ph�
 
 | # | Chỗ mơ hồ | Lượt sơ sài có bắt? | Lượt có ràng buộc có bắt? |
 |---|---|---|---|
-| 1 | Hai mốc phí giao hàng khác nhau, 500.000 và 700.000 | | |
-| 2 | Luật "hạng Vàng trên 10 triệu phải duyệt ngay" không có trong luồng chính | | |
+| 1 | Hai mốc phí dịch vụ khác nhau, 500.000 và 700.000 | | |
+| 2 | Luật "chương trình Elite trên 10 triệu phải duyệt ngay" không có trong luồng chính | | |
 | 3 | Khách chưa được phân hạng thì tính giảm giá thế nào | | |
 
 Điền bảng. Kết quả hay gặp: lượt sơ sài bỏ cả ba và không hỏi câu nào. Lượt có ràng buộc bắt được ít nhất

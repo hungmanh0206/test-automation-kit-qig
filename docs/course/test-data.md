@@ -18,7 +18,7 @@ là trạng thái test của bạn cần. Test đỏ, và đỏ không phải v�
 
 | | |
 |---|---|
-| **Bạn đang khổ vì** | Test đang dùng khách `KH02` có sẵn trên môi trường. Ai đó sửa `KH02` là test đỏ, mà đỏ không phải vì sản phẩm sai. |
+| **Bạn đang khổ vì** | Test đang dùng khách `HV02` có sẵn trên môi trường. Ai đó sửa `HV02` là test đỏ, mà đỏ không phải vì sản phẩm sai. |
 | **Bài này bạn gõ gì** | Một factory tạo dữ liệu qua API, đặt tiền tố nhận diện được, và dọn sạch sau lượt chạy. |
 | **Xong thì được gì** | Test chạy được trên môi trường vừa reset, chạy song song không đụng nhau, và không để rác lại. |
 
@@ -27,11 +27,11 @@ là trạng thái test của bạn cần. Test đỏ, và đỏ không phải v�
 
 ## Bài này bạn sẽ làm gì
 
-Test của Bài 4 dùng khách `KH02` có sẵn trên app. Nó chạy được, cho tới khi một trong ba chuyện xảy ra:
+Test của Bài 4 dùng khách `HV02` có sẵn trên app. Nó chạy được, cho tới khi một trong ba chuyện xảy ra:
 
-- Ai đó sửa hạng của `KH02` từ Bạc sang Vàng. Test đỏ, mà sản phẩm không sai.
-- Môi trường được reset. `KH02` biến mất. Test đỏ vì không tìm thấy dữ liệu.
-- Hai test cùng chạy, cùng sửa `KH02`. Một trong hai đỏ, và đỏ lúc được lúc không.
+- Ai đó sửa hạng của `HV02` từ Bạc sang Vàng. Test đỏ, mà sản phẩm không sai.
+- Môi trường được reset. `HV02` biến mất. Test đỏ vì không tìm thấy dữ liệu.
+- Hai test cùng chạy, cùng sửa `HV02`. Một trong hai đỏ, và đỏ lúc được lúc không.
 
 Cả ba đều là test đỏ **không phải vì sản phẩm sai**. Đó là loại đỏ tệ nhất, vì nó dạy người ta thói
 quen bỏ qua màu đỏ.
@@ -50,7 +50,7 @@ Bốn việc:
 | Cách làm | Hỏng thế nào | Dấu hiệu nhận ra |
 |---|---|---|
 | Dùng bản ghi có sẵn trên môi trường | Người khác sửa là test đỏ | Test đỏ sau khi bạn không đụng gì vào code |
-| Gắn cứng id (`KH02`, `order_1043`) | Môi trường reset là hỏng | Test chạy được trên máy bạn, đỏ trên CI |
+| Gắn cứng id (`HV02`, `order_1043`) | Môi trường reset là hỏng | Test chạy được trên máy bạn, đỏ trên CI |
 | Nhiều test dùng chung một bản ghi | Chạy song song thì đụng nhau | Đỏ lúc được lúc không, chạy lại thì xanh |
 
 Cách sửa cho cả ba là một: **mỗi test tự dựng dữ liệu của nó**.
@@ -80,19 +80,19 @@ function nhan(maTask, viec) {
   return `${TIEN_TO} ${maTask} ${viec}`;
 }
 
-async function taoKhach(request, { maTask, hang = 'BAC' }) {
-  const res = await request.post('/api/customers', {
+async function taoHocVien(request, { maTask, hang = 'BAC' }) {
+  const res = await request.post('/api/students', {
     data: { ten: nhan(maTask, 'khach'), hang: hang },
   });
   if (!res.ok()) {
-    throw new Error(`Tạo khách hỏng: HTTP ${res.status()} — ${await res.text()}`);
+    throw new Error(`Tạo học viên hỏng: HTTP ${res.status()} — ${await res.text()}`);
   }
   return res.json();
 }
 
-async function taoDon(request, { maTask, khachId, sanPhamId, soLuong = 1 }) {
+async function taoDon(request, { maTask, hocVienId, khoaHocId, soSuat = 1 }) {
   const res = await request.post('/api/orders', {
-    data: { khachId, items: [{ sanPhamId, soLuong }], ghiChu: nhan(maTask, 'don') },
+    data: { hocVienId, items: [{ khoaHocId, soSuat }], ghiChu: nhan(maTask, 'don') },
   });
   if (!res.ok()) {
     throw new Error(`Tạo đơn hỏng: HTTP ${res.status()} — ${await res.text()}`);
@@ -100,7 +100,7 @@ async function taoDon(request, { maTask, khachId, sanPhamId, soLuong = 1 }) {
   return res.json();
 }
 
-module.exports = { TIEN_TO, nhan, taoKhach, taoDon };
+module.exports = { TIEN_TO, nhan, taoHocVien, taoDon };
 ```
 
 Ba điểm đáng để ý, vì chúng lặp lại ở mọi factory bạn viết sau này:
@@ -121,30 +121,30 @@ mười lăm phút đó.
 
 ```js
 const { test, expect } = require('@playwright/test');
-const { taoKhach } = require('../support/factory');
+const { taoHocVien } = require('../support/factory');
 
-test('tạo đơn cho khách hạng Bạc, 2 sản phẩm SP01', async ({ page, request }) => {
-  const khach = await taoKhach(request, { maTask: 'DEMO-1', hang: 'BAC' });
+test('tạo đơn cho học viên chương trình Pro, 2 sản phẩm KH01', async ({ page, request }) => {
+  const khach = await taoHocVien(request, { maTask: 'DEMO-1', hang: 'BAC' });
 
   await page.goto('/');
-  await page.getByLabel('Khách hàng').selectOption(khach.id);
+  await page.getByLabel('Học viên').selectOption(khach.id);
   // ... phần còn lại giữ nguyên
 });
 ```
 
-**Bạn sẽ thấy** test chạy như cũ, nhưng giờ nó không phụ thuộc vào `KH02` nữa. Chạy hai lần liên
+**Bạn sẽ thấy** test chạy như cũ, nhưng giờ nó không phụ thuộc vào `HV02` nữa. Chạy hai lần liên
 tiếp cũng được, vì mỗi lần nó tạo một khách mới.
 
 | Thấy khác | Nghĩa là | Làm gì |
 |---|---|---|
-| `Tạo khách hỏng: HTTP 404` | Endpoint sai đường dẫn | Mở `spec.md` phần API, so lại |
+| `Tạo học viên hỏng: HTTP 404` | Endpoint sai đường dẫn | Mở `spec.md` phần API, so lại |
 | `selectOption` timeout | Khách vừa tạo chưa hiện trong danh sách | Trang đang cache. Tải lại trang **sau** khi tạo |
 | Mỗi lần chạy lại thêm một khách rác | Chưa có janitor | Việc 3 |
 
 ## Việc 3 — Dọn sạch, và ba lớp an toàn (35 phút)
 
 Dòng cuối bảng trên là vấn đề thật. Chạy bộ test 50 lần là môi trường có 50 khách rác. Sau một tháng
-thì danh sách khách của môi trường thử nghiệm không ai nhìn được nữa.
+thì danh sách học viên của môi trường thử nghiệm không ai nhìn được nữa.
 
 Nhưng dọn dẹp là thao tác **xoá**, và xoá là thao tác không lùi được. Nên nó cần lớp bảo vệ.
 
@@ -170,13 +170,13 @@ async function don(request, { maTask, baseURL }) {
   }
 
   const nhanCanXoa = `${TIEN_TO} ${maTask}`;
-  const res = await request.get('/api/customers');
+  const res = await request.get('/api/students');
   const dsKhach = await res.json();
 
   let daXoa = 0;
   for (const kh of dsKhach) {
     if (!kh.ten || !kh.ten.startsWith(nhanCanXoa)) continue;
-    await request.delete(`/api/customers/${kh.id}`);
+    await request.delete(`/api/students/${kh.id}`);
     daXoa++;
   }
   return daXoa;
@@ -247,7 +247,7 @@ Ba loại giá trị và cách xử lý khác nhau:
 | Số dùng để tính tiền | **Cố định**, chọn theo `spec.md` | Ngẫu nhiên thì kết quả mong đợi cũng phải tính động, và bạn sẽ tính bằng chính công thức của sản phẩm |
 | Ngày tháng | Cố định, hoặc tính từ một mốc khai rõ | Ngày "hôm nay" làm test đỏ vào cuối tháng, cuối năm, hoặc ngày 29/2 |
 
-Dòng giữa là chỗ dễ sai nhất, và nó đáng để nói kỹ. Nếu số lượng ngẫu nhiên thì bạn không viết được
+Dòng giữa là chỗ dễ sai nhất, và nó đáng để nói kỹ. Nếu số suất ngẫu nhiên thì bạn không viết được
 kết quả mong đợi cố định, nên bạn sẽ viết một hàm tính kết quả mong đợi. Hàm đó sẽ giống hệt công
 thức trong sản phẩm. Và lúc đó test của bạn đang so sản phẩm với chính nó.
 
@@ -310,7 +310,7 @@ Cấp độ này còn 4 bài nữa.
 
 ## Bài tập về nhà
 
-Chạy bộ test 5 lần liên tiếp, rồi mở danh sách khách trên app thực hành.
+Chạy bộ test 5 lần liên tiếp, rồi mở danh sách học viên trên app thực hành.
 
 Đếm xem còn bao nhiêu bản ghi rác. Nếu còn, tìm xem janitor bỏ sót ở đâu: nó không chạy, hay nó chạy
 mà tiêu chí lọc không khớp.
