@@ -285,6 +285,33 @@ const ok = (name, cond, got) => {
     return !!r && r.scrollWidth > r.clientWidth && getComputedStyle(r).overflowX === 'auto';
   }));
 
+  /* Hàng tab KHÔNG được cuộn ngang trên màn rộng.
+   *
+   * VÌ SAO CÓ PHÉP KIỂM NÀY: hàng tab từng dùng overflow-x:auto, và trên màn 1340px nó hiện một
+   * thanh cuộn chạy hết chiều ngang trong khi 8 tab đã vừa đủ chỗ. Một thanh cuộn không cuộn được
+   * gì là thứ người đọc thấy TRƯỚC cả nội dung, và không phép kiểm nào của tôi đo tới nó — mọi
+   * phép kiểm cũ chỉ hỏi "body có tràn không", mà cái này thì body không tràn.
+   *
+   * Trên màn hẹp thì cuộn một hàng là CỐ Ý (8 tab xuống dòng thành 4 hàng, mà khối này sticky nên
+   * nó ăn 193px chiều cao). Nên phép kiểm chỉ áp cho màn rộng, và đòi thanh cuộn phải được ẩn. */
+  for (const w of [1440, 1280, 1024]) {
+    const tp = await (await browser.newContext({ viewport: { width: w, height: 900 } })).newPage();
+    await tp.goto(FILE, { waitUntil: 'domcontentloaded' });
+    await tp.waitForTimeout(400);
+    const r = await tp.evaluate(() => {
+      const el = document.querySelector('.modes .wrap');
+      const cs = getComputedStyle(el);
+      return {
+        cuon: el.scrollWidth > el.clientWidth + 1,
+        anThanhCuon: cs.scrollbarWidth === 'none' || cs.overflowX === 'visible',
+        soHang: Math.round(el.getBoundingClientRect().height / 40),
+      };
+    });
+    ok(`${w}px: hàng tab không cuộn ngang`, !r.cuon, r);
+    ok(`${w}px: thanh cuộn của hàng tab được ẩn`, r.anThanhCuon, r);
+    await tp.close();
+  }
+
   console.log('\n[8] Tự chứa (CSP của Artifact chặn mọi host ngoài)');
   const html = require('fs').readFileSync(path.join(__dirname, 'index.html'), 'utf8');
   const urls = [...new Set(html.match(/https?:\/\/[^"' )]+/g) || [])];

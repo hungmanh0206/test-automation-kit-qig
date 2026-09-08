@@ -62,17 +62,51 @@ a{color:inherit}
 .band h1{margin:8px 0 0; font-size:clamp(28px,4.4vw,44px); line-height:1.15; font-weight:800; letter-spacing:-.01em}
 .band .sub{margin:12px 0 0; color:#C9C2B5; max-width:66ch; font-size:15px}
 .accent{width:64px; height:4px; background:var(--gold); border-radius:2px; margin:20px 0 4px}
-.bandstats{display:flex; gap:22px; flex-wrap:wrap; margin-top:18px; font-size:13px; color:#C9C2B5}
-.bandstats b{color:var(--gold); font-size:19px; display:block; font-weight:800; line-height:1.2}
+.bandstats{display:flex; flex-wrap:wrap; margin-top:22px; font-size:12.5px; color:#A9A29A;
+  letter-spacing:.01em}
+/* Vạch phân cách giữa các số, thay cho khoảng trắng suông: 4 con số đứng cạnh nhau mà không có
+   ranh giới thì mắt phải tự đoán số nào thuộc nhãn nào. */
+.bandstats > div{padding:0 20px; border-left:1px solid rgba(255,255,255,.10)}
+.bandstats > div:first-child{padding-left:0; border-left:0}
+.bandstats b{color:var(--gold); font-size:22px; display:block; font-weight:800; line-height:1.15;
+  font-variant-numeric:tabular-nums; margin-bottom:2px}
 
 /* ── Mode tabs ── */
 .modes{position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--wash) 88%, transparent);
   backdrop-filter:blur(10px); border-bottom:1px solid var(--bSubtle); margin-top:-14px}
-.modes .wrap{display:flex; gap:6px; overflow-x:auto; padding-top:10px; padding-bottom:10px}
+/* XUỐNG DÒNG, không cuộn ngang.
+   Bản đầu dùng overflow-x:auto và trên màn rộng vẫn hiện một thanh cuộn chạy hết chiều ngang, kể cả
+   khi 8 tab đã vừa đủ chỗ. Một thanh cuộn không cuộn được gì là thứ người đọc thấy trước cả nội dung.
+   flex-wrap thì hàng tab tự xuống dòng và không bao giờ cần cuộn; hai dòng cuối là chốt an toàn cho
+   trình duyệt nào vẫn dựng thanh cuộn. */
+.modes .wrap{display:flex; flex-wrap:wrap; gap:7px; padding-top:11px; padding-bottom:11px;
+  scrollbar-width:none; -ms-overflow-style:none}
+.modes .wrap::-webkit-scrollbar{display:none}
+/* KHÔNG dùng emoji trên tab.
+   Bảng màu của trang là vàng + nâu đen + kem. Tám emoji thì bơm vào xanh, đỏ, trắng, mỗi cái một
+   bề rộng, và cả hàng trông run. Bỏ chúng đi thì vàng trở lại làm điểm nhấn DUY NHẤT, và tab nào
+   đang mở đọc ra ngay. */
 .mode{white-space:nowrap; border:1px solid var(--bSubtle); background:var(--card); color:var(--t2);
-  border-radius:999px; padding:8px 15px; font:inherit; font-size:14px; font-weight:600; cursor:pointer}
-.mode:hover{border-color:var(--gold600); color:var(--t1)}
-.mode[aria-selected="true"]{background:var(--gold); border-color:var(--gold); color:#1A1916}
+  border-radius:999px; padding:7px 15px; font:inherit; font-size:13.5px; font-weight:600;
+  cursor:pointer; display:inline-flex; align-items:center;
+  transition:border-color .12s, color .12s, background .12s}
+.mode:hover{border-color:var(--gold600); color:var(--t1); background:color-mix(in srgb, var(--gold) 7%, var(--card))}
+.mode[aria-selected="true"]{background:var(--gold); border-color:var(--gold); color:#1A1916;
+  box-shadow:0 1px 8px rgba(255,183,0,.22)}
+
+/* MÀN HẸP thì quay lại MỘT HÀNG CUỘN, không xuống dòng.
+   Đo được: ở 390px, 8 tab xuống dòng thành 4 hàng và khối .modes cao 193px. Khối này position:sticky
+   nên nó chiếm gần một phần năm chiều cao màn hình suốt lúc đọc. Một hàng cuộn cao 60px thì tệ hơn
+   về khả năng thấy hết tab, nhưng tốt hơn nhiều về chỗ còn lại để đọc nội dung.
+   Thanh cuộn vẫn ẩn (khai ở .modes .wrap), và dải mờ bên phải là dấu hiệu còn tab phía sau. */
+@media (max-width: 720px){
+  .modes{position:relative}
+  .modes .wrap{flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-x:contain;
+    scroll-snap-type:x proximity;
+    mask-image:linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%)}
+  .mode{scroll-snap-align:start}
+  .bandstats > div{padding:0 14px}
+}
 
 main{padding:26px 0 60px}
 .panel[hidden]{display:none}
@@ -558,7 +592,7 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
     <div class="accent"></div>
     <div class="bandstats">
       <div><b data-stat="terms">0</b> thuật ngữ</div>
-      <div><b data-stat="cat-gate">0</b> gate máy-kiểm</div>
+      <div><b data-stat="cat-gate">0</b> mục về gate</div>
       <div><b data-stat="cat-skill">0</b> skill</div>
       <div><b data-stat="links">0</b> liên kết khái niệm</div>
     </div>
@@ -567,14 +601,14 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
 
 <div class="modes">
   <div class="wrap" role="tablist">
-    <button class="mode" data-mode="graph"  role="tab" aria-selected="true">🗺 Bản đồ khái niệm</button>
-    <button class="mode" data-mode="az"     role="tab" aria-selected="false">🔤 Tra cứu A–Z</button>
-    <button class="mode" data-mode="guide"  role="tab" aria-selected="false">📘 Hướng dẫn dùng kit</button>
-    <button class="mode" data-mode="readme" role="tab" aria-selected="false">📄 Readme</button>
-    <button class="mode" data-mode="course"  role="tab" aria-selected="false">🛠 Tự dựng kit</button>
-    <button class="mode" data-mode="flash"  role="tab" aria-selected="false">🃏 Flashcard</button>
-    <button class="mode" data-mode="chal"   role="tab" aria-selected="false">🎲 Đề luyện QA</button>
-    <button class="mode" data-mode="info"   role="tab" aria-selected="false">ℹ️ Về dự án</button>
+    <button class="mode" data-mode="graph"  role="tab" aria-selected="true">Bản đồ khái niệm</button>
+    <button class="mode" data-mode="az"     role="tab" aria-selected="false">Tra cứu A–Z</button>
+    <button class="mode" data-mode="guide"  role="tab" aria-selected="false">Hướng dẫn dùng kit</button>
+    <button class="mode" data-mode="readme" role="tab" aria-selected="false">Readme</button>
+    <button class="mode" data-mode="course"  role="tab" aria-selected="false">Tự dựng kit</button>
+    <button class="mode" data-mode="flash"  role="tab" aria-selected="false">Flashcard</button>
+    <button class="mode" data-mode="chal"   role="tab" aria-selected="false">Đề luyện QA</button>
+    <button class="mode" data-mode="info"   role="tab" aria-selected="false">Về dự án</button>
   </div>
 </div>
 
