@@ -190,7 +190,7 @@ Mở file agent vừa sửa, đọc kỹ, rồi đối chiếu với bảng này
 
 Câu ở dòng thứ hai là câu bạn sẽ dùng nhiều nhất về sau:
 
-> **Nếu app sai, dòng này có đỏ không?**
+> Nếu app sai, dòng này có đỏ không?
 
 Thử áp nó vào Kiểu B. Giả sử app trả `tamTinh: 1`, `giamGia: 0`, `phiGiaoHang: 0`, `tongCong: 1`. Sai bét.
 Nhưng `1 - 0 + 0 === 1` nên test vẫn xanh. Vậy là dòng đó không kiểm gì cả.

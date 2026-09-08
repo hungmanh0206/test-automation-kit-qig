@@ -2,7 +2,7 @@
 
 > **2 giờ** · Có gì trong tay: kết quả chạy có verdict và tầng lỗi · Sau bài này: ảnh có khoanh đỏ, video có banner, PII đã che — và file trạng thái đã đủ bằng chứng
 >
-> *Bài này không đánh số — nó là phần đào sâu của **Bài 13**. Đọc kèm **Bài 13**.*
+> *Bài này không đánh số, nó là phần đào sâu của **Bài 13**. Đọc kèm **Bài 13**.*
 
 **Tóm tắt bài này**
 
@@ -44,7 +44,7 @@ Vì sao trace và log **không** phải bằng chứng dù chúng chứa nhiều
 > công cụ, cần biết cách đọc, và cần chính bản build đó. Log thì chỉ là chữ do **chính script bạn** in ra —
 > nó chứng minh script đã in gì, không chứng minh màn hình trông thế nào.
 
-Trace và log vẫn hữu ích — chúng là **công cụ điều tra tại chỗ**, không phải bằng chứng để nộp.
+Trace và log vẫn hữu ích. Chúng là **công cụ điều tra tại chỗ**, không phải bằng chứng để nộp.
 
 ## 2. Vì sao case PASS cũng phải có evidence
 
@@ -54,7 +54,7 @@ Trả lời bằng một tình huống. Sáu tuần sau, production có bug ở 
 lúc đó màn hình trông thế nào?"*
 
 Không có ảnh thì mọi PASS của bạn là **lời khai không kiểm chứng được**. Có ảnh thì bạn trả lời được trong một
-phút — hoặc phát hiện ra rằng lúc đó nó **đã sai rồi** mà oracle của bạn không bắt (và đó là thông tin cực
+phút. Hoặc phát hiện ra rằng lúc đó nó **đã sai rồi** mà oracle của bạn không bắt (và đó là thông tin cực
 giá trị cho Bài 21).
 
 Đây là mục 4 trong `CLAUDE.md` bạn viết ở Bài 2, và là luật mà `gate-bang-chung.js` ở Bài 8 canh.
@@ -220,7 +220,7 @@ el.setAttribute('value', '••••');
 ```
 
 **Và luật cuối, không được bỏ:** sau khi chụp, **mở ảnh ra xem bằng mắt** trước khi đính vào báo cáo. Đây là
-việc năm giây, và nó là lớp bảo vệ cuối cùng — bạn không thể tự động hoá việc *nhìn thấy* một thông tin chưa
+việc năm giây, và nó là lớp bảo vệ cuối cùng. Bạn không thể tự động hoá việc *nhìn thấy* một thông tin chưa
 che nằm ở chỗ bạn không nghĩ tới.
 
 ## 5. Khi nào buộc phải quay video
@@ -272,8 +272,8 @@ async function buoc(page, moTa, giay = 2.5) {
 module.exports = { buoc };
 ```
 
-> `waitForTimeout` ở đây là **ngoại lệ hợp lệ** duy nhất của luật ở Bài 12. Nó không chờ ứng dụng — nó chờ
-> **người xem video** kịp đọc banner. Ghi comment rõ để người sau không tưởng là mã ẩu.
+> `waitForTimeout` ở đây là **ngoại lệ hợp lệ** duy nhất của luật ở Bài 12. Nó không chờ ứng dụng, nó chờ
+> người xem video kịp đọc banner. Ghi comment rõ để người sau không tưởng là mã ẩu.
 
 Bật quay video cho một test cụ thể:
 
@@ -351,7 +351,7 @@ báo không tồn tại).
 | **Không khoanh** | Người đọc phải tự dò | Luôn dùng `chupCoHighlight` |
 | **Còn PII** | Mở ra và **đọc** | Che, rồi mở ảnh ra soi |
 
-Ảnh trắng là thứ hay xảy ra nhất: khi test đỏ, Playwright vẫn chụp — chỉ là chụp **sau khi** trang đã hỏng
+Ảnh trắng là thứ hay xảy ra nhất: khi test đỏ, Playwright vẫn chụp, chỉ là chụp **sau khi** trang đã hỏng
 hoặc chưa render. File vẫn được tạo, đường dẫn vẫn có. Nên `gate-bang-chung.js` ở Bài 8 kiểm cả **kích thước
 file**, không chỉ kiểm sự tồn tại.
 
@@ -384,7 +384,7 @@ el.textContent = '••••';
 el.value = '••••'; el.setAttribute('value', '••••');
 ```
 
-Chụp cả hai, **mở cả hai ảnh ra so**. Bạn phải **thấy** rằng cách sai không che được gì — thấy một lần thì
+Chụp cả hai, **mở cả hai ảnh ra so**. Bạn phải **thấy** rằng cách sai không che được gì, thấy một lần thì
 không quên.
 
 ### Bước 4 — Quay một video (10 phút)
@@ -436,7 +436,7 @@ kit-cua-toi/tests/support/
 └── video.js                      ← MỚI · quay có banner từng bước, cho case nhiều bước
 ```
 
-Hai file này là **hạ tầng**, không phải máy chặn. Máy chặn đọc *kết quả* của chúng — đó là
+Hai file này là **hạ tầng**, không phải máy chặn. Máy chặn đọc *kết quả* của chúng, đó là
 `gate-bang-chung.js` ở Bài 8.
 
 ## Tự kiểm
@@ -444,7 +444,7 @@ Hai file này là **hạ tầng**, không phải máy chặn. Máy chặn đọc
 - [ ] Tôi biết danh sách đuôi file được chấp nhận, và vì sao trace/log **không** phải bằng chứng.
 - [ ] Tôi giải thích được vì sao case **PASS** cũng cần bằng chứng.
 - [ ] Mọi ảnh của tôi có **khoanh đỏ và nhãn**, không có ảnh chụp trơn.
-- [ ] Nhãn của tôi có `pointerEvents: 'none'` — nó **không chặn** thao tác của bước sau.
+- [ ] Nhãn của tôi có `pointerEvents: 'none'`, nó **không chặn** thao tác của bước sau.
 - [ ] Tôi đã **thấy tận mắt** rằng `textContent` không che được ô nhập.
 - [ ] Tôi đã **mở từng ảnh ra soi** trước khi đính vào báo cáo.
 - [ ] Video của tôi có banner từng bước và người ngoài hiểu được.
@@ -459,7 +459,7 @@ Mở **năm** bug gần nhất team bạn log lên hệ thống quản lý việ
 1. Có ảnh hoặc video không? (hay chỉ có mô tả chữ)
 2. Ảnh có **khoanh** chỗ sai không?
 3. Có thông tin khách hàng chưa che không?
-4. Với bug chuỗi thao tác — có video không, hay chỉ ảnh cuối?
+4. Với bug chuỗi thao tác, có video không, hay chỉ ảnh cuối?
 
 Nếu có bug từng bị trả về với lý do *"không tái hiện được"* hoặc *"không thấy lỗi"*, xem lại bằng chứng của
 nó. Rất thường là ảnh chụp trơn.

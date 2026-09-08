@@ -40,7 +40,7 @@ Bộ testcase có hai trục độc lập:
 
 Và đây là bẫy trung tâm của cả bài:
 
-> Một bộ case phủ kín **mọi module** mà trống hẳn **một chiều** thì vẫn **TRÔNG đầy đủ**. Bảng coverage theo
+> Một bộ case phủ kín **mọi module** mà trống hẳn **một chiều** thì vẫn TRÔNG đầy đủ. Bảng coverage theo
 > module xanh hết. Số lượng case lớn. Không có tín hiệu nào báo là thiếu.
 
 Con số thật ở kit này, đo trên một bộ **530 case** đã review và đã publish:
@@ -51,7 +51,7 @@ Con số thật ở kit này, đo trên một bộ **530 case** đã review và 
 | Change impact (ảnh hưởng lan khi sửa) | **0–1** |
 | Hiển thị (đúng cột, đúng nhãn, đúng định dạng) | **≈12%** — dù mục đó là **bắt buộc** |
 
-530 case, phủ kín module, mà **không có case E2E nào**. Không ai phát hiện ra bằng cách đọc — bộ trông rất đầy.
+530 case, phủ kín module, mà **không có case E2E nào**. Không ai phát hiện ra bằng cách đọc, bộ trông rất đầy.
 
 ## 2. Các chiều, và chiều nào hay trống
 
@@ -74,7 +74,7 @@ Ba chiều hay trống nhất có cùng một nguyên nhân: **chúng không n�
 
 Tài liệu đặc tả nói *tính năng làm gì*. Nó không nói *cái gì phải bị chặn*, không nói *luồng đầu-cuối trông
 thế nào*, không nói *sửa cái này thì ảnh hưởng gì*. Nên agent đọc tài liệu rồi sinh case sẽ **tự nhiên** bỏ
-trống đúng ba chiều đó — không phải vì nó kém, mà vì nguồn nó đọc không có.
+trống đúng ba chiều đó. Không phải vì nó kém, mà vì nguồn nó đọc không có.
 
 ### Ví dụ trên tài liệu mẫu
 
@@ -87,7 +87,7 @@ trống đúng ba chiều đó — không phải vì nó kém, mà vì nguồn n
 | `E2E` | **Không** | Tạo đơn → lưu nháp → mở màn chi tiết → mọi giá trị còn nguyên |
 | `Concurrency` | **Không** | Bấm Lưu nháp hai lần liên tiếp → có tạo hai đơn không |
 
-Bốn chiều cuối là chỗ bug thật hay nằm — và cũng là chỗ tài liệu im lặng.
+Bốn chiều cuối là chỗ bug thật hay nằm, và cũng là chỗ tài liệu im lặng.
 
 ## 3. Gắn tag để đếm được
 
@@ -102,7 +102,7 @@ Chiều là thứ vô hình cho tới khi bạn **gắn nhãn**. Quy ước đơ
 
 Một case được phép nhiều tag: `[Calc][Boundary]`.
 
-> **Vì sao tag nằm trong tiêu đề, không phải cột riêng.** Ba lý do thực dụng: nó đi theo case khi publish lên
+> Vì sao tag nằm trong tiêu đề, không phải cột riêng. Ba lý do thực dụng: nó đi theo case khi publish lên
 > công cụ test-management (không mất) · người đọc thấy ngay khi quét danh sách · và không phải thêm cột bắt
 > buộc thứ tám (Bài 9 mục 2 đã nói vì sao nên tiết chế số cột).
 
@@ -119,7 +119,7 @@ Không có ràng buộc này thì tag chỉ là nhãn dán, và số đếm ở 
 
 Không phải task nào cũng cần đủ mọi chiều. Task sửa một nhãn chữ thì `Concurrency` là vô nghĩa.
 
-Nên mỗi task **khai** chiều nào bắt buộc — và **ghi lý do** khi khai một chiều là không áp dụng.
+Nên mỗi task **khai** chiều nào bắt buộc. Và **ghi lý do** khi khai một chiều là không áp dụng.
 
 `outputs/demo/tasks/PROJ-1234/requirements/chieu-phu.json`:
 
@@ -147,7 +147,7 @@ Hai điều làm file này có giá trị:
 1. **`n/a` bắt buộc có lý do.** Không lý do thì nó chỉ là cách làm bảng xanh. Có lý do thì người review đọc
    được và **phản đối được** nếu lý do sai.
 2. **Quyết định được ghi lại.** Sáu tuần sau có bug ở chiều bạn khai `n/a`, bạn đọc lại lý do và biết mình
-   đã nghĩ gì — thay vì tự hỏi *"sao lúc đó không làm?"*
+   đã nghĩ gì, thay vì tự hỏi *"sao lúc đó không làm?"*
 
 > Cảnh báo: nếu bạn khai `n/a` cho một chiều mà **artifact của task cho thấy chiều đó có tồn tại** (ví dụ khai
 > `API: n/a` trong khi task có file đặc tả API), thì đó là khai sai. Bài 11 khi bạn viết gate cho chiều, hãy
@@ -240,7 +240,7 @@ Thêm vào `package.json`:
 ```
 
 Để ý phép kiểm cuối: nếu **quá nửa** case chưa gắn tag thì script **từ chối kết luận**. Đếm trên dữ liệu chưa
-gắn nhãn thì con số vô nghĩa, và một con số vô nghĩa còn tệ hơn không có con số — nó làm bạn yên tâm sai chỗ.
+gắn nhãn thì con số vô nghĩa, và một con số vô nghĩa còn tệ hơn không có con số, nó làm bạn yên tâm sai chỗ.
 
 ## 6. Đọc kết quả cho đúng
 
@@ -266,7 +266,7 @@ Tự kiểm: đưa lý do cho người khác đọc, họ **phản đối đư�
 
 ### Bước 2 — Gắn tag cho bộ hiện có (15 phút)
 
-Gắn tag chiều vào tiêu đề mọi case trong bộ Bài 7–7. Đừng gắn cho đủ — gắn đúng cái case **thật sự** đang hỏi.
+Gắn tag chiều vào tiêu đề mọi case trong bộ Bài 7–7. Đừng gắn cho đủ, gắn đúng cái case **thật sự** đang hỏi.
 
 Case nào bạn không biết gắn tag gì thường là case **không rõ mục đích** — dấu hiệu cần viết lại.
 
@@ -332,12 +332,12 @@ kit-cua-toi/
 ## Tự kiểm
 
 - [ ] Tôi giải thích được hai trục, và vì sao trục chiều vô hình cho tới khi có tag.
-- [ ] Tôi nói được vì sao ba chiều `Guard` `E2E` `Impact` hay trống — và nguyên nhân chung của cả ba.
+- [ ] Tôi nói được vì sao ba chiều `Guard` `E2E` `Impact` hay trống, và nguyên nhân chung của cả ba.
 - [ ] Mọi case trong bộ của tôi đã có tag chiều.
 - [ ] Case gắn `[Display]` có expected **liệt kê tên cột**, không phải "hiển thị đủ".
 - [ ] `chieu-phu.json` của tôi có lý do cho **mọi** `n/a`, và lý do đó phản đối được.
 - [ ] Máy đếm **từ chối kết luận** khi quá nửa case chưa gắn tag.
-- [ ] Tôi đã viết case mới cho hai chiều trống — không lấp bằng cách dán tag vào case cũ.
+- [ ] Tôi đã viết case mới cho hai chiều trống, không lấp bằng cách dán tag vào case cũ.
 - [ ] Case `[Guard]` của tôi kiểm **403 ở tầng dưới**, không chỉ kiểm nút bị ẩn.
 
 ## Bài tập về nhà
@@ -345,13 +345,13 @@ kit-cua-toi/
 Lấy bộ testcase **thật** lớn nhất ở dự án bạn. Gắn tag chiều cho một mẫu 50 case (không cần cả bộ), rồi đếm.
 
 Rất có thể bạn tìm ra ít nhất một chiều có **0 case** trong một bộ mà cả team đã review và đã chạy nhiều lần.
-Đó không phải lỗi của ai — đó là **điểm mù có hệ thống**: tài liệu không nói thì không ai nghĩ ra.
+Đó không phải lỗi của ai. Đó là **điểm mù có hệ thống**: tài liệu không nói thì không ai nghĩ ra.
 
 Ghi con số lại. Ở Bài 21 bạn sẽ có một cách khác để tìm điểm mù: không hỏi *"tôi thiếu loại câu hỏi nào"* mà
 hỏi *"bộ kiểm của tôi có bắt được lỗi không"* — và đo được bằng số.
 
 ## Đọc thêm
 
-- [`scripts/qa/dimension_coverage.js`](../../scripts/qa/dimension_coverage.js) của kit này — bản đầy đủ,
+- [`scripts/qa/dimension_coverage.js`](../../scripts/qa/dimension_coverage.js) của kit này, bản đầy đủ,
   **20** chiều và có cả phần chặn khi khai `n/a` trái với artifact thật.
 - Phần 3 (Bài 12–12) chuyển sang chạy thật: locator bền, dựng dữ liệu, verdict, bằng chứng.

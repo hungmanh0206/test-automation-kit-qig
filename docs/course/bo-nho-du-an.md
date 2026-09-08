@@ -34,7 +34,7 @@ Bốn việc:
 Bạn đã có kit khá đầy đủ. Nhưng thử tình huống này:
 
 > Tuần 1: bạn phát hiện màn Chi tiết đơn hiển thị sai định dạng ngày. Log bug. Dev điều tra, kết luận
-> **đúng thiết kế** — hai tab cố ý dùng hai định dạng vì hai đối tượng người dùng khác nhau. Bug bị từ chối.
+> đúng thiết kế. Hai tab cố ý dùng hai định dạng vì hai đối tượng người dùng khác nhau. Bug bị từ chối.
 >
 > Tuần 4: task khác, cùng màn đó. Agent thấy đúng hiện tượng ấy, và **log lại đúng bug đó**.
 
@@ -95,7 +95,7 @@ Và ghi luôn **nguồn xác nhận**: ai chốt, ngày nào. Sáu tuần sau b�
 
 ### Nguồn 3 — Lịch sử hệ thống quản lý việc
 
-Nếu dự án đã chạy một thời gian thì đã có bug lịch sử. Quét về làm mầm cho `bugs/` — nó là đầu vào của
+Nếu dự án đã chạy một thời gian thì đã có bug lịch sử. Quét về làm mầm cho `bugs/`, nó là đầu vào của
 Bài 19 (chấm rủi ro) và của việc đối chiếu "lỗi từng xảy ra đã có case canh chưa".
 
 Nhưng **suggest-only**: nạp dữ liệu, không tự kết luận. Lý do ở Bài 19 mục 5.
@@ -104,7 +104,7 @@ Nhưng **suggest-only**: nạp dữ liệu, không tự kết luận. Lý do ở
 
 Đây là phần khó nhất về tâm lý.
 
-`system/` gần như chắc chắn trống ở tuần đầu — bạn chưa khảo sát máy trạng thái, chưa dựng ma trận phân quyền.
+`system/` gần như chắc chắn trống ở tuần đầu. Bạn chưa khảo sát máy trạng thái, chưa dựng ma trận phân quyền.
 Hai lựa chọn:
 
 | Lựa chọn | Hậu quả |
@@ -221,7 +221,7 @@ knowledge/*
 
 Nhưng đây là chỗ có một rủi ro thật, và nó khác với `.env`:
 
-> `.env` nạp lại được — bạn có credentials ở chỗ khác. `knowledge/` thì **một phần không nạp lại được từ
+> `.env` nạp lại được, bạn có credentials ở chỗ khác. `knowledge/` thì **một phần không nạp lại được từ
 > nguồn máy nào**: mọi thứ **ghi tay** (rule đã xác nhận, quyết định đã chốt, recipe kèm cạm bẫy) chỉ tồn tại
 > ở đó. Mất là mất hẳn.
 
@@ -280,7 +280,7 @@ console.log(`[backup] đã sao lưu ${soFile} file → ${goi}`);
 
 ## 6. Thu tự động: gắn vào reporter
 
-Với `metrics/`, đừng gắn vào một lệnh phải nhớ gọi. Gắn vào **reporter** của test runner — nó chạy sau **mỗi**
+Với `metrics/`, đừng gắn vào một lệnh phải nhớ gọi. Gắn vào **reporter** của test runner, nó chạy sau **mỗi**
 lượt test, mặc định, không ai phải nhớ.
 
 `tests/support/reporter-hoc.js`:
@@ -356,8 +356,8 @@ module.exports = {
 };
 ```
 
-> **Vì sao phải ở cuối, và vì sao không dùng `globalTeardown`.** Đo thật: `globalTeardown` chạy **trước** khi
-> reporter `json` ghi xong `results.json` — nên nếu bạn đọc file đó ở teardown thì đọc bản cũ hoặc không có
+> Vì sao phải ở cuối, và vì sao không dùng `globalTeardown`. Đo thật: `globalTeardown` chạy **trước** khi
+> reporter `json` ghi xong `results.json`. Nên nếu bạn đọc file đó ở teardown thì đọc bản cũ hoặc không có
 > file. Reporter khai cuối thì chạy sau các reporter trước nó.
 
 ## 7. Độ tin cậy từng case, và cách ly test bất ổn
@@ -423,7 +423,7 @@ if (canCachLy.length) {
 }
 ```
 
-**Cách ly** là đường giữa giữa hai lựa chọn tệ: để nguyên thì suite luôn đỏ và người ta ngừng đọc; xoá đi thì
+**Cách ly** là đường ở giữa hai lựa chọn đều tệ: để nguyên thì suite luôn đỏ và người ta ngừng đọc; xoá đi thì
 mất luôn phần kiểm. Cách ly giữ tín hiệu mà không để nó làm nhiễu.
 
 ---
@@ -458,7 +458,7 @@ Trường `lyDo` **để trống là vô dụng** — chính nó là thứ khi�
 ### Bước 3 — Ghi một recipe kèm cạm bẫy (10 phút)
 
 Lấy tiền điều kiện khó nhất ở Bài 12 và ghi vào `knowledge/setup_recipes/`. Phần **`camBay`** là phần giá trị
-nhất — đó là thứ chỉ biết sau khi đã vấp:
+nhất, đó là thứ chỉ biết sau khi đã vấp:
 
 ```json
 {
@@ -499,7 +499,7 @@ Chạy suite **năm lần** (đủ ngưỡng tối thiểu), rồi:
 node scripts/qa/do-tin-cay.js
 ```
 
-Có case nào dưới ngưỡng thì đó là danh sách cần truy nguyên nhân — quay lại Bài 12 mục 5.
+Có case nào dưới ngưỡng thì đó là danh sách cần truy nguyên nhân, quay lại Bài 12 mục 5.
 
 ### Bước 6 — Dùng lại store ở lượt sinh case (5 phút)
 
@@ -549,7 +549,7 @@ kit-cua-toi/
 - [ ] Mọi rule trong `domain/` có `nguon` và ít nhất hai ví dụ input→expected.
 - [ ] `kiem-domain.js` của tôi chặn rule thiếu nguồn, và cảnh báo khi nghi có PII.
 - [ ] Quyết định tôi ghi có trường `lyDo` **không rỗng**, và có ai chốt + ngày.
-- [ ] Recipe của tôi có phần `camBay` — thứ chỉ biết sau khi vấp.
+- [ ] Recipe của tôi có phần `camBay`, thứ chỉ biết sau khi vấp.
 - [ ] Reporter khai ở **cuối**, và tôi biết vì sao không dùng `globalTeardown`.
 - [ ] Reporter **không bao giờ throw**, và bỏ qua khi thiếu ngữ cảnh task.
 - [ ] Sao lưu ra `exit 2` khi đích nằm trong repo.
@@ -558,7 +558,7 @@ kit-cua-toi/
 
 ## Bài tập về nhà
 
-Chọn ba kết luận QA gần nhất của bạn — bug bị từ chối, case PASS kèm ghi chú, cách test đã thử và thất bại —
+Chọn ba kết luận QA gần nhất của bạn. Bug bị từ chối, case PASS kèm ghi chú, cách test đã thử và thất bại —
 và ghi cả ba vào `decisions/`.
 
 Rồi tự trả lời: **trong sáu tháng qua, bao nhiêu lần team bạn kết luận lại một thứ đã kết luận rồi?** Con số
@@ -566,6 +566,6 @@ Rồi tự trả lời: **trong sáu tháng qua, bao nhiêu lần team bạn k�
 
 ## Đọc thêm
 
-- Bài 19 sẽ dùng `bugs/` và `metrics/` để chấm rủi ro — và giải bài toán cold start của **chính việc chấm**.
+- Bài 19 sẽ dùng `bugs/` và `metrics/` để chấm rủi ro. Và giải bài toán cold start của **chính việc chấm**.
 - [`knowledge/SCHEMA.md`](../../knowledge/SCHEMA.md) của kit này (nếu repo bạn có) — hình dạng đầy đủ của
   bảy store.

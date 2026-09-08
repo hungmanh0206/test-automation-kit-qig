@@ -411,6 +411,65 @@ if (!exists(COURSE_MD)) {
       ok.push('không dán nội bộ kit có sẵn — tài liệu chỉ dùng tên do chính nó dựng');
     }
 
+    /* GIỌNG VĂN: đếm mấy dạng viết nghe như máy, và chặn khi vượt sàn.
+     *
+     * VÌ SAO ĐẶT SÀN CHỨ KHÔNG CẤM TUYỆT ĐỐI: gạch ngang dài đôi khi dùng đúng, ví dụ ngăn nhãn với
+     * mô tả trong danh sách. Cấm sạch thì gate bắt oan. Đặt sàn thì bắt được lúc lối viết cũ quay lại
+     * hàng loạt, mà không phiền vài chỗ dùng hợp lý.
+     *
+     * Sàn lấy từ số đo THẬT sau khi đã dọn một lượt, cộng biên độ nhỏ. */
+    const SAN_GIONG = { gachNgang: 8, trichDamDau: 38 };
+    function vanXuoi(md) {
+      const ra = [];
+      let trongMa = false;
+      for (const d of md.split('\n')) {
+        if (d.trim().startsWith('```')) { trongMa = !trongMa; continue; }
+        if (trongMa || d.trim().startsWith('|')) continue;
+        ra.push(d);
+      }
+      return ra.join('\n');
+    }
+    let demGach = 0, demTrich = 0;
+    const lapTu = [];
+    for (const rel of lessonFiles) {
+      const raw = rd(path.join(ROOT, 'docs', rel));
+      const s = vanXuoi(raw);
+      /* Đếm ĐÚNG những chỗ đáng sửa: bỏ tiêu đề, bỏ dòng metadata đầu bài, và bỏ gạch ngang
+         nằm trong **...** (đó là nhãn danh sách, không phải nối vế). */
+      for (const dong of s.split('\n')) {
+        if (dong.trim().startsWith('#')) continue;
+        if (/^> \*\*.+\*\* · Có gì trong tay/.test(dong.trim())) continue;
+        for (const mm of dong.matchAll(/[a-zà-ỹ0-9)”"`\]] — [a-zà-ỹ(“"`[]/g)) {
+          const truocDo = dong.slice(0, mm.index);
+          if ((truocDo.match(/\*\*/g) || []).length % 2 === 1) continue;   // trong cụm in đậm
+          if (/^\s*[-*] /.test(dong) && /(\)|Bài \d+|\*\*)\s*$/.test(truocDo + mm[0][0])) continue;
+          demGach++;
+        }
+      }
+      demTrich += (s.match(/^> \*\*[^*]+\*\*/gm) || []).length;
+      /* Lặp từ: dấu vết của một lượt thay chuỗi hàng loạt bị chồng lên nhau. Đã dính 2 lần. */
+      for (const m of s.matchAll(/\b([a-zà-ỹ]{3,}) \1\b/g)) {
+        if (['song', 'mãi', 'luôn', 'nhau', 'từng', 'chung', 'riêng'].includes(m[1])) continue;   // từ láy hợp lệ
+        lapTu.push(`${path.basename(rel)}: "${m[0]}"`);
+      }
+    }
+    if (lapTu.length) {
+      problems.push(`${lapTu.length} chỗ LẶP TỪ (dấu vết thay chuỗi hàng loạt bị chồng):\n      ` +
+        lapTu.slice(0, 10).join('\n      '));
+    } else {
+      ok.push('không có chỗ lặp từ');
+    }
+    const vuot = [];
+    if (demGach > SAN_GIONG.gachNgang) vuot.push(`gạch ngang nối vế: ${demGach} > sàn ${SAN_GIONG.gachNgang}`);
+    if (demTrich > SAN_GIONG.trichDamDau) vuot.push(`trích dẫn mở đầu bằng in đậm: ${demTrich} > sàn ${SAN_GIONG.trichDamDau}`);
+    if (vuot.length) {
+      problems.push('lối viết cũ đang quay lại:\n      ' + vuot.join('\n      ') +
+        '\n      Viết câu ngắn, dùng dấu chấm thay gạch ngang, bỏ in đậm dẫn đầu trong trích dẫn.');
+    } else {
+      ok.push(`giọng văn trong ngưỡng (gạch ngang ${demGach}/${SAN_GIONG.gachNgang} · ` +
+        `trích dẫn in đậm ${demTrich}/${SAN_GIONG.trichDamDau})`);
+    }
+
     /* Mỗi bài phải có khối "Từ mới của bài này".
      *
      * VÌ SAO: người đọc từ số 0 gặp từ lạ ngay giữa bài thì phải dừng lại tra, và thường là tra sai.

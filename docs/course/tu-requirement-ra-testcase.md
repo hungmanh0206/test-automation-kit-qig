@@ -40,7 +40,7 @@ khác nhau** và **điều kiện dừng khác nhau**:
 | **2. Sinh case** | Biến mệnh đề thành testcase | Bảng 7 cột | Sinh xong |
 
 Gộp hai lượt thì agent **không có chỗ để dừng**. Nó gặp chỗ mơ hồ, chọn một cách hiểu, rồi sinh 40 case trên
-giả định đó — và bạn không biết nó đã giả định gì.
+giả định đó, và bạn không biết nó đã giả định gì.
 
 Tách ra thì chỗ mơ hồ **lộ trước khi tốn công**.
 
@@ -161,7 +161,7 @@ liệt kê ở cuối dưới tiêu đề "CHƯA SINH ĐƯỢC" kèm lý do. Đ�
 ```
 
 Điều kiện dừng ở đây là thứ đáng giá nhất: nó cho agent **một đường thoát trung thực**. Không có nó, agent
-gặp rule thiếu thông tin sẽ viết một case với expected mơ hồ — và case mơ hồ thì trông như đã kiểm.
+gặp rule thiếu thông tin sẽ viết một case với expected mơ hồ, và case mơ hồ thì trông như đã kiểm.
 
 Lưu vào `outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md`.
 
@@ -180,7 +180,7 @@ loi.forEach(l => console.log('  - ' + l));
 " outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md
 ```
 
-Nếu parser **không đọc được** thì agent đã sai định dạng — sửa prompt, đừng sửa tay bảng. Sửa tay là bạn đang
+Nếu parser **không đọc được** thì agent đã sai định dạng, sửa prompt, đừng sửa tay bảng. Sửa tay là bạn đang
 làm việc của máy, và lần sau vẫn sai.
 
 ## 6. Ba dấu hiệu case không execute được
@@ -247,7 +247,7 @@ bạn quyết**. Nó làm phần rộng, bạn làm phần sâu.
 ### Bước 1 — Lượt phân tích (20 phút)
 
 Chạy prompt mục 2 trên tài liệu mẫu. Kiểm đầu ra có: phạm vi · bảng `BR-` có cột trích từ · bảng chỗ chưa rõ
-có phân mức. Đối chiếu với bảng ở cuối mục 2 — bắt được mấy trong ba chỗ chặn?
+có phân mức. Đối chiếu với bảng ở cuối mục 2, bắt được mấy trong ba chỗ chặn?
 
 Không đủ ba thì sửa prompt rồi chạy lại **phiên mới**, ghi lại bạn đã sửa gì.
 
@@ -278,7 +278,7 @@ Có case nào lỗi thì thêm một câu ràng buộc vào prompt, chạy lại
 
 Điền bảng mục 7. Với mỗi case **bạn có mà agent không**, viết một dòng: *vì sao tôi biết mà tài liệu không nói?*
 
-Giữ danh sách đó lại — nó là đầu vào cho Bài 17.
+Giữ danh sách đó lại, nó là đầu vào cho Bài 17.
 
 ### Bước 6 — Commit
 
@@ -321,10 +321,10 @@ Chạy đúng hai lượt này trên **một tài liệu thật** của dự án
 1. Bao nhiêu câu BA trả lời được ngay? (⇒ tài liệu thiếu, không phải bạn hiểu sai)
 2. Bao nhiêu câu **BA cũng chưa biết**? (⇒ khoảng trống thật của sản phẩm, và đó là phát hiện có giá trị)
 
-Con số thứ hai thường làm BA ngạc nhiên — và nó là cách nhanh nhất để họ thấy giá trị của cách làm này.
+Con số thứ hai thường làm BA ngạc nhiên. Và nó là cách nhanh nhất để họ thấy giá trị của cách làm này.
 
 ## Đọc thêm
 
 - Phần "Ghi chú cho giảng viên" ở cuối [`assets/sample-requirement.md`](assets/sample-requirement.md):
   **10** chỗ cài cắm, không chỉ 3. Đọc sau khi làm xong để biết mình còn bỏ sót gì.
-- Bài 10 sẽ soi kỹ vào cột Kết quả mong đợi — phần dễ trông-như-đúng nhất.
+- Bài 10 sẽ soi kỹ vào cột Kết quả mong đợi, phần dễ trông-như-đúng nhất.

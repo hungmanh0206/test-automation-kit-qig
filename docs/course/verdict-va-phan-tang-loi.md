@@ -123,7 +123,7 @@ module.exports = { TAXONOMY, DA_CHAY, LOG_JIRA };
 ```
 
 > Nhớ lại Bài 8: gate bằng chứng có hằng số `DA_CHAY = ['PASS', 'FAIL']` **viết tay**. Đó là bản đơn giản
-> để học. Bản đúng là đọc từ file này — vì khi bạn thêm `PASS_WITH_DEVIATION`, gate viết tay sẽ **bỏ sót**
+> để học. Bản đúng là đọc từ file này. Vì khi bạn thêm `PASS_WITH_DEVIATION`, gate viết tay sẽ **bỏ sót**
 > nó (nó đã chạy nhưng gate không đòi bằng chứng), mà bỏ sót thì không có tín hiệu nào báo.
 
 ## 2. Bảy tầng lỗi, và chỉ hai đáng log
@@ -198,7 +198,7 @@ mà không thêm thông tin. Con số này khai trong taxonomy để **đổi �
 
 **Triệu chứng nhận dạng:**
 
-> FAIL lặp lại **rất ổn định** — rerun không cứu được — nhưng **làm tay theo đúng các bước đó thì kết quả lại
+> FAIL lặp lại **rất ổn định** — rerun không cứu được. Nhưng **làm tay theo đúng các bước đó thì kết quả lại
 > đúng**.
 
 Phép thử: **làm tay**. Mất năm phút và tiết kiệm một buổi của Dev.
@@ -395,7 +395,7 @@ Bốn đặc điểm khiến bug này được nhận ngay: **bước tái hiệ
 Viết `.agent/config/phan-quyet.json` và `scripts/lib/verdict.js`. Rồi **sửa `gate-bang-chung.js` ở Bài 8**
 để đọc `DA_CHAY` từ file thay vì hằng số viết tay.
 
-*(Nếu bạn học theo thứ tự bài thì Bài 8 chưa tới — ghi việc này vào danh sách để làm lúc đó.)*
+*(Nếu bạn học theo thứ tự bài thì Bài 8 chưa tới, ghi việc này vào danh sách để làm lúc đó.)*
 
 ### Bước 2 — Sinh status (15 phút)
 
@@ -485,6 +485,6 @@ và cả hai đều **không nên** lên Jira ngay từ đầu.
 
 ## Đọc thêm
 
-- [`.agent/config/phan-quyet.json`](../../.agent/config/phan-quyet.json) của kit này — bản đầy đủ,
+- [`.agent/config/phan-quyet.json`](../../.agent/config/phan-quyet.json) của kit này, bản đầy đủ,
   gồm cả `EXPANSION_FINDING` cho phát hiện từ việc mở rộng (Bài 21).
 - Bài 13 sẽ điền phần `evidence` cho file trạng thái bạn vừa sinh.

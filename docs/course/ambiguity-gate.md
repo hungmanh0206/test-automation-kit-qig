@@ -22,9 +22,9 @@
 
 Bốn việc:
 
-1. Tự thấy agent **đoán** khi gặp mơ hồ — trên một tài liệu có 10 vấn đề cài sẵn (25 phút).
+1. Tự thấy agent **đoán** khi gặp mơ hồ. Trên một tài liệu có 10 vấn đề cài sẵn (25 phút).
 2. Phân mức chặn / không chặn, và viết bộ câu hỏi có giả định đề xuất (20 phút).
-3. **Xây gate** chặn không cho sinh testcase khi chưa chốt — và học **công thức viết mọi gate** (30 phút).
+3. **Xây gate** chặn không cho sinh testcase khi chưa chốt, và học **công thức viết mọi gate** (30 phút).
 4. Chạy lại toàn luồng, thấy gate chặn thật rồi mở ra thật (15 phút).
 
 > Bài này cũng là bài dạy **cách viết một gate**. Từ đây trở đi tài liệu này sẽ nói *"xây gate chặn X"* rất nhiều
@@ -34,10 +34,11 @@ Bốn việc:
 
 ## Việc 1 — Xem agent đoán (25 phút)
 
-Tài liệu này có kèm một đặc tả đặc tả **cố tình mơ hồ**: [`sample-requirement.md`](assets/sample-requirement.md) — một
-FSD giả cho màn "Tạo đơn hàng", kèm 3 ghi chú của BA chứa mâu thuẫn và lỗ hổng. Nó có **10 vấn đề cài sẵn**.
+Kèm theo đây có một bản đặc tả **cố tình viết mơ hồ**: [`sample-requirement.md`](assets/sample-requirement.md).
+Nó là một FSD giả cho màn "Tạo đơn hàng", có 3 ghi chú của BA chứa mâu thuẫn và lỗ hổng. Tổng cộng **10 vấn
+đề cài sẵn**.
 
-Mở phiên agent và gõ **đúng** câu này — câu mà 90% người sẽ gõ:
+Mở phiên agent và gõ **đúng** câu này, câu mà 90% người sẽ gõ:
 
 ```
 Đọc docs/course/assets/sample-requirement.md rồi sinh testcase cho màn Tạo đơn hàng.
@@ -72,8 +73,8 @@ Con số thứ hai là thứ bài này nhắm tới.
 
 Không phải mơ hồ nào cũng phải dừng. Dừng hết thì bạn không làm được gì; đoán hết thì bộ case sai. Ranh giới:
 
-> **Chặn** khi không trả lời được thì **kết quả mong đợi không viết được**.
-> **Không chặn** khi bạn đoán được và ghi rõ mình đã đoán gì.
+> Chặn khi không trả lời được thì **kết quả mong đợi không viết được**.
+> Không chặn khi bạn đoán được và ghi rõ mình đã đoán gì.
 
 | Mơ hồ | Mức | Vì sao |
 |---|---|---|
@@ -252,7 +253,7 @@ process.exit(1);
 ```
 
 Câu cuối là câu đáng dán lên tường: **đừng điền giả định vào chỗ câu trả lời.** Nó làm gate xanh và biến một
-phỏng đoán thành "đã chốt" — đúng loại gian lận mà Bài 1 dạy nhận ra, chỉ ở một chỗ khác.
+phỏng đoán thành "đã chốt". Đúng loại gian lận mà Bài 1 dạy nhận ra, chỉ ở một chỗ khác.
 
 ## Việc 4 — Thử gate: chặn thật rồi mở ra thật (15 phút)
 
@@ -295,7 +296,7 @@ mâu thuẫn.
 cho qua, nhưng không để bạn quên là mình đã đoán.
 
 **Lần 4 — đối chứng âm quan trọng nhất:** để câu `A1` (không chặn) **trống** và trả lời đủ 3 câu chặn.
-Gate phải ra **`0`**. Nếu ra `1` thì gate của bạn đang chặn cả mơ hồ không chặn — tức nó sẽ chặn **mọi** task,
+Gate phải ra **`0`**. Nếu ra `1` thì gate của bạn đang chặn cả mơ hồ không chặn, tức nó sẽ chặn **mọi** task,
 và người ta sẽ bỏ nó sau ba lần.
 
 ### Giờ làm lại Việc 1
@@ -335,30 +336,30 @@ kit-cua-toi/
     └── questions.json                ← MỚI · bản cho máy — gate đọc cái này
 ```
 
-Hai tệp `questions.*` là một cặp có chủ ý: **người** đọc markdown, **máy** đọc JSON. Nhưng chỉ **một** trong
-hai là canonical — chọn JSON, và sinh markdown từ nó. Hai bản viết tay song song thì sẽ trôi khỏi nhau, đúng
+Hai tệp `questions.*` là một cặp có chủ ý: **người** đọc markdown, **máy** đọc JSON. Nhưng chỉ một trong
+hai là canonical, chọn JSON, và sinh markdown từ nó. Hai bản viết tay song song thì sẽ trôi khỏi nhau, đúng
 luật một-nguồn của Bài 6.
 
 ## Tự kiểm
 
 1. Ranh giới giữa mơ hồ **chặn** và **không chặn** là gì? Nêu bằng một câu.
-2. Ba thứ làm bộ câu hỏi được BA trả lời nhanh — kể ra.
+2. Ba thứ làm bộ câu hỏi được BA trả lời nhanh, kể ra.
 3. Vì sao thiếu tệp `questions.json` là mã `2` chứ không phải mã `0`?
 4. Vì sao gate bắt buộc có `giaDinh` và `nguon`, không chỉ `hoi`?
 5. Vì sao gate bắt buộc có `aiTraLoi`, không chỉ `traLoi`?
-6. Điền giả định vào `traLoi` để gate xanh — sai ở đâu? Nó giống kiểu gian lận nào ở Bài 1?
+6. Điền giả định vào `traLoi` để gate xanh, sai ở đâu? Nó giống kiểu gian lận nào ở Bài 1?
 7. Năm câu hỏi của **công thức viết gate** — kể lại. Câu nào hay bị bỏ nhất?
 
 ## Bài tập về nhà (25 phút)
 
-Áp công thức 5 câu hỏi để viết **một gate mới** cho dự án bạn — tự chọn thứ cần chặn. Ví dụ: *"không cho
+Áp công thức 5 câu hỏi để viết **một gate mới** cho dự án bạn, tự chọn thứ cần chặn. Ví dụ: *"không cho
 publish testcase nếu chưa có ai review"*, hoặc *"không cho execute nếu chưa khai môi trường"*.
 
 Viết ra giấy **cả năm câu trả lời trước khi viết code**. Rồi:
 
 1. Viết gate, đúng ba mã thoát.
 2. Làm đủ hai đối chứng: một ca **phải chặn**, một ca **phải cho qua**.
-3. Chạy nó trên một task **thật** đã xong. Nếu nó báo đỏ trên task đã xong đúng — thì gate của bạn sai, không
+3. Chạy nó trên một task **thật** đã xong. Nếu nó báo đỏ trên task đã xong đúng, thì gate của bạn sai, không
    phải task sai. Sửa gate.
 
 Bước 3 là cách rẻ nhất để phát hiện gate bắt oan: chạy nó **ngược** lên dữ liệu đã biết là tốt.

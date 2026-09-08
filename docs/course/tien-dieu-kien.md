@@ -2,7 +2,7 @@
 
 > **2 giờ** · Có gì trong tay: 3 test chạy được · Sau bài này: dữ liệu dựng đúng luồng, dọn được, và không phá môi trường của ai
 >
-> *Bài này không đánh số — nó là phần đào sâu của **Bài 12**. Đọc kèm **Bài 12**.*
+> *Bài này không đánh số, nó là phần đào sâu của **Bài 12**. Đọc kèm **Bài 12**.*
 
 **Tóm tắt bài này**
 
@@ -43,7 +43,7 @@ test('TC_015 …', async ({ page }) => {
 ```
 
 Test này chỉ chạy được nếu `KH_BAC_01` **tồn tại** và **đang hạng Bạc**. Ai làm điều đó? Hiện tại: không ai.
-Nó chạy được vì tình cờ dữ liệu đó có trên môi trường — và nó sẽ đỏ vào ngày ai đó xoá hoặc đổi hạng khách đó.
+Nó chạy được vì tình cờ dữ liệu đó có trên môi trường. Và nó sẽ đỏ vào ngày ai đó xoá hoặc đổi hạng khách đó.
 
 Test phụ thuộc dữ liệu tình cờ **không phải test**. Nó là một quan sát may mắn.
 
@@ -233,7 +233,7 @@ Vì sao phải tách hai mức cuối: chúng là **hai việc khác nhau**.
 - `Chỉ làm tay` là một **quyết định về phạm vi** — không ai phải làm gì thêm.
 
 Gộp cả hai vào `SKIP` thì không ai biết cái nào cần đòi Dev, cái nào chấp nhận làm tay. Và ghi *"thiếu
-capability"* chung chung cũng vô dụng — phải ghi **thiếu hook nào, thiếu quyền gì**.
+capability"* chung chung cũng vô dụng, phải ghi **thiếu hook nào, thiếu quyền gì**.
 
 ## 7. Hợp đồng tiền điều kiện
 
@@ -264,12 +264,12 @@ Với mỗi tiền điều kiện, ghi bốn thứ. Đặt trong `requirements/s
 Ba lý do hợp đồng này đáng viết:
 
 1. **Case chết giữa chừng lộ ra ở Phase 1**, không phải giữa lúc execute.
-2. **Phần verify** là thứ hay bị bỏ — dựng xong mà không kiểm thì bạn không biết nó đã dựng đúng.
+2. **Phần verify** là thứ hay bị bỏ. Dựng xong mà không kiểm thì bạn không biết nó đã dựng đúng.
 3. **Phần dọn** viết ra thì mới có người làm.
 
 > Vì sao phải kiểm lại sau khi dựng. Hàm tạo dữ liệu trả về `200` không có nghĩa dữ liệu đúng như bạn muốn. API có thể bỏ
 > qua field `hang` (không có trong danh sách cho phép ghi) và tạo khách hạng `Thường`. Test sau đó kiểm giảm
-> giá 3% và đỏ — bạn tưởng công thức sai, thực ra khách sai hạng. **Verify bắt được ngay.**
+> giá 3% và đỏ. Bạn tưởng công thức sai, thực ra khách sai hạng. **Verify bắt được ngay.**
 
 ## 8. Non-destructive: đừng phá việc của người khác
 
@@ -277,7 +277,7 @@ Môi trường test là môi trường **dùng chung**: BA đang demo, Dev đang
 
 Ba luật:
 
-1. **Chỉ chạm dữ liệu mình tạo.** Không sửa, không xoá bản ghi có sẵn — kể cả khi trông như rác.
+1. **Chỉ chạm dữ liệu mình tạo.** Không sửa, không xoá bản ghi có sẵn, kể cả khi trông như rác.
 2. **Xác nhận trước mỗi lượt chạm có khả năng thay đổi dữ liệu**, khi làm thủ công.
 3. **Dọn thứ mình tạo**, và có một janitor dọn định kỳ cho phần rơi lại.
 
@@ -366,7 +366,7 @@ npx playwright test
 # Đếm LẠI — phải bằng con số trước
 ```
 
-Không bằng nhau nghĩa là `don()` không chạy hoặc chạy không hết. Sửa trước khi đi tiếp — nếu không bạn đang
+Không bằng nhau nghĩa là `don()` không chạy hoặc chạy không hết. Sửa trước khi đi tiếp, nếu không bạn đang
 tích luỹ rác trên môi trường dùng chung.
 
 Thử luôn ca xấu: cho một test **đỏ** có chủ ý, xác nhận phần dọn **vẫn chạy**.
@@ -436,6 +436,6 @@ Câu 3 là câu khó và cũng là câu đáng giá nhất.
 
 ## Đọc thêm
 
-- Bài 13 sẽ dùng chữ `SETUP:` trong lỗi factory để phân loại `setup_failure` — loại **không** log Jira.
-- [`tests/support/setup/`](../../tests/support/setup/) của kit này — setup layer đầy đủ, gồm cả guarded client
+- Bài 13 sẽ dùng chữ `SETUP:` trong lỗi factory để phân loại `setup_failure`, loại **không** log Jira.
+- [`tests/support/setup/`](../../tests/support/setup/) của kit này, setup layer đầy đủ, gồm cả guarded client
   chỉ-đọc cho database.

@@ -26,7 +26,7 @@ Bốn việc:
 1. Tính hai đường tỉ lệ, và đọc **khoảng cách** giữa chúng (25 phút).
 2. Tính độ tin cậy từng test, xếp hạng, quyết định quarantine (25 phút).
 3. Hiểu vì sao dọn flaky có thể **chôn bug thật**, và cách phân biệt (20 phút).
-4. Ba luật liêm chính của phép đo — không có chúng thì mọi con số trên là trang trí (20 phút).
+4. Ba luật liêm chính của phép đo. Không có chúng thì mọi con số trên là trang trí (20 phút).
 
 ---
 
@@ -138,7 +138,7 @@ Chạy trên lượt chạy gần nhất:
 node scripts/qa/do-metrics.js test-results/results.json
 ```
 
-**Bạn sẽ thấy** ba con số và danh sách test phải chạy lại, kèm **chuỗi kết quả** của từng test — `✗✓` nghĩa
+**Bạn sẽ thấy** ba con số và danh sách test phải chạy lại, kèm **chuỗi kết quả** của từng test, `✗✓` nghĩa
 là đỏ rồi xanh, `✗✗✓` là đỏ hai lần mới xanh.
 
 Chuỗi đó là dữ liệu, không phải trang trí: `✗✓` lặp lại ở cùng một test qua nhiều lượt là dấu hiệu rất khác
@@ -181,12 +181,12 @@ Tỉ lệ toàn bộ suite không nói test **nào** yếu. Cần điểm theo t
 | Còn thấy nó không | **có** — nằm trong báo cáo, có nhãn | không |
 | Ai đó sẽ quay lại sửa không | có, vì nó còn hiện | **không** |
 
-> Xoá một test chập chờn là cách rẻ nhất để mất luôn phần phủ mà nó đang giữ — và **không ai biết** phần đó
+> Xoá một test chập chờn là cách rẻ nhất để mất luôn phần phủ mà nó đang giữ, và **không ai biết** phần đó
 > đã mất. Quarantine giữ lại tín hiệu "chỗ này chưa được canh".
 
 Và một luật đi kèm:
 
-> **Quarantine phải có hạn.** Không hạn thì nó thành nghĩa địa. Đặt 30 ngày: quá hạn mà chưa ai điều tra thì
+> Quarantine phải có hạn. Không hạn thì nó thành nghĩa địa. Đặt 30 ngày: quá hạn mà chưa ai điều tra thì
 > báo cáo nêu tên nó lên, mỗi lượt.
 
 ## Việc 3 — Dọn flaky có thể chôn bug thật (20 phút)
@@ -201,7 +201,7 @@ cùng một hiện tượng:
 | Test chờ sai — bấm trước khi element hiện xong | lỗi **test** | sửa test |
 | **App thật sự chậm/không ổn định** ở lần gọi đầu | **bug sản phẩm** | **log bug** |
 
-Retry làm cả hai cùng chuyển xanh. Nên "dọn flaky" theo phản xạ sẽ **chôn** nguyên nhân thứ hai — và nó
+Retry làm cả hai cùng chuyển xanh. Nên "dọn flaky" theo phản xạ sẽ **chôn** nguyên nhân thứ hai, và nó
 thường là bug hiệu năng hoặc race condition, tức loại bug đắt nhất.
 
 ### Bốn dấu hiệu phân biệt
@@ -236,7 +236,7 @@ Trước khi gắn nhãn `flaky` cho bất cứ test nào, bắt buộc ghi:
 ```
 
 Không điền được `daThu` thì **chưa được gắn nhãn flaky**. Đây là cách biến một phản xạ thành một bước có
-bằng chứng — cùng cơ chế với `tangLoi` ở Bài 13.
+bằng chứng, cùng cơ chế với `tangLoi` ở Bài 13.
 
 ## Việc 4 — Ba luật liêm chính của phép đo (20 phút)
 
@@ -260,7 +260,7 @@ module.exports = {
 
 ### Luật 2 — bỏ `skipped` khỏi mẫu số
 
-Test bị skip không nói gì về độ ổn định. Tính nó vào là làm loãng cả hai đường — và tệ hơn: skip thêm test là
+Test bị skip không nói gì về độ ổn định. Tính nó vào là làm loãng cả hai đường, và tệ hơn: skip thêm test là
 cách **làm đẹp số** mà không sửa gì. `do-metrics.js` ở trên đã lọc.
 
 ### Luật 3 — độ phủ phải có ngưỡng tối thiểu cho **mỗi** chiều
@@ -270,7 +270,7 @@ chiều, không phải tổng (Bài 11).
 
 ### Và một câu chốt
 
-> **Metrics không phải để khoe. Nó để trả lời "tháng này bộ kiểm của tôi tốt lên hay xấu đi".**
+> Metrics không phải để khoe. Nó để trả lời "tháng này bộ kiểm của tôi tốt lên hay xấu đi".
 
 Nên số nào không đổi được hành động thì đừng đo. Ba số đáng theo hàng tháng:
 
@@ -302,7 +302,7 @@ kit-cua-toi/
 5. Vì sao quarantine phải có **hạn**?
 6. `forbidOnly` không bật thì clean pass rate sai thế nào?
 7. Vì sao bỏ `skipped` khỏi mẫu số? Không bỏ thì có cách "làm đẹp số" nào?
-8. `retries: 0` ở máy cá nhân — vì sao là cố ý?
+8. `retries: 0` ở máy cá nhân, vì sao là cố ý?
 
 ## Bài tập về nhà (25 phút)
 
@@ -310,7 +310,7 @@ kit-cua-toi/
    đang giãn ra?
 2. Lấy test có chuỗi `✗✓` gần nhất. Chạy nó **một mình, tuần tự** 5 lần. Vẫn đỏ lần nào không?
    - Không đỏ lần nào ⇒ nhiều khả năng lỗi test. Sửa cách chờ.
-   - **Có đỏ** ⇒ đừng gắn nhãn flaky. Đi tìm nguyên nhân ở app — bạn có thể đang cầm một bug thật.
+   - **Có đỏ** ⇒ đừng gắn nhãn flaky. Đi tìm nguyên nhân ở app, bạn có thể đang cầm một bug thật.
 3. Điền `daThu` cho **mọi** test đang mang nhãn flaky trong dự án bạn. Cái nào không điền nổi thì gỡ nhãn —
    nó chưa được chứng minh là flaky.
 

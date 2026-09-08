@@ -2,7 +2,7 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: một gate tự viết, đã chứng minh có răng · Sau bài này: 4 gate + một lệnh gộp
 >
-> *Bài này không đánh số — nó là phần đào sâu của **Bài 11**. Đọc kèm **Bài 11**.*
+> *Bài này không đánh số, nó là phần đào sâu của **Bài 11**. Đọc kèm **Bài 11**.*
 
 **Tóm tắt bài này**
 
@@ -99,14 +99,14 @@ function fileDangTrack(cwd = process.cwd()) {
 module.exports = { ketQua, khongDoDuoc, ketThuc, fileDangTrack };
 ```
 
-> **`fileDangTrack` trả `null` chứ không throw** — điều này đến từ một lần vấp thật: hai gate của kit gọi
+> `fileDangTrack` trả `null` chứ không throw. Điều này đến từ một lần vấp thật: hai gate của kit gọi
 > `git ls-files` vô điều kiện và **crash** khi chạy trong thư mục đã giải nén (không có `.git`). Nó chỉ lộ ra
 > khi có người thử đúng trải nghiệm của người nhận gói. Ba gate sau đó dùng chung một helper thay vì vá lần
 > thứ ba.
 
 ## 3. Gate 1 — chống suite rỗng vẫn xanh
 
-Lớp lỗi này có thật và rất dễ xảy ra: đổi cấu trúc thư mục, sửa một glob, đổi tên `describe` — bất cứ cái nào
+Lớp lỗi này có thật và rất dễ xảy ra: đổi cấu trúc thư mục, sửa một glob, đổi tên `describe`, bất cứ cái nào
 cũng có thể làm bộ test không khớp file nào. Mà nhiều runner có cờ *"không có test thì vẫn coi là thành công"*.
 
 `scripts/qa/kiem-ton-kho.js`:
@@ -231,7 +231,7 @@ chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ t
 
 **Mã thoát:** thiếu biến hoặc thiếu thư mục → `2` (không đo được). JSON hỏng hoặc thiếu testcase → `1`.
 
-> **Vì sao mục 3 quan trọng đến thế.** Quên truyền file env riêng của task là lỗi kinh điển: env rơi về file
+> Vì sao mục 3 quan trọng đến thế. Quên truyền file env riêng của task là lỗi kinh điển: env rơi về file
 > chung, thiếu credentials, công cụ đứng ở màn đăng nhập, và **mọi màn đọc ra 0 cột** — báo cáo trông y hệt
 > như ứng dụng hỏng thật. Đó chính là câu chuyện ở Bài 8 mục 2, và kiem-dau-vao là nơi chặn nó sớm nhất.
 
@@ -241,7 +241,7 @@ chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ t
 
 Bài 9 bạn chốt 7 cột bắt buộc. Gate này canh chúng:
 
-**Tầng cấu trúc** (chặn ngay — thiếu là mọi công cụ sau vỡ):
+**Tầng cấu trúc** (chặn ngay, thiếu là mọi công cụ sau vỡ):
 - Đủ 7 cột, **đúng tên**. Thiếu hoặc đổi tên → `exit 1`.
 - Mọi dòng có `TC ID` không rỗng và không trùng.
 
@@ -250,7 +250,7 @@ Bài 9 bạn chốt 7 cột bắt buộc. Gate này canh chúng:
 - `Ưu tiên` nằm ngoài thang đã khai.
 - `Các bước thực hiện` chỉ một dòng cho case nhiều bước.
 
-Mẫu bắt oracle rỗng — đây là phần đáng giá nhất của gate này:
+Mẫu bắt oracle rỗng, đây là phần đáng giá nhất của gate này:
 
 ```js
 // Cụm chữ KHÔNG phán được gì: pass với gần như mọi giá trị, kể cả giá trị sai.
@@ -408,7 +408,7 @@ kit-cua-toi/scripts/
     └── tu-soi.js            ← SỬA · gộp mọi gate; KHÔNG ĐO ĐƯỢC thắng VI PHẠM
 ```
 
-`lib/gate.js` ở `scripts/lib/` vì gõ `node scripts/lib/gate.js` không làm gì cả — nó là thư viện.
+`lib/gate.js` ở `scripts/lib/` vì gõ `node scripts/lib/gate.js` không làm gì cả, nó là thư viện.
 Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát với mã khác 0 khi có vi phạm.
 
 ## Tự kiểm
@@ -416,7 +416,7 @@ Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát v�
 - [ ] Bốn gate dùng chung `lib/gate.js`, không chép logic in kết quả.
 - [ ] `fileDangTrack` **không crash** khi không có `.git`.
 - [ ] `kiem-ton-kho` hỏi runner, không tự đếm file.
-- [ ] `quet-secret` bỏ qua file `.example` và tài liệu — và tôi hiểu vì sao đó không phải nới lỏng.
+- [ ] `quet-secret` bỏ qua file `.example` và tài liệu, và tôi hiểu vì sao đó không phải nới lỏng.
 - [ ] `kiem-dau-vao` phân biệt đúng `exit 2` với `exit 1`.
 - [ ] `tu-soi` chỉ điều phối, và **mỗi gate vẫn chạy được riêng**.
 - [ ] Trong `tu-soi`, `KHÔNG ĐO ĐƯỢC` thắng `VI PHẠM`.
@@ -431,6 +431,6 @@ Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát v�
 
 ## Đọc thêm
 
-- [`scripts/qa/`](../../scripts/qa/) của kit này — bộ máy, cùng một khuôn bạn vừa dựng.
+- [`scripts/qa/`](../../scripts/qa/) của kit này, bộ máy, cùng một khuôn bạn vừa dựng.
 - Bài 28: khi số gate tăng lên, làm sao biết **gate nào đã mất nơi gọi** và **gate nào đã âm thầm tụt thành
   cảnh báo**.

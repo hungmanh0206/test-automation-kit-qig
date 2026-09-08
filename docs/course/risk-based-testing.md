@@ -35,7 +35,7 @@ Bài 11 cho bạn biết bộ case đang trống **loại câu hỏi** nào. Nh�
 
 > Trong 20 module, module nào đáng test **sâu**, module nào smoke là đủ?
 
-Không có câu trả lời thì bạn rải đều — và rải đều nghĩa là chỗ nguy hiểm bị hời hợt, chỗ an toàn bị thừa.
+Không có câu trả lời thì bạn rải đều. Và rải đều nghĩa là chỗ nguy hiểm bị hời hợt, chỗ an toàn bị thừa.
 
 Câu trả lời phải là **con số**, không phải ý kiến. Vì nếu là ý kiến thì mỗi người một khác, và mỗi sprint lại
 đổi.
@@ -268,7 +268,7 @@ process.exit(0);
 }
 ```
 
-> **Vì sao cold start chỉ cảnh báo, không chặn.** Tín hiệu thay thế là **phỏng đoán có cơ sở**, không phải dữ
+> Vì sao cold start chỉ cảnh báo, không chặn. Tín hiệu thay thế là **phỏng đoán có cơ sở**, không phải dữ
 > liệu. Chặn dựa trên phỏng đoán thì sẽ chặn oan, và Bài 8 mục 8 đã nói hậu quả: gate báo oan là gate bị bỏ
 > qua. Khi `bugs/` đã có dữ liệu thật thì mới bàn tới chuyện chặn.
 
@@ -288,7 +288,7 @@ Nhận ra bằng hai dấu hiệu xuất hiện **cùng lúc**:
 1. Module khai Impact mà **0 dữ liệu**.
 2. Module **có** dữ liệu mà rơi về Impact mặc định.
 
-Chỉ có dấu hiệu 1 thì có thể module đó thật sự chưa được test — không phải lệch tên. Có **cả hai** thì gần như
+Chỉ có dấu hiệu 1 thì có thể module đó thật sự chưa được test, không phải lệch tên. Có **cả hai** thì gần như
 chắc chắn là hai danh sách tên khác nhau. Đó là lý do máy ở mục 3 chỉ nổ khi có cả hai.
 
 Một bẫy nhỏ hơn cùng họ: khoá `_note` trong cấu hình bị đếm thành module, làm bảng mọc một dòng tên `_note`
@@ -305,7 +305,7 @@ Hai cách đã thử và **bị loại**, ghi lại để bạn không làm lạ
 | Suy module từ tiêu đề bug | 9 ca "trông chắc", soi ra **≥4 sai rõ ràng** | Gán sai bơm Likelihood cho module **vô can**, và vẫn để module thật mỏng |
 | Bảng tra `nhãn → module` | **5/17 nhãn đa nghĩa**, và toàn là loại phổ biến nhất | Nhãn thực tế là nhãn **quy trình**, không phải nhãn chức năng |
 
-> **Module SAI tệ hơn module TRỐNG.** Trống thì bạn biết là thiếu. Sai thì bạn có một con số tin được — mà nó
+> Module SAI tệ hơn module TRỐNG. Trống thì bạn biết là thiếu. Sai thì bạn có một con số tin được, mà nó
 > sai.
 
 Nên công cụ chỉ **đề xuất**, người chốt. Đo được: đoán theo module xác suất cao nhất chỉ đúng **40%**, nhưng
@@ -387,7 +387,7 @@ process.exit(ENFORCE ? 1 : 0);
 Bảng rủi ro là **đề xuất**, không phải phán quyết. QA biết những thứ máy không biết: sắp demo cho khách, module
 này khách dùng nhiều, phần kia sắp bỏ.
 
-Nên override là hợp lệ — kèm nghĩa vụ:
+Nên override là hợp lệ, kèm nghĩa vụ:
 
 ```json
 {
@@ -413,7 +413,7 @@ Ghi vào `knowledge/decisions/`. Hai trường quan trọng:
 ### Bước 1 — Khai Impact (10 phút)
 
 Viết `.agent/config/risk_model.json` cho dự án bạn. Ràng buộc: tên module **copy đúng** từ cột `Module` của bộ
-testcase — đừng gõ lại, đừng dịch.
+testcase, đừng gõ lại, đừng dịch.
 
 ```bash
 # lấy đúng danh sách tên module đang dùng
@@ -529,4 +529,4 @@ từng cái.
 
 - Bài 21 sẽ dùng band rủi ro để quyết **độ sâu mở rộng** — mở 5 trục cho mọi case thì evidence nhân lên tới
   mức không ai đọc báo cáo nữa.
-- [`scripts/qa/risk_score.js`](../../scripts/qa/risk_score.js) của kit này — bản đầy đủ, dựa trên lịch sử thật.
+- [`scripts/qa/risk_score.js`](../../scripts/qa/risk_score.js) của kit này, bản đầy đủ, dựa trên lịch sử thật.

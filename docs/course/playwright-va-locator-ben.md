@@ -97,7 +97,7 @@ test('khảo sát: app có phát test id không', async ({ page }) => {
 ```
 
 `soTestId = 0` nghĩa là **tầng 5 là tầng chết** với app của bạn. Đừng viết hướng dẫn "ưu tiên test id" rồi
-để đó — nó sẽ khiến người sau đi tìm thứ không tồn tại.
+để đó. Nó sẽ khiến người sau đi tìm thứ không tồn tại.
 
 > Chuyện thật ở kit này: `getByTestId` xuất hiện **0 lần dùng thật** trong repo (2 chỗ khớp đều nằm trong
 > comment giải thích đúng chuyện này), và `tests/**` không có `data-testid` nào. App dựng bằng ant-design cộng
@@ -106,7 +106,7 @@ test('khảo sát: app có phát test id không', async ({ page }) => {
 ## 3. Đọc DOM thật, đừng đoán
 
 Đây là bước bị bỏ nhiều nhất, và là **nguồn lỗi script lớn nhất ở lượt chạy đầu**: agent (và người) đoán
-locator từ tên tính năng — `#btn-save`, `.total-amount` — rồi test đỏ vì element không tồn tại.
+locator từ tên tính năng. `#btn-save`, `.total-amount`, rồi test đỏ vì element không tồn tại.
 
 `tests/support/kham-pha-dom.js`:
 
@@ -182,7 +182,7 @@ và tiết kiệm rất nhiều cho bạn.
 | Regex trên `body.innerText` | "Tôi tìm con số ở đâu đó trên trang" | Bắt trúng con số **ở khu vực khác** |
 
 Đo thật trên một task lớn ở kit này: `.first()` **2052 lần** · `force: true` **1011** · regex trên
-`body.innerText` **204** · `querySelectorAll('*')` **166** · `.nth(N)` **141** · click theo toạ độ **31**.
+`body.innerText` **204** · `querySelectorAll('*')` **166** · `.nth(N)` 141 · click theo toạ độ 31.
 
 > Điểm chung của cả bốn: **chúng không làm test đỏ.** Chúng làm test đọc nhầm giá trị, click nhầm nút, rồi
 > báo một lỗi **không tồn tại**. Dev điều tra xong trả về *"log sai"* — mất thời gian hai phía và mất uy tín
@@ -235,7 +235,7 @@ test('chờ trạng thái, không chờ thời gian', async ({ page }) => {
 ```
 
 > `waitForTimeout` trong mã production của suite là **mùi**. Nó nói: *tôi không biết chờ điều kiện gì, nên
-> tôi chờ bừa.* Và ở Bài 13 bạn sẽ thấy nó còn tệ hơn thế — một cái `wait` thêm vào để cho test xanh có thể
+> tôi chờ bừa.* Và ở Bài 13 bạn sẽ thấy nó còn tệ hơn thế. Một cái `wait` thêm vào để cho test xanh có thể
 > đang **lấp một bug hiệu năng thật**.
 
 ## 6. Một spec đầy đủ
@@ -316,7 +316,7 @@ không?* Bài 11 sẽ biến nó thành gate.
 
 ### Bước 1 — Cài và cấu hình (10 phút)
 
-Cài Playwright, tạo `playwright.config.js` theo mục 1. Chạy `npx playwright test --list` — phải in ra `0 test`
+Cài Playwright, tạo `playwright.config.js` theo mục 1. Chạy `npx playwright test --list`, phải in ra `0 test`
 (chưa có spec nào), không phải lỗi.
 
 ### Bước 2 — Khảo sát app của bạn (15 phút)

@@ -72,7 +72,7 @@ curl -s http://localhost:4010/api/_store/orders
 
 **Điều vừa xảy ra:** bạn vừa bắt được BUG-2 bằng một con đường **hoàn toàn khác** với Bài 13. Ở Bài 13 bạn
 tìm ra nó bằng cách cộng thử các số trên màn hình. Ở đây bạn tìm ra nó bằng cách so với nơi lưu. Cùng một
-bug, hai máy bắt được — và đó là dấu hiệu bộ kiểm đang khoẻ.
+bug, hai máy bắt được, và đó là dấu hiệu bộ kiểm đang khoẻ.
 
 Ba chi tiết trong cửa tầng lưu trữ, mỗi cái có lý do:
 
@@ -101,11 +101,11 @@ Ba lớp đắt nhất trong thực tế là **2, 5 và 6**:
 - **Lớp 2** không lộ ra ngay. Nó lộ vào cuối tháng, khi báo cáo lệch một ngày, và lúc đó không ai nối được
   về đơn nào.
 - **Lớp 5** làm đơn "tồn tại mà rỗng". Giao diện chi tiết đơn thường tự tính lại từ dữ liệu đang có trong
-  màn, nên nó vẫn hiện đúng — cho tới khi ai đó tải lại trang.
-- **Lớp 6** cho ra **đúng** một dòng trên danh sách nếu danh sách gom nhóm, và **hai** dòng nếu không. Bug
+  màn, nên nó vẫn hiện đúng, cho tới khi ai đó tải lại trang.
+- **Lớp 6** cho ra **đúng** một dòng trên danh sách nếu danh sách gom nhóm, và hai dòng nếu không. Bug
   cùng gốc, biểu hiện khác nhau tuỳ màn.
 
-> **Test qua giao diện không bắt được bảy lớp này** — không phải vì bạn viết case dở, mà vì thông tin cần
+> Test qua giao diện không bắt được bảy lớp này. Không phải vì bạn viết case dở, mà vì thông tin cần
 > thiết **không có mặt** trên giao diện. Thêm case UI bao nhiêu cũng không giúp.
 
 ## Việc 3 — Dùng hai nguồn để khoanh tầng lỗi (20 phút)
@@ -124,7 +124,7 @@ thị**, tầng `frontend`. Bạn khoanh được tầng mà **không** cần đ
 
 Ô góc trên-phải là ô đáng sợ nhất:
 
-> Màn hình hiện đúng, dữ liệu lưu sai — vì màn hình đang hiện lại **giá trị bạn vừa nhập**, không phải giá trị
+> Màn hình hiện đúng, dữ liệu lưu sai. Vì màn hình đang hiện lại **giá trị bạn vừa nhập**, không phải giá trị
 > nó đọc về từ nơi lưu.
 
 Cách phát hiện: sau khi lưu, **tải lại trang** rồi mới đọc. Nếu số đổi sau khi tải lại, bạn vừa gặp ô đó.
@@ -158,7 +158,7 @@ test('đơn tạo xong đọc lại vẫn đúng số', async ({ page, request }
 
 ## Việc 4 — Máy đối chiếu UI ↔ tầng lưu trữ (35 phút)
 
-Đối chiếu tay được vài đơn. Bộ 200 case thì cần máy. Điểm khó không phải so số — mà là **ánh xạ tên trường**.
+Đối chiếu tay được vài đơn. Bộ 200 case thì cần máy. Điểm khó không phải so số, mà là **ánh xạ tên trường**.
 
 `.agent/config/anh-xa-luu-tru.json`:
 
@@ -185,7 +185,7 @@ Ba thứ trong file này đáng chú ý:
    sai. Máy sẽ chặn nếu thiếu.
 2. **`uiCoTheLaChu`** — `BR-03` + `UI-03` nói phí bằng 0 thì hiện chữ *"Miễn phí"*. Không khai thì máy báo
    lệch oan, và gate bắt oan thì gate chết (Bài 28).
-3. **`banDo`** cho enum — giao diện hiện tiếng Việt, tầng lưu trữ ghi mã. So thô là lệch 100%.
+3. **`banDo`** cho enum. Giao diện hiện tiếng Việt, tầng lưu trữ ghi mã. So thô là lệch 100%.
 
 ```js
 #!/usr/bin/env node
@@ -318,7 +318,7 @@ Bước này bắt buộc. Máy chỉ báo đỏ mà chưa từng báo xanh thì
 chê**.
 
 **Lần 3 — ca "Miễn phí".** Đổi `"phi-giao-hang"` thành `"Miễn phí"` và `shipping_fee` thành `0`. Phải ra
-`0` — nếu ra `1` thì `uiCoTheLaChu` khai chưa đúng, và bạn vừa tránh được một gate bắt oan.
+`0`. Nếu ra `1` thì `uiCoTheLaChu` khai chưa đúng, và bạn vừa tránh được một gate bắt oan.
 
 ## Việc 5 — Nối database thật mà không phá gì (30 phút)
 
@@ -336,11 +336,11 @@ gây tai nạn nhất trong cả tài liệu này.
 
 Điểm quan trọng nhất, và cũng là chỗ nhiều người làm ngược:
 
-> **Lớp 1 phải là lớp chính.** Nhiều người dùng transaction rồi rollback và coi thế là an toàn — *"tôi có
+> Lớp 1 phải là lớp chính. Nhiều người dùng transaction rồi rollback và coi thế là an toàn — *"tôi có
 > ghi, nhưng tôi hoàn lại"*. Không an toàn: script chết giữa đường thì transaction không rollback; một
 > `COMMIT` lọt vào thì mất luôn; và trigger/sequence vẫn chạy dù rollback.
 >
-> **Tài khoản chỉ đọc thì database từ chối lệnh ghi — bạn không cần đúng để an toàn.**
+> Tài khoản chỉ đọc thì database từ chối lệnh ghi, bạn không cần đúng để an toàn.
 
 ### Lớp 2, viết ra code
 
@@ -403,11 +403,11 @@ module.exports = { khoDonHang };
 ```
 
 Ba hàm trên không phải ví dụ ngẫu nhiên: mỗi hàm **nhắm đúng một lớp bug** ở Việc 2. Đó là cách chọn hàm cho
-giao diện này — đi từ lớp bug muốn bắt, không đi từ bảng có sẵn.
+giao diện này. Đi từ lớp bug muốn bắt, không đi từ bảng có sẵn.
 
 ### Điều tuyệt đối không làm
 
-> **Không dựng tiền điều kiện bằng tầng lưu trữ**, dù bạn đang có kết nối mở.
+> Không dựng tiền điều kiện bằng tầng lưu trữ, dù bạn đang có kết nối mở.
 
 Ba lý do, xếp theo mức đau:
 
@@ -421,7 +421,7 @@ Dựng state qua giao diện, API, factory hoặc hook. Tầng lưu trữ chỉ 
 
 Và một câu nữa, ngắn:
 
-> **Tầng lưu trữ không phải bằng chứng.** Ảnh chụp một câu `SELECT` không phải evidence cho một case (Bài 13) —
+> Tầng lưu trữ không phải bằng chứng. Ảnh chụp một câu `SELECT` không phải evidence cho một case (Bài 13) —
 > nó không chứng minh người dùng thấy gì. Nó là dữ liệu để khoanh tầng, đính vào phần phân tích của bug.
 
 ## Cây thư mục sau bài này
@@ -443,11 +443,11 @@ nó là hạ tầng test. Câu hỏi phân loại ở Bài 0 vẫn dùng đượ
 ## Tự kiểm
 
 1. Kể ba trong bảy lớp bug mà chỉ tầng lưu trữ mới bắt. Vì sao thêm case UI không giúp?
-2. UI hiện `8.000`, lưu trữ ghi `8750`, spec nói `8750` — tầng lỗi là gì? Còn nếu spec nói `8.000`?
+2. UI hiện `8.000`, lưu trữ ghi `8750`, spec nói `8750`, tầng lỗi là gì? Còn nếu spec nói `8.000`?
 3. Ô "UI đúng / lưu trữ sai" nguy hiểm ở đâu? Một dòng code nào phát hiện được nó?
 4. Vì sao tài khoản chỉ đọc phải là lớp **chính**, không phải transaction + rollback?
 5. Vì sao `uiCoTheLaChu` tồn tại trong file ánh xạ? Không có nó thì gate hỏng kiểu gì?
-6. Hai tầng khớp nhau — kết luận được app đúng chưa? Vì sao?
+6. Hai tầng khớp nhau, kết luận được app đúng chưa? Vì sao?
 7. Bạn có kết nối database đang mở và cần một đơn "đã xác nhận". Vì sao **không** `INSERT`?
 
 ## Bài tập về nhà (30 phút)
@@ -456,10 +456,10 @@ Ba việc trên app thực hành:
 
 1. Viết một test Playwright tạo đơn qua giao diện, **tải lại trang**, rồi đọc cả UI và `/api/_store/orders`,
    ghi ra `cap.json`, và chạy máy đối chiếu. Nó phải bắt được BUG-2 **mà không** cần bạn nói trước lệch ở đâu.
-2. Với dự án thật của bạn: viết ra ba hàm đầu tiên cho giao diện ngữ nghĩa — đi từ **lớp bug muốn bắt**, không
+2. Với dự án thật của bạn: viết ra ba hàm đầu tiên cho giao diện ngữ nghĩa, đi từ **lớp bug muốn bắt**, không
    từ bảng có sẵn. Ghi rõ mỗi hàm nhắm lớp nào trong bảy lớp.
 3. Kiểm lớp 1 của bạn có thật: dùng tài khoản đọc của bạn chạy `UPDATE ... WHERE 1=0` (không sửa dòng nào).
-   Database phải **từ chối vì thiếu quyền**. Nếu nó chạy được thì bạn đang không có lớp 1, chỉ có lớp 2 — và
+   Database phải **từ chối vì thiếu quyền**. Nếu nó chạy được thì bạn đang không có lớp 1, chỉ có lớp 2, và
    lớp 2 thì một lỗi chính tả trong regex là xuyên qua.
 
 Việc 3 là việc quan trọng nhất. Đây là đối chứng âm cho lớp an toàn của bạn, và hầu như không ai làm nó.

@@ -63,13 +63,13 @@ gọi Figma. Bốn hệ quả, đều đắt:
 5. Đo cỡ tài liệu trước khi đọc (Bài 3). Vượt ngưỡng thì giao subagent trích.
 ```
 
-Quy tắc 3 đáng nhấn: **không cấp quyền xoá cho bất cứ server nào.** Không phải vì agent hay xoá bừa — mà vì
+Quy tắc 3 đáng nhấn: **không cấp quyền xoá cho bất cứ server nào.** Không phải vì agent hay xoá bừa, mà vì
 xoá là hành động **không hoàn tác được**, và không có lợi ích nào đủ để đánh đổi. Dọn dẹp thì đổi trạng thái
 (`Deprecated`, `Closed`), đừng xoá.
 
 ## Việc 2 — Gate: quyền ghi phải có người duyệt (30 phút)
 
-Bảng trên là văn bản. Văn bản thì trôi — ai đó thêm một server, cấp quyền ghi, và không ai để ý.
+Bảng trên là văn bản. Văn bản thì trôi. Ai đó thêm một server, cấp quyền ghi, và không ai để ý.
 
 Áp công thức 5 câu hỏi (Bài 8):
 
@@ -167,9 +167,9 @@ console.log('\n[mcp-quyen] ✓ ĐẠT — mọi quyền ghi đều có người 
 Lần 4 là đối chứng âm: server chỉ đọc **không** cần người duyệt, và gate phải cho qua ngay. Bắt duyệt cả dòng
 chỉ đọc thì mọi lần thêm server là một vòng thủ tục, và người ta sẽ bỏ file khai báo.
 
-> **Máy này đo KHAI BÁO, không đo cấu hình thật.** Nó không với tới được cấu hình MCP trên máy bạn. Nên nó
+> Máy này đo KHAI BÁO, không đo cấu hình thật. Nó không với tới được cấu hình MCP trên máy bạn. Nên nó
 > chặn được *"cấp quyền mà không ai duyệt"*, **không** chặn được *"khai một đằng cấu hình một nẻo"*. Ghi giới
-> hạn này vào chú thích của máy — gate mà người dùng tưởng nó đo nhiều hơn thực tế là gate nguy hiểm.
+> hạn này vào chú thích của máy. Gate mà người dùng tưởng nó đo nhiều hơn thực tế là gate nguy hiểm.
 
 ## Việc 3 — Ranh giới, lịch chạy, và thông báo (25 phút)
 
@@ -190,7 +190,7 @@ Ranh giới không nằm ở *"máy làm nổi không"* — nó nằm ở **hậ
 | **Sửa `knowledge/`** ở mức đổi `active` → `invalid` | ❌ | quyết định "kết quả cũ mất giá trị" (Bài 18) |
 
 Bốn dòng ❌ có chung một tính chất: **hậu quả đổ lên người khác**, và **khó hoàn tác**. Đó là định nghĩa dùng
-được của human gate — không phải "việc khó".
+được của human gate, không phải "việc khó".
 
 > Human gate **không phải** là không tin agent. Nó là chỗ đặt trách nhiệm. Bug sai gửi cho Dev thì người chịu
 > là bạn, nên người bấm cũng phải là bạn.
@@ -253,19 +253,19 @@ kit-cua-toi/
 2. Vì sao **không** server nào được cấp quyền xoá? Dọn dẹp thì làm gì?
 3. Vì sao server **chỉ đọc** không cần người duyệt, và gate phải cho qua ngay?
 4. Máy `kiem-mcp-quyen.js` **không** đo được cái gì? Vì sao phải ghi giới hạn đó vào chú thích?
-5. Ranh giới human gate nằm ở đâu — "việc khó" hay "hậu quả"? Kể 2 việc bắt buộc người bấm.
+5. Ranh giới human gate nằm ở đâu, "việc khó" hay "hậu quả"? Kể 2 việc bắt buộc người bấm.
 6. Vì sao chỉ báo khi đỏ? Báo cả khi xanh thì hỏng thế nào?
 7. Vì sao workflow theo lịch vẫn phải có `workflow_dispatch`?
 
 ## Bài tập về nhà (25 phút)
 
 1. Khai `mcp_config.md` cho dự án bạn. Với **mỗi** server, trả lời thật: *nó đang được cấp quyền gì?*
-   Nếu bạn không biết — đó là phát hiện của bài này, đi tìm cho ra.
+   Nếu bạn không biết, đó là phát hiện của bài này, đi tìm cho ra.
 2. Chạy `kiem-mcp-quyen.js`. Sửa tới khi đạt. Đừng nới gate; hoặc bỏ quyền thừa, hoặc xin duyệt thật.
 3. Liệt kê **mọi** việc kit bạn đang tự động hoá. Với mỗi việc hỏi: *máy làm sai thì hậu quả đổ lên ai, và
    hoàn tác được không?* Việc nào "đổ lên người khác + khó hoàn tác" mà đang tự động ⇒ thêm human gate.
 
-Bước 3 hay lộ ra một hoặc hai chỗ đã tự động hoá vượt ranh giới từ lâu mà không ai nhận ra — thường là đường
+Bước 3 hay lộ ra một hoặc hai chỗ đã tự động hoá vượt ranh giới từ lâu mà không ai nhận ra, thường là đường
 publish hoặc đường log bug.
 
 ## Đọc thêm

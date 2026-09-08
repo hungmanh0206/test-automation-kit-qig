@@ -59,7 +59,7 @@ Bài 2 bạn tạo hai file nói **cùng một luật** ở hai độ chi tiết
 
 Điểm mấu chốt, và nó ngược với phản xạ thông thường:
 
-> Đừng bắt bản tóm **trùng từng chữ** với canonical. Nếu trùng từng chữ thì nó mất lý do tồn tại — người ta
+> Đừng bắt bản tóm **trùng từng chữ** với canonical. Nếu trùng từng chữ thì nó mất lý do tồn tại, người ta
 > đã có thể đọc canonical rồi. Bản tóm được phép diễn đạt lại; điều phải ép là **quy ước chống trôi**.
 
 Nên gate không so văn bản. Nó kiểm ba quy ước:
@@ -76,7 +76,7 @@ Chuyện thật ở kit này, và con số đủ để giật mình:
 
 > Quét mọi lệnh xuất hiện trong tầng workflow rồi đối chiếu với các điểm vào: **11 lệnh gate chỉ tồn tại ở
 > tầng workflow**, mà điểm vào không trỏ tới workflow nào. Nghĩa là ai làm **đúng** theo điểm vào thì
-> **không bao giờ** chạy chúng — trong đó có cả lệnh tự soi trước khi kết thúc và lệnh kiểm input trước khi
+> không bao giờ chạy chúng. Trong đó có cả lệnh tự soi trước khi kết thúc và lệnh kiểm input trước khi
 > chạy phase.
 
 Chúng không hỏng. Chúng chỉ **không được gọi**. Và không có cách nào biết bằng cách đọc.
@@ -209,10 +209,10 @@ Ba chi tiết đắt giá trong đoạn trên:
 
 ## 4. Danh mục máy tự sinh
 
-Câu 1 và câu 3 ở mục 1 cần một danh mục — và danh mục đó phải **sinh từ source**, không viết tay. Viết tay
+Câu 1 và câu 3 ở mục 1 cần một danh mục. Và danh mục đó phải **sinh từ source**, không viết tay. Viết tay
 thì nó mục ngay tuần sau.
 
-Mẹo hay: **suy mức chặn từ chính mã**. Gate có `process.exit(1)` là **CHẶN**; chỉ ghi file là **SINH**; chỉ
+Mẹo hay: **suy mức chặn từ chính mã**. Gate có `process.exit(1)` là **CHẶN**; chỉ ghi file là SINH; chỉ
 in ra là **BÁO CÁO**.
 
 `scripts/qa/danh-muc-gate.js`:
@@ -310,7 +310,7 @@ Thêm vào `package.json`:
 "gate:policy": "node scripts/qa/chong-troi.js"
 ```
 
-> **Cảnh báo từ kinh nghiệm.** Khi mới dựng danh mục ở kit này, **bốn "phát hiện" đầu tiên đều là lỗi của
+> Cảnh báo từ kinh nghiệm. Khi mới dựng danh mục ở kit này, **bốn "phát hiện" đầu tiên đều là lỗi của
 > BẢNG, không của kit** — mô tả trích sai dòng, bí danh không phân giải, mức suy sai vì gate gọi hàm khác
 > để thoát. Phải **hiệu chuẩn danh mục trước khi tin số nó đưa ra**. Đây đúng là nguyên tắc *"máy phải chạy
 > trên nội dung thật mới tính là nghiệm thu"* ở Bài 8.
@@ -331,7 +331,7 @@ ai dám xoá. Allowlist biến thành **chỗ giấu nợ**: gate vẫn xanh, n�
 ```
 
 Thiếu chữ `s`. Code đọc `npmScripts` nên **không thấy gì**. Bạn tưởng đã khai miễn trừ; gate vẫn đỏ hoặc —
-tệ hơn — bạn thêm miễn trừ khác cho tới khi nó xanh vì lý do khác. Cách chữa duy nhất là **chặn khối không
+tệ hơn. Bạn thêm miễn trừ khác cho tới khi nó xanh vì lý do khác. Cách chữa duy nhất là **chặn khối không
 nằm trong danh sách hợp lệ**.
 
 Thêm luật thứ ba nếu bạn muốn đi xa hơn: **miễn trừ trỏ tới thứ không còn tồn tại cũng bị chặn**. Không có
@@ -348,10 +348,10 @@ Viết `chong-troi.js` và file allowlist. Chạy `npm run gate:policy`.
 Rất có thể nó **đỏ ngay lần đầu** — đó là bình thường, và là dấu hiệu tốt. Với mỗi lệnh bị báo mồ côi, quyết
 định: nối vào một điểm vào, hay khai miễn trừ **kèm lý do**? Đừng khai miễn trừ chỉ để cho nó xanh.
 
-> **Một lỗi thật trong chính bài học này**, để lại vì nó dạy đúng thứ cần dạy. Bản đầu của phép kiểm rule
+> Một lỗi thật trong chính bài học này, để lại vì nó dạy đúng thứ cần dạy. Bản đầu của phép kiểm rule
 > mồ côi viết là `if (!chuTatCa.split(rel).length > 1 && …)`. Cú pháp hợp lệ, `node --check` xanh, nhìn qua
 > rất hợp lý. Nhưng `!` bám chặt hơn `>` nên nó thành `(!length) > 1` — **luôn `false`**, và phép kiểm đó
-> **không bao giờ chạy**. Một gate xanh vĩnh viễn vì nó không kiểm gì cả.
+> không bao giờ chạy. Một gate xanh vĩnh viễn vì nó không kiểm gì cả.
 >
 > Bài học: **cú pháp đúng không có nghĩa logic đúng**, và đây chính là lý do mỗi gate phải có negative
 > control ở Bước 2. Không tiêm lỗi thì loại lỗi này sống mãi.
@@ -375,7 +375,7 @@ npm run gate:policy; echo "exit=$?"        # → 1, nêu đúng tên lệnh
 
 Viết `danh-muc-gate.js`, chạy `npm run gates:list`, **mở `GATES.md` ra đọc**.
 
-Soi từng dòng. Với mỗi dòng sai — mô tả trích sai, mức suy sai, bí danh không nhận ra — **sửa `danh-muc-gate`,
+Soi từng dòng. Với mỗi dòng sai. Mô tả trích sai, mức suy sai, bí danh không nhận ra — **sửa `danh-muc-gate`,
 không sửa gate**. Đây là bước hiệu chuẩn ở mục 4, và nó là phần đáng giá nhất của bài.
 
 ### Bước 4 — Nghiệm thu `--check` (10 phút)
@@ -428,14 +428,14 @@ kit-cua-toi/
 ## Bài tập về nhà
 
 Nối hai gate mới vào **CI**: `gate:policy` và `gates:index:check` đều chỉ đọc file, không cần môi trường thật,
-không cần credentials — nên chúng thuộc diện chạy được ở **mọi lần push**. Bài 24 sẽ nói kỹ về ranh giới
+không cần credentials. Nên chúng thuộc diện chạy được ở **mọi lần push**. Bài 24 sẽ nói kỹ về ranh giới
 "CI dùng chung không được tự chạm môi trường thật", nhưng hai gate này thì an toàn tuyệt đối.
 
 Sau khi nối, thử push một commit cố tình thêm lệnh mồ côi và xác nhận CI đỏ.
 
 ## Đọc thêm
 
-- [`.agent/config/GATES.md`](../../.agent/config/GATES.md) của kit này — bảng thật, sinh từ source.
+- [`.agent/config/GATES.md`](../../.agent/config/GATES.md) của kit này, bảng thật, sinh từ source.
 - [`scripts/qa/policy_source_check.js`](../../scripts/qa/policy_source_check.js) — bản đầy đủ, kiểm 5 quy ước
   thay vì 3. Để ý cách nó **không** bắt trùng văn bản.
 - Phần 5 (Bài 17–17) chuyển sang bộ nhớ dự án: làm gì khi chưa có dữ liệu nào.

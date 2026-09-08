@@ -76,8 +76,8 @@ sẽ có một công cụ phía sau vỡ.
 Ba quy ước trong ví dụ trên, và mỗi cái có lý do:
 
 1. **Kết quả mong đợi đánh số khớp từng bước.** `1.` ứng với bước `1.` Không gộp kiểu "các giá trị hiển thị
-   đúng" — đó là oracle rỗng, Bài 10 sẽ nói kỹ.
-2. **Tiền điều kiện nêu dữ liệu cụ thể**, có mã. Không viết "có một khách hàng hạng Bạc" — lúc execute thì
+   đúng", đó là oracle rỗng, Bài 10 sẽ nói kỹ.
+2. **Tiền điều kiện nêu dữ liệu cụ thể**, có mã. Không viết "có một khách hàng hạng Bạc", lúc execute thì
    *khách nào*?
 3. **Giá trị cụ thể trong kết quả mong đợi**, kèm cách tính. `321.000` chứ không "tổng đúng".
 
@@ -87,8 +87,8 @@ Bạn sẽ phải đọc testcase từ nhiều chỗ. Markdown khi agent sinh ra
 cụ quản lý testcase nữa. Phản xạ tự nhiên là viết một hàm đọc cho mỗi nơi. Đừng làm thế.
 
 > Chuyện thật ở kit này: có **4 parser trùng nhau**, và một trong số đó tách cột bằng `split('|')` thô nên
-> **lệch cột** khi ô chứa `\|`. Ba parser kia đúng. Nghĩa là cùng một file testcase đọc ra hai kết quả khác
-> nhau tuỳ công cụ nào đọc — và không có gì báo.
+> lệch cột khi ô chứa `\|`. Ba parser kia đúng. Nghĩa là cùng một file testcase đọc ra hai kết quả khác
+> nhau tuỳ công cụ nào đọc, và không có gì báo.
 
 Cách đúng: **một** model canonical, một hàm đọc cho mỗi định dạng, cùng trả về **cùng một hình dạng**.
 
@@ -222,14 +222,14 @@ Hai thứ này độc lập với nhau. Một lỗi hậu quả rất lớn như
 **Nhưng Severity không nên là cột bắt buộc của testcase.** Lý do rất thẳng:
 
 > Chấm severity lúc **viết case** là đoán trước hậu quả của một **lỗi chưa xảy ra**. Bạn chưa biết nó sẽ hỏng
-> kiểu gì. Severity là thuộc tính của bug — chấm nó khi bug xuất hiện thì mới có căn cứ.
+> kiểu gì. Severity là thuộc tính của bug, chấm nó khi bug xuất hiện thì mới có căn cứ.
 >
 > Kit này từng có cột đó và đã **bỏ** (đo trên 1977 case: bỏ hẳn cột này làm đổi độ sâu mở rộng đúng **0
 > case** — nó dư thật, chỉ đang che một lỗi khác của thang ưu tiên).
 
 **Một cảnh báo về thang giá trị.** Chọn thang **khớp với công cụ** bạn sẽ publish lên, không phải thang bạn
 thích. Chuyện thật: bộ case dùng `Highest` (thang Jira) trong khi công cụ test-management map theo **tên** và
-thang của nó là `Critical` — nên **14 case bị tụt về `Medium`** khi publish, mà không ai biết.
+thang của nó là `Critical`. Nên **14 case bị tụt về `Medium`** khi publish, mà không ai biết.
 
 Thêm phép kiểm này vào parser:
 
@@ -276,7 +276,7 @@ kiểm chuyện này.
 ### Bước 1 — Chốt template (10 phút)
 
 Tạo `.agent/config/testcase-template.md` với bảng 7 cột và **một** dòng ví dụ đầy đủ. Nếu dự án bạn cần thêm
-cột, thêm — nhưng viết luôn một câu vì sao cột đó bắt buộc.
+cột, thêm. Nhưng viết luôn một câu vì sao cột đó bắt buộc.
 
 ### Bước 2 — Viết parser (20 phút)
 
@@ -294,7 +294,7 @@ sửa trước khi đi tiếp. Thử lại bằng `split('|')` thô để **th�
 
 ### Bước 3 — Viết 10 case tay (15 phút)
 
-Dùng [`assets/sample-requirement.md`](assets/sample-requirement.md). Viết **tay**, không dùng agent — đây là
+Dùng [`assets/sample-requirement.md`](assets/sample-requirement.md). Viết **tay**, không dùng agent, đây là
 bản đối chứng cho Bài 7.
 
 Phân bổ gợi ý: 3 case luồng chính · 3 case công thức (giảm giá, phí giao hàng, tổng cộng) · 2 case biên
@@ -353,7 +353,7 @@ kit-cua-toi/
 ## Tự kiểm
 
 - [ ] Template của tôi có 7 cột, và tôi giải thích được vì sao **từng** cột bắt buộc.
-- [ ] `tachO` xử lý đúng ô chứa `\|` — tôi đã **thử và thấy** `split('|')` thô lệch cột.
+- [ ] `tachO` xử lý đúng ô chứa `\|`. Tôi đã **thử và thấy** `split('|')` thô lệch cột.
 - [ ] Chỉ có **một** chỗ đọc markdown; công cụ xuất Excel gọi lại nó, không tự parse.
 - [ ] Tôi phân biệt được Ưu tiên với Severity, và nói được vì sao severity không thuộc testcase.
 - [ ] Thang Ưu tiên của tôi **khớp công cụ** sẽ publish lên, không phải thang tôi thích.
@@ -375,5 +375,5 @@ gate, và lúc đó bạn có máy để sửa hàng loạt.
 
 ## Đọc thêm
 
-- [`scripts/lib/testcase/`](../../scripts/lib/testcase/) của kit này — bản đầy đủ, có cả phần đọc Excel.
+- [`scripts/lib/testcase/`](../../scripts/lib/testcase/) của kit này, bản đầy đủ, có cả phần đọc Excel.
 - Bài 7 sẽ dùng chính parser này để kiểm bộ case do agent sinh.

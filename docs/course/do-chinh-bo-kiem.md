@@ -49,7 +49,7 @@ tầm **cả bộ**: bạn không đo được năng lực phát hiện của b�
 Câu chuyện quen thuộc: suite xanh suốt sprint, rồi một QA khác (hoặc khách) tìm ra bug ở đúng luồng suite đã
 "phủ". Câu hỏi đúng lúc đó **không** phải "sao dev để lọt", mà là:
 
-> **Case nào lẽ ra phải đỏ mà lại xanh — và vì sao nó xanh?**
+> Case nào lẽ ra phải đỏ mà lại xanh, và vì sao nó xanh?
 
 ## 2. Cách duy nhất để đo: làm ứng dụng sai có kiểm soát
 
@@ -75,7 +75,7 @@ Một mutant = một cách làm sai cụ thể. Bốn họ mutant đáng tiêm n
 
 ## 3. Máy tiêm lỗi
 
-`.agent/config/mutants.json` — mutant khai bằng **dữ liệu**, không hardcode trong mã:
+`.agent/config/mutants.json`. Mutant khai bằng **dữ liệu**, không hardcode trong mã:
 
 ```json
 {
@@ -439,7 +439,7 @@ máy crash.
 Nếu suite đã có 3 case đỏ từ trước, thì mọi lượt mutant cũng đỏ, và **mọi** mutant được tính là "bị diệt".
 Điểm 100%. Hoàn toàn vô nghĩa.
 
-Máy ở trên chặn bằng cách chạy lượt nền trước và **exit 2** nếu nền đỏ. Đây không phải cẩn thận thừa — đó là
+Máy ở trên chặn bằng cách chạy lượt nền trước và **exit 2** nếu nền đỏ. Đây không phải cẩn thận thừa, đó là
 cách đo này chết đi lặng lẽ trong thực tế.
 
 ### Bẫy 2 — mutant không tiêm được ⇒ điểm thấp giả
@@ -456,7 +456,7 @@ Playwright cấu hình `retries: 2` sẽ chạy lại case đỏ. Với case đ�
 này không cắn ở đây. Nhưng nó cắn ở chỗ khác: reporter json ghi kết quả **cuối cùng**, và nếu case đỏ vì mutant
 mà lượt cuối lại xanh do một lý do khác (dữ liệu đổi giữa các lượt, cache), thì mutant được báo là sống sót.
 
-Máy ở trên đặt `PW_RETRIES: '0'` cho mọi lượt mutation. Mutation run **không** cần chống nhoè — nó cần tín hiệu
+Máy ở trên đặt `PW_RETRIES: '0'` cho mọi lượt mutation. Mutation run **không** cần chống nhoè, nó cần tín hiệu
 sạch.
 
 > Ba bẫy này là ví dụ hoàn hảo cho luật ở Bài 28: **máy nào cũng phải có đối chứng âm**. Trước khi tin điểm
@@ -487,8 +487,8 @@ Khi execute một case, đừng chỉ làm đúng chữ trong case. Mở **5 tr�
 
 ### Luật quan trọng nhất của mục này
 
-> **Kết quả mở rộng chỉ được PASS/FAIL khi có neo oracle** (`BR-`, `SM-`, `UI-`…).
-> **Không có neo thì nó là `OBSERVATION`, không phải kết luận.**
+> Kết quả mở rộng chỉ được PASS/FAIL khi có neo oracle (`BR-`, `SM-`, `UI-`…).
+> Không có neo thì nó là `OBSERVATION`, không phải kết luận.
 
 Vì sao luật này tồn tại: mở rộng trục 2 thấy màn A hiện `1.000.000` và màn B cũng hiện `1.000.000` — **nhất
 quán**. Rất dễ ghi PASS. Nhưng nếu spec nói cả hai phải là `1.100.000` (có phí) thì hai màn **cùng sai** và bạn
@@ -571,10 +571,10 @@ cao, vì nó là chỗ bug sẽ sinh ra ở sprint sau.
 
 Đây là luật khép lại toàn bộ tài liệu.
 
-Khi có bug lọt ra ngoài — QA khác tìm ra, hay khách báo — phản xạ tự nhiên là *"case của tôi không phủ chỗ
+Khi có bug lọt ra ngoài — QA khác tìm ra, hay khách báo. Phản xạ tự nhiên là *"case của tôi không phủ chỗ
 đó"*. Luật này bác bỏ phản xạ đó và bắt trả lời:
 
-> **Máy nào lẽ ra phải bắt được nó, và vì sao nó không bắt?**
+> Máy nào lẽ ra phải bắt được nó, và vì sao nó không bắt?
 
 Ba câu trả lời hợp lệ, mỗi câu ứng một hành động:
 
@@ -601,7 +601,7 @@ Ghi lại thành một dòng trong `knowledge/`:
 ```
 
 Trường `mutantXacNhan` là điểm quan trọng: sửa xong thì **chứng minh bằng phép đo** rằng lần sau lỗi đó sẽ bị
-bắt — không phải bằng lời hứa.
+bắt, không phải bằng lời hứa.
 
 ---
 
@@ -682,7 +682,7 @@ Chọn một case đã PASS. Mở 5 trục quanh nó, ghi vào `mo-rong.json`. V
 
 Có → `PASS`/`FAIL` kèm `oracleRef`. Không → `OBSERVATION`. Rồi chạy `gate-mo-rong.js`.
 
-Thử ca xấu: đổi một `OBSERVATION` thành `PASS` rồi xoá `oracleRef` — gate phải **chặn**.
+Thử ca xấu: đổi một `OBSERVATION` thành `PASS` rồi xoá `oracleRef`, gate phải **chặn**.
 
 ### Bước 7 — Commit
 
@@ -714,7 +714,7 @@ kit-cua-toi/
 ```
 
 `outputs/mutation/diem.json` là **mốc so sánh**: tháng sau đo lại, điểm tụt nghĩa là có oracle vừa bị
-làm yếu đi. Đừng để nó trong `.gitignore` nếu bạn muốn so theo thời gian — hoặc lưu nó ra ngoài repo.
+làm yếu đi. Đừng để nó trong `.gitignore` nếu bạn muốn so theo thời gian, hoặc lưu nó ra ngoài repo.
 
 ## Tự kiểm
 
@@ -737,7 +737,7 @@ Rồi:
 
 1. Viết một mutant tái hiện **đúng** lỗi đó ở tầng response.
 2. Chạy nó trên suite **hiện tại**. Nó sống sót hay bị diệt?
-3. Nếu sống sót — sửa oracle tới khi bị diệt.
+3. Nếu sống sót, sửa oracle tới khi bị diệt.
 4. Ghi một dòng `LEAK-*` vào `knowledge/` với `mutantXacNhan`.
 
 Làm xong bốn bước này một lần, bạn có một vòng lặp đóng: **bug lọt → mutant → sửa oracle → chứng minh bằng
@@ -746,5 +746,5 @@ phép đo**. Đó là thứ phân biệt một bộ kiểm đang tốt lên vớ
 ## Đọc thêm
 
 - Bài 24 khép lại: đưa mọi máy này vào CI, và đóng gói kit để người khác dùng được.
-- Bài 10 (oracle) và Bài 11 (KHÔNG ĐO ĐƯỢC) là hai bài mà bài này dựa lên hoàn toàn — nếu mục 4 và mục 5 đọc
+- Bài 10 (oracle) và Bài 11 (KHÔNG ĐO ĐƯỢC) là hai bài mà bài này dựa lên hoàn toàn, nếu mục 4 và mục 5 đọc
   thấy khó thì quay lại hai bài đó.

@@ -2,7 +2,7 @@
 
 > **2 giờ 30 phút** · Có gì trong tay: một vòng làm việc hoàn chỉnh — case, chạy, verdict, evidence. Giờ mới có thứ để canh · Sau bài này: một gate chạy được, đã chứng minh có răng
 >
-> *Bài này không đánh số — nó là phần đào sâu của **Bài 8**. Đọc kèm **Bài 8**.*
+> *Bài này không đánh số, nó là phần đào sâu của **Bài 8**. Đọc kèm **Bài 8**.*
 
 **Tóm tắt bài này**
 
@@ -62,7 +62,7 @@ Mã thoát là phần dễ bị làm sai nhất. Ba mã, ba nghĩa **khác nhau*
 | `1` | Đo được, và **có vi phạm** | Dừng, sửa vi phạm |
 | `2` | **KHÔNG đo được** (thiếu file, thiếu quyền, file hỏng) | Dừng, sửa hạ tầng — **đừng đọc báo cáo của lượt này** |
 
-> **Vì sao phải tách mã 2.** Gộp "không đo được" vào mã 1 là sai lầm tốn kém nhất khi viết gate. Một lần
+> Vì sao phải tách mã 2. Gộp "không đo được" vào mã 1 là sai lầm tốn kém nhất khi viết gate. Một lần
 > thật ở kit này: công cụ kiểm giao diện thiếu credentials nên đứng ở màn đăng nhập, đọc ra **0 cột ở mọi
 > màn**, rồi báo cáo *"thiếu toàn bộ cột"*. Báo cáo đó trông **y hệt như ứng dụng hỏng nặng**. Người đọc mất
 > nửa ngày điều tra một thứ không xảy ra.
@@ -220,7 +220,7 @@ Với **mỗi** dòng vi phạm, tự trả lời: **thật hay oan?**
 
 Ba kiểu báo oan bạn sẽ gặp ngay:
 
-1. **Trạng thái ngoài danh sách.** Bài 13 có thêm `PASS_WITH_DEVIATION` chẳng hạn — nó *đã chạy* nên phải
+1. **Trạng thái ngoài danh sách.** Bài 13 có thêm `PASS_WITH_DEVIATION` chẳng hạn, nó *đã chạy* nên phải
    đòi bằng chứng, nhưng `DA_CHAY` của bạn chưa có nó ⇒ gate **bỏ sót**, không phải báo oan. Cũng nguy hiểm.
 2. **Đường dẫn tương đối.** Gate chạy ở gốc repo, đường dẫn trong file lại tính từ thư mục task ⇒ báo "không
    tồn tại" oan hàng loạt. Chốt **một** quy ước rồi ghi vào luật.
@@ -313,7 +313,7 @@ Chạy, rồi lập bảng cho mọi dòng vi phạm:
 
 ### Bước 4 — Sửa luật cho phần báo oan (10 phút)
 
-Với mỗi dòng "oan", sửa **gate**. Ghi lại vì sao vào comment ngay tại dòng đó — sáu tuần sau bạn sẽ cảm ơn.
+Với mỗi dòng "oan", sửa **gate**. Ghi lại vì sao vào comment ngay tại dòng đó, sáu tuần sau bạn sẽ cảm ơn.
 
 ### Bước 5 — Negative control (15 phút)
 
@@ -325,7 +325,7 @@ Chạy đủ ba mũi tiêm ở mục 6. Điền bảng:
 | ② evidence sai đuôi | 1 | | |
 | ③ file trạng thái không có | 2 | | |
 
-**Cả ba phải đạt.** Chưa đạt thì gate chưa xong — đừng đi tiếp.
+**Cả ba phải đạt.** Chưa đạt thì gate chưa xong, đừng đi tiếp.
 
 ### Bước 6 — Commit
 
@@ -370,6 +370,6 @@ Với gate mới, **vẫn phải làm negative control**. Không có ngoại l�
 
 ## Đọc thêm
 
-- [`scripts/qa/library_drift.js`](../../scripts/qa/library_drift.js) của kit này — một gate thật, để ý phần
+- [`scripts/qa/library_drift.js`](../../scripts/qa/library_drift.js) của kit này, một gate thật, để ý phần
   allowlist bắt buộc ghi lý do (sẽ học ở Bài 28).
 - Bài 11 sẽ gộp gate của bạn vào một bộ có helper dùng chung.

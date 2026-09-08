@@ -24,7 +24,7 @@
 Năm việc:
 
 1. Đưa kit của bạn thành một repo, commit lần đầu (25 phút).
-2. Làm một nhánh, sửa, gộp lại — và hiểu vì sao QA cần việc này (20 phút).
+2. Làm một nhánh, sửa, gộp lại, và hiểu vì sao QA cần việc này (20 phút).
 3. Viết `.gitignore` cho ba thư mục cấm (15 phút).
 4. **Xây máy chặn**: tệp cấm bị track ⇒ chặn. Rồi tự tay thử phá nó (30 phút).
 5. Đẩy lên GitHub/GitLab (20 phút).
@@ -52,7 +52,7 @@ Initialized empty Git repository in .../kit-cua-toi/.git/
 | `Reinitialized existing…` | Ở đây đã là repo rồi | Không sao, đi tiếp |
 | `git: command not found` | Chưa có Git | Tải ở git-scm.com, cài, **mở terminal mới** |
 
-Khai tên bạn — git ghi nó vào mỗi commit:
+Khai tên bạn, git ghi nó vào mỗi commit:
 
 ```bash
 git config user.name "Tên bạn"
@@ -66,7 +66,7 @@ git status
 ```
 
 **Bạn sẽ thấy** danh sách `Untracked files` gồm `scripts/` và `tests/`. *Untracked* nghĩa là git **chưa quản**
-chúng — đây là điểm quan trọng nhất của cả bài, và Việc 4 sẽ dựa vào nó.
+chúng. Đây là điểm quan trọng nhất của cả bài, và Việc 4 sẽ dựa vào nó.
 
 Chốt mốc đầu tiên:
 
@@ -372,24 +372,24 @@ kit-cua-toi/
 
 1. `.gitignore` có `outputs/` rồi, nhưng `outputs/x.json` vẫn bị git theo dõi. Vì sao? Sửa thế nào?
 2. Vì sao máy chặn đo **danh sách tệp đang track** thay vì đọc `.gitignore`?
-3. Ba thư mục cấm — nêu **ba lý do khác nhau**, không gộp thành "vì nhạy cảm".
+3. Ba thư mục cấm. Nêu **ba lý do khác nhau**, không gộp thành "vì nhạy cảm".
 4. Vì sao `profiles/task.env.example` **phải** vào repo?
-5. Lỡ push một tệp chứa token thật lên repo — xoá commit là đủ chưa? Vì sao?
+5. Lỡ push một tệp chứa token thật lên repo, xoá commit là đủ chưa? Vì sao?
 6. `git ls-files` trên repo công khai tiết lộ được gì **mà không cần mở tệp nào**?
 7. Lệnh nào xuyên qua `.gitignore`? Máy chặn của bạn có bắt được nó không? Bạn đã **thử** chưa?
 
 ## Bài tập về nhà (25 phút)
 
-1. Thêm vào `kiem-file-cam.js` một mẫu cấm nữa phù hợp dự án bạn — ví dụ `*.sql` (dump dữ liệu), hoặc
+1. Thêm vào `kiem-file-cam.js` một mẫu cấm nữa phù hợp dự án bạn, ví dụ `*.sql` (dump dữ liệu), hoặc
    `evidence/` nếu bạn để bằng chứng ngoài `outputs/`. Ghi **lý do** cho mẫu mới.
 2. Với mỗi mẫu cấm, làm **đủ hai** phép thử: một tệp phải bị chặn, một tệp gần giống phải **đi qua**.
-   Ví dụ với `*.sql`: `dump.sql` bị chặn, còn `scripts/migrations/001-init.sql` thì tuỳ bạn — nhưng phải
+   Ví dụ với `*.sql`: `dump.sql` bị chặn, còn `scripts/migrations/001-init.sql` thì tuỳ bạn, nhưng phải
    **quyết định** và khai vào `CHO_PHEP` nếu cho qua.
 3. Chạy `git log --oneline` và đọc lại chính lời commit của bạn. Có cái nào chỉ ghi "update" không? Từ giờ
    viết **vì sao**.
 
 Bước 2 là bước hay bị bỏ, và nó là toàn bộ giá trị: một máy chặn chỉ biết chặn thì sẽ chặn cả thứ đúng, và
-lúc đó người ta thêm `--no-verify` — thế là bạn mất luôn cái máy.
+lúc đó người ta thêm `--no-verify`, thế là bạn mất luôn cái máy.
 
 ## Đọc thêm
 

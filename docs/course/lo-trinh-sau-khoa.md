@@ -16,7 +16,7 @@ Bốn việc:
 
 1. Nhận ra vì sao **dừng xây** là bước tiếp theo đúng (20 phút).
 2. Danh sách thứ **không** nên thêm, dù nghe hay (20 phút).
-3. Ba hướng đáng học tiếp — và **dấu hiệu** cho biết đã tới lúc (25 phút).
+3. Ba hướng đáng học tiếp, và **dấu hiệu** cho biết đã tới lúc (25 phút).
 4. Chốt nhịp bảo dưỡng và tự chấm kit của bạn (25 phút).
 
 ---
@@ -38,7 +38,7 @@ Kit chỉ chứng minh được giá trị khi nó **chạy trên việc thật 
 Dòng cuối quan trọng nhất. Khi ai đó lách một luật, cách họ lách nói cho bạn biết luật đó **sai ở đâu** — và
 đó là dữ liệu bạn không mua được bằng cách nghĩ thêm.
 
-> **Ba tháng dùng thật dạy bạn nhiều hơn ba tháng xây thêm.** Nhưng chỉ khi bạn *ghi lại* những gì va chạm —
+> Ba tháng dùng thật dạy bạn nhiều hơn ba tháng xây thêm. Nhưng chỉ khi bạn *ghi lại* những gì va chạm —
 > nếu không thì ba tháng đó chỉ là ba tháng.
 
 Nên việc tiếp theo không phải "xây gì nữa", mà là: **chạy 10 task thật, và mỗi task ghi một dòng vào
@@ -59,11 +59,11 @@ hơn mọi phỏng đoán hôm nay.
 Dòng **gate cho mọi thứ** đáng nhấn, vì nó là cách kit tự sát phổ biến nhất:
 
 > Mỗi gate mới phải chỉ ra được **một lần sai đã xảy ra thật** mà nó sẽ chặn. Không chỉ ra được thì đó là gate
-> phòng thủ tưởng tượng — nó thêm ma sát mà không đổi lấy gì.
+> phòng thủ tưởng tượng, nó thêm ma sát mà không đổi lấy gì.
 
 Và một câu để kiểm tra chính mình:
 
-> **Gate nào chưa từng nổ trong 3 tháng?** Nó đang canh một thứ không xảy ra, hay nó **hỏng và bạn không biết**?
+> Gate nào chưa từng nổ trong 3 tháng? Nó đang canh một thứ không xảy ra, hay nó **hỏng và bạn không biết**?
 > Câu trả lời chỉ có được bằng **đối chứng dương**: tiêm đúng lỗi nó phải bắt, xem nó có đỏ không.
 
 ## Việc 3 — Ba hướng đáng học tiếp, và dấu hiệu (25 phút)
@@ -98,7 +98,7 @@ Và một câu để kiểm tra chính mình:
 | **Chưa cần nếu** | bug nào cũng tái hiện được ở UAT |
 
 Ba dấu hiệu trên đều có dạng chung: **một lớp bug bạn đang không xử lý được bằng công cụ hiện có**. Không có
-dấu hiệu thì học cũng được, nhưng đừng đưa vào kit — kit chỉ chứa thứ đang giải một vấn đề thật.
+dấu hiệu thì học cũng được, nhưng đừng đưa vào kit, kit chỉ chứa thứ đang giải một vấn đề thật.
 
 ## Việc 4 — Nhịp bảo dưỡng và tự chấm (25 phút)
 
@@ -170,7 +170,7 @@ Chặn nó sẽ làm người ta xoá ngoại lệ cho xanh, và mất luôn lý
 1. Vì sao "dừng xây, chuyển sang dùng" là bước đúng? Thứ gì **chỉ** lộ ra khi dùng thật?
 2. Kể ba thứ **không** nên thêm, và điều kiện duy nhất để thêm mỗi thứ.
 3. Điều kiện để một gate mới được sinh ra là gì?
-4. Gate chưa từng nổ trong 3 tháng — hai khả năng là gì? Phân biệt bằng cách nào?
+4. Gate chưa từng nổ trong 3 tháng, hai khả năng là gì? Phân biệt bằng cách nào?
 5. Ba hướng học tiếp, và **dấu hiệu** của từng hướng.
 6. Vì sao đo hiệu năng mà không có ngưỡng do sản phẩm chốt thì kết quả là *advisory*?
 7. Vì sao `kiem-ngoai-le.js` chỉ cảnh báo mà không chặn?
@@ -212,8 +212,8 @@ Bạn bắt đầu ở Bài 0 với một app có 3 bug và không có gì khác
 
 Nếu phải chọn **hai** câu mang theo, chọn hai câu này:
 
-> **Một luật không có máy chặn thì không phải luật — nó là lời dặn.**
-> **Một máy không có đối chứng âm thì không phải máy — nó là niềm tin.**
+> Một luật không có máy chặn thì không phải luật, nó là lời dặn.
+> Một máy không có đối chứng âm thì không phải máy, nó là niềm tin.
 
 Mọi thứ trong 30 bài là hai câu đó áp vào từng chỗ cụ thể.
 

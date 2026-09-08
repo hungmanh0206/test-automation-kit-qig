@@ -361,13 +361,13 @@ main().catch((e) => { console.error('[day-ket-qua] lỗi: ' + e.message); proces
 ```
 
 > Để ý: gate chất lượng đứng **ngay trong đường publish**, không chỉ ở lệnh tự soi. Lý do thực dụng: người ta
-> bỏ qua lệnh tự soi rồi đẩy thẳng — và nếu gate chỉ ở một cửa thì không gì cản. **Cùng một luật, hai cửa**,
+> bỏ qua lệnh tự soi rồi đẩy thẳng, và nếu gate chỉ ở một cửa thì không gì cản. **Cùng một luật, hai cửa**,
 > và luật dùng chung một module để không trôi.
 
 ## 6. Đối soát độ tươi trước khi execute
 
 Bài 9 mục 5 đã chốt: khi execute thì **công cụ test-management** là canonical. Nên trước khi chạy, kéo bản mới
-nhất về — và **kiểm** bản sao đang có có cũ không.
+nhất về, và **kiểm** bản sao đang có có cũ không.
 
 ```js
 #!/usr/bin/env node
@@ -434,7 +434,7 @@ Agent cần đọc Jira, tài liệu, thiết kế. Đừng để mỗi chỗ t�
 ```
 
 Nguyên tắc "một cửa vào" rất thực dụng: mỗi chỗ tự gọi API thì mỗi chỗ tự xử lý token, phân trang và lỗi theo
-một kiểu — và khi API đổi thì phải sửa mười chỗ.
+một kiểu, và khi API đổi thì phải sửa mười chỗ.
 
 ## 8. Slash command: biến trình tự thành một dòng
 
@@ -478,7 +478,7 @@ Nếu có case FAIL: rerun 2–3 lần, đọc response để khoanh tầng, đi
 Chín lệnh nên có: `/phase1` `/phase2` `/rerun` `/publish` `/kiem-dau-vao` `/gates` `/explore` `/ui-debug`
 `/partial-rerun`.
 
-> **Slash command KHÔNG thay thế gate** — nó chỉ dẫn đúng đường. Gate vẫn là thứ chặn. Nhưng nó xoá được một
+> Slash command KHÔNG thay thế gate, nó chỉ dẫn đúng đường. Gate vẫn là thứ chặn. Nhưng nó xoá được một
 > lớp lỗi thật: *"tôi không biết phải chạy gì"*.
 
 ---
@@ -497,7 +497,7 @@ Trước khi viết mã, trả lời bằng cách **đọc tài liệu API** c�
 | Có chặn tần suất gọi không? Bao nhiêu? | |
 | Evidence gắn vào **run** hay vào **từng bước**? | |
 
-Câu 3 là câu hay gây mất mát nhất — xem mục 4.
+Câu 3 là câu hay gây mất mát nhất, xem mục 4.
 
 ### Bước 2 — Publish dry-run (15 phút)
 
@@ -533,7 +533,7 @@ Viết `day-ket-qua.js`. Chạy dry-run, rồi `--apply`. Mở công cụ ra ki�
 - Trạng thái từng run có đúng ánh xạ?
 - **Bằng chứng có mở được** từ giao diện công cụ?
 
-Rồi thử ca xấu: xoá `evidence` của một case rồi đẩy lại — nó phải **bị `gate-bang-chung` chặn**.
+Rồi thử ca xấu: xoá `evidence` của một case rồi đẩy lại, nó phải **bị `gate-bang-chung` chặn**.
 
 ### Bước 5 — Slash command (10 phút)
 
@@ -588,12 +588,12 @@ Với bộ case **thật** đã publish của dự án bạn (nếu có), chạy
 1. Bao nhiêu case lệch ít nhất một trường?
 2. Trường nào lệch nhiều nhất?
 
-Nếu câu 2 là `Ưu tiên` hoặc một trường có thang giá trị — gần như chắc chắn thang của bạn không khớp thang
+Nếu câu 2 là `Ưu tiên` hoặc một trường có thang giá trị. Gần như chắc chắn thang của bạn không khớp thang
 công cụ, và đó là lỗi **im lặng** đã tồn tại từ lượt publish đầu tiên.
 
 ## Đọc thêm
 
 - Bài 21 là bài trọng tâm của cả tài liệu: giờ bạn đã có suite chạy nhiều lượt, **đo được** năng lực phát hiện
   của nó.
-- [`scripts/integrations/aio/README.md`](../../scripts/integrations/aio/README.md) của kit này — tầng tích hợp
+- [`scripts/integrations/aio/README.md`](../../scripts/integrations/aio/README.md) của kit này, tầng tích hợp
   đầy đủ với một công cụ thật.

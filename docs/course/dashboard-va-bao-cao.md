@@ -31,7 +31,7 @@ Ba việc:
 
 Luật một câu:
 
-> **Dashboard sinh ra từ dữ liệu. Sửa số trên dashboard là sửa bản photo.**
+> Dashboard sinh ra từ dữ liệu. Sửa số trên dashboard là sửa bản photo.
 
 Nghe hiển nhiên, nhưng nó bị vi phạm theo ba cách rất tự nhiên:
 
@@ -43,12 +43,12 @@ Nghe hiển nhiên, nhưng nó bị vi phạm theo ba cách rất tự nhiên:
 
 Nên hai quy tắc cho mọi dashboard:
 
-1. **Xoá đi sinh lại được, y hệt.** Không được thì có dữ liệu đang chỉ sống ở đó — đưa nó về nơi đúng trước.
+1. **Xoá đi sinh lại được, y hệt.** Không được thì có dữ liệu đang chỉ sống ở đó, đưa nó về nơi đúng trước.
 2. **Không có ô nhập liệu.** Dashboard chỉ đọc. Muốn sửa số thì sửa nguồn.
 
 ## Việc 2 — Sinh dashboard tự chứa (35 phút)
 
-Ba đường cần vẽ — đúng ba đường ở cuối Bài 22, không hơn:
+Ba đường cần vẽ, đúng ba đường ở cuối Bài 22, không hơn:
 
 | Đường | Tụt/tăng thì nghĩa là |
 |---|---|
@@ -56,7 +56,7 @@ Ba đường cần vẽ — đúng ba đường ở cuối Bài 22, không hơn:
 | Khoảng cách clean ↔ eventual | tăng ⇒ suite lệ thuộc retry hơn |
 | Số test hạng `chap-chon` trở xuống | tăng ⇒ nợ kỹ thuật đang tích |
 
-> **Đừng vẽ thêm.** Mỗi biểu đồ không đổi được hành động là một biểu đồ làm loãng ba cái quan trọng. Câu hỏi
+> Đừng vẽ thêm. Mỗi biểu đồ không đổi được hành động là một biểu đồ làm loãng ba cái quan trọng. Câu hỏi
 > trước khi thêm bất cứ đường nào: *"đường này đi xuống thì tôi làm gì khác đi?"* — không trả lời được thì
 > đừng vẽ.
 
@@ -201,7 +201,7 @@ if (hostNgoai.length) {
 console.log(`[dashboard] ✓ ${RA} · ${ds.length} mốc · ${(html.length / 1024).toFixed(0)} KB · 0 host ngoài`);
 ```
 
-Lịch sử metrics — mỗi lượt chạy ghi thêm **một** dòng:
+Lịch sử metrics, mỗi lượt chạy ghi thêm **một** dòng:
 
 ```json
 [
@@ -222,7 +222,7 @@ node scripts/qa/sinh-dashboard.js outputs/metrics/dashboard.html
 ```
 
 Mở tệp. Với dữ liệu mẫu trên, trang kể một câu chuyện rất rõ: mutation score **tụt** từ 0.72 xuống 0.68,
-lệ thuộc retry **tăng gấp đôi**, số test yếu gần **gấp đôi**. Ba mũi tên đỏ cùng lúc — và đó là thứ một bảng
+lệ thuộc retry **tăng gấp đôi**, số test yếu gần **gấp đôi**. Ba mũi tên đỏ cùng lúc, và đó là thứ một bảng
 số không nói được.
 
 ### Ba chi tiết trong mã đáng chú ý
@@ -235,7 +235,7 @@ số không nói được.
 
 ## Việc 3 — Báo cáo cho người không có quyền (15 phút)
 
-Sếp, PM, khách — họ không có tài khoản công cụ test-management, và họ **không** đọc dashboard kỹ thuật.
+Sếp, PM, khách. Họ không có tài khoản công cụ test-management, và họ **không** đọc dashboard kỹ thuật.
 
 Bốn phần, đúng thứ tự này:
 
@@ -290,7 +290,7 @@ kit-cua-toi/
     └── dashboard.html                ← MỚI · artifact — xoá đi sinh lại được y hệt
 ```
 
-`lich-su.json` nằm trong `outputs/` nên không lên git — nhưng Bài 20 đã khai nó giữ **365 ngày** và
+`lich-su.json` nằm trong `outputs/` nên không lên git, nhưng Bài 20 đã khai nó giữ **365 ngày** và
 `mutation-diem` thì **không bao giờ tỉa**, vì mất chúng là mất đường xu hướng.
 
 ## Tự kiểm
@@ -300,12 +300,12 @@ kit-cua-toi/
 3. Vì sao dưới 2 mốc thì máy **từ chối** vẽ?
 4. Vì sao trang phải tự chứa? Máy tự kiểm điều đó bằng cách nào?
 5. Vì sao so với **mốc trước** thay vì hiện giá trị tuyệt đối?
-6. Bốn phần của báo cáo stakeholder — kể theo đúng thứ tự và nói vì sao thứ tự đó.
+6. Bốn phần của báo cáo stakeholder, kể theo đúng thứ tự và nói vì sao thứ tự đó.
 7. Vì sao **không** đính ảnh dashboard làm bằng chứng cho một case?
 
 ## Bài tập về nhà (20 phút)
 
-1. Ghi mốc metrics đầu tiên cho dự án bạn vào `lich-su.json`. Một mốc thôi — dashboard sẽ **từ chối** vẽ, và
+1. Ghi mốc metrics đầu tiên cho dự án bạn vào `lich-su.json`. Một mốc thôi, dashboard sẽ **từ chối** vẽ, và
    đó là hành vi đúng. Tuần sau ghi mốc thứ hai rồi chạy lại.
 2. Viết báo cáo 4 phần cho lượt chạy gần nhất. Rồi đưa cho **một người không làm QA** đọc và hỏi họ **một**
    câu: *"theo bạn, cái này nên phát hành chưa?"*

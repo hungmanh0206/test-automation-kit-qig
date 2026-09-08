@@ -26,7 +26,7 @@ Bốn việc:
 1. Thấy tri thức không có nguồn dạy sai agent thế nào (20 phút).
 2. Thiết kế schema: `source` rỗng thì **cấm ghi** (30 phút).
 3. Hiểu **4 trạng thái vòng đời**, và khác biệt tinh giữa `superseded` và `invalid` (30 phút).
-4. **Xây gate** chống học sai: mâu thuẫn · quá cũ · thiếu nguồn — chạy **trước khi** agent được đọc (40 phút).
+4. **Xây gate** chống học sai: mâu thuẫn · quá cũ · thiếu nguồn, chạy **trước khi** agent được đọc (40 phút).
 
 ---
 
@@ -105,7 +105,7 @@ Ba trường đáng nói:
 | `covered_by` | Truy **ngược**: luật này có case nào canh không? Không có ⇒ luật đang không được kiểm |
 | `version` | Đổi nội dung thì tăng version + ghi `supersedes`, **không sửa đè** |
 
-> **Không sửa đè.** Sửa đè thì bạn mất lịch sử, và mất luôn khả năng trả lời câu *"lượt chạy tháng trước
+> Không sửa đè. Sửa đè thì bạn mất lịch sử, và mất luôn khả năng trả lời câu *"lượt chạy tháng trước
 > dùng luật nào?"* — câu này quyết định kết quả cũ còn giá trị hay không (Việc 3).
 
 ### `sourceHopLe` không phải hình thức
@@ -171,7 +171,7 @@ Giữ bản cũ cho phép trả lời: *"lượt chạy 15/09 dùng mốc nào?"
 
 ### Tái xác nhận định kỳ
 
-Tri thức không sai — nó **cũ đi**. `hanTaiXacNhan` trong schema nói mỗi loại sống bao lâu trước khi phải hỏi lại:
+Tri thức không sai, nó **cũ đi**. `hanTaiXacNhan` trong schema nói mỗi loại sống bao lâu trước khi phải hỏi lại:
 
 | Loại | Hạn | Vì sao |
 |---|---|---|
@@ -341,7 +341,7 @@ console.log('[knowledge] ✓ ĐẠT — kho sạch, agent được đọc.');
 | 4 | đổi `v1` thành `superseded`, `ngayGhi` từ 2 năm trước | **`0`** — bản đã `superseded` thì không tính hạn |
 
 Lần 4 là đối chứng âm quan trọng: **bản ghi cũ đã nghỉ hưu phải đi qua**. Chặn cả nó thì người ta sẽ xoá bản
-cũ cho gọn — và mất luôn lịch sử.
+cũ cho gọn, và mất luôn lịch sử.
 
 ## Bảo mật: vì sao `knowledge/` không lên repo công khai
 
@@ -378,11 +378,11 @@ kit-cua-toi/
 ## Tự kiểm
 
 1. Vì sao `source` là trường quan trọng nhất của schema?
-2. `"theo tài liệu"` — đủ làm `source` chưa? Vì sao?
+2. `"theo tài liệu"`, đủ làm `source` chưa? Vì sao?
 3. `superseded` và `invalid` khác nhau ở chỗ nào? Kết quả chạy cũ trong mỗi trường hợp?
 4. Quá hạn tái xác nhận thì chuyển trạng thái gì? Vì sao **không** phải `invalid`?
 5. Vì sao gate chặn ở cửa **đọc** chứ không ở cửa **ghi**?
-6. Hai bản ghi cùng `id` đều `active` — nguy hiểm ra sao?
+6. Hai bản ghi cùng `id` đều `active`, nguy hiểm ra sao?
 7. Vì sao "luật active mà `covered_by` rỗng" chỉ là **cảnh báo**, không phải chặn?
 8. `git ls-files` trên repo công khai tiết lộ gì mà không cần mở tệp?
 
@@ -392,7 +392,7 @@ kit-cua-toi/
    bằng cách nào?* Bản nào không trả lời được → sửa `source`, hoặc chuyển `cho-xac-nhan`.
 2. Tìm một luật nghiệp vụ **đã đổi** trong dự án bạn. Ghi đủ cặp `v1` (`superseded`, có `hieuLucDen`) và
    `v2` (`active`, có `hieuLucTu`). Rồi trả lời: *kết quả chạy tháng trước còn giá trị không?*
-3. Chạy `kiem-tri-thuc.js` lên kho thật. Con số vi phạm lần đầu thường lớn — đó là bình thường. Sửa **5 cái
+3. Chạy `kiem-tri-thuc.js` lên kho thật. Con số vi phạm lần đầu thường lớn, đó là bình thường. Sửa **5 cái
    nặng nhất**, đừng sửa hết trong một lần.
 
 Câu hỏi ở bước 2 là toàn bộ lý do bài này tồn tại. Không có `superseded`/`invalid` tách bạch thì bạn phải

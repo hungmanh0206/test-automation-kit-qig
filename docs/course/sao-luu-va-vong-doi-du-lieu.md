@@ -59,7 +59,7 @@ toàn. `knowledge/` nằm trong `.gitignore` — **git không giữ nó**.
 
 ## Việc 2 — Gate sao lưu: đích trong repo ⇒ từ chối (25 phút)
 
-Sao lưu vào một thư mục **bên trong** repo là không sao lưu gì cả — nó chết cùng repo trong cả ba kịch bản
+Sao lưu vào một thư mục **bên trong** repo là không sao lưu gì cả, nó chết cùng repo trong cả ba kịch bản
 trên. Nhưng đây là chỗ người ta hay làm, vì nó tiện.
 
 Áp công thức 5 câu hỏi (Bài 8):
@@ -235,7 +235,7 @@ Một người thì `knowledge/` nằm trên máy bạn là đủ. Ba người t
 | Hai người ghi mâu thuẫn thì sao? | gate Bài 18 bắt "hai bản cùng `active`" — chạy nó ở **cửa đọc**, mỗi máy tự chạy |
 | Ai được sửa? | ai cũng **thêm** được; đổi `active` → `superseded`/`invalid` thì cần người thứ hai duyệt |
 
-Điểm cần cẩn thận: repo riêng cho `knowledge/` phải **private**, và vẫn áp `kiem-file-cam.js` — vì nó chứa
+Điểm cần cẩn thận: repo riêng cho `knowledge/` phải **private**, và vẫn áp `kiem-file-cam.js`, vì nó chứa
 đúng thứ Bài 5 nói là không được để lộ, kể cả qua tên tệp.
 
 > Đừng nhét `knowledge/` thành submodule của repo kit. Nghe gọn, nhưng người clone kit sẽ vô tình kéo cả kho
@@ -262,7 +262,7 @@ kit-cua-toi/
 ## Tự kiểm
 
 1. Kể bốn loại dữ liệu **mất hẳn** trong kit. Vì sao git không cứu được chúng?
-2. Vì sao sao lưu vào thư mục trong repo *"nguy hiểm hơn không sao lưu"*?
+2. Vì sao để bản sao lưu trong thư mục repo lại *"nguy hiểm hơn không sao lưu"*?
 3. Vì sao gate dùng `realpath` chứ không chỉ so chuỗi đường dẫn?
 4. Sao lưu chưa từng khôi phục thì gọi là gì? Bạn đã thử chưa?
 5. Vì sao ngưỡng tỉa phải khai **trước** khi dữ liệu tích lại?
@@ -273,7 +273,7 @@ kit-cua-toi/
 
 1. Khai `KNOWLEDGE_BACKUP_DIR` trỏ ra ngoài repo. Chạy sao lưu. Kiểm bằng mắt là tệp có ở đó thật.
 2. **Khôi phục thật** theo Việc 2, và chạy `kiem-tri-thuc.js` trên bản khôi phục. Đạt mới tính là xong.
-3. Điền `vong-doi-du-lieu.json` cho dự án bạn. Với **mỗi** loại, viết `lyDo` — nếu không viết nổi lý do thì
+3. Điền `vong-doi-du-lieu.json` cho dự án bạn. Với **mỗi** loại, viết `lyDo`, nếu không viết nổi lý do thì
    bạn chưa biết dữ liệu đó dùng làm gì, và đó là thứ cần biết trước khi quyết giữ hay xoá.
 4. Đặt một nhắc lịch **hàng tuần** chạy sao lưu. Không tự động hoá được thì nhắc tay còn hơn không có gì —
    nhưng ghi vào nhịp bảo dưỡng (Bài 29) để nó không phụ thuộc trí nhớ.

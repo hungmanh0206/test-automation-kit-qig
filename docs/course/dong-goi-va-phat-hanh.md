@@ -47,7 +47,7 @@ Quy ước đơn giản, đủ dùng:
 | Thêm máy/lệnh mà không đổi hành vi cũ | minor | thêm `sinh-dashboard.js` |
 | Sửa lỗi, sửa chữ, chỉnh ngưỡng nhỏ | patch | sửa regex bắt oan |
 
-> **Gate siết chặt hơn = major.** Nghe hơi nặng, nhưng đúng: nó **phá** quy trình đang chạy của người khác.
+> Gate siết chặt hơn = major. Nghe hơi nặng, nhưng đúng: nó **phá** quy trình đang chạy của người khác.
 > Nếu bạn không đánh dấu, họ cập nhật rồi mọi task đỏ và không hiểu vì sao.
 
 `CHANGELOG.md`:
@@ -193,7 +193,7 @@ Hai chi tiết đáng chú ý:
 
 ## Việc 3 — Nghiệm thu gói (40 phút)
 
-> **Bước quan trọng nhất của bài này**, và là bước gần như ai cũng bỏ.
+> Bước quan trọng nhất của bài này, và là bước gần như ai cũng bỏ.
 
 Gói chưa từng được giải nén và chạy thử thì bạn **không biết** nó chạy được. Và cách duy nhất để biết là làm
 đúng những gì người nhận sẽ làm: **thư mục sạch, cài lại, chạy gate**.
@@ -324,7 +324,7 @@ npm run nghiem-thu-goi -- dist/kit-3.1.0
 [nghiem-thu] ✓ gói chạy được ở thư mục sạch. ĐƯỢC phát hành.
 ```
 
-Nếu có `✗`, sân kiểm **được giữ lại** để bạn vào đó tìm nguyên nhân — đó là cố ý.
+Nếu có `✗`, sân kiểm **được giữ lại** để bạn vào đó tìm nguyên nhân, đó là cố ý.
 
 ## Việc 4 — Đưa bản mới sang dự án khác (25 phút)
 
@@ -342,7 +342,7 @@ Dự án B đang dùng kit `2.4.0`, bạn phát hành `3.0.0`. Quy trình:
 Bước 6 là đối chứng của cả quy trình, và nó rẻ: task đã xong thì bạn **biết trước** kết quả đúng phải là gì.
 Ra khác ⇒ kit mới đổi hành vi ngoài dự kiến.
 
-> **Đừng chép đè cả thư mục kit.** Bạn sẽ xoá mất `chieu-phu.json`, `risk_model.json`, `mutants.json`
+> Đừng chép đè cả thư mục kit. Bạn sẽ xoá mất `chieu-phu.json`, `risk_model.json`, `mutants.json`
 > của dự án B — tức toàn bộ phần B đã tự chỉnh. Bài 27 dựng ranh giới này thành máy kiểm.
 
 ## Cây thư mục sau bài này
@@ -358,16 +358,16 @@ kit-cua-toi/
         └── _ban-ke.json              ·  version · ngày · số tệp
 ```
 
-Nhớ thêm `dist/` vào `.gitignore` — nó là artifact, sinh lại được từ mã nguồn.
+Nhớ thêm `dist/` vào `.gitignore`, nó là artifact, sinh lại được từ mã nguồn.
 
 ## Tự kiểm
 
 1. Gate siết chặt hơn là major hay minor? Vì sao?
-2. Ba thứ làm một changelog dùng được — kể ra.
+2. Ba thứ làm một changelog dùng được, kể ra.
 3. Vì sao phải quét secret **lại** trong gói, dù CI đã có `quet-secret`?
 4. Phát hiện secret trong gói ⇒ vì sao **xoá gói** chứ không chỉ báo?
 5. Vì sao sân nghiệm thu phải nằm **ngoài** repo?
-6. Bẫy thiếu `.git` — nó cắn ở đâu, và vì sao **nơi** nó cắn mới là điều tệ nhất?
+6. Bẫy thiếu `.git`. Nó cắn ở đâu, và vì sao **nơi** nó cắn mới là điều tệ nhất?
 7. Máy gặp "không phải repo git" thì trả mã mấy? Vì sao không phải mã 1?
 8. Bước 6 khi nâng cấp dự án khác là gì, và vì sao nó là đối chứng rẻ?
 

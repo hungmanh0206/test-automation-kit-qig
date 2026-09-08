@@ -24,7 +24,7 @@ Bốn việc:
 
 1. Phân ba loại: **giữ nguyên · cấu hình · thay** (25 phút).
 2. **Xây gate** canh ranh giới hai tầng (25 phút).
-3. Khớp cơ chế đăng nhập — việc tốn công nhất, luôn luôn (40 phút).
+3. Khớp cơ chế đăng nhập, việc tốn công nhất, luôn luôn (40 phút).
 4. Chạy trọn một vòng thật trên dự án bạn (30 phút).
 
 ---
@@ -287,7 +287,7 @@ Kit chỉ được coi là đã chuyển giao khi nó đi hết **một** vòng 
 - [ ] Suite của tôi bắt được **≥1** bug thật của dự án này. Không bắt được cái nào ⇒ chưa xong.
 ```
 
-Dòng cuối là điều kiện nghiệm thu thật. Kit chạy xanh trên dự án mới **không** chứng minh gì — đúng nguyên
+Dòng cuối là điều kiện nghiệm thu thật. Kit chạy xanh trên dự án mới **không** chứng minh gì, đúng nguyên
 tắc từ Bài 0: app đúng và bộ kiểm mù cho **cùng một dấu hiệu**. Trên app thực hành bạn có 3 bug biết trước
 làm đối chứng; trên dự án thật, đối chứng là **một bug thật**.
 
@@ -322,7 +322,7 @@ Chưa có bug nào để bắt? Có hai đường:
 1. Ba loại khi chuyển kit là gì? Loại nào đông nhất về số dòng, loại nào tốn nhiều thời gian nhất?
 2. Vì sao commit trộn hai tầng là commit "không mang đi được"?
 3. Gate gặp tệp chưa phân loại thì trả mã mấy? Vì sao **không** đoán theo tên?
-4. Bốn cơ chế đăng nhập — cái nào **không** nên automate, và giải bằng gì?
+4. Bốn cơ chế đăng nhập. Cái nào **không** nên automate, và giải bằng gì?
 5. Ba câu hỏi ràng buộc phải hỏi trước khi viết đăng nhập. Câu nào liên quan tới "trông giống flaky"?
 6. Vì sao `addInitScript` phải **trước** `goto`?
 7. Vì sao lỗi đăng nhập phải có tiền tố `SETUP:`?
@@ -331,11 +331,11 @@ Chưa có bug nào để bắt? Có hai đường:
 ## Bài tập về nhà (30 phút)
 
 1. Điền `kit-layers.md` cho dự án bạn. Chạy `layers-check.js` lên thay đổi gần nhất. Có tệp chưa phân loại
-   thì khai — đó chính là những chỗ bạn **chưa quyết được** nó thuộc tầng nào, và cần quyết.
+   thì khai. Đó chính là những chỗ bạn **chưa quyết được** nó thuộc tầng nào, và cần quyết.
 2. Trả lời **ba câu ràng buộc đăng nhập** bằng cách hỏi dev/BA, không đoán. Ghi vào
    `knowledge/system/dang-nhap.json` kèm `source` (Bài 18).
 3. Chạy trọn danh sách chuyển giao. Tới dòng cuối: **suite của bạn bắt được bug thật nào chưa?**
-   Chưa thì chạy `npm run mutation` và đọc điểm — bạn sẽ biết mình đang mù ở đâu.
+   Chưa thì chạy `npm run mutation` và đọc điểm, bạn sẽ biết mình đang mù ở đâu.
 
 ## Đọc thêm
 

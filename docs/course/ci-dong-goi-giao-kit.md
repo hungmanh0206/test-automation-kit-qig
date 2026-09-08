@@ -310,7 +310,7 @@ Kit sống ở nhiều nhánh, và mỗi nhánh có vòng đời riêng. Nhánh 
 }
 ```
 
-Máy kiểm đọc file workflow của từng nhánh và đối chiếu — cùng kiểu như `gates-voi-toi.js`, nên tôi không lặp
+Máy kiểm đọc file workflow của từng nhánh và đối chiếu. Cùng kiểu như `gates-voi-toi.js`, nên tôi không lặp
 lại mã. Điểm cần nhớ: **khai bằng dữ liệu, kiểm bằng máy**. Viết trong tài liệu "nhánh rerun phải chạy
 self-review" là dặn dò; file JSON + máy đọc nó là forcing function.
 
@@ -459,7 +459,7 @@ Bạn bắt đầu từ con số không. Giờ bạn có:
 
 Nếu phải chọn **một** điều mang theo, chọn điều này:
 
-> **Một luật không có máy chặn thì không phải luật — nó là lời dặn.**
+> Một luật không có máy chặn thì không phải luật, nó là lời dặn.
 > Và **một máy không có đối chứng âm thì không phải máy — nó là niềm tin.**
 
 Mọi thứ trong tài liệu này là hai câu đó áp vào từng chỗ cụ thể.
@@ -473,7 +473,7 @@ Mọi thứ trong tài liệu này là hai câu đó áp vào từng chỗ cụ 
 Viết `ci_scope.json` cho kit của bạn. Xếp **mọi** npm script vào một trong bốn hạng. Với mỗi cái ở
 `khongVaoCi`, viết `lyDo` cụ thể.
 
-Rồi chạy `ci-scope.js`. Nếu nó liệt kê script chưa xếp — xếp chúng. Đừng thêm vào `MIEN` cho nhanh.
+Rồi chạy `ci-scope.js`. Nếu nó liệt kê script chưa xếp, xếp chúng. Đừng thêm vào `MIEN` cho nhanh.
 
 ### Bước 2 — Thử môi trường sạch (15 phút)
 
@@ -582,7 +582,7 @@ Ba việc, làm được cả ba là kit của bạn đứng vững:
    `npm run gates` ĐẠT. Mọi chỗ phải ứng biến là một chỗ thiếu trong README.
 
 2. **Chốt điểm mutation gốc.** Chạy `npm run mutation` toàn bộ, lưu `diem.json`, ghi ngày. Đây là mốc so
-   sánh. Tháng sau đo lại — tụt thì tìm oracle nào bị làm yếu.
+   sánh. Tháng sau đo lại, tụt thì tìm oracle nào bị làm yếu.
 
 3. **Đóng vòng lặp bug lọt.** Lấy bug gần nhất lọt ra ngoài. Trả lời: **máy nào lẽ ra phải bắt?** Rồi sửa
    đúng máy đó, và chứng minh bằng một mutant chuyển từ SỐNG SÓT sang BỊ DIỆT.
