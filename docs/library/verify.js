@@ -9,6 +9,7 @@
  * Thoát 0 = mọi phép kiểm đạt · 1 = có phép kiểm hỏng (in rõ cái nào).
  */
 'use strict';
+const fs = require('fs');
 const path = require('path');
 const { chromium } = require(path.join(__dirname, '..', '..', 'node_modules', 'playwright'));
 
@@ -135,6 +136,55 @@ const ok = (name, cond, got) => {
   const lessons = await p.locator('.clesson').count();
   ok('có các bài', lessons >= 15, lessons);
   ok('có các phần', await p.locator('#cParts .subhead').count() >= 4);
+
+  /* Thống kê ở đầu tab phải KHỚP thứ hiện ngay dưới nó.
+   *
+   * Người rà tìm ra bốn con số mâu thuẫn, và chúng nằm đúng chỗ dễ thấy nhất: header ghi "5 phần"
+   * cạnh một tiêu đề gõ cứng "8 phần"; header ghi "14 gate tự xây" cạnh cây thư mục liệt kê 18 tệp.
+   * Người đọc thấy hai con số cạnh nhau thì mất tin ngay, và không có phép kiểm nào bắt được. */
+  const soThongKe = async (nhan) => {
+    const t = await p.locator(`#cStats >> text=${nhan}`).first()
+      .locator('xpath=..').innerText().catch(() => '');
+    const m = /(\d+)/.exec(t);
+    return m ? Number(m[1]) : null;
+  };
+  const stPhan = await soThongKe('phần');
+  const soPhanThat = await p.locator('#cParts .subhead').count();
+  ok(`thống kê "phần" khớp số phần hiện ra (${stPhan} = ${soPhanThat})`, stPhan === soPhanThat);
+
+  const stMay = await soThongKe('máy chặn tự viết');
+  /* Đếm từ NGUỒN, không đọc lại DOM. Hai lý do: `innerText` chuẩn hoá khoảng trắng nên phép đo theo
+     độ thụt của cây ra 0, và đọc lại DOM thì phép kiểm chỉ đang so trang với chính nó. So với
+     docs/COURSE.md mới là một thước độc lập. */
+  const mdSrc = fs.readFileSync(path.join(__dirname, '..', 'COURSE.md'), 'utf8');
+  const cayText = (mdSrc.match(/## Cấu trúc thư mục của bộ kit[\s\S]*?```\n([\s\S]*?)```/) || [, ''])[1];
+  const dongCay = cayText.split('\n');
+  const iQa = dongCay.findIndex((d) => /qa\/\s/.test(d));
+  let mayTrongCay = 0;
+  if (iQa >= 0) {
+    const sau = (d) => d.search(/[a-zA-Z0-9_.]/);
+    for (let k = iQa + 1; k < dongCay.length; k++) {
+      const d = dongCay[k];
+      if (!d.trim()) continue;
+      if (sau(d) <= sau(dongCay[iQa])) break;
+      if (/[a-z0-9_.-]+\.js\s/.test(d)) mayTrongCay++;
+    }
+  }
+  ok(`thống kê "máy chặn" khớp cây thư mục (${stMay} = ${mayTrongCay})`,
+    stMay !== null && mayTrongCay > 0 && stMay === mayTrongCay);
+
+  const stTh = await soThongKe('lượt thực hành');
+  const thThat = await p.locator('.cgoals li.cpractice').count();
+  ok(`thống kê "thực hành" khớp số callout (${stTh} = ${thThat})`, stTh === thThat);
+
+  /* Không tiêu đề nào trên trang được gõ cứng một con số về phần hoặc bài. */
+  /* Bỏ số thứ tự mục ở đầu tiêu đề (badge .num) trước khi soi. Bản đầu bắt cả "10 Bài chi tiết bổ
+     trợ" và báo oan: số 10 đó là thứ tự mục trên trang, không phải một phép đếm bài. */
+  const soCung = await p.locator('.subhead').allInnerTexts();
+  const cungLech = soCung
+    .map((t) => t.replace(/^\s*\d+\s*/, ''))
+    .filter((t) => /\b\d+\s*(phần|bài)\b/i.test(t));
+  ok('không tiêu đề nào gõ cứng số phần/bài', cungLech.length === 0, cungLech.join(' · '));
   ok('mỗi bài có dòng "có gì trong tay"', await p.locator('.clesson .chave').count() === lessons);
   ok('mỗi bài có thời lượng', await p.locator('.clesson .cdur').count() === lessons);
   /* Mỗi PHẦN phải khai số giờ — thiếu thì bảng tổng thời lượng của khoá nói dối. */

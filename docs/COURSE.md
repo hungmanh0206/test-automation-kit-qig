@@ -1,78 +1,148 @@
-# Tự dựng bộ Automation Test Kit cho QA — từ requirement đến report
+# Tự xây Automation Test Kit từ con số 0
 
-> **Định vị:** không dạy Playwright, và cũng không dạy dùng một kit có sẵn. Dạy tự xây một bộ kit
-> kiểm thử đi trọn vòng đời của một task QA thật, rồi mang chính bộ kit đó sang dự án khác.
+> **Định vị:** từ testcase đầu tiên đến một QA workflow có AI Agent hỗ trợ, và mang chính bộ kit đó
+> sang dự án tiếp theo. Playwright không phải mục tiêu học, nó là công cụ để làm một việc lớn hơn.
+
+---
+
+## Bạn sẽ học gì ở đây
+
+Tài liệu này không lấy Playwright làm mục tiêu học. Playwright là công cụ chúng ta sử dụng để làm một
+việc lớn hơn: **tự xây một Automation Test Kit từ một thư mục rỗng.**
+
+Bạn sẽ bắt đầu bằng một testcase rất nhỏ. Sau đó, từng vấn đề thực tế xuất hiện sẽ buộc chúng ta bổ
+sung thêm một phần vào bộ kit:
+
+```text
+Testcase đầu tiên
+      ↓
+Configuration
+      ↓
+Test Data
+      ↓
+Fixture & Setup
+      ↓
+FE / API Automation
+      ↓
+Evidence & Report
+      ↓
+Requirement
+      ↓
+Test Design
+      ↓
+Coverage
+      ↓
+Execution
+      ↓
+Triage
+      ↓
+CI
+      ↓
+Knowledge & Learning
+      ↓
+Reusable Kit
+```
+
+Đến cuối tài liệu, thứ bạn có không chỉ là một repository chứa nhiều testcase. Bạn sẽ có một bộ kit
+có thể làm nền tảng cho dự án khác.
+
+---
+
+## Câu hỏi xuyên suốt tài liệu
+
+> **Một testcase chạy xanh thực sự chứng minh được điều gì?**
+
+Application hiển thị `515000`. Test của bạn expected `515000`. Test chạy xanh.
+
+Nhưng `515000` có thực sự đúng không?
+
+Nếu expected được lấy từ chính giá trị application đang trả thì testcase đó chỉ chứng minh một điều:
+**application bằng chính nó.** Nó chưa chứng minh application đúng requirement.
+
+Đây là kiểu vấn đề mà chúng ta sẽ liên tục gặp trong quá trình xây bộ kit. Test chạy được chưa đủ.
+Chúng ta còn phải biết:
+
+- Expected lấy từ đâu?
+- Requirement có đủ rõ không?
+- Test data có đáng tin không?
+- Testcase đã phủ đúng rủi ro chưa?
+- Một lần Fail là lỗi sản phẩm hay lỗi automation?
+- Evidence có đủ để người khác kiểm chứng không?
+- AI Agent có đang sửa test đúng hay chỉ đang cố làm nó xanh?
+
+Mỗi phần của kit được thêm vào để trả lời một trong những câu hỏi đó.
+
+---
+
+## Ai phù hợp với tài liệu này
+
+Tài liệu được viết cho QA đã biết những khái niệm kiểm thử cơ bản như testcase, expected result, bug
+và quy trình QA, nhưng chưa có nhiều kinh nghiệm automation.
+
+**Bắt buộc:** biết khái niệm kiểm thử cơ bản (testcase, expected result, bug, quy trình QA) · dùng được máy tính ở mức thao tác file và terminal · Node.js 18+.
+**Không bắt buộc:** kinh nghiệm Playwright · kinh nghiệm CI/CD · kinh nghiệm automation · là developer · có dự án thật. Tài liệu này đi kèm [app thực hành](course/assets/app-thuc-hanh/README.md) chạy trên máy bạn.
+
+⚠️ **Nói thẳng:** trong quá trình học bạn sẽ đọc, chạy và sửa JavaScript ở mức cần thiết để tự xây bộ
+kit. Mục tiêu không phải biến bạn thành developer. Mục tiêu là bạn đủ hiểu code để **kiểm soát
+automation của chính mình**.
 
 ---
 
 ## Bạn sẽ dựng cái gì
 
-Một dây chuyền. Đây là thứ chạy trong một dự án thật, và cũng là cốt truyện của cả tài liệu này:
+Ở giai đoạn đầu, bộ automation chỉ biết chạy testcase:
 
+```text
+Testcase  →  Run  →  Pass / Fail
 ```
-Requirement → Phân tích scope → Thiết kế testcase → QA review → Quản lý testcase
-     → Automation execution → Evidence + Report → Triage → Bug → Dev fix → Rerun
+
+Khi hoàn thiện, flow sẽ trở thành:
+
+```text
+Requirement → Test Design → Automation → Execution → Evidence → Triage
+    → Bug / Observation → Rerun → Knowledge  ↺
 ```
 
-Phần lớn tài liệu automation dừng ở chặng thứ sáu: viết được script, chạy được, xanh hoặc đỏ. Chín
-chặng còn lại mới là phần một QA làm hằng ngày, và cũng là phần quyết định bộ automation của bạn có
-dùng được trong dự án thật hay không.
+Ở từng điểm quan trọng, chúng ta sẽ dần xây các **Quality Gate**: những kiểm tra tự động giúp ngăn một
+số kết luận sai trước khi chúng đi sang bước tiếp theo.
 
-Cụ thể thì bạn gõ gì. Ví dụ ở Bài 13, bạn bảo agent sửa cho test pass, nó sửa xong, và máy của bạn
-chặn lại:
+Ví dụ. Bạn yêu cầu AI Agent sửa một testcase đang Fail. Agent thấy application trả `515000`, nên nó
+đổi expected thành `515000`. Test lập tức xanh. Nhưng bộ kit chặn lại:
 
 ```console
 $ node scripts/qa/kiem-so-mong-doi.js tests/api/don-hang-bac.js
-[kiem] ✗ CHẶN — file chứa 515000, đây là số APP đang trả, không phải số spec.
-        Số mong đợi phải tính từ spec.md, không phải copy từ app.
+[kiem] ✗ CHẶN
+        File chứa 515000 — đây là số application đang trả,
+        không phải số được suy ra từ requirement.
+        Expected phải có nguồn độc lập với application.
 $ echo "mã thoát = $?"
 mã thoát = 1
 ```
 
-Ba dòng đó là toàn bộ ý tưởng của phần nâng cao: không ai cố ý gian lận, người ta chỉ đang làm cho
-test xanh theo cách nhanh nhất. Máy chặn là thứ đứng giữa.
+Đây là một nguyên tắc quan trọng của tài liệu: **AI có thể hỗ trợ thực hiện công việc QA, nhưng AI
+không được tự tạo ra sự thật mà testcase dùng làm chuẩn.**
 
-Hết tài liệu này bạn có ba thứ:
-
-| Thứ | Nghĩa là |
-|---|---|
-| Một bộ automation chạy được | FE, API, mobile web, kèm evidence và report đọc được |
-| Một quy trình bắt đầu từ requirement | Không phải bắt đầu từ `test('login', ...)` |
-| Một bộ kit tách hai tầng | Tầng chung mang đi mọi dự án. Tầng dự án khai lại một file |
-
-Câu hỏi *"tôi test nhiều dự án thì sao"* được trả lời ở bài cuối: clone kit, tạo profile, điền
-environment, chạy. Mất một buổi, không phải viết lại từ đầu.
+Nói rõ để bạn không chờ nhầm chỗ: máy chặn ở trên bạn viết ở **Bài 13**, khi đã có bảng testcase để nó
+soi. Còn máy chặn *đầu tiên* thì có sớm hơn nhiều, ở **Bài 2**, và nó canh một chuyện khác: không cho
+tệp cấm lọt lên repo. Bài 1 và Bài 4 gieo sẵn ý tưởng bằng tay trước khi có máy nào cả.
 
 ---
 
-## Bốn mốc dừng được
+## Bốn mốc hoàn thành
 
-Đừng nhìn 65.5 giờ rồi nản. Tài liệu chia thành bốn mốc, dừng ở mốc nào cũng đã có thứ dùng được.
+Bạn không cần học hết toàn bộ tài liệu mới có thứ sử dụng được.
 
 | Mốc | Tới bài | Cộng dồn | Dừng ở đây bạn đã có |
 |---|---|---|---|
-| ① Chạy được | hết Bài 4 | ~7.5 giờ | Một testcase automation chạy thật trên app thực hành, và bạn đọc được vì sao nó xanh hay đỏ |
-| ② Thành bộ kit ⭐ | hết Bài 11 | ~22.5 giờ | Config tách khỏi testcase · dữ liệu test dựng bằng factory · FE và API cùng một khung · có ảnh, video và report. Đây là điểm áp được vào dự án thật |
-| ③ Thành quy trình QA | hết Bài 17 | ~38 giờ | Bắt đầu từ requirement chứ không từ locator · testcase có nguồn · fail được phân loại trước khi thành bug |
-| ④ Mang đi được | hết Bài 29 | ~65.5 giờ | CI gác cổng · knowledge tích luỹ qua từng sprint · kit chạy trên dự án thứ hai |
+| ① Automation đầu tiên | hết Bài 4 | ~7.5 giờ | Một testcase automation chạy thật trên app thực hành. Quan trọng hơn: bạn đọc được vì sao nó Pass hoặc Fail, và biết cách chứng minh testcase có khả năng phát hiện lỗi |
+| ② Thành Automation Test Kit ⭐ | hết Bài 11 | ~22.5 giờ | Configuration tách khỏi testcase · test data được tạo chủ động · fixture dựng và dọn precondition · FE và API automation · screenshot, video và report. Đây là mốc bộ automation đủ cấu trúc để áp dụng vào dự án thật |
+| ③ Thành QA Workflow | hết Bài 17 | ~38 giờ | Automation không còn bắt đầu bằng locator mà bắt đầu từ requirement. Testcase truy được nguồn của expected, và một lần Failed phải được phân loại trước khi trở thành Bug |
+| ④ Thành Reusable QA Kit | hết Bài 29 | ~65.5 giờ | Kit vào CI, đo được reliability, tích luỹ knowledge, và được đóng gói. Bài cuối không dùng lại project cũ: bạn mang kit sang dự án thứ hai với requirement, UI, API và dữ liệu khác |
 
-Mốc ② là mốc quan trọng nhất. Nhiều người dừng ở đó và dùng cả năm. Hoàn toàn hợp lý. Mốc ③ và ④
-là khi bạn muốn cả team dùng chung, và muốn bộ kit tốt lên sau mỗi sprint thay vì chỉ chạy lại.
+Mốc ② là mốc quan trọng nhất, và nhiều người dừng ở đó rồi dùng cả năm. Hoàn toàn hợp lý.
 
----
-
-## Khác gì một tutorial Playwright
-
-| | Tutorial automation thường gặp | Tài liệu này |
-|---|---|---|
-| Điểm bắt đầu | `test('login', ...)` | Requirement, và câu hỏi kết quả nào mới là đúng |
-| Phạm vi | Viết script, chạy, xanh đỏ | Trọn vòng từ requirement tới rerun sau khi Dev fix |
-| Kết quả | Một bộ test cho một website | Một bộ kit làm nền cho nhiều dự án |
-| Khi test đỏ | Sửa cho xanh | Phân tầng trước: sản phẩm sai, hay test sai, hay dữ liệu sai |
-| Chất lượng đầu ra | Dựa vào người viết cẩn thận | Dựa vào cổng kiểm chặn được |
-
-**Câu hỏi cốt lõi:** script chạy xanh thì chứng minh được gì, và làm sao biết bộ test của bạn thực sự
-bắt được bug?
+Về mốc ④, có một tiêu chí nghiệm thu thẳng thắn: nếu sang dự án thứ hai mà vẫn phải sửa phần lớn tầng
+chung, thì kit của bạn chưa thực sự dùng lại được.
 
 ---
 
@@ -96,13 +166,46 @@ Làm hết tài liệu này, bạn có thể:
 
 ---
 
-## Yêu cầu đầu vào
+## Một vòng QA mà bộ kit sẽ hỗ trợ
 
-**Bắt buộc:** biết cơ bản về kiểm thử (test case, bug, quy trình QA) · dùng được máy tính ở mức thao tác file/terminal · Node.js 18+.
-**Không bắt buộc:** biết code (tài liệu này dạy từ đầu ở mức cần thiết) · biết Playwright · biết CI/CD · có dự án thật. Tài liệu này đi kèm [app thực hành](course/assets/app-thuc-hanh/README.md) chạy trên máy bạn.
+Toàn bộ tài liệu xoay quanh sáu chặng. Mười lăm bước ở mục đầu trang là cách kể theo **thứ bạn xây
+thêm**; sáu chặng dưới đây là cách kể theo **việc bạn làm mỗi task**.
 
-⚠️ **Nói thẳng:** bạn sẽ phải đọc code và tự sửa khi có thứ chặn sai. Nếu chỉ muốn một bộ script
-chạy cho xong thì phần đầu là đủ, và dừng ở Bài 4 cũng đã có thứ dùng được.
+Khi kit trưởng thành, giữa các chặng xuất hiện những điều kiện kiểm soát. Trong tài liệu, chúng được
+gọi là **Quality Gate**.
+
+| # | Chặng | Bạn đưa vào | Ra được gì | Cổng chặn ở cuối chặng | Học ở |
+|---|---|---|---|---|---|
+| 1 | Đọc yêu cầu | tài liệu, Figma, API | bảng luật `BR-` + danh sách chỗ mơ hồ | requirement còn mơ hồ ⇒ chưa sinh testcase | Bài 12, 15 |
+| 2 | Thiết kế testcase | bảng `BR-` đã chốt | bộ case có nguồn | expected không có nguồn ⇒ chưa execute | Bài 13–14 |
+| 3 | Execute | bộ case + môi trường | kết quả từng case | testcase đã chạy mà không có evidence ⇒ chưa kết luận | Bài 9–11, 16 |
+| 4 | Thu thập evidence | thao tác thật trên sản phẩm | ảnh có khoanh đỏ, video từng bước | evidence sai định dạng hoặc chưa che dữ liệu khách ⇒ chặn | Bài 11 |
+| 5 | Triage | case đỏ | phán quyết + tầng lỗi | Failed chưa xác định được tầng lỗi ⇒ chưa tạo Bug | Bài 17, 19 |
+| 6 | Học lại từ kết quả | bug + kết quả lượt chạy | tri thức + điểm rủi ro mới | knowledge không có nguồn ⇒ không được dùng cho lượt sau | Bài 26–27 |
+
+Chặng 6 quay về chặng 1 của task sau. Đó là chỗ kit **tốt lên** thay vì chỉ chạy lại.
+
+Mục tiêu của gate không phải làm quy trình phức tạp hơn. Mục tiêu là biến những nguyên tắc QA quan
+trọng từ *"QA nên nhớ làm điều này"* thành **"nếu chưa làm điều này, hệ thống không cho đi tiếp."**
+
+---
+
+## Khác gì một tutorial Automation thông thường
+
+| | Tutorial Automation thông thường | Tài liệu này |
+|---|---|---|
+| Điểm bắt đầu | `test('login', ...)` | Requirement |
+| Mục tiêu | Viết và chạy script | Xây kết quả kiểm thử đáng tin |
+| Expected | Giá trị dùng để assert | Phải truy được về nguồn |
+| Khi test đỏ | Debug cho test xanh | Triage trước khi kết luận |
+| Test data | Dữ liệu phục vụ script | Một phần phải được kiểm soát |
+| Evidence | Screenshot khi cần | Một phần của execution |
+| AI | Sinh testcase và code nhanh hơn | Làm việc trong rule và gate |
+| Kết quả cuối | Automation của một sản phẩm | Kit làm nền cho nhiều dự án |
+
+Playwright vẫn quan trọng. AI Agent cũng quan trọng. Nhưng cả hai đều chỉ là công cụ.
+
+**Câu hỏi cốt lõi:** làm thế nào để QA có thể tin vào kết quả mà bộ automation của mình tạo ra?
 
 ---
 
@@ -126,24 +229,6 @@ Biết trước "có 3 bug" nghĩa là bắt được 0/3 thì lỗi ở bộ ki
 
 Nguồn phán đúng/sai là [`spec.md`](course/assets/app-thuc-hanh/spec.md). Mọi luật có mã (`BR-01`…`UI-04`).
 Nói "chỗ này sai" mà không chỉ được mã luật thì chưa chứng minh được gì.
-
----
-
-## Một vòng làm việc trông thế nào
-
-Sáu chặng, đi một chiều, và mỗi chặng có một cổng chặn. Không qua cổng thì không sang chặng sau. Đó
-là toàn bộ khác biệt giữa một bộ kit và một đống script.
-
-| # | Chặng | Bạn đưa vào | Ra được gì | Cổng chặn ở cuối chặng | Học ở |
-|---|---|---|---|---|---|
-| 1 | Đọc yêu cầu | tài liệu, Figma, API | bảng luật `BR-` + danh sách chỗ mơ hồ | Ambiguity Gate, còn mơ hồ chặn thì dừng | Bài 12, 15 |
-| 2 | Thiết kế testcase | bảng `BR-` đã chốt | bộ case có nguồn | Oracle Gate, expected không trỏ nguồn thì chặn | Bài 13–14 |
-| 3 | Chạy thật | bộ case + môi trường | kết quả từng case | Evidence Gate, chạy rồi mà không ảnh/video thì chặn | Bài 9–11, 16 |
-| 4 | Mở rộng quanh case | case đã chạy | phát hiện ngoài kịch bản | Gate mở rộng, không neo mã luật thì hạ xuống `OBSERVATION` | Bài 16 |
-| 5 | Triage rồi báo lỗi | phát hiện có bằng chứng | bug có tầng lỗi | Human gate, người bấm chứ không phải máy | Bài 17, 19 |
-| 6 | Học lại | bug + kết quả lượt chạy | tri thức + điểm rủi ro mới | Gate tri thức, bản ghi không nguồn thì cấm ghi | Bài 26–27 |
-
-Chặng 6 quay về chặng 1 của task sau. Đó là chỗ kit tốt lên thay vì chỉ chạy.
 
 ---
 
@@ -264,15 +349,18 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 1 — Nền tảng (7.5 giờ)
+## PHẦN 1 — Từ Manual QA đến Automation đầu tiên (7.5 giờ)
 
-> **Xong phần này bạn có:** một testcase automation chạy thật trên app thực hành, và bạn đọc được vì sao nó xanh hay đỏ
+> **Xong phần này bạn có:** một testcase thực sự chạy, và bạn hiểu dấu xanh hay đỏ của nó có ý nghĩa gì
+
+Bạn bắt đầu từ requirement và manual testing, sau đó tự tạo repository, cài Playwright và viết
+testcase automation đầu tiên.
 
 ### [Bài 1 — Automation Test Kit là gì](course/automation-test-kit-la-gi.md) *(2h · dễ)*
 
 *Có gì trong tay: chưa có gì.*
 
-- Chạy app thực hành, tạo một đơn hàng bằng tay, tự tính kết quả từ `spec.md`, và tìm ra bug đầu tiên ở phút thứ 40 mà không dùng công cụ nào
+- **Thực hành:** chạy app, tạo một đơn hàng bằng tay, tự tính kết quả từ `spec.md`, và tìm ra bug đầu tiên ở phút thứ 40 mà không dùng công cụ nào
 - Phân biệt ba thứ hay bị gọi lẫn: một bộ test, một automation project, và một test kit
 - 10 từ vựng của cả tài liệu này, mỗi từ một ví dụ lấy từ việc vừa làm, không phải một định nghĩa
 - Vẽ dây chuyền 11 chặng và tự đánh dấu chặng nào bạn đang làm bằng tay
@@ -308,9 +396,12 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 2 — Dựng bộ kit (15 giờ)
+## PHẦN 2 — Từ Automation Project đến Test Kit (15 giờ)
 
-> **Xong phần này bạn có:** config tách khỏi testcase, dữ liệu dựng bằng factory, FE và API cùng một khung, và report đọc được
+> **Xong phần này bạn có:** một Automation Test Kit có cấu trúc đủ để sử dụng trong dự án thật
+
+Bạn giải quyết từng vấn đề xuất hiện khi số lượng testcase bắt đầu tăng: configuration, test data,
+fixture, FE, API, evidence và reporting.
 
 ### [Bài 5 — Cấu trúc một automation project](course/cau-truc-project.md) *(1.5h · dễ)*
 
@@ -379,9 +470,13 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 3 — Quy trình QA (15.5 giờ)
+## PHẦN 3 — Từ Testcase đến QA Workflow (15.5 giờ)
 
-> **Xong phần này bạn có:** một quy trình bắt đầu từ requirement, testcase truy được nguồn, và fail được phân loại trước khi thành bug
+> **Xong phần này bạn có:** automation trở thành một phần của quy trình QA, thay vì một tập script độc lập
+
+Bạn quay lại thứ đáng lẽ phải đứng trước automation: **requirement**. Bóc business rule, thiết kế
+testcase có nguồn, đánh giá coverage, giao một phần công việc cho AI Agent, và triage failure trước
+khi tạo bug.
 
 ### [Bài 12 — Đừng bắt đầu automation bằng code](course/dung-bat-dau-bang-code.md) *(2h · vừa)*
 
@@ -442,9 +537,12 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 4 — Làm việc nhóm và bàn giao (6 giờ)
+## PHẦN 4 — Đưa Kit vào Team và CI (6 giờ)
 
-> **Xong phần này bạn có:** testcase và kết quả nằm ở nơi cả team đọc được, bug đi đúng đường, và CI gác cổng mỗi lần push
+> **Xong phần này bạn có:** kit bắt đầu hoạt động trong workflow của cả team
+
+Testcase và kết quả được đưa ra khỏi máy cá nhân. Bạn tích hợp test management, bug workflow và CI để
+các rule quan trọng không phụ thuộc vào việc một QA có nhớ chạy chúng hay không.
 
 ### [Bài 18 — Test Management](course/test-management.md) *(2h · vừa)*
 
@@ -476,9 +574,15 @@ kit-cua-toi/
 
 ---
 
-## PHẦN 5 — Nâng cao và đóng gói (21.5 giờ)
+## PHẦN 5 — Mở rộng, đo độ tin cậy và tái sử dụng (21.5 giờ)
 
-> **Xong phần này bạn có:** kit phủ thêm mobile, khả năng tiếp cận và hiệu năng, tự đo được chính mình, và đóng gói mang đi được
+> **Xong phần này bạn có:** bằng chứng rằng bộ automation vừa xây là một kit dùng lại được, không chỉ là automation của một website
+
+Bạn bổ sung những capability không phải dự án nào cũng cần giống nhau: Mobile Web · Accessibility ·
+Performance và Load · Quality Gates · Flaky và Reliability · Knowledge Base · Learning Loop.
+
+Cuối cùng, bạn tách phần **CHUNG** khỏi phần **DỰ ÁN**, đóng gói kit và mang sang một sản phẩm hoàn
+toàn mới.
 
 ### [Bài 21 — Mobile Web](course/mobile-web.md) *(1.5h · dễ)*
 
@@ -517,7 +621,7 @@ kit-cua-toi/
 - **Xây gate:** `tu-soi.js` gọi mọi máy một lượt · `chong-troi.js` chặn luật bị trôi
 - Đào sâu: [viết gate đầu tiên](course/viet-gate-dau-tien.md) · [một nguồn và máy chống trôi](course/mot-nguon-va-may-chong-troi.md)
 
-### [Bài 25 — Flaky và độ tin cậy](course/flaky-va-do-tin-cay.md) *(3.5h · khó)*
+### [Bài 25 — Flaky và đo chính bộ kiểm](course/flaky-va-do-tin-cay.md) *(3.5h · khó)* ⭐
 
 *Có gì trong tay: bộ test khá lớn, thỉnh thoảng đỏ không rõ lý do.*
 
@@ -570,11 +674,11 @@ kit-cua-toi/
 
 | Phần | Giờ |
 |---|---|
-| 1. Nền tảng | 7.5 |
-| 2. Dựng bộ kit | 15 |
-| 3. Quy trình QA | 15.5 |
-| 4. Làm việc nhóm và bàn giao | 6 |
-| 5. Nâng cao và đóng gói | 21.5 |
+| 1. Từ Manual QA đến Automation đầu tiên | 7.5 |
+| 2. Từ Automation Project đến Test Kit | 15 |
+| 3. Từ Testcase đến QA Workflow | 15.5 |
+| 4. Đưa Kit vào Team và CI | 6 |
+| 5. Mở rộng, đo độ tin cậy và tái sử dụng | 21.5 |
 
 ---
 

@@ -46,7 +46,13 @@ function parseCourse(mdPath) {
   if (!total) throw new Error('COURSE.md: không thấy "## Tổng thời lượng: …"');
 
   const positioning = stripMd((md.match(/>\s*\*\*Định vị:\*\*([\s\S]*?)\n\n/) || [, ''])[1]);
-  const coreQuestion = stripMd((md.match(/\*\*Câu hỏi cốt lõi:\*\*(.+)/) || [, ''])[1]);
+  /* Đọc tới DÒNG TRỐNG, không tới hết dòng.
+   *
+   * Bản đầu dùng `(.+)`, mà `.` không khớp ký tự xuống dòng. Nguồn gấp khúc ở 100 cột nên câu hỏi
+   * cốt lõi bị cắt đúng giữa: "...làm sao biết bộ test của bạn thực sự" — mất hẳn vế cuối. Nó là
+   * câu quan trọng nhất trang, đứng ngay đầu, và đứt. `plain()` đã gộp khoảng trắng nên chỉ cần
+   * quét đúng phạm vi là xong. */
+  const coreQuestion = stripMd((md.match(/\*\*Câu hỏi cốt lõi:\*\*([\s\S]*?)\n\n/) || [, ''])[1]);
 
   // "Bạn làm được gì sau khi đọc hết" — danh sách ✅ ở cấp khoá
   const outcomeBlock = (md.match(/## Bạn làm được gì sau khi đọc hết([\s\S]*?)\n---/) || [, ''])[1];
@@ -58,7 +64,7 @@ function parseCourse(mdPath) {
   const warning = stripMd((md.match(/⚠️\s*\*\*Nói thẳng:\*\*([\s\S]*?)\n\n/) || [, ''])[1]);
 
   // So sánh với khoá khác — bảng 2 cột
-  const cmpBlock = (md.match(/## Khác gì một tutorial Playwright([\s\S]*?)\n\*\*Câu hỏi/) || [, ''])[1];
+  const cmpBlock = (md.match(/## Khác gì một tutorial Automation thông thường([\s\S]*?)\n\*\*Câu hỏi/) || [, ''])[1];
   const compare = [...cmpBlock.matchAll(/^\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*$/gm)]
     .map((r) => ({ aspect: stripMd(r[1]), others: stripMd(r[2]), ours: stripMd(r[3]) }))
     .filter((r) => r.aspect && !/^-+$/.test(r.others));
@@ -71,13 +77,13 @@ function parseCourse(mdPath) {
 
   /* Vòng làm việc 6 chặng — nguồn của sơ đồ trên trang. Mỗi chặng PHẢI có cổng chặn:
      chặng không có cổng là chặng đi qua được mà không ai kiểm. */
-  const flowBlock = (md.match(/## Một vòng làm việc trông thế nào[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
+  const flowBlock = (md.match(/## Một vòng QA mà bộ kit sẽ hỗ trợ[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
   const workflow = [...flowBlock.matchAll(
     /^\|\s*(\d+)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*$/gm)]
     .map((r) => ({ n: r[1], stage: stripMd(r[2]), input: stripMd(r[3]), output: stripMd(r[4]),
                    gate: stripMd(r[5]), lessons: stripMd(r[6]) }));
   if (workflow.length < 4) {
-    throw new Error(`COURSE.md: mục "Một vòng làm việc" chỉ đọc được ${workflow.length} chặng — cần ít nhất 4`);
+    throw new Error(`COURSE.md: mục "Một vòng QA" chỉ đọc được ${workflow.length} chặng — cần ít nhất 4`);
   }
   const thieuCong = workflow.filter((w) => !w.gate).map((w) => w.n);
   if (thieuCong.length) {
@@ -87,14 +93,14 @@ function parseCourse(mdPath) {
 
   /* Bốn mốc dừng được — thứ giúp người mới không nản khi thấy tổng thời lượng.
      Mỗi mốc phải nói DỪNG Ở ĐÂY CÓ GÌ, không chỉ nói tới bài mấy. */
-  const mocBlock = (md.match(/## Bốn mốc dừng được[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
+  const mocBlock = (md.match(/## Bốn mốc hoàn thành[\s\S]*?\n(\|[\s\S]*?)\n\n/) || [, ''])[1] || '';
   const milestones = [...mocBlock.matchAll(
     /^\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|\s*$/gm)]
     .map((r) => ({ ten: stripMd(r[1]), toiBai: stripMd(r[2]), congDon: stripMd(r[3]), coGi: stripMd(r[4]),
                    trongTam: r[1].indexOf('⭐') >= 0 }))
     .filter((r) => r.ten && !/^-+$/.test(r.toiBai) && !/^Mốc$/i.test(r.ten));
   if (milestones.length < 3) {
-    throw new Error(`COURSE.md: mục "Bốn mốc dừng được" chỉ đọc được ${milestones.length} mốc — cần ít nhất 3`);
+    throw new Error(`COURSE.md: mục "Bốn mốc hoàn thành" chỉ đọc được ${milestones.length} mốc — cần ít nhất 3`);
   }
 
   /* "Bạn sẽ dựng cái gì" — khối console cho thấy kit CHẶN trông ra sao. Người mới cần thấy
@@ -128,7 +134,14 @@ function parseCourse(mdPath) {
 
   /* ── Phần và bài ─────────────────────────────────────────────────────────── */
 
-  const partChunks = md.split(/^## PHẦN /m).slice(1);
+  /* CẮT nguồn ở "## Tổng thời lượng" TRƯỚC khi tách phần.
+   *
+   * Không cắt thì mảnh của phần CUỐI chạy tới hết tệp, nên bài cuối cùng ăn luôn danh sách gạch đầu
+   * dòng của mục "Bạn có gì sau khi làm hết". Hệ quả: 6 dòng tổng kết cả tài liệu hiện ra như nội
+   * dung của Bài 29. */
+  const iHet = md.indexOf('## Tổng thời lượng');
+  const partsSrc = iHet > 0 ? md.slice(0, iHet) : md;
+  const partChunks = partsSrc.split(/^## PHẦN /m).slice(1);
   if (!partChunks.length) throw new Error('COURSE.md: không thấy mục nào dạng "## PHẦN N — …"');
 
   const parts = [];
@@ -234,7 +247,16 @@ function parseCourse(mdPath) {
 
   // "Quyết định thiết kế khoá học" — N. **tiêu đề** nội dung
   const designBlock = (md.match(/## Quyết định thiết kế tài liệu này([\s\S]*)$/) || [, ''])[1];
-  const decisions = [...designBlock.matchAll(/^\*\*(\d+)\.\s*(.+?)\*\*([\s\S]*?)(?=\n\*\*\d+\.|\s*$)/gm)]
+  /* CẮT THEO MỐC, không dùng lookahead `\s*$`.
+   *
+   * Bản đầu viết `([\s\S]*?)(?=\n\*\*\d+\.|\s*$)` với cờ `m`. Với cờ `m` thì `$` khớp cuối MỌI dòng,
+   * nên phần thân lười dừng ngay ở dòng đầu tiên: 6 trong 7 mục bị cụt giữa câu ("Người đọc đi theo
+   * thứ tự họ gặp vấn"). Tách theo mốc "**N. " rồi parse từng mảnh thì không có chỗ cho lookahead
+   * hiểu sai. */
+  const decisions = designBlock
+    .split(/\n(?=\*\*\d+\.\s)/)
+    .map((khoi) => khoi.match(/^\*\*(\d+)\.\s*([\s\S]*?)\*\*([\s\S]*)$/))
+    .filter(Boolean)
     .map((x) => ({ n: x[1], title: stripMd(x[2]), body: stripMd(x[3]) }));
   if (!decisions.length) throw new Error('COURSE.md: mục "Quyết định thiết kế tài liệu này" không đọc được mục nào');
 

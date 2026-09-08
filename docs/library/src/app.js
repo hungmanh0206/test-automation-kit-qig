@@ -514,14 +514,35 @@
     var practices = allLessons.reduce(function (a, l) {
       return a + l.bullets.filter(function (b) { return b.kind === 'practice'; }).length;
     }, 0);
-    var gates = allLessons.reduce(function (a, l) {
-      return a + l.bullets.filter(function (b) { return b.kind === 'gate'; }).length;
-    }, 0);
+    /* ĐẾM TỪ CÂY THƯ MỤC, không đếm bullet.
+     *
+     * Bản đầu đếm số bullet mang nhãn "Xây gate:" và ra 14, trong khi cây thư mục ngay dưới liệt kê
+     * 18 tệp trong scripts/qa/. Người đọc thấy hai con số cạnh nhau và không biết tin cái nào. Cây
+     * thư mục mới là thứ nói đúng "bạn sẽ có bao nhiêu máy chặn", vì một bài có thể xây hai máy mà
+     * chỉ ghi một dòng nhãn. */
+    var gates = (function () {
+      /* Đếm theo CẤU TRÚC cây, không theo tên tệp. Lọc bằng tên là phỏng đoán: nó ra đúng 18 hôm
+         nay, rồi sai vào hôm có một máy đặt tên khác quy ước. Ở đây: tìm nhánh "qa/", rồi đếm lá
+         .js cho tới khi độ thụt về mức bằng hoặc nông hơn chính nhánh đó. */
+      var dong = String(COURSE.kitTree || '').split('\n');
+      var i = dong.findIndex(function (d) { return /qa\/\s*(?:←|·|$)/.test(d); });
+      if (i < 0) return 0;
+      var sau = function (d) { return d.search(/[a-zA-Z0-9_.]/); };
+      var mucQa = sau(dong[i]);
+      var n = 0;
+      for (var k = i + 1; k < dong.length; k++) {
+        var d = dong[k];
+        if (!d.trim()) continue;
+        if (sau(d) <= mucQa) break;
+        if (/[a-z0-9_.-]+\.js\s/.test(d)) n++;
+      }
+      return n;
+    })();
 
     var st = $('#cStats');
     [['bài', COURSE.lessonCount], ['phần', COURSE.parts.length],
      ['bài đã có bài giảng', withLesson], ['lượt thực hành', practices],
-     ['gate tự xây', gates]].forEach(function (p) {
+     ['máy chặn tự viết', gates]].forEach(function (p) {
       var d = el('div');
       d.appendChild(el('b', null, String(p[1])));
       d.appendChild(el('span', null, p[0]));
