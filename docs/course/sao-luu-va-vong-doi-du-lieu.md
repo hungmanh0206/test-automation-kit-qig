@@ -291,7 +291,7 @@ kit-cua-toi/
 
 ## Đọc thêm
 
-- Bài 26 — [knowledge base có kỷ luật](knowledge-base-co-ky-luat.md): bản `superseded` là thứ sao lưu phải
+- Bài 26 — [knowledge base có kỷ luật](knowledge-base.md): bản `superseded` là thứ sao lưu phải
   giữ, vì nó trả lời *"lượt chạy tháng trước dùng luật nào?"*.
 - Bài 25 — metrics: `outputs-status` giữ 365 ngày là để có đường xu hướng 12 tháng.
 - Bài 2 — [Git](git-tu-so-0.md): vì sao chính **tên tệp** trong `knowledge/` cũng là dữ liệu nhạy cảm.

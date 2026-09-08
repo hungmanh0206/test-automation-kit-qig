@@ -31,11 +31,34 @@ catch (e) { console.error('LỖI đọc COURSE.md: ' + e.message); process.exit(
 const courseJs = '/* SINH TỰ ĐỘNG từ docs/COURSE.md — đừng sửa ở đây, sửa file markdown. */\n' +
   'const COURSE = ' + JSON.stringify(course) + ';\n';
 
+/* TOÀN VĂN 43 bài giảng, nhúng thẳng vào trang.
+ *
+ * VÌ SAO: tiêu đề bài trên trang trỏ tới `course/<slug>.md`. Trong repo thì bấm được, còn trang xuất
+ * bản là MỘT file HTML tự chứa — không có tệp .md nào bên cạnh. Người đọc nhìn thấy 43 bài mà không
+ * mở được bài nào, và đó là toàn bộ nội dung của tài liệu.
+ *
+ * Giá phải trả: khoảng 890 KB markdown, nên trang lên cỡ 1,2 MB. Đổi lại là trang tự chứa THẬT —
+ * gửi qua chat, lưu offline, mở lại sau ba tháng đều đọc được đủ. */
+const COURSE_DIR = path.join(ROOT, '..', 'course');
+const lessons = {};
+for (const f of fs.readdirSync(COURSE_DIR).filter((x) => x.endsWith('.md'))) {
+  if (f === 'TEMPLATE.md') continue;
+  const raw = fs.readFileSync(path.join(COURSE_DIR, f), 'utf8');
+  const h1 = (raw.match(/^#\s+(.+)$/m) || ['', f])[1].trim();
+  lessons[f.replace(/\.md$/, '')] = { t: h1, md: raw };
+}
+if (Object.keys(lessons).length < 20) {
+  console.error('LỖI: chỉ đọc được ' + Object.keys(lessons).length + ' bài giảng trong docs/course/');
+  process.exit(1);
+}
+const lessonJs = '/* SINH TỰ ĐỘNG từ docs/course/*.md — đừng sửa ở đây, sửa file markdown. */\n' +
+  'const LESSONS = ' + JSON.stringify(lessons) + ';\n';
+
 let html = read('shell.html')
   .replace('/*__CSS__*/', () => read('style.css') + '\n' + read('style.extra.css'))
   .replace('__LOGO__', () => logo)
-  .replace('/*__DATA__*/', () => courseJs + DATA_FILES.map(read).join('\n'))
-  .replace('/*__APP__*/', () => read('graph3d.js') + '\n' + read('app.js'));
+  .replace('/*__DATA__*/', () => courseJs + lessonJs + DATA_FILES.map(read).join('\n'))
+  .replace('/*__APP__*/', () => read('md.js') + '\n' + read('graph3d.js') + '\n' + read('app.js'));
 
 // Kiểm cú pháp TỪNG file nguồn trước khi ghép. Ghép rồi mới lỗi thì thông báo trỏ vào file gộp,
 // không biết hỏng ở file nào; mà một dấu nháy rơi trong data là cả trang chết trắng.

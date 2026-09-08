@@ -282,6 +282,6 @@ publish hoặc đường log bug.
 
 ## Đọc thêm
 
-- Bài 18 — [bug report và tích hợp](tich-hop.md): vì sao publish và log bug đều mặc định dry-run.
+- Bài 18 — [bug report và tích hợp](test-management.md): vì sao publish và log bug đều mặc định dry-run.
 - Bài 1 — [chi phí và giới hạn](chi-phi-va-gioi-han.md): đo tài liệu trước khi cho agent đọc qua MCP.
-- Bài 20 — [CI](ci-dong-goi-giao-kit.md): `kiem-mcp-quyen` thuộc hạng *mọi commit*.
+- Bài 20 — [CI](ci-cd.md): `kiem-mcp-quyen` thuộc hạng *mọi commit*.

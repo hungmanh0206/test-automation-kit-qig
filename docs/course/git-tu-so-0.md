@@ -268,8 +268,8 @@ lúc đó người ta thêm `--no-verify`, thế là bạn mất luôn cái máy
 
 ## Đọc thêm
 
-- Bài 14 — [bộ gate nền](bo-gate-nen.md): máy quét secret đọc **nội dung**; máy ở bài này đọc **tên tệp**.
+- Bài 14 — [bộ gate nền](quality-gates.md): máy quét secret đọc **nội dung**; máy ở bài này đọc **tên tệp**.
   Cần cả hai.
-- Bài 20 — [CI](ci-dong-goi-giao-kit.md): `kiem:file-cam` là ứng viên hạng *mọi commit* — rẻ, tất định,
+- Bài 20 — [CI](ci-cd.md): `kiem:file-cam` là ứng viên hạng *mọi commit* — rẻ, tất định,
   không chạm môi trường nào.
 - Bài 24 — [khi kit chặn sai](mot-nguon-va-may-chong-troi.md): ngoại lệ phải có lý do và ngày.

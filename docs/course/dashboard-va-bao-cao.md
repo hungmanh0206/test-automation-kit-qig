@@ -327,6 +327,6 @@ kit-cua-toi/
 
 ## Đọc thêm
 
-- Bài 25 — [metrics và độ tin cậy](metrics-va-do-tin-cay.md): ba đường này tính ở đó.
+- Bài 25 — [metrics và độ tin cậy](flaky-va-do-tin-cay.md): ba đường này tính ở đó.
 - Bài 25 — [mutation testing](do-chinh-bo-kiem.md): đường quan trọng nhất, và cách đọc điểm cho đúng.
 - Bài 27 — [sao lưu và vòng đời dữ liệu](sao-luu-va-vong-doi-du-lieu.md): vì sao `lich-su.json` không được tỉa.

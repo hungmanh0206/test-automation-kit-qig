@@ -279,6 +279,27 @@
   </div>
 </footer>
 
+<!-- Khung đọc bài giảng. Toàn văn 43 bài nhúng trong trang, nên bấm một bài là đọc được ngay,
+     không phải mở tệp .md nào. -->
+<div class="rdscrim" id="rdScrim"></div>
+<section class="reader" id="reader" role="dialog" aria-modal="true" aria-labelledby="rdTitle" hidden>
+  <header class="rdbar">
+    <button class="rdclose" id="rdClose" aria-label="Đóng bài giảng">✕</button>
+    <div class="rdmeta">
+      <span class="rdkicker" id="rdKicker"></span>
+      <h2 id="rdTitle"></h2>
+    </div>
+    <div class="rdnav">
+      <button class="rdprev" id="rdPrev">‹ Bài trước</button>
+      <button class="rdnext" id="rdNext">Bài sau ›</button>
+    </div>
+  </header>
+  <div class="rdbody">
+    <nav class="rdtoc" id="rdToc" aria-label="Mục trong bài"></nav>
+    <article class="rdart" id="rdArt"></article>
+  </div>
+</section>
+
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-label="Chi tiết thuật ngữ">
   <div class="dh">

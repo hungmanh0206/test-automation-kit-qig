@@ -481,7 +481,7 @@ thật hay chỉ có trên giấy.
 
 ## Đọc thêm
 
-- Bài 17 — [bằng chứng và phân tầng lỗi](verdict-va-phan-tang-loi.md): bảng bốn ô ở Việc 3 đưa thẳng vào
+- Bài 17 — [bằng chứng và phân tầng lỗi](triage-va-rerun.md): bảng bốn ô ở Việc 3 đưa thẳng vào
   trường `tangLoi`.
 - Bài 13 — [oracle](oracle.md): "nhất quán ≠ đúng" ở đây là hai **tầng** cùng sai, không phải hai màn.
-- Bài 9 — [tiền điều kiện](tien-dieu-kien.md): vì sao dựng state bằng tầng lưu trữ sinh ra **bug ma**.
+- Bài 9 — [tiền điều kiện](fixture-va-setup.md): vì sao dựng state bằng tầng lưu trữ sinh ra **bug ma**.

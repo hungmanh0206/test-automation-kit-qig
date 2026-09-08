@@ -450,7 +450,7 @@ nhiều tháng.
 ## Đọc thêm
 
 - Bài 25 — [mutation testing](do-chinh-bo-kiem.md): mutation run phải chạy `retries=0`, đúng lý do bài này.
-- Bài 17 — [phân tầng lỗi](verdict-va-phan-tang-loi.md): pass-sau-retry là `PASS_WITH_DEVIATION`, không phải
+- Bài 17 — [phân tầng lỗi](triage-va-rerun.md): pass-sau-retry là `PASS_WITH_DEVIATION`, không phải
   `PASS`.
 - Bài 11 — dashboard: ba số ở cuối Việc 4 là ba đường cần vẽ, và chỉ ba đường đó.
 

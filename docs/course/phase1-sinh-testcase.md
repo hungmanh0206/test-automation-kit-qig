@@ -633,7 +633,7 @@ Bước 3 là cách rẻ nhất để phát hiện gate bắt oan: chạy nó **
 
 - [Viết gate đầu tiên](viet-gate-dau-tien.md) — bài chi tiết về cơ chế `exit 0/1/2` và ba phép tiêm lỗi để
   chứng minh gate chặn thật.
-- [Bộ gate nền](bo-gate-nen.md) — `lib/gate.js` dùng chung, để mọi gate về sau không phải viết lại phần khung.
+- [Bộ gate nền](quality-gates.md) — `lib/gate.js` dùng chung, để mọi gate về sau không phải viết lại phần khung.
 - Bài 24 — [khi kit chặn sai](mot-nguon-va-may-chong-troi.md): gate bắt oan mất uy tín, và đó là cách một kit
   chết.
 

@@ -507,6 +507,118 @@
     wrap.appendChild(vong);
   }
 
+
+  /* ─────────── Khung đọc bài giảng ───────────
+   *
+   * VÌ SAO: trước đây thẻ bài chỉ hiện đường dẫn `docs/course/<slug>.md`. Trong repo thì mở được,
+   * còn trên trang xuất bản thì không có tệp đó — người đọc nhìn thấy 43 bài mà không mở được bài
+   * nào. Toàn văn nay nằm trong biến LESSONS, dựng bằng MD.render khi bấm.
+   */
+  var RD = (function () {
+    /* Thứ tự đọc: các bài CÓ SỐ theo đúng lộ trình, rồi tới bài bổ trợ. Prev/next đi theo thứ tự
+       này, không đi theo thứ tự chữ cái của tên tệp. */
+    var thuTu = [];
+    COURSE.parts.forEach(function (p) {
+      p.lessons.forEach(function (l) {
+        if (l.href) thuTu.push(l.href.replace(/^course\//, '').replace(/\.md$/, ''));
+      });
+    });
+    Object.keys(LESSONS).forEach(function (k) { if (thuTu.indexOf(k) < 0) thuTu.push(k); });
+
+    var soCuaBai = {};
+    COURSE.parts.forEach(function (p) {
+      p.lessons.forEach(function (l) {
+        if (l.href) soCuaBai[l.href.replace(/^course\//, '').replace(/\.md$/, '')] = l.n;
+      });
+    });
+
+    var dangMo = null;
+
+    /* Liên kết trong bài: `oracle.md` hoặc `course/oracle.md` là một bài khác trong trang.
+       Còn `assets/...` là tệp trong repo, không có trên trang. */
+    function giaiQuyetLink(dich) {
+      var s = String(dich).replace(/^\.\//, '').replace(/^course\//, '');
+      if (s.indexOf('/') >= 0) return null;
+      s = s.replace(/\.md$/, '');
+      return LESSONS[s] ? s : null;
+    }
+
+    function mo(slug) {
+      var bai = LESSONS[slug];
+      if (!bai) return;
+      dangMo = slug;
+
+      var so = soCuaBai[slug];
+      $('#rdKicker').textContent = so ? ('Bài ' + so + ' / ' + COURSE.lessonCount) : 'Bài chi tiết bổ trợ';
+      $('#rdTitle').textContent = bai.t.replace(/^Bài\s+\d+\s+—\s+/, '');
+
+      /* Bỏ dòng H1 khỏi phần thân: tiêu đề đã hiện ở thanh trên, để lại là lặp. */
+      var than = bai.md.replace(/^#\s+.*\n/, '');
+      $('#rdArt').innerHTML = MD.render(than, giaiQuyetLink);
+
+      var toc = $('#rdToc');
+      toc.innerHTML = '';
+      var muc = MD.mucLuc(than);
+      if (muc.length > 2) {
+        toc.appendChild(el('div', 'rdtoch', 'Trong bài này'));
+        muc.forEach(function (m) {
+          var a = el('a', 'rdtocl', m.chu);
+          a.href = '#';
+          a.onclick = function (e) {
+            e.preventDefault();
+            var t = $('#rdArt').querySelector('[id="' + m.id + '"]');
+            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          };
+          toc.appendChild(a);
+        });
+      }
+
+      var i = thuTu.indexOf(slug);
+      var pv = $('#rdPrev'), nx = $('#rdNext');
+      pv.disabled = i <= 0;
+      nx.disabled = i < 0 || i >= thuTu.length - 1;
+      pv.onclick = function () { if (i > 0) mo(thuTu[i - 1]); };
+      nx.onclick = function () { if (i >= 0 && i < thuTu.length - 1) mo(thuTu[i + 1]); };
+
+      /* Bấm một liên kết tới bài khác thì mở ngay trong khung này, không rời trang. */
+      $$('#rdArt .mdlesson').forEach(function (a) {
+        a.onclick = function (e) { e.preventDefault(); mo(a.dataset.lesson); };
+      });
+
+      $('#reader').hidden = false;
+      $('#rdScrim').classList.add('on');
+      document.body.classList.add('rdopen');
+      $('#rdArt').scrollTop = 0;
+      $('#rdClose').focus();
+    }
+
+    function dong() {
+      $('#reader').hidden = true;
+      $('#rdScrim').classList.remove('on');
+      document.body.classList.remove('rdopen');
+      if (dangMo) {
+        var c = document.getElementById('bai-' + soCuaBai[dangMo]);
+        if (c) c.focus({ preventScroll: true });
+      }
+      dangMo = null;
+    }
+
+    $('#rdClose').onclick = dong;
+    $('#rdScrim').onclick = dong;
+    document.addEventListener('keydown', function (e) {
+      if ($('#reader').hidden) return;
+      if (e.key === 'Escape') { dong(); return; }
+      /* Mũi tên chỉ chuyển bài khi con trỏ KHÔNG ở trong một ô nhập — nếu không thì người đọc gõ
+         vào ô tìm kiếm cũng bị nhảy bài. */
+      var t = document.activeElement;
+      if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+      if (e.key === 'ArrowLeft') $('#rdPrev').click();
+      if (e.key === 'ArrowRight') $('#rdNext').click();
+    });
+
+    return { mo: mo, dong: dong, giaiQuyetLink: giaiQuyetLink };
+  })();
+
   /* ─────────── Tab Tự dựng kit (dữ liệu sinh từ docs/COURSE.md) ─────────── */
   function renderCourse() {
     var allLessons = COURSE.parts.reduce(function (a, p) { return a.concat(p.lessons); }, []);
@@ -643,10 +755,22 @@
 
       var grid = el('div', 'clessons');
       part.lessons.forEach(function (l) {
-        /* Bài đã có bài giảng chi tiết thì viền vàng — người đọc thấy ngay chỗ nào mở được luôn.
-           KHÔNG đặt thẻ <a>: trang là một file rời, đường dẫn tương đối tới repo sẽ chết. */
-        var c = el('div', 'clesson' + (l.href ? ' ready' : '') + (l.star ? ' star' : ''));
+        /* Thẻ bài BẤM ĐƯỢC: toàn văn bài giảng nhúng trong trang, nên mở ngay trong khung đọc.
+           Trước đây thẻ chỉ hiện đường dẫn `docs/course/<slug>.md`, mà trên trang xuất bản thì
+           không có tệp đó — người đọc nhìn thấy bài mà không mở được. */
+        var slug = l.href ? l.href.replace(/^course\//, '').replace(/\.md$/, '') : null;
+        var moDuoc = slug && LESSONS[slug];
+        var c = el('div', 'clesson' + (moDuoc ? ' ready' : '') + (l.star ? ' star' : ''));
         c.id = 'bai-' + l.n;
+        if (moDuoc) {
+          c.tabIndex = 0;
+          c.setAttribute('role', 'button');
+          c.setAttribute('aria-label', 'Mở Bài ' + l.n + ': ' + l.title);
+          c.onclick = function () { RD.mo(slug); };
+          c.onkeydown = function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); RD.mo(slug); }
+          };
+        }
         var head = el('div', 'chead');
         head.appendChild(el('span', 'cnum', l.n));
         var t = el('h4', null, l.title);
@@ -675,7 +799,14 @@
         });
         c.appendChild(ul);
 
-        if (l.href) c.appendChild(el('span', 'cfile', 'docs/' + l.href));
+        if (moDuoc) {
+          var cta = el('span', 'copen');
+          cta.appendChild(el('b', null, 'Đọc bài này'));
+          cta.appendChild(document.createTextNode(' →'));
+          c.appendChild(cta);
+        } else if (l.href) {
+          c.appendChild(el('span', 'cfile', 'docs/' + l.href));
+        }
         grid.appendChild(c);
       });
       wrap.appendChild(grid);

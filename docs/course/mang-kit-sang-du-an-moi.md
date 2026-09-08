@@ -365,6 +365,6 @@ cả tài liệu           bài 29/29
 
 ## Đọc thêm
 
-- Bài 28 — [đóng gói và phát hành](dong-goi-va-phat-hanh.md): quy trình đưa bản mới sang dự án đang chạy.
-- Bài 27 — [risk-based testing](risk-based-testing.md): dự án mới chưa có lịch sử bug ⇒ chế độ cold-start.
+- Bài 28 — [đóng gói và phát hành](dong-goi-kit.md): quy trình đưa bản mới sang dự án đang chạy.
+- Bài 27 — [risk-based testing](learning-loop.md): dự án mới chưa có lịch sử bug ⇒ chế độ cold-start.
 - Bài 25 — [mutation testing](do-chinh-bo-kiem.md): cách chứng minh suite trên dự án mới không mù.

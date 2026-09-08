@@ -479,7 +479,7 @@ Cấp độ này còn 1 bài nữa.
 
 ## Đọc thêm
 
-- Bài 20 — [CI](ci-dong-goi-giao-kit.md): hạng `moiCommit` mà nghiệm thu gói chạy lại, và luật một-nguồn cho CI.
+- Bài 20 — [CI](ci-cd.md): hạng `moiCommit` mà nghiệm thu gói chạy lại, và luật một-nguồn cho CI.
 - Bài 29 — mang kit sang dự án mới: ranh giới tầng chung ↔ tầng dự án, dựng thành máy kiểm.
 - Bài 2 — [Git](git-tu-so-0.md): `kiem-file-cam.js` và cách nó trả mã 2 thay vì crash khi thiếu `.git`.
 

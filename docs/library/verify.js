@@ -285,6 +285,64 @@ const ok = (name, cond, got) => {
     return !!r && r.scrollWidth > r.clientWidth && getComputedStyle(r).overflowX === 'auto';
   }));
 
+  console.log('\n[5b] Khung đọc bài giảng (toàn văn nhúng trong trang)');
+  await p.locator('.mode[data-mode="course"]').click();
+  await p.waitForTimeout(500);
+  const soThe = await p.locator('.clesson.ready').count();
+  ok('mọi bài có số đều bấm mở được', soThe === (await p.locator('.clesson').count()), soThe);
+
+  await p.locator('#bai-1').click();
+  await p.waitForTimeout(500);
+  const rd = await p.evaluate(() => {
+    const a = document.querySelector('#rdArt');
+    return {
+      mo: !document.querySelector('#reader').hidden,
+      chu: a.textContent.trim().length,
+      bang: a.querySelectorAll('table.mdtable').length,
+      ma: a.querySelectorAll('pre.mdpre').length,
+      h1Sot: /^\s*Bài\s+\d/.test(a.textContent.trim()),
+      theLot: /<script|<iframe/i.test(a.innerHTML),
+    };
+  });
+  ok('bấm một bài thì khung đọc mở ra', rd.mo);
+  ok('bài dựng ra đủ chữ', rd.chu > 5000, rd.chu);
+  ok('bảng và khối mã dựng được', rd.bang > 3 && rd.ma > 3, rd);
+  ok('không lặp dòng tiêu đề trong thân bài', !rd.h1Sot);
+  /* Nội dung bài là markdown của chính repo, nhưng vẫn phải thoát HTML: bài có `<input value="...">`
+     và `<div>` trong ví dụ, không thoát thì bố cục vỡ từ giữa bài. */
+  ok('không lọt thẻ script/iframe vào thân bài', !rd.theLot);
+
+  await p.locator('#rdNext').click(); await p.waitForTimeout(350);
+  ok('nút Bài sau chuyển bài', (await p.locator('#rdTitle').innerText()).length > 5);
+  await p.keyboard.press('ArrowLeft'); await p.waitForTimeout(350);
+  await p.keyboard.press('Escape'); await p.waitForTimeout(250);
+  ok('Esc đóng khung đọc', await p.evaluate(() => document.querySelector('#reader').hidden));
+
+  /* Dựng THỬ cả 43 bài, và soi mọi mục lục.
+   *
+   * VÌ SAO SOI MỤC LỤC: bộ dựng thân bài bỏ qua khối mã, còn bản đầu của bộ mục lục thì không — nên
+   * ba dòng `##` nằm TRONG một khối markdown mẫu ở Bài 1 lọt vào mục lục và trỏ tới chỗ không tồn
+   * tại. Hai bộ đọc cùng một tệp mà hiểu khác nhau là lỗi kinh điển, và chỉ lộ ra khi đối chiếu. */
+  const md = await p.evaluate(() => {
+    const loi = [];
+    let mucTong = 0, mucHong = 0;
+    Object.keys(LESSONS).forEach((k) => {
+      const than = LESSONS[k].md.replace(/^#\s+.*\n/, '');
+      let h;
+      try { h = MD.render(than, () => null); }
+      catch (e) { loi.push(k + ': ' + e.message); return; }
+      if (!h || h.length < 500) loi.push(k + ': dựng ra quá ngắn');
+      const d = document.createElement('div'); d.innerHTML = h;
+      MD.mucLuc(than).forEach((m) => {
+        mucTong++;
+        if (!d.querySelector('[id="' + m.id + '"]')) { mucHong++; loi.push(k + ' → mục lục treo: ' + m.chu); }
+      });
+    });
+    return { soBai: Object.keys(LESSONS).length, loi: loi.slice(0, 8), mucTong, mucHong };
+  });
+  ok(`dựng được cả ${md.soBai} bài, không lỗi`, md.loi.length === 0, md.loi);
+  ok(`${md.mucTong} mục lục đều trỏ tới tiêu đề có thật`, md.mucHong === 0, md.mucHong);
+
   /* Hàng tab KHÔNG được cuộn ngang trên màn rộng.
    *
    * VÌ SAO CÓ PHÉP KIỂM NÀY: hàng tab từng dùng overflow-x:auto, và trên màn 1340px nó hiện một
@@ -313,9 +371,20 @@ const ok = (name, cond, got) => {
   }
 
   console.log('\n[8] Tự chứa (CSP của Artifact chặn mọi host ngoài)');
+  /* Chỉ soi chỗ TRÌNH DUYỆT ĐI NẠP: src=, href=, url() trong CSS.
+   *
+   * Bản đầu quét mọi chuỗi `http://` trong cả tệp. Từ lúc trang nhúng toàn văn 43 bài giảng thì nó
+   * báo đỏ ngay, vì trong bài có `http://localhost:4010` và `https://staging-a...` nằm trong CHỮ.
+   * CSP chỉ chặn thứ trang đi TẢI, nên đo cả văn bản là đo sai thứ cần đo.
+   *
+   * Phép kiểm này TRÙNG với một phép trong scripts/qa/library_drift.js, và tôi vừa sửa ở đó mà quên
+   * ở đây — đúng loại lỗi "một nội dung nằm hai chỗ thì hai bản trôi xa nhau". Giữ cả hai là cố ý
+   * (drift chạy không cần trình duyệt, verify chạy trên bản render), nhưng sửa một thì phải sửa cả. */
   const html = require('fs').readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-  const urls = [...new Set(html.match(/https?:\/\/[^"' )]+/g) || [])];
-  ok('không gọi ra host ngoài nào', urls.length === 0, urls);
+  const urls = [...new Set([...html.matchAll(/(?:\b(?:src|href)\s*=\s*["']|url\(\s*["']?)(https?:\/\/[^"')\s]+)/gi)]
+    .map((m) => m[1])
+    .filter((u) => !/^https?:\/\/www\.w3\.org/.test(u)))];
+  ok('không NẠP gì từ host ngoài', urls.length === 0, urls);
   ok('không còn lỗi nào phát sinh trong cả lượt', errs.length === 0, errs);
 
   await browser.close();

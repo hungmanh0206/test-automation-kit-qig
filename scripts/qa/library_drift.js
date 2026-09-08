@@ -347,6 +347,31 @@ if (!exists(COURSE_MD)) {
       ok.push(`${Object.keys(cs.parts).length ? cs.lessonCount + boTroFile.size : 0} file bài giảng khớp số + tiêu đề giáo trình`);
     }
 
+    /* Mọi liên kết `.md` TRONG THÂN BÀI phải trỏ tới một bài CÓ THẬT.
+     *
+     * VÌ SAO: lượt đổi tên 18 tệp bài giảng có sửa COURSE.md và sửa dòng H1, nhưng KHÔNG sửa liên
+     * kết nằm trong thân bài. Kết quả là 13 liên kết trỏ tới tên tệp đã không còn tồn tại, và chúng
+     * nằm đó qua bốn lượt commit. Không phép kiểm nào bắt được vì gate cũ chỉ soi liên kết được
+     * KHAI trong COURSE.md (trường extraHrefs), không soi bên trong bài.
+     *
+     * Nay còn quan trọng hơn: trang xuất bản mở bài ngay trong khung đọc, nên một liên kết trỏ sai
+     * là một cú bấm không ra gì. */
+    const coFile = new Set(fs.readdirSync(COURSE_DIR).filter((f) => f.endsWith('.md')));
+    const linkChet = [];
+    for (const rel of lessonFiles) {
+      const ten = path.basename(rel);
+      const noi = rd(path.join(ROOT, 'docs', rel));
+      for (const m of noi.matchAll(/\]\((?:\.\/)?(?:course\/)?([a-z0-9-]+\.md)\)/g)) {
+        if (!coFile.has(m[1])) linkChet.push(`${ten} → ${m[1]}`);
+      }
+    }
+    if (linkChet.length) {
+      problems.push(`${linkChet.length} liên kết trong thân bài trỏ tới bài KHÔNG tồn tại:\n      ` +
+        linkChet.slice(0, 12).join('\n      '));
+    } else {
+      ok.push('mọi liên kết .md trong thân bài đều trỏ tới bài có thật');
+    }
+
     /* Không khối mã nào được xuất hiện nguyên vẹn ở HAI bài.
      *
      * VÌ SAO: đo được 2 chỗ trùng, và cả hai đều là nội dung bị dạy hai lần. Máy chặn tệp cấm nằm
@@ -743,8 +768,20 @@ if (!HTML) {
   if (fs.statSync(COURSE_MD).mtimeMs > outAt) stale.push('docs/COURSE.md');
   if (stale.length) problems.push(`index.html CŨ hơn nguồn (${stale.join(' ')}) — chạy \`node docs/library/build.js\``);
   else ok.push('index.html mới hơn mọi file nguồn');
-  if (/https?:\/\//.test(HTML.replace(/https?:\/\/www\.w3\.org[^"' )]*/g, ''))) {
-    problems.push('index.html còn gọi host NGOÀI — CSP của Artifact chặn, trang sẽ hỏng im lặng');
+  /* Chỉ soi chỗ TRÌNH DUYỆT ĐI NẠP: src=, href=, và url() trong CSS.
+   *
+   * Bản đầu quét mọi chuỗi `http://` trong cả tệp. Từ lúc trang nhúng toàn văn 43 bài giảng thì nó
+   * báo đỏ ngay, vì trong bài có `http://localhost:4010`, `https://staging-a...`, `nodejs.org` —
+   * toàn là địa chỉ nằm trong CHỮ, không phải chỗ nạp tài nguyên. CSP chỉ chặn thứ trang đi tải,
+   * nên đo cả văn bản là đo sai thứ cần đo, và một gate báo oan thì sẽ bị tắt.
+   *
+   * Vẫn giữ ngoại lệ w3.org: đó là namespace của SVG, không phải một lượt tải. */
+  const nạp = [...HTML.matchAll(/(?:\b(?:src|href)\s*=\s*["']|url\(\s*["']?)(https?:\/\/[^"')\s]+)/gi)]
+    .map((m) => m[1])
+    .filter((u) => !/^https?:\/\/www\.w3\.org/.test(u));
+  if (nạp.length) {
+    problems.push('index.html còn NẠP từ host ngoài — CSP của Artifact chặn, trang sẽ hỏng im lặng:\n      ' +
+      [...new Set(nạp)].slice(0, 6).join('\n      '));
   } else ok.push('index.html tự chứa (0 host ngoài)');
 }
 
