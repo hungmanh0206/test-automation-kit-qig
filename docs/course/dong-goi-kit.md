@@ -4,12 +4,16 @@
 
 **Vấn đề**
 
-Một QA khác trong công ty hỏi xin bộ kit của bạn để dùng cho sản phẩm của họ.
+Một QA khác trong công ty hỏi xin bộ kit của bạn để dùng cho một sản phẩm khác.
 
 Trước khi gửi, bạn tự hỏi: họ cần xoá những gì trước khi bắt đầu?
 
 Nếu câu trả lời là *"khá nhiều"*, thì thứ bạn đang có là automation của một sản phẩm, không phải một
 bộ kit.
+
+> Và có một thứ nguy hiểm hơn cả sự bừa bộn: nếu trong gói còn sót quy tắc nghiệp vụ của OPS, thì
+> sang sản phẩm khác nó thành một chuẩn đối chiếu SAI, mà sai im lặng.
+
 
 **Tóm tắt bài này**
 

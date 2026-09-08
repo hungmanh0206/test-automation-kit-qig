@@ -10,8 +10,12 @@ CI báo `TC-104 FAILED`. PM nhìn qua vai bạn và hỏi:
 
 Câu trả lời đúng lúc này là: **chưa biết**.
 
-Nhưng "chưa biết" là câu khó nói, nên phần lớn người ta nói "có" rồi tạo defect. Và một phần đáng
-kể số defect đó bị Dev trả về.
+Nhưng "chưa biết" là câu khó nói, nên phần lớn người ta nói "có" rồi tạo defect. Và một phần đáng kể
+số defect đó bị trả về.
+
+> Đã có ít nhất hai bug bị Rejected vì đúng chuyện này: một cái vì tài liệu tôi đọc đã cũ, một cái vì
+> tôi lọc thông báo trên giao diện theo lớp CSS nên đọc nhầm thông báo.
+
 
 **Tóm tắt bài này**
 

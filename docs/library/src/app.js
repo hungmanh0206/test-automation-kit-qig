@@ -554,7 +554,49 @@
 
       /* Bỏ dòng H1 khỏi phần thân: tiêu đề đã hiện ở thanh trên, để lại là lặp. */
       var than = bai.md.replace(/^#\s+.*\n/, '');
+
+      /* Dòng metadata KHÔNG dựng thành trích dẫn.
+       *
+       * Trong markdown nó là `> **1 giờ 30 phút** · Có gì trong tay: … · Sau bài này: …`, nên bộ
+       * dựng cho ra một khối viền vàng đặt ngay dưới thanh tiêu đề — hai khối nhấn mạnh chồng nhau,
+       * và khối dưới thì chỉ chứa DỮ LIỆU chứ không phải một lời dẫn. Tách nó ra thành ba ô nhỏ. */
+      var strip = $('#rdStrip');
+      strip.innerHTML = '';
+      var mMeta = /^\s*>\s*\*\*([^*]+)\*\*\s*·\s*Có gì trong tay:\s*([^·]*?)\s*·\s*Sau bài này:\s*([\s\S]*?)(?:\n(?!>)|$)/.exec(than);
+      if (mMeta) {
+        than = than.slice(mMeta[0].length);
+        [['Thời lượng', mMeta[1]], ['Có gì trong tay', mMeta[2]], ['Sau bài này', mMeta[3].replace(/\n>?\s*/g, ' ').trim()]]
+          .forEach(function (pair, i) {
+            var o = el('div', 'rdmi' + (i === 0 ? ' rdmi-dur' : ''));
+            o.appendChild(el('span', 'rdmk', pair[0]));
+            o.appendChild(el('span', 'rdmv', pair[1]));
+            strip.appendChild(o);
+          });
+      }
+      strip.hidden = !mMeta;
+
       $('#rdArt').innerHTML = MD.render(than, giaiQuyetLink);
+
+      /* Khối "Vấn đề" là móc của cả bài, nên nó phải nhìn khác một đoạn văn thường. Bộ dựng cho ra
+         <p><strong>Vấn đề</strong></p> rồi mấy đoạn tiếp theo — gom chúng vào một panel. */
+      (function () {
+        var ps = $$('#rdArt > p');
+        for (var i = 0; i < ps.length; i++) {
+          var s = ps[i].textContent.trim();
+          if (s !== 'Vấn đề') continue;
+          var box = el('div', 'rdhook');
+          box.appendChild(el('div', 'rdhookk', 'Vấn đề'));
+          var n = ps[i].nextElementSibling;
+          ps[i].parentNode.insertBefore(box, ps[i]);
+          ps[i].remove();
+          while (n && !/^(H2|H3|HR)$/.test(n.tagName) && n.textContent.trim() !== 'Tóm tắt bài này') {
+            var ke = n.nextElementSibling;
+            box.appendChild(n);
+            n = ke;
+          }
+          break;
+        }
+      })();
 
       var toc = $('#rdToc');
       toc.innerHTML = '';

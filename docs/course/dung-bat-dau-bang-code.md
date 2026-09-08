@@ -4,13 +4,18 @@
 
 **Vấn đề**
 
-BA gửi một ticket. Ticket ghi: *"Đơn hàng trên 500.000 được miễn phí vận chuyển."*
+BA gửi một tệp tổng hợp yêu cầu. Nó ghi phí dịch vụ của đơn gia hạn tính theo một công thức.
 
-Bạn mở Figma. Bản thiết kế hiện phí vận chuyển 15.000 trên một đơn 600.000.
+Bạn mở Figma. Bản thiết kế màn tạo đơn không có ô nào cho con số đó.
 
-Bạn mở tài liệu API. Nó không nói gì về miễn phí vận chuyển.
+Bạn mở tài liệu đặc tả chức năng. Nó nói một công thức khác, và ở cuối có ghi chú *"cập nhật
+sprint 9"* mà hôm nay đã là sprint 14.
 
 Bạn automate theo cái nào?
+
+> Chuyện này đã dẫn tới một bug bị Rejected: con số trong tài liệu đặc tả đã cũ, còn bản đúng nằm ở
+> tệp mapping mà không ai chỉ.
+
 
 **Tóm tắt bài này**
 

@@ -11,6 +11,7 @@ nhất: git giữ lại **mọi thứ** bạn từng commit, kể cả thứ b�
 
 Chính điều đó làm một lần commit sai trở nên đắt.
 
+
 **Tóm tắt bài này**
 
 | | |

@@ -4,13 +4,14 @@
 
 **Vấn đề**
 
-Bạn vừa có 120 testcase, tất cả nằm trong repo của bạn.
+Bạn vừa có 120 testcase cho luồng thanh toán, tất cả nằm trong repo của bạn.
 
-Một QA khác trong đội hỏi: *"case nào đang cover BR-017?"*
+Một QA khác trong đội hỏi: *"case nào đang cover luật giới hạn ba lần thanh toán?"*
 
 Bạn trả lời: *"để tôi mở file ra tìm."*
 
 Đó là lúc bạn nhận ra bộ testcase của bạn chỉ tồn tại với người biết mở đúng file.
+
 
 **Tóm tắt bài này**
 

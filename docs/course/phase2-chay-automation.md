@@ -4,14 +4,20 @@
 
 **Vấn đề**
 
-Testcase ghi ba bước: chọn khách, chọn sản phẩm, bấm Tạo đơn. Kết quả mong đợi là đơn được tạo.
+Testcase ghi ba bước: tạo đơn, thêm giao dịch, xác nhận giao dịch. Kết quả mong đợi là đơn chuyển
+sang trạng thái đã thanh toán.
 
-Bạn chạy. Đơn được tạo. Test xanh.
+Bạn chạy. Đơn chuyển trạng thái. Test xanh.
 
-Trong lúc chạy, có bốn thứ bạn thấy mà testcase không nhắc: tổng tiền hiển thị lệch một nghìn, một
-thông báo sai chính tả, phản hồi API có một trường lạ, và trang tải lại mất gần hai giây.
+Trong lúc chạy, có bốn thứ bạn thấy mà testcase không nhắc: dòng Paid Amount nhảy gấp đôi trong một
+nhịp rồi trở lại, một thông báo sai chính tả, phản hồi API có một trường lạ, và màn danh sách tải
+chậm hơn hẳn bình thường.
 
 Bốn thứ đó đi đâu?
+
+> Cái thứ nhất là một bug thật. Gọi lại đúng một lần nữa cùng một callback thanh toán thì Paid Amount
+> bị cộng đôi. Nó không nằm trong bước nào của testcase.
+
 
 **Tóm tắt bài này**
 

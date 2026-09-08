@@ -4,12 +4,13 @@
 
 **Vấn đề**
 
-Test của bạn click được nút Xác nhận. Xanh.
+Test của bạn click được nút Xác nhận trên màn thanh toán. Xanh.
 
-Một người dùng chỉ dùng bàn phím thì bấm Tab qua từng element. Đến nút Xác nhận thì con trỏ nhảy
-qua, không dừng lại được.
+Một người dùng chỉ dùng bàn phím thì bấm Tab qua từng element. Đến nút Xác nhận thì con trỏ nhảy qua,
+không dừng lại được.
 
-Test xanh. Người dùng bị kẹt.
+Test xanh. Người dùng không thanh toán được.
+
 
 **Tóm tắt bài này**
 

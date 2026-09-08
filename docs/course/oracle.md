@@ -4,12 +4,16 @@
 
 **Vấn đề**
 
-Testcase của bạn ghi: kết quả mong đợi là `515.000`.
+Testcase của bạn ghi: kết quả mong đợi là `3.850.000`.
 
 Ai đó hỏi con số đó ở đâu ra.
 
 Nếu câu trả lời là *"vì sản phẩm đang trả về thế"* thì testcase đó không kiểm gì cả. Nó chỉ ghi lại
 hiện trạng, rồi báo đỏ mỗi khi hiện trạng đổi, kể cả khi đổi theo hướng đúng.
+
+> Trên OPS, con số doanh thu của một đơn có tới ba chỗ có thể lấy: một trường trên deal, một trường
+> tính lại ở OPS, và một trường hiển thị. Lấy sai chỗ thì test vẫn xanh và vẫn sai.
+
 
 **Tóm tắt bài này**
 

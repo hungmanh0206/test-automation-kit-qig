@@ -8,8 +8,9 @@ Bạn có tám gate. Thứ Hai bạn nhớ chạy. Thứ Ba cũng nhớ.
 
 Thứ Sáu có bản phát hành gấp. Không ai chạy gate nào. Code vẫn merge.
 
-Nếu chất lượng phụ thuộc vào việc một người có nhớ gõ lệnh hay không, thì nó có phải một cơ chế
-kiểm soát đáng tin?
+Nếu chất lượng phụ thuộc vào việc một người có nhớ gõ lệnh hay không, thì nó có phải một cơ chế kiểm
+soát đáng tin?
+
 
 **Tóm tắt bài này**
 

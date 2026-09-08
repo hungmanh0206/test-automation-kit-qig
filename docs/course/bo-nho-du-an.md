@@ -6,10 +6,11 @@
 
 Bạn giao một task cho agent. Nó làm tốt. Bạn giao task thứ hai cùng loại.
 
-Nó hỏi lại đúng những câu đã hỏi ở task thứ nhất. Cách dựng trạng thái Pending, tên trường ở tầng
-dưới, quy tắc tính giảm giá.
+Nó hỏi lại đúng những câu đã hỏi ở task thứ nhất: dựng một đơn gia hạn thế nào, trường loại-phí phải
+đặt trước hay sau khi đồng bộ, và tài khoản nhận phí lấy từ đâu.
 
 Nó không nhớ gì. Và người kế tiếp làm task đó cũng sẽ mò lại từ đầu đúng chuỗi bước bạn vừa mò ra.
+
 
 **Tóm tắt bài này**
 

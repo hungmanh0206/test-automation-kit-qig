@@ -4,12 +4,15 @@
 
 **Vấn đề**
 
-Testcase đầu tiên đang chạy tốt. Bạn thêm testcase thứ hai. Rồi thứ ba.
+Testcase đầu tiên chạy tốt. Bạn thêm case thứ hai cho đơn Service Fee. Rồi case thứ ba cho đơn
+Add-on.
 
-Đến file thứ ba bạn nhận ra mình đang copy: dòng mở trang, đoạn chọn khách, đoạn chọn sản phẩm. Ba
-file giống nhau tới tám phần mười.
+Đến file thứ ba bạn nhận ra mình đang copy: đoạn đăng nhập OPS, đoạn mở màn tạo đơn, đoạn bấm qua ba
+bước Next-Finish-Confirm. Ba file giống nhau tới tám phần mười.
 
-Chưa có gì sai ngay lập tức. Nhưng thử đổi nhãn một ô trên giao diện và đếm xem bạn phải sửa mấy chỗ.
+Chưa có gì sai ngay lập tức. Nhưng thử tưởng tượng luồng tạo đơn thêm một bước, và đếm xem bạn phải
+sửa mấy chỗ.
+
 
 **Tóm tắt bài này**
 

@@ -4,12 +4,13 @@
 
 **Vấn đề**
 
-Ai đó nói *"trang đơn hàng chậm"*.
+Bộ phận vận hành nói *"màn danh sách đơn chậm"*.
 
 Bạn mở lên. Nó tải xong trong khoảng hai giây. Chậm hay không?
 
 Bạn không có con số nào để đồng ý hay phản đối, và cũng không có mốc nào để so. Nên cuộc trao đổi
 biến thành ai cảm thấy thế nào.
+
 
 **Tóm tắt bài này**
 

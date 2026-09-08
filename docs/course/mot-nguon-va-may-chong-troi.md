@@ -11,6 +11,7 @@ Bạn sửa gate cho nó thôi chặn. Đi tiếp.
 Hai tháng sau, một chỗ vi phạm thật lọt qua đúng cái gate đó. Nó vẫn chạy, vẫn báo đạt, và không ai
 biết nó đã ngừng kiểm từ lúc nào.
 
+
 **Tóm tắt bài này**
 
 | | |

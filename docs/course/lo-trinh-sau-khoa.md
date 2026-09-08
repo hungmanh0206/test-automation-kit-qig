@@ -10,6 +10,7 @@ Sáu tháng sau, một người trong đội tìm ra cách lách một gate củ
 
 Phản ứng đầu tiên thường là siết gate lại. Nhưng có một cách đọc khác về chuyện vừa xảy ra.
 
+
 **Tóm tắt bài này**
 
 | | |

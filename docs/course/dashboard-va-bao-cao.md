@@ -4,11 +4,12 @@
 
 **Vấn đề**
 
-Bộ test chạy xong. Bạn có một thư mục kết quả với bốn mươi tấm ảnh và một file JSON.
+Bộ test chạy xong. Bạn có một thư mục kết quả với bốn mươi tấm ảnh và một tệp JSON.
 
 Bạn gửi cả thư mục cho PM.
 
 Họ mở ra, nhìn bốn mươi tấm ảnh, và hỏi lại đúng câu họ cần biết từ đầu: *"vậy có gì hỏng không?"*
+
 
 **Tóm tắt bài này**
 

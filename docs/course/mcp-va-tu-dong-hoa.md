@@ -4,12 +4,14 @@
 
 **Vấn đề**
 
-Agent của bạn cần đọc ticket trên hệ quản lý việc, đọc bản thiết kế, và đọc tài liệu API.
+Agent của bạn cần đọc ticket trên hệ quản lý việc, đọc bản thiết kế, và đọc dữ liệu deal bên
+HubSpot.
 
 Cách nhanh nhất là để mỗi chỗ tự gọi API của nó. Bạn viết ba đoạn code, mỗi đoạn tự lo token và phân
 trang theo một kiểu.
 
 Rồi một trong ba API đổi cách xác thực. Bạn phải tìm ra nó nằm ở mấy chỗ.
+
 
 **Tóm tắt bài này**
 

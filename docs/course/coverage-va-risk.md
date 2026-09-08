@@ -4,16 +4,16 @@
 
 **Vấn đề**
 
-Requirement nói miễn phí giao hàng từ 500.000. Bạn viết mười testcase:
-
-```
-600k · 700k · 800k · 900k · 1tr · 1,2tr · 1,5tr · 2tr · 3tr · 5tr
-```
+Requirement nói mỗi đơn Core được thanh toán tối đa ba lần. Bạn viết mười testcase, mỗi case một
+số tiền khác nhau, tất cả đều chia đơn thành hai lần trả.
 
 Mười case, tất cả xanh. Trông rất phủ.
 
-Nhưng không case nào chạm `499.999`, `500.000` hay `500.001`. Mười case, và bỏ sót đúng chỗ hay
-hỏng nhất.
+Nhưng không case nào thử **lần thứ tư**. Cũng không case nào thử khi một trong ba giao dịch còn ở
+trạng thái chưa xác nhận — mà luật thì chỉ đếm giao dịch đã xác nhận.
+
+Mười case, và bỏ sót đúng chỗ hay hỏng nhất.
+
 
 **Tóm tắt bài này**
 

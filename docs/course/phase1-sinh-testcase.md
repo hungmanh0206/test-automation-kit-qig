@@ -4,14 +4,18 @@
 
 **Vấn đề**
 
-Requirement nói: *"Khách VIP được giảm phí."*
+Requirement nói: *"Học viên thuộc chương trình cũ được giữ mức phí cũ."*
 
-Nó không nói VIP là hạng nào, giảm bao nhiêu, và giảm trước hay sau khi áp mã giảm giá.
+Nó không nói chương trình nào là cũ, mốc thời gian nào phân chia, và mức phí cũ lấy từ đâu.
 
 Bạn giao việc sinh testcase cho agent. Nó trả về mười hai testcase, trình bày rất gọn, đọc lên đều
 thấy hợp lý.
 
 Mười hai testcase đó dựa trên luật nào?
+
+> Trên OPS, đúng chỗ này có một mốc thật: tài khoản nhận phí dịch vụ đổi theo chương trình **và**
+> theo một ngày cụ thể. Đoán sai mốc là cả bộ case sai theo, mà nhìn thì không thấy.
+
 
 **Tóm tắt bài này**
 

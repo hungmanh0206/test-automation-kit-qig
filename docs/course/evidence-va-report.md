@@ -8,13 +8,15 @@ Bộ test chạy lúc 2 giờ 14 phút sáng. Tám giờ ba mươi bạn mở k�
 
 ```
 TC-104   FAILED
-Expected: 510.000
-Received: 515.000
+Expected: 3.500.000
+Received: 3.850.000
 ```
 
-Đang ở màn nào? Đơn nào? Trước đó bấm những gì? Màn hình lúc đó trông ra sao?
+Đơn nào? Loại Core hay Service Fee? Học viên ở chương trình nào? Trước đó bấm những gì? Màn hình lúc
+đó trông ra sao?
 
 Không ai biết. Kể cả bạn.
+
 
 **Tóm tắt bài này**
 

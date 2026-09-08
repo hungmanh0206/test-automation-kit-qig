@@ -6,11 +6,12 @@
 
 Bạn định bắt đầu. Mở terminal, tạo một thư mục, và câu hỏi đầu tiên là gõ gì trước.
 
-Có một chuyện xảy ra rất thường xuyên ở đúng lúc này. Người ta tạo repo, viết README, làm việc vài
-ngày, rồi một lần `git add .` lúc gấp. Trong thư mục có một file nháp chứa tài khoản test và vài
-dòng dữ liệu khách copy từ môi trường thật.
+Có một chuyện đã xảy ra thật ở đúng lúc này. Bảy tệp nháp dump API còn sót ở thư mục gốc, chưa ai cho
+vào `.gitignore`. Trong đó có một tệp chứa hai mươi bốn email và sáu số điện thoại học viên, nằm ở
+phần giá trị mẫu của phản hồi.
 
-Nó lên repo rồi. Và lịch sử git thì không xoá sạch được dễ dàng.
+Một lần `git add .` là xong. Và lịch sử git thì không xoá sạch được dễ dàng.
+
 
 **Tóm tắt bài này**
 

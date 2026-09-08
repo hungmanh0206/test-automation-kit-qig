@@ -8,8 +8,10 @@ Bạn quyết định dựng một bộ kit. Trước khi bỏ vào đó vài ch
 
 Câu thứ nhất là nó tốn bao nhiêu, không chỉ lúc dựng mà cả lúc bảo dưỡng.
 
-Câu thứ hai khó chịu hơn: có việc gì mà bộ kit này **không** làm được, để bạn không đặt nhầm kỳ vọng
-rồi thất vọng ở tháng thứ ba.
+Câu thứ hai khó chịu hơn: có việc gì mà bộ kit này **không** làm được. Ví dụ nó không thay bạn đọc
+tệp mapping để biết một trường doanh thu lấy từ đâu, và cũng không thay bạn đi hỏi BA khi hai tài
+liệu nói hai con số.
+
 
 **Tóm tắt bài này**
 

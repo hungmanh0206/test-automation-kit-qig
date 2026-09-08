@@ -4,12 +4,14 @@
 
 **Vấn đề**
 
-Bạn có một case đỏ, đã rerun ba lần, đã xác định là lỗi sản phẩm. Giờ tạo bug.
+Bạn có một case đỏ, đã rerun, đã xác định là lỗi sản phẩm. Bạn tạo bug.
 
 Hai ngày sau nó bị trả về: *"không tái hiện được."*
 
-Bạn mở lại và làm theo đúng các bước mình đã ghi. Nó tái hiện. Vấn đề là Dev làm theo cách khác, vì
-phần các-bước-tái-hiện của bạn viết *"tạo một đơn hàng"* chứ không ghi bạn đã tạo nó bằng cách nào.
+Bạn mở lại và làm theo đúng các bước mình đã ghi. Nó tái hiện. Vấn đề là Dev dựng dữ liệu theo cách
+khác, vì phần các-bước của bạn viết *"tạo một đơn gia hạn"* chứ không ghi rằng đơn đó phải sinh từ
+một deal đã ở đúng trạng thái, với một trường loại-phí đã được đặt trước.
+
 
 **Tóm tắt bài này**
 

@@ -13,6 +13,7 @@ Luật đó nằm trong tài liệu của đội. Ai cũng đồng ý nó hợp 
 Ba tuần sau, có một bản phát hành gấp. Không ai kiểm luật đó, và không có gì báo. Không phải vì ai
 cẩu thả, mà vì lúc gấp thì người ta quên.
 
+
 **Tóm tắt bài này**
 
 | | |

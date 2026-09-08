@@ -10,6 +10,10 @@ Con số đó nghĩa là sản phẩm tốt, hay nghĩa là bộ test đã chạ
 
 Bạn không biết, vì báo cáo gộp "xanh ngay lần đầu" và "xanh ở lần thứ ba" thành cùng một chữ Pass.
 
+> Trên OPS có một chỗ chập chờn thật và rất dễ giấu bằng retry: menu ba chấm ở mỗi dòng bảng dựng
+> bằng JavaScript nên mở không kịp, và một cú click lệch nhịp rơi vào nút Edit thay vì nút Cancel.
+
+
 **Tóm tắt bài này**
 
 | | |

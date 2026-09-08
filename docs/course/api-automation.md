@@ -6,10 +6,13 @@
 
 Bạn cần kiểm một luật: đơn đã xác nhận thì không được sửa.
 
-Bạn mở màn chi tiết đơn, thấy nút Sửa đã bị ẩn. Test viết xong, chạy xanh, đánh dấu luật này đã phủ.
+Bạn mở màn chi tiết đơn, thấy nút Edit đã bị ẩn. Test viết xong, chạy xanh, đánh dấu luật này đã phủ.
 
-Nhưng bạn vừa chứng minh được điều gì? Rằng giao diện đã ẩn nút. Không phải rằng hệ thống từ chối
-việc sửa.
+Nhưng bạn vừa chứng minh được điều gì? Rằng giao diện đã ẩn nút.
+
+Chuyện này đã xảy ra thật trên OPS, và ở một chỗ đắt hơn: API cho phép huỷ một đơn đã thanh toán, và
+cho phép xoá một giao dịch đã xác nhận. Giao diện thì không có nút nào cho hai việc đó.
+
 
 **Tóm tắt bài này**
 

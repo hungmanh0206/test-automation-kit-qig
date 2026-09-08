@@ -4,11 +4,13 @@
 
 **Vấn đề**
 
-Kho tri thức của bạn có vài trăm bản ghi, tích trong sáu tháng.
+Kho tri thức của bạn có vài trăm bản ghi, tích trong sáu tháng: cách dựng từng loại đơn, bản đồ tên
+trường giữa ba tầng, lịch sử bug theo module.
 
 Nó không nằm trong repo, vì nó là dữ liệu công ty. Nghĩa là git không giữ nó.
 
 Nghĩa là nếu bạn xoá sai một thư mục, không có bản lùi nào.
+
 
 **Tóm tắt bài này**
 

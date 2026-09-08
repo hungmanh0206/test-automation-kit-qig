@@ -4,12 +4,14 @@
 
 **Vấn đề**
 
-Bạn cài xong công cụ, chạy được test mẫu, và mở file cấu hình ra xem.
+Bạn cài xong công cụ, chạy được test mẫu, và mở tệp cấu hình ra xem.
 
 Bốn mươi dòng. Bạn không biết dòng nào làm gì.
 
 Cách nhanh nhất là copy một cấu hình từ blog nào đó rồi đi tiếp. Nhiều người làm thế, và nó chạy.
-Vấn đề chỉ lộ ra sáu tháng sau, khi CI báo xanh trong khi không có gì được kiểm thật.
+Vấn đề chỉ lộ ra sau một lần đổi cấu trúc thư mục: CI báo xanh trong khi không có test nào được
+chạy.
+
 
 **Tóm tắt bài này**
 

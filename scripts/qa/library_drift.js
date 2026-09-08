@@ -497,7 +497,17 @@ if (!exists(COURSE_MD)) {
      * CHỈ cấm cụm tự xưng — "các khoá AI Testing hiện có" / "khoá phổ biến trên thị trường"
      * là so sánh với khoá của NGƯỜI KHÁC, hoàn toàn hợp lệ. Cấm từ trần "khoá" thì bắt oan cả
      * "khoảng cách", "tài khoản", "khoá API". */
-    const XUNG_HO_CAM = /học viên|người học|Học viên|Người học|khoá học này|cả khoá(?! AI| phổ biến| nhẹ| khác)|sau khoá học|cuối khoá|toàn khoá|trong khoá(?! AI)|khoá này(?! nhẹ)/;
+    /* "HỌC VIÊN" nay là DANH TỪ NGHIỆP VỤ, không còn là cách gọi người đọc.
+     *
+     * Từ lượt viết lại khối "Vấn đề" bằng tình huống thật của LMS-OPS, chữ này xuất hiện đúng nghĩa
+     * của nó: người dùng cuối của hệ học tập. "Chọn học viên, chọn khoá" là một bước trên màn tạo
+     * đơn, không phải một câu nói với người đọc. Cấm từ trần thì bắt oan 7 chỗ, và không thay được
+     * bằng từ nào khác vì đó là tên đúng của thực thể đó.
+     *
+     * Nên chỉ cấm những CỤM mà chữ này chắc chắn đang chỉ người đọc: "học viên sẽ học", "học viên
+     * nhận được", "dành cho học viên"... Còn "người học" thì cấm tuyệt đối, vì nó không phải danh từ
+     * nghiệp vụ của hệ nào cả. */
+    const XUNG_HO_CAM = /[Hh]ọc viên (?:sẽ (?:học|hiểu|biết|nhận|làm được)|nhận được|phải (?:học|nắm)|của (?:khoá|kh[oó]a))|dành cho học viên|[Nn]gười học|khoá học này|cả khoá(?! AI| phổ biến| nhẹ| khác)|sau khoá học|cuối khoá|toàn khoá|trong khoá(?! AI)|khoá này(?! nhẹ)/;
     const viPhamXungHo = [];
     for (const rel of lessonFiles.concat(['COURSE.md'])) {
       const f = rel === 'COURSE.md' ? COURSE_MD : path.join(ROOT, 'docs', rel);

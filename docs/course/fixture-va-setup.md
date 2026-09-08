@@ -8,10 +8,11 @@
 
 Bạn mở ba mươi testcase của mình ra và đọc phần đầu của từng cái.
 
-Cả ba mươi đều bắt đầu bằng gần như đúng tám dòng giống nhau: tạo khách, tạo sản phẩm, tạo đơn, rồi
-đưa đơn về trạng thái cần thiết.
+Cả ba mươi đều bắt đầu bằng gần như đúng tám dòng giống nhau: tạo deal, đẩy deal sang trạng thái mở
+được pipeline thanh toán, đồng bộ sang OPS, tạo đơn, rồi đưa đơn về đúng trạng thái cần kiểm.
 
-Giờ luồng tạo đơn của sản phẩm đổi một bước. Bạn phải sửa ba mươi chỗ, và sẽ có chỗ bị bỏ sót.
+Giờ luồng đó thêm một bước xác nhận. Bạn phải sửa ba mươi chỗ, và sẽ có chỗ bị bỏ sót.
+
 
 **Tóm tắt bài này**
 

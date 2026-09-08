@@ -4,12 +4,13 @@
 
 **Vấn đề**
 
-Bạn có một test mẫu chạy xanh. Nó kiểm một trang trên internet, không kiểm sản phẩm của bạn.
+Bạn viết test đầu tiên cho luồng tạo đơn. Nó xanh ngay lần chạy đầu.
 
-Giờ bạn viết test đầu tiên cho luồng tạo đơn. Nó xanh ngay lần chạy đầu.
+Nhưng bạn vừa tự tìm ra ở Bài 1 rằng luồng đó **có bug**.
 
-Nhưng bạn vừa thấy ở Bài 1 là sản phẩm này **có bug** ở đúng luồng đó. Test xanh mà bug vẫn còn,
-nghĩa là test của bạn chưa kiểm cái nó tưởng đang kiểm.
+Test xanh mà bug vẫn còn, nghĩa là test của bạn chưa kiểm cái nó tưởng đang kiểm. Và đây là kiểu
+hỏng khó thấy nhất, vì nó cho đúng cái tín hiệu mà một bộ test tốt cũng cho.
+
 
 **Tóm tắt bài này**
 

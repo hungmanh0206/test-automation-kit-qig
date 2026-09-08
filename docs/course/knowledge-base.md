@@ -4,14 +4,15 @@
 
 **Vấn đề**
 
-Sprint 4, đội tìm ra một bug làm tròn số ở màn thanh toán. Fix, đóng, đi tiếp.
+Một sprint nào đó, đội tìm ra bug làm tròn số ở màn thanh toán. Fix, đóng, đi tiếp.
 
-Sprint 11, màn thanh toán được viết lại. Không ai còn nhớ bug cũ. Bộ regression mới không có case
-nào cho việc làm tròn.
+Bảy sprint sau, luồng thanh toán được viết lại để thêm một cổng thanh toán mới. Không ai còn nhớ bug
+cũ. Bộ regression mới không có case nào cho việc làm tròn.
 
 Bug quay lại.
 
 Đội đã từng học được điều này. Nhưng bộ kit thì không nhớ gì.
+
 
 **Tóm tắt bài này**
 

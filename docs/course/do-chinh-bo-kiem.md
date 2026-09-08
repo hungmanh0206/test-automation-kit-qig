@@ -11,9 +11,10 @@ Bộ test của bạn có 500 case. Chạy hết bốn mươi phút mỗi đêm.
 
 Nghe rất tốt.
 
-Nhưng nếu mai sản phẩm hỏng một chỗ, nó có đỏ không?
+Nhưng nếu mai luồng thanh toán hỏng một chỗ, nó có đỏ không?
 
 Không ai biết. Vì sản phẩm đang đúng, nên bộ test chưa có cơ hội chứng minh nó bắt được gì.
+
 
 **Tóm tắt bài này**
 

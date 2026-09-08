@@ -6,10 +6,12 @@
 
 Bộ test desktop của bạn xanh hết.
 
-PM mở sản phẩm trên điện thoại để duyệt, rồi gửi cho bạn một ảnh: nút Thanh toán bị bàn phím ảo che
-mất. Không bấm được.
+Học viên mở LMS trên điện thoại để vào lớp, rồi gửi ảnh cho bộ phận vận hành: nút vào phòng học bị
+bàn phím ảo che mất. Không bấm được.
 
-Bộ test của bạn không hề thấy chuyện này, vì nó chưa từng chạy ở kích thước đó.
+Bộ test của bạn không hề thấy chuyện này, vì nó chưa từng chạy ở kích thước đó. Mà phần lớn học viên
+thì vào bằng điện thoại.
+
 
 **Tóm tắt bài này**
 

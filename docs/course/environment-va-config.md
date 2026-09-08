@@ -4,17 +4,14 @@
 
 **Vấn đề**
 
-Bộ test của bạn đang chạy trên một sản phẩm.
+Bộ test của bạn đang chạy trên môi trường thử nghiệm của OPS.
 
-Tuần sau bạn được giao thêm một sản phẩm nữa. Cùng công ty, khác đội, khác địa chỉ:
+Tuần sau bạn được giao thêm việc trên LMS. Khác hệ, khác địa chỉ, khác cả cách đăng nhập: OPS thì
+form rồi cookie, còn LMS thì token qua Keycloak.
 
-```
-Sản phẩm A:  https://staging-a.congty.com
-Sản phẩm B:  https://staging-b.congty.com
-```
+Nếu để chuyển sang hệ thứ hai bạn phải sửa `page.goto('https://...')` trong tám mươi testcase, thì
+thứ bạn đang có không phải một bộ kit.
 
-Nếu để chuyển sang B bạn phải sửa `page.goto('https://...')` trong tám mươi testcase, thì thứ bạn
-đang có không phải một bộ kit.
 
 **Tóm tắt bài này**
 

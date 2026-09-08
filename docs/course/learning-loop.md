@@ -4,12 +4,14 @@
 
 **Vấn đề**
 
-Bạn có hai mươi module và thời gian đủ để test kỹ khoảng năm cái.
+Bạn có hai mươi module trên OPS và thời gian đủ để test kỹ khoảng năm cái.
 
 Chọn năm cái nào?
 
 Nếu câu trả lời là cảm giác thì mỗi người chọn khác, và mỗi sprint lại đổi. Mà bạn đang có sẵn dữ
-liệu để trả lời: lịch sử bug của hai mươi module đó nằm ngay trong kho tri thức từ Bài 26.
+liệu để trả lời: lịch sử bug của hai mươi module đó nằm ngay trong kho tri thức từ Bài 26, và nó nói
+rất rõ rằng luồng thanh toán vỡ nhiều hơn màn danh mục.
+
 
 **Tóm tắt bài này**
 

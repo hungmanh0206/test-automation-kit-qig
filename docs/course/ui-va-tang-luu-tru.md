@@ -4,12 +4,13 @@
 
 **Vấn đề**
 
-Bạn tạo một đơn hàng. Màn hình hiện giảm giá `8.000`. Test so `8.000`, xanh.
+Bạn tạo một đơn. Màn hình hiện giảm giá `8.000`. Test so `8.000`, xanh.
 
 Ba tuần sau kế toán báo lệch tiền.
 
 Giá trị thật được lưu là `8.750`. Giao diện làm tròn xuống khi hiển thị, và chỉ làm tròn ở phần hiển
 thị. Test của bạn đọc đúng cái màn hình hiện, nên nó không thấy gì bất thường.
+
 
 **Tóm tắt bài này**
 

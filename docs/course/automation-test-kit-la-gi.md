@@ -4,14 +4,20 @@
 
 **Vấn đề**
 
-Bạn được giao kiểm chức năng tạo đơn hàng. Requirement nói phí giao hàng được tính theo một quy tắc
-cụ thể.
+Bạn được giao kiểm màn tạo đơn hàng trên OPS. Requirement nói phí dịch vụ được tính theo một quy
+tắc cụ thể, phụ thuộc loại đơn và chương trình học.
 
-Bạn mở sản phẩm, chọn khách, chọn hàng, bấm Tạo đơn. Màn hình hiện một con số.
+Bạn mở màn, chọn học viên, chọn khoá, bấm qua Next rồi Finish rồi Confirm. Màn hình hiện một con số
+ở dòng Total.
 
 Con số đó đúng không?
 
 Bạn chưa biết. Vì bạn chưa tính con số nào của riêng mình để so vào.
+
+> Tài liệu này thực hành trên một sản phẩm nhỏ chạy trên máy bạn, không phải trên OPS. Lý do đơn
+> giản: bạn cần một chỗ tự do bấm và cố tình làm sai. Nhưng mọi tình huống mở bài đều là tình huống
+> thật đã gặp trên OPS và LMS.
+
 
 **Tóm tắt bài này**
 

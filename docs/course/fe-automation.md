@@ -8,8 +8,9 @@ Sáng nay bộ test đỏ mười hai case. Bạn mở ra xem.
 
 Không case nào đỏ vì sản phẩm sai. Cả mười hai đều đỏ vì không tìm thấy element.
 
-Dev vừa đổi một thẻ `div` thành `section` ở phần bố cục, không đụng gì tới logic. Hành vi của sản
-phẩm y nguyên, mà bộ test của bạn thì gãy.
+Màn danh sách đơn dùng bảng của thư viện giao diện, và nút thao tác nằm sau một menu ba chấm. Dev đổi
+một lớp CSS ở phần bố cục, không đụng gì tới logic. Hành vi y nguyên, mà bộ test thì gãy.
+
 
 **Tóm tắt bài này**
 

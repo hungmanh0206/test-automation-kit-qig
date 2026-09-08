@@ -4,14 +4,15 @@
 
 **Vấn đề**
 
-Test của bạn đang dùng khách `KH02` có sẵn trên môi trường.
+Test của bạn đang dùng một học viên có sẵn trên môi trường, và một deal có sẵn bên HubSpot.
 
 Sáng nay nó đỏ. Bạn không sửa dòng nào từ hôm qua.
 
-Hoá ra một người khác đổi hạng của `KH02` từ Bạc sang Vàng để thử một việc khác. Test đỏ, và đỏ
-không phải vì sản phẩm sai.
+Hoá ra một người khác đã dùng chính deal đó để thử luồng chuyển đổi, nên trạng thái của nó không còn
+là trạng thái test của bạn cần. Test đỏ, và đỏ không phải vì sản phẩm sai.
 
-Đó là loại đỏ tệ nhất, vì nó dạy cả team thói quen bỏ qua màu đỏ.
+Đó là loại đỏ tệ nhất, vì nó dạy cả đội thói quen bỏ qua màu đỏ.
+
 
 **Tóm tắt bài này**
 

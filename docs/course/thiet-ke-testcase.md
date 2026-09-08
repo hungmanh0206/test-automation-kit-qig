@@ -4,14 +4,16 @@
 
 **Vấn đề**
 
-Sản phẩm trả về `515000`. Test của bạn viết `expect(total).toBe(515000)`. Chạy xanh.
+Sản phẩm trả về `3.850.000`. Test của bạn viết `expect(total).toBe(3850000)`. Chạy xanh.
 
 Test đó vừa chứng minh được gì?
 
 Nó chứng minh sản phẩm trả về đúng con số mà test vừa copy từ chính sản phẩm. Tức là sản phẩm bằng
 chính nó.
 
-Nó chưa chứng minh sản phẩm đúng requirement.
+Nó chưa chứng minh sản phẩm đúng requirement. Mà công thức phí dịch vụ có tới ba nhánh theo loại đơn,
+nên "đúng" ở đây không hiển nhiên chút nào.
+
 
 **Tóm tắt bài này**
 
