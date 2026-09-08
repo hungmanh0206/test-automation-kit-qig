@@ -635,7 +635,7 @@ if (!exists(COURSE_MD)) {
      * Khối "Vấn đề" phải VIẾT TAY cho từng bài (một tình huống cụ thể), nên nó dùng MỐC: ghi số bài
      * còn thiếu hôm nay, và chỉ chặn khi con số TĂNG. Bật chặn tuyệt đối ngay thì gate đỏ 43 bài và
      * bị tắt trong một ngày — bài học đã trả giá ở gate locator. */
-    const MOC_THIEU_VAN_DE = 43;
+    const MOC_THIEU_VAN_DE = 42;
     const thieuVanDe = [];
     const thieuDoChin = [];
     const baiSauKhongLyDo = [];

@@ -386,11 +386,13 @@ testcase automation đầu tiên.
 
 *Có gì trong tay: chưa có gì.*
 
-- **Thực hành:** chạy app, tạo một đơn hàng bằng tay, tự tính kết quả từ `spec.md`, và tìm ra bug đầu tiên ở phút thứ 40 mà không dùng công cụ nào
-- Phân biệt ba thứ hay bị gọi lẫn: một bộ test, một automation project, và một test kit
-- 10 từ vựng của cả tài liệu này, mỗi từ một ví dụ lấy từ việc vừa làm, không phải một định nghĩa
-- Vẽ dây chuyền 11 chặng và tự đánh dấu chặng nào bạn đang làm bằng tay
-- Đào sâu: [chi phí và giới hạn thật](course/chi-phi-va-gioi-han.md) của việc dựng kit, đọc trước khi quyết đầu tư thời gian
+- **Thực hành:** nhận việc, đọc đặc tả, tự tính kết quả TRƯỚC khi bấm, rồi tìm ra bug đầu tiên ở phút thứ 40 mà không dùng công cụ nào
+- Dựng thêm một bộ dữ liệu phân biệt được hai giải thích, để nghi ngờ thành bằng chứng
+- Đếm thời gian bốn mươi phút cho một bộ, rồi tự thấy vì sao cần automation
+- Vòng 5 chặng, và chặng duy nhất máy KHÔNG làm được
+- Ba thứ hay bị gọi lẫn: một bộ test, một automation project, và một test kit
+- 10 từ vựng, mỗi từ gắn vào đúng việc bạn vừa làm, gọi tên ở CUỐI bài chứ không định nghĩa trước
+- Đào sâu: [chi phí và giới hạn thật](course/chi-phi-va-gioi-han.md) của việc dựng kit
 
 ### [Bài 2 — Dựng môi trường làm việc cho Automation](course/moi-truong.md) *(1.5h · dễ)*
 
