@@ -1,6 +1,6 @@
 # Bài 20 — CI/CD
 
-> **2 giờ 30 phút** · Có gì trong tay: kit hoàn chỉnh có điểm mutation · Sau bài này: kit chạy không cần bạn, và người khác dùng được nó
+> **2 giờ 30 phút** · Có gì trong tay: mọi gate chạy được trên máy bạn, và chỉ khi bạn nhớ chạy · Sau bài này: kit chạy không cần bạn, và người khác dùng được nó
 
 **Tóm tắt bài này**
 
@@ -30,7 +30,7 @@ Năm việc:
 
 ---
 
-## 1. CI không phải "chạy tất cả trên đám mây"
+## Việc 1 — CI không phải "chạy tất cả trên đám mây"
 
 Phản xạ đầu tiên là nhét mọi thứ vào CI. Sai, vì ba lý do:
 
@@ -119,7 +119,7 @@ if (chuaXep.length) {
 console.log(`[ci-scope] ✓ ĐẠT — ${daXep.size} script đã xếp hạng`);
 ```
 
-## 2. Cái bẫy đắt nhất của CI: thừa hưởng biến môi trường
+## Việc 2 — Cái bẫy đắt nhất của CI: thừa hưởng biến môi trường
 
 Chuyện này xảy ra với mọi người một lần, và mất nửa ngày để hiểu:
 
@@ -216,7 +216,7 @@ npx playwright test tests/smoke
 
 Đỏ ở đây nghĩa là nó cũng sẽ đỏ trên CI — và bạn biết trước mười lăm phút thay vì sau nửa ngày.
 
-## 3. Độ với tới: máy không ai gọi thì bằng không có
+## Việc 3 — Độ với tới: máy không ai gọi thì bằng không có
 
 Bạn có hơn ba mươi máy. Câu hỏi: bao nhiêu cái thật sự chạy?
 
@@ -291,7 +291,7 @@ console.log('[voi-toi] ✓ ĐẠT — mọi máy đều với tới được');
 > Lần đầu chạy máy này trên kit thật, nó tìm ra **bốn** gate viết xong, đúng, có test, và chưa bao giờ chạy
 > vì không ai thêm chúng vào workflow.
 
-## 4. Kiểm ngang nhánh
+## Việc 4 — Kiểm ngang nhánh
 
 Kit sống ở nhiều nhánh, và mỗi nhánh có vòng đời riêng. Nhánh `rerun` phải có gate chất lượng output; nhánh
 `phase1` phải có validator testcase. Khai bằng dữ liệu:
@@ -314,7 +314,7 @@ Máy kiểm đọc file workflow của từng nhánh và đối chiếu. Cùng k
 lại mã. Điểm cần nhớ: khai bằng dữ liệu, kiểm bằng máy. Viết trong tài liệu "nhánh rerun phải chạy
 self-review" là dặn dò; file JSON + máy đọc nó là forcing function.
 
-## 5. Đóng gói: tầng chung vs tầng theo dự án
+## Việc 5 — Đóng gói: tầng chung vs tầng theo dự án
 
 Khi giao kit cho người khác, câu hỏi đầu tiên của họ là *"cái nào tôi phải sửa?"*. Trả lời bằng một ranh giới
 rõ ràng:
@@ -367,7 +367,7 @@ test-results/
 playwright-report/
 ```
 
-## 6. README mà người mới đọc là chạy được
+## Việc 6 — README mà người mới đọc là chạy được
 
 Đây là thứ quyết định kit của bạn có được ai dùng hay không. Cấu trúc đã chứng minh hiệu quả:
 
@@ -430,7 +430,7 @@ Ba đặc điểm của README này đáng chép lại:
 3. Mục "khi gate chặn bạn", vì đó là trải nghiệm đầu tiên của người mới, và nếu nó khó chịu thì họ sẽ đi
    tìm cách vô hiệu gate.
 
-## 7. Nhịp bảo dưỡng
+## Việc 7 — Nhịp bảo dưỡng
 
 Kit không tự đứng vững. Bốn nhịp:
 
@@ -575,3 +575,8 @@ chỉ **chạy**.
 - [`docs/BUILD_JOURNAL.md`](../BUILD_JOURNAL.md) — hồi ký dựng bộ kit thật này: bảy thời kỳ, sáu nguyên tắc,
   và bốn điểm mù đã trả giá để biết. Đọc sau khi làm hết, vì giờ bạn đã có ngữ cảnh để nó có nghĩa.
 - Thư viện thuật ngữ ở [`docs/library/`](../library/) — tra nhanh mọi luật, máy, verdict, kỹ năng.
+
+## Bài sau
+
+Hết Bài 20 là hết Phần 4. Bài 21 mở Phần 5 bằng chỗ hổng dễ thấy nhất: bộ test của bạn chạy trên
+desktop, còn phần lớn người dùng thì cầm điện thoại.

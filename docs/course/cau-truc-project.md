@@ -200,5 +200,5 @@ thứ tự ưu tiên là thứ tự mức nguy hiểm.
 
 ## Bài sau
 
-Bài 1 nói về chuyện tốn kém: bạn đưa cả thư mục tài liệu cho agent, nó đọc thiếu, và không có gì báo cho bạn
-biết là nó đã đọc thiếu.
+Bài 6 hỏi tiếp: cấu trúc thư mục xong rồi, nhưng URL và tài khoản vẫn nằm trong code. Mai chuyển bộ
+automation này sang một sản phẩm khác thì phải sửa bao nhiêu chỗ.

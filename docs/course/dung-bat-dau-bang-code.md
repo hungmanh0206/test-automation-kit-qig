@@ -1,6 +1,6 @@
 # Bài 12 — Đừng bắt đầu automation bằng code
 
-> **2 giờ 30 phút** · Có gì trong tay: template testcase, 10 case viết tay để so · Sau bài này: bộ case do agent sinh, đã qua Ambiguity Gate
+> **2 giờ** · Có gì trong tay: bộ automation chạy được, nhưng chưa ai hỏi nó đang kiểm cái gì · Sau bài này: bộ case do agent sinh, đã qua Ambiguity Gate
 
 **Tóm tắt bài này**
 
@@ -29,7 +29,7 @@ Bốn việc:
 
 ---
 
-## 1. Hai lượt, không phải một
+## Việc 1 — Hai lượt, không phải một
 
 Sai lầm phổ biến nhất: một prompt duy nhất *"đọc tài liệu và viết testcase"*. Nó gộp hai việc có **bản chất
 khác nhau** và **điều kiện dừng khác nhau**:
@@ -44,7 +44,7 @@ giả định đó, và bạn không biết nó đã giả định gì.
 
 Tách ra thì chỗ mơ hồ lộ trước khi tốn công.
 
-## 2. Lượt 1 — phân tích
+## Việc 2 — Lượt 1 — phân tích
 
 Dùng khuôn 5 phần từ Bài 15. Điểm mới ở đây là định dạng đầu ra có mã tham chiếu:
 
@@ -103,7 +103,7 @@ Và bảng chỗ chưa rõ phải bắt được **cả ba** thứ này:
 > mục 2: câu ràng buộc phải kiểm được. Ở đây câu hiệu quả là *"đọc TOÀN BỘ, gồm phần Ghi chú của BA ở cuối"*
 > — vì chỗ mơ hồ trong tài liệu thật gần như luôn nằm ở phần ghi chú, không nằm ở phần đặc tả.
 
-## 3. Ambiguity Gate — điểm dừng thật
+## Việc 3 — Ambiguity Gate — điểm dừng thật
 
 Ba mức, và chỉ mức đầu được dừng cả lượt:
 
@@ -131,7 +131,7 @@ Ba câu này chặn việc viết case tính tiền, nên em chờ trả lời r
 Ba đặc điểm khiến nó được trả lời nhanh: trích vị trí cụ thể · nói rõ nó chặn cái gì · **đề xuất một
 cách hiểu** để BA chỉ cần xác nhận thay vì tự nghĩ.
 
-## 4. Lượt 2 — sinh case
+## Việc 4 — Lượt 2 — sinh case
 
 Chỉ chạy sau khi có câu trả lời. Prompt:
 
@@ -165,7 +165,7 @@ gặp rule thiếu thông tin sẽ viết một case với expected mơ hồ, v�
 
 Lưu vào `outputs/demo/tasks/PROJ-1234/test-cases/agent-sinh.md`.
 
-## 5. Kiểm bằng máy trước khi đọc bằng mắt
+## Việc 5 — Kiểm bằng máy trước khi đọc bằng mắt
 
 Bạn đã có parser từ Bài 13. Dùng nó trước khi đọc:
 
@@ -183,7 +183,7 @@ loi.forEach(l => console.log('  - ' + l));
 Nếu parser không đọc được thì agent đã sai định dạng, sửa prompt, đừng sửa tay bảng. Sửa tay là bạn đang
 làm việc của máy, và lần sau vẫn sai.
 
-## 6. Ba dấu hiệu case không execute được
+## Việc 6 — Ba dấu hiệu case không execute được
 
 Đây là thứ phân biệt bộ case dùng được với bộ case trông đẹp. Cả ba đều bắt được bằng mắt trong một phút.
 
@@ -215,7 +215,7 @@ Phép thử: đọc xong bạn biết phải làm gì để có trạng thái đ
 
 Bước gộp thì khi FAIL bạn không biết hỏng ở bước nào, và đó là nửa công việc điều tra.
 
-## 7. Đối chiếu với 10 case bạn viết tay
+## Việc 7 — Đối chiếu với 10 case bạn viết tay
 
 Đây là bước quan trọng nhất của bài, vì nó nói cho bạn biết agent mạnh và yếu ở đâu trên chính dự án bạn.
 
@@ -230,7 +230,7 @@ Nhóm thứ hai là chỗ học được nhiều nhất. Nếu bạn có case m�
 mà tài liệu không nói?** Câu trả lời thường là một business rule chưa được ghi ở đâu — và đó chính là thứ
 phải ghi vào bộ nhớ dự án ở Bài 26.
 
-## 8. Vì sao review của người không bị thay thế
+## Việc 8 — Vì sao review của người không bị thay thế
 
 Agent làm tốt: đọc hết tài liệu · phủ rộng và đều · giữ đúng định dạng · không mỏi.
 
@@ -345,3 +345,8 @@ quản lý rằng độ phủ sẽ bị giới hạn bởi nguồn, không bởi
 - Phần "Ghi chú cho giảng viên" ở cuối [`assets/sample-requirement.md`](assets/sample-requirement.md):
   **10** chỗ cài cắm, không chỉ 3. Đọc sau khi làm xong để biết mình còn bỏ sót gì.
 - Bài 13 sẽ soi kỹ vào cột Kết quả mong đợi, phần dễ trông-như-đúng nhất.
+
+## Bài sau
+
+Bài 13 soi vào cột dễ trông-như-đúng nhất của bảng testcase: Kết quả mong đợi. Cụ thể là câu hỏi con
+số trong đó lấy từ đâu ra.

@@ -1,6 +1,6 @@
 # Bài 26 — Knowledge Base
 
-> **2 giờ 30 phút** · Có gì trong tay: knowledge base đã có vài chục bản ghi · Sau bài này: tri thức có phiên bản, truy được nguồn, và không âm thầm dạy sai cho agent
+> **2 giờ 30 phút** · Có gì trong tay: đã chạy hàng trăm testcase qua nhiều sprint · Sau bài này: tri thức có phiên bản, truy được nguồn, và không âm thầm dạy sai cho agent
 
 **Tóm tắt bài này**
 
@@ -403,3 +403,8 @@ Câu hỏi ở bước 2 là toàn bộ lý do bài này tồn tại. Không có
 - Bài 26 — [bộ nhớ dự án](bo-nho-du-an.md): 5 kho, và câu trả lời cho *"từ số 0 thì học từ đâu"*.
 - Bài 27 — sao lưu và vòng đời dữ liệu: kho này mất thì mất theo cả lịch sử `superseded`.
 - Bài 2 — [Git](git-tu-so-0.md): vì sao `knowledge/` không lên repo, và tên tệp là lớp rò rỉ hay bị bỏ.
+
+## Bài sau
+
+Bài 27 khép vòng: bug đã log quay lại thành trọng số rủi ro của lượt chạy sau. Đây là chỗ kit tốt lên
+thay vì chỉ chạy lại.

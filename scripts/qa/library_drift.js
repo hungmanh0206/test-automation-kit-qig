@@ -343,6 +343,62 @@ if (!exists(COURSE_MD)) {
       ok.push(`${Object.keys(cs.parts).length ? cs.lessonCount + boTroFile.size : 0} file bài giảng khớp số + tiêu đề giáo trình`);
     }
 
+    /* ── Bài giảng khớp giáo trình ở BA mệnh đề nữa, ngoài số + tiêu đề ────────────────
+     *
+     * VÌ SAO: lượt tái cấu trúc vừa rồi đổi số 29 bài và đổi tiêu đề 18 bài. Số + tiêu đề thì
+     * gate cũ bắt được, còn BA thứ này thì không, nên chúng trôi im lặng — đo được 41 chỗ lệch:
+     *   · thời lượng trong bài ≠ thời lượng giáo trình (6 bài, lệch tới 1 giờ)
+     *   · dòng "Có gì trong tay" nói người đọc đang cầm thứ của bài KHÁC (11 bài)
+     *   · thiếu hẳn mục "Bài sau" (15 bài) — người đọc từ số 0 mất luôn sợi dây nối sang bài kế
+     * Cả ba đều là thứ người đọc thấy ngay ở dòng đầu và dòng cuối mỗi bài. */
+    const phutTuGio = (t) => {
+      const m = /^(\d+(?:\.\d+)?)h$/.exec(t.trim());
+      if (m) return Math.round(parseFloat(m[1]) * 60);
+      let p = 0;
+      const g = /(\d+)\s*giờ/.exec(t); if (g) p += Number(g[1]) * 60;
+      const ph = /(\d+)\s*phút/.exec(t); if (ph) p += Number(ph[1]);
+      return p;
+    };
+    const lechBai = [];
+    const soCoTruoc = new Set(cs.parts.flatMap((p) => p.lessons.map((l) => Number(l.n))));
+    const baiCuoi = Math.max(...soCoTruoc);
+    for (const p of cs.parts) for (const l of p.lessons) {
+      if (!l.href) continue;
+      const ten = path.basename(l.href);
+      const noi = rd(path.join(ROOT, 'docs', l.href));
+
+      const meta = /^> \*\*([^*]+)\*\* · Có gì trong tay:([^·]*)·/m.exec(noi);
+      if (!meta) { lechBai.push(`${ten}: thiếu dòng metadata đầu bài`); continue; }
+
+      if (phutTuGio(meta[1]) !== phutTuGio(l.dur)) {
+        lechBai.push(`${ten}: thời lượng "${meta[1]}" ≠ giáo trình "${l.dur}"`);
+      }
+      const co = meta[2].trim().replace(/\.$/, '').toLowerCase();
+      const mongCo = String(l.have || '').trim().replace(/\.$/, '').toLowerCase();
+      if (mongCo && co.slice(0, 28) !== mongCo.slice(0, 28)) {
+        lechBai.push(`${ten}: vào bài "${co.slice(0, 40)}" ≠ giáo trình "${mongCo.slice(0, 40)}"`);
+      }
+
+      /* Mục "Bài sau" phải nhắc bài kế tiếp — Ở BẤT KỲ ĐÂU trong khối, không chỉ ở tham chiếu
+         đầu tiên. Bản đầu chỉ đọc ref đầu tiên và báo oan 3 bài mở bằng "Hết Bài N là hết Mốc ②". */
+      if (Number(l.n) !== baiCuoi) {
+        const ms = /(?:^|\n)## Bài sau\s*\n([\s\S]*)$/.exec(noi);
+        if (!ms) lechBai.push(`${ten}: thiếu mục "Bài sau" — người đọc mất sợi dây nối sang bài kế`);
+        else {
+          const refs = [...ms[1].matchAll(/Bài (\d+)/g)].map((x) => Number(x[1]));
+          if (refs.length && !refs.includes(Number(l.n) + 1)) {
+            lechBai.push(`${ten}: "Bài sau" nhắc ${JSON.stringify(refs)}, không nhắc Bài ${Number(l.n) + 1}`);
+          }
+        }
+      }
+    }
+    if (lechBai.length) {
+      problems.push(`${lechBai.length} chỗ bài giảng lệch giáo trình (thời lượng · vào bài · bài sau):\n      ` +
+        lechBai.slice(0, 12).join('\n      '));
+    } else {
+      ok.push('mọi bài khớp giáo trình: thời lượng · dòng vào bài · mục "Bài sau"');
+    }
+
     /* Mọi tham chiếu "Bài N" trong bài giảng phải trỏ tới bài CÓ THẬT. */
     const soCo = new Set(cs.parts.flatMap((p) => p.lessons.map((l) => Number(l.n))));
     const troHong = [];

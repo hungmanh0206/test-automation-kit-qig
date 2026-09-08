@@ -1,6 +1,6 @@
 # Bài 25 — Flaky và độ tin cậy
 
-> **1 giờ 30 phút** · Có gì trong tay: mutation score gốc đã chốt, vài chục lượt chạy đã ghi · Sau bài này: đo được suite của bạn lệ thuộc retry bao nhiêu, và biết vì sao dọn flaky có thể chôn bug thật
+> **2 giờ 30 phút** · Có gì trong tay: bộ test khá lớn, thỉnh thoảng đỏ không rõ lý do · Sau bài này: đo được suite của bạn lệ thuộc retry bao nhiêu, và biết vì sao dọn flaky có thể chôn bug thật
 
 **Tóm tắt bài này**
 
@@ -323,3 +323,8 @@ nhiều tháng.
 - Bài 17 — [phân tầng lỗi](verdict-va-phan-tang-loi.md): pass-sau-retry là `PASS_WITH_DEVIATION`, không phải
   `PASS`.
 - Bài 11 — dashboard: ba số ở cuối Việc 4 là ba đường cần vẽ, và chỉ ba đường đó.
+
+## Bài sau
+
+Bài 26 hỏi một câu mà bộ test nào cũng nên bị hỏi: đã chạy hàng trăm case qua nhiều sprint, nó học
+được gì từ ngần ấy lượt chạy.

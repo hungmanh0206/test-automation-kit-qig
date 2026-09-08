@@ -581,3 +581,10 @@ nó. Rất thường là ảnh chụp trơn.
 
 - Phần 4 (Bài 15–15) sẽ biến chính luật của bài này thành **máy chặn**: `gate-bang-chung.js` đọc file trạng thái
   bạn vừa sinh, tìm case đã chạy mà thiếu bằng chứng, và thoát mã 1.
+
+## Bài sau
+
+Hết Bài 11 là hết Mốc ②, bạn đã có một bộ kit dùng được trong dự án thật.
+
+Bài 12 mở Phần 3 bằng một câu hỏi mà mười một bài vừa rồi chưa ai đặt ra: bộ automation này đang kiểm
+cái gì, và ai quyết định điều đó.

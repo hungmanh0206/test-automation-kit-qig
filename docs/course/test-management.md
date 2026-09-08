@@ -528,3 +528,8 @@ công cụ, và đó là lỗi **im lặng** đã tồn tại từ lượt publi
   của nó.
 - [`scripts/integrations/aio/README.md`](../../scripts/integrations/aio/README.md) của kit này, tầng tích hợp
   đầy đủ với một công cụ thật.
+
+## Bài sau
+
+Bài 19 đi nốt đoạn cuối: từ một phát hiện đã qua triage tới một bug mà Dev đọc là làm được, không
+phải hỏi lại.

@@ -1,6 +1,6 @@
 # Bài 16 — Phase 2: chạy automation có kiểm soát
 
-> **2 giờ 30 phút** · Có gì trong tay: kết quả đã phân tầng, có bằng chứng · Sau bài này: bắt được bug ở chỗ testcase không hề nói tới — mà không biến mở rộng thành tautology nhân 7 lần
+> **2 giờ 30 phút** · Có gì trong tay: bộ testcase đã sinh và đã chốt · Sau bài này: bắt được bug ở chỗ testcase không hề nói tới — mà không biến mở rộng thành tautology nhân 7 lần
 
 **Tóm tắt bài này**
 
@@ -422,3 +422,8 @@ Rồi trả lời hai câu:
 - Bài 13 — [oracle](oracle.md): "nhất quán ≠ đúng" ở đây là bảy lần cơ hội vi phạm nó.
 - Bài 25 — [mutation testing](do-chinh-bo-kiem.md): đo xem suite của bạn **thật sự** bắt được bao nhiêu, và
   biến luật *"bug lọt = lỗi của máy"* thành con số.
+
+## Bài sau
+
+Bài 17 lo phần sau khi có case đỏ. Một testcase Failed chưa đồng nghĩa với một Bug, và chặng nằm giữa
+hai thứ đó là chặng hay bị bỏ nhất.

@@ -1,6 +1,6 @@
 # Bài 28 — Đóng gói thành kit dùng lại được
 
-> **2 giờ** · Có gì trong tay: kit có CI, có tích hợp · Sau bài này: một bản phát hành đã được chứng minh là chạy được, không phải một tệp zip hy vọng
+> **2 giờ** · Có gì trong tay: kit đầy đủ, chạy tốt trên máy bạn · Sau bài này: một bản phát hành đã được chứng minh là chạy được, không phải một tệp zip hy vọng
 
 **Tóm tắt bài này**
 
@@ -387,3 +387,8 @@ Nhớ thêm `dist/` vào `.gitignore`, nó là artifact, sinh lại được t�
 - Bài 20 — [CI](ci-dong-goi-giao-kit.md): hạng `moiCommit` mà nghiệm thu gói chạy lại, và luật một-nguồn cho CI.
 - Bài 29 — mang kit sang dự án mới: ranh giới tầng chung ↔ tầng dự án, dựng thành máy kiểm.
 - Bài 2 — [Git](git-tu-so-0.md): `kiem-file-cam.js` và cách nó trả mã 2 thay vì crash khi thiếu `.git`.
+
+## Bài sau
+
+Bài 29 là bài chứng minh. Bạn mang chính bộ kit vừa đóng gói sang một dự án chưa từng chạm vào, và
+đếm xem phải sửa bao nhiêu file.

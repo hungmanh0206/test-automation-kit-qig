@@ -1,6 +1,6 @@
 # Bài 8 — Fixture và Setup
 
-> **2 giờ** · Có gì trong tay: 3 test chạy được · Sau bài này: dữ liệu dựng đúng luồng, dọn được, và không phá môi trường của ai
+> **2 giờ** · Có gì trong tay: factory tạo được dữ liệu, mỗi test vẫn tự gọi tay · Sau bài này: dữ liệu dựng đúng luồng, dọn được, và không phá môi trường của ai
 >
 > *Bài này không đánh số, nó là phần đào sâu của **Bài 9**. Đọc kèm **Bài 9**.*
 
@@ -31,7 +31,7 @@ Bốn việc:
 
 ---
 
-## 1. Vấn đề: 3 test ở Bài 9 đang giả định có sẵn dữ liệu
+## Việc 1 — Vấn đề: 3 test ở Bài 9 đang giả định có sẵn dữ liệu
 
 Nhìn lại `TC_015`:
 
@@ -47,7 +47,7 @@ Nó chạy được vì tình cờ dữ liệu đó có trên môi trường. V�
 
 Test phụ thuộc dữ liệu tình cờ không phải test. Nó là một quan sát may mắn.
 
-## 2. Bốn cách dựng, và cách thứ năm bị cấm
+## Việc 2 — Bốn cách dựng, và cách thứ năm bị cấm
 
 | Cách | Là gì | Dùng khi | Chi phí |
 |---|---|---|---|
@@ -60,7 +60,7 @@ Test phụ thuộc dữ liệu tình cờ không phải test. Nó là một quan
 Thứ tự ưu tiên: Factory → Fixture → Hook → Mock. Xuống tầng nào thì mất một phần độ thật của test, nên
 chỉ xuống khi tầng trên không làm được.
 
-## 3. Vì sao database bị cấm: bug ma
+## Việc 3 — Vì sao database bị cấm: bug ma
 
 Đây là mục quan trọng nhất của bài.
 
@@ -94,7 +94,7 @@ Test trên đó rồi thấy màn Chi tiết hiển thị sai → bạn log bug 
 
 Và kể cả khi đọc: kết quả truy vấn DB không phải bằng chứng (Bài 17). Nó là công cụ điều tra.
 
-## 4. Factory: cách mặc định
+## Việc 4 — Factory: cách mặc định
 
 `tests/support/setup/factory.js`:
 
@@ -162,7 +162,7 @@ Bốn quyết định trong đoạn trên, mỗi cái chặn một vấn đề:
 | Ném lỗi có chữ `SETUP:` | Bài 17 phân loại được đây là lỗi dựng, không log Jira |
 | `don()` không throw | Dọn thất bại làm test đỏ thì bạn mất kết quả thật của lượt chạy |
 
-## 5. Fixture của Playwright: dựng và dọn tự động
+## Việc 5 — Fixture của Playwright: dựng và dọn tự động
 
 `tests/support/fixtures.js`:
 
@@ -217,7 +217,7 @@ test('TC_015 [E2E] tạo đơn → lưu nháp → chi tiết, giá trị còn ng
 });
 ```
 
-## 6. Ba mức sẵn sàng
+## Việc 6 — Ba mức sẵn sàng
 
 Không phải tiền điều kiện nào cũng dựng được. Phân **ba mức**, và mỗi mức dẫn tới một trạng thái kết quả khác:
 
@@ -235,7 +235,7 @@ Vì sao phải tách hai mức cuối: chúng là hai việc khác nhau.
 Gộp cả hai vào `SKIP` thì không ai biết cái nào cần đòi Dev, cái nào chấp nhận làm tay. Và ghi *"thiếu
 capability"* chung chung cũng vô dụng, phải ghi thiếu hook nào, thiếu quyền gì.
 
-## 7. Hợp đồng tiền điều kiện
+## Việc 7 — Hợp đồng tiền điều kiện
 
 Với mỗi tiền điều kiện, ghi bốn thứ. Đặt trong `requirements/setup-strategy.md`:
 
@@ -271,7 +271,7 @@ Ba lý do hợp đồng này đáng viết:
 > qua field `hang` (không có trong danh sách cho phép ghi) và tạo khách hạng `Thường`. Test sau đó kiểm giảm
 > giá 3% và đỏ. Bạn tưởng công thức sai, thực ra khách sai hạng. **Verify bắt được ngay.**
 
-## 8. Non-destructive: đừng phá việc của người khác
+## Việc 8 — Non-destructive: đừng phá việc của người khác
 
 Môi trường test là môi trường **dùng chung**: BA đang demo, Dev đang debug, QA khác đang chạy suite.
 
@@ -439,3 +439,8 @@ Câu 3 là câu khó và cũng là câu đáng giá nhất.
 - Bài 17 sẽ dùng chữ `SETUP:` trong lỗi factory để phân loại `setup_failure`, loại không log Jira.
 - [`tests/support/setup/`](../../tests/support/setup/) của kit này, setup layer đầy đủ, gồm cả guarded client
   chỉ-đọc cho database.
+
+## Bài sau
+
+Bài 9 quay lại một chuyện đã âm ỉ từ Bài 4: test đỏ vì không tìm thấy element, chứ không phải vì sản
+phẩm sai. Sửa xong hôm nay, tuần sau gãy chỗ khác.

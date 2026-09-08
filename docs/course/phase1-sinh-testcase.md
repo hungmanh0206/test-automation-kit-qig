@@ -1,6 +1,6 @@
 # Bài 15 — Phase 1: sinh testcase từ requirement
 
-> **1 giờ 30 phút** · Có gì trong tay: một requirement đã bóc thành bảng `BR-` · Sau bài này: agent không còn đoán khi gặp mơ hồ, và bạn biết công thức viết mọi gate về sau
+> **2 giờ 30 phút** · Có gì trong tay: quy tắc thiết kế và đo phủ đã có, làm tay vẫn chậm · Sau bài này: agent không còn đoán khi gặp mơ hồ, và bạn biết công thức viết mọi gate về sau
 
 **Tóm tắt bài này**
 
@@ -478,3 +478,8 @@ Bước 3 là cách rẻ nhất để phát hiện gate bắt oan: chạy nó **
 - [Bộ gate nền](bo-gate-nen.md) — `lib/gate.js` dùng chung, để mọi gate về sau không phải viết lại phần khung.
 - Bài 24 — [khi kit chặn sai](mot-nguon-va-may-chong-troi.md): gate bắt oan mất uy tín, và đó là cách một kit
   chết.
+
+## Bài sau
+
+Bài 16 sang phía chạy. Và nó bắt đầu bằng một điều nghe ngược: bám đúng chữ trong testcase là chưa đủ,
+vì bug thường nằm ngay cạnh case chứ không nằm trong case.

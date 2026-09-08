@@ -1,6 +1,6 @@
 # Bài 27 — Learning Loop
 
-> **2 giờ** · Có gì trong tay: bộ nhớ đã có mầm dữ liệu · Sau bài này: bảng rủi ro chấm được ngay từ tuần đầu
+> **2 giờ** · Có gì trong tay: knowledge base có dữ liệu của vài sprint · Sau bài này: bảng rủi ro chấm được ngay từ tuần đầu
 
 **Tóm tắt bài này**
 
@@ -29,7 +29,7 @@ Bốn việc:
 
 ---
 
-## 1. Vấn đề: thời gian test luôn ít hơn thứ cần test
+## Việc 1 — Vấn đề: thời gian test luôn ít hơn thứ cần test
 
 Bài 14 cho bạn biết bộ case đang trống loại câu hỏi nào. Nhưng còn một câu khác chưa trả lời được:
 
@@ -40,7 +40,7 @@ Không có câu trả lời thì bạn rải đều. Và rải đều nghĩa là
 Câu trả lời phải là **con số**, không phải ý kiến. Vì nếu là ý kiến thì mỗi người một khác, và mỗi sprint lại
 đổi.
 
-## 2. Công thức, và hai vế lấy từ đâu
+## Việc 2 — Công thức, và hai vế lấy từ đâu
 
 ```
 Risk = Likelihood × Impact
@@ -94,7 +94,7 @@ không phải vì mã nói thế.
 }
 ```
 
-## 3. Cold start: chấm khi chưa có bug nào
+## Việc 3 — Cold start: chấm khi chưa có bug nào
 
 Đây là mục quan trọng nhất, và là chỗ mà công thức trên không dùng được ở tuần đầu: `bugs/` rỗng nên
 Likelihood = 0 cho mọi module, và mọi module cùng band. Vô dụng.
@@ -272,7 +272,7 @@ process.exit(0);
 > liệu. Chặn dựa trên phỏng đoán thì sẽ chặn oan, và Bài 15 mục 8 đã nói hậu quả: gate báo oan là gate bị bỏ
 > qua. Khi `bugs/` đã có dữ liệu thật thì mới bàn tới chuyện chặn.
 
-## 4. Bẫy dòng ma: tên module lệch
+## Việc 4 — Bẫy dòng ma: tên module lệch
 
 Đây là bẫy đo được thật, và nó làm cả bảng rủi ro vô dụng mà vẫn trông đúng.
 
@@ -294,7 +294,7 @@ chắc chắn là hai danh sách tên khác nhau. Đó là lý do máy ở mục
 Một bẫy nhỏ hơn cùng họ: khoá `_note` trong cấu hình bị đếm thành module, làm bảng mọc một dòng tên `_note`
 với Impact là chuỗi. Nên có `chiModule()` bỏ mọi khoá bắt đầu bằng `_`.
 
-## 5. Bug thiếu nhãn module, và vì sao không được đoán
+## Việc 5 — Bug thiếu nhãn module, và vì sao không được đoán
 
 `bugs/` có bug không gắn module thì Likelihood của module thật bị hụt. Phản xạ: **suy** module từ tiêu đề bug.
 
@@ -314,7 +314,7 @@ module thật nằm trong top-12 tới **73%** — đủ để làm danh sách �
 Vì vậy: không có chế độ `--apply`. Người đọc danh sách rồi ghi tay vào một file bản đồ, và bản đồ đó là
 **nguồn thứ ba** (sau nhãn và mô tả) khi nạp bug.
 
-## 6. Gate độ sâu theo band
+## Việc 6 — Gate độ sâu theo band
 
 Có bảng rủi ro rồi thì đối chiếu với bộ case: module band `high` có đủ độ sâu chưa?
 
@@ -382,7 +382,7 @@ process.exit(ENFORCE ? 1 : 0);
 Để ý dòng cuối: `--enforce` ở chế độ cold-start vẫn **không chặn**. Máy tự từ chối chặn khi dữ liệu chưa đủ tin
 — tốt hơn là để người dùng tự nhớ.
 
-## 7. Người override được, nhưng phải ghi lý do
+## Việc 7 — Người override được, nhưng phải ghi lý do
 
 Bảng rủi ro là **đề xuất**, không phải phán quyết. QA biết những thứ máy không biết: sắp demo cho khách, module
 này khách dùng nhiều, phần kia sắp bỏ.
@@ -530,3 +530,8 @@ từng cái.
 - Bài 25 sẽ dùng band rủi ro để quyết độ sâu mở rộng — mở 5 trục cho mọi case thì evidence nhân lên tới
   mức không ai đọc báo cáo nữa.
 - [`scripts/qa/risk_score.js`](../../scripts/qa/risk_score.js) của kit này, bản đầy đủ, dựa trên lịch sử thật.
+
+## Bài sau
+
+Bài 28 chuẩn bị cho việc bàn giao: tách tầng chung khỏi tầng dự án, rồi đóng gói. Nhầm ranh giới ở
+đây không phải chuyện gọn gàng, mà là chuyện an toàn.

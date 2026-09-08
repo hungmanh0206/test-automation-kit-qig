@@ -493,3 +493,8 @@ và cả hai đều **không nên** lên Jira ngay từ đầu.
 - [`.agent/config/phan-quyet.json`](../../.agent/config/phan-quyet.json) của kit này, bản đầy đủ,
   gồm cả `EXPANSION_FINDING` cho phát hiện từ việc mở rộng (Bài 25).
 - Bài 17 sẽ điền phần `evidence` cho file trạng thái bạn vừa sinh.
+
+## Bài sau
+
+Hết Bài 17 là hết Mốc ③. Bài 18 mở Phần 4: testcase và kết quả của bạn vẫn đang nằm local. Với một
+người thì đủ. Với năm người thì không.

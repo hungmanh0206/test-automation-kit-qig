@@ -1,6 +1,6 @@
 # Bài 13 — Thiết kế testcase
 
-> **2 giờ** · Có gì trong tay: khung kit, cách viết prompt · Sau bài này: template 7 cột, một parser, và 10 case viết tay để đối chứng
+> **2 giờ 30 phút** · Có gì trong tay: bảng luật `BR-` đã bóc từ requirement · Sau bài này: template 7 cột, một parser, và 10 case viết tay để đối chứng
 
 **Tóm tắt bài này**
 
@@ -606,3 +606,8 @@ gate, và lúc đó bạn có máy để sửa hàng loạt.
 
 - [`scripts/lib/testcase/`](../../scripts/lib/testcase/) của kit này, bản đầy đủ, có cả phần đọc Excel.
 - Bài 12 sẽ dùng chính parser này để kiểm bộ case do agent sinh.
+
+## Bài sau
+
+Bài 14 hỏi câu tiếp theo: bộ case của bạn có oracle rồi, nhưng đủ hay thiếu. Và vì sao đếm số lượng
+testcase không trả lời được câu đó.

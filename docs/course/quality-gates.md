@@ -1,6 +1,6 @@
 # Bài 24 — Quality Gates
 
-> **2 giờ 30 phút** · Có gì trong tay: một gate tự viết, đã chứng minh có răng · Sau bài này: 4 gate + một lệnh gộp
+> **2 giờ 30 phút** · Có gì trong tay: khoảng mười gate rời rạc, viết theo từng bài · Sau bài này: 4 gate + một lệnh gộp
 >
 > *Bài này không đánh số, nó là phần đào sâu của **Bài 14**. Đọc kèm **Bài 14**.*
 
@@ -31,7 +31,7 @@ Bốn việc:
 
 ---
 
-## 1. Bốn lớp lỗi cần canh, và thứ tự nguy hiểm
+## Việc 1 — Bốn lớp lỗi cần canh, và thứ tự nguy hiểm
 
 Bài 15 bạn canh **bằng chứng**. Còn bốn lớp nữa, xếp theo mức nguy hiểm giảm dần:
 
@@ -44,7 +44,7 @@ Bài 15 bạn canh **bằng chứng**. Còn bốn lớp nữa, xếp theo mức 
 
 Lớp 1 đứng đầu vì nó là lớp **duy nhất** không có triệu chứng. Ba lớp còn lại rồi cũng lộ; lớp 1 thì không.
 
-## 2. Trước tiên: helper dùng chung
+## Việc 2 — Trước tiên: helper dùng chung
 
 Bốn gate cùng in kết quả một kiểu, cùng ba mã thoát. Chép logic đó bốn lần là tự tạo trôi: sửa cách in ở
 một chỗ, ba chỗ kia vẫn kiểu cũ.
@@ -104,7 +104,7 @@ module.exports = { ketQua, khongDoDuoc, ketThuc, fileDangTrack };
 > khi có người thử đúng trải nghiệm của người nhận gói. Ba gate sau đó dùng chung một helper thay vì vá lần
 > thứ ba.
 
-## 3. Gate 1 — chống suite rỗng vẫn xanh
+## Việc 3 — Gate 1 — chống suite rỗng vẫn xanh
 
 Lớp lỗi này có thật và rất dễ xảy ra: đổi cấu trúc thư mục, sửa một glob, đổi tên `describe`, bất cứ cái nào
 cũng có thể làm bộ test không khớp file nào. Mà nhiều runner có cờ *"không có test thì vẫn coi là thành công"*.
@@ -159,7 +159,7 @@ ketThuc(kq);
 Để ý `khongDoDuoc` xuất hiện **hai lần**: runner không chạy được và runner trả về thứ không đọc được đều là
 *không đo được*, không phải *suite rỗng*. Gộp lại là đúng lỗi mà Bài 15 mục 2 cảnh báo.
 
-## 4. Gate 2 — quét secret trên file đã track
+## Việc 4 — Gate 2 — quét secret trên file đã track
 
 ```js
 #!/usr/bin/env node
@@ -216,7 +216,7 @@ ketThuc(kq);
 Hai danh sách `BO_QUA` và `BINARY` không phải để làm gate dễ dãi. Chúng là phần chống báo oan. Không có
 chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ token đều đỏ, và bạn sẽ tắt gate trong tuần.
 
-## 5. Gate 3 — kiem-dau-vao: bạn tự viết
+## Việc 5 — Gate 3 — kiem-dau-vao: bạn tự viết
 
 Đây là bài tập, không phải bài đọc. Đặc tả:
 
@@ -237,7 +237,7 @@ chúng thì mọi file `.env.example` và mọi trang tài liệu có ví dụ t
 
 **Tự kiểm sau khi viết:** thiếu `MA_TASK` → `2` · JSON hỏng → `1` kèm tên file và số dòng · đủ mọi thứ → `0`.
 
-## 6. Gate 4 — design: soi thiết kế bộ testcase
+## Việc 6 — Gate 4 — design: soi thiết kế bộ testcase
 
 Bài 13 bạn chốt 7 cột bắt buộc. Gate này canh chúng:
 
@@ -264,7 +264,7 @@ if (ORACLE_RONG.some((re) => re.test(String(row.expected).trim()))) {
 }
 ```
 
-## 7. Lệnh gộp
+## Việc 7 — Lệnh gộp
 
 Bốn gate chạy rời thì sẽ có lần bạn quên một cái. Gộp lại:
 
@@ -434,3 +434,8 @@ Ba file kia ở `scripts/qa/` vì mỗi file tự chạy được và thoát v�
 - [`scripts/qa/`](../../scripts/qa/) của kit này, bộ máy, cùng một khuôn bạn vừa dựng.
 - Bài 24: khi số gate tăng lên, làm sao biết gate nào đã mất nơi gọi và **gate nào đã âm thầm tụt thành
   cảnh báo**.
+
+## Bài sau
+
+Bài 25 quay sang một câu khó chịu hơn: bộ test của bạn có thật sự bắt được bug không, hay chỉ đang
+chạy. Và cách trả lời bằng số thay vì bằng cảm giác.

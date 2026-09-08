@@ -1,6 +1,6 @@
 # Bài 14 — Coverage và Risk
 
-> **2 giờ** · Có gì trong tay: bộ testcase có oracle neo được · Sau bài này: biết bộ của mình trống hẳn loại câu hỏi nào
+> **2 giờ 30 phút** · Có gì trong tay: bộ testcase có oracle, chưa biết đủ hay thiếu · Sau bài này: biết bộ của mình trống hẳn loại câu hỏi nào
 
 **Tóm tắt bài này**
 
@@ -29,7 +29,7 @@ Bốn việc:
 
 ---
 
-## 1. Hai trục, và trục thứ hai vô hình
+## Việc 1 — Hai trục, và trục thứ hai vô hình
 
 Bộ testcase có hai trục độc lập:
 
@@ -53,7 +53,7 @@ Con số thật ở kit này, đo trên một bộ **530 case** đã review và 
 
 530 case, phủ kín module, mà không có case E2E nào. Không ai phát hiện ra bằng cách đọc, bộ trông rất đầy.
 
-## 2. Các chiều, và chiều nào hay trống
+## Việc 2 — Các chiều, và chiều nào hay trống
 
 Danh sách này là gợi ý khởi đầu; dự án bạn có thể thêm bớt. Cột cuối là điều đáng chú ý nhất.
 
@@ -89,7 +89,7 @@ trống đúng ba chiều đó. Không phải vì nó kém, mà vì nguồn nó 
 
 Bốn chiều cuối là chỗ bug thật hay nằm, và cũng là chỗ tài liệu im lặng.
 
-## 3. Gắn tag để đếm được
+## Việc 3 — Gắn tag để đếm được
 
 Chiều là thứ vô hình cho tới khi bạn **gắn nhãn**. Quy ước đơn giản nhất: tag ở đầu tiêu đề case.
 
@@ -115,7 +115,7 @@ Một case được phép nhiều tag: `[Calc][Boundary]`.
 
 Không có ràng buộc này thì tag chỉ là nhãn dán, và số đếm ở mục 5 thành vô nghĩa.
 
-## 4. Khai chiều bắt buộc, kèm lý do
+## Việc 4 — Khai chiều bắt buộc, kèm lý do
 
 Không phải task nào cũng cần đủ mọi chiều. Task sửa một nhãn chữ thì `Concurrency` là vô nghĩa.
 
@@ -153,7 +153,7 @@ Hai điều làm file này có giá trị:
 > `API: n/a` trong khi task có file đặc tả API), thì đó là khai sai. Bài 14 khi bạn viết gate cho chiều, hãy
 > chặn đúng trường hợp đó.
 
-## 5. Đếm
+## Việc 5 — Đếm
 
 Giờ mới đếm được. Script đơn giản, đủ dùng:
 
@@ -242,7 +242,7 @@ Thêm vào `package.json`:
 Để ý phép kiểm cuối: nếu **quá nửa** case chưa gắn tag thì script từ chối kết luận. Đếm trên dữ liệu chưa
 gắn nhãn thì con số vô nghĩa, và một con số vô nghĩa còn tệ hơn không có con số, nó làm bạn yên tâm sai chỗ.
 
-## 6. Đọc kết quả cho đúng
+## Việc 6 — Đọc kết quả cho đúng
 
 Sau khi chạy, ba câu hỏi theo thứ tự:
 
@@ -355,3 +355,8 @@ hỏi *"bộ kiểm của tôi có bắt được lỗi không"* — và đo đ�
 - [`scripts/qa/dimension_coverage.js`](../../scripts/qa/dimension_coverage.js) của kit này, bản đầy đủ,
   **20** chiều và có cả phần chặn khi khai `n/a` trái với artifact thật.
 - Phần 3 (Bài 9–12) chuyển sang chạy thật: locator bền, dựng dữ liệu, verdict, bằng chứng.
+
+## Bài sau
+
+Bài 15 chuyển việc sinh testcase cho agent, rồi xem chuyện gì xảy ra khi nó gặp một chỗ tài liệu
+viết mơ hồ. Gợi ý: nó không hỏi bạn.
