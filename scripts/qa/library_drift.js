@@ -806,10 +806,51 @@ if (!exists(COURSE_MD)) {
 if (!HTML) {
   problems.push('chưa có docs/library/index.html — chạy `node docs/library/build.js`');
 } else {
-  const outAt = fs.statSync(path.join(LIB, 'index.html')).mtimeMs;
-  const stale = [...DATA_FILES, 'shell.html', 'style.css', 'style.extra.css', 'app.js', 'graph3d.js', 'course_parse.js']
-    .filter((f) => exists(path.join(SRC, f)) && fs.statSync(path.join(SRC, f)).mtimeMs > outAt);
-  if (fs.statSync(COURSE_MD).mtimeMs > outAt) stale.push('docs/COURSE.md');
+  /*
+   * SO BẰNG GÌ: file nào ĐANG SỬA DỞ thì so mtime, file nào sạch thì so THỜI ĐIỂM COMMIT.
+   *
+   * Bản đầu so mtime cho mọi file. Sai trên CI, và sai một cách luôn-đỏ: git KHÔNG giữ mtime, nên sau
+   * mỗi lần clone thì mtime chỉ phản ánh THỨ TỰ CHECKOUT. `index.html` xếp trước `src/` theo alphabet
+   * nên nó luôn được ghi trước, khiến mọi file nguồn trông như mới hơn. Đo được ngày 08/09/2026: ở cây
+   * làm việc thì `index.html` mới hơn nguồn (đúng, vừa build), nhưng trong hai worktree vừa checkout
+   * và trong log CI job 14237 thì nó đều báo "CŨ hơn nguồn". Một gate luôn đỏ thì sẽ bị tắt.
+   *
+   * Vẫn giữ mtime cho file sửa dở, vì đó là tín hiệu duy nhất bắt được "vừa sửa nguồn mà chưa build".
+   * Không có git thì bỏ qua phép kiểm này chứ không quay về mtime: quay về là quay lại đúng chỗ sai.
+   */
+  const gitTs = (relPath) => {
+    try {
+      const o = require('child_process').execFileSync('git', ['log', '-1', '--format=%ct', '--', relPath], {
+        cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+      return o ? Number(o) * 1000 : null;
+    } catch (e) { return null; }
+  };
+  let dirty;
+  try {
+    dirty = new Set(require('child_process').execFileSync('git', ['status', '--porcelain'], {
+      cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).split(/\r?\n/).map((l) => l.slice(3).trim()).filter(Boolean));
+  } catch (e) { dirty = null; }
+
+  const OUT_REL = 'docs/library/index.html';
+  const outMtime = fs.statSync(path.join(LIB, 'index.html')).mtimeMs;
+  const outCommit = gitTs(OUT_REL);
+  const srcList = [...DATA_FILES, 'shell.html', 'style.css', 'style.extra.css', 'app.js', 'graph3d.js', 'course_parse.js']
+    .filter((f) => exists(path.join(SRC, f)))
+    .map((f) => ({ label: f, abs: path.join(SRC, f), rel: `docs/library/src/${f}` }));
+  srcList.push({ label: 'docs/COURSE.md', abs: COURSE_MD, rel: 'docs/COURSE.md' });
+
+  const stale = [];
+  for (const s of srcList) {
+    if (dirty && dirty.has(s.rel)) {
+      if (fs.statSync(s.abs).mtimeMs > outMtime) stale.push(`${s.label} (đang sửa dở)`);
+      continue;
+    }
+    if (dirty === null || outCommit === null) continue;   // không đọc được git ⇒ không phán
+    const t = gitTs(s.rel);
+    if (t !== null && t > outCommit) stale.push(s.label);
+  }
   if (stale.length) problems.push(`index.html CŨ hơn nguồn (${stale.join(' ')}) — chạy \`node docs/library/build.js\``);
   else ok.push('index.html mới hơn mọi file nguồn');
   /* Chỉ soi chỗ TRÌNH DUYỆT ĐI NẠP: src=, href=, và url() trong CSS.
