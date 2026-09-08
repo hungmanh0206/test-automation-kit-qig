@@ -51,7 +51,7 @@ Bộ testcase của bạn phủ hết những gì tài liệu nói. Bug thì s�
 | Trường thứ 5 trong cùng khối form | Tài liệu chỉ nêu 4 trường; trường thứ 5 có trên UI |
 | Cùng một số, ở màn khác | Tài liệu viết theo màn, không viết theo *giá trị* |
 | Giữa hai tầng (UI ↔ API ↔ nơi lưu) | Tài liệu nói "hiển thị đúng", không nói "và lưu đúng" |
-| Nhánh ít đi (đơn huỷ, khách không có mã số) | Tài liệu nêu luồng chính |
+| Nhánh ít đi (chưa xếp lớp mới, hạn mới rơi vào quá khứ) | Tài liệu nêu luồng chính |
 | Trạng thái ngay trước/sau | Tài liệu tả trạng thái, không tả **chuyển** trạng thái |
 | Hai người làm cùng lúc | Tài liệu gần như không bao giờ nói |
 | Thứ ứng dụng làm mà tài liệu **không nói** | Không case nào sinh ra từ chỗ trống |
@@ -64,7 +64,7 @@ Bảy dòng trên chính là 7 trục. Chúng không phải danh sách đẹp, m
 
 ## Việc 2 — Mở 7 trục quanh một case (50 phút)
 
-Lấy một case đã PASS trên app thực hành: *"Tạo đơn cho khách chương trình Standard, 1 Ghế nhựa, tổng cộng 130.000"*.
+Lấy một case đã PASS trên app thực hành: *"Đồng bộ học lại cho `HV03`, hạn mới 31/08/2026"*.
 
 Chạy app, rồi mở từng trục. Mỗi trục có một **câu hỏi** — hỏi đúng câu là ra việc.
 
@@ -72,65 +72,68 @@ Chạy app, rồi mở từng trục. Mỗi trục có một **câu hỏi** — 
 
 > *Các trường khác trong cùng khối có đúng không?*
 
-Case chỉ kiểm `Tổng cộng`. Cùng khối còn `Tạm tính`, `Giảm giá`, `Phí dịch vụ`.
+Case chỉ kiểm `Hạn mới`. Cùng khối còn `Lớp cũ`, `Lớp lấy làm mốc`, `Hạn hiện tại`.
 
 ```bash
-curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/json" \
-  -d "{\"customerId\":\"HV01\",\"items\":[{\"productId\":\"KH02\",\"qty\":1}]}"
+curl -s -X POST http://localhost:4010/api/tinh-han -H "Content-Type: application/json" \
+  -d "{\"hocVienId\":\"HV03\"}"
 ```
 
-**Bạn sẽ thấy** `{"tamTinh":100000,"giamGia":0,"phiDichVu":30000,"tongCong":130000}`, cả bốn khớp
-`BR-01`…`BR-04`. Trục này **PASS**, có neo.
+**Bạn sẽ thấy** `{"lopCu":"ACCA01","lopMoc":"ACCA02","hanHienTai":"2026-07-31","hanMoi":"2026-08-31"}`,
+cả bốn khớp `BR-02`, `BR-03`, `BR-05`. Trục này **PASS**, có neo.
 
 ### Trục 2 — Cùng giá trị, khác nơi hiển thị
 
 > *Giá trị này còn hiện ở đâu nữa? Có khớp?*
 
-`Tổng cộng` hiện ở màn Tạo đơn **và** ở bảng Danh sách đơn hàng. Tạo đơn qua giao diện rồi so hai chỗ.
+Hạn mới hiện ở khối Đồng bộ học lại, **và** ở cột `Thời hạn` của bảng học viên, **và** nó quyết định
+cột `Ngày hết hạn`. Bấm Áp dụng hạn mới qua giao diện rồi so ba chỗ.
 
-Đây là trục tìm ra **BUG-2** nếu bạn chọn học viên chương trình Elite: màn Tạo đơn hiện `Giảm giá 8.000` mà tầng lưu trữ
-ghi `8750`. Neo: `UI-04`. ⇒ **FAIL**, tầng `frontend`.
+Đây là trục tìm ra **BUG-2**: cột Thời hạn kết thúc `31/08/2026`, cột Gia hạn hiện `—`, vậy Ngày hết
+hạn phải là `31/08/2026`. Màn hiện `31/07/2026`. Neo: `UI-04`. ⇒ **FAIL**, tầng `frontend`.
 
 ### Trục 3 — Chuỗi form → API → nơi lưu → UI
 
 > *Nhập gì → gửi gì → lưu gì → hiện gì? Tầng nào biến đổi giá trị?*
 
 ```bash
-curl -s http://localhost:4010/api/_store/orders
+curl -s http://localhost:4010/api/_store/ghi-danh
 ```
 
 Đây là Bài 10 làm kỹ. Ở đây chỉ cần thấy: có bốn tầng, và mỗi ranh giới là một chỗ giá trị đổi được.
+Tầng lưu trữ ghi `duration_end: 2026-08-31` và `expire_date: 2026-08-31`, nên chỗ lệch nằm sau nó.
 
 ### Trục 4 — Biến thể
 
 > *Nhánh khác của cùng luật thì sao?*
 
-Case dùng chương trình Standard (giảm 0%). Còn Bạc 3%, Vàng 5%. Và ở đúng mốc `500.000`:
+Case dùng `HV03`, và học viên này chỉ có **một** lớp mới. Nhánh khác là nhóm lớp mới có **nhiều** lớp:
 
 ```bash
-curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/json" \
-  -d "{\"customerId\":\"HV02\",\"items\":[{\"productId\":\"KH01\",\"qty\":2}]}"
+curl -s -X POST http://localhost:4010/api/tinh-han -H "Content-Type: application/json" \
+  -d "{\"hocVienId\":\"HV01\"}"
 ```
 
-**Bạn sẽ thấy** `phiDichVu: 30000` trong khi `BR-03` nói tạm tính `500.000` thì **miễn phí**. Đây là
-**BUG-1**. Neo: `BR-03`. ⇒ **FAIL**, tầng `backend`.
+**Bạn sẽ thấy** `"lopMoc":"CFA02F"` trong khi `BR-02` nói mốc chỉ lấy trong **lớp chính**, và
+`CFA02F` là Foundation. Hạn mới ra `2026-06-30` thay vì `2026-08-31`. Đây là **BUG-1**. Neo:
+`BR-02`. ⇒ **FAIL**, tầng `backend`.
 
-Để ý: với hạng **Thường** (giảm 0%) hai công thức cho **cùng** kết quả, nên nếu chỉ mở trục 4 theo hạng mà
-không đi tới mốc biên, bạn vẫn không thấy. Trục 4 phải giao với giá trị biên.
+Để ý: nếu lớp Foundation bắt đầu **muộn hơn** lớp chính thì hai cách chọn cho **cùng** kết quả, nên nếu
+chỉ mở trục 4 theo *loại lớp* mà không đi tới *thứ tự ngày bắt đầu*, bạn vẫn không thấy. Trục 4 phải
+giao với thứ tự, không chỉ với loại.
 
 ### Trục 5 — Trạng thái kế cận
 
 > *Trạng thái ngay trước/sau thì hành vi có đúng?*
 
-Đơn `Chờ xác nhận` sửa được. Còn `Đã xác nhận`?
+Học viên loại `Thường` thì xoá được khỏi lớp. Còn loại `Học lại`?
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" -X PATCH http://localhost:4010/api/orders/DH0001 \
-  -H "Content-Type: application/json" -d "{\"items\":[{\"productId\":\"KH01\",\"qty\":9}]}"
+curl -s -o /dev/null -w "%{http_code}\n" -X DELETE http://localhost:4010/api/ghi-danh/GD001
 ```
 
-Với đơn đã xác nhận, bạn sẽ thấy `200` trong khi `BR-08` nói phải chặn bằng mọi đường. Đây là
-**BUG-3**. Neo: `BR-08`. ⇒ **FAIL**, tầng `backend`.
+Với ghi danh đã sang loại Học lại, bạn sẽ thấy `200` trong khi `BR-10` nói phải từ chối bằng mọi
+đường. Đây là **BUG-3**. Neo: `BR-10`. ⇒ **FAIL**, tầng `backend`.
 
 ### Trục 6 — Đồng thời
 
@@ -139,16 +142,17 @@ Với đơn đã xác nhận, bạn sẽ thấy `200` trong khi `BR-08` nói ph�
 ```bash
 curl -s -X POST http://localhost:4010/api/reset > /dev/null
 for i in 1 2; do
-  curl -s -X POST http://localhost:4010/api/orders -H "Content-Type: application/json" \
-    -d "{\"customerId\":\"HV01\",\"items\":[{\"productId\":\"KH02\",\"qty\":1}]}" -o /dev/null &
+  curl -s -X POST http://localhost:4010/api/dong-bo-hoc-lai -H "Content-Type: application/json" \
+    -d "{\"hocVienId\":\"HV03\"}" -o /dev/null &
 done; wait
-curl -s http://localhost:4010/api/_store/orders
+curl -s http://localhost:4010/api/ghi-danh/GD003/lich-su
 ```
 
-**Bạn sẽ thấy hai đơn**: `DH0001` và `DH0002`. Người dùng bấm hai lần, hoặc mạng chậm nên client gửi lại —
-ra hai đơn.
+**Bạn sẽ thấy hai dòng lịch sử** cho một lần cắt hạn, và dòng thứ hai ghi thời hạn **đã cắt rồi**.
+Luồng đồng bộ ở hệ thống thật chạy theo lịch, nên gọi trùng là chuyện thường xuyên.
 
-Đây là bug? **Chưa kết luận được.** Đọc `spec.md`: không có luật nào về chống trùng. Không có mã luật để neo.
+Đây là bug? **Chưa kết luận được.** Đọc `spec.md`: `BR-12` nói mỗi lần thời hạn *bị đổi* thì ghi một
+dòng, mà lần thứ hai thời hạn không đổi. Không có luật nào nói gọi trùng phải bị chặn.
 
 ⇒ Trục 6 cho ra một **`OBSERVATION`**, không phải FAIL. Và nó dẫn thẳng sang trục 7.
 
@@ -162,10 +166,10 @@ Sáu trục trên đi từ case ra ứng dụng. Trục 7 đi ngược: từ ứ
 {
   "id": "GAP-001",
   "loai": "spec:gap",
-  "quanSat": "Gửi 2 request tạo đơn giống nhau cùng lúc ⇒ tạo 2 đơn riêng (DH0001, DH0002)",
-  "specNoiGi": "spec.md không có luật nào về chống trùng / idempotency khi tạo đơn",
+  "quanSat": "Gọi đồng bộ học lại 2 lần cùng lúc ⇒ 2 dòng lịch sử cho một lần cắt hạn",
+  "specNoiGi": "spec.md không có luật nào về gọi trùng / idempotency của luồng đồng bộ",
   "viSaoQuanTrong": "Không biết đây là hành vi đúng hay thiếu chốt ⇒ KHÔNG kiểm được, và không thể log bug",
-  "evidence": "outputs/tasks/DEMO-1/evidence/GAP-001-hai-don-trung.png",
+  "evidence": "outputs/tasks/DEMO-1/evidence/GAP-001-lich-su-trung.png",
   "hoiAi": "BA",
   "trangThai": "cho-tra-loi"
 }
@@ -181,13 +185,13 @@ người ta tin bạn ít hơn.
 
 | Trục | Tìm ra gì | Neo | Kết luận |
 |---|---|---|---|
-| 1 · field cùng khối | 4 số đều khớp | `BR-01`…`BR-04` | PASS |
-| 2 · cùng giá trị khác nơi hiển thị | UI 8.000 ≠ lưu 8.750 | `UI-04` | **FAIL** · frontend |
+| 1 · field cùng khối | cả 4 ô đều khớp | `BR-02`, `BR-03`, `BR-05` | PASS |
+| 2 · cùng giá trị khác nơi hiển thị | Ngày hết hạn 31/07 ≠ Thời hạn 31/08 | `UI-04` | **FAIL** · frontend |
 | 3 · chuỗi 4 tầng | thấy chỗ giá trị đổi được | — | (dẫn sang Bài 10) |
-| 4 · biến thể | mốc 500.000 chương trình Pro sai phí | `BR-03` | **FAIL** · backend |
-| 5 · trạng thái kế cận | sửa được đơn đã xác nhận | `BR-08` | **FAIL** · backend |
-| 6 · đồng thời | 2 request ⇒ 2 đơn | **không có** | `OBSERVATION` |
-| 7 · chiều ngược | spec không nói gì về chống trùng | — | **`spec:gap`** |
+| 4 · biến thể | lấy lớp Foundation làm mốc | `BR-02` | **FAIL** · backend |
+| 5 · trạng thái kế cận | xoá được học viên Học lại | `BR-10` | **FAIL** · backend |
+| 6 · đồng thời | gọi 2 lần ⇒ 2 dòng lịch sử | **không có** | `OBSERVATION` |
+| 7 · chiều ngược | spec không nói gì về gọi trùng | — | **`spec:gap`** |
 
 Bảy trục quanh một case đã PASS tìm ra cả ba bug cài sẵn cộng một lỗ hổng đặc tả. Đó là toàn bộ lập
 luận của bài này.
@@ -235,13 +239,13 @@ Luật ở Việc 3 bị vi phạm theo phản xạ. Thấy hai màn giống nha
 ```json
 [
   { "id": "MR-001", "caseGoc": "TC_012", "truc": "field-cung-khoi",
-    "quanSat": "Tạm tính/Giảm giá/Phí đều khớp công thức", "oracleRef": "BR-01,BR-04",
+    "quanSat": "Lớp cũ/Lớp mốc/Hạn hiện tại/Hạn mới đều khớp công thức", "oracleRef": "BR-02,BR-03",
     "ketLuan": "PASS", "evidence": "evidence/MR-001.png" },
   { "id": "MR-002", "caseGoc": "TC_012", "truc": "cung-gia-tri-khac-man",
-    "quanSat": "UI hiện Giảm giá 8.000, tầng lưu trữ ghi 8750", "oracleRef": "UI-04",
+    "quanSat": "UI hiện Ngày hết hạn 31/07/2026, cột Thời hạn kết thúc 31/08/2026", "oracleRef": "UI-04",
     "ketLuan": "FAIL", "tangLoi": "frontend", "evidence": "evidence/MR-002.png" },
   { "id": "MR-003", "caseGoc": "TC_012", "truc": "dong-thoi",
-    "quanSat": "2 request tạo đơn cùng lúc ⇒ 2 đơn", "oracleRef": "",
+    "quanSat": "Gọi đồng bộ 2 lần cùng lúc ⇒ 2 dòng lịch sử", "oracleRef": "",
     "ketLuan": "OBSERVATION", "evidence": "evidence/MR-003.png" }
 ]
 ```
@@ -481,9 +485,9 @@ Cấp độ này còn 4 bài nữa.
 
 1. Kể 7 trục. Trục nào đi **ngược** chiều với sáu trục kia?
 2. Trên app thực hành, trục nào tìm ra BUG-1? BUG-2? BUG-3?
-3. Vì sao mở trục 4 theo chương trình mà không đi tới mốc biên thì vẫn không thấy BUG-1?
+3. Vì sao mở trục 4 theo loại lớp mà không đi tới thứ tự ngày bắt đầu thì vẫn không thấy BUG-1?
 4. Hai màn cùng hiện `1.000.000` ⇒ kết luận được PASS chưa? Nêu bằng một câu.
-5. Trục 6 tìm ra 2 đơn trùng. Vì sao đó không phải FAIL? Nó là gì?
+5. Trục 6 tìm ra 2 dòng lịch sử cho một lần cắt hạn. Vì sao đó không phải FAIL? Nó là gì?
 6. Vì sao `OBSERVATION` không neo phải đi qua gate? Chặn nó thì hậu quả gì?
 7. Case mức `low` cần mở mấy trục? Mức rủi ro đó lấy từ đâu, và vì sao không để người chạy tự chọn?
 

@@ -1,22 +1,25 @@
 #!/usr/bin/env node
 /*
- * course_numbers.js — CHẶN "con số trong bài giảng không khớp sản phẩm thực hành".
+ * course_numbers.js — CHẶN "ví dụ trong bài giảng không khớp sản phẩm thực hành".
  *
- * VÌ SAO CÓ FILE NÀY (đo được, đã trả giá): ví dụ trụ cột của cả tài liệu nằm ở Bài 1, và nó KHÔNG
- * chạy được. Năm chỗ lệch cùng lúc, tồn tại qua nhiều lượt commit, không phép kiểm nào bắt:
- *   · app đặt giá 250.000, bài giảng tính theo 225.000
- *   · app thu phí dịch vụ 30.000, bài giảng viết 50.000
- *   · app nhận trường `customerId`/`qty`, bài giảng viết `hocVienId`/`soSuat` — ai copy cũng lỗi
- *   · ví dụ "tạm tính đúng 520.000" KHÔNG dựng được từ bảng giá của app
- *   · và nặng nhất: với bộ dữ liệu bài giảng dùng, bug cài sẵn KHÔNG hề lộ ra — nên câu "app trả về
- *     khác con số bạn tính" là sai
+ * VÌ SAO CÓ FILE NÀY (đo được, đã trả giá hai lần):
  *
- * Không gate nào bắt được vì mọi phép kiểm cũ đọc VĂN BẢN. Cái thiếu là một phép kiểm CHẠY sản phẩm
- * rồi so con số.
+ * Lượt một — ví dụ trụ cột của cả tài liệu nằm ở Bài 1, và nó KHÔNG chạy được. Năm chỗ lệch cùng lúc,
+ * tồn tại qua nhiều lượt commit, không phép kiểm nào bắt: giá trong app khác giá trong bài, tên trường
+ * API khác, bộ dữ liệu của bài không dựng được từ bảng giá, và nặng nhất là bug cài sẵn KHÔNG hề lộ ra
+ * với dữ liệu bài dùng — nên câu "app trả về khác con số bạn tính" là sai.
+ *
+ * Lượt hai — đổi nghiệp vụ sang vận hành lớp học thì lộ thêm: giao diện gửi `customerId`/`qty` trong khi
+ * server đọc `hocVienId`/`soSuat`, tức là màn hình của app thực hành đã ngừng chạy từ trước đó, và bài
+ * factory thì dạy một API (`POST /api/students`) mà app KHÔNG có.
+ *
+ * Không gate nào bắt được vì mọi phép kiểm cũ đọc VĂN BẢN. Cái thiếu là một phép kiểm CHẠY sản phẩm.
  *
  * ĐO CÁI GÌ:
- *   1. Khởi động app thực hành, gọi API, so với bảng số CANONICAL khai ở dưới.
- *   2. Quét bài giảng tìm những con số ĐÃ CŨ (khai tường minh) — còn sót là chặn.
+ *   1. Khởi động app, gọi API, so với bảng CANONICAL — kết quả kỳ vọng suy từ spec.md.
+ *   2. Chứng minh CẢ BA bug cài sẵn vẫn còn sống. Sản phẩm thực hành mất bug thì cả tài liệu mất đối chứng.
+ *   3. Mọi đường API mà bài giảng gọi đều phải tồn tại thật.
+ *   4. Quét bài giảng tìm dấu vết của nghiệp vụ CŨ — còn sót là chặn.
  * Mã thoát: 0 khớp · 1 lệch · 2 không đo được (không chạy nổi app).
  */
 'use strict';
@@ -26,50 +29,73 @@ const http = require('http');
 const { spawn } = require('child_process');
 
 const ROOT = path.join(__dirname, '..', '..');
-const APP = path.join(ROOT, 'docs', 'course', 'assets', 'app-thuc-hanh', 'server.js');
+const APP_DIR = path.join(ROOT, 'docs', 'course', 'assets', 'app-thuc-hanh');
+const APP = path.join(APP_DIR, 'server.js');
 const COURSE_DIR = path.join(ROOT, 'docs', 'course');
 const PORT = Number(process.env.APP_PORT || 4099);
 
-/* Bảng số CANONICAL. Mỗi dòng là một lượt gọi thật, và con số kỳ vọng SUY TỪ spec.md — không phải
-   copy từ app. Chỗ `theoApp` khác `theoSpec` chính là bug cài sẵn, và nó PHẢI khác: một sản phẩm
-   thực hành mà bug không lộ ra thì mọi phép đo trong tài liệu mất đối chứng. */
+/* Bảng CANONICAL. Mỗi dòng là một lượt gọi thật. `theoSpec` suy từ spec.md — KHÔNG copy từ app.
+   Chỗ `theoApp` khác `theoSpec` chính là bug cài sẵn, và nó PHẢI khác. */
 const CA = [
   {
-    ten: 'Việc 2 của Bài 1 — bug PHẢI lộ ra',
-    body: { hocVienId: 'HV03', items: [{ khoaHocId: 'KH01', soSuat: 2 }] },
-    theoSpec: { tamTinh: 520000, giamGia: 26000, phiDichVu: 0, tongCong: 494000 },
-    theoApp: { tamTinh: 520000, giamGia: 26000, phiDichVu: 50000, tongCong: 544000 },
+    ten: 'Bài 1 Việc 2 — bug PHẢI lộ ra (nhóm lớp mới có Foundation sớm hơn)',
+    body: { hocVienId: 'HV01' },
+    theoSpec: { lopCu: 'CFA01', lopMoc: 'CFA02', hanHienTai: '2026-07-31', hanMoi: '2026-08-31' },
+    theoApp: { lopCu: 'CFA01', lopMoc: 'CFA02F', hanHienTai: '2026-07-31', hanMoi: '2026-06-30' },
     buglo: true,
   },
   {
-    ten: 'Việc 3 của Bài 1 — ca phân biệt, app PHẢI khớp spec',
-    body: { hocVienId: 'HV03', items: [{ khoaHocId: 'KH01', soSuat: 3 }] },
-    theoSpec: { tamTinh: 780000, giamGia: 39000, phiDichVu: 0, tongCong: 741000 },
-    theoApp: { tamTinh: 780000, giamGia: 39000, phiDichVu: 0, tongCong: 741000 },
+    ten: 'Bài 1 Việc 3 — ca phân biệt, chỉ một lớp mới nên app PHẢI khớp spec',
+    body: { hocVienId: 'HV03' },
+    theoSpec: { lopCu: 'ACCA01', lopMoc: 'ACCA02', hanHienTai: '2026-07-31', hanMoi: '2026-08-31' },
+    theoApp: { lopCu: 'ACCA01', lopMoc: 'ACCA02', hanHienTai: '2026-07-31', hanMoi: '2026-08-31' },
+    buglo: false,
+  },
+  {
+    ten: 'Bài 4 bài tập — nhánh chặn hạn âm (BR-05)',
+    body: { hocVienId: 'HV02' },
+    theoSpec: { lopCu: 'CFA03', lopMoc: 'CFA02', hanHienTai: '2026-12-31', hanMoi: '2026-09-01' },
+    theoApp: { lopCu: 'CFA03', lopMoc: 'CFA02', hanHienTai: '2026-12-31', hanMoi: '2026-09-01' },
     buglo: false,
   },
 ];
 
-/* Con số của BẢN CŨ. Còn sót trong bài nào là bài đó đang dạy một phép tính không chạy được.
-   Khai tường minh thay vì đoán bằng regex tiền tệ: đoán thì báo oan mọi con số hợp lệ. */
-const SO_CU = ['225.000', '450.000', '13.500', '486.500', '515.000', '196.250'];
-/* 8.750 KHÔNG nằm trong danh sách này: đã gọi app và xác nhận nó vẫn là giảm giá đúng của ca
-   HV03 + KH03 ×1 (5% của 175.000). Bản đầu của gate xếp nó vào số cũ và báo oan 3 chỗ. */
+/* Đường API bài giảng có gọi. Thiếu một đường là có bài đang dạy thứ không tồn tại. */
+const DUONG_PHAI_CO = [
+  ['GET', '/api/hoc-vien'], ['GET', '/api/lop'], ['GET', '/api/don-hoc-lai'],
+  ['GET', '/api/lop/CFA01/hoc-vien'], ['GET', '/api/_store/ghi-danh'],
+  ['POST', '/api/hoc-vien'], ['POST', '/api/lop'], ['POST', '/api/ghi-danh'],
+  ['POST', '/api/don-hoc-lai'], ['POST', '/api/tinh-han'], ['POST', '/api/dong-bo-hoc-lai'],
+  ['POST', '/api/gia-han'], ['POST', '/api/reset'],
+];
 
-function goi(body) {
+/* Dấu vết của nghiệp vụ CŨ (cửa hàng bán lẻ). Khai tường minh thay vì đoán bằng regex tiền tệ:
+   đoán thì báo oan mọi con số hợp lệ. */
+const VET_CU = [
+  'tamTinh', 'phiDichVu', 'giamGia', 'tongCong', 'tongTien', 'api/quote', 'api/orders',
+  'api/students', 'api/courses', 'customerId', 'productId', 'Cổng đăng ký khoá học',
+  'tam-tinh', 'tong-cong', 'tong-tien', 'KH_BAC_01', 'SP_A', 'DH0001',
+  '225.000', '450.000', '13.500', '486.500', '515.000', '196.250', '494.000', '544.000', '321.000',
+];
+
+function goi(cach, duong, body) {
   return new Promise((ok, loi) => {
-    const data = JSON.stringify(body);
+    const data = body ? JSON.stringify(body) : null;
     const req = http.request(
-      { host: '127.0.0.1', port: PORT, path: '/api/quote', method: 'POST',
-        headers: { 'content-type': 'application/json', 'content-length': Buffer.byteLength(data) } },
+      { host: '127.0.0.1', port: PORT, path: duong, method: cach,
+        headers: data ? { 'content-type': 'application/json', 'content-length': Buffer.byteLength(data) } : {} },
       (res) => {
         let s = '';
         res.on('data', (c) => { s += c; });
-        res.on('end', () => { try { ok(JSON.parse(s)); } catch (e) { loi(e); } });
+        res.on('end', () => {
+          let j = null;
+          try { j = JSON.parse(s); } catch (e) { /* không phải JSON — trả nguyên trạng */ }
+          ok({ ma: res.statusCode, body: j, tho: s });
+        });
       }
     );
     req.on('error', loi);
-    req.write(data);
+    if (data) req.write(data);
     req.end();
   });
 }
@@ -95,7 +121,7 @@ const cho = (ms) => new Promise((r) => setTimeout(r, ms));
     let song = false;
     for (let i = 0; i < 25 && !song; i++) {
       await cho(120);
-      try { await goi(CA[0].body); song = true; } catch (e) { /* chưa mở, thử tiếp */ }
+      try { const r = await goi('GET', '/api/hoc-vien'); song = r.ma === 200; } catch (e) { /* chưa mở */ }
     }
     if (!song) {
       console.error('[so-lieu] ? KHÔNG ĐO ĐƯỢC — app không mở được cổng ' + PORT +
@@ -104,34 +130,71 @@ const cho = (ms) => new Promise((r) => setTimeout(r, ms));
       process.exit(2);
     }
 
+    /* ── 1 + 2a. Bảng canonical, và bug số 1 phải còn sống ─────────────────── */
+    await goi('POST', '/api/reset', {});
     for (const c of CA) {
-      const r = await goi(c.body);
-      const d = (r && r.data) || {};
+      const r = await goi('POST', '/api/tinh-han', c.body);
+      const d = (r.body && r.body.data) || {};
       for (const k of Object.keys(c.theoApp)) {
         if (d[k] !== c.theoApp[k]) {
-          van.push(`${c.ten}: app trả ${k}=${d[k]}, bảng canonical ghi ${c.theoApp[k]}`);
+          van.push(`${c.ten}: app trả ${k}=${JSON.stringify(d[k])}, bảng canonical ghi ${JSON.stringify(c.theoApp[k])}`);
         }
       }
-      /* Ca "bug phải lộ" thì app BẮT BUỘC khác spec. Nếu chúng trùng nhau thì sản phẩm thực hành đã
-         mất bug, và cả tài liệu mất phép đối chứng — im lặng. */
       const khac = JSON.stringify(c.theoApp) !== JSON.stringify(c.theoSpec);
       if (c.buglo && !khac) van.push(`${c.ten}: app KHỚP spec, tức là bug cài sẵn đã biến mất`);
       if (!c.buglo && khac) van.push(`${c.ten}: app LỆCH spec, ca này đáng lẽ phải khớp`);
+    }
+
+    /* ── 2b. Bug số 3 — chốt trạng thái vẫn phải THIẾU ở backend ───────────── */
+    await goi('POST', '/api/reset', {});
+    const db = await goi('POST', '/api/dong-bo-hoc-lai', { hocVienId: 'HV01' });
+    const gdId = db.body && db.body.data && db.body.data.id;
+    if (!gdId || db.body.data.type !== 'RETOOK') {
+      van.push('BUG-3: không dựng được ghi danh loại RETOOK để thử chốt trạng thái');
+    } else {
+      const patch = await goi('PATCH', '/api/ghi-danh/' + gdId, { type: 'NORMAL' });
+      if (patch.ma >= 400) van.push(`BUG-3a đã biến mất: PATCH RETOOK→NORMAL trả ${patch.ma}, đáng lẽ phải là 200`);
+      await goi('POST', '/api/reset', {});
+      await goi('POST', '/api/dong-bo-hoc-lai', { hocVienId: 'HV01' });
+      const xoa = await goi('DELETE', '/api/ghi-danh/' + gdId);
+      if (xoa.ma >= 400) van.push(`BUG-3b đã biến mất: DELETE ghi danh RETOOK trả ${xoa.ma}, đáng lẽ phải là 200`);
+    }
+
+    /* ── 2c. Bug số 2 — nằm ở tầng hiển thị, đo bằng nguồn của chính nó ─────
+       Không mở trình duyệt ở gate này (verify.js lo phần đó), nhưng vẫn phải chắc dòng cài bug
+       còn nguyên: giao diện cộng số ngày gia hạn vào hạn của LỚP thay vì hạn của GHI DANH. */
+    const fe = fs.readFileSync(path.join(APP_DIR, 'app.js'), 'utf8');
+    if (!/congNgay\(lop\.ketThuc,\s*g\.giaHan\)/.test(fe)) {
+      van.push('BUG-2 đã biến mất khỏi app.js: giao diện không còn cộng gia hạn vào hạn của LỚP');
+    }
+
+    /* ── 3. Mọi đường API bài giảng gọi đều phải tồn tại ───────────────────── */
+    await goi('POST', '/api/reset', {});
+    for (const [cach, duong] of DUONG_PHAI_CO) {
+      const r = await goi(cach, duong, cach === 'POST' ? {} : null);
+      if (r.ma === 404 && /^không có đường này/.test(r.tho)) {
+        van.push(`${cach} ${duong}: app KHÔNG có đường này, nhưng bài giảng có gọi`);
+      }
     }
   } finally {
     proc.kill();
   }
 
-  /* Số cũ còn sót trong bài giảng. */
+  /* ── 4. Dấu vết nghiệp vụ cũ còn sót trong bài giảng ─────────────────────── */
   const sot = [];
-  for (const f of fs.readdirSync(COURSE_DIR).filter((x) => x.endsWith('.md'))) {
-    if (f === 'TEMPLATE.md') continue;
-    const noi = fs.readFileSync(path.join(COURSE_DIR, f), 'utf8');
-    for (const s of SO_CU) {
-      const n = noi.split(s).length - 1;
-      if (n) sot.push(`${f}: còn ${n} lần "${s}"`);
+  const quet = (thuMuc) => {
+    for (const f of fs.readdirSync(thuMuc)) {
+      const p = path.join(thuMuc, f);
+      if (fs.statSync(p).isDirectory()) { if (f !== 'app-thuc-hanh') quet(p); continue; }
+      if (!f.endsWith('.md') || f === 'TEMPLATE.md') continue;
+      const noi = fs.readFileSync(p, 'utf8');
+      for (const v of VET_CU) {
+        const n = noi.split(v).length - 1;
+        if (n) sot.push(`${path.relative(COURSE_DIR, p)}: còn ${n} lần "${v}"`);
+      }
     }
-  }
+  };
+  quet(COURSE_DIR);
 
   if (van.length || sot.length) {
     console.error('[so-lieu] ✗ CHẶN');
@@ -140,13 +203,13 @@ const cho = (ms) => new Promise((r) => setTimeout(r, ms));
       for (const v of van) console.error('    ' + v);
     }
     if (sot.length) {
-      console.error(`  ${sot.length} chỗ còn con số của BẢN CŨ (phép tính đó không chạy được nữa):`);
+      console.error(`  ${sot.length} chỗ còn dấu vết nghiệp vụ CŨ (ví dụ đó không chạy được nữa):`);
       for (const s of sot.slice(0, 14)) console.error('    ' + s);
       if (sot.length > 14) console.error(`    … và ${sot.length - 14} chỗ nữa`);
     }
     process.exit(1);
   }
 
-  console.log(`[so-lieu] ✓ ${CA.length} ca gọi app khớp bảng canonical, và bug cài sẵn vẫn lộ ra. ` +
-    'Không bài nào còn con số của bản cũ.');
+  console.log(`[so-lieu] ✓ ${CA.length} ca gọi app khớp bảng canonical · cả 3 bug cài sẵn còn sống · ` +
+    `${DUONG_PHAI_CO.length} đường API bài giảng gọi đều tồn tại · không bài nào còn dấu vết nghiệp vụ cũ.`);
 })();

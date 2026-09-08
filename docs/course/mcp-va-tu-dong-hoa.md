@@ -233,7 +233,7 @@ Bốn điều về thông báo, học từ chỗ mọi kênh thông báo đều 
 |---|---|
 | **Chỉ báo khi ĐỎ**, không báo khi xanh | báo mỗi ngày thì sau hai tuần không ai đọc nữa |
 | Kèm link tới bản chạy, không dán log | log dài làm trôi kênh; link thì mở khi cần |
-| Nói cái gì hỏng, không chỉ "build failed" | *"3 case Tạo đơn đỏ ở bước tính tiền"* mới hành động được |
+| Nói cái gì hỏng, không chỉ "build failed" | *"3 case Đồng bộ học lại đỏ ở bước chọn lớp mốc"* mới hành động được |
 | Có `workflow_dispatch` | lịch hỏng lúc nào cũng bấm tay chạy lại được |
 
 Dòng đầu là dòng quan trọng nhất: thông báo bị bỏ qua còn tệ hơn không có thông báo, vì nó tạo cảm giác

@@ -4,7 +4,7 @@
 
 **Vấn đề**
 
-BA gửi một tệp tổng hợp yêu cầu. Nó ghi phí dịch vụ của đơn gia hạn tính theo một công thức.
+BA gửi một tệp tổng hợp yêu cầu. Nó ghi thời hạn lớp cũ được cắt lại theo một công thức.
 
 Bạn mở Figma. Bản thiết kế màn tạo đơn không có ô nào cho con số đó.
 
@@ -117,7 +117,7 @@ Và bảng chỗ chưa rõ phải bắt được **cả ba** thứ này:
 
 | # | Chỗ chưa rõ | Mức |
 |---|---|---|
-| 1 | Mốc phí dịch vụ: mục 2 ghi 500.000, Ghi chú 2 ghi 700.000 | **chặn** |
+| 1 | Trần số ngày gia hạn: mục 2 ghi 180, Ghi chú 2 ghi 365 | **chặn** |
 | 2 | Rule "Vàng trên 10 triệu phải duyệt ngay" (Ghi chú 1) không có trong luồng chính mục 4 | **chặn** |
 | 3 | Khách chưa được phân hạng thì hiển thị gì và tính giảm giá thế nào (Ghi chú 3) | **chặn** |
 
@@ -182,9 +182,9 @@ Không đủ ba thì sửa prompt rồi chạy lại **phiên mới**, ghi lại
 
 Bạn đóng vai BA, trả lời ba câu. Với tài liệu mẫu, dùng đáp án này để cả lớp có cùng nền:
 
-1. Mốc phí dịch vụ: **500.000** (bảng giá mới chưa hiệu lực).
-2. Rule Vàng trên 10 triệu: còn hiệu lực, cần trưởng nhóm duyệt ngay ở bước lưu nháp.
-3. Khách chưa phân hạng: hiển thị `Chưa phân hạng`, giảm giá 0%.
+1. Trần số ngày gia hạn: **180** (quy định mới chưa hiệu lực).
+2. Rule học viên quá 50% tiến độ: còn hiệu lực, cần trưởng bộ phận duyệt ngay ở bước Lưu.
+3. Học viên chưa được xếp lớp mới: khối C hiện dấu gạch, và thời hạn lớp cũ giữ nguyên.
 
 Ghi vào cuối `phan-tich.md` dưới tiêu đề `Câu trả lời của BA`.
 

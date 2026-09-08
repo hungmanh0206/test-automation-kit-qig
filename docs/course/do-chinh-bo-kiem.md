@@ -450,7 +450,7 @@ Máy ở trên chặn bằng cách chạy lượt nền trước, và thoát mã
 
 ### Bẫy 2: mutant chưa tiêm được cho ra điểm thấp giả
 
-Bạn viết `urlPattern` là `**/api/orders/*` nhưng API thật là `/api/v1/orders/*`. Thế là `page.route()` không
+Bạn viết `urlPattern` là `**/api/tinh-han` nhưng API thật là `/api/v1/tinh-han`. Thế là `page.route()` không
 khớp request nào. Response về nguyên vẹn. Suite xanh. Máy báo mutant sống sót. Rồi bạn đi sửa oracle cho một
 lỗi chưa bao giờ xảy ra.
 

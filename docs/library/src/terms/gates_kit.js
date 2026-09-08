@@ -27,13 +27,13 @@ const TERMS_GATE3 = [
   src:'scripts/qa/library_drift.js', rel:['c-canonical','g-gate_index','c-forcing-function','c-gate-real-content','g-skills_index'] },
 
 { id:'g-course_numbers', t:'course:numbers', cat:'gate',
-  def:'CHẠY sản phẩm thực hành rồi so con số trong bài giảng với con số nó trả về.',
-  detail:'Khởi động app thực hành ở một cổng riêng, gọi API báo giá cho các ca canonical, và so với bảng số khai trong gate. Ngoài ra quét bài giảng tìm những con số của BẢN CŨ. Một ca được khai là bug-phải-lộ thì app BẮT BUỘC khác spec: sản phẩm thực hành mà bug không lộ ra thì cả tài liệu mất phép đối chứng.',
-  why:'Ví dụ trụ cột của tài liệu nằm ở Bài 1 và nó KHÔNG chạy được. Năm chỗ lệch cùng lúc: app đặt giá 250.000 còn bài tính theo 225.000 · app thu phí 30.000 còn bài viết 50.000 · app nhận trường customerId/qty còn bài viết hocVienId/soSuat nên ai copy cũng lỗi · ví dụ tạm tính 520.000 KHÔNG dựng được từ bảng giá · và nặng nhất là với bộ dữ liệu bài dùng thì bug cài sẵn không hề lộ ra. Không gate nào bắt được vì mọi phép kiểm cũ đọc VĂN BẢN.',
+  def:'CHẠY sản phẩm thực hành rồi so ví dụ trong bài giảng với thứ nó trả về thật.',
+  detail:'Khởi động app thực hành ở một cổng riêng rồi đo bốn thứ: các ca canonical có khớp bảng khai trong gate không · CẢ BA bug cài sẵn còn sống không · mọi đường API bài giảng có gọi thì app có thật không · và bài giảng còn sót dấu vết nghiệp vụ CŨ không. Một ca được khai là bug-phải-lộ thì app BẮT BUỘC khác spec: sản phẩm thực hành mà bug không lộ ra thì cả tài liệu mất phép đối chứng.',
+  why:'Ví dụ trụ cột của tài liệu nằm ở Bài 1 và nó KHÔNG chạy được. Trả giá hai lượt. Lượt một: giá trong app khác giá trong bài, tên trường API khác, bộ dữ liệu của bài không dựng được từ bảng giá, và nặng nhất là bug cài sẵn không hề lộ ra với dữ liệu bài dùng. Lượt hai, lúc đổi nghiệp vụ: giao diện app gửi customerId/qty trong khi server đọc hocVienId/soSuat, tức là màn hình đã ngừng chạy từ trước đó, và bài factory thì dạy một API mà app KHÔNG có. Không gate nào bắt được vì mọi phép kiểm cũ đọc VĂN BẢN.',
   how:['npm run course:numbers trước khi sửa bất cứ con số nào trong bài giảng.','Đổi app thì đổi bảng canonical trong gate, và ngược lại.'],
   cmd:'npm run course:numbers',
-  ex:'HV03 + KH01 ×2: spec nói phí 0 vì tạm tính 520.000 đã đạt mốc, app thu 50.000 nên tổng 544.000 thay vì 494.000. Lệch đúng bằng tiền phí.',
-  trap:'Bản đầu của gate xếp 8.750 vào danh sách số cũ và báo oan 3 chỗ — con số đó vẫn đúng, đã gọi app xác nhận. Danh sách số cũ phải khai tường minh, đừng đoán bằng regex tiền tệ.',
+  ex:'HV01 có hai lớp mới, Foundation bắt đầu 01/07 và Lớp chính bắt đầu 01/09. BR-02 nói mốc lấy theo lớp chính nên hạn mới phải là 31/08/2026, app lấy Foundation và trả 30/06/2026. HV03 chỉ có một lớp mới thì app trả đúng, và đó là ca phân biệt.',
+  trap:'Bản đầu của gate xếp 8.750 vào danh sách số cũ và báo oan 3 chỗ, trong khi con số đó vẫn đúng. Danh sách dấu vết cũ phải khai tường minh, đừng đoán bằng regex tiền tệ. Nghiệm thu bằng 4 phép tiêm: vá từng bug một, và xoá một đường API, mỗi lần phải CHẶN.',
   src:'scripts/qa/course_numbers.js', rel:['c-gate-real-content','g-library_drift','g-course_maturity'] },
 
 { id:'g-course_maturity', t:'course:maturity', cat:'gate',

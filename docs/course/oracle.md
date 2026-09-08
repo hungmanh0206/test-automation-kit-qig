@@ -50,9 +50,9 @@ một quyết định đã chốt. Hai là nó cụ thể: một con số, một
 
 | Chưa phải oracle | Là oracle |
 |---|---|
-| "Tổng tiền hiển thị đúng" | "Tổng cộng = 321.000, theo BR-03: 300.000 − 9.000 + 30.000" |
-| "Chuyển sang màn chi tiết" | "URL khớp `/orders/{id}` và tiêu đề trang là `Chi tiết đơn hàng`" |
-| "Có thông báo lỗi" | "Hiện đúng chữ `Số suất phải từ 1 đến 999`, theo mục 5" |
+| "Thời hạn hiển thị đúng" | "Hạn mới = 31/08/2026, theo mục 3: lớp mốc `CFA02` bắt đầu 01/09/2026, trừ 1 ngày" |
+| "Bảng tải lại sau khi áp dụng" | "Cột Loại của hàng đó đổi thành `Học lại` và cột Thời hạn kết thúc là `31/08/2026`" |
+| "Có thông báo lỗi" | "Hiện đúng chữ `Số ngày gia hạn phải từ 1 đến 180`, theo mục 5" |
 
 Không có oracle thì test chỉ mô tả app đang làm gì. Nó không nói được app làm có đúng không. Đó là ranh giới
 giữa kiểm thử và chụp ảnh hiện trạng.
@@ -96,8 +96,8 @@ Không ai viết thế này một cách có ý thức. Nhưng biến thể nhẹ
 
 ```js
 test('vẫn là tautology, chỉ trông có việc hơn', async ({ page }) => {
-  const tong = await page.locator('#tong-cong').innerText();
-  expect(tong).toBe(tong.trim());      // A bằng A
+  const han = await page.locator('#han-moi').innerText();
+  expect(han).toBe(han.trim());        // A bằng A
 });
 ```
 
@@ -105,31 +105,32 @@ test('vẫn là tautology, chỉ trông có việc hơn', async ({ page }) => {
 
 ```js
 test('so UI với API của chính hệ thống', async ({ page, request }) => {
-  const tuApi = (await (await request.get('/api/orders/1')).json()).total;
-  const tuUi = await page.locator('#tong-cong').innerText();
-  expect(chuanHoa(tuUi)).toBe(chuanHoa(tuApi));   // không chứng minh backend tính đúng
+  const tuApi = (await (await request.post('/api/tinh-han')).json()).data.hanMoi;
+  const tuUi = await page.locator('#han-moi').innerText();
+  expect(chuanHoa(tuUi)).toBe(chuanHoa(tuApi));   // không chứng minh backend chọn đúng lớp mốc
 });
 ```
 
 Cách này hợp lệ nếu mục tiêu của bạn là kiểm giao diện có lấy đúng dữ liệu backend không. Nhưng nó không nói
-gì về chuyện backend tính đúng hay sai. Công thức backend sai thì cả hai bên cùng sai, và test vẫn xanh.
+gì về chuyện backend chọn đúng lớp mốc hay sai. Backend chọn sai thì cả hai bên cùng sai, và test vẫn xanh.
 
-Thử bằng một câu: nếu công thức tính sai, test này có đỏ không? Không đỏ thì nó không kiểm công thức.
+Thử bằng một câu: nếu backend chọn sai lớp mốc, test này có đỏ không? Không đỏ thì nó không kiểm quy tắc đó.
 
 ### Kiểu 2: lấy kỳ vọng từ chính màn hình
 
 ```js
 test('đọc kỳ vọng từ chính màn hình', async ({ page }) => {
-  const donGia = await page.locator('#don-gia').innerText();     // 100.000
-  const soSuat = await page.locator('#so-luong').inputValue();  // 3
-  const mongDoi = Number(donGia) * Number(soSuat);              // ← kỳ vọng lấy TỪ MÀN HÌNH
-  expect(await page.locator('#thanh-tien').innerText()).toBe(dinhDang(mongDoi));
+  const ketThuc = await page.locator('#thoi-han-ket-thuc').innerText();  // 31/08/2026
+  const giaHan = await page.locator('#gia-han').innerText();             // 30
+  const mongDoi = congNgay(ketThuc, Number(giaHan));                     // ← kỳ vọng lấy TỪ MÀN HÌNH
+  expect(await page.locator('#ngay-het-han').innerText()).toBe(mongDoi);
 });
 ```
 
-Trông rất có tính toán. Nhưng nếu ô Đơn giá hiển thị sai giá thì Thành tiền cũng sai theo, và test vẫn xanh.
+Trông rất có tính toán. Nhưng nếu ô Thời hạn hiển thị sai ngày kết thúc thì Ngày hết hạn cũng sai theo,
+và test vẫn xanh.
 
-Oracle đúng phải là: `SP_A` giá `100.000`, lấy từ danh mục sản phẩm chứ không lấy từ màn hình.
+Oracle đúng phải là: lớp mốc `CFA02` bắt đầu `01/09/2026`, lấy từ danh mục lớp chứ không lấy từ màn hình.
 
 ### Kiểu 3: thấy hai nơi giống nhau rồi kết luận đúng
 
@@ -147,7 +148,7 @@ Nhưng hai màn đó cùng đọc một API. Nếu API trả sai thì cả hai c
 ```markdown
 | Kết quả mong đợi |
 |---|
-| 1. Tạm tính = 300.000<br>2. Giảm giá = 9.000 — `BR-01` (Bạc 3%, chưa tới trần 100.000)<br>3. Phí dịch vụ = 30.000 — `BR-02` (tạm tính < 500.000)<br>4. **Tổng cộng = 321.000** — `BR-03` |
+| 1. Lớp lấy làm mốc = `CFA02` — `BR-02` (Foundation không được làm mốc)<br>2. Hạn mới = `31/08/2026` — `BR-03` (01/09/2026 trừ 1 ngày)<br>3. Không rơi vào nhánh chặn hạn âm — `BR-05` (31/08/2026 sau 01/03/2026) |
 ```
 
 Bạn được ngay ba thứ.
@@ -223,9 +224,10 @@ nhau. Nếu cả hai cho cùng một kết quả thì chạy xong bạn vẫn kh
 
 Áp rộng ra:
 
-- Kiểm "giá lấy từ danh mục chứ không phải nhập tay" thì đặt hai giá khác nhau.
-- Kiểm "phí dịch vụ tính theo Tạm tính chứ không theo Tổng cộng" thì dựng ca mà hai số đó nằm hai bên mốc.
-- Kiểm "làm tròn xuống chứ không làm tròn thường" thì dùng số lẻ ra `.5`.
+- Kiểm "ngày lấy từ danh mục lớp chứ không phải nhập tay" thì đặt hai ngày khác nhau.
+- Kiểm "mốc lấy theo lớp chính chứ không theo lớp sớm nhất" thì dựng nhóm lớp mới có Foundation bắt đầu
+  sớm hơn lớp chính.
+- Kiểm "cộng vào hạn của ghi danh chứ không vào hạn của lớp" thì dựng học viên có hạn khác hạn lớp.
 
 Giờ tự viết một case. Chọn một trong hai tình huống trên, rồi viết đủ ba phần: tiền điều kiện nêu cả hai giá
 trị, kết quả mong đợi nêu giá trị nào phải thắng, và một câu nói rõ nếu ra giá trị kia thì kết luận gì.

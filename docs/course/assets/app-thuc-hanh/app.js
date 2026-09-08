@@ -1,5 +1,5 @@
 /*
- * Giao diện của Cổng đăng ký khoá học. Chạy trong trình duyệt.
+ * Giao diện của Vận hành lớp học. Chạy trong trình duyệt.
  *
  * Đọc được file này là một phần của bài học: khi test đỏ, bạn cần biết
  * chữ trên màn hình đến từ đâu.
@@ -9,142 +9,202 @@
 const $ = (s) => document.querySelector(s);
 const q = (t) => document.querySelector(`[data-testid="${t}"]`);
 
-let khachDs = [];
-let sanPhamDs = [];
-let gio = [];
+let lopDs = [];
+let hocVienDs = [];
+let hangDs = [];
+let hanDangXem = null;
+let ghiDanhDangSua = null;
 
-const tien = (n) => new Intl.NumberFormat('vi-VN').format(n) + ' đ';
+/* Ngày lưu dạng YYYY-MM-DD, hiện dạng dd/mm/yyyy. */
+const ngay = (s) => (s ? s.slice(8, 10) + '/' + s.slice(5, 7) + '/' + s.slice(0, 4) : '—');
+const khoang = (a, b) => ngay(a) + ' - ' + ngay(b);
+
+const TEN_LOAI = { NORMAL: 'Thường', RETOOK: 'Học lại', RESERVED: 'Bảo lưu' };
+const LOP_LOAI = { LESSON: 'Lớp chính', FOUNDATION: 'Foundation', REVISION: 'Revision' };
 
 async function goi(duong, tuyChon) {
-  const r = await fetch(duong, {
-    headers: { 'Content-Type': 'application/json' },
-    ...tuyChon
-  });
+  const r = await fetch(duong, { headers: { 'Content-Type': 'application/json' }, ...tuyChon });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || 'lỗi ' + r.status);
   return j.data;
 }
 
-function hienLoi(chu) {
-  const el = q('loi');
+function hienLoi(chu, o) {
+  const el = o || q('loi');
   if (!chu) { el.hidden = true; el.textContent = ''; return; }
   el.hidden = false;
   el.textContent = chu;
 }
 
-function veGio() {
-  const tb = q('gio');
-  tb.innerHTML = '';
-  for (const [i, it] of gio.entries()) {
-    const sp = sanPhamDs.find((p) => p.id === it.productId);
-    const tr = document.createElement('tr');
-    tr.innerHTML =
-      `<td>${sp.ten}</td>` +
-      `<td class="so">${tien(sp.gia)}</td>` +
-      `<td class="so">${it.qty}</td>` +
-      `<td class="so">${tien(sp.gia * it.qty)}</td>` +
-      `<td><button class="phu" data-xoa="${i}">Xoá</button></td>`;
-    tb.appendChild(tr);
-  }
-  $('#gioTrong').hidden = gio.length > 0;
-  $('#taoDon').disabled = gio.length === 0;
+/* Cộng ngày ở tầng hiển thị, để màn hình không phải chờ server mỗi lần đổi số. */
+function congNgay(s, n) {
+  const t = Date.parse(s + 'T00:00:00Z') + n * 86400000;
+  return new Date(t).toISOString().slice(0, 10);
 }
 
-async function capNhatTien() {
-  if (!gio.length) {
-    for (const t of ['tam-tinh', 'giam-gia', 'phi-dich-vu', 'tong-cong']) q(t).textContent = '—';
-    return;
+/* ── Bảng học viên ─────────────────────────────────────────────────────────── */
+
+async function veBangHocVien() {
+  const maLop = q('lop').value;
+  const lop = lopDs.find((l) => l.ma === maLop);
+  hangDs = await goi(`/api/lop/${maLop}/hoc-vien`);
+
+  q('lop-loai').textContent = LOP_LOAI[lop.loai] || lop.loai;
+  q('lop-thoi-han').textContent = khoang(lop.batDau, lop.ketThuc);
+  q('lop-si-so').textContent = String(hangDs.length);
+
+  const tb = q('bang-hoc-vien');
+  tb.innerHTML = '';
+  for (const [i, g] of hangDs.entries()) {
+    const loai = (g.type || '').toLowerCase();
+    const nhan = loai === 'retook' ? 'hoclai' : loai === 'reserved' ? 'baoluu' : 'thuong';
+    // Ngày hết hạn: thời hạn của lớp cộng số ngày gia hạn của học viên.
+    const hetHan = congNgay(lop.ketThuc, g.giaHan);
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-ghi-danh', g.id);
+    tr.innerHTML =
+      `<td>${i + 1}</td>` +
+      `<td>${g.hocVienTen}</td>` +
+      `<td><span class="nhan ${nhan}">${TEN_LOAI[g.type] || g.type}</span></td>` +
+      `<td>${khoang(g.batDau, g.ketThuc)}</td>` +
+      `<td class="so">${g.giaHan === 0 ? '—' : g.giaHan}</td>` +
+      `<td>${ngay(hetHan)}</td>` +
+      `<td><span class="menu">` +
+        `<button data-menu="${g.id}" aria-label="Hành động">⋮</button>` +
+        `<ul hidden data-menu-cua="${g.id}">` +
+          `<li><button data-gia-han="${g.id}">Gia hạn</button></li>` +
+          `<li><button data-lich-su="${g.id}">Lịch sử</button></li>` +
+        `</ul>` +
+      `</span></td>`;
+    tb.appendChild(tr);
   }
+  $('#hvTrong').hidden = hangDs.length > 0;
+}
+
+/* ── Đồng bộ học lại ───────────────────────────────────────────────────────── */
+
+function xoaOHan() {
+  for (const t of ['lop-cu', 'lop-moc', 'han-hien-tai', 'han-moi']) q(t).textContent = '—';
+  q('ap-dung').disabled = true;
+  hanDangXem = null;
+}
+
+async function xemHan() {
   try {
-    const t = await goi('/api/quote', {
+    const d = await goi('/api/tinh-han', {
       method: 'POST',
-      body: JSON.stringify({ customerId: q('khach').value, items: gio })
+      body: JSON.stringify({ hocVienId: q('hoc-vien').value })
     });
     hienLoi('');
-    q('tam-tinh').textContent = tien(t.tamTinh);
-    // Làm tròn xuống nghìn cho gọn mắt
-    q('giam-gia').textContent = tien(Math.floor(t.giamGia / 1000) * 1000);
-    q('phi-dich-vu').textContent = t.phiDichVu === 0 ? 'Miễn phí' : tien(t.phiDichVu);
-    q('tong-cong').textContent = tien(t.tongCong);
+    hanDangXem = d;
+    q('lop-cu').textContent = d.lopCu;
+    q('lop-moc').textContent = d.lopMoc ? `${d.lopMoc} (${LOP_LOAI[d.lopMocLoai] || d.lopMocLoai})` : '— chưa có lớp mới';
+    q('han-hien-tai').textContent = ngay(d.hanHienTai);
+    q('han-moi').textContent = ngay(d.hanMoi);
+    q('ap-dung').disabled = false;
+  } catch (e) {
+    xoaOHan();
+    hienLoi(e.message);
+  }
+}
+
+async function apDung() {
+  try {
+    await goi('/api/dong-bo-hoc-lai', {
+      method: 'POST',
+      body: JSON.stringify({ hocVienId: q('hoc-vien').value })
+    });
+    hienLoi('');
+    xoaOHan();
+    await veBangHocVien();
   } catch (e) {
     hienLoi(e.message);
   }
 }
 
-async function veDsDon() {
-  const ds = await goi('/api/orders');
-  const tb = q('ds-don');
-  tb.innerHTML = '';
-  for (const d of ds) {
-    const cho = d.status === 'CHO_XAC_NHAN';
-    const tr = document.createElement('tr');
-    tr.innerHTML =
-      `<td>${d.id}</td>` +
-      `<td>${d.customerName}</td>` +
-      `<td class="so">${tien(d.tongCong)}</td>` +
-      `<td><span class="nhan ${cho ? 'cho' : 'xong'}">${cho ? 'Chờ xác nhận' : 'Đã xác nhận'}</span></td>` +
-      `<td>${cho ? `<button class="phu" data-xacnhan="${d.id}">Xác nhận</button>` : ''}</td>`;
-    tb.appendChild(tr);
-  }
-  $('#donTrong').hidden = ds.length > 0;
+/* ── Gia hạn ───────────────────────────────────────────────────────────────── */
+
+function moGiaHan(id) {
+  const g = hangDs.find((x) => x.id === id);
+  ghiDanhDangSua = g;
+  q('gia-han-hv').textContent = `${g.hocVienTen} · thời hạn hiện tại ${khoang(g.batDau, g.ketThuc)}`;
+  q('so-ngay').value = '30';
+  q('ly-do').value = '';
+  q('dem-ly-do').textContent = '0/60';
+  hienLoi('', q('loi-gia-han'));
+  $('#hopGiaHan').showModal();
 }
+
+async function luuGiaHan() {
+  try {
+    await goi('/api/gia-han', {
+      method: 'POST',
+      body: JSON.stringify({
+        ghiDanhId: ghiDanhDangSua.id,
+        soNgay: Number(q('so-ngay').value),
+        lyDo: q('ly-do').value
+      })
+    });
+    $('#hopGiaHan').close();
+    await veBangHocVien();
+  } catch (e) {
+    hienLoi(e.message, q('loi-gia-han'));
+  }
+}
+
+async function moLichSu(id) {
+  const ds = await goi(`/api/ghi-danh/${id}/lich-su`);
+  const tb = q('bang-lich-su');
+  tb.innerHTML = ds.map((r, i) =>
+    `<tr><td>${i + 1}</td><td>${khoang(r.tu, r.den)}</td><td>${r.lyDo}</td><td>${r.boi}</td></tr>`
+  ).join('');
+  q('lich-su-trong').hidden = ds.length > 0;
+  $('#hopLichSu').showModal();
+}
+
+/* ── Khởi động ─────────────────────────────────────────────────────────────── */
 
 async function khoiDong() {
-  khachDs = await goi('/api/students');
-  sanPhamDs = await goi('/api/courses');
+  lopDs = await goi('/api/lop');
+  hocVienDs = await goi('/api/hoc-vien');
 
-  const tenHang = { THUONG: 'Thường', BAC: 'Bạc', VANG: 'Vàng' };
-  q('khach').innerHTML = khachDs
-    .map((k) => `<option value="${k.id}">${k.ten} — hạng ${tenHang[k.hang]}</option>`).join('');
-  q('sanpham').innerHTML = sanPhamDs
-    .map((p) => `<option value="${p.id}">${p.ten} — ${tien(p.gia)}</option>`).join('');
+  q('lop').innerHTML = lopDs
+    .map((l) => `<option value="${l.ma}">${l.ma} — ${l.ten}</option>`).join('');
+  q('hoc-vien').innerHTML = hocVienDs
+    .map((h) => `<option value="${h.id}">${h.id} — ${h.ten}</option>`).join('');
 
-  await veDsDon();
+  await veBangHocVien();
 }
 
-/* ── Sự kiện ────────────────────────────────────────────────────────────────── */
+/* ── Sự kiện ───────────────────────────────────────────────────────────────── */
 
-$('#them').addEventListener('click', async () => {
-  const sl = Number(q('soluong').value);
-  if (!Number.isInteger(sl) || sl < 1 || sl > 99) { hienLoi('Số suất phải từ 1 đến 99'); return; }
-  const pid = q('sanpham').value;
-  const co = gio.find((x) => x.productId === pid);
-  if (co) co.qty += sl; else gio.push({ productId: pid, qty: sl });
-  veGio();
-  await capNhatTien();
-});
+q('lop').addEventListener('change', async () => { await veBangHocVien(); });
+q('xem-han').addEventListener('click', xemHan);
+q('ap-dung').addEventListener('click', apDung);
+q('hoc-vien').addEventListener('change', xoaOHan);
 
-q('gio').addEventListener('click', async (e) => {
-  const i = e.target.getAttribute && e.target.getAttribute('data-xoa');
-  if (i === null || i === undefined) return;
-  gio.splice(Number(i), 1);
-  veGio();
-  await capNhatTien();
-});
-
-q('khach').addEventListener('change', capNhatTien);
-
-$('#taoDon').addEventListener('click', async () => {
-  try {
-    await goi('/api/orders', {
-      method: 'POST',
-      body: JSON.stringify({ customerId: q('khach').value, items: gio })
-    });
-    gio = [];
-    veGio();
-    await capNhatTien();
-    await veDsDon();
-    hienLoi('');
-  } catch (e) {
-    hienLoi(e.message);
+q('bang-hoc-vien').addEventListener('click', (e) => {
+  const el = e.target;
+  if (!el.getAttribute) return;
+  const mo = el.getAttribute('data-menu');
+  if (mo) {
+    const ul = document.querySelector(`[data-menu-cua="${mo}"]`);
+    const dangMo = !ul.hidden;
+    for (const x of document.querySelectorAll('[data-menu-cua]')) x.hidden = true;
+    ul.hidden = dangMo;
+    return;
   }
+  const gh = el.getAttribute('data-gia-han');
+  if (gh) { for (const x of document.querySelectorAll('[data-menu-cua]')) x.hidden = true; moGiaHan(gh); return; }
+  const ls = el.getAttribute('data-lich-su');
+  if (ls) { for (const x of document.querySelectorAll('[data-menu-cua]')) x.hidden = true; moLichSu(ls); }
 });
 
-q('ds-don').addEventListener('click', async (e) => {
-  const id = e.target.getAttribute && e.target.getAttribute('data-xacnhan');
-  if (!id) return;
-  try { await goi(`/api/orders/${id}/confirm`, { method: 'POST' }); await veDsDon(); }
-  catch (err) { hienLoi(err.message); }
+q('ly-do').addEventListener('input', () => {
+  q('dem-ly-do').textContent = `${q('ly-do').value.length}/60`;
 });
+q('luu-gia-han').addEventListener('click', luuGiaHan);
+q('huy-gia-han').addEventListener('click', () => $('#hopGiaHan').close());
+q('dong-lich-su').addEventListener('click', () => $('#hopLichSu').close());
 
 khoiDong().catch((e) => hienLoi('Không nối được server: ' + e.message));

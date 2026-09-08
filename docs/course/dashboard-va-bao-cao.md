@@ -248,7 +248,7 @@ Bốn phần, đúng thứ tự này:
 # Kết quả kiểm thử — <Sprint/Story> — <ngày>
 
 ## Việc 1 — Kết luận một câu
-Chức năng Tạo đơn hàng **chưa nên phát hành**: còn 1 lỗi tính tiền ở mốc 500.000 (PROJ-1234).
+Chức năng Đồng bộ học lại **chưa nên phát hành**: còn 1 lỗi chọn sai lớp mốc (PROJ-1234).
 
 ## Việc 2 — Con số
 | | |
@@ -261,7 +261,7 @@ Chức năng Tạo đơn hàng **chưa nên phát hành**: còn 1 lỗi tính ti
 ## Việc 3 — Cái gì hỏng, ảnh hưởng ai
 | Lỗi | Ảnh hưởng | Mức |
 |---|---|---|
-| Phí dịch vụ tính sai ở mốc 500.000 | học viên chương trình Pro bị thu thừa 30.000đ/đơn | **chặn** |
+| Chọn sai lớp làm mốc cắt hạn | học viên có lớp Foundation mất truy cập sớm 2 tháng | **chặn** |
 | Số trên màn không cộng khớp | khách thấy số lệch, gọi hỗ trợ | cao |
 | Sửa được đơn đã xác nhận qua API | dữ liệu đơn đổi sau khi chốt | cao |
 
@@ -275,7 +275,7 @@ Bốn nguyên tắc:
 | Nguyên tắc | Vì sao |
 |---|---|
 | **Kết luận đứng đầu** | người đọc quyết định trong 10 giây đầu; đừng bắt họ tự suy ra |
-| **"Ảnh hưởng ai"**, không phải tên lỗi kỹ thuật | *"học viên chương trình Pro bị thu thừa 30.000đ"* ≠ *"BR-03 sai"* |
+| **"Ảnh hưởng ai"**, không phải tên lỗi kỹ thuật | *"học viên mất truy cập sớm 2 tháng"* ≠ *"BR-02 sai"* |
 | **Nêu cả chỗ chưa kiểm được** | im lặng về nó là để người đọc tưởng đã phủ hết |
 | **Nói cần gì để đi tiếp** | báo cáo không có bước tiếp theo thì chỉ là lời than |
 

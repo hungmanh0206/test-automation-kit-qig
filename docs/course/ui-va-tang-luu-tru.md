@@ -30,7 +30,7 @@ thật sự được lưu xuống.
 
 Năm việc:
 
-1. Nhìn cùng một đơn hàng từ hai tầng, và thấy chúng không giống nhau (20 phút).
+1. Nhìn cùng một ghi danh từ hai tầng, và thấy chúng không giống nhau (20 phút).
 2. Hiểu 7 lớp bug mà chỉ đối chiếu tầng lưu trữ mới bắt được (25 phút).
 3. Dùng hai nguồn để khoanh tầng lỗi. Bug hiển thị hay bug lưu (20 phút).
 4. Viết máy đối chiếu UI ↔ tầng lưu trữ, có ánh xạ tên trường (35 phút).
@@ -47,11 +47,11 @@ Chạy app, rồi ở cửa sổ terminal thứ hai:
 
 ```bash
 curl -s -X POST http://localhost:4010/api/reset
-curl -s -X POST http://localhost:4010/api/orders -H "Content-Type: application/json" \
-  -d "{\"customerId\":\"HV03\",\"items\":[{\"productId\":\"KH03\",\"qty\":1}]}"
+curl -s -X POST http://localhost:4010/api/dong-bo-hoc-lai -H "Content-Type: application/json" \
+  -d "{\"hocVienId\":\"HV03\"}"
 ```
 
-Giờ mở `http://localhost:4010`, tạo đúng đơn đó bằng tay (khách `Lê Văn C — chương trình Elite`, `Đèn bàn`, số
+Giờ mở `http://localhost:4010`, làm đúng việc đó bằng tay (học viên `HV03 — Lê Văn C`, bấm Xem hạn mới rồi Áp dụng, số
 lượng `1`) và ghi lại bốn số trên màn hình. Rồi gọi cửa tầng lưu trữ:
 
 ```bash
@@ -61,7 +61,7 @@ curl -s http://localhost:4010/api/_store/orders
 **Bạn sẽ thấy:**
 
 ```json
-{"data":[{"id":"DH0001","student_id":"HV03","rank":"VANG","subtotal_amount":175000,
+{"data":[{"id":"GD003","student_id":"HV03","class_code":"ACCA01","student_type":"RETOOK",
 "discount_amount":8750,"service_fee":30000,"total_amount":196250,
 "status":"CHO_XAC_NHAN","item_count":1,"created_at_utc":"2026-09-07T11:12:41.432Z"}]}
 ```
@@ -83,7 +83,7 @@ Ba chi tiết trong cửa tầng lưu trữ, mỗi cái có lý do:
 
 | Chi tiết | Vì sao nó như vậy |
 |---|---|
-| Tên trường **khác hẳn** (`discount_amount` ≠ `giamGia`) | Bắt bạn phải **ánh xạ**, thay vì so tên cho khớp. Database thật không đặt tên theo giao diện |
+| Tên trường **khác hẳn** (`duration_end` ≠ `ketThuc`) | Bắt bạn phải **ánh xạ**, thay vì so tên cho khớp. Database thật không đặt tên theo giao diện |
 | `created_at_utc` luôn là UTC | Giao diện hiển thị theo giờ máy người dùng. Đây là nguồn của cả một lớp bug — Việc 2 |
 | **Không có đường ghi** | Tiền điều kiện **không được** dựng bằng tầng lưu trữ, dù tầng đó đang mở — Việc 5 |
 
@@ -145,7 +145,8 @@ test('đơn tạo xong đọc lại vẫn đúng số', async ({ page, request }
 
   // Không tin số đang hiện: TẢI LẠI rồi đọc, vì trang có thể đang vẽ lại thứ bạn vừa nhập
   await page.reload();
-  const tongTrenUI = await page.getByTestId('tong-cong').textContent();
+  const hetHanTrenUI = await page.getByTestId('bang-hoc-vien').locator('tr').first()
+    .locator('td').nth(5).textContent();
 
   // Nguồn thứ hai: tầng lưu trữ
   const kho = await (await request.get('/api/_store/orders')).json();
@@ -174,10 +175,10 @@ giữa hai bên.
   "orders": {
     "khoa": { "ui": "ma-don", "store": "id" },
     "truong": [
-      { "y": "Tạm tính", "oracleRef": "BR-01", "ui": "tam-tinh", "store": "subtotal_amount", "kieu": "tien" },
+      { "y": "Thời hạn kết thúc", "oracleRef": "BR-03", "ui": "thoi-han", "store": "duration_end", "kieu": "ngay" },
       { "y": "Giảm giá", "oracleRef": "BR-02", "ui": "giam-gia", "store": "discount_amount", "kieu": "tien" },
       { "y": "Phí dịch vụ", "oracleRef": "BR-03", "ui": "phi-dich-vu", "store": "service_fee", "kieu": "tien", "uiCoTheLaChu": ["Miễn phí"] },
-      { "y": "Tổng cộng", "oracleRef": "BR-04", "ui": "tong-cong", "store": "total_amount", "kieu": "tien" },
+      { "y": "Ngày hết hạn", "oracleRef": "BR-09", "ui": "ngay-het-han", "store": "expire_date", "kieu": "ngay" },
       { "y": "Trạng thái", "oracleRef": "BR-06", "ui": "trang-thai", "store": "status", "kieu": "enum",
         "banDo": { "Chờ xác nhận": "CHO_XAC_NHAN", "Đã xác nhận": "DA_XAC_NHAN" } }
     ]
@@ -298,9 +299,9 @@ module.exports = { soMotBanGhi, soTuChu };
 
 ```json
 [{ "bang": "orders",
-   "ui": { "ma-don": "DH0001", "tam-tinh": "175.000 đ", "giam-gia": "8.000 đ",
-           "phi-dich-vu": "30.000 đ", "tong-cong": "216.250 đ", "trang-thai": "Chờ xác nhận" },
-   "store": { "id": "DH0001", "subtotal_amount": 175000, "discount_amount": 8750,
+   "ui": { "ma-ghi-danh": "GD003", "thoi-han": "01/03/2026 - 31/08/2026", "gia-han": "—",
+           "ngay-het-han": "31/07/2026", "loai": "Học lại" },
+   "store": { "id": "GD003", "duration_end": "2026-08-31", "extended_days": 0,
               "service_fee": 30000, "total_amount": 196250, "status": "CHO_XAC_NHAN" } }]
 ```
 
@@ -311,7 +312,7 @@ node scripts/qa/doi-chieu-luu-tru.js cap.json; echo "mã thoát = $?"
 **Bạn sẽ thấy:**
 
 ```
-✗ orders DH0001
+✗ ghi-danh GD003
    - Giảm giá (BR-02): UI 8000 ≠ lưu trữ 8750 — lệch 750
 
 [doi-chieu] ✗ 1 lệch giữa giao diện và tầng lưu trữ.

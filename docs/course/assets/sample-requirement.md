@@ -1,131 +1,135 @@
-# [MẪU THỰC HÀNH] FSD — Màn "Tạo đơn hàng" · Hệ thống CRM nội bộ
+# [MẪU THỰC HÀNH] FSD — Màn "Lớp › Học viên" · Hệ thống vận hành nội bộ
 
-> **Đây là tài liệu GIẢ LẬP dùng cho khoá học.** Nó được viết *cố ý* giống tài liệu thật ở dự án:
-> có chỗ rõ, có chỗ mơ hồ, có chỗ mâu thuẫn, và có ghi chú quan trọng nằm ở footnote.
+> **Đây là tài liệu GIẢ LẬP dùng cho tài liệu này.** Nó được viết *cố ý* giống tài liệu thật ở dự án:
+> có chỗ rõ, có chỗ mơ hồ, có chỗ mâu thuẫn, và có ghi chú quan trọng nằm ở cuối.
 >
-> Dùng ở **Bài 4** (so prompt sơ sài với prompt có ràng buộc) và **Bài 6** (sinh testcase).
-> Không có dữ liệu thật, không có tên khách hàng thật.
+> Dùng ở **Bài 15** (giao việc sinh testcase cho agent) và ở bài về prompt.
+> Không có dữ liệu thật, không có tên học viên thật.
 
 ---
 
 ## 1. Phạm vi
 
-Màn `Tạo đơn hàng` cho phép nhân viên bán hàng tạo đơn cho một khách hàng đã tồn tại trong hệ thống.
-Đơn sau khi tạo ở trạng thái `Nháp`, cần được duyệt trước khi gửi cho khách.
+Màn `Lớp › Học viên` cho phép nhân viên vận hành xem danh sách học viên trong một lớp, **cắt hạn** lớp cũ
+khi học viên đăng ký học lại, và **gia hạn** thêm ngày truy cập cho học viên có lý do chính đáng.
 
-Ngoài phạm vi: nhập khách hàng mới · thanh toán · xuất hoá đơn.
+Ngoài phạm vi: tạo lớp mới · nhập học viên mới · điểm danh · thu học phí.
 
 ## 2. Bố cục màn
 
 Ba khối theo thứ tự từ trên xuống:
 
-**Khối A — Thông tin khách hàng** (chỉ đọc, tự điền sau khi chọn khách)
+**Khối A — Thông tin lớp** (chỉ đọc, tự điền sau khi chọn lớp)
 
 | Trường | Kiểu | Ghi chú |
 |---|---|---|
-| Mã khách hàng | text | Lấy từ ô tìm kiếm ở đầu màn |
-| Tên khách hàng | text | |
-| Số điện thoại | text | Định dạng `0xxxxxxxxx` |
-| Hạng khách hàng | text | Một trong: `Thường` · `Bạc` · `Vàng` |
+| Mã lớp | text | Lấy từ ô chọn lớp ở đầu màn |
+| Tên lớp | text | |
+| Loại lớp | text | Một trong: `Lớp chính` · `Foundation` · `Revision` |
+| Thời hạn lớp | text | Dạng `dd/mm/yyyy - dd/mm/yyyy` |
 
-**Khối B — Danh sách sản phẩm**
+**Khối B — Danh sách học viên trong lớp**
 
 | Trường | Kiểu | Ràng buộc |
 |---|---|---|
-| Sản phẩm | dropdown | Bắt buộc. Chỉ hiện sản phẩm đang `Còn bán` |
-| Số lượng | số nguyên | Bắt buộc, từ 1 đến 999 |
-| Đơn giá | số | **Chỉ đọc** — lấy từ danh mục sản phẩm |
-| Thành tiền | số | **Chỉ đọc** — `Số lượng × Đơn giá` |
+| Học viên | text | **Chỉ đọc** — lấy từ danh mục học viên |
+| Loại | text | **Chỉ đọc** — một trong `Thường` · `Học lại` · `Bảo lưu` |
+| Thời hạn | text | **Chỉ đọc** — thời hạn riêng của học viên trong lớp này |
+| Số ngày gia hạn | số nguyên | Bắt buộc khi gia hạn, từ 1 đến 180 |
+| Lý do gia hạn | text | Bắt buộc khi gia hạn, tối đa 60 ký tự |
+| Ngày hết hạn | text | **Chỉ đọc** — `Thời hạn kết thúc + Số ngày gia hạn` |
 
-Cho phép thêm tối đa **20 dòng** sản phẩm. Nút `Thêm dòng` bị vô hiệu khi đã đủ 20 dòng.
+Bảng hiện tối đa **20 dòng** mỗi trang. Nút `Trang sau` bị vô hiệu ở trang cuối.
 
-**Khối C — Tổng kết**
+**Khối C — Đồng bộ học lại**
 
-| Trường | Công thức |
+| Trường | Cách tính |
 |---|---|
-| Tạm tính | Tổng `Thành tiền` của mọi dòng |
-| Giảm giá | Theo hạng khách hàng — xem mục 3 |
-| Phí giao hàng | `30.000` nếu Tạm tính < `500.000`, ngược lại `0` |
-| **Tổng cộng** | `Tạm tính − Giảm giá + Phí giao hàng` |
+| Lớp cũ | Lớp học viên đang xin học lại |
+| Lớp lấy làm mốc | Lớp mới bắt đầu sớm nhất — xem mục 3 |
+| Hạn hiện tại | Thời hạn kết thúc đang lưu của học viên ở lớp cũ |
+| **Hạn mới** | `Ngày bắt đầu của lớp mốc − 1 ngày` |
 
-## 3. Quy tắc giảm giá theo hạng khách hàng
+## 3. Quy tắc chọn lớp mốc
 
-| Hạng | Tỉ lệ giảm | Giảm tối đa |
-|---|---|---|
-| Thường | 0% | — |
-| Bạc | 3% | 100.000 |
-| Vàng | 5% | 300.000 |
+| Loại lớp mới | Được dùng làm mốc |
+|---|---|
+| Lớp chính | Có |
+| Foundation | Không |
+| Revision | Không |
 
-Giảm giá tính trên **Tạm tính**, làm tròn xuống đến đơn vị đồng.
+Trong số các lớp được dùng làm mốc, lấy lớp có **ngày bắt đầu sớm nhất**.
 
 ## 4. Luồng chính
 
-1. Nhân viên mở màn `Tạo đơn hàng`.
-2. Tìm và chọn khách hàng → Khối A tự điền.
-3. Thêm ít nhất một dòng sản phẩm ở Khối B.
-4. Khối C tự tính lại sau mỗi thay đổi ở Khối B.
-5. Bấm `Lưu nháp` → đơn được tạo với trạng thái `Nháp`, hiện thông báo `Đã lưu đơn nháp` và chuyển sang màn
-   chi tiết đơn.
+1. Nhân viên mở màn `Lớp › Học viên`.
+2. Chọn lớp → Khối A tự điền, Khối B tải danh sách học viên.
+3. Chọn học viên ở Khối C rồi bấm `Xem hạn mới` → bốn ô của Khối C được điền, **chưa ghi gì**.
+4. Bấm `Áp dụng hạn mới` → thời hạn của học viên ở lớp cũ được cập nhật, `Loại` chuyển sang `Học lại`,
+   và Khối B tải lại.
+5. Để gia hạn: mở menu `⋮` của một hàng → `Gia hạn` → nhập số ngày và lý do → bấm `Lưu`, hiện thông báo
+   `Đã cập nhật thời hạn` và bảng tải lại.
 
 ## 5. Luồng lỗi
 
 | Tình huống | Hành vi mong đợi |
 |---|---|
-| Chưa chọn khách hàng mà bấm `Lưu nháp` | Chặn, hiện `Vui lòng chọn khách hàng` |
-| Không có dòng sản phẩm nào | Chặn, hiện `Đơn hàng phải có ít nhất một sản phẩm` |
-| Số lượng = 0 hoặc để trống | Chặn tại dòng đó, hiện `Số lượng phải từ 1 đến 999` |
-| Số lượng > 999 | Chặn tại dòng đó, cùng thông báo trên |
+| Chưa chọn học viên mà bấm `Xem hạn mới` | Chặn, hiện `Vui lòng chọn học viên` |
+| Học viên không có đơn học lại | Chặn, hiện `Học viên này không có đơn học lại` |
+| Số ngày gia hạn = 0 hoặc để trống | Chặn, hiện `Số ngày gia hạn phải từ 1 đến 180` |
+| Số ngày gia hạn > 180 | Chặn, cùng thông báo trên |
+| Để trống lý do gia hạn | Chặn, hiện `Vui lòng nhập lý do gia hạn` |
 | Mất kết nối khi đang lưu | Giữ nguyên dữ liệu đã nhập, hiện `Không lưu được, vui lòng thử lại` |
 
 ## 6. Phân quyền
 
 | Vai trò | Được làm gì trên màn này |
 |---|---|
-| Nhân viên bán hàng | Tạo và lưu nháp |
-| Trưởng nhóm bán hàng | Tạo, lưu nháp, và duyệt đơn |
+| Nhân viên vận hành | Xem, gia hạn, đồng bộ học lại |
+| Trưởng bộ phận vận hành | Xem, gia hạn, đồng bộ, và duyệt gia hạn dài |
 | Kế toán | **Chỉ xem** |
-| Nhân viên kho | Không được vào màn này |
+| Giảng viên | Không được vào màn này |
 
 ## 7. Yêu cầu phi chức năng
 
-- Khối C phải tính lại xong trong vòng **300ms** sau khi người dùng đổi số lượng.
+- Khối C phải tính xong trong vòng **300ms** sau khi người dùng bấm `Xem hạn mới`.
 - Màn phải dùng được ở độ rộng từ 1280px trở lên.
 
 ---
 
 ## Ghi chú của BA
 
-> ⚠️ **Ghi chú 1.** Đơn của khách hạng `Vàng` mà Tạm tính trên `10.000.000` thì cần trưởng nhóm duyệt ngay
-> ở bước lưu nháp, không chờ bước duyệt riêng. *(Bổ sung sau buổi họp ngày 12 — chưa cập nhật vào mục 4.)*
+> ⚠️ **Ghi chú 1.** Học viên đã học quá `50%` tiến độ lớp cũ thì việc gia hạn cần trưởng bộ phận duyệt
+> ngay ở bước `Lưu`, không chờ bước duyệt riêng. *(Bổ sung sau buổi họp ngày 12 — chưa cập nhật vào mục 4.)*
 
-> ⚠️ **Ghi chú 2.** Phí giao hàng ở mục 2 ghi mốc `500.000`, nhưng bảng giá mới nhất phòng kinh doanh gửi
-> ghi mốc `700.000`. **Chưa chốt.**
+> ⚠️ **Ghi chú 2.** Số ngày gia hạn ở mục 2 ghi tối đa `180`, nhưng quy định mới nhất phòng vận hành gửi
+> ghi tối đa `365`. **Chưa chốt.**
 
-> ⚠️ **Ghi chú 3.** Trường `Hạng khách hàng` hiện lấy từ hệ thống CRM. Có trường hợp khách chưa được phân
-> hạng — tài liệu chưa nói lúc đó hiển thị gì và tính giảm giá thế nào.
+> ⚠️ **Ghi chú 3.** Có trường hợp học viên xin học lại nhưng **chưa được xếp vào lớp mới nào** — tài liệu
+> chưa nói lúc đó Khối C hiển thị gì và thời hạn lớp cũ được xử lý thế nào.
 
 ---
 
-## Dành cho giảng viên — những chỗ cài cắm cố ý
+## Dành cho người hướng dẫn — những chỗ cài cắm cố ý
 
 *(Đọc phần này SAU khi đã tự làm bài thực hành.)*
 
 | # | Loại | Nằm ở đâu | Điều cần nhận ra |
 |---|---|---|---|
-| 1 | **Mâu thuẫn số** | Ghi chú 2 vs mục 2 | Hai mốc phí giao hàng khác nhau ⇒ **phải hỏi**, không được chọn bừa một con |
+| 1 | **Mâu thuẫn số** | Ghi chú 2 vs mục 2 | Hai mức trần gia hạn khác nhau ⇒ **phải hỏi**, không được chọn bừa một con |
 | 2 | **Rule nằm ngoài luồng chính** | Ghi chú 1 | Rule duyệt-ngay không có trong mục 4 ⇒ đọc mục 4 mà bỏ ghi chú là mất hẳn một nhánh |
-| 3 | **Khoảng trống thật** | Ghi chú 3 | Khách chưa phân hạng: tài liệu KHÔNG có câu trả lời ⇒ đây là câu hỏi cho BA, không phải chỗ để suy đoán |
-| 4 | **Trường dẫn xuất** | `Đơn giá`, `Thành tiền`, cả Khối A | Chỉ đọc ⇒ phải có case kiểm **không sửa được**, không chỉ kiểm hiển thị đúng |
-| 5 | **Biên rõ** | Số lượng 1–999, tối đa 20 dòng | Có biên thì phải có case biên: 0, 1, 999, 1000, dòng thứ 20 và 21 |
-| 6 | **Làm tròn** | Mục 3 "làm tròn xuống" | Cần case ra số lẻ, ví dụ Bạc 3% trên 33.333 |
-| 7 | **Giảm tối đa** | Mục 3 | Vàng 5% nhưng trần 300.000 ⇒ case vượt trần là case riêng |
+| 3 | **Khoảng trống thật** | Ghi chú 3 | Chưa xếp lớp mới: tài liệu KHÔNG có câu trả lời ⇒ đây là câu hỏi cho BA, không phải chỗ để suy đoán |
+| 4 | **Trường dẫn xuất** | `Thời hạn`, `Ngày hết hạn`, cả Khối A | Chỉ đọc ⇒ phải có case kiểm **không sửa được**, không chỉ kiểm hiển thị đúng |
+| 5 | **Biên rõ** | Số ngày 1–180, lý do 60 ký tự, 20 dòng mỗi trang | Có biên thì phải có case biên: 0, 1, 180, 181, ký tự thứ 60 và 61, dòng thứ 20 và 21 |
+| 6 | **Biên ngày qua mốc** | Mục 2 Khối C, phép `− 1 ngày` | Lớp mốc bắt đầu `01/01` ⇒ hạn mới rơi sang `31/12` năm trước. Cần case qua mốc tháng và mốc năm |
+| 7 | **Nhánh chặn hạn âm** | Mục 2 Khối C vs Khối A | Hạn mới có thể sớm hơn ngày bắt đầu lớp cũ ⇒ tài liệu không nói xử lý sao, và đó là case riêng |
 | 8 | **Ma trận phân quyền** | Mục 6 | 4 vai trò × các hành động ⇒ ô ngoài vùng cho phép phải bị **chặn**, không chỉ ẩn nút |
-| 9 | **Chuỗi lưu trữ** | Mục 4 bước 5 | Lưu xong chuyển màn ⇒ giá trị nhập có sống sót qua chuỗi không (dùng ở Bài 19) |
-| 10 | **Chữ hiển thị chính xác** | Mục 5 | Bốn thông báo lỗi có chữ cụ thể ⇒ kiểm đúng từng chữ, không kiểm "có thông báo là được" |
+| 9 | **Chuỗi lưu trữ** | Mục 4 bước 5 | Lưu xong bảng tải lại ⇒ giá trị vừa nhập có sống sót qua chuỗi không |
+| 10 | **Chữ hiển thị chính xác** | Mục 5 | Sáu thông báo lỗi có chữ cụ thể ⇒ kiểm đúng từng chữ, không kiểm "có thông báo là được" |
 
-**Cách dùng ở Bài 4.** Chạy hai prompt trên cùng tài liệu này. Prompt sơ sài (*"đọc file này và
+**Cách dùng với prompt.** Chạy hai prompt trên cùng tài liệu này. Prompt sơ sài (*"đọc file này và
 viết testcase"*) thường bỏ hết ba ghi chú và không hỏi gì. Prompt có ràng buộc — buộc liệt kê chỗ mơ hồ
 trước khi sinh case — thường bắt được ít nhất mâu thuẫn ở Ghi chú 2.
 
-**Cách dùng ở Bài 6.** Bộ testcase đạt yêu cầu phải: dừng lại hỏi về 3 ghi chú thay vì đoán · có case biên
-cho cả hai biên · có case cho trần giảm giá · có case phân quyền cho cả 4 vai trò.
+**Cách dùng ở Bài 15.** Bộ testcase đạt yêu cầu phải: dừng lại hỏi về 3 ghi chú thay vì đoán · có case
+biên cho cả hai đầu · có case cho nhánh chặn hạn âm · có case phân quyền cho cả 4 vai trò.

@@ -4,15 +4,15 @@
 
 **Vấn đề**
 
-Bạn được giao kiểm màn tạo đơn hàng trên OPS. Requirement nói phí dịch vụ được tính theo một quy
-tắc cụ thể, phụ thuộc loại đơn và chương trình học.
+Học viên xin học lại khoá sau. Việc này chạy hằng ngày trên OPS: hệ thống nhận đơn học lại, xếp học
+viên vào lớp mới, rồi **cắt hạn truy cập lớp cũ** lại cho khớp. Không để hai lớp cùng mở.
 
-Bạn mở màn, chọn học viên, chọn khoá, bấm qua Next rồi Finish rồi Confirm. Màn hình hiện một con số
-ở dòng Total.
+Bạn được giao kiểm chuyện đó. Bạn mở màn Lớp › Học viên, chọn một học viên, bấm đồng bộ. Cột thời hạn
+đổi sang một ngày mới.
 
-Con số đó đúng không?
+Ngày đó đúng không?
 
-Bạn chưa biết. Vì bạn chưa tính con số nào của riêng mình để so vào.
+Bạn chưa biết. Vì bạn chưa tự suy ra ngày nào của riêng mình để so vào.
 
 > Tài liệu này thực hành trên một sản phẩm nhỏ chạy trên máy bạn, không phải trên OPS. Lý do đơn
 > giản: bạn cần một chỗ tự do bấm và cố tình làm sai. Nhưng mọi tình huống mở bài đều là tình huống
@@ -23,8 +23,8 @@ Bạn chưa biết. Vì bạn chưa tính con số nào của riêng mình để
 
 | | |
 |---|---|
-| **Bạn đang khổ vì** | Bấm xong thì thấy một con số, và không có gì để đối chiếu ngoài cảm giác "trông có vẻ đúng". |
-| **Bài này bạn gõ gì** | Không gõ dòng code nào. Bạn test bằng tay, tự tính kết quả từ đặc tả, rồi tìm ra bug đầu tiên. |
+| **Bạn đang khổ vì** | Bấm xong thì thấy một ngày, và không có gì để đối chiếu ngoài cảm giác "trông có vẻ đúng". |
+| **Bài này bạn gõ gì** | Không gõ dòng code nào. Bạn test bằng tay, tự suy kết quả từ đặc tả, rồi tìm ra bug đầu tiên. |
 | **Xong thì được gì** | Một bug tự tìm được, và một bản đồ chỉ rõ automation sắp thay bạn làm chặng nào. |
 
 > Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
@@ -35,7 +35,7 @@ Bạn chưa biết. Vì bạn chưa tính con số nào của riêng mình để
 Năm việc. Bốn việc đầu làm hoàn toàn bằng tay, và đó là cố ý.
 
 1. Nhận việc: chạy sản phẩm, đọc đặc tả, chốt bạn đang kiểm cái gì (20 phút).
-2. **Thực hành:** tự tính kết quả trước khi bấm, rồi tìm ra bug đầu tiên (40 phút).
+2. **Thực hành:** tự suy kết quả trước khi bấm, rồi tìm ra bug đầu tiên (40 phút).
 3. Dựng thêm một bộ dữ liệu để biến nghi ngờ thành bằng chứng (20 phút).
 4. Nếu mai phải làm lại việc này 100 lần thì sao. Chỗ automation bước vào (25 phút).
 5. Ba thứ hay bị gọi lẫn: bộ test, automation project, và test kit (15 phút).
@@ -57,7 +57,7 @@ node docs/course/assets/app-thuc-hanh/server.js
 **Bạn sẽ thấy:**
 
 ```
-Cổng đăng ký khoá học đang chạy ở http://localhost:4010
+Vận hành lớp học đang chạy: http://localhost:4010
 ```
 
 | Thấy khác | Nghĩa là | Làm gì |
@@ -66,9 +66,10 @@ Cổng đăng ký khoá học đang chạy ở http://localhost:4010
 | `EADDRINUSE: address already in use` | Cổng 4010 đang bận | `PORT=4011 node server.js` |
 | Không in gì, con trỏ đứng im | Bình thường. Nó đang chạy | Mở trình duyệt |
 
-Mở `http://localhost:4010`. Bạn có một trang tạo đơn: chọn học viên, chọn khoá học, nhập số suất.
+Mở `http://localhost:4010`. Bạn có ba khối: chọn lớp, bảng học viên trong lớp, và khối đồng bộ học
+lại.
 
-Bấm thử một lần cho quen tay. Chưa cần kết luận gì.
+Bấm thử **Xem hạn mới** một lần cho quen tay. Chưa cần kết luận gì.
 
 ### Đọc đặc tả, và chỉ đọc bốn dòng
 
@@ -77,12 +78,12 @@ bốn luật:
 
 | Mã | Luật |
 |---|---|
-| `BR-02` | Tạm tính = tổng (đơn giá × số suất) |
-| `BR-03` | Giảm giá theo chương trình: Standard 0%, Pro 3%, Elite 5% |
-| `BR-04` | Phí dịch vụ 50.000. Miễn phí khi **tạm tính** đạt 500.000 |
-| `BR-05` | Tổng tiền = Tạm tính − Giảm giá + Phí dịch vụ |
+| `BR-02` | Lớp mốc là lớp mới **loại Lớp chính** có ngày bắt đầu sớm nhất. Foundation và Revision không được dùng làm mốc |
+| `BR-03` | Hạn mới của lớp cũ = ngày bắt đầu lớp mốc **trừ 1 ngày** |
+| `BR-05` | Nếu hạn mới sớm hơn ngày bắt đầu lớp cũ thì lấy ngày bắt đầu lớp cũ |
+| `BR-06` | Chưa có lớp mới nào thì giữ nguyên hạn |
 
-Để ý chữ **tạm tính** ở `BR-04`. Nó sẽ quan trọng trong hai mươi phút nữa.
+Để ý chữ **Lớp chính** ở `BR-02`. Nó sẽ quan trọng trong hai mươi phút nữa.
 
 ### Chốt lại: bạn đang kiểm cái gì
 
@@ -90,128 +91,146 @@ Trước khi bấm tiếp, viết ra ba câu trả lời. Viết ra giấy cũng
 
 | Câu hỏi | Câu trả lời cho việc hôm nay |
 |---|---|
-| Tôi đang kiểm điều gì? | Bốn luật `BR-02` tới `BR-05` trên màn tạo đơn |
-| Sai thì rủi ro là gì? | Sai tiền. Khách trả thừa hoặc công ty thu thiếu |
-| "Đúng" nghĩa là gì, lấy chuẩn từ đâu? | Từ `spec.md`, không từ con số sản phẩm đang hiện |
+| Tôi đang kiểm điều gì? | Bốn luật `BR-02`, `BR-03`, `BR-05`, `BR-06` ở khối đồng bộ học lại |
+| Sai thì rủi ro là gì? | Học viên mất quyền vào lớp sớm hơn quyền họ đã mua, hoặc giữ quyền lâu hơn |
+| "Đúng" nghĩa là gì, lấy chuẩn từ đâu? | Từ `spec.md`, không từ ngày sản phẩm đang hiện |
 
 Ba câu này nghe hình thức. Nhưng dòng thứ ba là dòng phân biệt một phép kiểm với một lần bấm thử, và
 nó sẽ quay lại ở mọi bài còn lại của tài liệu này.
 
-## Việc 2 — Tự tính trước, bấm sau (40 phút)
+## Việc 2 — Tự suy trước, bấm sau (40 phút)
 
 Đây là thói quen quan trọng nhất của cả tài liệu, và nó không cần công cụ nào:
 
-> **Viết ra con số bạn kỳ vọng. Rồi mới nhìn con số sản phẩm trả về.**
+> **Viết ra kết quả bạn kỳ vọng. Rồi mới nhìn kết quả sản phẩm trả về.**
 
-Thứ tự đó quan trọng. Nhìn trước rồi mới tính thì bạn sẽ vô thức tính sao cho khớp.
+Thứ tự đó quan trọng. Nhìn trước rồi mới suy thì bạn sẽ vô thức suy sao cho khớp.
 
-### Tính bằng tay
+### Suy bằng tay
 
-Lấy giấy. Học viên `HV03` (chương trình Elite, giảm 5%), khoá học `KH01` (đơn giá 260.000), số
-suất 2:
+Lấy giấy. Học viên `HV01`, lớp cũ `CFA01` (đang có hạn tới 31/07/2026). Bảng đơn học lại trong
+`spec.md` nói học viên này đã được xếp vào **hai** lớp mới:
+
+| Lớp mới | Loại | Bắt đầu |
+|---|---|---|
+| `CFA02F` | Foundation | 01/07/2026 |
+| `CFA02` | **Lớp chính** | 01/09/2026 |
+
+Giờ áp luật:
 
 ```
-Tạm tính      = 260.000 × 2            = 520.000     (BR-02)
-Giảm giá      = 520.000 × 5%           =  26.000     (BR-03)
-Phí dịch vụ   : tạm tính 520.000 đã ĐẠT mốc 500.000
-                nên theo BR-04 phải MIỄN
-                                       =       0     (BR-04)
-Tổng phải thu = 520.000 − 26.000 + 0   = 494.000     (BR-05)
+Lớp mốc   : chỉ xét lớp LOẠI LỚP CHÍNH   → CFA02          (BR-02)
+            CFA02F là Foundation, KHÔNG được dùng làm mốc
+Ngày mốc  : CFA02 bắt đầu                  01/09/2026
+Hạn mới   : ngày mốc trừ 1 ngày          = 31/08/2026     (BR-03)
+Kiểm BR-05: 31/08/2026 có sớm hơn ngày bắt đầu lớp cũ (01/03/2026)?
+            Không. Giữ 31/08/2026.
 ```
 
-Khoanh con số `494.000` lại. Đó là thứ bạn mang đi so.
+Khoanh ngày `31/08/2026` lại. Đó là thứ bạn mang đi so.
 
-Để ý dòng phí dịch vụ. Tạm tính đã vượt mốc, nên theo `BR-04` con số đó phải là **0**. Đây là chỗ
-đáng nhìn kỹ nhất trong cả phép tính.
+Để ý bước đầu tiên. Có **hai** lớp mới, và luật chỉ cho phép **một** trong hai được làm mốc. Đây là
+chỗ đáng nhìn kỹ nhất trong cả phép suy này.
 
 ### Giờ mới bấm
 
-Nhập đúng bộ đó trên trang, bấm Tạo đơn.
+Chọn `HV01` ở khối đồng bộ học lại, bấm **Xem hạn mới**.
 
-**Bạn sẽ thấy** con số sản phẩm trả về **khác** con số bạn vừa tính.
+**Bạn sẽ thấy** ngày sản phẩm trả về **khác** ngày bạn vừa suy ra.
 
 Đừng kết luận ai sai. Việc tiếp theo là tìm chỗ lệch, và cách làm là đi từng khâu:
 
-| Khâu | Bạn tính | Sản phẩm trả | Khớp? |
+| Khâu | Bạn suy ra | Sản phẩm trả | Khớp? |
 |---|---|---|---|
-| Tạm tính | 520.000 | | |
-| Giảm giá | 26.000 | | |
-| Phí dịch vụ | **0** | | |
-| Tổng phải thu | 494.000 | | |
+| Lớp cũ | `CFA01` | | |
+| Lớp lấy làm mốc | `CFA02` (Lớp chính) | | |
+| Hạn hiện tại | 31/07/2026 | | |
+| Hạn mới | **31/08/2026** | | |
 
-Điền cột thứ ba vào từ màn hình. Hai dòng đầu khớp. Dòng phí dịch vụ thì không: nó hiện `50.000`,
-nên tổng thành `544.000` thay vì `494.000`. Lệch đúng bằng tiền phí.
+Điền cột thứ ba vào từ màn hình. Hai dòng đầu đã đủ chỉ ra vấn đề: sản phẩm hiện lớp mốc là
+`CFA02F (Foundation)`, và hạn mới là `30/06/2026` thay vì `31/08/2026`.
 
 | Thấy khác | Nghĩa là | Làm gì |
 |---|---|---|
-| Cả bốn dòng đều khớp | Bạn nhập khác bộ dữ liệu ở trên | Kiểm lại mã học viên và số suất |
-| Tạm tính đã lệch | Đơn giá `KH01` khác con số bạn dùng | Mở lại `spec.md` phần bảng giá |
-| Màn hình không hiện đủ bốn dòng | Bạn đang xem màn danh sách, không phải màn chi tiết | Bấm vào đơn vừa tạo |
+| Cả bốn dòng đều khớp | Bạn đang chọn học viên khác | Kiểm lại ô Học viên, phải là `HV01` |
+| Ô lớp mốc hiện dấu gạch | Đơn học lại chưa có lớp mới nào | Gọi `POST /api/reset` rồi thử lại |
+| Không có ô nào đổi | Bạn chưa bấm **Xem hạn mới** | Bấm nút đó, không phải nút Áp dụng |
+
+Chỗ sản phẩm này in ra **lớp nó đã chọn làm mốc**, không chỉ in ra ngày cuối, là một may mắn: nó cho
+bạn thấy bước trung gian. Hệ thống thật thường không có. Bài 12 nói về việc đòi cho được những bước
+trung gian đó.
 
 ### Vì sao nó lệch
 
-Sản phẩm đang so mốc `500.000` với số **sau khi trừ giảm giá**, chứ không phải với tạm tính:
+Sản phẩm đang xếp mọi lớp mới theo ngày bắt đầu rồi lấy lớp sớm nhất, **bất kể loại lớp**:
 
 ```
-tạm tính               520.000  ≥ 500.000   → BR-04 nói MIỄN phí
-sau khi trừ giảm giá   494.000  < 500.000   → sản phẩm thu 50.000
+mọi lớp mới, xếp theo ngày    CFA02F  01/07/2026   ← sản phẩm lấy cái này
+                              CFA02   01/09/2026
+chỉ lớp CHÍNH, xếp theo ngày  CFA02   01/09/2026   ← BR-02 nói phải lấy cái này
 ```
 
-Mà `BR-04` nói rõ mốc so trên **tạm tính**. Chọn sai một trong hai số đó là chọn sai cả kết quả, và
-với phần lớn bộ dữ liệu khác thì hai cách so cho **cùng một đáp án** nên không ai thấy gì.
+Mà `BR-02` nói rõ mốc chỉ lấy trong **lớp chính**. Học viên vì thế mất quyền vào lớp cũ **sớm hơn
+hai tháng** so với thứ đặc tả cho phép.
 
 Đến đây bạn có một nghi ngờ có cơ sở. Chưa phải bằng chứng. Việc 3 lo phần đó.
 
 ## Việc 3 — Biến nghi ngờ thành bằng chứng (20 phút)
 
-Bạn đang có một nghi ngờ: *"nó so mốc trên số sau giảm giá."*
+Bạn đang có một nghi ngờ: *"nó chọn sai lớp làm mốc."*
 
-Nhưng có một giải thích thứ hai cũng khớp hoàn hảo với những gì bạn vừa thấy: *"nó luôn thu phí dịch
-vụ, bất kể mốc nào."*
+Nhưng có một giải thích thứ hai cũng khớp hoàn hảo với những gì bạn vừa thấy: *"công thức cắt hạn của
+nó hỏng hoàn toàn, sai với mọi học viên."*
 
-Với bộ dữ liệu vừa rồi, **cả hai giải thích cho cùng một con số** `544.000`. Nên bạn chưa phân biệt
-được cái nào đúng. Và mang một nghi ngờ chưa phân biệt được sang cho Dev thì họ sẽ tự phân biệt hộ
-bạn, thường là theo hướng "không tái hiện được".
+Với bộ dữ liệu vừa rồi, **cả hai giải thích cho cùng một kết quả** `30/06/2026`. Nên bạn chưa phân
+biệt được cái nào đúng. Và hai giải thích đó dẫn tới hai kết luận rất khác nhau:
 
-### Dựng một bộ dữ liệu mà hai giải thích cho hai đáp án khác nhau
-
-Điều kiện cần: **cả tạm tính và số sau giảm giá đều vượt mốc**. Lúc đó:
-
-| Giải thích | Nó sẽ làm gì | Phí dịch vụ |
+| Giải thích | Ai bị ảnh hưởng | Nghiêm trọng thế nào |
 |---|---|---|
-| A. So mốc trên số sau giảm giá | Số sau giảm cũng vượt mốc, nên vẫn miễn | 0 |
-| B. Luôn thu phí bất kể mốc | Vẫn thu | 50.000 |
+| A. Chọn sai lớp làm mốc | Chỉ học viên có lớp đi kèm bắt đầu sớm hơn lớp chính | Một nhánh dữ liệu |
+| B. Công thức cắt hạn hỏng | **Mọi** học viên học lại | Chặn phát hành |
 
-Hai đáp án khác nhau. Đó là điều kiện của một phép thử phân biệt được.
+Mang một nghi ngờ chưa phân biệt được sang cho Dev thì họ sẽ tự phân biệt hộ bạn, thường là theo
+hướng "không tái hiện được".
 
-Vẫn học viên `HV03` (Elite, giảm 5%), nhưng **3 suất** thay vì 2:
+### Dựng một bộ dữ liệu mà hai giải thích cho hai kết quả khác nhau
+
+Điều kiện cần: một học viên mà **chỉ có đúng một** lớp mới, và lớp đó là lớp chính. Lúc đó bước
+"chọn lớp nào" không còn chỗ để sai, vì chỉ có một ứng viên. Kết quả vẫn lệch thì lỗi nằm ở phép tính
+ngày; kết quả đúng thì lỗi nằm ở bước chọn.
+
+| Giải thích | Nó sẽ trả gì cho ca một-lớp-mới |
+|---|---|
+| A. Chọn sai lớp làm mốc | Đúng — vì không có lớp nào khác để chọn sai |
+| B. Công thức cắt hạn hỏng | Vẫn sai |
+
+Hai kết quả khác nhau. Đó là điều kiện của một phép thử phân biệt được.
+
+Học viên `HV03` là ca đó: lớp cũ `ACCA01`, và đúng một lớp mới `ACCA02` (Lớp chính, bắt đầu
+01/09/2026).
 
 ```
-Tạm tính              = 260.000 × 3   = 780.000    ≥ 500.000
-Giảm giá              = 780.000 × 5%  =  39.000
-Sau khi trừ giảm giá  = 741.000                    ≥ 500.000  ← cả hai đều vượt mốc
-
-nếu giải thích A đúng → phí = 0        → tổng 741.000
-nếu giải thích B đúng → phí = 50.000   → tổng 791.000
+Lớp mốc : chỉ có một ứng viên             → ACCA02
+Hạn mới : 01/09/2026 trừ 1 ngày           = 31/08/2026
 ```
 
-Bấm thử bộ đó.
+Chọn `HV03`, bấm **Xem hạn mới**.
 
-**Bạn sẽ thấy** nó trả về `741.000`. Phí dịch vụ bằng 0.
+**Bạn sẽ thấy** nó trả về `31/08/2026`. Đúng bằng ngày bạn suy ra.
 
-Vậy giải thích B **bị loại**: sản phẩm không hề luôn thu phí, nó biết miễn khi số nó đang so vượt
-mốc. Chỉ có điều nó so sai số.
+Vậy giải thích B **bị loại**: phép trừ ngày của sản phẩm không hỏng, và cắt hạn vẫn chạy đúng với
+học viên bình thường. Chỉ có điều nó chọn sai ứng viên khi có nhiều hơn một lớp mới.
 
 Giờ bạn có một bằng chứng, không còn là nghi ngờ. Và bạn nói được thành một câu Dev đọc là sửa được:
 
-> Với `HV03` + `KH01` × 2: `BR-04` nói miễn phí vì tạm tính `520.000` đã đạt mốc `500.000`, nhưng
-> sản phẩm thu `50.000`. Với × 3 thì nó miễn đúng. Nên mốc đang được so với số **sau giảm giá**
-> (`494.000`) thay vì với tạm tính.
+> Với `HV01`: `BR-02` nói mốc lấy theo lớp chính `CFA02` (01/09) nên hạn mới phải là `31/08/2026`,
+> nhưng sản phẩm lấy `CFA02F` (Foundation, 01/07) và trả `30/06/2026`. Với `HV03`, tức ca chỉ có một
+> lớp mới, nó trả đúng. Nên lỗi nằm ở bước **chọn lớp mốc**, không ở phép trừ ngày.
 
 > Ghi lại bốn bước bạn vừa làm, vì đó là phương pháp của cả tài liệu này:
 >
-> 1. Đọc đặc tả, viết ra con số kỳ vọng.
-> 2. Chạy, ghi con số thực tế.
+> 1. Đọc đặc tả, viết ra kết quả kỳ vọng.
+> 2. Chạy, ghi kết quả thực tế.
 > 3. Lệch thì đi từng khâu tìm chỗ lệch.
 > 4. Dựng thêm một bộ dữ liệu **phân biệt được** hai giải thích.
 >
@@ -233,12 +252,14 @@ khi làm hết Phần 2. Mở sớm thì mất luôn phép đối chứng này.
 
 Bạn vừa hoàn thành một vòng kiểm thử đầy đủ. Không dùng công cụ nào.
 
-Giờ đếm thời gian: bốn mươi phút cho **một** bộ dữ liệu.
+Giờ đếm thời gian: bốn mươi phút cho **một** học viên.
 
-Mà bốn luật `BR-02` tới `BR-05` có nhiều bộ đáng kiểm hơn thế. Chương trình có ba mức. Mốc 500.000 có
-ba điểm đáng thử là ngay dưới, đúng bằng, ngay trên. Nhân lên là chín bộ, và đó chỉ là một màn hình.
+Mà bốn luật `BR-02`, `BR-03`, `BR-05`, `BR-06` có nhiều ca đáng kiểm hơn thế. Nhóm lớp mới có ba
+hình dạng đáng thử: một lớp chính, lớp chính kèm Foundation bắt đầu sớm hơn, và lớp chính kèm
+Foundation bắt đầu muộn hơn. Nhánh `BR-05` có ba điểm đáng thử quanh chỗ hạn mới rơi đúng vào ngày
+bắt đầu lớp cũ. Cộng thêm nhánh `BR-06`. Nhân lên là mười ca, và đó chỉ là một khối trên một màn.
 
-Rồi tuần sau Dev sửa một chỗ khác, và bạn phải làm lại cả chín bộ.
+Rồi tuần sau Dev sửa một chỗ khác, và bạn phải làm lại cả mười ca.
 
 Đó là lúc automation có lý do tồn tại. Không phải vì nó hiện đại.
 
@@ -251,13 +272,13 @@ Requirement  →  Prepare  →  Execute  →  Compare  →  Report
 | Chặng | Bạn vừa làm gì | Máy làm được không |
 |---|---|---|
 | **Requirement** | Đọc `spec.md`, chốt bốn luật, chốt ba câu hỏi | **Không.** Đây là việc của bạn |
-| **Prepare** | Chọn học viên `HV02`, khoá học `KH01`, số suất 2 | Được, và nhanh hơn nhiều |
-| **Execute** | Bấm qua ba ô rồi bấm Tạo đơn | Được. Đây là chặng máy giỏi nhất |
-| **Compare** | Tính `494.000` rồi so với màn hình | Được, **nếu** bạn nói cho nó số nào là đúng |
-| **Report** | Chưa làm. Con số đang nằm trong đầu bạn | Được, và làm tốt hơn bạn |
+| **Prepare** | Chọn học viên `HV01`, biết trước nhóm lớp mới của họ gồm những gì | Được, và nhanh hơn nhiều |
+| **Execute** | Chọn học viên rồi bấm Xem hạn mới | Được. Đây là chặng máy giỏi nhất |
+| **Compare** | Suy ra `31/08/2026` rồi so với màn hình | Được, **nếu** bạn nói cho nó kết quả nào là đúng |
+| **Report** | Chưa làm. Ngày đó đang nằm trong đầu bạn | Được, và làm tốt hơn bạn |
 
-Dòng đầu là dòng đáng để ý nhất. Máy không đọc được đặc tả để tự biết `494.000` là đúng. Nó chỉ biết
-con số bạn đưa cho nó.
+Dòng đầu là dòng đáng để ý nhất. Máy không đọc được đặc tả để tự biết `31/08/2026` là đúng. Nó chỉ
+biết kết quả bạn đưa cho nó.
 
 Nghĩa là nếu bạn đưa sai, nó sẽ xanh và sai cùng bạn. Cả tài liệu này xoay quanh việc chặn đúng
 chuyện đó.
@@ -309,7 +330,7 @@ không phải chuyện gọn gàng mà là chuyện an toàn.
 Một thư mục có 200 file test mà không ai dám xoá cái nào. Một bộ test mà cách duy nhất để biết nó còn
 đúng là chạy lên xem có đỏ không. Một quy trình nằm trong đầu một người.
 
-Ba thứ đó rất phổ biến, và chúng đều là một đống script. Khác biệt không nằm ở số suất test.
+Ba thứ đó rất phổ biến, và chúng đều là một đống script. Khác biệt không nằm ở số lượng test.
 
 ## Gọi tên những gì bạn vừa làm
 
@@ -318,27 +339,27 @@ Giờ mới đặt tên, vì bạn đã chạm vào từng thứ rồi. Cột th
 | Từ | Nghĩa gọn | Bạn vừa gặp nó ở đâu |
 |---|---|---|
 | **Đặc tả** | Tài liệu nói sản phẩm phải làm gì | `spec.md`, bốn luật ở Việc 1 |
-| **Test Data** | Dữ liệu bạn đưa vào trước khi chạy | Học viên `HV02`, khoá học `KH01`, số suất 2 |
-| **Precondition** | Trạng thái phải có trước khi kiểm | Phải tồn tại một học viên chương trình Pro và một sản phẩm còn hàng |
-| **Expected Result** | Con số bạn viết ra **trước** khi bấm | `494.000` bạn tính trên giấy ở Việc 2 |
-| **Actual Result** | Con số sản phẩm trả về | Con số bạn điền vào cột thứ ba của bảng |
-| **Oracle** | Căn cứ để nói cái nào đúng | `BR-04`, chỗ nói mốc so trên *tạm tính* |
-| **Triage** | Việc tìm xem hai số lệch nhau vì đâu | Việc bạn làm khi đi từng khâu ở Việc 2 |
-| **Bug biên** | Lỗi chỉ lộ ra ngay chỗ chuyển trạng thái | Tạm tính đúng `520.000`, ngay trên mốc, ở Việc 3 |
+| **Test Data** | Dữ liệu bạn đưa vào trước khi chạy | Học viên `HV01` và nhóm lớp mới của họ |
+| **Precondition** | Trạng thái phải có trước khi kiểm | Phải tồn tại một đơn học lại, và lớp mới phải đã được xếp |
+| **Expected Result** | Kết quả bạn viết ra **trước** khi bấm | `31/08/2026` bạn suy trên giấy ở Việc 2 |
+| **Actual Result** | Kết quả sản phẩm trả về | Ngày bạn điền vào cột thứ ba của bảng |
+| **Oracle** | Căn cứ để nói cái nào đúng | `BR-02`, chỗ nói mốc lấy theo *lớp chính* |
+| **Triage** | Việc tìm xem hai kết quả lệch nhau vì đâu | Việc bạn làm khi đi từng khâu ở Việc 2 |
+| **Ca phân biệt** | Bộ dữ liệu mà hai giải thích cho hai kết quả khác nhau | `HV03` — chỉ một lớp mới — ở Việc 3 |
 | **Đối chứng** | Biết trước đáp án để đo xem cách kiểm có hiệu quả | Biết có 3 bug, bắt 0/3 thì bộ kiểm mù |
 | **Gate** | Máy chặn, không cho đi tiếp khi có vi phạm | Chưa gặp. Bài 2 bạn viết cái đầu tiên |
 
 Ba từ hay bị dùng sai nhất, nói rõ luôn:
 
-**Oracle không phải Expected Result.** Expected Result là con số `494.000`. Oracle là **lý do** con
-số đó là `494.000`, tức là `BR-02` cộng `BR-03` cộng `BR-04`. Viết được con số mà không chỉ được mã
-luật thì bạn đang đoán, và Bài 13 dựng một máy chặn đúng chuyện đó.
+**Oracle không phải Expected Result.** Expected Result là ngày `31/08/2026`. Oracle là **lý do** ngày
+đó là `31/08/2026`, tức là `BR-02` cộng `BR-03`. Viết được kết quả mà không chỉ được mã luật thì bạn
+đang đoán, và Bài 13 dựng một máy chặn đúng chuyện đó.
 
-**"Không phán được" không phải là Pass.** Nếu bạn không đọc được con số vì trang lỗi, kết quả là
+**"Không phán được" không phải là Pass.** Nếu bạn không đọc được ngày vì trang lỗi, kết quả là
 *chưa đo được*, không phải *đạt*. Trộn hai thứ này là cách bảng kết quả trở nên đẹp trong khi độ phủ
 thật giảm đi.
 
-**"Nhất quán" không phải "đúng".** Hai màn hình cùng hiện một con số chỉ chứng minh chúng đọc chung
+**"Nhất quán" không phải "đúng".** Hai màn hình cùng hiện một ngày chỉ chứng minh chúng đọc chung
 một nguồn. Cả hai vẫn có thể sai so với `spec.md`.
 
 ## Cây thư mục sau bài này
@@ -382,16 +403,16 @@ Cấp độ này còn 3 bài nữa.
 
 ## Tự kiểm
 
-1. Vì sao phải viết con số kỳ vọng ra giấy **trước** khi bấm, chứ không phải sau?
+1. Vì sao phải viết kết quả kỳ vọng ra giấy **trước** khi bấm, chứ không phải sau?
 2. Ba câu hỏi ở Việc 1 là gì? Câu nào phân biệt một phép kiểm với một lần bấm thử?
 3. Bước thứ tư trong phương pháp ở Việc 3 là gì? Bỏ nó thì bạn thiếu cái gì?
 4. Vì sao bộ dữ liệu ở Việc 2 **không** phân biệt được hai giải thích?
-5. Vì sao sản phẩm thực hành cố tình có bug?
-6. Trong 5 chặng ở Việc 4, chặng nào máy **không** làm được, và vì sao?
-7. Câu "nếu bạn đưa sai, nó sẽ xanh và sai cùng bạn" nói về chặng nào?
-8. Ba mức bộ test, project, kit. Ranh giới thật nằm ở đâu?
+5. Vì sao ca `HV03`, ca chỉ có một lớp mới, lại loại được giải thích B?
+6. Vì sao sản phẩm thực hành cố tình có bug?
+7. Trong 5 chặng ở Việc 4, chặng nào máy **không** làm được, và vì sao?
+8. Câu "nếu bạn đưa sai, nó sẽ xanh và sai cùng bạn" nói về chặng nào?
 9. Oracle khác Expected Result ở chỗ nào?
-10. Vì sao hai màn hình cùng hiện một con số vẫn chưa chứng minh được gì?
+10. Vì sao hai màn hình cùng hiện một ngày vẫn chưa chứng minh được gì?
 
 ## Bài tập về nhà
 
@@ -408,7 +429,7 @@ nhận ra. Bài 13 dựng một máy chặn đúng chuyện đó.
 
 ## Bài sau
 
-Bốn mươi phút cho một bộ dữ liệu, và bạn còn tám bộ nữa. Nên từ Bài 2 chúng ta bắt đầu dựng chỗ làm
+Bốn mươi phút cho một học viên, và bạn còn chín ca nữa. Nên từ Bài 2 chúng ta bắt đầu dựng chỗ làm
 việc cho máy.
 
 Bài 2 ngắn, và có một chi tiết nghe nhỏ mà đắt: `.gitignore` được viết trước cả README. Vì chỉ cần

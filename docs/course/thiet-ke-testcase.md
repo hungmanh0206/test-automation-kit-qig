@@ -11,7 +11,7 @@ Test đó vừa chứng minh được gì?
 Nó chứng minh sản phẩm trả về đúng con số mà test vừa copy từ chính sản phẩm. Tức là sản phẩm bằng
 chính nó.
 
-Nó chưa chứng minh sản phẩm đúng requirement. Mà công thức phí dịch vụ có tới ba nhánh theo loại đơn,
+Nó chưa chứng minh sản phẩm đúng requirement. Mà công thức cắt hạn có tới ba nhánh theo nhóm lớp mới,
 nên "đúng" ở đây không hiển nhiên chút nào.
 
 
@@ -78,16 +78,16 @@ sẽ có một công cụ phía sau vỡ.
 ```markdown
 | TC ID | Module | Trường hợp kiểm thử | Tiền điều kiện | Các bước thực hiện | Kết quả mong đợi | Ưu tiên |
 |---|---|---|---|---|---|---|
-| TC_001 | Tạo đơn hàng | Tính Tổng cộng khi học viên chương trình Pro, tạm tính dưới mốc phí dịch vụ | Khách `KH_BAC_01` chương trình Pro; sản phẩm `SP_A` giá 100.000 còn bán | 1. Mở màn Tạo đơn hàng<br>2. Chọn học viên `KH_BAC_01`<br>3. Thêm `SP_A`, số suất 3 | 1. Tạm tính = 300.000<br>2. Giảm giá = 9.000 (3% của 300.000)<br>3. Phí dịch vụ = 30.000<br>4. **Tổng cộng = 321.000** | High |
+| TC_001 | Đồng bộ học lại | Cắt hạn lớp cũ khi nhóm lớp mới có cả lớp chính và lớp Foundation | Học viên `HV01` có đơn học lại lớp cũ `CFA01` hạn tới 31/07/2026; đã xếp vào `CFA02F` (Foundation, 01/07/2026) và `CFA02` (Lớp chính, 01/09/2026) | 1. Mở màn Lớp › Học viên<br>2. Chọn `HV01` ở khối Đồng bộ học lại<br>3. Bấm **Xem hạn mới** | 1. Ô Lớp cũ = `CFA01`<br>2. Ô Lớp lấy làm mốc = `CFA02`, vì `BR-02` không cho lấy Foundation<br>3. **Ô Hạn mới = 31/08/2026** — `BR-03`, tức 01/09/2026 trừ 1 ngày | High |
 ```
 
 Ba quy ước trong ví dụ trên, và mỗi cái có lý do:
 
 1. Kết quả mong đợi đánh số khớp từng bước. `1.` ứng với bước `1.` Không gộp kiểu "các giá trị hiển thị
    đúng", đó là oracle rỗng, Bài 13 sẽ nói kỹ.
-2. Tiền điều kiện nêu dữ liệu cụ thể, có mã. Không viết "có một học viên chương trình Pro", lúc execute thì
-   *khách nào*?
-3. Giá trị cụ thể trong kết quả mong đợi, kèm cách tính. `321.000` chứ không "tổng đúng".
+2. Tiền điều kiện nêu dữ liệu cụ thể, có mã. Không viết "có một học viên đang xin học lại", lúc execute thì
+   *học viên nào*, và *nhóm lớp mới gồm những gì*?
+3. Giá trị cụ thể trong kết quả mong đợi, kèm cách tính. `31/08/2026` chứ không "hạn đúng".
 
 ## Việc 3 — Một parser, không phải bốn
 
@@ -312,12 +312,12 @@ Test xanh ngay. Bug thì vẫn nằm nguyên trong app.
 ### Kiểu B — Lấy số mong đợi từ chính app
 
 ```js
-const thucTe = j.data.tongCong;
-const KY_VONG = j.data.tamTinh - j.data.giamGia + j.data.phiDichVu;   // ← tính lại từ app
+const hanTrenUI = docTextCua(page, 'han-moi');   // đọc từ màn hình
+const KY_VONG = doiSangNgayViet(j.data.hanMoi);  // ← cùng con số app vừa trả về
 ```
 
-Nhìn thì có vẻ thông minh, kiểu "tôi tính lại từ các thành phần". Nhưng bốn số đó đều do app trả về. Nó đang
-so app với chính app. Cách này lúc nào cũng xanh, kể cả khi app tính sai bét.
+Nhìn thì có vẻ thông minh, kiểu "tôi so màn hình với API". Nhưng cả hai đầu đều là cùng một phép tính của
+app. Nó đang so app với chính app. Cách này lúc nào cũng xanh, kể cả khi app cắt hạn sai bét.
 
 ### Kiểu C — Nới điều kiện
 
@@ -345,14 +345,14 @@ không mở file ra đọc thì bạn không có cách nào biết.
 Muốn chắc thì gọi lại API bằng tay ở terminal thứ hai:
 
 ```bash
-curl -s -X POST http://localhost:4010/api/quote -H "Content-Type: application/json" ^
-  -d "{\"customerId\":\"HV02\",\"items\":[{\"productId\":\"KH01\",\"qty\":2}]}"
+curl -s -X POST http://localhost:4010/api/tinh-han -H "Content-Type: application/json" ^
+  -d "{\"hocVienId\":\"HV01\"}"
 ```
 
 Trên Windows dùng `^` để nối dòng như trên, trên macOS hay Linux thì dùng `\`. Máy không có `curl` thì cứ mở
 `http://localhost:4010` rồi làm tay như Bài 1.
 
-Bạn sẽ thấy `"tongCong":544000`, y nguyên. Test xanh, app sai.
+Bạn sẽ thấy `"hanMoi":"2026-06-30"`, y nguyên. Test xanh, app sai.
 
 ## Việc 7 — Gọi tên chỗ gian lận (20 phút)
 
@@ -369,8 +369,8 @@ Câu ở dòng thứ hai là câu bạn sẽ dùng nhiều nhất về sau:
 
 > Nếu app sai, dòng này có đỏ không?
 
-Thử áp nó vào Kiểu B. Giả sử app trả `tamTinh: 1`, `giamGia: 0`, `phiDichVu: 0`, `tongCong: 1`. Sai bét.
-Nhưng `1 - 0 + 0 === 1` nên test vẫn xanh. Vậy là dòng đó không kiểm gì cả.
+Thử áp nó vào Kiểu B. Giả sử app cắt hạn về `1999-01-01`. Sai bét. Nhưng màn hình cũng hiện
+`01/01/1999`, nên hai bên vẫn bằng nhau và test vẫn xanh. Vậy là dòng đó không kiểm gì cả.
 
 ### Agent không cố ý gian lận
 
@@ -396,8 +396,8 @@ Bạn sẽ gặp một trong hai:
 
 | Kết quả | Nghĩa |
 |---|---|
-| Agent nói "test đang đỏ vì app có bug ở BR-03, nên tôi không sửa test" | Lần này lời dặn có tác dụng |
-| Agent vẫn tìm đường khác để xanh: sửa `server.js`, thêm `try/catch`, hoặc đổi dữ liệu đầu vào sang khách chương trình Standard | Lời dặn không ăn thua |
+| Agent nói "test đang đỏ vì app có bug ở BR-02, nên tôi không sửa test" | Lần này lời dặn có tác dụng |
+| Agent vẫn tìm đường khác để xanh: sửa `server.js`, thêm `try/catch`, hoặc đổi dữ liệu đầu vào sang học viên chỉ có một lớp mới | Lời dặn không ăn thua |
 
 Chạy thử ba bốn lần. Bạn sẽ gặp cả hai.
 
@@ -534,8 +534,8 @@ sửa trước khi đi tiếp. Thử lại bằng `split('|')` thô để **th�
 Dùng [`assets/sample-requirement.md`](assets/sample-requirement.md). Viết **tay**, không dùng agent, đây là
 bản đối chứng cho Bài 12.
 
-Phân bổ gợi ý: 3 case luồng chính · 3 case công thức (giảm giá, phí dịch vụ, tổng cộng) · 2 case biên
-(số suất 1 và 999) · 2 case luồng lỗi.
+Phân bổ gợi ý: 3 case luồng chính · 3 case công thức (chọn lớp mốc, trừ 1 ngày, chặn hạn âm) · 2 case biên
+(hạn mới rơi đúng ngày bắt đầu lớp cũ, và sớm hơn một ngày) · 2 case luồng lỗi.
 
 Lưu ở `outputs/demo/tasks/PROJ-1234/test-cases/tay-10-case.md`.
 
@@ -639,5 +639,5 @@ gate, và lúc đó bạn có máy để sửa hàng loạt.
 
 ## Bài sau
 
-Bài 14 hỏi câu tiếp theo: bộ case của bạn có oracle rồi, nhưng đủ hay thiếu. Và vì sao đếm số suất
+Bài 14 hỏi câu tiếp theo: bộ case của bạn có oracle rồi, nhưng đủ hay thiếu. Và vì sao đếm số lượng
 testcase không trả lời được câu đó.

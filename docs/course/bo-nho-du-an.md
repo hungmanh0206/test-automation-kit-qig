@@ -143,13 +143,13 @@ Trường `chuaKhaoSat` là thứ làm file này trung thực. Nó cũng là dan
 ```json
 {
   "ma": "BR-01",
-  "phatBieu": "Giảm giá tính trên Tạm tính theo chương trình: Thường 0%, Bạc 3% (trần 100.000), Vàng 5% (trần 300.000). Làm tròn XUỐNG đến đồng.",
-  "nguon": "FSD Tạo đơn hàng mục 3; BA xác nhận ngày 2026-xx-xx",
+  "phatBieu": "Mốc cắt hạn lớp cũ lấy theo lớp mới LOẠI LỚP CHÍNH có ngày bắt đầu sớm nhất. Lớp Foundation và Revision KHÔNG được dùng làm mốc, dù bắt đầu sớm hơn.",
+  "nguon": "FSD Đồng bộ học lại mục 3; BA xác nhận ngày 2026-xx-xx",
   "viDu": [
-    { "input": "hang=Bạc, tamTinh=300000", "expected": "giamGia=9000" },
-    { "input": "hang=Bạc, tamTinh=5000000", "expected": "giamGia=100000 (đụng trần)" },
-    { "input": "hang=Bạc, tamTinh=33333", "expected": "giamGia=999 (làm tròn xuống từ 999.99)" },
-    { "input": "hang=chưa phân hạng, tamTinh=300000", "expected": "giamGia=0" }
+    { "input": "lopMoi = [Lớp chính 01/09]", "expected": "hanMoi = 2026-08-31" },
+    { "input": "lopMoi = [Foundation 01/07, Lớp chính 01/09]", "expected": "hanMoi = 2026-08-31 (Foundation bị bỏ qua)" },
+    { "input": "lopMoi = [Lớp chính 01/09, Lớp chính 01/10]", "expected": "hanMoi = 2026-08-31 (lấy lớp chính SỚM nhất)" },
+    { "input": "lopMoi = []", "expected": "hanMoi = giữ nguyên hạn cũ" }
   ],
   "coveredBy": ["TC_012", "TC_018", "TC_019"],
   "version": 1
@@ -467,19 +467,19 @@ nhất, đó là thứ chỉ biết sau khi đã vấp:
 
 ```json
 {
-  "mucTieu": "Có đơn hàng ở trạng thái CHO_DUYET",
+  "mucTieu": "Có một ghi danh ở loại RETOOK",
   "cach": "factory",
   "buoc": [
-    "POST /api/students tạo học viên (nhớ tiền tố IT test)",
-    "POST /api/orders với trangThai NHAP",
-    "POST /api/orders/{id}/submit để chuyển sang CHO_DUYET"
+    "POST /api/hoc-vien tạo học viên (nhớ tiền tố IT test)",
+    "POST /api/lop tạo lớp cũ và lớp mới, POST /api/ghi-danh xếp học viên vào lớp cũ",
+    "POST /api/don-hoc-lai rồi POST /api/dong-bo-hoc-lai để chuyển sang RETOOK"
   ],
   "camBay": [
     "Gọi submit ngay sau create thì trả 409 — cần đợi đơn có ít nhất 1 dòng sản phẩm",
     "submit KHÔNG nhận trangThai trong body; truyền vào thì bị bỏ qua âm thầm"
   ],
-  "verify": "GET /api/orders/{id} → trangThai === 'CHO_DUYET'",
-  "donDep": "DELETE /api/orders/{id}",
+  "verify": "GET /api/lop/{ma}/hoc-vien → type === 'RETOOK'",
+  "donDep": "DELETE /api/hoc-vien/{id}",
   "daDungO": ["TC_022", "TC_023"]
 }
 ```

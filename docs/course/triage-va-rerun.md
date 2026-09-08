@@ -216,17 +216,17 @@ const { test, expect } = require('../support/fixtures');
 test('bắt response để khoanh tầng lỗi', async ({ page }) => {
   // Bắt response TRƯỚC khi thao tác, để có dữ liệu BE mà đối chiếu khi màn hiện sai
   const choResponse = page.waitForResponse((r) =>
-    r.url().includes('/api/orders') && r.request().method() === 'POST');
+    r.url().includes('/api/tinh-han') && r.request().method() === 'POST');
 
-  await page.getByRole('button', { name: 'Lưu nháp', exact: true }).click();
+  await page.getByRole('button', { name: 'Xem hạn mới', exact: true }).click();
   const res = await choResponse;
   const beTraVe = await res.json();
 
-  const trenMan = await page.locator('#tong-ket').getByLabel('Tổng cộng').innerText();
+  const trenMan = await page.locator('#khoi-dong-bo').getByLabel('Hạn mới').innerText();
 
   // Ghi CẢ HAI giá trị vào báo cáo — đây là thứ khoanh tầng, không phải phỏng đoán
-  console.log({ beTraVe: beTraVe.tongCong, trenMan, status: res.status() });
-  expect(trenMan).toBe('321.000');
+  console.log({ beTraVe: beTraVe.data.hanMoi, trenMan, status: res.status() });
+  expect(trenMan).toBe('31/08/2026');
 });
 ```
 

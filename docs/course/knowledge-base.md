@@ -54,9 +54,9 @@ lời, thì đừng ghi.
 
 | Loại | Trả lời câu hỏi | Ví dụ một bản ghi |
 |---|---|---|
-| Quy tắc nghiệp vụ | *"Giá trị đúng là bao nhiêu?"* | `BR-04`: mốc miễn phí dịch vụ so trên tạm tính |
-| Cách dựng trạng thái | *"Làm sao có được trạng thái này?"* | Đơn `Pending` cần tạo qua API rồi **không** confirm |
-| Bản đồ hệ thống | *"Trường này ở tầng dưới tên gì?"* | `giamGia` ở giao diện là `discount_amount` ở tầng lưu trữ |
+| Quy tắc nghiệp vụ | *"Giá trị đúng là bao nhiêu?"* | `BR-02`: mốc cắt hạn chỉ lấy trong lớp chính |
+| Cách dựng trạng thái | *"Làm sao có được trạng thái này?"* | Loại `Học lại` cần tạo đơn học lại rồi gọi đồng bộ |
+| Bản đồ hệ thống | *"Trường này ở tầng dưới tên gì?"* | `ketThuc` ở giao diện là `duration_end` ở tầng lưu trữ |
 | Quyết định đã chốt | *"Vì sao hồi đó chọn thế?"* | Bỏ kiểm màn X vì BA xác nhận sẽ xoá trong sprint sau |
 | Bug đã gặp | *"Chỗ này từng vỡ chưa?"* | Module thanh toán: 7 bug trong 3 sprint |
 | Điểm định vị đã sửa | *"Nút này định vị bằng gì cho bền?"* | Nút Lưu đổi từ `.btn-primary` sang `getByRole` |
@@ -177,7 +177,7 @@ Ba kiểu nguồn, mỗi kiểu đòi một thứ khác nhau, và đòi đúng c
 |---|---|---|
 | `tai-lieu` | `spec.md § BR-03` | `"theo tài liệu"` |
 | `nguoi` | `"BA Hương, 07/09/2026"` | `"BA xác nhận"` |
-| `do-duoc` | `"curl POST /api/quote HV02×2 ⇒ phiDichVu=30000"` | `"đã test thấy vậy"` |
+| `do-duoc` | `"curl POST /api/tinh-han HV01 ⇒ lopMoc=CFA02F"` | `"đã test thấy vậy"` |
 
 Cột phải là những câu không truy được, và chúng chiếm phần lớn tri thức viết vội.
 

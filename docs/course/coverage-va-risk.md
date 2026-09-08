@@ -91,12 +91,12 @@ trống đúng ba chiều đó. Không phải vì nó kém, mà vì nguồn nó 
 
 | Chiều | Tài liệu mẫu có nói? | Case cần có |
 |---|---|---|
-| `Calc` | Có, mục 3 rất rõ | Giảm giá từng hạng, trần, làm tròn xuống |
-| `Validation` | Có, mục 5 | Số suất 0, 1, 999, 1000, để trống |
-| `Display` | **Có nhưng dễ bỏ** — bảng khối B liệt kê 4 trường | Khối B đủ 4 cột, đúng thứ tự, đúng nhãn; Đơn giá không sửa được |
-| `Guard` | **Không nói rõ** | Kế toán gọi thẳng API lưu đơn → phải **403**, không chỉ ẩn nút |
-| `E2E` | **Không** | Tạo đơn → lưu nháp → mở màn chi tiết → mọi giá trị còn nguyên |
-| `Concurrency` | **Không** | Bấm Lưu nháp hai lần liên tiếp → có tạo hai đơn không |
+| `Calc` | Có, mục 3 rất rõ | Chọn lớp mốc theo loại, phép trừ 1 ngày, qua mốc tháng và mốc năm |
+| `Validation` | Có, mục 5 | Số ngày gia hạn 0, 1, 180, 181, để trống; lý do rỗng và 61 ký tự |
+| `Display` | **Có nhưng dễ bỏ** — bảng khối B liệt kê 6 trường | Khối B đủ 6 cột, đúng thứ tự, đúng nhãn; Ngày hết hạn không sửa được |
+| `Guard` | **Không nói rõ** | Kế toán gọi thẳng API gia hạn → phải **403**, không chỉ ẩn nút |
+| `E2E` | **Không** | Đồng bộ học lại → bảng tải lại → mọi giá trị còn nguyên |
+| `Concurrency` | **Không** | Bấm Áp dụng hạn mới hai lần liên tiếp → có ghi hai dòng lịch sử không |
 
 Bốn chiều cuối là chỗ bug thật hay nằm, và cũng là chỗ tài liệu im lặng.
 
@@ -105,10 +105,10 @@ Bốn chiều cuối là chỗ bug thật hay nằm, và cũng là chỗ tài li
 Chiều là thứ vô hình cho tới khi bạn **gắn nhãn**. Quy ước đơn giản nhất: tag ở đầu tiêu đề case.
 
 ```markdown
-| TC_012 | Tạo đơn hàng | [Calc] Giảm giá chương trình Elite vượt trần 300.000 | … |
-| TC_013 | Tạo đơn hàng | [Display] Khối B đủ 4 cột, đúng thứ tự và nhãn | … |
-| TC_014 | Tạo đơn hàng | [Guard] Kế toán gọi API lưu đơn → 403 | … |
-| TC_015 | Tạo đơn hàng | [E2E] Tạo → lưu nháp → chi tiết, giá trị còn nguyên | … |
+| TC_012 | Lớp › Học viên | [Calc] Hạn mới khi lớp mốc bắt đầu 01/01 — qua mốc năm | … |
+| TC_013 | Lớp › Học viên | [Display] Khối B đủ 6 cột, đúng thứ tự và nhãn | … |
+| TC_014 | Lớp › Học viên | [Guard] Kế toán gọi API gia hạn → 403 | … |
+| TC_015 | Lớp › Học viên | [E2E] Đồng bộ → bảng tải lại, giá trị còn nguyên | … |
 ```
 
 Một case được phép nhiều tag: `[Calc][Boundary]`.
@@ -146,8 +146,8 @@ Nên mỗi task **khai** chiều nào bắt buộc. Và ghi lý do khi khai mộ
     "Guard": "required",
     "E2E": "required",
     "API": { "status": "n/a", "reason": "màn này chưa có API công khai để test riêng; đã phủ qua E2E" },
-    "Concurrency": { "status": "n/a", "reason": "đơn nháp là dữ liệu cá nhân, không có ca hai người sửa cùng lúc" },
-    "SideEffect": { "status": "n/a", "reason": "lưu nháp không sinh mail hay job nào theo mục 4" },
+    "Concurrency": { "status": "required", "reason": "luồng đồng bộ chạy theo lịch nên gọi trùng là chuyện thường" },
+    "SideEffect": { "status": "n/a", "reason": "gia hạn không sinh mail hay job nào theo mục 4" },
     "Impact": "required"
   }
 }
@@ -353,19 +353,19 @@ Chọn **hai** chiều đang 0 case và viết case thật. Gợi ý cho tài li
 
 | Trường | Nội dung |
 |---|---|
-| Tiêu đề | `[Guard][Perm]` Kế toán gọi API lưu đơn nháp → bị chặn ở tầng dưới |
-| Tiền điều kiện | Đăng nhập `user_ketoan_01` (vai trò Kế toán); có sẵn payload đơn hợp lệ |
-| Các bước | 1. Lấy token của `user_ketoan_01`<br>2. Gọi thẳng API lưu đơn nháp với payload hợp lệ |
-| Kết quả mong đợi | 1. Mã trạng thái = **403**<br>2. Đơn không được tạo (kiểm lại danh sách đơn: số suất không đổi) — `BR-06` |
+| Tiêu đề | `[Guard][Perm]` Kế toán gọi API gia hạn → bị chặn ở tầng dưới |
+| Tiền điều kiện | Đăng nhập `user_ketoan_01` (vai trò Kế toán); có sẵn payload gia hạn hợp lệ |
+| Các bước | 1. Lấy token của `user_ketoan_01`<br>2. Gọi thẳng API gia hạn với payload hợp lệ |
+| Kết quả mong đợi | 1. Mã trạng thái = **403**<br>2. Thời hạn không đổi (đọc lại danh sách học viên: số ngày gia hạn vẫn là 0) — mục 6 |
 
 **`[E2E]`** — luồng đầu-cuối, và giá trị phải sống sót qua chuyển màn:
 
 | Trường | Nội dung |
 |---|---|
-| Tiêu đề | `[E2E]` Tạo đơn → lưu nháp → màn chi tiết: mọi giá trị còn nguyên |
-| Tiền điều kiện | Khách `KH_BAC_01` chương trình Pro; `SP_A` giá 100.000 |
-| Các bước | 1. Tạo đơn với `SP_A` số suất 3<br>2. Bấm Lưu nháp<br>3. Ở màn chi tiết, đọc lại 4 giá trị của khối C |
-| Kết quả mong đợi | 1. Hiện đúng chữ `Đã lưu đơn nháp`<br>2. URL khớp `/orders/{id}`<br>3. Tạm tính 300.000 · Giảm giá 9.000 · Phí 30.000 · **Tổng cộng 321.000** — giống hệt trước khi lưu — `BR-01` `BR-02` `BR-03` |
+| Tiêu đề | `[E2E]` Đồng bộ học lại → bảng tải lại: mọi giá trị còn nguyên |
+| Tiền điều kiện | Học viên `HV_HOCLAI_01` ở lớp cũ `CFA01`; đã xếp vào lớp chính `CFA02` bắt đầu 01/09/2026 |
+| Các bước | 1. Bấm Xem hạn mới<br>2. Bấm Áp dụng hạn mới<br>3. Đọc lại hàng của học viên đó trong bảng khối B |
+| Kết quả mong đợi | 1. Cột Loại = `Học lại`<br>2. Cột Thời hạn kết thúc = `31/08/2026` — giống hệt ô Hạn mới trước khi áp dụng<br>3. Cột Ngày hết hạn = `31/08/2026` vì gia hạn đang là 0 — mục 2, mục 3 |
 
 Chạy lại `dim:coverage`, xác nhận hai chiều đó không còn 0.
 

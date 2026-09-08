@@ -159,7 +159,7 @@ Tỉ lệ toàn bộ suite không nói test **nào** yếu. Cần điểm theo t
 
 ```json
 {
-  "test": "tao-don.spec.js > tính tổng cộng học viên chương trình Pro",
+  "test": "cat-han-hoc-lai.spec.js > cắt hạn lớp cũ của HV01 theo lớp chính",
   "soLuot": 40,
   "xanhNgay": 31,
   "xanhSauRetry": 38,
@@ -230,11 +230,11 @@ Trước khi gắn nhãn `flaky` cho bất cứ test nào, bắt buộc ghi:
 
 ```json
 {
-  "test": "tao-don.spec.js > tính tổng cộng học viên chương trình Pro",
+  "test": "cat-han-hoc-lai.spec.js > cắt hạn lớp cũ của HV01 theo lớp chính",
   "nhan": "flaky",
   "daThu": {
     "chayMotMinhTuanTu": "xanh 5/5 lượt",
-    "loiHayGap": "timeout waiting for [data-testid=tong-cong]",
+    "loiHayGap": "timeout waiting for [data-testid=han-moi]",
     "coQuyLuatTheoThoiDiem": false
   },
   "ketLuan": "lỗi test — chờ sai, phải chờ giá trị KHÁC '—' thay vì chờ element xuất hiện",
@@ -312,11 +312,11 @@ Bạn không sửa source của sản phẩm. Bạn chặn ở giữa và đổi
  * giữa hai sprint.
  */
 const MUTANTS = {
-  'giam-gia-bang-0':    (d) => ({ ...d, giamGia: 0 }),
-  'phi-dich-vu-mien': (d) => ({ ...d, phiDichVu: 0 }),
-  'tong-lech-1000':     (d) => ({ ...d, tongTien: d.tongTien + 1000 }),
-  'thieu-truong':       (d) => { const x = { ...d }; delete x.giamGia; return x; },
-  'trang-thai-sai':     (d) => ({ ...d, trangThai: 'CONFIRMED' }),
+  'lop-moc-sai':      (d) => ({ ...d, lopMoc: 'CFA02F' }),
+  'han-lech-1-ngay':  (d) => ({ ...d, hanMoi: congNgay(d.hanMoi, 1) }),
+  'han-lech-1-thang': (d) => ({ ...d, hanMoi: congNgay(d.hanMoi, 30) }),
+  'thieu-truong':     (d) => { const x = { ...d }; delete x.lopMoc; return x; },
+  'loai-sai':         (d) => ({ ...d, lopMocLoai: 'LESSON' }),
 };
 
 async function gan(page, tenMutant, duongDan) {
@@ -348,11 +348,11 @@ gian. Đó là lý do phép đo này chạy hằng tuần chứ không chạy m�
 
 | Mutant | Suite có đỏ không | Nghĩa là |
 |---|---|---|
-| `giam-gia-bang-0` | ✓ đỏ | Có case kiểm giảm giá thật |
-| `phi-dich-vu-mien` | ✓ đỏ | Có case kiểm phí dịch vụ |
-| `tong-lech-1000` | ✓ đỏ | Có case kiểm tổng |
+| `lop-moc-sai` | ✓ đỏ | Có case kiểm lớp mốc thật, không chỉ kiểm ngày cuối |
+| `han-lech-1-ngay` | ✓ đỏ | Có case kiểm phép trừ 1 ngày |
+| `han-lech-1-thang` | ✓ đỏ | Có case kiểm hạn mới |
 | `thieu-truong` | ✗ **xanh** | Không case nào kiểm trường này có tồn tại hay không |
-| `trang-thai-sai` | ✗ **xanh** | Không case nào kiểm trạng thái đơn |
+| `loai-sai` | ✗ **xanh** | Không case nào kiểm loại của lớp được chọn làm mốc |
 
 Điểm số: **3/5**.
 

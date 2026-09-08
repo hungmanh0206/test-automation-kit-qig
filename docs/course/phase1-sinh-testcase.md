@@ -13,7 +13,7 @@ thấy hợp lý.
 
 Mười hai testcase đó dựa trên luật nào?
 
-> Trên OPS, đúng chỗ này có một mốc thật: tài khoản nhận phí dịch vụ đổi theo chương trình **và**
+> Trên OPS, đúng chỗ này có một mốc thật: hạn truy cập lớp cũ đổi theo loại lớp mới **và**
 > theo một ngày cụ thể. Đoán sai mốc là cả bộ case sai theo, mà nhìn thì không thấy.
 
 
@@ -59,13 +59,13 @@ Mười việc, chia làm ba chặng.
 ## Việc 1 — Xem agent đoán (25 phút)
 
 Kèm theo đây có một bản đặc tả cố tình viết mơ hồ: [`sample-requirement.md`](assets/sample-requirement.md).
-Nó là một FSD giả cho màn "Tạo đơn hàng", có 3 ghi chú của BA chứa mâu thuẫn và lỗ hổng. Tổng cộng **10 vấn
+Nó là một FSD giả cho màn "Lớp › Học viên", có 3 ghi chú của BA chứa mâu thuẫn và lỗ hổng. Tổng cộng **10 vấn
 đề cài sẵn**.
 
 Mở phiên agent và gõ đúng câu này, câu mà 90% người sẽ gõ:
 
 ```
-Đọc docs/course/assets/sample-requirement.md rồi sinh testcase cho màn Tạo đơn hàng.
+Đọc docs/course/assets/sample-requirement.md rồi sinh testcase cho màn Lớp › Học viên.
 ```
 
 **Bạn sẽ thấy** agent trả về một bộ testcase trông rất gọn gàng. Giờ đọc kỹ và tìm ba dấu hiệu:
@@ -102,12 +102,12 @@ Không phải mơ hồ nào cũng phải dừng. Dừng hết thì bạn không 
 
 | Mơ hồ | Mức | Vì sao |
 |---|---|---|
-| Mốc miễn phí dịch vụ: `500.000` hay `520.000`? | **CHẶN** | Kết quả mong đợi của mọi case tính tiền phụ thuộc số này |
+| Mốc cắt hạn lấy theo lớp chính hay lớp bắt đầu sớm nhất? | **CHẶN** | Kết quả mong đợi của mọi case cắt hạn phụ thuộc câu này |
 | Giảm giá tính trên tạm tính hay trên tổng? | **CHẶN** | Đổi cả công thức |
 | Số suất tối đa là `99` hay `100`? | **CHẶN** | Case biên đúng/sai lệch hẳn |
 | Thông báo lỗi ghi chữ gì chính xác? | không chặn | Đoán được; assert theo mã lỗi, chữ hiển thị kiểm sau khi có Figma |
 | Danh sách sắp thứ tự theo gì? | không chặn | Đoán "mới nhất trước", ghi rõ đã đoán |
-| Có chương trình "Kim cương" không? | **CHẶN** | Nếu có thì thiếu hẳn một nhánh; nếu không thì đừng sinh case cho nó |
+| Có loại lớp "Revision" trong nhóm lớp mới không? | **CHẶN** | Nếu có thì thiếu hẳn một nhánh; nếu không thì đừng sinh case cho nó |
 
 ### Bộ câu hỏi viết thế nào để BA trả lời trong 2 phút
 
@@ -121,17 +121,17 @@ Sai: *"Anh cho em hỏi về phần giảm giá ạ, em thấy hơi mơ hồ."*
 
 ## CHẶN — không trả lời thì không sinh được testcase
 
-### Q1. Mốc miễn phí dịch vụ là 500.000 hay 520.000?
+### Q1. Mốc cắt hạn lấy theo lớp chính, hay theo lớp bắt đầu sớm nhất?
 - FSD mục 2.3 ghi **500.000**; ghi chú BA ngày 12/08 ghi **520.000**.
 - **Giả định đề xuất:** 500.000 (theo FSD, vì ghi chú không nói là thay đổi).
 - Nếu sai: **mọi** case tính tiền có kết quả mong đợi sai.
 
 ### Q2. Giảm giá theo hạng tính trên Tạm tính hay trên (Tạm tính + Phí dịch vụ)?
-- FSD chỉ ghi "giảm theo chương trình", không nói tính trên gì.
+- FSD chỉ ghi "cắt theo lớp mới", không nói lớp nào khi có nhiều lớp.
 - **Giả định đề xuất:** trên Tạm tính.
 - Nếu sai: sai công thức, và sai theo hướng khó thấy vì hai cách cho cùng kết quả khi phí = 0.
 
-### Q3. Có chương trình "Kim cương" không?
+### Q3. Có loại lớp "Revision" trong nhóm lớp mới không?
 - FSD liệt kê Standard/Pro/Elite. Ghi chú BA nhắc "khách Kim cương" một lần.
 - **Giả định đề xuất:** KHÔNG có (chỉ 3 hạng).
 - Nếu sai: thiếu hẳn một nhánh, và không chiều nào của độ phủ chỉ ra được chỗ thiếu.
@@ -140,7 +140,7 @@ Sai: *"Anh cho em hỏi về phần giảm giá ạ, em thấy hơi mơ hồ."*
 
 | # | Chỗ mơ hồ | Em đoán | Ảnh hưởng nếu đoán sai |
 |---|---|---|---|
-| A1 | Chữ trong thông báo lỗi số suất | assert theo **mã lỗi**, không theo chữ | phải sửa 3 case khi có Figma |
+| A1 | Chữ trong thông báo lỗi số ngày gia hạn | assert theo **mã lỗi**, không theo chữ | phải sửa 3 case khi có Figma |
 | A2 | Thứ tự danh sách đơn | mới nhất trước | 1 case |
 ```
 
@@ -178,13 +178,13 @@ Máy không đọc được văn xuôi. Nên câu hỏi cần một bản máy-�
   "task": "DEMO-1",
   "ngayHoi": "2026-09-07",
   "cauHoi": [
-    { "id": "Q1", "muc": "blocking", "hoi": "Mốc miễn phí dịch vụ 500.000 hay 520.000?",
+    { "id": "Q1", "muc": "blocking", "hoi": "Mốc cắt hạn lấy theo lớp chính hay lớp sớm nhất?",
       "nguon": "FSD 2.3 vs ghi chú BA 12/08", "giaDinh": "500.000", "traLoi": "", "aiTraLoi": "" },
     { "id": "Q2", "muc": "blocking", "hoi": "Giảm giá tính trên Tạm tính hay trên tổng?",
       "nguon": "FSD không nói", "giaDinh": "trên Tạm tính", "traLoi": "", "aiTraLoi": "" },
-    { "id": "Q3", "muc": "blocking", "hoi": "Có chương trình Kim cương không?",
+    { "id": "Q3", "muc": "blocking", "hoi": "Có loại lớp Revision trong nhóm lớp mới không?",
       "nguon": "FSD liệt kê 3 hạng; ghi chú BA nhắc hạng thứ 4", "giaDinh": "không có", "traLoi": "", "aiTraLoi": "" },
-    { "id": "A1", "muc": "non-blocking", "hoi": "Chữ trong thông báo lỗi số suất?",
+    { "id": "A1", "muc": "non-blocking", "hoi": "Chữ trong thông báo lỗi số ngày gia hạn?",
       "nguon": "chưa có Figma", "giaDinh": "assert theo mã lỗi", "traLoi": "", "aiTraLoi": "" }
   ]
 }
@@ -311,7 +311,7 @@ mâu thuẫn.
 **Lần 3 — trả lời đủ** (phải cho qua):
 
 ```json
-{ "id": "Q1", "muc": "blocking", "hoi": "Mốc miễn phí dịch vụ 500.000 hay 520.000?",
+{ "id": "Q1", "muc": "blocking", "hoi": "Mốc cắt hạn lấy theo lớp chính hay lớp sớm nhất?",
   "nguon": "FSD 2.3 vs ghi chú BA 12/08", "giaDinh": "500.000",
   "traLoi": "500.000 — ghi chú 12/08 là bản nháp, bỏ", "aiTraLoi": "BA Hương, 07/09" }
 ```
@@ -541,9 +541,9 @@ làm việc của máy, và lần sau vẫn sai.
 
 | Không đo được | Đo được |
 |---|---|
-| "Hiển thị đúng thông tin học viên" | "Tên học viên = `Công ty A`, SĐT = `0901234567`" |
-| "Tính toán chính xác" | "Tổng cộng = `321.000` (300.000 − 9.000 + 30.000)" |
-| "Thông báo lỗi xuất hiện" | "Hiện đúng chữ `Số suất phải từ 1 đến 999`" |
+| "Hiển thị đúng thông tin lớp" | "Mã lớp = `CFA01`, Thời hạn lớp = `01/03/2026 - 31/07/2026`" |
+| "Tính toán chính xác" | "Hạn mới = `31/08/2026`, vì lớp mốc `CFA02` bắt đầu 01/09/2026" |
+| "Thông báo lỗi xuất hiện" | "Hiện đúng chữ `Số ngày gia hạn phải từ 1 đến 180`" |
 
 Phép thử một câu: hai người đọc expected này có phán cùng kết quả không? Không thì nó không đo được.
 
@@ -551,7 +551,7 @@ Phép thử một câu: hai người đọc expected này có phán cùng kết 
 
 | Không dựng được | Dựng được |
 |---|---|
-| "Có một học viên chương trình Pro" | "Khách `KH_BAC_01`, chương trình Pro, đã có trong hệ thống" |
+| "Có một học viên đang xin học lại" | "Học viên `HV01`, lớp cũ `CFA01`, đã xếp vào `CFA02F` và `CFA02`" |
 | "Đơn hàng ở trạng thái phù hợp" | "Đơn `DH_NHAP_01` trạng thái Nháp, có 2 dòng sản phẩm" |
 | "Người dùng có quyền" | "Đăng nhập bằng `user_sales_01` (vai trò Nhân viên bán hàng)" |
 
@@ -561,7 +561,7 @@ Phép thử: đọc xong bạn biết phải làm gì để có trạng thái đ
 
 | Gộp | Tách |
 |---|---|
-| "Tạo đơn hàng và kiểm tra tổng tiền" | "1. Chọn học viên `KH_BAC_01`<br>2. Thêm `SP_A` số suất 3<br>3. Đọc ô Tổng cộng" |
+| "Đồng bộ học lại và kiểm tra thời hạn" | "1. Chọn học viên `HV01`<br>2. Bấm Xem hạn mới<br>3. Đọc ô Hạn mới" |
 
 Bước gộp thì khi FAIL bạn không biết hỏng ở bước nào, và đó là nửa công việc điều tra.
 

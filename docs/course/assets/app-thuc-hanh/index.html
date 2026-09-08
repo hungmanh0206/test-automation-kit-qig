@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cổng đăng ký khoá học</title>
+<title>Vận hành lớp học</title>
 <style>
   :root { --ink:#1A1916; --wash:#FAF8F3; --line:#E6E0D5; --gold:#FFB700; --mo:#79736A; }
   * { box-sizing:border-box }
   body { margin:0; font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
          color:var(--ink); background:var(--wash) }
   header { background:var(--ink); color:#fff; padding:14px 20px; font-weight:600 }
-  main { max-width:900px; margin:0 auto; padding:20px; display:grid; gap:20px }
+  main { max-width:960px; margin:0 auto; padding:20px; display:grid; gap:20px }
   .the { background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px }
   h2 { margin:0 0 14px; font-size:16px }
   label { display:block; font-size:13px; color:var(--mo); margin:10px 0 4px }
-  select, input { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px;
-                  font:inherit; background:#fff }
+  select, input, textarea { width:100%; padding:8px 10px; border:1px solid var(--line);
+                  border-radius:8px; font:inherit; background:#fff }
   button { padding:9px 16px; border:0; border-radius:8px; background:var(--gold);
            color:var(--ink); font:inherit; font-weight:600; cursor:pointer }
   button:disabled { opacity:.45; cursor:not-allowed }
@@ -27,72 +27,128 @@
   th, td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--line) }
   th { font-size:12px; color:var(--mo); font-weight:600 }
   td.so, th.so { text-align:right; font-variant-numeric:tabular-nums }
-  .tien { display:grid; gap:6px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line) }
-  .tien div { display:flex; justify-content:space-between }
-  .tien .tong { font-weight:700; font-size:17px; padding-top:6px; border-top:1px solid var(--line) }
+  .tomtat { display:grid; gap:6px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line) }
+  .tomtat div { display:flex; justify-content:space-between }
+  .tomtat .chot { font-weight:700; font-size:17px; padding-top:6px; border-top:1px solid var(--line) }
   .loi { background:#FBEAEA; color:#9E2C2C; padding:9px 12px; border-radius:8px; margin-top:12px;
          font-size:14px }
   .loi[hidden] { display:none }
   .nhan { display:inline-block; padding:2px 8px; border-radius:20px; font-size:12px; font-weight:600 }
-  .nhan.cho { background:#FFF9EC; color:#946800 }
-  .nhan.xong { background:#E9F6EF; color:#14613F }
+  .nhan.thuong { background:#EEF1F6; color:#3B4559 }
+  .nhan.hoclai { background:#FFF9EC; color:#946800 }
+  .nhan.baoluu { background:#F1ECFA; color:#513A85 }
   .trong { color:var(--mo); font-size:14px }
+  .menu { position:relative; display:inline-block }
+  .menu > button { padding:4px 10px; background:#fff; border:1px solid var(--line) }
+  .menu ul { position:absolute; right:0; top:100%; margin:4px 0 0; padding:4px; list-style:none;
+             background:#fff; border:1px solid var(--line); border-radius:8px; min-width:150px;
+             box-shadow:0 6px 20px rgba(0,0,0,.08); z-index:5 }
+  .menu ul[hidden] { display:none }
+  .menu li button { width:100%; text-align:left; background:#fff; font-weight:500; padding:7px 10px }
+  .lopmeta { display:flex; gap:22px; flex-wrap:wrap; font-size:14px; color:var(--mo); margin-top:10px }
+  .lopmeta b { color:var(--ink); font-weight:600 }
+  dialog { border:1px solid var(--line); border-radius:12px; padding:18px; max-width:420px; width:92% }
+  dialog::backdrop { background:rgba(26,25,22,.35) }
+  .dem { font-size:12px; color:var(--mo); text-align:right; margin-top:4px }
+  .nutcuoi { display:flex; gap:10px; justify-content:flex-end; margin-top:16px }
 </style>
 </head>
 <body>
-<header>Cổng đăng ký khoá học · app thực hành</header>
+<header>Vận hành lớp học · app thực hành</header>
 <main>
 
   <section class="the">
-    <h2>Tạo đơn hàng</h2>
+    <h2>Lớp học</h2>
 
-    <label for="khach">Học viên</label>
-    <select id="khach" data-testid="khach"></select>
+    <label for="lop">Chọn lớp</label>
+    <select id="lop" data-testid="lop"></select>
+
+    <div class="lopmeta" data-testid="lop-meta">
+      <span>Loại: <b data-testid="lop-loai">—</b></span>
+      <span>Thời hạn lớp: <b data-testid="lop-thoi-han">—</b></span>
+      <span>Số học viên: <b data-testid="lop-si-so">—</b></span>
+    </div>
+  </section>
+
+  <section class="the">
+    <h2>Học viên trong lớp</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Học viên</th>
+          <th>Loại</th>
+          <th>Thời hạn</th>
+          <th class="so">Gia hạn (ngày)</th>
+          <th>Ngày hết hạn</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="bangHv" data-testid="bang-hoc-vien"></tbody>
+    </table>
+    <p id="hvTrong" class="trong">Lớp này chưa có học viên nào.</p>
+  </section>
+
+  <section class="the">
+    <h2>Đồng bộ học lại</h2>
+    <p class="trong" style="margin-top:0">
+      Học viên xin học lại thì hạn truy cập lớp cũ phải cắt lại cho khớp lớp mới.
+      Bấm <b>Xem hạn mới</b> để tính trước, chưa ghi gì.
+    </p>
 
     <div class="hang">
       <div>
-        <label for="sanpham">Sản phẩm</label>
-        <select id="sanpham" data-testid="sanpham"></select>
+        <label for="hocVien">Học viên</label>
+        <select id="hocVien" data-testid="hoc-vien"></select>
       </div>
-      <div style="max-width:110px">
-        <label for="soluong">Số suất</label>
-        <input id="soluong" data-testid="soluong" type="number" value="1" min="1" max="99">
-      </div>
-      <button id="them" class="phu" data-testid="them">Thêm</button>
+      <button id="xemHan" class="phu" data-testid="xem-han">Xem hạn mới</button>
     </div>
 
-    <table style="margin-top:16px">
-      <thead>
-        <tr><th>Sản phẩm</th><th class="so">Đơn giá</th><th class="so">SL</th><th class="so">Thành tiền</th><th></th></tr>
-      </thead>
-      <tbody id="gio" data-testid="gio"></tbody>
-    </table>
-    <p id="gioTrong" class="trong">Chưa có sản phẩm nào.</p>
-
-    <div class="tien">
-      <div><span>Tạm tính</span><span data-testid="tam-tinh">—</span></div>
-      <div><span>Giảm giá</span><span data-testid="giam-gia">—</span></div>
-      <div><span>Phí dịch vụ</span><span data-testid="phi-dich-vu">—</span></div>
-      <div class="tong"><span>Tổng cộng</span><span data-testid="tong-cong">—</span></div>
+    <div class="tomtat">
+      <div><span>Lớp cũ</span><span data-testid="lop-cu">—</span></div>
+      <div><span>Lớp lấy làm mốc</span><span data-testid="lop-moc">—</span></div>
+      <div><span>Hạn hiện tại</span><span data-testid="han-hien-tai">—</span></div>
+      <div class="chot"><span>Hạn mới</span><span data-testid="han-moi">—</span></div>
     </div>
 
     <div id="loi" class="loi" data-testid="loi" hidden></div>
 
-    <p style="margin:16px 0 0"><button id="taoDon" data-testid="tao-don" disabled>Tạo đơn</button></p>
-  </section>
-
-  <section class="the">
-    <h2>Danh sách đơn hàng</h2>
-    <table>
-      <thead>
-        <tr><th>Mã đơn</th><th>Khách</th><th class="so">Tổng cộng</th><th>Trạng thái</th><th></th></tr>
-      </thead>
-      <tbody id="dsDon" data-testid="ds-don"></tbody>
-    </table>
-    <p id="donTrong" class="trong">Chưa có đơn nào.</p>
+    <p style="margin:16px 0 0">
+      <button id="apDung" data-testid="ap-dung" disabled>Áp dụng hạn mới</button>
+    </p>
   </section>
 
 </main>
+
+<dialog id="hopGiaHan" data-testid="hop-gia-han">
+  <h2 style="margin-top:0">Gia hạn thời hạn</h2>
+  <p class="trong" data-testid="gia-han-hv" style="margin-top:0">—</p>
+
+  <label for="soNgay">Số ngày gia hạn</label>
+  <input id="soNgay" data-testid="so-ngay" type="number" value="30" min="1" max="180">
+
+  <label for="lyDo">Lý do gia hạn</label>
+  <input id="lyDo" data-testid="ly-do" maxlength="60" placeholder="Ví dụ: học viên nghỉ ốm dài">
+  <div class="dem" data-testid="dem-ly-do">0/60</div>
+
+  <div id="loiGiaHan" class="loi" data-testid="loi-gia-han" hidden></div>
+
+  <div class="nutcuoi">
+    <button class="phu" data-testid="huy-gia-han">Huỷ</button>
+    <button data-testid="luu-gia-han">Lưu</button>
+  </div>
+</dialog>
+
+<dialog id="hopLichSu" data-testid="hop-lich-su">
+  <h2 style="margin-top:0">Lịch sử thay đổi thời hạn</h2>
+  <table>
+    <thead><tr><th>#</th><th>Từ ngày - Đến ngày</th><th>Lý do</th><th>Người sửa</th></tr></thead>
+    <tbody data-testid="bang-lich-su"></tbody>
+  </table>
+  <p class="trong" data-testid="lich-su-trong">Chưa có lần thay đổi nào.</p>
+  <div class="nutcuoi"><button class="phu" data-testid="dong-lich-su">Đóng</button></div>
+</dialog>
+
 <script src="/app.js"></script>
 </body>
 </html>

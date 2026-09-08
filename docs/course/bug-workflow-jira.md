@@ -66,27 +66,28 @@ Một bug report Dev không phải hỏi lại gồm đúng bốn phần. Không
 
 ```markdown
 ## Mô tả
-Đơn hàng ở trạng thái CONFIRMED vẫn sửa được qua API. Vi phạm BR-07.
+Học viên loại RETOOK vẫn xoá được khỏi lớp qua API. Vi phạm BR-10.
 
 ## Các bước tái hiện
-1. Tạo đơn: POST /api/orders  { hocVienId: "HV02", items: [{ khoaHocId: "KH01", soSuat: 1 }] }
-2. Xác nhận đơn: POST /api/orders/<id>/confirm
-3. Sửa đơn: PATCH /api/orders/<id>  { items: [{ khoaHocId: "KH01", soSuat: 99 }] }
+1. Dựng lại dữ liệu: POST /api/reset
+2. Đồng bộ học lại: POST /api/dong-bo-hoc-lai  { hocVienId: "HV01" }  → GD001 sang loại RETOOK
+3. Xoá khỏi lớp: DELETE /api/ghi-danh/GD001
 
 ## Kết quả mong đợi
-Bước 3 bị từ chối với mã 4xx. Nguồn: spec.md BR-07 — "Đơn ở trạng thái CONFIRMED không được sửa."
+Bước 3 bị từ chối với mã 4xx. Nguồn: spec.md BR-10 — "Học viên có Loại khác Thường thì không xoá được
+khỏi lớp."
 
 ## Kết quả thực tế
-Bước 3 trả về HTTP 200. Đơn đã đổi số suất thành 99.
+Bước 3 trả về HTTP 200 {"data":{"daXoa":"GD001"}}. Bản ghi biến mất khỏi lớp.
 ```
 
 Bốn quy tắc, mỗi cái đến từ một lần bị trả về:
 
-**Các bước phải khớp fixture thật.** Viết *"tạo một đơn hàng"* thì Dev tạo theo cách của họ, gặp trạng
-thái khác, không tái hiện được, và trả về. Ghi đúng lời gọi bạn đã dùng.
+**Các bước phải khớp fixture thật.** Viết *"đưa một học viên sang loại Học lại"* thì Dev dựng theo cách
+của họ, gặp trạng thái khác, không tái hiện được, và trả về. Ghi đúng lời gọi bạn đã dùng.
 
-**Kết quả mong đợi phải trích nguồn.** Câu *"đáng lẽ phải bị chặn"* là ý kiến. Câu *"spec.md BR-07 nói
-không được sửa"* là căn cứ. Không có nguồn thì cuộc trao đổi biến thành tranh luận ai đúng.
+**Kết quả mong đợi phải trích nguồn.** Câu *"đáng lẽ phải bị chặn"* là ý kiến. Câu *"spec.md BR-10 nói
+không xoá được"* là căn cứ. Không có nguồn thì cuộc trao đổi biến thành tranh luận ai đúng.
 
 **Kết quả thực tế phải là quan sát, không phải suy diễn.** Ghi `HTTP 200, đơn đã đổi`. Đừng ghi
 *"thiếu guard trạng thái ở backend"*, đó là chẩn đoán, và chẩn đoán sai thì Dev mất thời gian đi theo
@@ -121,7 +122,7 @@ Cách khoanh tầng rẻ nhất là thứ bạn đã có từ Bài 10: đọc c�
 
 ```bash
 node scripts/qa/doi-chieu-luu-tru.js ui.json luu-tru.json
-# → giamGia: màn hình 8000 · tầng lưu trữ 8750 ⇒ lỗi tầng HIỂN THỊ
+# → ngayHetHan: màn hình 2026-07-31 · tầng lưu trữ 2026-08-31 ⇒ lỗi tầng HIỂN THỊ
 ```
 
 Dòng đó trả lời luôn câu "gán cho ai".

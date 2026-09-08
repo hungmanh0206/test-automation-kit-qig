@@ -108,7 +108,7 @@ Và bên trong file, tên test mang luôn mã luật:
 ```js
 const { test } = require('@playwright/test');
 
-test('BR-03: học viên chương trình Pro được giảm 3% trên tạm tính', async ({ page }) => {
+test('BR-02: mốc cắt hạn lấy theo lớp chính, không theo lớp sớm nhất', async ({ page }) => {
   // ...
 });
 ```

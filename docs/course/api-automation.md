@@ -67,34 +67,34 @@ Playwright có sẵn một context để gọi HTTP, không cần thư viện th
 ```js
 const { test, expect } = require('@playwright/test');
 
-test('BR-04: phí dịch vụ so mốc trên TẠM TÍNH', async ({ request }) => {
-  const res = await request.post('/api/quote', {
-    data: { hocVienId: 'HV02', items: [{ khoaHocId: 'KH01', soSuat: 2 }] },
+test('BR-02: mốc cắt hạn lấy theo LỚP CHÍNH', async ({ request }) => {
+  const res = await request.post('/api/tinh-han', {
+    data: { hocVienId: 'HV01' },
   });
 
   expect(res.status()).toBe(200);
-  const bao = await res.json();
+  const kq = (await res.json()).data;
 
-  /* Số mong đợi tính từ spec.md BR-02, BR-03, BR-04. KHÔNG lấy từ phản hồi của app. */
-  expect(bao.tamTinh).toBe(520000);      // BR-02: 260.000 × 2
-  expect(bao.giamGia).toBe(-15000);      // BR-03: chương trình Pro, 
-  expect(bao.phiDichVu).toBe(50000);   // BR-04: tạm tính 520.000 < mốc 500.000
-  expect(bao.tongTien).toBe(485000);
+  /* Kết quả mong đợi suy từ spec.md BR-02 và BR-03. KHÔNG lấy từ phản hồi của app. */
+  expect(kq.lopCu).toBe('CFA01');
+  expect(kq.lopMoc).toBe('CFA02');          // BR-02: lớp chính, KHÔNG phải CFA02F
+  expect(kq.hanHienTai).toBe('2026-07-31');
+  expect(kq.hanMoi).toBe('2026-08-31');     // BR-03: 01/09/2026 trừ 1 ngày
 });
 ```
 
-Tạo `tests/api/bao-gia.spec.js` với nội dung trên rồi chạy:
+Tạo `tests/api/tinh-han.spec.js` với nội dung trên rồi chạy:
 
 ```bash
 npx playwright test tests/api/
 ```
 
-**Bạn sẽ thấy** nó đỏ ở dòng `phiDichVu`, và đỏ nhanh hơn hẳn UI test vì không phải mở trình duyệt.
+**Bạn sẽ thấy** nó đỏ ở dòng `lopMoc`, và đỏ nhanh hơn hẳn UI test vì không phải mở trình duyệt.
 
 | Thấy khác | Nghĩa là | Làm gì |
 |---|---|---|
-| `expect(received).toBe(expected)` ở `tamTinh` | Giá sản phẩm khác `spec.md` | Đọc lại `spec.md`, có thể bạn nhớ nhầm mã khoá học |
-| `res.status()` là `404` | Đường dẫn API sai | Xem phần API trong `spec.md` |
+| `expect(received).toBe(expected)` ở `hanHienTai` | Dữ liệu đã bị lần chạy trước sửa | Gọi `POST /api/reset` rồi chạy lại |
+| `res.status()` là `404` | Đường dẫn API sai | Xem mục Bề mặt API trong `spec.md` |
 | `res.status()` là `401` | Cần đăng nhập | Phần dưới |
 
 ### Tái dùng token, không đăng nhập lại 200 lần
@@ -137,29 +137,27 @@ Ba điều đáng nhớ khi làm việc với token:
 
 Đây là bug mà UI test không bao giờ thấy, vì giao diện ẩn nút Sửa sau khi đơn đã xác nhận.
 
-Mở `spec.md` mục `BR-07`:
+Mở `spec.md` mục `BR-10`:
 
-> Đơn ở trạng thái `CONFIRMED` không được sửa. Mọi yêu cầu sửa phải bị từ chối.
+> Học viên có Loại khác Thường thì không xoá được khỏi lớp. Mọi yêu cầu xoá phải bị từ chối.
 
 Viết test:
 
 ```js
-test('BR-07: đơn đã xác nhận thì KHÔNG sửa được', async ({ request }) => {
-  // dựng: tạo đơn rồi xác nhận
-  const tao = await request.post('/api/orders', {
-    data: { hocVienId: 'HV02', items: [{ khoaHocId: 'KH01', soSuat: 1 }] },
+test('BR-10: học viên Học lại thì KHÔNG xoá được khỏi lớp', async ({ request }) => {
+  // dựng: đưa một ghi danh sang loại Học lại
+  await request.post('/api/reset');
+  const dongBo = await request.post('/api/dong-bo-hoc-lai', {
+    data: { hocVienId: 'HV01' },
   });
-  const don = await tao.json();
+  const gd = (await dongBo.json()).data;
+  expect(gd.type).toBe('RETOOK');
 
-  await request.post(`/api/orders/${don.id}/confirm`);
+  // hành động: thử xoá
+  const xoa = await request.delete(`/api/ghi-danh/${gd.id}`);
 
-  // hành động: thử sửa
-  const sua = await request.patch(`/api/orders/${don.id}`, {
-    data: { items: [{ khoaHocId: 'KH01', soSuat: 99 }] },
-  });
-
-  // oracle: BR-07 nói phải bị từ chối
-  expect(sua.status()).toBeGreaterThanOrEqual(400);
+  // oracle: BR-10 nói phải bị từ chối
+  expect(xoa.status()).toBeGreaterThanOrEqual(400);
 });
 ```
 
@@ -195,9 +193,9 @@ Khai bản đồ tên trong `.agent/config/anh-xa-luu-tru.json`:
 {
   "moTa": "Một trường, ba tên gọi. Thiếu bảng này thì mỗi lần so lại phải đoán.",
   "truong": {
-    "giamGia": { "ui": "giam-gia", "api": "giamGia", "luuTru": "discount_amount" },
-    "tongTien": { "ui": "tong-tien", "api": "tongTien", "luuTru": "total_amount" },
-    "phiDichVu": { "ui": "phi-dich-vu", "api": "phiDichVu", "luuTru": "service_fee" }
+    "ketThuc": { "ui": "thoi-han", "api": "ketThuc", "luuTru": "duration_end" },
+    "giaHan": { "ui": "gia-han", "api": "giaHan", "luuTru": "extended_days" },
+    "ngayHetHan": { "ui": "ngay-het-han", "api": "ngayHetHan", "luuTru": "expire_date" }
   }
 }
 ```
@@ -284,7 +282,7 @@ node scripts/qa/doi-chieu-luu-tru.js mau/ui-khop.json mau/lt-khop.json     # →
 
 # Ca phải CHẶN — bug thứ hai của app thực hành
 node scripts/qa/doi-chieu-luu-tru.js mau/ui-lech.json mau/lt-lech.json     # → ✗, mã 1
-#   giamGia: màn hình 8000 · tầng lưu trữ 8750 ⇒ lỗi tầng HIỂN THỊ
+#   ngayHetHan: màn hình 2026-07-31 · tầng lưu trữ 2026-08-31 ⇒ lỗi tầng HIỂN THỊ
 
 # Ca phải báo KHÔNG ĐO ĐƯỢC — xoá một trường khỏi file lưu trữ
 node scripts/qa/doi-chieu-luu-tru.js mau/ui-khop.json mau/lt-thieu.json    # → ?, mã 2

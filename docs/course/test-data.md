@@ -18,7 +18,7 @@ là trạng thái test của bạn cần. Test đỏ, và đỏ không phải v�
 
 | | |
 |---|---|
-| **Bạn đang khổ vì** | Test đang dùng khách `HV02` có sẵn trên môi trường. Ai đó sửa `HV02` là test đỏ, mà đỏ không phải vì sản phẩm sai. |
+| **Bạn đang khổ vì** | Test đang dùng học viên `HV01` có sẵn trên môi trường. Ai đó đổi nhóm lớp mới của `HV01` là test đỏ, mà đỏ không phải vì sản phẩm sai. |
 | **Bài này bạn gõ gì** | Một factory tạo dữ liệu qua API, đặt tiền tố nhận diện được, và dọn sạch sau lượt chạy. |
 | **Xong thì được gì** | Test chạy được trên môi trường vừa reset, chạy song song không đụng nhau, và không để rác lại. |
 
@@ -27,11 +27,11 @@ là trạng thái test của bạn cần. Test đỏ, và đỏ không phải v�
 
 ## Bài này bạn sẽ làm gì
 
-Test của Bài 4 dùng khách `HV02` có sẵn trên app. Nó chạy được, cho tới khi một trong ba chuyện xảy ra:
+Test của Bài 4 dùng học viên `HV01` có sẵn trên app. Nó chạy được, cho tới khi một trong ba chuyện xảy ra:
 
-- Ai đó sửa hạng của `HV02` từ Bạc sang Vàng. Test đỏ, mà sản phẩm không sai.
-- Môi trường được reset. `HV02` biến mất. Test đỏ vì không tìm thấy dữ liệu.
-- Hai test cùng chạy, cùng sửa `HV02`. Một trong hai đỏ, và đỏ lúc được lúc không.
+- Ai đó xếp `HV01` vào thêm một lớp mới. Hạn mới đổi theo, test đỏ, mà sản phẩm không sai.
+- Môi trường được reset. Đơn học lại của `HV01` biến mất. Test đỏ vì không tìm thấy dữ liệu.
+- Hai test cùng chạy, cùng đồng bộ `HV01`. Một trong hai đỏ, và đỏ lúc được lúc không.
 
 Cả ba đều là test đỏ **không phải vì sản phẩm sai**. Đó là loại đỏ tệ nhất, vì nó dạy người ta thói
 quen bỏ qua màu đỏ.
@@ -50,7 +50,7 @@ Bốn việc:
 | Cách làm | Hỏng thế nào | Dấu hiệu nhận ra |
 |---|---|---|
 | Dùng bản ghi có sẵn trên môi trường | Người khác sửa là test đỏ | Test đỏ sau khi bạn không đụng gì vào code |
-| Gắn cứng id (`HV02`, `order_1043`) | Môi trường reset là hỏng | Test chạy được trên máy bạn, đỏ trên CI |
+| Gắn cứng id (`HV01`, `GD001`) | Môi trường reset là hỏng | Test chạy được trên máy bạn, đỏ trên CI |
 | Nhiều test dùng chung một bản ghi | Chạy song song thì đụng nhau | Đỏ lúc được lúc không, chạy lại thì xanh |
 
 Cách sửa cho cả ba là một: **mỗi test tự dựng dữ liệu của nó**.
@@ -80,27 +80,35 @@ function nhan(maTask, viec) {
   return `${TIEN_TO} ${maTask} ${viec}`;
 }
 
-async function taoHocVien(request, { maTask, hang = 'BAC' }) {
-  const res = await request.post('/api/students', {
-    data: { ten: nhan(maTask, 'khach'), hang: hang },
+async function taoHocVien(request, { maTask }) {
+  const res = await request.post('/api/hoc-vien', {
+    data: { ten: nhan(maTask, 'hoc-vien') },
   });
   if (!res.ok()) {
     throw new Error(`Tạo học viên hỏng: HTTP ${res.status()} — ${await res.text()}`);
   }
-  return res.json();
+  return (await res.json()).data;
 }
 
-async function taoDon(request, { maTask, hocVienId, khoaHocId, soSuat = 1 }) {
-  const res = await request.post('/api/orders', {
-    data: { hocVienId, items: [{ khoaHocId, soSuat }], ghiChu: nhan(maTask, 'don') },
+async function taoLop(request, { maTask, loai = 'LESSON', batDau, ketThuc }) {
+  const res = await request.post('/api/lop', {
+    data: { ten: nhan(maTask, 'lop'), loai, batDau, ketThuc },
   });
   if (!res.ok()) {
-    throw new Error(`Tạo đơn hỏng: HTTP ${res.status()} — ${await res.text()}`);
+    throw new Error(`Tạo lớp hỏng: HTTP ${res.status()} — ${await res.text()}`);
   }
-  return res.json();
+  return (await res.json()).data;
 }
 
-module.exports = { TIEN_TO, nhan, taoHocVien, taoDon };
+async function ghiDanhVaoLop(request, { hocVienId, lopMa }) {
+  const res = await request.post('/api/ghi-danh', { data: { hocVienId, lopMa } });
+  if (!res.ok()) {
+    throw new Error(`Ghi danh hỏng: HTTP ${res.status()} — ${await res.text()}`);
+  }
+  return (await res.json()).data;
+}
+
+module.exports = { TIEN_TO, nhan, taoHocVien, taoLop, ghiDanhVaoLop };
 ```
 
 Ba điểm đáng để ý, vì chúng lặp lại ở mọi factory bạn viết sau này:
@@ -115,7 +123,8 @@ hợp cụ thể của chuyện này, và nó dẫn tới một bug không tồn
 
 **Hỏng thì ném lỗi kèm nội dung phản hồi.** Factory trả về `undefined` im lặng thì test đỏ ở dòng
 khác, và bạn mất mười lăm phút tìm ngược. Câu `HTTP 400 — {"loi":"hang không hợp lệ"}` tiết kiệm đúng
-mười lăm phút đó.
+mười lăm phút đó. Câu `HTTP 400 — {"error":"batDau phải có dạng YYYY-MM-DD"}` tiết kiệm đúng mười
+lăm phút đó.
 
 Đổi test Bài 4 sang dùng factory:
 
@@ -123,28 +132,31 @@ mười lăm phút đó.
 const { test, expect } = require('@playwright/test');
 const { taoHocVien } = require('../support/factory');
 
-test('tạo đơn cho học viên chương trình Pro, 2 sản phẩm KH01', async ({ page, request }) => {
-  const khach = await taoHocVien(request, { maTask: 'DEMO-1', hang: 'BAC' });
+test('cắt hạn lớp cũ theo lớp chính của chính lượt chạy này', async ({ page, request }) => {
+  const hv = await taoHocVien(request, { maTask: 'DEMO-1' });
+  const lopCu = await taoLop(request, { maTask: 'DEMO-1', batDau: '2026-03-01', ketThuc: '2026-07-31' });
+
+  await ghiDanhVaoLop(request, { hocVienId: hv.id, lopMa: lopCu.ma });
 
   await page.goto('/');
-  await page.getByLabel('Học viên').selectOption(khach.id);
+  await page.getByLabel('Học viên').selectOption(hv.id);
   // ... phần còn lại giữ nguyên
 });
 ```
 
-**Bạn sẽ thấy** test chạy như cũ, nhưng giờ nó không phụ thuộc vào `HV02` nữa. Chạy hai lần liên
-tiếp cũng được, vì mỗi lần nó tạo một khách mới.
+**Bạn sẽ thấy** test chạy như cũ, nhưng giờ nó không phụ thuộc vào `HV01` nữa. Chạy hai lần liên
+tiếp cũng được, vì mỗi lần nó tạo một học viên và một lớp mới.
 
 | Thấy khác | Nghĩa là | Làm gì |
 |---|---|---|
 | `Tạo học viên hỏng: HTTP 404` | Endpoint sai đường dẫn | Mở `spec.md` phần API, so lại |
-| `selectOption` timeout | Khách vừa tạo chưa hiện trong danh sách | Trang đang cache. Tải lại trang **sau** khi tạo |
-| Mỗi lần chạy lại thêm một khách rác | Chưa có janitor | Việc 3 |
+| `selectOption` timeout | Học viên vừa tạo chưa hiện trong danh sách | Trang đang cache. Tải lại trang **sau** khi tạo |
+| Mỗi lần chạy lại thêm một học viên rác | Chưa có janitor | Việc 3 |
 
 ## Việc 3 — Dọn sạch, và ba lớp an toàn (35 phút)
 
-Dòng cuối bảng trên là vấn đề thật. Chạy bộ test 50 lần là môi trường có 50 khách rác. Sau một tháng
-thì danh sách học viên của môi trường thử nghiệm không ai nhìn được nữa.
+Dòng cuối bảng trên là vấn đề thật. Chạy bộ test 50 lần là môi trường có 50 học viên rác cùng 50 lớp
+rác. Sau một tháng thì danh sách lớp của môi trường thử nghiệm không ai nhìn được nữa.
 
 Nhưng dọn dẹp là thao tác **xoá**, và xoá là thao tác không lùi được. Nên nó cần lớp bảo vệ.
 
@@ -170,13 +182,13 @@ async function don(request, { maTask, baseURL }) {
   }
 
   const nhanCanXoa = `${TIEN_TO} ${maTask}`;
-  const res = await request.get('/api/students');
-  const dsKhach = await res.json();
+  const res = await request.get('/api/hoc-vien');
+  const dsHocVien = (await res.json()).data;
 
   let daXoa = 0;
-  for (const kh of dsKhach) {
-    if (!kh.ten || !kh.ten.startsWith(nhanCanXoa)) continue;
-    await request.delete(`/api/students/${kh.id}`);
+  for (const hv of dsHocVien) {
+    if (!hv.ten || !hv.ten.startsWith(nhanCanXoa)) continue;
+    await request.delete(`/api/hoc-vien/${hv.id}`);
     daXoa++;
   }
   return daXoa;
@@ -237,19 +249,19 @@ function nhan(maTask, viec) {
 }
 ```
 
-Giờ tên bản ghi là `IT test DEMO-1 20260908143012 khach`. Nhìn là biết task nào, lượt nào, việc gì.
+Giờ tên bản ghi là `IT test DEMO-1 20260908143012 hoc-vien`. Nhìn là biết task nào, lượt nào, việc gì.
 
 Ba loại giá trị và cách xử lý khác nhau:
 
 | Loại | Nên làm gì | Vì sao |
 |---|---|---|
-| Tên, mã, email | Tựa ngẫu nhiên có mã lượt | Không trùng, mà truy được |
-| Số dùng để tính tiền | **Cố định**, chọn theo `spec.md` | Ngẫu nhiên thì kết quả mong đợi cũng phải tính động, và bạn sẽ tính bằng chính công thức của sản phẩm |
-| Ngày tháng | Cố định, hoặc tính từ một mốc khai rõ | Ngày "hôm nay" làm test đỏ vào cuối tháng, cuối năm, hoặc ngày 29/2 |
+| Tên, mã, nhãn | Tựa ngẫu nhiên có mã lượt | Không trùng, mà truy được |
+| Ngày dùng để tính hạn | **Cố định**, chọn theo `spec.md` | Ngẫu nhiên thì kết quả mong đợi cũng phải tính động, và bạn sẽ tính bằng chính công thức của sản phẩm |
+| Ngày "hôm nay" | Không dùng trực tiếp. Khai một mốc rõ rồi tính từ đó | Ngày "hôm nay" làm test đỏ vào cuối tháng, cuối năm, hoặc ngày 29/2 |
 
-Dòng giữa là chỗ dễ sai nhất, và nó đáng để nói kỹ. Nếu số suất ngẫu nhiên thì bạn không viết được
-kết quả mong đợi cố định, nên bạn sẽ viết một hàm tính kết quả mong đợi. Hàm đó sẽ giống hệt công
-thức trong sản phẩm. Và lúc đó test của bạn đang so sản phẩm với chính nó.
+Dòng giữa là chỗ dễ sai nhất, và nó đáng để nói kỹ. Nếu ngày bắt đầu lớp mới sinh ngẫu nhiên thì bạn
+không viết được hạn mong đợi cố định, nên bạn sẽ viết một hàm tính hạn mong đợi. Hàm đó sẽ giống hệt
+công thức trong sản phẩm. Và lúc đó test của bạn đang so sản phẩm với chính nó.
 
 Đó gọi là **tautology**, và Bài 13 dành cả bài cho nó, vì nó là cách hỏng âm thầm nhất trong nghề
 này: test luôn xanh, và không chứng minh được gì.
@@ -320,6 +332,6 @@ chạy janitor. Nó phải **từ chối**. Nếu nó chạy thì lớp an toàn
 
 ## Bài sau
 
-Bài 8 đi tiếp một bậc. Factory tạo được dữ liệu, nhưng testcase thường không nói *"cần một khách hạng
-Bạc"*, nó nói *"cần một đơn hàng ở trạng thái Pending"*. Trạng thái thì không tạo thẳng được, phải
+Bài 8 đi tiếp một bậc. Factory tạo được dữ liệu, nhưng testcase thường không nói *"cần một học viên và
+một lớp"*, nó nói *"cần một học viên đang ở loại Học lại"*. Trạng thái thì không tạo thẳng được, phải
 đi qua vài bước. Đó là chỗ fixture xuất hiện.

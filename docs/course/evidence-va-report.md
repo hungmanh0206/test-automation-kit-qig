@@ -177,17 +177,17 @@ Dùng trong test:
 const { test, expect } = require('../support/fixtures');
 const { chupCoHighlight } = require('../support/evidence');
 
-test('TC_012 [Calc] giảm giá chương trình Pro', async ({ page, duLieu }, testInfo) => {
-  const kh = await duLieu.khachHang({ hang: 'Bạc' });
-  await page.goto('/orders/create');
+test('TC_012 [Calc] hạn mới khi có lớp Foundation sớm hơn', async ({ page, duLieu }, testInfo) => {
+  const hv = await duLieu.hocVienHocLai();
+  await page.goto('/classes/CFA01/students');
   // … thao tác …
 
   const anh = `outputs/demo/tasks/${process.env.MA_TASK}/evidence/TC_012.png`;
   await chupCoHighlight(page, {
     file: anh,
     khoanh: [
-      { selector: '#tong-ket [data-field=giam-gia]', nhan: 'Giảm giá 9.000 (mong đợi)' },
-      { selector: '#tong-ket [data-field=tong-cong]', nhan: 'Tổng cộng 321.000 (mong đợi)' }
+      { selector: '#khoi-dong-bo [data-field=lop-moc]', nhan: 'Lớp mốc CFA02 (mong đợi)' },
+      { selector: '#khoi-dong-bo [data-field=han-moi]', nhan: 'Hạn mới 31/08/2026 (mong đợi)' }
     ],
     maskSelector: ['[data-field=sdt]', 'input[name=email]']
   });
@@ -296,14 +296,14 @@ const { buoc } = require('../support/video');
 
 test.use({ video: { mode: 'on', size: { width: 1280, height: 720 } } });
 
-test('TC_030 [E2E] tick sản phẩm → thu gọn → mở lại: tick còn nguyên', async ({ page }, testInfo) => {
-  await page.goto('/orders/create');
+test('TC_030 [E2E] tick học viên → thu gọn → mở lại: tick còn nguyên', async ({ page }, testInfo) => {
+  await page.goto('/classes/CFA01/students');
 
-  await buoc(page, 'Bước 1: tick chọn 2 sản phẩm');
-  await page.getByRole('row').filter({ hasText: 'SP_A' }).getByRole('checkbox').check();
-  await page.getByRole('row').filter({ hasText: 'SP_B' }).getByRole('checkbox').check();
+  await buoc(page, 'Bước 1: tick chọn 2 học viên');
+  await page.getByRole('row').filter({ hasText: 'HV_HOCLAI_01' }).getByRole('checkbox').check();
+  await page.getByRole('row').filter({ hasText: 'HV_HOCLAI_02' }).getByRole('checkbox').check();
 
-  await buoc(page, 'Bước 2: thu gọn khối Danh sách sản phẩm');
+  await buoc(page, 'Bước 2: thu gọn khối Danh sách học viên');
   await page.getByRole('button', { name: 'Thu gọn', exact: true }).click();
 
   await buoc(page, 'Bước 3: mở lại khối — mong đợi: 2 tick CÒN NGUYÊN');

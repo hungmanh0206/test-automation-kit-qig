@@ -180,7 +180,7 @@ Làm hết tài liệu này, bạn có thể:
 ✅ Viết automation cho cả giao diện lẫn API, và biết khi nào nên dùng cái nào
 ✅ Chụp ảnh có khoanh đỏ, quay video từng bước, che dữ liệu khách, rồi ráp thành report đọc được
 ✅ Đi từ requirement ra test scenario trước khi mở trình soạn thảo
-✅ Đo độ phủ theo chiều và theo rủi ro, thay vì đếm số suất testcase
+✅ Đo độ phủ theo chiều và theo rủi ro, thay vì đếm số lượng testcase
 ✅ Phân loại một lượt fail trước khi tạo bug: sản phẩm, test, dữ liệu, hay môi trường
 ✅ Đưa testcase và kết quả lên hệ quản lý test dùng chung cho cả team
 ✅ Dựng CI chạy gate mỗi lần push, và regression hằng đêm
@@ -235,7 +235,7 @@ Playwright vẫn quan trọng. AI Agent cũng quan trọng. Nhưng cả hai đ�
 
 ## App thực hành: bạn có gì để test ngay từ Bài 1
 
-Cả tài liệu thực hành trên một app duy nhất. [Cổng đăng ký khoá học](course/assets/app-thuc-hanh/README.md), Node
+Cả tài liệu thực hành trên một app duy nhất. [Vận hành lớp học](course/assets/app-thuc-hanh/README.md), Node
 thuần, `node server.js` là chạy, không cài gì.
 
 Nó có đúng 3 bug cài sẵn, cố ý, mỗi bug đại diện một loại điểm mù:
@@ -417,7 +417,7 @@ testcase automation đầu tiên.
 
 *Có gì trong tay: Playwright đã cài, `playwright.config.js` đã cấu hình.*
 
-- Viết test đầu tiên cho luồng tạo đơn hàng trên app thực hành
+- Viết test đầu tiên cho luồng cắt hạn học lại trên app thực hành
 - **Thực hành:** làm nó đỏ có chủ đích trước, rồi mới làm cho xanh, để biết nó thật sự đang kiểm
 - Ba cách viết assertion, và cách nào chứng minh được nhiều nhất
 - Đọc một lượt chạy đỏ: đọc từ dòng nào, bỏ qua dòng nào
@@ -430,7 +430,7 @@ testcase automation đầu tiên.
 
 > **Xong phần này bạn có:** một Automation Test Kit có cấu trúc đủ để sử dụng trong dự án thật
 
-Bạn giải quyết từng vấn đề xuất hiện khi số suất testcase bắt đầu tăng: configuration, test data,
+Bạn giải quyết từng vấn đề xuất hiện khi số lượng testcase bắt đầu tăng: configuration, test data,
 fixture, FE, API, evidence và reporting.
 
 ### [Bài 5 — Khi một testcase bắt đầu trở thành một project](course/cau-truc-project.md) *(1.5h · dễ)*
@@ -464,7 +464,7 @@ fixture, FE, API, evidence và reporting.
 
 *Có gì trong tay: factory tạo được dữ liệu, mỗi test vẫn tự gọi tay.*
 
-- Testcase ghi *"Precondition: đơn hàng ở trạng thái Pending"*, câu hỏi đúng không phải selector của nút Approve mà là làm sao dựng được trạng thái đó một cách ổn định
+- Testcase ghi *"Precondition: học viên đang ở loại Học lại"*, câu hỏi đúng không phải selector của nút Gia hạn mà là làm sao dựng được trạng thái đó một cách ổn định
 - Fixture, hook, cleanup, setup contract: bốn khái niệm, mỗi cái một ví dụ chạy được
 - Bốn cách dựng tiền điều kiện xếp theo thứ tự ưu tiên, và vì sao dựng bằng database là cách tệ nhất
 - **Bug ma:** khi tiền điều kiện dựng sai, sản phẩm xử lý sai theo, và bạn log một bug không tồn tại

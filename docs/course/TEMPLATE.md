@@ -77,7 +77,7 @@ Nên bảng thuật ngữ nằm **sau các Việc**, và mỗi dòng nên trỏ 
 
 | Từ | Nghĩa gọn | Bạn vừa gặp nó ở đâu |
 |---|---|---|
-| **Test Data** | Dữ liệu bạn nhập vào trước khi chạy | Việc 1, lúc chọn khách `KH02` |
+| **Test Data** | Dữ liệu bạn nhập vào trước khi chạy | Việc 1, lúc chọn học viên `HV01` |
 | **Actual Result** | Con số sản phẩm trả về | Việc 1, con số `515.000` |
 
 Cột thứ ba là cột làm khối này khác một từ điển.

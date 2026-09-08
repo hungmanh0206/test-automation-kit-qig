@@ -89,7 +89,7 @@ Dùng:
 ```js
 const { quet } = require('../support/a11y');
 
-test('tạo đơn cho học viên chương trình Pro', async ({ page }) => {
+test('cắt hạn lớp cũ của HV01', async ({ page }) => {
   await page.goto('/');
   // ... các bước có sẵn của Bài 4
 

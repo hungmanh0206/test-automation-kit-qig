@@ -43,7 +43,7 @@ Ba việc:
 | Một API mất bao lâu để trả lời? | Đo điểm cuối | Gọi lặp, lấy phân vị |
 | 200 người cùng lúc thì sao? | Đo tải | Kịch bản tải |
 
-Chọn nhầm loại thì con số ra vô nghĩa. Ví dụ hay gặp: có người báo "trang đơn hàng chậm", bạn chạy
+Chọn nhầm loại thì con số ra vô nghĩa. Ví dụ hay gặp: có người báo "màn học viên trong lớp chậm", bạn chạy
 kịch bản tải 500 người dùng ảo, kết quả đẹp, và kết luận không có vấn đề. Trong khi vấn đề thật là
 trang tải một tệp JavaScript 4MB, và nó chậm **kể cả khi chỉ có một người dùng**.
 
@@ -131,8 +131,8 @@ async function motNguoi(ctx) {
   const doTre = [];
   for (let i = 0; i < SO_LUOT_MOI_NGUOI; i++) {
     const t0 = Date.now();
-    const res = await ctx.post('/api/quote', {
-      data: { hocVienId: 'HV02', items: [{ khoaHocId: 'KH01', soSuat: 2 }] },
+    const res = await ctx.post('/api/tinh-han', {
+      data: { hocVienId: 'HV01' },
     });
     doTre.push({ ms: Date.now() - t0, ok: res.ok() });
   }

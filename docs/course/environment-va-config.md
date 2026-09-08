@@ -61,7 +61,7 @@ Bốn nhóm giá trị luôn phải tách ra, và lý do khác nhau:
 | Địa chỉ | `baseURL`, endpoint API | Mỗi môi trường một địa chỉ, mỗi dự án một bộ |
 | Danh tính | tài khoản, mật khẩu, token | Là bí mật. Không được nằm trong repo |
 | Nơi ghi kết quả | thư mục output | Mỗi task một thư mục, không đè lên nhau |
-| Hằng số nghiệp vụ | mốc miễn phí dịch vụ | Mỗi sản phẩm một luật |
+| Hằng số nghiệp vụ | trần số ngày gia hạn | Mỗi sản phẩm một luật |
 
 Nhóm cuối hay bị bỏ quên. Nó không trông giống "cấu hình", nó trông giống một con số bình thường
 trong test. Nhưng mang bộ test sang sản phẩm khác thì nó là thứ sai đầu tiên, và sai im lặng.
@@ -383,6 +383,6 @@ Không sửa một dòng testcase nào. Nếu bạn phải sửa thì còn một
 
 ## Bài sau
 
-Bài 7 hỏi tiếp: cấu hình tách rồi, còn dữ liệu test thì sao. Test của bạn đang dùng khách `HV02` có
-sẵn trên app. Chuyện gì xảy ra khi hai test cùng sửa `HV02`, hoặc khi môi trường được reset và
-`HV02` biến mất.
+Bài 7 hỏi tiếp: cấu hình tách rồi, còn dữ liệu test thì sao. Test của bạn đang dùng học viên `HV01` có
+sẵn trên app. Chuyện gì xảy ra khi hai test cùng đồng bộ `HV01`, hoặc khi môi trường được reset và
+đơn học lại của `HV01` biến mất.

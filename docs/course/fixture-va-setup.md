@@ -42,13 +42,14 @@ Nhìn lại `TC_015`:
 
 ```js
 test('TC_015 …', async ({ page }) => {
-  await page.getByLabel('Tìm học viên').fill('KH_BAC_01');   // ← mã dữ liệu GÁN CỨNG
+  await page.getByLabel('Tìm học viên').fill('HV_HOCLAI_01');   // ← mã dữ liệu GÁN CỨNG
   // …
 });
 ```
 
-Test này chỉ chạy được nếu `KH_BAC_01` **tồn tại** và đang chương trình Pro. Ai làm điều đó? Hiện tại: không ai.
-Nó chạy được vì tình cờ dữ liệu đó có trên môi trường. Và nó sẽ đỏ vào ngày ai đó xoá hoặc đổi chương trình đó.
+Test này chỉ chạy được nếu `HV_HOCLAI_01` **tồn tại** và đang có đơn học lại chờ đồng bộ. Ai làm điều đó?
+Hiện tại: không ai. Nó chạy được vì tình cờ dữ liệu đó có trên môi trường. Và nó sẽ đỏ vào ngày ai đó
+xoá học viên đó, hoặc xếp thêm cho họ một lớp mới.
 
 Test phụ thuộc dữ liệu tình cờ không phải test. Nó là một quan sát may mắn.
 
@@ -123,39 +124,38 @@ function tenDuyNhat(mo_ta) {
 }
 
 /**
- * Tạo học viên ở hạng cho trước.
+ * Tạo một học viên.
  * @param {import('@playwright/test').APIRequestContext} api
  */
-async function taoHocVienHang(api, { hang = 'Thường' } = {}) {
-  const body = { ten: tenDuyNhat('KH'), hang, sdt: '0900000000' };
-  const r = await api.post('/api/students', { data: body });
+async function taoHocVien(api) {
+  const r = await api.post('/api/hoc-vien', { data: { ten: tenDuyNhat('hoc-vien') } });
   if (!r.ok()) {
     // Ném lỗi RÕ RÀNG: đây là setup_failure, không phải bug sản phẩm (Bài 17).
     throw new Error(`SETUP: tạo học viên thất bại ${r.status()} — ${await r.text()}`);
   }
-  return r.json();
+  return (await r.json()).data;
 }
 
-/** Tạo đơn nháp có sẵn dòng sản phẩm. */
-async function taoDonNhap(api, { khachHangId, khoaHocId, soSuat = 1 } = {}) {
-  const r = await api.post('/api/orders', {
-    data: { khachHangId, dong: [{ khoaHocId, soSuat }], trangThai: 'NHAP' }
+/** Tạo một lớp. `loai` là LESSON, FOUNDATION hoặc REVISION. */
+async function taoLop(api, { loai = 'LESSON', batDau, ketThuc } = {}) {
+  const r = await api.post('/api/lop', {
+    data: { ten: tenDuyNhat('lop'), loai, batDau, ketThuc }
   });
-  if (!r.ok()) throw new Error(`SETUP: tạo đơn nháp thất bại ${r.status()} — ${await r.text()}`);
-  return r.json();
+  if (!r.ok()) throw new Error(`SETUP: tạo lớp thất bại ${r.status()} — ${await r.text()}`);
+  return (await r.json()).data;
 }
 
 /** Dọn: xoá qua API, đúng luồng. Không throw — dọn thất bại không được làm test đỏ. */
-async function don(api, { customers = [], orders = [] } = {}) {
-  for (const id of orders) {
-    try { await api.delete(`/api/orders/${id}`); } catch (e) { console.warn('dọn đơn ' + id + ' lỗi'); }
+async function don(api, { hocVien = [], lop = [] } = {}) {
+  for (const id of hocVien) {
+    try { await api.delete(`/api/hoc-vien/${id}`); } catch (e) { console.warn('dọn HV ' + id + ' lỗi'); }
   }
-  for (const id of customers) {
-    try { await api.delete(`/api/students/${id}`); } catch (e) { console.warn('dọn KH ' + id + ' lỗi'); }
+  for (const ma of lop) {
+    try { await api.delete(`/api/lop/${ma}`); } catch (e) { console.warn('dọn lớp ' + ma + ' lỗi'); }
   }
 }
 
-module.exports = { TIEN_TO, tenDuyNhat, taoHocVienHang, taoDonNhap, don };
+module.exports = { TIEN_TO, tenDuyNhat, taoHocVien, taoLop, don };
 ```
 
 Bốn quyết định trong đoạn trên, mỗi cái chặn một vấn đề:
@@ -173,15 +173,16 @@ Bốn quyết định trong đoạn trên, mỗi cái chặn một vấn đề:
 
 ```js
 const base = require('@playwright/test');
-const { taoHocVienHang, taoDonNhap, don } = require('./setup/factory');
+const { taoHocVien, taoLop, don } = require('./setup/factory');
 
 /*
- * Fixture bọc factory lại: test chỉ khai "tôi cần học viên chương trình Pro", không cần biết dựng thế nào.
- * Phần dọn chạy SAU mỗi test, kể cả khi test đỏ — đó là lý do dùng fixture chứ không gọi factory trực tiếp.
+ * Fixture bọc factory lại: test chỉ khai "tôi cần một học viên đang ở loại Học lại", không cần biết
+ * dựng thế nào. Phần dọn chạy SAU mỗi test, kể cả khi test đỏ — đó là lý do dùng fixture chứ không
+ * gọi factory trực tiếp.
  */
 const test = base.test.extend({
   duLieu: async ({ request }, use) => {
-    const daTao = { customers: [], orders: [] };
+    const daTao = { hocVien: [], lop: [] };
 
     const api = {
       async khachHang(opts) {
@@ -211,13 +212,13 @@ Test giờ đọc rất gọn, và không còn phụ thuộc dữ liệu tình c
 ```js
 const { test, expect } = require('../support/fixtures');
 
-test('TC_015 [E2E] tạo đơn → lưu nháp → chi tiết, giá trị còn nguyên', async ({ page, duLieu }) => {
+test('TC_015 [E2E] đồng bộ → bảng tải lại, giá trị còn nguyên', async ({ page, duLieu }) => {
   // Tiền điều kiện dựng BẰNG MÁY, không giả định dữ liệu có sẵn
-  const kh = await duLieu.khachHang({ hang: 'Bạc' });
+  const hv = await duLieu.hocVienHocLai();
 
-  await page.goto('/orders/create');
-  await page.getByLabel('Tìm học viên').fill(kh.ma);
-  await page.getByRole('option', { name: kh.ma, exact: true }).click();
+  await page.goto('/classes/CFA01/students');
+  await page.getByLabel('Tìm học viên').fill(hv.id);
+  await page.getByRole('option', { name: hv.id, exact: true }).click();
   // … phần còn lại như Bài 9
 });
 ```
@@ -245,14 +246,14 @@ capability"* chung chung cũng vô dụng, phải ghi thiếu hook nào, thiếu
 Với mỗi tiền điều kiện, ghi bốn thứ. Đặt trong `requirements/setup-strategy.md`:
 
 ```markdown
-## PRE-01 — Học viên chương trình Pro
+## PRE-01 — Học viên đang ở loại Học lại
 
 | | |
 |---|---|
-| **Loại** | Dữ liệu nghiệp vụ |
-| **Cách dựng** | Factory — `POST /api/students` với `hang: "Bạc"` |
-| **Verify** | Đọc lại `GET /api/students/{id}`, khẳng định `hang === "Bạc"` |
-| **Dọn** | `DELETE /api/students/{id}` sau mỗi test (fixture tự chạy) |
+| **Loại** | Trạng thái nghiệp vụ |
+| **Cách dựng** | Factory dựng học viên, lớp cũ, lớp mới; rồi `POST /api/don-hoc-lai` và `POST /api/dong-bo-hoc-lai` |
+| **Verify** | Đọc lại `GET /api/lop/{ma}/hoc-vien`, khẳng định `type === "RETOOK"` |
+| **Dọn** | `DELETE /api/hoc-vien/{id}` sau mỗi test (fixture tự chạy) |
 | **Sẵn sàng** | Ready |
 
 ## PRE-02 — Đơn đã thanh toán rồi bị hủy
@@ -313,7 +314,7 @@ async function main() {
     process.exit(2);
   }
 
-  const r = await fetch(`${base}/api/students?q=${encodeURIComponent(TIEN_TO)}`, {
+  const r = await fetch(`${base}/api/hoc-vien?q=${encodeURIComponent(TIEN_TO)}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   if (!r.ok) { console.error('[janitor] KHÔNG ĐO ĐƯỢC: API trả ' + r.status); process.exit(2); }
@@ -332,7 +333,7 @@ async function main() {
   }
   let ok = 0;
   for (const c of canDon) {
-    const d = await fetch(`${base}/api/students/${c.id}`,
+    const d = await fetch(`${base}/api/hoc-vien/${c.id}`,
       { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     if (d.ok) ok++;
   }

@@ -73,7 +73,7 @@ không phải vì mã nói thế.
   "impact": {
     "_thang": "1 = thẩm mỹ · 2 = bất tiện · 3 = sai dữ liệu · 4 = sai tiền hoặc chặn nghiệp vụ · 5 = mất dữ liệu hoặc lộ dữ liệu",
     "modules": {
-      "Tạo đơn hàng": 4,
+      "Đồng bộ học lại": 4,
       "Thanh toán": 5,
       "Danh mục sản phẩm": 3,
       "Báo cáo": 2,
@@ -93,7 +93,7 @@ không phải vì mã nói thế.
     "_note": "Khi chưa có lịch sử bug, Likelihood suy từ các tín hiệu THAY THẾ dưới đây. Chúng là PHỎNG ĐOÁN CÓ CƠ SỞ, không phải dữ liệu — nên band ở chế độ cold start chỉ CẢNH BÁO, không chặn.",
     "tinHieu": {
       "moiViet":        { "diem": 3, "giaiThich": "mã mới, chưa ai dùng thật" },
-      "duongTien":      { "diem": 3, "giaiThich": "có tính toán tiền hoặc số suất" },
+      "duongTien":      { "diem": 3, "giaiThich": "có tính toán tiền hoặc quyền truy cập" },
       "nhieuNhanh":     { "diem": 2, "giaiThich": "nhiều điều kiện, nhiều biến thể" },
       "phuThuocNgoai":  { "diem": 2, "giaiThich": "gọi hệ thống ngoài" },
       "suaNhieuLan":    { "diem": 2, "giaiThich": "git log cho thấy sửa nhiều lần gần đây" },
@@ -114,7 +114,7 @@ Năm tín hiệu thay thế, tất cả lấy được mà không cần lịch s
 | Tín hiệu | Lấy ở đâu | Vì sao liên quan |
 |---|---|---|
 | **Mới viết** | `git log --diff-filter=A` cho thư mục module | Mã chưa ai dùng thật thì chưa ai phát hiện lỗi |
-| **Đường tiền** | Đọc tài liệu: có công thức tính tiền/số suất không | Lỗi ở đây tốn tiền thật, và hay có lỗi làm tròn |
+| **Đường tiền** | Đọc tài liệu: có công thức tính tiền hoặc quyền truy cập không | Lỗi ở đây tốn tiền thật, hoặc lấy đi thứ khách đã mua |
 | **Nhiều nhánh** | Đếm điều kiện trong tài liệu (chương trình, loại đơn…) | Nhiều tổ hợp thì nhiều chỗ chưa ai thử |
 | **Phụ thuộc ngoài** | Có gọi hệ thống khác không | Điểm đứt thêm, và không kiểm soát được |
 | **Sửa nhiều lần** | `git log --oneline -- <đường/dẫn> \| wc -l` | Sửa nhiều thường là chưa ổn định |
@@ -269,7 +269,7 @@ process.exit(0);
 {
   "_note": "Tín hiệu thay thế cho Likelihood khi chưa có bug lịch sử. Khai theo module, tên PHẢI khớp cột Module của testcase. Tín hiệu hợp lệ khai ở risk_model.json/coldStart/tinHieu.",
   "modules": {
-    "Tạo đơn hàng": ["moiViet", "duongTien", "nhieuNhanh"],
+    "Đồng bộ học lại": ["moiViet", "duongTien", "nhieuNhanh"],
     "Thanh toán": ["duongTien", "phuThuocNgoai", "suaNhieuLan"],
     "Danh mục sản phẩm": ["onDinhLauNgay"],
     "Báo cáo": ["nhieuNhanh"],
@@ -464,8 +464,8 @@ Kiểm ba thứ:
 node -e "
 const fs=require('fs');const p='.agent/config/risk_model.json';
 const m=JSON.parse(fs.readFileSync(p,'utf8'));
-m.impact.modules['Order Creation'] = m.impact.modules['Tạo đơn hàng'];
-delete m.impact.modules['Tạo đơn hàng'];
+m.impact.modules['Retake Sync'] = m.impact.modules['Đồng bộ học lại'];
+delete m.impact.modules['Đồng bộ học lại'];
 fs.writeFileSync(p, JSON.stringify(m,null,2));
 "
 node scripts/qa/cham-rui-ro.js; echo "exit=$?"    # → 1, nêu NGHI LỆCH TÊN MODULE

@@ -17,7 +17,7 @@ hỏng khó thấy nhất, vì nó cho đúng cái tín hiệu mà một bộ te
 | | |
 |---|---|
 | **Bạn đang khổ vì** | Test mẫu của Playwright chạy xanh, nhưng nó kiểm trang example.com. Bạn chưa viết dòng nào cho app của mình. |
-| **Bài này bạn gõ gì** | Một test cho luồng tạo đơn hàng. Làm nó đỏ trước, rồi mới làm cho xanh. |
+| **Bài này bạn gõ gì** | Một test cho luồng cắt hạn học lại. Làm nó đỏ trước, rồi mới làm cho xanh. |
 | **Xong thì được gì** | Một test chạy thật, và quan trọng hơn: bằng chứng rằng nó thật sự đang kiểm chứ không chỉ chạy qua. |
 
 > Bài này có vài từ mới. Chúng được gọi tên ở **cuối bài**, sau khi bạn đã chạm vào chúng,
@@ -27,7 +27,7 @@ hỏng khó thấy nhất, vì nó cho đúng cái tín hiệu mà một bộ te
 
 Bốn việc:
 
-1. Viết test đầu tiên cho luồng tạo đơn hàng (35 phút).
+1. Viết test đầu tiên cho luồng cắt hạn học lại (35 phút).
 2. Làm nó đỏ có chủ đích, để chứng minh nó đang kiểm thật (20 phút).
 3. So ba cách viết assertion, chọn cách chứng minh được nhiều nhất (35 phút).
 4. Đọc một lượt chạy đỏ cho đúng cách (30 phút).
@@ -42,43 +42,41 @@ Mở app thực hành ở một cửa sổ terminal:
 node docs/course/assets/app-thuc-hanh/server.js
 ```
 
-Nó chạy ở `http://localhost:4010`. Mở trình duyệt xem qua một lượt: chọn học viên, chọn khoá học, bấm
-tạo đơn. Bạn đã làm việc này bằng tay ở Bài 1 rồi, giờ là lúc bảo máy làm.
+Nó chạy ở `http://localhost:4010`. Mở trình duyệt xem qua một lượt: chọn học viên, bấm Xem hạn mới.
+Bạn đã làm việc này bằng tay ở Bài 1 rồi, giờ là lúc bảo máy làm.
 
-Tạo `tests/e2e/tao-don-hang.spec.js`:
+Tạo `tests/e2e/cat-han-hoc-lai.spec.js`:
 
 ```js
 const { test, expect } = require('@playwright/test');
 
-test('tạo đơn cho học viên chương trình Pro, 2 sản phẩm KH01', async ({ page }) => {
+test('cắt hạn lớp cũ của HV01 theo lớp chính', async ({ page }) => {
   await page.goto('/');
 
-  await page.getByLabel('Học viên').selectOption('HV02');
-  await page.getByLabel('Khoá học').selectOption('KH01');
-  await page.getByLabel('Số suất').fill('2');
-  await page.getByRole('button', { name: 'Tạo đơn' }).click();
+  await page.getByLabel('Học viên').selectOption('HV01');
+  await page.getByRole('button', { name: 'Xem hạn mới' }).click();
 
-  await expect(page.getByTestId('tong-tien')).toHaveText('485.000');
+  await expect(page.getByTestId('han-moi')).toHaveText('31/08/2026');
 });
 ```
 
 Chạy:
 
 ```bash
-npx playwright test tests/e2e/tao-don-hang.spec.js
+npx playwright test tests/e2e/cat-han-hoc-lai.spec.js
 ```
 
 **Bạn sẽ thấy** test **đỏ**. Và đó là kết quả đúng.
 
 ```
 Error: expect(locator).toHaveText(expected)
-  Expected string: "485.000"
-  Received string: "544.000"
+  Expected string: "31/08/2026"
+  Received string: "30/06/2026"
 ```
 
-Chưa vội sửa. Đây là bug thứ nhất của app thực hành, cái bạn đã tìm ra bằng tay ở Bài 1: phí giao
-hàng đang so mốc trên số sau giảm giá thay vì số trước giảm giá. Số `485.000` không phải bạn đoán,
-nó tính từ [`spec.md`](assets/app-thuc-hanh/spec.md) mục `BR-04`.
+Chưa vội sửa. Đây là bug thứ nhất của app thực hành, cái bạn đã tìm ra bằng tay ở Bài 1: nó lấy lớp
+bắt đầu sớm nhất làm mốc, bất kể loại lớp. Ngày `31/08/2026` không phải bạn đoán, nó suy ra từ
+[`spec.md`](assets/app-thuc-hanh/spec.md) mục `BR-02` và `BR-03`.
 
 | Thấy khác | Nghĩa là | Làm gì |
 |---|---|---|
@@ -98,7 +96,7 @@ Cách làm là tự phá. Sửa tạm giá trị mong đợi thành một số c
 
 ```js
 // trong test của Việc 1, đổi đúng dòng assertion:
-// await expect(page.getByTestId('tong-tien')).toHaveText('999.999');
+// await expect(page.getByTestId('han-moi')).toHaveText('01/01/1999');
 ```
 
 Chạy lại. Nó phải đỏ. Nếu nó vẫn xanh thì bạn có một **test xanh giả**, và nguyên nhân thường là một
@@ -123,17 +121,17 @@ Cùng một ý "tổng tiền phải là 485.000", ba cách viết, và chúng k
 ```js
 async function baCach(page, expect) {
 // Cách A — đọc rồi so bằng JavaScript
-const text = await page.getByTestId('tong-tien').textContent();
-expect(text).toBe('485.000');
+const text = await page.getByTestId('han-moi').textContent();
+expect(text).toBe('31/08/2026');
 
 // Cách B — assertion của Playwright
-await expect(page.getByTestId('tong-tien')).toHaveText('485.000');
+await expect(page.getByTestId('han-moi')).toHaveText('31/08/2026');
 
 // Cách C — so cả cụm liên quan
-await expect(page.getByTestId('tam-tinh')).toHaveText('520.000');
-await expect(page.getByTestId('giam-gia')).toHaveText('-15.000');
-await expect(page.getByTestId('phi-dich-vu')).toHaveText('50.000');
-await expect(page.getByTestId('tong-tien')).toHaveText('485.000');
+await expect(page.getByTestId('lop-cu')).toHaveText('CFA01');
+await expect(page.getByTestId('lop-moc')).toHaveText('CFA02 (Lớp chính)');
+await expect(page.getByTestId('han-hien-tai')).toHaveText('31/07/2026');
+await expect(page.getByTestId('han-moi')).toHaveText('31/08/2026');
 }
 ```
 
@@ -141,20 +139,20 @@ Khác nhau ở đâu:
 
 | | Chờ trang cập nhật | Khi đỏ thì biết được gì |
 |---|---|---|
-| A | Không. Đọc một lần, được gì so nấy | Chỉ biết tổng sai |
-| B | Có. Tự thử lại tới khi hết thời gian chờ | Chỉ biết tổng sai |
-| C | Có | Biết **sai ở đâu trong chuỗi tính** |
+| A | Không. Đọc một lần, được gì so nấy | Chỉ biết hạn mới sai |
+| B | Có. Tự thử lại tới khi hết thời gian chờ | Chỉ biết hạn mới sai |
+| C | Có | Biết **sai ở đâu trong chuỗi suy luận** |
 
 Cách A là nguồn của phần lớn test chập chờn: trang chưa kịp render xong thì nó đã đọc. Đừng dùng,
 trừ khi bạn thật sự cần giá trị đó để tính tiếp.
 
 Cách C dài hơn nhưng trả lời được câu hỏi mà người đọc report sẽ hỏi ngay: *"sai ở khâu nào"*. Với
-ví dụ này, cách C cho thấy tạm tính đúng, giảm giá đúng, **phí dịch vụ sai**, tổng sai theo. Cách
-B chỉ nói tổng sai, và Dev sẽ phải tự dò.
+ví dụ này, cách C cho thấy lớp cũ đúng, hạn hiện tại đúng, **lớp mốc sai**, và hạn mới sai theo.
+Cách B chỉ nói hạn mới sai, và Dev sẽ phải tự dò xem sai ở bước chọn lớp hay ở phép trừ ngày.
 
 Đổi test của bạn sang cách C rồi chạy lại.
 
-**Bạn sẽ thấy** nó vẫn đỏ, nhưng đỏ ở đúng dòng `phi-dich-vu`. Ba dòng trên xanh. Đó là khác biệt
+**Bạn sẽ thấy** nó vẫn đỏ, nhưng đỏ ở đúng dòng `lop-moc`. Hai dòng quanh đó xanh. Đó là khác biệt
 giữa một test báo lỗi và một test **chỉ được chỗ lỗi**.
 
 > Đây cũng là lần đầu bạn chạm vào một ý sẽ quay lại suốt tài liệu: kiểm từng trường riêng lẻ thì bỏ
@@ -179,15 +177,15 @@ Ba loại lỗi hay gặp nhất ở tuần đầu:
 |---|---|---|
 | `Timeout 5000ms exceeded` + `waiting for locator` | Locator không khớp element nào | Locator, không phải app |
 | `Received: ""` | Element có, nội dung chưa có | Chờ điều kiện, xem Bài 9 |
-| `Expected "485.000" Received "544.000"` | Cả hai bên đều đọc được, số lệch | **App sai**, hoặc số mong đợi của bạn sai |
+| `Expected "31/08/2026" Received "30/06/2026"` | Cả hai bên đều đọc được, giá trị lệch | **App sai**, hoặc kết quả mong đợi của bạn sai |
 
 Dòng cuối bảng là chỗ dễ nhầm nhất. Test đỏ **không tự động nghĩa là app sai**. Nó chỉ nghĩa là hai
-con số khác nhau, và một trong hai sai. Bài 17 dành cả bài cho câu hỏi này, còn ở đây thì cách kiểm
-rẻ nhất là: mở `spec.md`, tính lại bằng tay, xem con số nào đúng.
+giá trị khác nhau, và một trong hai sai. Bài 17 dành cả bài cho câu hỏi này, còn ở đây thì cách kiểm
+rẻ nhất là: mở `spec.md`, suy lại bằng tay, xem giá trị nào đúng.
 
-Với ví dụ này, `spec.md` mục `BR-04` nói phí dịch vụ miễn phí khi **tạm tính** đạt `500.000`. Tạm
-tính là `520.000`, chưa đạt, nên phí `50.000` là đúng. Nhưng app lại tính miễn phí dựa trên số sau
-giảm giá. Vậy app sai. Bạn vừa xác nhận bug thứ nhất bằng automation.
+Với ví dụ này, `spec.md` mục `BR-02` nói mốc chỉ lấy trong **lớp chính**. `CFA02F` là Foundation, nên
+nó không được làm mốc, và hạn mới phải tính từ `CFA02`. Nhưng app lấy lớp bắt đầu sớm nhất bất kể
+loại. Vậy app sai. Bạn vừa xác nhận bug thứ nhất bằng automation.
 
 ## Gọi tên những gì bạn vừa làm
 
@@ -232,16 +230,16 @@ cả tài liệu           bài 4/29
 2. Ba nguyên nhân làm một test xanh giả là gì?
 3. Vì sao cách A (đọc rồi so bằng JavaScript) hay gây test chập chờn?
 4. Cách C dài hơn cách B. Nó đổi lại được gì?
-5. Test đỏ với `Expected 485.000 / Received 544.000`. Kết luận "app sai" đã đủ căn cứ chưa?
+5. Test đỏ với `Expected 31/08/2026 / Received 30/06/2026`. Kết luận "app sai" đã đủ căn cứ chưa?
 6. `Received: ""` khác `Timeout` ở chỗ nào?
 7. Bạn chứng minh assertion của mình có tác dụng bằng cách nào?
 
 ## Bài tập về nhà
 
-Viết thêm một test cho học viên chương trình Elite, 1 sản phẩm KH03. Tự tính kết quả mong đợi từ `spec.md` trước
-khi chạy, ghi con số đó ra giấy.
+Viết thêm một test cho học viên `HV02`, ca mà hạn mới rơi vào trước ngày bắt đầu lớp cũ. Tự suy kết
+quả mong đợi từ `spec.md` trước khi chạy, ghi ngày đó ra giấy.
 
-Rồi chạy. Nếu số của bạn khác số app trả, đừng sửa test cho khớp app. Ghi lại cả hai số và đi tiếp,
+Rồi chạy. Nếu giá trị của bạn khác giá trị app trả, đừng sửa test cho khớp app. Ghi lại cả hai và đi tiếp,
 Bài 13 sẽ nói vì sao phản xạ "sửa expected cho khớp" là thứ nguy hiểm nhất trong nghề này.
 
 ## Bài sau

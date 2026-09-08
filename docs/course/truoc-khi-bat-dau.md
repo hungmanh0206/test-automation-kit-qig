@@ -17,7 +17,7 @@ Ba mươi phút sau bạn đã mở bảy tab và chưa gõ dòng nào.
 | | |
 |---|---|
 | **Bạn đang khổ vì** | Bạn muốn dựng bộ kit nhưng chưa có gì để thử. Mấy từ sắp gặp cũng chưa rõ nghĩa. |
-| **Bài này bạn gõ gì** | Kiểm máy có Node chưa, chạy app thực hành, rồi tạo một đơn hàng bằng tay. |
+| **Bài này bạn gõ gì** | Kiểm máy có Node chưa, chạy app thực hành, rồi cắt hạn một học viên bằng tay. |
 | **Xong thì được gì** | App chạy trên máy bạn. 10 từ vựng hiểu qua ví dụ. Và một bug bạn tự tìm ra sau 40 phút. |
 
 ## Bài này bạn sẽ làm gì
@@ -26,7 +26,7 @@ Năm việc, việc nào cũng gõ tay:
 
 1. Xem máy đã có Node.js chưa (5 phút).
 2. Chạy app thực hành, mở nó trên trình duyệt (10 phút).
-3. Tạo một đơn hàng bằng tay, ghi lại bốn con số (15 phút).
+3. Cắt hạn một học viên bằng tay, ghi lại bốn giá trị (15 phút).
 4. Học 10 từ sẽ gặp suốt các bài sau. Học qua ví dụ, không học định nghĩa (30 phút).
 5. Xem trước cây thư mục của bộ kit bạn sắp dựng (10 phút).
 
@@ -88,12 +88,12 @@ node docs/course/assets/app-thuc-hanh/server.js
 Bạn sẽ thấy đúng hai dòng:
 
 ```
-Cổng đăng ký khoá học đang chạy: http://localhost:4010
+Vận hành lớp học đang chạy: http://localhost:4010
 Dừng: Ctrl + C
 ```
 
-Mở trình duyệt vào `http://localhost:4010`. Trang có chữ Cổng đăng ký khoá học ở trên. Bên dưới là khung
-**Tạo đơn hàng** với ô chọn học viên, ô chọn khoá học, ô số suất và nút **Thêm**.
+Mở trình duyệt vào `http://localhost:4010`. Trang có chữ Vận hành lớp học ở trên. Bên dưới là ba khối:
+**Lớp học**, **Học viên trong lớp**, và **Đồng bộ học lại**.
 
 | Bạn thấy gì | Nghĩa là | Làm gì |
 |---|---|---|
@@ -106,38 +106,39 @@ Mở trình duyệt vào `http://localhost:4010`. Trang có chữ Cổng đăng 
 
 Đây là chỗ làm người mới bối rối nhất trong ngày đầu: một cửa sổ để app chạy, một cửa sổ để bạn làm việc.
 
-## Việc 3 — Tạo một đơn hàng bằng tay (15 phút)
+## Việc 3 — Cắt hạn một học viên bằng tay (15 phút)
 
 Trước khi tự động hoá cái gì, hãy làm bằng tay một lần. Không phải cho có. Lý do đơn giản là bạn không tự
 động hoá được thứ bạn chưa từng làm.
 
 Trên trang web:
 
-1. Ô **Học viên**, chọn `Trần Thị B — chương trình Pro`.
-2. Ô **Sản phẩm**, chọn `Bàn gỗ — 250.000 đ`.
-3. Ô **Số suất**, sửa thành `2`.
-4. Bấm **Thêm**.
+1. Ô **Chọn lớp**, để nguyên `CFA01`.
+2. Nhìn bảng **Học viên trong lớp**: có `Nguyễn Văn A`, loại `Thường`, thời hạn `01/03/2026 - 31/07/2026`.
+3. Xuống khối **Đồng bộ học lại**, ô **Học viên** chọn `HV01 — Nguyễn Văn A`.
+4. Bấm **Xem hạn mới**.
 
-Một dòng hiện ra trong bảng giỏ hàng, và bốn con số hiện ra bên dưới. Ghi lại đã:
+Bốn ô hiện ra bên dưới. Ghi lại đã:
 
-| Nhãn | Số bạn thấy trên màn hình |
+| Nhãn | Giá trị bạn thấy trên màn hình |
 |---|---|
-| Tạm tính | |
-| Giảm giá | |
-| Phí dịch vụ | |
-| Tổng cộng | |
+| Lớp cũ | |
+| Lớp lấy làm mốc | |
+| Hạn hiện tại | |
+| Hạn mới | |
 
 Giờ mở file [`spec.md`](assets/app-thuc-hanh/spec.md). Đây là đặc tả, tức là bản mô tả app *phải* làm gì.
-Đọc bốn luật `BR-01` đến `BR-04`, rồi tự tính bốn con số đó bằng máy tính tay:
+Đọc bảng đơn học lại cùng ba luật `BR-02`, `BR-03`, `BR-05`, rồi tự suy ra bốn giá trị đó:
 
-- `BR-01` Tạm tính = 250.000 × 2 = **500.000**
-- `BR-02` Giảm giá cho chương trình Pro là 3% = 500.000 × 3% = **15.000**
-- `BR-03` Tạm tính là 500.000, từ 500.000 trở lên thì miễn phí dịch vụ, nên phí = **0**
-- `BR-04` Tổng cộng = 500.000 − 15.000 + 0 = **485.000**
+- Nhóm lớp mới của `HV01` gồm `CFA02F` (Foundation, bắt đầu 01/07/2026) và `CFA02` (Lớp chính, 01/09/2026)
+- `BR-02` Foundation **không** được dùng làm mốc, nên lớp mốc là **`CFA02`**
+- `BR-03` Hạn mới = ngày bắt đầu lớp mốc trừ 1 ngày = 01/09/2026 − 1 = **31/08/2026**
+- `BR-05` 31/08/2026 không sớm hơn ngày bắt đầu lớp cũ (01/03/2026), nên giữ nguyên
 
 So với bảng bạn vừa ghi.
 
-Hai bên không khớp. Màn hình hiện Phí dịch vụ **30.000 đ** và Tổng cộng **544.000 đ**.
+Hai bên không khớp. Màn hình hiện Lớp lấy làm mốc là **`CFA02F (Foundation)`** và Hạn mới là
+**30/06/2026**.
 
 Bạn vừa tìm ra một trong ba bug, bằng tay, ở phút thứ 40. Nhưng cách bạn tìm ra nó mới là chỗ đáng nhớ:
 
@@ -163,7 +164,7 @@ Việc 3 vừa rồi là một testcase, chỉ là bạn chưa viết nó ra gi�
 
 Con số hoặc trạng thái đúng, tính ra mà không dùng tới app.
 
-`485.000` là kết quả mong đợi độc lập, vì bạn tính nó từ `spec.md` bằng máy tính tay. Còn `544.000` thì
+`31/08/2026` là kết quả mong đợi độc lập, vì bạn suy nó từ `spec.md` bằng tay. Còn `30/06/2026` thì
 không, vì đó là app tự nói về chính nó.
 
 Giống đi mua gạo. Bạn không cân gạo bằng cân của người bán rồi hỏi người bán xem cân có đúng không. Bạn mang
@@ -216,7 +217,7 @@ Kết luận về một case sau khi chạy. Không chỉ có PASS với FAIL:
 
 Ảnh hoặc video chứng minh case đã chạy thật, và kết quả đúng như bạn nói.
 
-Ví dụ: ảnh chụp lúc Tổng cộng hiện `544.000`, có khoanh đỏ vào đúng con số đó.
+Ví dụ: ảnh chụp lúc ô Hạn mới hiện `30/06/2026`, có khoanh đỏ vào đúng ngày đó và vào ô Lớp lấy làm mốc.
 
 File `.txt` ghi "đã test, pass" thì không tính. Đó chỉ là bạn nói lại lần nữa thôi. Bài 17 dạy cách chụp có
 khoanh đỏ và che thông tin cá nhân.
@@ -318,7 +319,7 @@ Trả lời được bằng lời của mình thì đi tiếp. Không trả lờ
 
 1. App thực hành chạy ở địa chỉ nào? Dừng nó thế nào?
 2. Vì sao tài liệu này đưa cho bạn một app có bug cài sẵn, thay vì một app đúng?
-3. Ở Việc 3, `485.000` và `544.000`, số nào là kết quả mong đợi độc lập? Số kia sai ở chỗ nào?
+3. Ở Việc 3, `31/08/2026` và `30/06/2026`, ngày nào là kết quả mong đợi độc lập? Ngày kia sai ở chỗ nào?
 4. Máy kiểm khác lời dặn ở chỗ nào? Cho một ví dụ ngoài đời.
 5. Case chạy được nhưng app trả số khác spec thì ghi phán quyết gì? Case không đăng nhập được nên không chạy
    nổi thì ghi gì?
@@ -326,12 +327,11 @@ Trả lời được bằng lời của mình thì đi tiếp. Không trả lờ
 
 ## Bài tập về nhà (15 phút)
 
-Làm lại Việc 3, nhưng đổi khách sang `Lê Văn C — chương trình Elite`, sản phẩm sang `Đèn bàn — 175.000 đ`, số suất `1`.
+Làm lại Việc 3, nhưng đổi học viên sang `HV03 — Lê Văn C`.
 
-1. Ghi lại bốn số trên màn hình.
-2. Tự tính bốn số đó từ `spec.md`.
-3. Lấy máy tính cộng thử các số đang hiện: Tạm tính trừ Giảm giá cộng Phí dịch vụ. Có ra đúng số Tổng cộng
-   đang hiện không?
+1. Ghi lại bốn giá trị trên màn hình.
+2. Tự suy bốn giá trị đó từ `spec.md`.
+3. Lần này hai bên khớp. Ghi ra một câu: **vì sao** ca này khớp mà ca `HV01` thì không?
 
 Câu 3 mới là câu chính. Nếu thấy có gì lạ thì ghi vào một file `ghi-chu.md`, đừng vội kết luận. Bài 13 sẽ dạy
 cách biến "thấy lạ" thành "chứng minh được là sai".

@@ -79,7 +79,7 @@ git add scripts tests
 git commit -m "feat(kit): máy chặn đầu tiên + test đầu tiên
 
 kiem-so-mong-doi.js chặn khi số mong đợi bị đổi thành số app đang trả.
-don-hang-bac.js đỏ vì app sai BR-03 thật (485.000 vs 544.000)."
+cat-han-hoc-lai.js đỏ vì app sai BR-02 thật (31/08/2026 vs 30/06/2026)."
 ```
 
 **Bạn sẽ thấy** đại ý `2 files changed, N insertions(+)`.

@@ -94,7 +94,7 @@ thứ ba, và sai im lặng.
 
 ```js
 async function bamTaoDon(page) {
-  await page.getByRole('button', { name: 'Tạo đơn' }).tap();
+  await page.getByRole('button', { name: 'Xem hạn mới' }).tap();
 }
 ```
 
@@ -139,7 +139,7 @@ Ba nhóm đáng chạy trên mobile, và một nhóm không:
 Đánh dấu bằng tag thay vì tách thư mục riêng, để một case không phải tồn tại hai bản:
 
 ```js
-test('tạo đơn cho học viên chương trình Pro @mobile', async ({ page }) => { /* ... */ });
+test('cắt hạn lớp cũ của HV01 @mobile', async ({ page }) => { /* ... */ });
 ```
 
 ```js

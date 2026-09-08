@@ -42,11 +42,11 @@ Xếp theo độ bền giảm dần:
 
 | Tầng | Cách | Bền vì | Ví dụ |
 |---|---|---|---|
-| 1 | **Vai trò + tên hiển thị** | Đổi CSS không ảnh hưởng; khớp cách người dùng nhìn | `getByRole('button', { name: 'Lưu nháp', exact: true })` |
-| 2 | **Nhãn của ô nhập** | Nhãn là hợp đồng với người dùng | `getByLabel('Số suất')` |
-| 3 | **Chữ hiển thị** | Chữ đổi thì test **nên** đỏ | `getByText('Đã lưu đơn nháp', { exact: true })` |
+| 1 | **Vai trò + tên hiển thị** | Đổi CSS không ảnh hưởng; khớp cách người dùng nhìn | `getByRole('button', { name: 'Xem hạn mới', exact: true })` |
+| 2 | **Nhãn của ô nhập** | Nhãn là hợp đồng với người dùng | `getByLabel('Số ngày gia hạn')` |
+| 3 | **Chữ hiển thị** | Chữ đổi thì test **nên** đỏ | `getByText('Đã cập nhật thời hạn', { exact: true })` |
 | 4 | **Selector có ngữ nghĩa** | Ổn nếu neo vào cấu trúc, không vào class trang trí | `locator('table thead th')` |
-| 5 | **Test id** | Bền nhất — nếu app có phát | `getByTestId('tong-cong')` |
+| 5 | **Test id** | Bền nhất — nếu app có phát | `getByTestId('han-moi')` |
 
 ### Kiểm ngay: app của bạn có test id không
 
@@ -128,12 +128,12 @@ Chạy nó một lần cho mỗi màn mới, **trước khi** viết test:
 const { test } = require('@playwright/test');
 const { khaoSat, cotBang } = require('./support/kham-pha-dom');
 
-test('khám phá màn Tạo đơn hàng', async ({ page }) => {
-  await page.goto('/orders/create');
+test('khám phá màn Lớp › Học viên', async ({ page }) => {
+  await page.goto('/classes/CFA01/students');
   const els = await khaoSat(page);
   console.log('Không có locator bền:', els.filter((e) => !e.deXuat));
   console.log('Đề xuất:', els.filter((e) => e.deXuat).map((e) => e.deXuat));
-  console.log('Cột khối B:', await cotBang(page, '#products-table'));
+  console.log('Cột khối B:', await cotBang(page, '#students-table'));
 });
 ```
 
@@ -163,18 +163,18 @@ một dự án đang chạy**, khoảng 900 tệp. Nó là số của repo đó,
 const { test, expect } = require('@playwright/test');
 
 test('thu hẹp vùng thay vì chọn theo thứ tự', async ({ page }) => {
-  await page.goto('/orders/create');
+  await page.goto('/classes/CFA01/students');
 
-  // ✗ SAI: có 20 nút Xoá trên trang, lấy cái đầu là ngẫu nhiên
-  // await page.getByRole('button', { name: 'Xoá' }).first().click();
+  // ✗ SAI: mỗi hàng học viên có một nút Gia hạn, lấy cái đầu là ngẫu nhiên
+  // await page.getByRole('button', { name: 'Gia hạn' }).first().click();
 
-  // ✓ ĐÚNG: neo vào DÒNG chứa sản phẩm cần xoá, rồi tìm nút trong dòng đó
-  const dong = page.getByRole('row').filter({ hasText: 'SP_A' });
-  await dong.getByRole('button', { name: 'Xoá', exact: true }).click();
+  // ✓ ĐÚNG: neo vào DÒNG của học viên cần gia hạn, rồi tìm nút trong dòng đó
+  const dong = page.getByRole('row').filter({ hasText: 'HV_HOCLAI_01' });
+  await dong.getByRole('button', { name: 'Gia hạn', exact: true }).click();
 
   // ✓ ĐÚNG: đọc giá trị trong đúng vùng, không regex cả trang
-  const tongCong = page.locator('#tong-ket').getByLabel('Tổng cộng');
-  await expect(tongCong).toHaveText('321.000');
+  const hanMoi = page.locator('#khoi-dong-bo').getByLabel('Hạn mới');
+  await expect(hanMoi).toHaveText('31/08/2026');
 });
 ```
 
@@ -193,13 +193,13 @@ const { test, expect } = require('@playwright/test');
 
 test('chờ trạng thái, không chờ thời gian', async ({ page }) => {
   await page.goto('/orders/create');
-  await page.getByLabel('Số suất').fill('3');
+  await page.getByLabel('Số ngày gia hạn').fill('30');
 
   // ✗ SAI: đoán 500ms là đủ. Máy chậm hơn thì đỏ, máy nhanh hơn thì chậm vô ích.
   // await page.waitForTimeout(500);
 
   // ✓ ĐÚNG: chờ đúng ĐIỀU KIỆN mình cần. Playwright tự thử lại tới khi đạt hoặc hết hạn.
-  await expect(page.locator('#tong-ket').getByLabel('Tổng cộng')).toHaveText('321.000');
+  await expect(page.locator('#khoi-dong-bo').getByLabel('Hạn mới')).toHaveText('31/08/2026');
 });
 ```
 
