@@ -20,8 +20,8 @@
 
 ## Bài này bạn sẽ làm gì
 
-Cho tới giờ bạn kết luận đúng/sai bằng **những gì màn hình hiện**. Bài này thêm một nguồn thứ hai: **dữ liệu
-thật sự được lưu**.
+Tới giờ bạn vẫn kết luận đúng sai dựa vào những gì màn hình hiện ra. Bài này thêm một nguồn thứ hai: dữ liệu
+thật sự được lưu xuống.
 
 Năm việc:
 
@@ -70,9 +70,9 @@ curl -s http://localhost:4010/api/_store/orders
 | Phí giao hàng | 30.000 đ | `30000` | ✓ |
 | Tổng cộng | 196.250 đ | `196250` | ✓ |
 
-**Điều vừa xảy ra:** bạn vừa bắt được BUG-2 bằng một con đường **hoàn toàn khác** với Bài 13. Ở Bài 13 bạn
-tìm ra nó bằng cách cộng thử các số trên màn hình. Ở đây bạn tìm ra nó bằng cách so với nơi lưu. Cùng một
-bug, hai máy bắt được, và đó là dấu hiệu bộ kiểm đang khoẻ.
+Bạn vừa bắt được BUG-2 theo một con đường khác hẳn Bài 13. Ở đó bạn tìm ra nó bằng cách cộng thử các số
+trên màn hình. Ở đây bạn tìm ra nó bằng cách so với nơi lưu. Cùng một bug mà hai đường đều bắt được. Đó là
+dấu hiệu bộ kiểm đang khoẻ.
 
 Ba chi tiết trong cửa tầng lưu trữ, mỗi cái có lý do:
 
@@ -105,8 +105,8 @@ Ba lớp đắt nhất trong thực tế là **2, 5 và 6**:
 - **Lớp 6** cho ra **đúng** một dòng trên danh sách nếu danh sách gom nhóm, và hai dòng nếu không. Bug
   cùng gốc, biểu hiện khác nhau tuỳ màn.
 
-> Test qua giao diện không bắt được bảy lớp này. Không phải vì bạn viết case dở, mà vì thông tin cần
-> thiết **không có mặt** trên giao diện. Thêm case UI bao nhiêu cũng không giúp.
+> Test qua giao diện không bắt được bảy loại này. Không phải vì bạn viết case dở, mà vì thông tin cần thiết
+> không hề xuất hiện trên giao diện. Thêm bao nhiêu case giao diện cũng không giúp được.
 
 ## Việc 3 — Dùng hai nguồn để khoanh tầng lỗi (20 phút)
 
@@ -122,10 +122,10 @@ Khi một case FAIL, Bài 13 bắt bạn điền `tangLoi`. Trước đây bạn
 Áp vào BUG-2 vừa rồi: UI hiện `8.000`, lưu trữ ghi `8750`, spec nói `8750`. ⇒ ô góc dưới-trái ⇒ **bug hiển
 thị**, tầng `frontend`. Bạn khoanh được tầng mà **không** cần đọc một dòng code nào.
 
-Ô góc trên-phải là ô đáng sợ nhất:
+Ô góc trên bên phải là ô đáng sợ nhất:
 
-> Màn hình hiện đúng, dữ liệu lưu sai. Vì màn hình đang hiện lại **giá trị bạn vừa nhập**, không phải giá trị
-> nó đọc về từ nơi lưu.
+> Màn hình hiện đúng nhưng dữ liệu lưu sai. Lý do là màn hình đang vẽ lại chính giá trị bạn vừa nhập, chứ
+> không phải giá trị nó đọc về từ nơi lưu.
 
 Cách phát hiện: sau khi lưu, **tải lại trang** rồi mới đọc. Nếu số đổi sau khi tải lại, bạn vừa gặp ô đó.
 Đây là một dòng thêm vào mọi case tạo/sửa, và nó rẻ:
@@ -152,13 +152,14 @@ test('đơn tạo xong đọc lại vẫn đúng số', async ({ page, request }
 });
 ```
 
-> Để ý dòng cuối cùng: **oracle chính vẫn là đặc tả**. Tầng lưu trữ là **oracle phụ** — nó cho bạn tầng lỗi,
-> không cho bạn kết luận đúng/sai. So UI với tầng lưu trữ mà cả hai cùng sai thì bạn được "khớp" và ghi PASS.
-> Đây đúng là bẫy *"nhất quán ≠ đúng"* của Bài 10, chỉ ở một tầng khác.
+> Để ý dòng cuối. Chuẩn để phán đúng sai vẫn là đặc tả. Tầng lưu trữ chỉ là nguồn thứ hai: nó cho bạn biết
+> lỗi nằm ở tầng nào, chứ không cho bạn kết luận đúng sai. Nếu cả giao diện lẫn nơi lưu cùng sai thì hai bên
+> vẫn khớp, và bạn sẽ ghi PASS. Đây đúng là cái bẫy của Bài 10, chỉ ở một tầng khác.
 
 ## Việc 4 — Máy đối chiếu UI ↔ tầng lưu trữ (35 phút)
 
-Đối chiếu tay được vài đơn. Bộ 200 case thì cần máy. Điểm khó không phải so số, mà là **ánh xạ tên trường**.
+Vài đơn thì đối chiếu tay được. Bộ 200 case thì cần máy. Chỗ khó không phải là so số, mà là ánh xạ tên trường
+giữa hai bên.
 
 `.agent/config/anh-xa-luu-tru.json`:
 
@@ -314,16 +315,16 @@ mã thoát = 1
 
 **Lần 2 — đối chứng âm.** Sửa `"giam-gia"` thành `"8.750 đ"` và chạy lại. Phải ra `mã thoát = 0`.
 
-Bước này bắt buộc. Máy chỉ báo đỏ mà chưa từng báo xanh thì bạn không biết nó đang **so** hay đang **luôn
-chê**.
+Bước này bắt buộc. Một cái máy chỉ toàn báo đỏ mà chưa bao giờ báo xanh thì bạn không biết nó đang so, hay
+nó chê tất.
 
 **Lần 3 — ca "Miễn phí".** Đổi `"phi-giao-hang"` thành `"Miễn phí"` và `shipping_fee` thành `0`. Phải ra
 `0`. Nếu ra `1` thì `uiCoTheLaChu` khai chưa đúng, và bạn vừa tránh được một gate bắt oan.
 
 ## Việc 5 — Nối database thật mà không phá gì (30 phút)
 
-App thực hành lưu trong bộ nhớ. Dự án thật là một database có dữ liệu người khác đang dùng. Đây là chỗ dễ
-gây tai nạn nhất trong cả tài liệu này.
+App thực hành lưu dữ liệu trong bộ nhớ. Còn dự án thật là một database có dữ liệu người khác đang dùng. Đây
+là chỗ dễ gây tai nạn nhất trong cả tài liệu.
 
 ### Mô hình an toàn 4 lớp
 
@@ -336,11 +337,11 @@ gây tai nạn nhất trong cả tài liệu này.
 
 Điểm quan trọng nhất, và cũng là chỗ nhiều người làm ngược:
 
-> Lớp 1 phải là lớp chính. Nhiều người dùng transaction rồi rollback và coi thế là an toàn — *"tôi có
-> ghi, nhưng tôi hoàn lại"*. Không an toàn: script chết giữa đường thì transaction không rollback; một
-> `COMMIT` lọt vào thì mất luôn; và trigger/sequence vẫn chạy dù rollback.
+> Lớp 1 phải là lớp chính. Nhiều người mở transaction rồi rollback và coi thế là an toàn, kiểu "tôi có ghi
+> nhưng tôi hoàn lại". Cách đó không an toàn. Script chết giữa chừng thì transaction không rollback. Một câu
+> `COMMIT` lọt vào là mất luôn. Và trigger với sequence vẫn chạy dù bạn có rollback.
 >
-> Tài khoản chỉ đọc thì database từ chối lệnh ghi, bạn không cần đúng để an toàn.
+> Còn với tài khoản chỉ đọc thì database tự từ chối mọi lệnh ghi. Bạn không cần làm đúng thì mới an toàn.
 
 ### Lớp 2, viết ra code
 
@@ -380,10 +381,10 @@ module.exports = { kiemChuoiKetNoi, kiemCau };
 
 ### Thiết kế đa database: interface theo **ngữ nghĩa**, không theo SQL
 
-Sai lầm hay gặp: viết hàm `chayCauSql(sql)` rồi rải câu SQL khắp test. Hệ quả: dự án dùng Mongo là viết lại
-hết, và mỗi test tự quyết join thế nào.
+Sai lầm hay gặp là viết một hàm `chayCauSql(sql)` rồi rải câu SQL khắp các test. Hậu quả có hai. Sang dự án
+dùng Mongo là phải viết lại hết. Và mỗi test tự quyết định join kiểu gì.
 
-Đúng: khai theo **câu hỏi nghiệp vụ**.
+Cách đúng là khai theo câu hỏi nghiệp vụ:
 
 ```js
 /*
@@ -402,8 +403,8 @@ const khoDonHang = {
 module.exports = { khoDonHang };
 ```
 
-Ba hàm trên không phải ví dụ ngẫu nhiên: mỗi hàm **nhắm đúng một lớp bug** ở Việc 2. Đó là cách chọn hàm cho
-giao diện này. Đi từ lớp bug muốn bắt, không đi từ bảng có sẵn.
+Ba hàm trên không phải chọn ngẫu nhiên. Mỗi hàm nhắm đúng một loại bug ở Việc 2. Đó cũng là cách bạn chọn
+hàm cho giao diện này: đi từ loại bug muốn bắt, đừng đi từ bảng có sẵn trong database.
 
 ### Điều tuyệt đối không làm
 
@@ -419,10 +420,11 @@ Ba lý do, xếp theo mức đau:
 
 Dựng state qua giao diện, API, factory hoặc hook. Tầng lưu trữ chỉ để **đọc và đối chiếu**.
 
-Và một câu nữa, ngắn:
+Và một câu nữa:
 
-> Tầng lưu trữ không phải bằng chứng. Ảnh chụp một câu `SELECT` không phải evidence cho một case (Bài 13) —
-> nó không chứng minh người dùng thấy gì. Nó là dữ liệu để khoanh tầng, đính vào phần phân tích của bug.
+> Tầng lưu trữ không phải bằng chứng. Ảnh chụp một câu `SELECT` không dùng làm bằng chứng cho một case được,
+> vì nó không nói lên người dùng đã nhìn thấy gì. Nó là dữ liệu để khoanh tầng lỗi, đính vào phần phân tích
+> của bug.
 
 ## Cây thư mục sau bài này
 
@@ -437,8 +439,8 @@ kit-cua-toi/
     └── khoDonHang.js                    ← MỚI · giao diện theo NGỮ NGHĨA, không theo SQL
 ```
 
-Để ý `khoDonHang.js` nằm ở `tests/support/`, không ở `scripts/qa/`: nó không tự chạy được và không chặn gì —
-nó là hạ tầng test. Câu hỏi phân loại ở Bài 0 vẫn dùng được.
+Để ý `khoDonHang.js` nằm ở `tests/support/` chứ không nằm ở `scripts/qa/`. Nó không tự chạy được và cũng
+không chặn gì, nên nó là hạ tầng test. Câu hỏi phân loại ở Bài 0 vẫn dùng được.
 
 ## Tự kiểm
 
@@ -462,7 +464,8 @@ Ba việc trên app thực hành:
    Database phải **từ chối vì thiếu quyền**. Nếu nó chạy được thì bạn đang không có lớp 1, chỉ có lớp 2, và
    lớp 2 thì một lỗi chính tả trong regex là xuyên qua.
 
-Việc 3 là việc quan trọng nhất. Đây là đối chứng âm cho lớp an toàn của bạn, và hầu như không ai làm nó.
+Việc 3 là việc quan trọng nhất, và hầu như không ai làm. Đó là cách duy nhất để biết lớp an toàn của bạn có
+thật hay chỉ có trên giấy.
 
 ## Đọc thêm
 

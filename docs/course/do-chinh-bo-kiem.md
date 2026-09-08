@@ -2,8 +2,8 @@
 
 > **3 giờ** · Có gì trong tay: suite đã chạy nhiều lượt, có evidence, có lịch sử · Sau bài này: bạn biết bộ kiểm của mình **bắt được bao nhiêu phần trăm** lỗi thật — bằng số, không bằng cảm giác
 
-Đây là bài trọng tâm của cả tài liệu. Mười tám bài trước dựng ra một bộ kiểm. Bài này trả lời câu hỏi mà không ai
-hỏi cho tới khi đã muộn: **bộ kiểm đó có bắt được lỗi không?**
+Đây là bài trọng tâm. Hai mươi bài trước dựng ra một bộ kiểm. Bài này hỏi một câu mà ít ai hỏi cho tới khi
+đã muộn: bộ kiểm đó có bắt được lỗi không?
 
 **Tóm tắt bài này**
 
@@ -34,37 +34,37 @@ Sáu việc:
 
 ---
 
-## 1. "Toàn bộ 120 case PASS" nghĩa là gì?
+## Việc 1 — "Toàn bộ 120 case PASS" nghĩa là gì (20 phút)
 
-Nó nghĩa là **một** trong hai điều, và bạn không phân biệt được:
+Câu đó có thể nghĩa là một trong hai điều. Và bạn không phân biệt được hai điều đó:
 
 | Khả năng | Xác suất thực tế |
 |---|---|
-| Ứng dụng đúng, và suite của bạn đủ nhạy để phát hiện nếu nó sai | ? |
-| Suite của bạn **không nhạy** — nó sẽ xanh dù ứng dụng sai | ? |
+| App đúng, và suite của bạn đủ nhạy để phát hiện nếu nó sai | ? |
+| Suite của bạn không nhạy, nên nó xanh kể cả khi app sai | ? |
 
-Xanh là **cùng một dấu hiệu** cho cả hai. Đây chính là vấn đề đã bàn ở Bài 10 (oracle tautology) nhưng ở
-tầm **cả bộ**: bạn không đo được năng lực phát hiện của bộ kiểm bằng cách chạy nó trên ứng dụng đúng.
+Cả hai đều cho ra màu xanh. Đây là đúng vấn đề của Bài 10, chỉ ở quy mô cả bộ: bạn không đo được năng lực
+phát hiện của một bộ kiểm bằng cách chạy nó trên một app đang đúng.
 
-Câu chuyện quen thuộc: suite xanh suốt sprint, rồi một QA khác (hoặc khách) tìm ra bug ở đúng luồng suite đã
-"phủ". Câu hỏi đúng lúc đó **không** phải "sao dev để lọt", mà là:
+Chuyện quen thuộc: suite xanh suốt sprint, rồi một QA khác hoặc khách hàng tìm ra bug ở đúng luồng mà suite
+đã "phủ". Lúc đó câu hỏi không phải "sao dev để lọt", mà là:
 
 > Case nào lẽ ra phải đỏ mà lại xanh, và vì sao nó xanh?
 
-## 2. Cách duy nhất để đo: làm ứng dụng sai có kiểm soát
+## Việc 2 — Cách duy nhất để đo: làm app sai có kiểm soát (45 phút)
 
-Nguyên tắc đến từ **mutation testing** trong kiểm thử đơn vị, nhưng ở đây ta không đổi mã nguồn ứng dụng (ta
-không có quyền, và không nên). Ta **can thiệp ở tầng mạng**: dùng `page.route()` của Playwright để sửa response
-trên đường về trình duyệt.
+Ý tưởng lấy từ mutation testing trong kiểm thử đơn vị. Nhưng ở đây bạn không sửa mã nguồn app, vì bạn không
+có quyền và cũng không nên. Bạn chặn ở tầng mạng: dùng `page.route()` của Playwright để sửa response trên
+đường nó về trình duyệt.
 
 ```
 Trình duyệt  ←─── response ĐÃ SỬA ─── page.route()  ←─── response thật ─── Backend
 ```
 
-Ứng dụng thật vẫn nguyên. Nhưng với **trình duyệt** thì nó đang trả sai. Nếu case của bạn không đỏ, case của
-bạn sẽ **không** phát hiện được đúng lỗi đó khi nó xảy ra thật.
+App thật vẫn nguyên. Nhưng với trình duyệt thì nó đang trả sai. Nếu case của bạn không đỏ lên, nghĩa là khi
+lỗi đó xảy ra thật, case của bạn cũng sẽ không phát hiện được.
 
-Một mutant = một cách làm sai cụ thể. Bốn họ mutant đáng tiêm nhất, xếp theo giá trị:
+Mỗi mutant là một cách làm sai cụ thể. Bốn họ đáng tiêm nhất:
 
 | Họ | Tiêm gì | Lỗi thật tương ứng |
 |---|---|---|
@@ -73,9 +73,9 @@ Một mutant = một cách làm sai cụ thể. Bốn họ mutant đáng tiêm n
 | **Trạng thái** | Đổi `status`/`enum` sang giá trị khác | Sai chuyển trạng thái, sai điều kiện hiển thị |
 | **Hình dạng** | Trả mảng rỗng, trả `null`, trả bớt một phần tử | Không xử lý ca rỗng, phân trang sai |
 
-## 3. Máy tiêm lỗi
+### Máy tiêm lỗi
 
-`.agent/config/mutants.json`. Mutant khai bằng **dữ liệu**, không hardcode trong mã:
+Khai mutant bằng dữ liệu, đừng viết cứng trong mã. `.agent/config/mutants.json`:
 
 ```json
 {
@@ -387,13 +387,13 @@ exports.test = base.test.extend({
 exports.expect = base.expect;
 ```
 
-## 4. Đọc điểm cho đúng
+## Việc 3 — Đọc điểm cho đúng (25 phút)
 
 Đây là chỗ dễ kết luận sai nhất.
 
-### Điểm 0/5 — "suite của tôi tệ"?
+### Điểm 0 trên 5 có nghĩa suite của bạn tệ không
 
-**Chưa chắc.** Bốn lý do khiến điểm 0 mà suite vẫn tốt:
+Chưa chắc. Có bốn lý do khiến điểm 0 mà suite vẫn tốt:
 
 | Lý do | Cách phân biệt |
 |---|---|
@@ -402,24 +402,24 @@ exports.expect = base.expect;
 | Ứng dụng **không dùng** trường bạn tiêm | Đây là thu hoạch: trường đó có thể là trường chết |
 | Mutant quá nhỏ để nhìn thấy | Cộng 1.000đ vào tổng 50 triệu mà UI làm tròn về triệu ⇒ không sai được |
 
-Chỉ khi cả bốn đã loại thì điểm 0 mới nghĩa là **suite mù**. Đây là ứng dụng trực tiếp của luật ở Bài 11:
-**KHÔNG ĐO ĐƯỢC không phải là ĐẠT, cũng không phải là VI PHẠM.**
+Loại hết bốn lý do đó rồi thì điểm 0 mới nghĩa là suite không nhìn thấy gì. Đây đúng là luật ở Bài 11: chỗ
+không đo được thì không phải đạt, mà cũng không phải vi phạm.
 
-### Điểm 5/5 — "suite của tôi hoàn hảo"?
+### Điểm 5 trên 5 có nghĩa suite hoàn hảo không
 
-**Không.** Nó nghĩa là suite bắt được **5 loại lỗi bạn nghĩ ra**. Điểm mutation đo được **năng lực phát hiện
-trên tập mutant của bạn** — không hơn. Tập mutant nghèo cho điểm đẹp.
+Không. Nó chỉ nghĩa là suite bắt được 5 loại lỗi mà bạn nghĩ ra. Điểm này đo năng lực phát hiện trên đúng
+tập mutant của bạn, không hơn. Tập mutant nghèo thì cho điểm đẹp.
 
-Nên khi đạt điểm cao, việc tiếp theo **không** phải ăn mừng, mà là **thêm mutant khó hơn**:
+Nên đạt điểm cao thì việc tiếp theo là thêm mutant khó hơn:
 
 - Mutant chỉ sai ở **một** trong nhiều bản ghi (không phải cả danh sách).
 - Mutant sai ở **nhánh** ít đi (đơn huỷ, đơn hết hạn, khách không có CCCD).
 - Mutant sai **chữ hiển thị** thay vì sai số.
 - Mutant sai **thứ tự** phần tử.
 
-### Mutant sống sót là **việc cần làm**, không phải điểm trừ
+### Mutant sống sót là việc cần làm, không phải điểm trừ
 
-Mỗi mutant sống sót cho bạn một hành động cụ thể:
+Mỗi mutant sống sót chỉ cho bạn một việc rất cụ thể:
 
 ```
 M05 (thiếu một bản ghi) SỐNG SÓT
@@ -427,37 +427,37 @@ M05 (thiếu một bản ghi) SỐNG SÓT
   → sửa oracle: assert đúng SỐ bản ghi kỳ vọng, tính độc lập từ dữ liệu đã dựng
 ```
 
-Đây là vòng lặp cải thiện có **thước đo**: sửa oracle → đo lại → mutant bị diệt.
+Đây là một vòng lặp có thước đo: sửa oracle, đo lại, mutant bị diệt.
 
-## 5. Ba cái bẫy của chính máy đo
+## Việc 4 — Ba cái bẫy của chính máy đo (30 phút)
 
-Máy đo cũng là mã, và nó cũng sai được. Ba bẫy sau **đều cho ra số đẹp giả** — nên chúng nguy hiểm hơn lỗi làm
-máy crash.
+Máy đo cũng là mã, và nó cũng sai được. Ba bẫy dưới đây đều cho ra số đẹp giả. Đó là lý do chúng nguy hiểm
+hơn một lỗi làm máy chết hẳn.
 
-### Bẫy 1 — nền đỏ ⇒ 100% giả
+### Bẫy 1: nền đỏ cho ra 100% giả
 
-Nếu suite đã có 3 case đỏ từ trước, thì mọi lượt mutant cũng đỏ, và **mọi** mutant được tính là "bị diệt".
-Điểm 100%. Hoàn toàn vô nghĩa.
+Suite của bạn đã có sẵn 3 case đỏ từ trước. Vậy lượt nào có mutant cũng đỏ, và mutant nào cũng được tính là
+bị diệt. Điểm 100%. Con số đó hoàn toàn vô nghĩa.
 
-Máy ở trên chặn bằng cách chạy lượt nền trước và **exit 2** nếu nền đỏ. Đây không phải cẩn thận thừa, đó là
-cách đo này chết đi lặng lẽ trong thực tế.
+Máy ở trên chặn bằng cách chạy lượt nền trước, và thoát mã 2 nếu nền đã đỏ. Đây không phải cẩn thận thừa.
+Đó chính là cách phép đo này chết đi mà không ai hay.
 
-### Bẫy 2 — mutant không tiêm được ⇒ điểm thấp giả
+### Bẫy 2: mutant chưa tiêm được cho ra điểm thấp giả
 
-`urlPattern` viết `**/api/orders/*` mà thực tế API là `/api/v1/orders/*` thì `page.route()` không khớp request
-nào. Response về nguyên. Suite xanh. Máy báo **SỐNG SÓT**. Bạn đi sửa oracle cho một lỗi chưa từng xảy ra.
+Bạn viết `urlPattern` là `**/api/orders/*` nhưng API thật là `/api/v1/orders/*`. Thế là `page.route()` không
+khớp request nào. Response về nguyên vẹn. Suite xanh. Máy báo mutant sống sót. Rồi bạn đi sửa oracle cho một
+lỗi chưa bao giờ xảy ra.
 
-Máy ở trên chặn bằng **file cờ**: chỉ khi thật sự sửa được một response mới ghi cờ. Không cờ ⇒ KHÔNG ĐO ĐƯỢC,
-và **không tính vào mẫu số**.
+Máy ở trên chặn bằng một file cờ. Chỉ khi thật sự sửa được một response nó mới ghi cờ. Không có cờ thì kết
+quả là chưa đo được, và mutant đó không tính vào mẫu số.
 
-### Bẫy 3 — `retries` bật ⇒ mutant sống sót giả
+### Bẫy 3: bật chạy lại cho ra mutant sống sót giả
 
 Playwright cấu hình `retries: 2` sẽ chạy lại case đỏ. Với case đỏ vì mutant thì lượt lại **cũng đỏ** — nên bẫy
 này không cắn ở đây. Nhưng nó cắn ở chỗ khác: reporter json ghi kết quả **cuối cùng**, và nếu case đỏ vì mutant
 mà lượt cuối lại xanh do một lý do khác (dữ liệu đổi giữa các lượt, cache), thì mutant được báo là sống sót.
 
-Máy ở trên đặt `PW_RETRIES: '0'` cho mọi lượt mutation. Mutation run **không** cần chống nhoè, nó cần tín hiệu
-sạch.
+Máy ở trên đặt `PW_RETRIES: '0'` cho mọi lượt tiêm lỗi. Lượt đo không cần chống nhoè, nó cần tín hiệu sạch.
 
 > Ba bẫy này là ví dụ hoàn hảo cho luật ở Bài 28: **máy nào cũng phải có đối chứng âm**. Trước khi tin điểm
 > mutation, hãy tiêm một mutant mà bạn **biết chắc** suite bắt được, và xem máy có báo BỊ DIỆT không. Nếu
@@ -471,11 +471,11 @@ node scripts/qa/tiem-loi.js --mutant M03-trang-thai-sai --grep "TC_030"
 # Kỳ vọng: BỊ DIỆT. Nếu ra SỐNG SÓT hoặc KHÔNG ĐO ĐƯỢC ⇒ máy đo hỏng, dừng lại sửa máy.
 ```
 
-## 6. Mở rộng 5 trục: đo cái suite **không** phủ
+## Việc 5 — Mở 5 hướng quanh mỗi case (30 phút)
 
-Mutation đo suite trên những gì nó **có**. Còn những gì nó **không có** thì sao?
+Tiêm lỗi đo được suite trên những gì nó đang có. Còn những gì nó không có thì sao?
 
-Khi execute một case, đừng chỉ làm đúng chữ trong case. Mở **5 trục** quanh nó:
+Khi chạy một case, đừng chỉ làm đúng chữ ghi trong case. Mở thêm 5 hướng quanh nó:
 
 | Trục | Câu hỏi | Ví dụ |
 |---|---|---|
@@ -485,16 +485,16 @@ Khi execute một case, đừng chỉ làm đúng chữ trong case. Mở **5 tr�
 | **4. Nhánh** | Nhánh khác của cùng luật thì sao? | Case kiểm đơn mới → còn đơn gia hạn, đơn chuyển đổi, đơn huỷ? |
 | **5. Trạng thái kế cận** | Trạng thái ngay trước/sau thì hành vi có đúng? | Đơn `PENDING` cho sửa → `PAID` có chặn sửa? `CANCELLED`? |
 
-### Luật quan trọng nhất của mục này
+### Luật quan trọng nhất của việc này
 
 > Kết quả mở rộng chỉ được PASS/FAIL khi có neo oracle (`BR-`, `SM-`, `UI-`…).
 > Không có neo thì nó là `OBSERVATION`, không phải kết luận.
 
-Vì sao luật này tồn tại: mở rộng trục 2 thấy màn A hiện `1.000.000` và màn B cũng hiện `1.000.000` — **nhất
-quán**. Rất dễ ghi PASS. Nhưng nếu spec nói cả hai phải là `1.100.000` (có phí) thì hai màn **cùng sai** và bạn
-vừa ghi PASS cho một bug.
+Vì sao cần luật này. Mở hướng 2, bạn thấy màn A hiện `1.000.000` và màn B cũng hiện `1.000.000`. Hai bên khớp
+nhau nên rất dễ ghi PASS. Nhưng nếu spec nói cả hai phải là `1.100.000` vì có phí, thì hai màn đang cùng sai,
+và bạn vừa ghi PASS cho một bug.
 
-**Nhất quán không phải là bằng chứng của đúng.** Nó chỉ là bằng chứng của cùng-một-nguồn.
+Hai màn hình giống nhau không có nghĩa là đúng. Chỉ có nghĩa là cả hai đang đọc từ cùng một chỗ.
 
 ```js
 #!/usr/bin/env node
@@ -538,19 +538,19 @@ if (loi.length) {
 console.log('[mo-rong] ✓ ĐẠT');
 ```
 
-## 7. Chiều ngược: `spec:gap`
+### Hướng ngược lại: chỗ đặc tả còn thiếu
 
-Năm trục đi từ **case ra ứng dụng**. Còn chiều ngược: từ **ứng dụng ra spec**.
+Năm hướng trên đi từ case ra app. Còn một hướng ngược, đi từ app ra đặc tả.
 
-Trong lúc execute, bạn nhìn thấy những thứ **spec không nói gì**:
+Trong lúc chạy, bạn sẽ thấy những thứ mà đặc tả không nói gì:
 
 - Một trường trên UI mà không có dòng nào trong đặc tả.
 - Một trạng thái ứng dụng chuyển sang mà tài liệu không liệt kê.
 - Một thông báo lỗi mà không ai định nghĩa nội dung.
 - Một luật ứng dụng đang áp mà spec im lặng.
 
-Đây **không phải bug** — bạn không có neo để nói nó sai. Nó là `spec:gap`: **lỗ hổng đặc tả**. Và nó có giá trị
-cao, vì nó là chỗ bug sẽ sinh ra ở sprint sau.
+Đây không phải bug, vì bạn không có gì để neo mà nói nó sai. Nó là một lỗ hổng của đặc tả. Và nó đáng giá,
+vì đó chính là chỗ bug sẽ sinh ra ở sprint sau.
 
 ```json
 {
@@ -567,12 +567,12 @@ cao, vì nó là chỗ bug sẽ sinh ra ở sprint sau.
 
 Đưa `spec:gap` vào cùng đường ra với bug (Bài 13), nhưng **không** log thành bug. Nó là câu hỏi cho BA.
 
-## 8. Luật cuối: bug do người ngoài tìm ra = lỗi của máy
+## Việc 6 — Bug do người ngoài tìm ra là lỗi của máy (30 phút)
 
-Đây là luật khép lại toàn bộ tài liệu.
+Đây là luật khép lại cả tài liệu.
 
-Khi có bug lọt ra ngoài — QA khác tìm ra, hay khách báo. Phản xạ tự nhiên là *"case của tôi không phủ chỗ
-đó"*. Luật này bác bỏ phản xạ đó và bắt trả lời:
+Có bug lọt ra ngoài. QA khác tìm ra, hoặc khách hàng báo. Phản xạ tự nhiên là nói "case của tôi không phủ
+chỗ đó". Luật này bác bỏ phản xạ đó, và bắt bạn trả lời câu khác:
 
 > Máy nào lẽ ra phải bắt được nó, và vì sao nó không bắt?
 
@@ -584,7 +584,7 @@ Ba câu trả lời hợp lệ, mỗi câu ứng một hành động:
 | Không có case phủ, và có chiều lẽ ra phải sinh ra case đó | Sửa **máy đếm chiều** (Bài 11) để chiều đó không còn báo đủ |
 | Không có case phủ, và không chiều nào chỉ tới nó | Thêm **một chiều mới** vào danh mục chiều |
 
-Câu trả lời **không** hợp lệ: *"tôi sẽ để ý hơn"*. Đó là dặn dò, không phải forcing function (Bài 1).
+Một câu trả lời không hợp lệ: "lần sau tôi sẽ để ý hơn". Đó là lời dặn, không phải máy chặn.
 
 Ghi lại thành một dòng trong `knowledge/`:
 
@@ -600,8 +600,8 @@ Ghi lại thành một dòng trong `knowledge/`:
 }
 ```
 
-Trường `mutantXacNhan` là điểm quan trọng: sửa xong thì **chứng minh bằng phép đo** rằng lần sau lỗi đó sẽ bị
-bắt, không phải bằng lời hứa.
+Trường `mutantXacNhan` là chỗ quan trọng. Sửa xong thì bạn chứng minh bằng phép đo rằng lần sau lỗi đó sẽ bị
+bắt. Không phải bằng lời hứa.
 
 ---
 
