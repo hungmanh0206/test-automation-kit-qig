@@ -559,6 +559,40 @@ if (!exists(COURSE_MD)) {
      * hàng loạt, mà không phiền vài chỗ dùng hợp lý.
      *
      * Sàn lấy từ số đo THẬT sau khi đã dọn một lượt, cộng biên độ nhỏ. */
+    /* Byte điều khiển trong NGUỒN CỦA TRANG.
+     *
+     * Đã dính hai lần. Lần đầu ở một bài giảng (ví dụ kiểm includes('\0') viết bằng NUL thật), lần
+     * hai ở docs/library/src/md.js — nó dùng NUL làm ký tự giữ chỗ cho khối mã inline. Cả hai lần
+     * hậu quả giống nhau: grep coi tệp là BINARY và im lặng bỏ qua, nên mọi lượt rà bằng grep đều
+     * báo sạch trong khi tệp đó chưa từng được đọc. Escape (\x00) chạy y như nhau mà tệp vẫn là text. */
+    {
+      const nguonTrang = [];
+      const goc = path.join(ROOT, 'docs', 'library');
+      (function quet(t) {
+        for (const f of fs.readdirSync(t)) {
+          const p = path.join(t, f);
+          if (fs.statSync(p).isDirectory()) { quet(p); continue; }
+          if (/\.(js|css|html)$/.test(f) && f !== 'index.html') nguonTrang.push(p);
+        }
+      })(goc);
+      const banByte = [];
+      for (const p of nguonTrang) {
+        const b = fs.readFileSync(p);
+        for (let i = 0; i < b.length; i++) {
+          const c = b[i];
+          if (c < 9 || (c > 13 && c < 32)) {
+            banByte.push(path.relative(ROOT, p) + ' byte ' + i + ' = 0x' + c.toString(16));
+            break;
+          }
+        }
+      }
+      if (banByte.length) {
+        problems.push(banByte.length + ' tệp nguồn trang có BYTE ĐIỀU KHIỂN (grep coi là binary rồi bỏ qua ' +
+          'âm thầm — dùng escape \\x00 thay ký tự thật):\n      ' + banByte.join('\n      '));
+      } else {
+        ok.push(nguonTrang.length + ' tệp nguồn trang đều là text sạch (0 byte điều khiển)');
+      }
+    }
     const SAN_GIONG = { gachNgang: 8, trichDamDau: 5 };
     function vanXuoi(md) {
       const ra = [];

@@ -312,6 +312,40 @@ const ok = (name, cond, got) => {
      và `<div>` trong ví dụ, không thoát thì bố cục vỡ từ giữa bài. */
   ok('không lọt thẻ script/iframe vào thân bài', !rd.theLot);
 
+  /* Thanh độ chín: markdown vẽ bằng ký tự █ ░ (để .md đọc được trên GitHub), khung đọc phải thay
+     bằng thanh thật. Phép kiểm này có vì lần đầu tôi viết sai bộ chọn — dùng $ thay vì $$ — nên
+     vòng lặp không chạy, khối ký tự cũ vẫn hiện, và KHÔNG có lỗi nào phát sinh. Loại hỏng im lặng.
+     Đo trên nhiều bài để phủ cả hai cách vẽ: ô rời (cấp độ) và thanh liền (cả tài liệu). */
+  for (const n of [1, 8, 20, 29]) {
+    await p.keyboard.press('Escape'); await p.waitForTimeout(150);
+    await p.locator('#bai-' + n).click(); await p.waitForTimeout(400);
+    const t = await p.evaluate(() => {
+      const h = [...document.querySelectorAll('#rdArt h2')]
+        .find((x) => x.textContent.trim() === 'Bộ kit của bạn đang ở đâu');
+      if (!h) return { loi: 'không thấy tiêu đề khối' };
+      const fill = document.querySelector('.lrmtb > i');
+      const so = [...document.querySelectorAll('.lrmtn')].map((e) => e.textContent.replace(/\s+/g, ' '));
+      return {
+        coThanh: !!document.querySelector('.lrmt'),
+        conKhoiChu: !!(h.nextElementSibling && h.nextElementSibling.tagName === 'PRE'),
+        pips: document.querySelectorAll('.lrmtp i').length,
+        nay: document.querySelectorAll('.lrmtp i.nay').length,
+        bar: fill ? parseInt(fill.style.width, 10) : null,
+        so,
+      };
+    });
+    const khopSo = Array.isArray(t.so) && t.so.length === 2 &&
+      t.pips === Number((t.so[0] || '').split('/')[1]);
+    ok('bài ' + n + ': thanh độ chín vẽ thành thanh, không còn khối chữ',
+      t.coThanh && !t.conKhoiChu, t);
+    ok('bài ' + n + ': số ô khớp số bài của cấp độ, đúng một ô "đang ở"',
+      khopSo && t.nay === 1, t);
+    ok('bài ' + n + ': thanh cả-tài-liệu có bề rộng theo tỉ lệ',
+      typeof t.bar === 'number' && t.bar >= 1 && t.bar <= 100, t.bar);
+  }
+  await p.keyboard.press('Escape'); await p.waitForTimeout(150);
+  await p.locator('#bai-1').click(); await p.waitForTimeout(400);
+
   await p.locator('#rdNext').click(); await p.waitForTimeout(350);
   ok('nút Bài sau chuyển bài', (await p.locator('#rdTitle').innerText()).length > 5);
   await p.keyboard.press('ArrowLeft'); await p.waitForTimeout(350);

@@ -598,6 +598,52 @@
         }
       })();
 
+      /* Khối "Bộ kit của bạn đang ở đâu": markdown vẽ bằng ký tự █ ░ để đọc được trên GitHub,
+         còn ở đây thì vẽ thanh thật. Đọc CON SỐ trong nhãn, không đọc mấy ký tự khối — đổi cách vẽ
+         bên nguồn thì trang vẫn dựng đúng. */
+      (function () {
+        var hs = $$('#rdArt h2');
+        for (var i = 0; i < hs.length; i++) {
+          if (hs[i].textContent.trim() !== 'Bộ kit của bạn đang ở đâu') continue;
+          var pre = hs[i].nextElementSibling;
+          if (!pre || pre.tagName !== 'PRE') break;
+          var hang = [];
+          pre.textContent.split('\n').forEach(function (d) {
+            var m = /^(.*?)\s{2,}bài\s+(\d+)\s*\/\s*(\d+)/.exec(d);
+            if (m) hang.push({ nhan: m[1].trim(), xong: Number(m[2]), tong: Number(m[3]) });
+          });
+          if (hang.length < 2) break;
+          var hop = el('div', 'lrmt');
+          hang.forEach(function (h, k) {
+            var row = el('div', 'lrmtr');
+            var head = el('div', 'lrmth');
+            head.appendChild(el('span', 'lrmtl' + (k === 0 ? ' lrmtl-cap' : ''), h.nhan));
+            var n = el('span', 'lrmtn');
+            n.appendChild(el('b', '', String(h.xong)));
+            n.appendChild(document.createTextNode(' / ' + h.tong));
+            head.appendChild(n);
+            row.appendChild(head);
+            if (h.tong <= 12) {
+              /* Ít bài thì vẽ từng ô: người đọc đếm được, và ô đang ở thì nhìn ra ngay. */
+              var pips = el('div', 'lrmtp');
+              for (var j = 1; j <= h.tong; j++) {
+                pips.appendChild(el('i', j < h.xong ? 'xong' : j === h.xong ? 'nay' : ''));
+              }
+              row.appendChild(pips);
+            } else {
+              var bar = el('div', 'lrmtb');
+              var fill = el('i', '');
+              fill.style.width = Math.max(2, Math.round((h.xong / h.tong) * 100)) + '%';
+              bar.appendChild(fill);
+              row.appendChild(bar);
+            }
+            hop.appendChild(row);
+          });
+          pre.parentNode.replaceChild(hop, pre);
+          break;
+        }
+      })();
+
       var toc = $('#rdToc');
       toc.innerHTML = '';
       var muc = MD.mucLuc(than);
