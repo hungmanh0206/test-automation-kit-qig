@@ -1,0 +1,57 @@
+{
+  "_why": "Chủ repo chỉ ra một lỗi lặp lại: ở Phase 2 tôi báo 'phát hiện bug' rồi hỏi có log không, bạn hỏi lại 'chắc chưa', tôi kiểm lại và rút lời. Tức phát hiện kỹ thuật sai ngay từ đầu, còn câu hỏi của người dùng đang làm việc mà gate lẽ ra phải làm.",
+  "_chan_doan": {
+    "goc": "Lỗi THỨ TỰ, không phải bất cẩn. Bar để khẳng định một bug nằm ở .agent/workflows/phase2_04_report_and_jira_gate.md với khoảng 8 điều kiện. Nhưng lời nói ra ở phase2_03, nơi chỉ đòi 2 điều kiện: rerun đủ vòng và thu evidence. Tôi nói trước khi qua gate.",
+    "khong_do_duoc": "Claim bị rút trước khi log thì không để lại dấu vết nào. knowledge/bugs có 62 bản ghi với 1 Rejected, nhưng memory ghi ít nhất 2 bug Rejected (SAPP-28776, SAPP-28126) nên store đã đếm thiếu. Lỗi không đếm được thì không sửa được.",
+    "cach_chua": "Dời kiểm chứng lên TRƯỚC lời nói. Claim phải là một bản ghi qua được máy, rồi mới được nhắc tới trong hội thoại. Câu hỏi cho người dùng khi đó chỉ còn là 'có log không', không phải 'có phải bug không'."
+  },
+  "claimDir": "reports/bug-claims",
+  "minReruns": 2,
+  "failResults": ["fail", "FAIL", "failed", "FAILED"],
+  "statuses": ["claimed", "confirmed", "withdrawn"],
+  "blockingLayers": ["product_bug", "api_bug"],
+
+  "oracleTypes": {
+    "_why": "Oracle phải là nguồn ĐỘC LẬP với app. Lấy app làm expected là tautology, RULE_GLOBAL đã cấm. Danh sách này để không ai khai 'theo tôi thấy' rồi qua gate.",
+    "allowed": ["BR", "FSD", "FIGMA", "MAPPING", "SM", "UI", "PM", "SWAGGER", "CONFLUENCE"],
+    "minQuoteChars": 15,
+    "_note": "oracle.quote là đòn bẩy chống nói chung chung: phải TRÍCH nguyên văn câu trong nguồn, không tóm tắt lại."
+  },
+
+  "fixturePaths": {
+    "_why": "Data dựng thẳng vào DB thì không chứng minh được app hành xử sai, vì app chưa từng đi qua trạng thái đó. CLAUDE.md đã cấm dựng precondition bằng DB.",
+    "allowed": ["ui", "api", "factory", "hook"],
+    "rejected": ["db", "sql", "manual_db"]
+  },
+
+  "falsification": {
+    "_why": "Checklist cũ toàn mục XÁC NHẬN, không có mục nào bắt cố chứng minh mình SAI. Ba nhóm dưới đây không phải nghĩ ra: mỗi nhóm là một false positive đã xảy ra thật.",
+    "requiredCategories": {
+      "doc_outdated": "Tài liệu cũ hơn build. Tiền lệ: hạn checkout 720h trong khi FSD ghi 24h; Cancel với Delete trên SF Order theo FSD 4.1.1.6.3 đã cũ.",
+      "instrument": "Dụng cụ đọc sai. Tiền lệ: JS set value ghi xuyên input disabled nên đẻ bug ma; lọc toast theo class nên đọc thiếu chữ, gây SAPP-28776 bị Rejected rồi tái phạm lần 2.",
+      "fixture": "Fixture dựng không tự nhiên. Tiền lệ: pipeline nhân bản không đại diện cho pipeline thật; data set thẳng DB thay vì đi qua app."
+    },
+    "minHypothesisChars": 10,
+    "minMeasurementChars": 20,
+    "measurementMustMatchOneOf": [
+      "\\d",
+      "npm run ",
+      "GET ",
+      "POST ",
+      "PATCH ",
+      "curl",
+      "\\.json",
+      "\\.md",
+      "§",
+      "="
+    ],
+    "_note": "measurement phải dẫn một PHÉP ĐO, không phải một câu khẳng định. Máy đếm được 3 mục nhưng không đọc được ý định, nên đây là chỗ chống làm cho có: bịa một phép đo khó hơn bịa một câu."
+  },
+
+  "field": {
+    "minExpectedActualChars": 8,
+    "minLayerProbeChars": 20
+  },
+
+  "_gioi_han": "Gate này KHÔNG phán được phản chứng có thật lòng hay không. Nó chỉ ép có mặt và ép dẫn phép đo. Phần còn lại là kỷ luật, và phần đó đo bằng --report: tỉ lệ claim bị rút cùng tên phép kiểm đã bắt được."
+}

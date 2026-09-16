@@ -33,36 +33,37 @@
 
 | # | Mục | Dòng | ~token | Tra nhanh |
 |---|---|---|---|---|
-| 1 | [Purpose](#purpose) | 68-71 | 30 | npm run rule -- 1 |
-| 2 | [When To Use](#when-to-use) | 72-83 | 60 | npm run rule -- 2 |
-| 3 | [Inputs](#inputs) | 84-96 | 339 | npm run rule -- 3 |
-| 4 | [Outputs](#outputs) | 97-141 | 743 | npm run rule -- 4 |
-| 5 | &nbsp;&nbsp;[Giọng văn output](#giọng-văn-output) | 109-141 | 450 | npm run rule -- 5 |
-| 6 | [Rules](#rules) | 142-478 | 10786 | npm run rule -- 6 |
-| 7 | &nbsp;&nbsp;[Language](#language) | 144-150 | 79 | npm run rule -- 7 |
-| 8 | &nbsp;&nbsp;[Security](#security) | 151-158 | 287 | npm run rule -- 8 |
-| 9 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 159-170 | 280 | npm run rule -- 9 |
-| 10 | &nbsp;&nbsp;[Parallel Story Safety](#parallel-story-safety) | 171-187 | 257 | npm run rule -- 10 |
-| 11 | &nbsp;&nbsp;[Phase-Separated Story Execution](#phase-separated-story-execution) | 188-214 | 1953 | npm run rule -- 11 |
-| 12 | &nbsp;&nbsp;[Task-Scoped Automation Code](#task-scoped-automation-code) | 215-225 | 312 | npm run rule -- 12 |
-| 13 | &nbsp;&nbsp;[Shared Change Gate](#shared-change-gate) | 226-237 | 394 | npm run rule -- 13 |
-| 14 | &nbsp;&nbsp;[Automation Promote Review](#automation-promote-review) | 238-246 | 159 | npm run rule -- 14 |
-| 15 | &nbsp;&nbsp;[Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)](#analysis-ambiguity-gate-phase-1-đọc-kỹ-hỏi-trước-khi-gen) | 247-252 | 492 | npm run rule -- 15 |
-| 16 | &nbsp;&nbsp;[Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)](#chiều-coverage-phase-1-khai-phạm-vi-gắn-tag-có-máy-đếm) | 253-262 | 516 | npm run rule -- 16 |
-| 17 | &nbsp;&nbsp;[Execution Discipline (Kỷ luật thực thi — chạy thông suốt)](#execution-discipline-kỷ-luật-thực-thi-chạy-thông-suốt) | 263-272 | 445 | npm run rule -- 17 |
-| 18 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 273-398 | 3549 | npm run rule -- 18 |
-| 19 | &nbsp;&nbsp;[Execute Results](#execute-results) | 399-418 | 223 | npm run rule -- 19 |
-| 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 419-433 | 302 | npm run rule -- 20 |
-| 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 434-445 | 614 | npm run rule -- 21 |
-| 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 446-457 | 393 | npm run rule -- 22 |
-| 23 | &nbsp;&nbsp;[Jira Bug Gate](#jira-bug-gate) | 458-467 | 144 | npm run rule -- 23 |
-| 24 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 468-478 | 382 | npm run rule -- 24 |
-| 25 | [Workflow](#workflow) | 479-492 | 43 | npm run rule -- 25 |
-| 26 | [Cleanup Rules](#cleanup-rules) | 493-518 | 383 | npm run rule -- 26 |
-| 27 | [Examples](#examples) | 519-526 | 82 | npm run rule -- 27 |
-| 28 | [References](#references) | 527-535 | 84 | npm run rule -- 28 |
+| 1 | [Purpose](#purpose) | 69-72 | 30 | npm run rule -- 1 |
+| 2 | [When To Use](#when-to-use) | 73-84 | 60 | npm run rule -- 2 |
+| 3 | [Inputs](#inputs) | 85-97 | 339 | npm run rule -- 3 |
+| 4 | [Outputs](#outputs) | 98-142 | 743 | npm run rule -- 4 |
+| 5 | &nbsp;&nbsp;[Giọng văn output](#giọng-văn-output) | 110-142 | 450 | npm run rule -- 5 |
+| 6 | [Rules](#rules) | 143-513 | 11316 | npm run rule -- 6 |
+| 7 | &nbsp;&nbsp;[Language](#language) | 145-151 | 79 | npm run rule -- 7 |
+| 8 | &nbsp;&nbsp;[Security](#security) | 152-159 | 287 | npm run rule -- 8 |
+| 9 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 160-171 | 280 | npm run rule -- 9 |
+| 10 | &nbsp;&nbsp;[Parallel Story Safety](#parallel-story-safety) | 172-188 | 257 | npm run rule -- 10 |
+| 11 | &nbsp;&nbsp;[Phase-Separated Story Execution](#phase-separated-story-execution) | 189-215 | 1953 | npm run rule -- 11 |
+| 12 | &nbsp;&nbsp;[Task-Scoped Automation Code](#task-scoped-automation-code) | 216-226 | 312 | npm run rule -- 12 |
+| 13 | &nbsp;&nbsp;[Shared Change Gate](#shared-change-gate) | 227-238 | 394 | npm run rule -- 13 |
+| 14 | &nbsp;&nbsp;[Automation Promote Review](#automation-promote-review) | 239-247 | 159 | npm run rule -- 14 |
+| 15 | &nbsp;&nbsp;[Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)](#analysis-ambiguity-gate-phase-1-đọc-kỹ-hỏi-trước-khi-gen) | 248-253 | 492 | npm run rule -- 15 |
+| 16 | &nbsp;&nbsp;[Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)](#chiều-coverage-phase-1-khai-phạm-vi-gắn-tag-có-máy-đếm) | 254-263 | 516 | npm run rule -- 16 |
+| 17 | &nbsp;&nbsp;[Execution Discipline (Kỷ luật thực thi — chạy thông suốt)](#execution-discipline-kỷ-luật-thực-thi-chạy-thông-suốt) | 264-273 | 445 | npm run rule -- 17 |
+| 18 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 274-399 | 3549 | npm run rule -- 18 |
+| 19 | &nbsp;&nbsp;[Execute Results](#execute-results) | 400-419 | 223 | npm run rule -- 19 |
+| 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 420-434 | 302 | npm run rule -- 20 |
+| 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 435-446 | 614 | npm run rule -- 21 |
+| 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 447-458 | 393 | npm run rule -- 22 |
+| 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 459-492 | 530 | npm run rule -- 23 |
+| 24 | &nbsp;&nbsp;[Jira Bug Gate](#jira-bug-gate) | 493-502 | 144 | npm run rule -- 24 |
+| 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 503-513 | 382 | npm run rule -- 25 |
+| 26 | [Workflow](#workflow) | 514-527 | 43 | npm run rule -- 26 |
+| 27 | [Cleanup Rules](#cleanup-rules) | 528-553 | 383 | npm run rule -- 27 |
+| 28 | [Examples](#examples) | 554-561 | 82 | npm run rule -- 28 |
+| 29 | [References](#references) | 562-570 | 84 | npm run rule -- 29 |
 
-> Cả file ~13969 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
+> Cả file ~14540 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
 <!-- MỤC-LỤC:KẾT-THÚC -->
 
 ## Purpose
@@ -454,6 +455,40 @@ Field `comment` của mỗi case (trong `testcase-status.json`, đẩy lên run 
 5. **Số/tiền ở dạng người đọc.** Viết `6.000.000đ`, `23tr`, ngày `2026-07-13` — không để số thô `6000000`, không để timestamp máy.
 6. **Không placeholder / con trỏ file.** CẤM comment kiểu `Xem xxx_results.json`, `TODO`, `(auto)` — phải là nội dung thật của kết quả. Không nhét ID thô (order/deal) trừ khi cần cho truy vết, và nếu cần thì rút gọn.
 7. **Case FAILED:** comment nêu rõ **kỳ vọng vs thực tế** ở bước lỗi (ngắn gọn), chi tiết bước/evidence để ở `steps[]`/`failedStep` (không nhồi hết vào comment).
+
+### Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói
+
+Luật này sinh ra từ một lỗi lặp lại, chủ repo chỉ ra ngày 16/09/2026. Ở Phase 2 tôi báo "phát hiện
+bug, có log không", bạn hỏi lại "chắc chưa", tôi kiểm lại rồi rút lời. Phát hiện kỹ thuật sai ngay từ
+đầu, và câu hỏi của người dùng đang làm việc mà gate lẽ ra phải làm.
+
+Gốc là lỗi thứ tự, không phải bất cẩn. Bar để khẳng định một bug nằm ở bước `phase2_04` với khoảng tám
+điều kiện. Nhưng lời nói ra ở bước `phase2_03`, nơi chỉ đòi hai điều kiện là rerun đủ vòng và thu
+evidence. Nói trước khi qua gate thì mọi câu hỏi đều ép làm sớm phần còn lại.
+
+Ba luật:
+
+1. **Không được dùng chữ "bug" trong hội thoại trước khi có claim qua máy.** Viết
+   `<TASK_OUTPUT_DIR>/reports/bug-claims/<TC_ID>.json` rồi chạy `npm run bug:claim`. Tạo nháp bằng
+   `npm run bug:claim:new -- --new <TC_ID>`. Trước đó chỉ được gọi là **quan sát bất thường**.
+   Câu hỏi đặt cho người dùng khi đó chỉ còn là "có log không", không phải "có phải bug không".
+
+2. **Phải cố chứng minh mình sai, và phải dẫn phép đo.** Claim bắt buộc có đủ ba nhóm phản chứng.
+   Mỗi nhóm là một false positive đã xảy ra thật. Nhóm một là tài liệu cũ hơn build. Nhóm hai là dụng
+   cụ đọc sai. Nhóm ba là fixture dựng không tự nhiên. Mỗi phản chứng phải dẫn một phép đo cụ thể,
+   không phải một câu khẳng định.
+
+3. **Đổi phán quyết phải có phép đo mới.** Khi bị hỏi "chắc chưa", trả lời từ bản ghi claim, không mở
+   lại điều tra từ đầu. Nếu đổi ý thì bắt buộc nói rõ hai thứ: trường nào trong claim bị bác, và phép
+   đo nào bác nó. Rút lời chung chung là không được phép. Claim rút thì ghi `status: withdrawn` kèm
+   `withdrawn_by_check`, và phải hạ verdict trong `testcase-status.json` cho khớp.
+
+Máy: `npm run bug:claim` chặn hai chiều. Chiều xuôi là claim thiếu trường. Chiều ngược là case đã chấm
+`product_bug` hoặc `api_bug` mà không có claim nào, tức đã phán mà chưa kiểm chứng.
+
+Giới hạn cần biết: máy đếm được ba phản chứng nhưng không đọc được ý định. `npm run bug:claim:report`
+đếm tỉ lệ claim bị rút và phép kiểm nào bắt được nhiều nhất. Con số đó mới nói được kỷ luật có thật hay
+chỉ là thủ tục.
 
 ### Jira Bug Gate
 

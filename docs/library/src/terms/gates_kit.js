@@ -2,9 +2,18 @@
    Nguồn: header của scripts/qa/{gate_index,rule_lookup,version_check,package_kit,verify_release}.js */
 const TERMS_GATE3 = [
 
+{ id:'g-bug_claim', t:'bug:claim', cat:'gate',
+  def:'Một phát hiện bug phải QUA MÁY trước khi được nói thành lời. Claim thiếu trường, hoặc case đã chấm product_bug mà không có claim, đều bị chặn.',
+  detail:'Claim là file JSON ở <TASK_OUTPUT_DIR>/reports/bug-claims/. Bắt buộc: oracle độc lập kèm TRÍCH nguyên văn, expected và actual là giá trị, rerun ổn định ít nhất 2 lượt, tầng FE hay BE kèm phép đo, dụng cụ đọc, đường dựng fixture, và ba phản chứng. Chặn hai chiều: chiều xuôi là claim thiếu trường, chiều ngược là case chấm bug mà không có claim.',
+  why:'Lỗi lặp lại do chủ repo chỉ ra 16/09/2026: agent báo phát hiện bug rồi hỏi có log không, user hỏi lại chắc chưa, agent kiểm lại rồi rút lời. Gốc là lỗi THỨ TỰ: bar khẳng định bug nằm ở phase2_04 với khoảng tám điều kiện, còn lời nói ra ở phase2_03 với hai điều kiện. Và lỗi này chưa từng được đếm, vì claim rút trước khi log thì không lên Jira nên không vào knowledge/bugs.',
+  how:['npm run bug:claim:new -- --new <TC_ID> để tạo bản nháp đủ trường.','npm run bug:claim để kiểm trước khi nói chữ bug.','npm run bug:claim:report để đếm tỉ lệ rút và phép kiểm nào bắt được.'],
+  cmd:'npm run bug:claim   ·   npm run bug:claim:report',
+  ex:'Ba nhóm phản chứng không phải nghĩ ra: tài liệu cũ hơn build (hạn checkout 720h so với FSD ghi 24h), dụng cụ đọc sai (lọc toast theo class gây SAPP-28776 bị Rejected), fixture dựng không tự nhiên (pipeline nhân bản không đại diện).',
+  trap:'Máy đếm được ba phản chứng nhưng không đọc được ý định. Nên mỗi phản chứng phải dẫn một PHÉP ĐO có số, lệnh, endpoint hoặc đường dẫn file. Bịa một phép đo khó hơn bịa một câu.',
+  src:'scripts/qa/bug_claim.js', rel:['c-forcing-function','g-gate_index','c-oracle'] },
 { id:'g-gate_index', t:'gates:index', cat:'gate',
   def:'Sinh DANH MỤC GATE của kit từ chính source. Trả lời được "kit có bao nhiêu gate, mỗi cái CHẶN gì, gọi ở đâu".',
-  detail:'Quét source rồi suy mức từ code: exit 1 là CHẶN · ghi artifact là SINH · chỉ in là BÁO CÁO. Bảng hiện tại: 62 máy — 41 CHẶN, 15 SINH, 6 BÁO CÁO. Bản --check chặn khi bảng lệch source.',
+  detail:'Quét source rồi suy mức từ code: exit 1 là CHẶN · ghi artifact là SINH · chỉ in là BÁO CÁO. Bảng hiện tại: 63 máy — 42 CHẶN, 15 SINH, 6 BÁO CÁO. Bản --check chặn khi bảng lệch source.',
   why:'Kit có hơn 30 npm script dạng gate và gần 60 file trong scripts/qa/, nhưng không chỗ nào trả lời được câu trên. Hệ quả không phải bất tiện: luận đề của kit là "luật cần MÁY", mà máy không LIỆT KÊ ĐƯỢC thì không kiểm toán được. Không ai biết một gate đã âm thầm tụt thành cảnh báo, hay đã mất nơi gọi.',
   how:['npm run gates:index để sinh lại bảng.','npm run gates:index:check để chặn khi bảng lệch source.'],
   cmd:'npm run gates:index   ·   npm run gates:index:check',

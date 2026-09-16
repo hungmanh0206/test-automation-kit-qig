@@ -25,6 +25,13 @@ Giảm skip/fail giả, đảm bảo case pass thật sự validate đúng behav
 5. Với fail nghi product bug:
    - Rerun đủ vòng để loại flaky/setup.
    - Thu evidence ảnh/video phù hợp (log/response chỉ là diagnostic local).
+   - **Viết bug claim TRƯỚC khi nói chữ "bug" ra ngoài** (RULE_GLOBAL §Bug Claim Gate):
+     `npm run bug:claim:new -- --new <TC_ID>` để tạo nháp, điền đủ, rồi `npm run bug:claim` để kiểm.
+     Chưa qua máy thì chỉ được gọi là **quan sát bất thường**, và câu hỏi cho user là "có log không",
+     không phải "có phải bug không".
+     Vì sao bước này ở đây chứ không ở `phase2_04`: bar khẳng định bug nằm ở 04 với khoảng tám điều
+     kiện, nhưng lời nói ra ở 03 với hai điều kiện. Chính khoảng lệch đó đẻ ra những lần phát hiện
+     sai rồi phải rút lời.
 
 ## Đo suite có bắt được bug không (band high, định kỳ)
 
