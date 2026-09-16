@@ -191,16 +191,29 @@ function missingClaims(taskOut, claims) {
    *     verdict, nếu không thì bug đã rút vẫn đi tiếp tới bước log Jira.
    */
   const missing = [];
+  let grandfathered = 0;
   for (const t of tests) {
     if (!cfg.blockingLayers.includes(String(t.failureLayer || ''))) continue;
-    if (active.has(t.id)) continue;
-    if (withdrawn.has(t.id)) {
-      missing.push(`${t.id}: claim ĐÃ RÚT nhưng case vẫn chấm ${t.failureLayer} — sửa verdict trong testcase-status.json cho khớp`);
+    /*
+     * Hai đời khuôn `testcase-status.json` cùng tồn tại: bộ cũ dùng `id`, bộ mới dùng `tcId`. Đọc một
+     * khoá thì bộ kia ra `undefined` và thông báo vô dụng. Đã dính thật khi chạy trên SAPP-28905.
+     */
+    const id = t.id || t.tcId || '(không đọc được id)';
+    /*
+     * BỎ QUA case ĐÃ CÓ BUG KEY. Gate này sinh ra để chặn claim CHƯA kiểm chứng lọt tới người đọc,
+     * không phải để đòi hồi tố cho bug đã log và đã đóng. Case có `bug: SAPP-xxxxx` nghĩa là nó đã đi
+     * qua gate của phase2_04 rồi. Bắt nó viết claim ngược là biến gate thành tiếng ồn trên nợ cũ, và
+     * gate hay báo oan thì bị tắt. Vẫn ĐẾM và in ra, để việc bỏ qua không âm thầm.
+     */
+    if (nonEmpty(t.bug)) { grandfathered += 1; continue; }
+    if (active.has(id)) continue;
+    if (withdrawn.has(id)) {
+      missing.push(`${id}: claim ĐÃ RÚT nhưng case vẫn chấm ${t.failureLayer} — sửa verdict trong testcase-status.json cho khớp`);
     } else {
-      missing.push(`${t.id} (${t.failureLayer}) được chấm là bug nhưng KHÔNG có claim — viết claim trước, đừng nói "bug" trước`);
+      missing.push(`${id} (${t.failureLayer}) được chấm là bug nhưng KHÔNG có claim — viết claim trước, đừng nói "bug" trước`);
     }
   }
-  return { checked: true, total: tests.length, missing };
+  return { checked: true, total: tests.length, missing, grandfathered };
 }
 
 const TEMPLATE = (tcId) => ({
@@ -284,7 +297,8 @@ function main() {
   }
 
   const scope = mc.checked ? `, đối chiếu ${mc.total} case trong testcase-status.json` : ', chưa có testcase-status.json để đối chiếu';
-  console.log(`[bug-claim] OK — ${nActive} claim hợp lệ, ${nWithdrawn} đã rút${scope}.`);
+  const gf = mc.grandfathered ? ` Bỏ qua ${mc.grandfathered} case đã có bug key (đã log trước khi có gate này).` : '';
+  console.log(`[bug-claim] OK — ${nActive} claim hợp lệ, ${nWithdrawn} đã rút${scope}.${gf}`);
   process.exit(0);
 }
 

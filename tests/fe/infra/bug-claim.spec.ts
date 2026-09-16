@@ -166,6 +166,37 @@ test.describe('@infra bug:claim — kiểm chứng phải đi trước lời nó
     expect(r.out).toContain('1 đã rút');
   });
 
+  test('đọc được CẢ HAI đời khuôn status: `id` và `tcId`', () => {
+    /*
+     * Chạy trên task thật mới lộ ra: bộ cũ ghi `id`, bộ mới ghi `tcId`. Đọc một khoá thì bộ kia in
+     * "case undefined" và thông báo thành vô dụng. Đã dính thật ở SAPP-28905.
+     */
+    const t = mkTask();
+    fs.writeFileSync(path.join(t.results, 'testcase-status.json'), JSON.stringify({
+      tests: [{ tcId: 'SAPP_CFMIG_TC_070', status: 'FAIL', failureLayer: 'product_bug' }],
+    }), 'utf8');
+    const r = run(t.root);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain('SAPP_CFMIG_TC_070');
+    expect(r.out).not.toContain('undefined');
+  });
+
+  test('case ĐÃ CÓ bug key thì bỏ qua, nhưng phải ĐẾM và nói ra', () => {
+    /*
+     * Gate này chặn claim CHƯA kiểm chứng lọt tới người đọc, không đòi hồi tố cho bug đã log và đã
+     * đóng. Case mang `bug: SAPP-xxxxx` nghĩa là đã qua gate của phase2_04. Bắt nó viết claim ngược
+     * là biến gate thành tiếng ồn trên nợ cũ, mà gate hay báo oan thì bị tắt.
+     * Vẫn phải IN ra số bỏ qua: bỏ qua âm thầm là cách một gate chết dần mà không ai biết.
+     */
+    const t = mkTask();
+    fs.writeFileSync(path.join(t.results, 'testcase-status.json'), JSON.stringify({
+      tests: [{ id: 'SAP_SYNC_TC_032', status: 'FAIL', failureLayer: 'product_bug', bug: 'SAPP-29161' }],
+    }), 'utf8');
+    const r = run(t.root);
+    expect(r.code, r.out).toBe(0);
+    expect(r.out).toContain('Bỏ qua 1 case đã có bug key');
+  });
+
   test('--report đếm tỉ lệ rút và phép kiểm nào bắt được', () => {
     const t = mkTask();
     writeClaim(t.claims, 'TC_001', validClaim());
