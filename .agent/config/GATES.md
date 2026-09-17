@@ -33,7 +33,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN | `ui:conformance` | "visual oracle" tự động. | `scripts/qa/ui_conformance_check.js` | prompt_templates |
 | CHẶN | `release:verify` | CHỨNG MINH bản phát hành chạy được từ con số 0. Đây là thước đo chính của cả luồng CD, | `scripts/qa/verify_release.js` | README.md · .github/workflows · tests/fe/infra |
 | CHẶN | `version:check` | CHẶN phát hành thiếu sót. | `scripts/qa/version_check.js` | README.md · .github/workflows · tests/fe/infra |
-| CHẶN | `writing:lint`, `writing:lint:docs` | output phải đọc như QA viết, không như máy viết. | `scripts/qa/writing_lint.js` | RULE_GLOBAL.md |
+| CHẶN | `writing:lint`, `writing:lint:docs` | output phải đọc như QA viết, không như máy viết. | `scripts/qa/writing_lint.js` | RULE_GLOBAL.md · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `xsurf:diff` | TRỤC 2: **cùng một giá trị, khác nơi hiển thị**. | `scripts/qa/cross_surface_diff.js` | RULE_GLOBAL.md · README.md · .agent/rules · prompt_templates |
 | CHẶN (có cờ --enforce) | `decisions:check`, `decisions:index` | quản lý `knowledge/decisions/`: LÝ DO của những quyết định QA đã chốt. | `scripts/qa/decisions.js` | README.md · USER_GUIDE.md · .agent/workflows · .agent/skills · prompt_templates |
 | CHẶN (có cờ --enforce) | `dim:coverage` | đếm case theo 15 CHIỀU coverage của `prompt_templates/phase1/02_gen_testcases.md` | `scripts/qa/dimension_coverage.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · QUICKSTART.md · .agent/workflows · .agent/rules · prompt_templates · partial-rerun · .claude/commands · tests/fe/infra |

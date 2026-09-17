@@ -110,6 +110,38 @@ function measure(text) {
   };
 }
 
+/**
+ * Cột "Kết quả mong đợi" của bảng testcase phải là điều KIỂM ĐƯỢC, không phải lời kể.
+ *
+ * Đo 17/09/2026 trên 26 bộ testcase thật, 2.449 ô: 0 vi phạm. Nên đây là phép kiểm PHÒNG NGỪA, không
+ * phải dọn nợ. Ghi rõ vì một gate bắt 0 lần dễ bị tưởng là gate hỏng.
+ *
+ * Đọc cột theo TÊN Ở HEADER rồi lấy chỉ số, không đếm cứng vị trí: bộ cũ 9 cột, bộ mới 10, và đếm cứng
+ * là bẫy lệch chỉ số cột đã dính hai lần trong repo này.
+ */
+function expectedCellProblems(text) {
+  const r = (cfg.testcaseFieldRules || {});
+  const header = r.expectedColumnHeader;
+  const banned = r.expectedMustNotStartWith || [];
+  if (!header || !banned.length) return [];
+
+  const lines = text.split(/\r?\n/);
+  const out = [];
+  for (let h = 0; h < lines.length; h += 1) {
+    if (!lines[h].startsWith('|') || !lines[h].includes(header)) continue;
+    const idx = lines[h].split('|').map((s) => s.trim()).findIndex((c) => c.includes(header));
+    if (idx < 0) continue;
+    for (let i = h + 2; i < lines.length; i += 1) {
+      if (!lines[i].startsWith('|')) break;
+      const cell = (lines[i].split('|')[idx] || '').trim();
+      if (!cell) continue;
+      const bad = banned.find((b) => cell.toLowerCase().startsWith(b.toLowerCase()));
+      if (bad) out.push(`dòng ${i + 1}: "Kết quả mong đợi" mở đầu bằng "${bad}" — phải là điều kiểm được, không phải lời kể`);
+    }
+  }
+  return out;
+}
+
 /** Cụm bị cấm — danh sách NGẮN, chỉ gồm cụm đo được ~0 lần trong văn bản thật. */
 function bannedHits(text) {
   const t = prose(text).toLowerCase();
@@ -195,6 +227,7 @@ for (const abs of files) {
   if (m.emojiCount > emojiCap) over.push(`emoji ${m.emojiCount} > mốc ${emojiCap}`);
   const banned = bannedHits(text);
   if (banned.length) over.push(`cụm bị cấm: ${banned.join(' · ')}`);
+  if (prof === 'testcase') over.push(...expectedCellProblems(text));
 
   rows.push({ file: key, prof, m, tooShort, over });
   if (over.length) problems.push(key);

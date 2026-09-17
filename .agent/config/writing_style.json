@@ -61,10 +61,11 @@
       "_dùng cho": "outputs/**/test-cases/*.md",
       "_why": "Testcase là bảng. Sau khi bỏ bảng thì còn rất ít văn xuôi nên máy sẽ bỏ qua phần mật độ và chỉ kiểm emoji cùng cụm bị cấm. Đó là hành vi đúng, không phải thiếu sót.",
       "limits": {
-        "slash": 2,
+        "slash": 5,
         "vague": 6
       },
-      "emojiMax": 0
+      "emojiMax": 0,
+      "_neo_yeu": "Mốc gạch-chéo 5 neo vào PHÂN VỊ 25 của 19 bộ testcase thật (p25=4.6, trung vị 8.5, p75=15.6, max=22.1). Bằng chứng YẾU HƠN các profile khác: chưa có mẫu CÓ NHÃN cho testcase, khác với 34 bài giáo trình đã được người viết tay lại. Mốc 2 lấy từ văn xuôi giáo trình là đo testcase bằng thước của loại khác, chỉ 2/19 bộ đạt. Xem lại con số này khi có một bộ case viết dưới luật."
     }
   },
   "bannedPhrases": {
@@ -104,7 +105,11 @@
     ]
   },
   "testcaseFieldRules": {
-    "_why": "Kết quả mong đợi phải là điều kiểm được, không phải lời kể.",
+    "_why": "Kết quả mong đợi phải là điều KIỂM ĐƯỢC, không phải lời kể.",
+    "_measured_at": "2026-09-17",
+    "_do_duoc": "Quét 26 bộ testcase thật, 2.449 ô Kết quả mong đợi. Vi phạm: 0. Ô không có giá trị cụ thể: 0. Ô mơ hồ kiểu hiển-thị-đúng mà không kèm số: 0. Ô ngắn dưới 15 ký tự: 0. Tức lớp lỗi này CHƯA xảy ra trong bộ hiện có, nên đây là phép kiểm PHÒNG NGỪA, không phải dọn nợ.",
+    "_khong_gate": "19,7% ô dài trên 300 ký tự. KHÔNG chặn: đó là các ô chứa nhiều assertion đánh số khớp từng bước, đúng chuẩn RULE_GLOBAL. Dài vì đầy đủ thì không phải lỗi.",
+    "expectedColumnHeader": "Kết quả mong đợi",
     "expectedMustNotStartWith": [
       "Hệ thống sẽ",
       "Người dùng sẽ",
@@ -112,6 +117,6 @@
       "Có thể",
       "Nên"
     ],
-    "_note": "Chưa nối vào máy: cần parser cột. Ghi ở đây để không mất ý."
+    "_note": "Nối vào profile testcase của writing_lint, không dựng máy riêng: máy đó đã chạy trên file testcase và đã đọc chính config này. Thêm một npm script cho một phép kiểm bắt 0 lần là thêm bề mặt phải bảo trì."
   }
 }
