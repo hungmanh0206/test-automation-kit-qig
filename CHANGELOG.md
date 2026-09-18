@@ -7,6 +7,51 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-18 — Fetch Confluence đang đọc thiếu spec, và không ai biết
+
+**Vấn đề.** Hai đường fetch tài liệu đổi HTML sang text bằng đúng một dòng
+`.replace(/<[^>]+>/g, ' ')`. Riêng `scripts/integrations/jira/fetch_confluence.js` gộp tiếp
+khoảng trắng, nên cả trang thành **một dòng**. Trong 56 file Confluence đã fetch, chỉ
+**7 file (13%)** còn dòng bảng.
+
+Đây không phải mất định dạng. Ở tài liệu của dự án này, **AC nằm trong bảng**. File fetch về
+vẫn có heading, vẫn có chữ, đọc vào vẫn thấy hợp lý. Chỉ là không còn điều kiện chấp nhận nào.
+Không có tín hiệu nào báo, nên không ai đi kiểm.
+
+**Đo trên 12 trang FS/BRD/US thật.** Gọi cùng API mà fetcher gọi, chỉ đọc.
+
+| | bản CŨ | bản MỚI |
+| --- | --- | --- |
+| trang có bảng ở nguồn giữ được bảng | 0 / 12 | **12 / 12** |
+| dòng bảng thu được (1.652 ô nguồn) | 0 | **676** |
+| dòng Given/When/Then giữ được (6 trang US) | 0 / 66 | **66 / 66** |
+| trang bị gộp thành đúng một dòng | 12 / 12 | 0 / 12 |
+
+Mất mát thứ hai lộ ra khi đo. Regex gỡ thẻ **ăn trọn khối `CDATA`** khi ruột không chứa dấu lớn hơn.
+Toàn bộ AC viết bằng Gherkin trong macro code bị xóa sạch, 66 trên 66 dòng.
+
+**Cách chữa.** Tách bộ đổi ra `scripts/lib/confluence/storage_to_markdown.js` dùng chung cho cả hai
+đường. Bộ đổi giữ bảng, danh sách, heading, khối code và tiêu đề trang được liên kết. Bảng entity
+của hai file gộp làm một và giải một lượt, nên không còn cảnh giải hai lần thành thẻ thật.
+
+**Tại sao lỗi sống lâu.** Phần chuyển đổi nằm trong thân hai script CLI chạy ở top-level và không
+export gì. **Không có cách nào phủ test.** Tách module là điều kiện để có lưới.
+`tests/fe/infra/confluence-markdown.spec.ts` có 16 test và chốt cả hai vế. Vế một: bộ đổi giữ được
+bảng. Vế hai: hai fetcher thực sự gọi nó. Thiếu vế hai thì ai cũng có thể viết lại một dòng gỡ thẻ
+trong fetcher mà test vẫn xanh.
+
+**Chống hồi quy đối kháng.** So bộ từ trên cùng 12 trang, sau khi giải entity ở cả hai vế. Bản mới
+thiếu **0,33%** từ so với bản cũ. Toàn bộ phần thiếu là `text` với `gherkin`, tức tên tham số macro
+bị rò thành chữ ở bản cũ. Chiều ngược lại có 2.581 từ thêm, đều là chữ nghiệp vụ. Không UUID hay
+hash nào lọt vào.
+
+**13 entity ký hiệu bổ sung là đếm chứ không đoán.** Quét lại output của 12 trang thật thấy còn sót
+đúng 13 cái. Nhiều nhất là `&rarr;` với **256 lần**. Chúng mang nghĩa thật: mũi tên là luật ánh xạ
+"A sang B", còn `&ge; &le; &ne;` là điều kiện biên.
+
+**Tiện thể.** `tests/fe/infra/user-guide-images.spec.ts` spawn `git` mà không qua `gateEnv()`. Gate
+tự-kiểm đang đỏ vì việc đó. Đã nối lại.
+
 ## 2026-09-07 — CI nhanh hơn 19 lần, danh mục gate tự sinh, và điểm mù ẢNH đã có máy canh
 
 **Vấn đề 1 — CI chậm mà không ai biết chậm ở đâu.** Job `static-check` mất **527s** và mọi suy đoán về

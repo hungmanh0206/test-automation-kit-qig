@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { execFileSync } from 'child_process';
+import { gateEnv } from './_gate_env';
 
 /*
  * ẢNH TRONG TÀI LIỆU LÀ ĐIỂM MÙ CÓ HỆ THỐNG của kit: mọi gate đọc VĂN BẢN, nên nội dung sai nằm trong
@@ -54,7 +55,7 @@ const pngsReferenced = (): string[] => {
 function lastCommitTs(rel: string): number | null {
   try {
     const out = execFileSync('git', ['log', '-1', '--format=%ct', '--', rel], {
-      cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+      cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], env: gateEnv(),
     }).trim();
     return out ? Number(out) : null;
   } catch {

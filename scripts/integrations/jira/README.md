@@ -22,7 +22,7 @@ Các script trong thư mục này hỗ trợ Phase 1 fetch requirement từ Jira
 | File | Purpose |
 |---|---|
 | `jira_fetcher.js` | Fetch Jira issues/epics/JQL results. |
-| `fetch_confluence.js` | Fetch Confluence page by `CONFLUENCE_PAGE_ID`. |
+| `fetch_confluence.js` | Fetch Confluence page by `CONFLUENCE_PAGE_ID`. Ra Markdown GIỮ BẢNG (dùng `scripts/lib/confluence/storage_to_markdown.js`). |
 | `fetch_figma.js` | Fetch Figma file/node and save raw JSON + summary. |
 | `probe_figma.js` | Verify access to Figma file/node. |
 | `publish_confluence_page.js` | Publish/update một Confluence page từ Markdown (tự backup bản cũ, có `--dry-run`). |

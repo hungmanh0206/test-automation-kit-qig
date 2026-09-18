@@ -49,3 +49,6 @@ description: Fetch/read Jira, Confluence và source liên quan khi workflow yêu
 
 - `scripts/integrations/jira/`
 - `scripts/phase1/fetch_confluence_children.js`
+- `scripts/lib/confluence/storage_to_markdown.js`: bộ đổi storage sang Markdown dùng chung cho cả hai
+  đường fetch. Giữ bảng, danh sách, heading và khối code. Sửa cách đọc tài liệu thì sửa ở đây, đừng
+  viết lại regex gỡ thẻ trong fetcher (test `confluence-markdown.spec.ts` chặn việc đó).

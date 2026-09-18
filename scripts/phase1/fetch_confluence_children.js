@@ -6,6 +6,7 @@ const {
   getTaskKey,
   loadEnv,
 } = require('../integrations/jira/utils');
+const { storageToMarkdown } = require('../lib/confluence/storage_to_markdown');
 
 loadEnv();
 
@@ -29,19 +30,6 @@ if (!baseUrl || !username || !token) {
 
 const base = new URL(baseUrl);
 const auth = Buffer.from(`${username}:${token}`).toString('base64');
-
-function decodeHtml(value) {
-  return String(value || '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function getJson(apiPath) {
   return new Promise((resolve, reject) => {
@@ -84,7 +72,7 @@ async function main() {
   const index = [];
 
   for (const page of pages) {
-    const text = decodeHtml(page.body?.storage?.value || '');
+    const text = storageToMarkdown(page.body?.storage?.value || '');
     const filename = `${page.id}_${safeName(page.title)}.md`;
     const filePath = path.join(outputDir, filename);
     fs.writeFileSync(filePath, `# ${page.title}\n\n## Page ID: ${page.id}\n\n${text}\n`, 'utf8');

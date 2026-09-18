@@ -7,6 +7,7 @@ const {
   getTaskOutputDir,
   loadEnv,
 } = require('./utils');
+const { storageToMarkdown } = require('../../lib/confluence/storage_to_markdown');
 
 loadEnv();
 
@@ -39,56 +40,6 @@ const options = {
   },
 };
 
-function decodeHtmlEntities(value) {
-  const named = {
-    amp: '&',
-    lt: '<',
-    gt: '>',
-    quot: '"',
-    apos: "'",
-    nbsp: ' ',
-    mdash: '-',
-    ndash: '-',
-    agrave: 'à',
-    aacute: 'á',
-    acirc: 'â',
-    atilde: 'ã',
-    egrave: 'è',
-    eacute: 'é',
-    ecirc: 'ê',
-    igrave: 'ì',
-    iacute: 'í',
-    ograve: 'ò',
-    oacute: 'ó',
-    ocirc: 'ô',
-    otilde: 'õ',
-    ugrave: 'ù',
-    uacute: 'ú',
-    yacute: 'ý',
-    Agrave: 'À',
-    Aacute: 'Á',
-    Acirc: 'Â',
-    Atilde: 'Ã',
-    Egrave: 'È',
-    Eacute: 'É',
-    Ecirc: 'Ê',
-    Igrave: 'Ì',
-    Iacute: 'Í',
-    Ograve: 'Ò',
-    Oacute: 'Ó',
-    Ocirc: 'Ô',
-    Otilde: 'Õ',
-    Ugrave: 'Ù',
-    Uacute: 'Ú',
-    Yacute: 'Ý',
-  };
-
-  return String(value || '')
-    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)))
-    .replace(/&([A-Za-z]+);/g, (match, name) => named[name] || match);
-}
-
 let data = '';
 const req = https.get(options, (res) => {
   res.on('data', (chunk) => {
@@ -99,7 +50,7 @@ const req = https.get(options, (res) => {
       const payload = JSON.parse(data);
       const title = payload.title || 'No title';
       const bodyRaw = payload.body?.storage?.value || '';
-      const bodyText = decodeHtmlEntities(bodyRaw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+      const bodyText = storageToMarkdown(bodyRaw);
       const output = `# ${title}\n\n## Page ID: ${PAGE_ID}\n\n${bodyText}`;
 
       if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
