@@ -236,7 +236,18 @@ async function main() {
 
   const rows = scanDir(dir);
   if (!rows.length) {
-    console.log(`[docs-health] không có tài liệu Confluence nào trong ${dir}`);
+    /*
+     * PHẢI nói rõ "không có file mang page id", KHÔNG được nói gọn thành "không có tài liệu nào".
+     * Máy này cần page id để hỏi version, nên nó bỏ qua tài liệu không có id. Nhưng tài liệu đó vẫn
+     * tồn tại và vẫn đọc được. Đo thật: 11 task in ra "không có tài liệu Confluence nào" trong khi
+     * chúng có tới 68 file spec lành. Câu nói gọn đó là một tín hiệu sạch-giả.
+     */
+    const coFile = scanDir(dir, { requireId: false }).length;
+    console.log(`[docs-health] không file nào trong ${dir} mang page id, nên không đối chiếu version được.`);
+    if (coFile) {
+      console.log(`              Vẫn có ${coFile} tài liệu ở đây — chúng KHÔNG bị bỏ, chỉ là không kiểm được`);
+      console.log('              LỆCH BẢN. Trích dẫn thì dùng `npm run docs:index`, máy đó không cần id.');
+    }
     process.exit(0);
   }
 

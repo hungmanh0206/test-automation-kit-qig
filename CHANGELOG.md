@@ -39,6 +39,16 @@ Cùng họ với luật "test không được kế thừa env môi trường": k
 
 Cửa đọc thứ tư của cùng lớp lỗi CRLF, sau `library_drift`, `build.js` và `course_parse.js`.
 
+**Thêm một tín hiệu sạch-giả nữa, lần này ở tầng báo cáo.** Chạy `docs:health` cho cả 16 task thì 11 task
+in ra "không có tài liệu Confluence nào". Thực tế chúng có tới 68 file spec lành. Máy cần page id để
+hỏi version nên bỏ qua file không có id, nhưng câu nói gọn kia đọc ra thành "task này không có tài liệu".
+Nay nói rõ là thiếu id, kèm số tài liệu thật sự đang có.
+
+**Soát xong 16 task, con số thật khác hẳn con số tôi báo lúc chưa sửa dụng cụ.** Chỉ **2 task** cần
+fetch lại: `SAPP-3255` (21 tài liệu, 4 lành, 18 mất bảng) và `SAPP-21786` (3 tài liệu, 1 lành).
+13 task còn lại đều lành. Con số "13 task không có tài liệu lành" báo trước đó là SAI, do ngưỡng
+entity và luật đọc id của chính dụng cụ.
+
 ## 2026-09-18 (khuya) — Dụng cụ đo sai thì mọi "phát hiện" của nó đều là báo oan
 
 **Định làm gì.** Bước E của kế hoạch là cho `docs:index` mọc răng: neo không tra được thì chặn.

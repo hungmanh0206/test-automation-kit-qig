@@ -90,9 +90,16 @@ test('nhận đủ 3 khuôn đầu file mà các đợt fetch khác nhau đã si
   for (const f of ['kieu1.md', 'kieu2.md', '555003__C.md']) expect(r.out).toContain(f);
 });
 
-test('file .md không phải tài liệu Confluence thì bỏ qua, không báo oan', () => {
-  const r = run(fixture({ 'ghichu.md': '# Ghi chú tay\n\nkhông có page id.' }));
-  expect(r.out).toContain('không có tài liệu Confluence nào');
+/*
+ * Máy này cần page id để hỏi version, nên nó bỏ qua tài liệu không mang id. Nhưng thông báo PHẢI nói
+ * đúng chuyện đó. Bản đầu viết gọn thành "không có tài liệu Confluence nào", và 11 task in ra câu ấy
+ * trong khi chúng có tới 68 file spec lành — một tín hiệu sạch-giả ở tầng báo cáo.
+ */
+test('file không mang page id thì nói rõ là thiếu id, KHÔNG nói là không có tài liệu', () => {
+  const r = run(fixture({ 'ghichu.md': `# Ghi chú tay\n\nkhông có page id.\n${'Chữ. '.repeat(200)}` }));
+  expect(r.out).toContain('mang page id');
+  expect(r.out).toContain('Vẫn có 1 tài liệu');
+  expect(r.out).not.toContain('không có tài liệu Confluence nào');
 });
 
 /*
