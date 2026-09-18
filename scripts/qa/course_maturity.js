@@ -34,9 +34,21 @@ const CAP_DO = [
   { n: 4, ten: 'EVOLVE', tu: 21, den: 29, noiDuoc: 'Tôi mở rộng, đo được độ tin cậy, tích luỹ learning và chứng minh reuse.' },
 ];
 
+/*
+ * CHUAN HOA CRLF NGAY O CUA DOC.
+ *
+ * Khoi do chin duoc sinh voi ket thuc dong LF, roi doi thang voi noi dung file. Checkout tren Windows
+ * cho ra CRLF (`core.autocrlf`), nen moi dong deu lech va may bao "khoi do chin da cu" o CA 29 bai du
+ * khong ai sua gi. Do that: cung mot commit, ban LF 16.488 byte va ban CRLF 16.849 byte, chenh dung 361
+ * byte tuc mot byte moi dong. CI chay Linux nen xanh, con nguoi dung Windows thi do — ket qua phu thuoc
+ * moi truong checkout thi "xanh" het nghia. Cung ho voi ba cua doc da va o `library_drift`/`build.js`.
+ */
+const CR = String.fromCharCode(13);
+const docSach = (f) => fs.readFileSync(f, 'utf8').split(CR + '\n').join('\n');
+
 let md;
 try {
-  md = fs.readFileSync(COURSE, 'utf8');
+  md = docSach(COURSE);
 } catch (e) {
   console.error('[maturity] không đọc được docs/COURSE.md — ' + e.message);
   process.exit(2);
@@ -103,7 +115,7 @@ let daGhi = 0;
 for (const b of bai) {
   const p = path.join(ROOT, 'docs', b.href);
   if (!fs.existsSync(p)) { lech.push(`${b.href}: không tồn tại`); continue; }
-  let s = fs.readFileSync(p, 'utf8');
+  let s = docSach(p);
   const khoi = khoiCho(b);
 
   const i = s.indexOf(MOC);

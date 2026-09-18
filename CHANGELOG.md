@@ -28,6 +28,17 @@ file không ai đọc.
 Cùng họ với luật "test không được kế thừa env môi trường": kết quả phụ thuộc môi trường chạy thì
 "xanh" hết nghĩa.
 
+**Soát nốt 11 cổng CI trong worktree sạch, ra thêm hai cái nữa sẽ đỏ.**
+
+- `library:drift` đỏ thật: trang giáo trình khẳng định "63 máy: 42 CHẶN" trong khi danh mục nay là
+  80 máy. Con số đó do người ghi, và việc mở rộng danh mục hôm nay làm nó lệch. Đã sửa trang.
+- `course:maturity:check` đỏ ở worktree Windows nhưng xanh ở cây chính. Truy ra `course_maturity.js`
+  không chuẩn hoá CRLF ở hai cửa đọc. Cùng một commit: bản LF 16.488 byte, bản CRLF 16.849 byte, chênh
+  đúng 361 byte tức một byte mỗi dòng. CI chạy Linux nên xanh, người dùng Windows checkout mới thì đỏ
+  cả 29 bài dù không ai sửa gì. Đã vá, nay xanh ở cả hai.
+
+Cửa đọc thứ tư của cùng lớp lỗi CRLF, sau `library_drift`, `build.js` và `course_parse.js`.
+
 ## 2026-09-18 (khuya) — Dụng cụ đo sai thì mọi "phát hiện" của nó đều là báo oan
 
 **Định làm gì.** Bước E của kế hoạch là cho `docs:index` mọc răng: neo không tra được thì chặn.
