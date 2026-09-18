@@ -7,6 +7,40 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-18 (tối) — Neo oracle phải tra ngược được về tài liệu, kèm số dòng
+
+**Vấn đề.** Kit đã bắt buộc mọi phán PASS/FAIL phải kèm `oracle_ref`, và có máy kiểm ở
+`scripts/lib/expansion/finding.js`. Nhưng máy đó chỉ kiểm HÌNH DẠNG chuỗi.
+Nó không hỏi câu quan trọng hơn. Neo đó có thật trong tài liệu không? Nằm ở đâu? Viết `BR-07` hay `AC-9.9` đều qua
+cửa như nhau, kể cả khi tài liệu không hề có mục đó.
+
+**Cách chữa.** `npm run docs:index` lập chỉ mục neo.
+`npm run docs:cite` tra một neo ra file kèm số dòng. Còn `--verify` so bộ testcase với chỉ mục. Chỉ mục **chỉ lấy tài liệu lành**, vì
+trích dẫn cần số dòng. File do bộ đổi cũ sinh ra dồn cả trang vào một dòng. Trỏ vào "dòng 1" của một
+trang 8 KB thì không phải trích dẫn. Đây là lý do bước này phải đi sau bước sửa bộ đổi.
+
+**Đối chứng âm.** Bộ testcase thật của SAPP-26878 có 76 neo. **Tất cả đều tra ngược được.**
+Một máy chỉ biết nói "đạt" thì vô dụng. Bơm thêm ba neo bịa thì cả ba bị gọi tên, `--enforce` exit 1.
+
+**Hiệu chỉnh cảnh báo MƠ HỒ, từ 26 xuống 8.** Tài liệu đánh số BR theo từng US, nên cùng mã có thể
+là hai luật khác hẳn. Nhưng hai bản đầu đều báo oan:
+
+| Bản | Luật | Kêu | Vì sao sai |
+| --- | --- | --- | --- |
+| 1 | đếm số trang định nghĩa | 26 | `US-xx` là tên TRANG, không phải luật |
+| 2 | thêm: `US-xx` phải sát ngay trước neo | 18 | testcase viết `US-02 ... BR-09` cùng dòng, vẫn đúng |
+| 3 | nội dung định nghĩa phải KHÁC nhau | **8** | đúng cái đáng kêu |
+
+Tám cái còn lại là báo thật. Ví dụ `NFR-02`: nửa tiền về là "kỳ khoá sổ", nửa DTTH là "chênh lệch
+đối chiếu deferred revenue dưới 1%". Một testcase trích trần `NFR-02` chưa chỉ ra được luật nào.
+
+**Một lỗi nữa của chính máy này.** Chỉ mục chạy ngoại tuyến nên phép đo MẤT BẢNG im lặng.
+Hậu quả là 9 bản đã làm phẳng bảng vẫn lọt vào. Nay mỗi trang chỉ lấy MỘT bản tốt nhất.
+Xếp hạng bằng ba tín hiệu đọc được từ chính file: có ghi version, nhiều dòng bảng, ít entity sót.
+
+Đã nối cả hai máy vào `prompt_templates/phase1/01_setup_engine_fetch_docs.md`, kèm hai dòng checklist.
+Máy không ai gọi là máy chết.
+
 ## 2026-09-18 (chiều) — Tài liệu cũ không tự nói là nó cũ, nên phải có máy hỏi hộ
 
 **Vấn đề.** Soát lại một task thật sau khi sửa bộ đổi Confluence, và thấy bốn chuyện, cả bốn đều im lặng.

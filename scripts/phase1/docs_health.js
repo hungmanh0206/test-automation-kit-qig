@@ -245,4 +245,13 @@ async function main() {
   process.exit(baoCao(rows, { strict: flag('strict') }));
 }
 
-main().catch((e) => { console.error(e.message); process.exit(2); });
+/*
+ * `docs_index.js` dùng lại `scanDir` và `lanh` để CHỈ lập chỉ mục trên tài liệu lành. Trích dẫn cần số
+ * dòng, mà file do bộ đổi cũ sinh ra dồn cả trang vào một dòng — trích dẫn vào đó là vô nghĩa. Vì vậy
+ * phải chép chung một định nghĩa "lành", không được có hai bản lệch nhau.
+ */
+module.exports = { scanDir, lanh, docMeta, NGUONG_RONG };
+
+if (require.main === module) {
+  main().catch((e) => { console.error(e.message); process.exit(2); });
+}

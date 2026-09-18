@@ -48,9 +48,32 @@ Lệnh in ra 3 thứ:
 
 > ⚠️ Giao subagent **KHÔNG** làm giảm tổng token (subagent phải nạp lại luật + ngữ cảnh). Nó đổi lấy việc **luồng chính không chứa nguyên văn tài liệu**, nên phần sau của lượt không bị bóp. Đừng kỳ vọng sai.
 
+# SAU KHI FETCH: soát tài liệu — `npm run docs:health -- --task <TASK_KEY>`
+
+**Tài liệu hỏng không tự báo là nó hỏng.** File vẫn có chữ, vẫn có tiêu đề, đọc vào vẫn hợp lý.
+
+Đo thật trên một task: 14 trên 23 trang đã bị sửa sau ngày fetch. Hai file fetch về rỗng. Mười ba file
+mất sạch bảng. AC của dự án này nằm trong bảng. Mất bảng là đọc thiếu điều kiện chấp nhận mà
+không hề biết.
+
+Bốn phép đo: **LỆCH BẢN**, **RỔNG**, **MẤT BẢNG**, **CÒN ENTITY**.
+Thấy MẤT BẢNG hay CÒN ENTITY thì **fetch lại**. Đừng đọc bản đó.
+
+# TRƯỚC KHI TRÍCH LUẬT: lập chỉ mục neo — `npm run docs:index -- --task <TASK_KEY>`
+
+Mọi neo phải **tra ngược được** về file kèm số dòng.
+Tra một neo bằng `npm run docs:cite -- --task <TASK_KEY> BR-07`.
+
+Hai điều lệnh này nói mà đọc tay không thấy:
+- **Neo không tra được** nghĩa là chưa có căn cứ để phán, chứ không phải "chắc ở đâu đó".
+- **Neo MƠ HỒ** là cùng mã nhưng luật khác nhau giữa các trang. Đo thật: `NFR-02` một bên là kỳ
+  khoá sổ, bên kia là chênh lệch deferred revenue. Viết kèm trang, kiểu `US-01 BR-07`.
+
 # Checklist kiểm tra
 - [ ] **Đã chạy `npm run docs:budget`** và xử lý đúng 3 mục trên (không đọc bản thiếu, không đọc bản dư, tài liệu >25k thì giao trích xuất).
 - [ ] Đã đọc **toàn bộ** tài liệu (không lướt); bóc đủ AC/rule/validation/enum/state/edge/phân quyền/biên; mâu thuẫn giữa các nguồn đã ghi ra.
+- [ ] **Đã chạy `npm run docs:health`** và không còn file RỔNG / MẤT BẢNG / CÒN ENTITY (thấy thì fetch lại).
+- [ ] **Đã chạy `npm run docs:index`** — mọi neo định dùng làm oracle đều tra ngược được về file kèm số dòng.
 - [ ] Tài liệu đủ để sinh testcase.
 - [ ] Domain tag đúng: App 1 / App 2 / Cross-app.
 - [ ] Requirement, UI và API context đã được liên kết rõ.
