@@ -41,6 +41,7 @@
     "ci:scope": "node scripts/qa/ci_scope_check.js",
     "sync:gitlab": "node scripts/utils/sync_gitlab.js",
     "preflight": "node scripts/qa/preflight_gate.js --mode generic",
+    "preflight:lanes": "node scripts/qa/preflight_gate.js --lanes",
     "inventory:gate": "node scripts/qa/test_inventory_gate.js",
     "secret:scan": "node scripts/qa/secret_scan.js",
     "audit:ci": "node scripts/qa/audit_ci.js",

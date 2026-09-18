@@ -208,6 +208,53 @@ async function main() {
   const task = arg('task', process.env.TASK_KEY || '');
   const QA_APPROVED = has('qa-approved');
 
+  /*
+   * `--lanes`: trả lời câu "tôi cần khai biến nào" bằng MỘT LỆNH, thay vì bắt người mới đọc 79 biến
+   * trong .env.example rồi tự đoán.
+   *
+   * Vì sao có (SAPP-29229, tester báo sau bàn giao): "không bắt buộc phải có env token của LMS và OPS
+   * thì mới test được". Đo lại thì code ĐÃ ĐÚNG — gỡ sạch biến OPS_ và LMS_ rồi chạy `--mode phase1`
+   * và `--mode generic` vẫn exit 0, 0 CHẶN. Cái sai nằm ở chỗ .env.example liệt kê 15 ô trống của
+   * OPS và LMS ngay khối đầu mà không nói lane nào cần, nên người mới điền hết rồi tưởng là bắt buộc.
+   *
+   * KHÔNG CHẶN. Đây là bảng trả lời, không phải cổng: thiếu lane nào thì chỉ có nghĩa lane đó chưa
+   * dùng được, không có nghĩa kit hỏng.
+   */
+  if (has('lanes')) {
+    const lanesFile = path.join(rc.REPO_ROOT, '.agent', 'config', 'env_lanes.json');
+    if (!fs.existsSync(lanesFile)) { console.error(`[preflight] thiếu ${lanesFile}`); process.exit(2); }
+    const cfg = JSON.parse(fs.readFileSync(lanesFile, 'utf8'));
+    const filled = (k) => {
+      const v = process.env[k];
+      return typeof v === 'string' && v.trim() !== '' && !/^<.*>$/.test(v.trim());
+    };
+    console.log('[preflight] Lane nào đã sẵn sàng với env hiện tại:');
+    console.log('');
+    let anyReady = false;
+    for (const [name, lane] of Object.entries(cfg.lanes)) {
+      const miss = (lane.required || []).filter((k) => !filled(k));
+      /* `requiredOneOf` là các nhóm THAY THẾ NHAU: đủ MỘT nhóm là được. Ví dụ OPS nhận token, hoặc
+       * nhận cặp username và password — có token thì không cần mật khẩu. */
+      const groups = lane.requiredOneOf || [];
+      const oneOfOk = groups.length === 0 || groups.some((g) => g.every((k) => filled(k)));
+      const ok = miss.length === 0 && oneOfOk;
+      if (ok) anyReady = true;
+      console.log(`  ${ok ? 'SẴN SÀNG' : 'chưa đủ '}  ${name.padEnd(12)} ${lane.mo_ta}`);
+      if (!ok) {
+        if (miss.length) console.log(`              thiếu: ${miss.join(', ')}`);
+        if (!oneOfOk) console.log(`              cần đủ MỘT nhóm: ${groups.map((g) => g.join(' + ')).join('  hoặc  ')}`);
+      }
+    }
+    console.log('');
+    console.log('  Lane nào không dùng thì KHÔNG cần khai biến của lane đó. Thiết kế testcase (phase1)');
+    console.log('  chỉ cần PROJECT_OUTPUT_DIR và TASK_KEY — không cần token OPS hay LMS.');
+    console.log('');
+    console.log('  Biến theo TASK nằm ở profiles/<TASK_KEY>/task.env. Muốn xem đúng lane của một task:');
+    console.log('    TASK_ENV=profiles/<TASK_KEY>/task.env npm run preflight:lanes');
+    if (!anyReady) console.log('  Chưa lane nào đủ: bắt đầu bằng PROJECT_OUTPUT_DIR và TASK_KEY.');
+    process.exit(0);
+  }
+
   const res = runPreflight({ mode, task, extraRequire: csv(arg('require', '')), allowMissing: csv(arg('allow-missing', '')) });
   if (res.error) { console.error(`[preflight] ${res.error}`); process.exit(2); }
   const { problems, warnings } = res;

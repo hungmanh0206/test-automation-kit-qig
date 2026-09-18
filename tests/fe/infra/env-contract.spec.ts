@@ -242,4 +242,45 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
     } catch (e) { hits = ''; }   // git grep exit 1 = không khớp
     expect(hits.trim(), `script đọc thẳng .env chung: ${hits.trim()}`).toBe('');
   });
+
+  /*
+   * SAPP-29229 — tester sau bàn giao báo: "không bắt buộc phải có env token của LMS và OPS thì mới
+   * test được, check lại". Đo lại thì code ĐÃ ĐÚNG, cái sai là tài liệu không nói lane nào cần gì.
+   * Ba phép kiểm dưới đây khoá câu trả lời đó, để mai kia không ai lặng lẽ thêm ràng buộc vào phase1.
+   */
+  test('lane phase1 CHỈ đòi PROJECT_OUTPUT_DIR và TASK_KEY — không OPS, không LMS', () => {
+    const lanes = JSON.parse(fs.readFileSync(path.join(REPO, '.agent', 'config', 'env_lanes.json'), 'utf8'));
+    const p1 = lanes.lanes.phase1;
+    expect([...(p1.required || [])].sort()).toEqual(['PROJECT_OUTPUT_DIR', 'TASK_KEY']);
+    expect(p1.requiredOneOf, 'phase1 không được có nhóm biến thay thế nào').toBeUndefined();
+    const all = JSON.stringify(p1);
+    expect(/OPS_|LMS_|AIO_/.test(all), 'phase1 không được đòi biến của lane khác').toBe(false);
+  });
+
+  test('mọi biến khai trong env_lanes.json đều có mặt ở .env.example', () => {
+    /* Chống trôi hai chiều: lane trỏ tới biến không tồn tại thì người đọc đi tìm một ô không có. */
+    const lanes = JSON.parse(fs.readFileSync(path.join(REPO, '.agent', 'config', 'env_lanes.json'), 'utf8'));
+    const example = fs.readFileSync(path.join(REPO, '.env.example'), 'utf8');
+    const declared = new Set<string>();
+    for (const lane of Object.values(lanes.lanes) as Array<Record<string, unknown>>) {
+      for (const k of (lane.required as string[]) || []) declared.add(k);
+      for (const g of (lane.requiredOneOf as string[][]) || []) for (const k of g) declared.add(k);
+      for (const k of (lane.optional as string[]) || []) declared.add(k);
+    }
+    const missing = [...declared].filter((k) => !new RegExp(`^\\s*${k}\\s*=`, 'm').test(example));
+    expect(missing, `env_lanes khai biến không có trong .env.example: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  test('`preflight --lanes` báo phase1 SẴN SÀNG khi chỉ có hai biến đó', () => {
+    const { spawnSync } = require('child_process');
+    const env = gateEnv({ PROJECT_OUTPUT_DIR: 'outputs/_lanecheck', TASK_KEY: 'LANE-0' });
+    for (const k of Object.keys(env)) if (/^(OPS_|LMS_)/.test(k)) delete (env as Record<string, string>)[k];
+    const r = spawnSync(process.execPath, ['scripts/qa/preflight_gate.js', '--lanes'],
+      { cwd: REPO, encoding: 'utf8', env });
+    const out = `${r.stdout || ''}${r.stderr || ''}`;
+    expect(r.status, out).toBe(0);
+    expect(out).toMatch(/SẴN SÀNG\s+phase1/);
+    /* Và nó phải NÓI RA điều tester cần nghe, không bắt người đọc tự suy. */
+    expect(out).toContain('không cần token OPS hay LMS');
+  });
 });
