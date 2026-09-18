@@ -3,13 +3,20 @@
 > **SINH TỰ ĐỘNG** bởi `node scripts/qa/gate_index.js --write`. Đừng sửa tay — `--check` sẽ chặn khi
 > bảng lệch source. Cột **Mức** suy từ code: `exit 1` = CHẶN · ghi artifact = SINH · chỉ in = BÁO CÁO.
 
-Tổng **63** máy — **42 CHẶN** · 15 SINH (ghi artifact) · 6 BÁO CÁO (chỉ in).
+Tổng **79** máy — **56 CHẶN** · 15 SINH (ghi artifact) · 8 BÁO CÁO (chỉ in).
 
 SINH/BÁO CÁO **không phải gate bị nới** — chúng không kiểm vi phạm. Ví dụ `bugs:checklist` in brief bug
 lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` §20).
 
 | Mức | npm script | Chặn/kiểm cái gì | File | Gọi từ |
 |---|---|---|---|---|
+| CHẶN | `library:build` | ghép src/ thành docs/library/index.html (một file duy nhất, self-contained). | `docs/library/build.js` | README.md |
+| CHẶN | `aio:deprecate-stale`, `aio:deprecate-stale:apply` | vòng đời testcase trên AIO khi Excel canonical thay đổi. | `scripts/integrations/aio/deprecate_stale_aio.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · QUICKSTART.md · .agent/workflows · .agent/skills · prompt_templates · partial-rerun |
+| CHẶN | `aio:pull`, `aio:pull:write` | kéo testcase TỪ AIO Tests về Excel canonical local. | `scripts/integrations/aio/pull_testcases_aio.js` | RULE_GLOBAL.md · USER_GUIDE.md · QUICKSTART.md · .agent/workflows · .agent/rules · .agent/skills · prompt_templates · partial-rerun · .claude/commands |
+| CHẶN | `aio:verify-fields` | ĐỐI SOÁT TỪNG TRƯỜNG giữa Excel canonical và bản ghi thật trên AIO. | `scripts/integrations/aio/verify_fields_aio.js` | USER_GUIDE.md · prompt_templates · .claude/commands · tests/fe/infra |
+| CHẶN | `gdoc:read` | Đọc nội dung từ Google Docs | `scripts/integrations/google_doc/doc_reader.js` | prompt_templates |
+| CHẶN | `jira:bug-report`, `jira:bug-report:dry-run` | Create Jira Sub-bug issues for failed Playwright test cases. | `scripts/integrations/jira/bug_reporter.js` | README.md · .github/workflows |
+| CHẶN | `integration:check`, `integration:check:live` | const axios = require('axios'); | `scripts/integrations/jira/check_connection.js` | .gitlab-ci.yml · README.md · USER_GUIDE.md · QUICKSTART.md · .github/workflows · tests/fe/infra |
 | CHẶN | `audit:ci` | npm audit cho CI, phân biệt rõ 2 tình huống: | `scripts/qa/audit_ci.js` | .gitlab-ci.yml · README.md · .github/workflows |
 | CHẶN | `bug:claim`, `bug:claim:new`, `bug:claim:report` | một phát hiện bug phải QUA MÁY trước khi được nói thành lời. | `scripts/qa/bug_claim.js` | RULE_GLOBAL.md · .agent/workflows · prompt_templates · tests/fe/infra |
 | CHẶN | `ci:scope` | MÁY ĐỨNG SAU LUẬT "CI generic KHÔNG tự chạm UAT". | `scripts/qa/ci_scope_check.js` | .gitlab-ci.yml · .github/workflows · tests/fe/infra |
@@ -34,6 +41,13 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN | `release:verify` | CHỨNG MINH bản phát hành chạy được từ con số 0. Đây là thước đo chính của cả luồng CD, | `scripts/qa/verify_release.js` | README.md · .github/workflows · tests/fe/infra |
 | CHẶN | `version:check` | CHẶN phát hành thiếu sót. | `scripts/qa/version_check.js` | README.md · .github/workflows · tests/fe/infra |
 | CHẶN | `writing:lint`, `writing:lint:docs` | output phải đọc như QA viết, không như máy viết. | `scripts/qa/writing_lint.js` | RULE_GLOBAL.md · tests/fe/infra |
+| CHẶN | `profile:create` | Tạo profile task từ template: profiles/task.env.example -> profiles/<TASK_KEY>/task.env | `scripts/utils/create_profile.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md |
+| CHẶN | `user-guide:images` | User Guide board renderer (HTML/CSS + Playwright) | `scripts/utils/generate_user_guide_images.mjs` | README.md · tests/fe/infra |
+| CHẶN | `test:task`, `test:task:fe`, `test:task:api` | const { spawn } = require('child_process'); | `scripts/utils/run_playwright_task.js` | README.md · USER_GUIDE.md · QUICKSTART.md · prompt_templates |
+| CHẶN | `sync:gitlab` | đẩy `main` sang nhánh GitLab, TRỪ những đường dẫn khai trong | `scripts/utils/sync_gitlab.js` | tests/fe/infra |
+| CHẶN (có cờ --enforce) | `aio:publish`, `aio:publish:apply` | đẩy testcase từ Excel canonical lên AIO Tests. | `scripts/integrations/aio/publish_testcases_aio.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · QUICKSTART.md · .github/workflows · .agent/workflows · .agent/rules · .agent/skills · prompt_templates · partial-rerun · .claude/commands · tests/fe/infra |
+| CHẶN (có cờ --enforce) | `aio:push-exec`, `aio:push-exec:apply` | đẩy kết quả execute của Phase 2 lên AIO Tests: cycle + run + evidence. | `scripts/integrations/aio/push_execution_aio.js` | RULE_GLOBAL.md · USER_GUIDE.md · .agent/workflows · .agent/rules · prompt_templates · partial-rerun · .claude/commands |
+| CHẶN (có cờ --enforce) | `aio:verify`, `aio:verify:enforce` | AIO LÀ SOURCE OF TRUTH, nên execute KHÔNG được chạy trên bản kéo về đã CŨ. | `scripts/integrations/aio/verify_mirror.js` | README.md · USER_GUIDE.md · QUICKSTART.md · .agent/rules · prompt_templates · .claude/commands · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `xsurf:diff` | TRỤC 2: **cùng một giá trị, khác nơi hiển thị**. | `scripts/qa/cross_surface_diff.js` | RULE_GLOBAL.md · README.md · .agent/rules · prompt_templates |
 | CHẶN (có cờ --enforce) | `decisions:check`, `decisions:index` | quản lý `knowledge/decisions/`: LÝ DO của những quyết định QA đã chốt. | `scripts/qa/decisions.js` | README.md · USER_GUIDE.md · .agent/workflows · .agent/skills · prompt_templates |
 | CHẶN (có cờ --enforce) | `dim:coverage` | đếm case theo 15 CHIỀU coverage của `prompt_templates/phase1/02_gen_testcases.md` | `scripts/qa/dimension_coverage.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · QUICKSTART.md · .agent/workflows · .agent/rules · prompt_templates · partial-rerun · .claude/commands · tests/fe/infra |
@@ -67,9 +81,11 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | SINH | `security` | biến phần deterministic của mục 15 thành ĐO THẬT. | `scripts/qa/security_check.js` | .gitlab-ci.yml · RULE_GLOBAL.md · README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .github/workflows · .agent/workflows · .agent/rules · .agent/skills · prompt_templates · exploratory · tests/fe/infra |
 | SINH | `spec:extract` | bảng field trong FSD (markdown) → `screens.json` → (tuỳ chọn) `ui_catalog.json`. | `scripts/qa/spec_extract.js` | RULE_GLOBAL.md · README.md · .agent/rules · prompt_templates |
 | SINH | `inventory:gate` | Chống "CI false green" (F1). | `scripts/qa/test_inventory_gate.js` | README.md |
+| BÁO CÁO | `docs:health` | trả lời "tài liệu tôi đang đọc có còn đúng không" bằng MỘT LỆNH. | `scripts/phase1/docs_health.js` | tests/fe/infra |
 | BÁO CÁO | `bug:tc-match` | ĐỀ XUẤT (không tự ghi) TC canonical cho bug đang `module: "(unmapped)"`. | `scripts/qa/bug_tc_matcher.js` | README.md · .claude/commands |
 | BÁO CÁO | `bugs:checklist` | biến `knowledge/bugs/` thành CHECKLIST lúc SINH CASE (chiều §20 Error Guessing). | `scripts/qa/bugs_checklist.js` | .agent/workflows · prompt_templates · .claude/commands · tests/fe/infra |
 | BÁO CÁO | `docs:budget` | đo TÀI LIỆU đầu vào của task rồi nói rõ: đọc trực tiếp, hay GIAO SUBAGENT trích ra rồi chỉ | `scripts/qa/doc_budget.js` | README.md · prompt_templates |
 | BÁO CÁO | `(không npm — đăng ký ở playwright.config.js)` | Playwright reporter TỰ ĐỘNG thu learning data sau MỖI lần chạy test. | `scripts/qa/learn_reporter.js` | playwright.config.js (tự động) |
 | BÁO CÁO | `quality:decision` | Quality Decision Engine, capstone). Gộp tín hiệu chất lượng → 1 quyết định | `scripts/qa/quality_decision.js` | README.md · scripts/qa/README.md |
 | BÁO CÁO | `select:tests` | Intelligent Test Selection từ git diff. | `scripts/qa/select_tests.js` | README.md · USER_GUIDE.md |
+| BÁO CÁO | `report` | const { spawnSync } = require('child_process'); | `scripts/show_report.js` | .gitlab-ci.yml · RULE_GLOBAL.md · CLAUDE.md · README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .github/workflows · .agent/workflows · .agent/rules · .agent/skills · prompt_templates · exploratory · partial-rerun · .claude/commands · tests/fe/infra |

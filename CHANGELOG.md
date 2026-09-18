@@ -7,6 +7,41 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-18 (chiều) — Tài liệu cũ không tự nói là nó cũ, nên phải có máy hỏi hộ
+
+**Vấn đề.** Soát lại một task thật sau khi sửa bộ đổi Confluence, và thấy bốn chuyện, cả bốn đều im lặng.
+
+| Đo được trên SAPP-26878 | Số |
+| --- | --- |
+| trang đã bị sửa sau ngày fetch | 14 / 23 |
+| file fetch về rỗng, không báo lỗi | 2 (72 và 91 byte) |
+| file có bảng ở nguồn mà không còn dòng bảng | 13 |
+| chỗ chữ còn dạng `&agrave;` thay vì `à` | 10.555 |
+
+Không cái nào phát hiện được bằng cách mở file ra đọc. File vẫn có chữ, vẫn có tiêu đề, đọc vào
+vẫn hợp lý. Mắt người không phân biệt được "tài liệu nói thế" với "tài liệu CÒN nói thế".
+
+Riêng chuyện entity không phải thẩm mỹ. Chuỗi `tr&ecirc;n` không khớp khi tìm "trên". Tài liệu
+vẫn nằm đó mà tra cứu không ra, tức là hỏng đúng tiền đề của mọi việc đọc tài liệu bằng máy.
+
+**Cách chữa.** Thêm `npm run docs:health -- --task <KEY>`. Bốn phép đo: LỆCH BẢN, RỔNG, MẤT BẢNG, CÒN ENTITY.
+Mỗi phép ứng với một sự cố ĐÃ XẢY RA, không phải rủi ro tưởng tượng. Mặc định
+không chặn, vì tài liệu lệch bản là chuyện bình thường của dự án đang chạy. Chặn ở đây sẽ biến một
+tín hiệu hữu ích thành tiếng ồn bị tắt.
+
+**Bản đầu của chính máy này đã nói dối.** Nó chỉ nhận khuôn đầu file `Page ID:`, nên bỏ sót nguyên
+một thư mục 16 file và vẫn in ra tín hiệu sạch. Một máy đo bỏ sót tệ hơn không có máy. Nay nó nhận cả ba
+khuôn mà ba đợt fetch khác nhau sinh ra. Có test chốt điều đó.
+
+**Danh mục gate đang thiếu 16 máy.** Thêm `docs:health` xong thì nó không vào được `GATES.md`. Truy ra
+`gate_index.js` chỉ quét `scripts/qa/`. Đếm lại: **16 file với 26 npm script** nằm ngoài thư mục đó.
+Chúng chưa từng có mặt trong bảng. Trong đó `aio:verify:enforce` là cổng CHẬN, `aio:publish:apply` là
+cổng người. Danh mục tự nhận liệt kê mọi máy mà thiếu nhóm cổng chặn thì tệ hơn không có.
+Người tra không thấy, rồi kết luận là không ai canh. **63 → 79 máy.**
+
+**Bổ sung 4 entity** (`&asymp;` `&isin;` `&hArr;` `&prime;`), vẫn theo lối đếm chứ không đoán. Sau khi thêm,
+32 trang của task fetch lại còn **0** entity sót, thu được **2.500 dòng bảng**.
+
 ## 2026-09-18 — Fetch Confluence đang đọc thiếu spec, và không ai biết
 
 **Vấn đề.** Hai đường fetch tài liệu đổi HTML sang text bằng đúng một dòng

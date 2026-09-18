@@ -102,6 +102,7 @@
     "explore:close": "node scripts/qa/explore_session.js --close",
     "learn:report": "node scripts/qa/learn_report.js",
     "docs:budget": "node scripts/qa/doc_budget.js",
+    "docs:health": "node scripts/phase1/docs_health.js",
     "knowledge:backup": "node scripts/qa/knowledge_backup.js",
     "domain:trace-back": "node scripts/qa/domain_rules.js --trace-back",
     "howto:find": "node scripts/qa/howto_store.js --find",

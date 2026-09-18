@@ -43,8 +43,9 @@ const NAMED_ENTITIES = {
    * nhất là `&rarr;` 256 lần. Chúng mang nghĩa thật — `&rarr;` là luật ánh xạ "A sang B", còn
    * `&ge; &le; &ne;` là điều kiện biên. Để nguyên dạng entity thì người đọc spec phải tự dịch.
    */
-  rarr: '→', larr: '←', harr: '↔', rArr: '⇒',
+  rarr: '→', larr: '←', harr: '↔', rArr: '⇒', hArr: '⇔',
   ge: '≥', le: '≤', ne: '≠', plusmn: '±', times: '×', divide: '÷', minus: '−',
+  asymp: '≈', isin: '∈', prime: '′',
   Delta: 'Δ', sect: '§',
 };
 

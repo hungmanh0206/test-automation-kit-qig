@@ -114,12 +114,31 @@ function build() {
   const surf = corpus();
   const PW_CONFIG = readSafe(path.join(REPO, 'playwright.config.js'));
 
+  /*
+   * TẬP MÁY = mọi file trong `scripts/qa/` CỘNG mọi file mà một npm script trỏ vào, ở bất kỳ đâu.
+   *
+   * Bản đầu chỉ đọc `scripts/qa/` nên bảng này bỏ sót 16 file với 26 npm script, trong đó có
+   * `aio:verify:enforce` (CHẶN) và `aio:publish:apply` (cổng người). Một danh mục tự nhận "liệt kê mọi
+   * máy" mà thiếu đúng nhóm cổng chặn thì tệ hơn không có danh mục: người đọc tra không thấy rồi kết
+   * luận là không có máy nào canh.
+   *
+   * Phần "mồ côi" phía dưới VẪN chỉ xét `scripts/qa/`, vì ở đó "không ai gọi" nghĩa là gate chết. Ngoài
+   * thư mục đó thì phần lớn `.js` là thư viện được require, không gọi bằng npm là chuyện bình thường.
+   */
+  const machines = new Map();
+  for (const name of fs.readdirSync(QA).sort()) {
+    if (name.endsWith('.js')) machines.set(`scripts/qa/${name}`, true);
+  }
+  for (const cmd of Object.values(scripts)) {
+    const m = cmd.match(/(?:^|\s)((?:scripts|docs)\/[A-Za-z0-9_/.-]+\.m?js)/);
+    if (m && fs.existsSync(path.join(REPO, m[1]))) machines.set(m[1], true);
+  }
+
   const rows = [];
   const orphanFiles = [];
-  for (const name of fs.readdirSync(QA).sort()) {
-    if (!name.endsWith('.js')) continue;
-    const rel = `scripts/qa/${name}`;
-    const text = readSafe(path.join(QA, name));
+  for (const rel of [...machines.keys()].sort()) {
+    const name = path.basename(rel);
+    const text = readSafe(path.join(REPO, rel));
 
     /*
      * npm script nào trỏ vào file này — VÀ cả cơ chế ĐĂNG KÝ, không chỉ npm.
@@ -129,7 +148,10 @@ function build() {
      */
     const npm = Object.entries(scripts).filter(([, cmd]) => cmd.includes(rel)).map(([k]) => k);
     const registered = PW_CONFIG.includes(rel) || PW_CONFIG.includes(`./${rel}`);
-    if (!npm.length && !registered) { orphanFiles.push(rel); continue; }
+    if (!npm.length && !registered) {
+      if (rel.startsWith('scripts/qa/')) orphanFiles.push(rel);
+      continue;
+    }
 
     // bề mặt nào nhắc tới npm script đó
     const called = [...new Set(surf.filter((c) => npm.some((n) => c.txt.includes(n))).map((c) => c.label))];
