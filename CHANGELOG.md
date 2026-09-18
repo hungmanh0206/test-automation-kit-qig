@@ -7,6 +7,27 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-18 (vá) — Artifact sinh ra từ source CHƯA COMMIT thì CI đỏ, máy dev xanh
+
+**Sự cố.** CI GitHub đỏ ở `gates:index:check` trong khi máy dev xanh.
+Worktree sạch tại HEAD tái hiện ngay. `aio:publish` xếp **CHẬN** khi sinh từ HEAD, nhưng bảng đã
+commit ghi **CHẬN có cờ --enforce**.
+
+**Nguyên nhân.** `GATES.md` được sinh trong cây làm việc đang có `publish_testcases_aio.js` sửa dở
+chưa commit. Bản sửa đó đổi cách phân loại. Bảng vì thế mang một mức mà source đã commit không sinh ra.
+Bảng là artifact của nội dung đã commit. Sinh nó từ cây bẩn là đẩy việc của phiên khác vào một
+file không ai đọc.
+
+**Hai chỗ sửa, đều nhắm vào việc nói ĐÚNG SỰ THẬT thay vì đổ lỗi:**
+- `gate_index` nay liệt kê thẳng file nguồn đang sửa dở. Thông báo cũ chỉ nói "bảng lệch source" nên
+  mất một vòng mới truy ra.
+- Cây bẩn mà bảng lệch thì là **KHÔNG PHÁN ĐƯỢC**, exit 2, không phải CHẬN.
+  Kết tội bảng ở đó là oan. CI luôn checkout sạch nên nhánh này không chạy ở CI.
+  Răng của gate giữ nguyên.
+
+Cùng họ với luật "test không được kế thừa env môi trường": kết quả phụ thuộc môi trường chạy thì
+"xanh" hết nghĩa.
+
 ## 2026-09-18 (khuya) — Dụng cụ đo sai thì mọi "phát hiện" của nó đều là báo oan
 
 **Định làm gì.** Bước E của kế hoạch là cho `docs:index` mọc răng: neo không tra được thì chặn.

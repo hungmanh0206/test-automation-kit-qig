@@ -206,7 +206,39 @@ function render({ rows, orphanFiles }) {
   return L.join('\n');
 }
 
+/*
+ * CẢNH BÁO NGUỒN BẨN — nói thẳng vì sao bảng lệch, thay vì bắt người ta đi truy.
+ *
+ * Đã trả giá thật ngày 18/09/2026: `GATES.md` được sinh trong cây làm việc đang có
+ * `publish_testcases_aio.js` sửa dở CHƯA COMMIT. Bản sửa đó đổi cách phân loại từ CHẶN sang
+ * CHẶN-có-cờ, nên bảng commit lên mang một mức mà source đã commit KHÔNG sinh ra. Máy dev xanh, CI đỏ,
+ * và thông báo lúc đó chỉ nói "bảng lệch source" nên mất một vòng mới truy ra.
+ *
+ * Bảng này là artifact sinh ra, nên nó phải sinh từ NỘI DUNG ĐÃ COMMIT. Đây cũng là họ lỗi "xanh máy
+ * dev, đỏ CI" mà kit đã dính ở chỗ khác: kết quả phụ thuộc môi trường chạy thì "xanh" hết nghĩa.
+ */
+function nguonBan(rows) {
+  let doi;
+  try {
+    /* eslint-disable-next-line global-require */
+    const { execFileSync } = require('child_process');
+    doi = new Set(execFileSync('git', ['status', '--porcelain', '--'], {
+      cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).split('\n').filter(Boolean).map((l) => l.slice(3).trim().split(' -> ').pop()));
+  } catch (e) {
+    return [];      // không phải git repo (gói phát hành) → bỏ qua, KHÔNG fail
+  }
+  return rows.map((r) => r.file).filter((f) => doi.has(f));
+}
+
 const data = build();
+const ban = nguonBan(data.rows);
+if (ban.length) {
+  console.error(`[gate-index] CẢNH BÁO: ${ban.length} file nguồn đang SỬA DỞ chưa commit, nên bảng sinh ra ở đây`);
+  console.error('             có thể khác bảng mà CI sinh từ nội dung đã commit:');
+  for (const f of ban) console.error(`               ${f}`);
+  console.error('             Commit phần sửa đó TRƯỚC rồi mới chạy `npm run gates:index`.');
+}
 const md = render(data);
 
 if (process.argv.includes('--json')) {
@@ -218,6 +250,16 @@ if (process.argv.includes('--json')) {
     process.exit(1);
   }
   if (cur.replace(/\r\n/g, '\n').trim() !== md.trim()) {
+    /*
+     * Cây làm việc BẨN thì lệch là chuyện đương nhiên, và kết tội bảng ở đó là oan. Bảng là artifact
+     * của nội dung ĐÃ COMMIT, nên chỉ phán được khi source sạch. CI luôn checkout sạch nên nhánh này
+     * không bao giờ chạy ở CI — răng của gate giữ nguyên.
+     */
+    if (ban.length) {
+      console.error('[gate-index] KHÔNG PHÁN ĐƯỢC: bảng lệch, nhưng source đang sửa dở nên chưa kết luận được.');
+      console.error('             Commit phần sửa ở trên rồi chạy lại. Đây KHÔNG phải là đạt.');
+      process.exit(2);
+    }
     console.error('[gate-index] CHẶN: .agent/config/GATES.md LỆCH source (gate được thêm/xoá, hoặc một gate đã đổi mức CHẶN <-> CẢNH BÁO mà bảng không ghi). Chạy `npm run gates:index` rồi commit.');
     process.exit(1);
   }
