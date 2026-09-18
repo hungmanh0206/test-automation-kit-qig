@@ -140,6 +140,68 @@ test('cùng mã nhưng CÙNG nội dung ở hai trang thì không phải mơ h�
 });
 
 /*
+ * BA trạng thái. Luật của kit: "không phán được" KHÔNG thành PASS. Im lặng exit 0 khi
+ * chưa đủ dữ kiện là phát ra tín hiệu "đã kiểm và sạch" trong khi thật ra chưa kiểm được.
+ */
+test('không có tài liệu lành thì là KHÔNG PHÁN ĐƯỢC, không phải đạt', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'docs-index-trong-'));
+  const f = cites(dir, 'Case kiểm BR-01.\n');
+  const r = run(dir, ['--verify', f, '--enforce']);
+  expect(r.out).toContain('KHÔNG PHÁN ĐƯỢC');
+  expect(r.code).toBe(2);
+});
+
+test('testcase không nhắc neo nào cũng là KHÔNG PHÁN ĐƯỢC', () => {
+  const dir = docsFixture();
+  const f = cites(dir, 'Case này không trích neo nào cả.\n');
+  const r = run(dir, ['--verify', f, '--enforce']);
+  expect(r.out).toContain('KHÔNG PHÁN ĐƯỢC');
+  expect(r.code).toBe(2);
+});
+
+/*
+ * Ngưỡng entity theo TỈ LỆ, không theo số đếm. Bản đầu dùng `entity > 0` và đã vứt hai file spec
+ * chính của một task vì đúng 1 và 3 entity, rồi quay sang kết tội testcase trích luật không tồn tại.
+ */
+test('một entity lẻ trong file lớn KHÔNG loại file đó khỏi chỉ mục', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'docs-index-ent-'));
+  fs.writeFileSync(path.join(dir, 'to.md'), `# Spec lớn
+
+## Page ID: 910001
+## Version: v1 (2026-01-01)
+
+| BR | Rule | AC |
+| --- | --- | --- |
+| BR-42 | Một quy tắc quan trọng, có m&ocirc;̣t entity sót | AC-4.2 |
+
+${'Chữ nghiệp vụ dài dòng để file đủ lớn. '.repeat(120)}
+`, 'utf8');
+  const r = run(dir, ['--cite', 'BR-42']);
+  expect(r.code).toBe(0);
+  expect(r.out).toContain('to.md:8');
+});
+
+/*
+ * Tài liệu KHÔNG mang page id vẫn phải vào chỉ mục. Trích dẫn chỉ cần file kèm số dòng. Đo thật:
+ * một task có 108 KB spec lành nhưng tên file không chứa id, và cả hai máy coi như task không có
+ * tài liệu nào.
+ */
+test('tài liệu không có page id vẫn trích dẫn được', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'docs-index-noid-'));
+  fs.writeFileSync(path.join(dir, 'spec_bao-luu.md'), `# Spec không có id
+
+| BR | Rule |
+| --- | --- |
+| BR-77 | Quy tắc nằm trong file không có page id |
+
+${'Chữ nghiệp vụ. '.repeat(60)}
+`, 'utf8');
+  const r = run(dir, ['--cite', 'BR-77']);
+  expect(r.code).toBe(0);
+  expect(r.out).toContain('spec_bao-luu.md:5');
+});
+
+/*
  * Trích dẫn cần SỐ DÒNG. File do bộ đổi cũ sinh ra dồn cả trang vào một dòng, trỏ vào "dòng 1" của
  * một trang 8 KB thì không phải trích dẫn. Trang nào có bản tốt hơn thì phải lấy bản đó.
  */

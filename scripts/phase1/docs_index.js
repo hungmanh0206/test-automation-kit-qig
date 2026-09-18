@@ -23,7 +23,11 @@
  *   node scripts/phase1/docs_index.js --task SAPP-26878 --cite BR-07
  *   node scripts/phase1/docs_index.js --task SAPP-26878 --verify <file.md|file.xlsx.md ...>
  *
- * Exit: 0 đạt · 1 có neo không tra được và đang bật --enforce · 2 dùng sai.
+ * Exit (chỉ có ý nghĩa khi bật `--enforce`; mặc định luôn 0 vì đây là báo cáo):
+ *   0 đạt · 1 có neo không tra được · 2 KHÔNG PHÁN ĐƯỢC hoặc dùng sai.
+ *
+ * BA trạng thái chứ không phải hai. Luật của kit: "không phán được" KHÔNG thành PASS. Không có tài
+ * liệu lành, hoặc testcase không nhắc neo nào, thì máy này chưa kết luận được gì.
  */
 
 const fs = require('fs');
@@ -94,7 +98,8 @@ function chonBanTot(rows) {
 }
 
 function buildIndex(dir) {
-  const rows = scanDir(dir);
+  /* Chỉ mục lấy CẢ tài liệu không có page id: trích dẫn chỉ cần file kèm số dòng. */
+  const rows = scanDir(dir, { requireId: false });
   /* Mỗi trang một bản tốt nhất, rồi bản đó vẫn phải qua `lanh()`. Không qua thì bỏ hẳn trang. */
   const ungVien = chonBanTot(rows);
   const dung = ungVien.filter(lanh);
@@ -212,6 +217,20 @@ function verify(idx, files) {
   console.log(`[docs-index] ${idx.anchors.size} neo trong ${idx.soFileDung} tài liệu lành.`);
   console.log(`             ${tong} neo được nhắc ở ${files.length} file đang soát.`);
 
+  /*
+   * BA trạng thái, không phải hai. Luật của kit: "không phán được" KHÔNG thành PASS.
+   *
+   * Không có tài liệu lành, hoặc testcase không nhắc neo nào, thì máy này không kết luận được gì. Im
+   * lặng exit 0 ở đó là phát ra tín hiệu "đã kiểm và sạch" trong khi thật ra chưa kiểm được. Đúng kiểu
+   * sạch-giả mà chính máy này đã dính ba lần trong ngày viết ra nó.
+   */
+  if (!idx.soFileDung || !tong) {
+    console.log('\n  KHÔNG PHÁN ĐƯỢC — chưa đủ dữ kiện để kiểm, và đây KHÔNG phải là đạt.');
+    if (!idx.soFileDung) console.log('    Không có tài liệu lành nào. Chạy `npm run docs:health` xem vì sao.');
+    if (!tong) console.log('    Testcase không nhắc neo nào, nên không có gì để đối chiếu.');
+    return 2;
+  }
+
   /* Neo tra được nhưng định nghĩa ở nhiều trang: trích một mình nó chưa chỉ ra luật nào. */
   const moHo = [...idx.anchors.values()]
     .filter((r) => moHoThat(r) && nhac.has(r.anchor) && khongPhamVi.has(r.anchor))
@@ -250,7 +269,11 @@ function main() {
   if (cite) process.exit(inCite(idx, cite.toUpperCase(), opt('in')));
 
   const files = rest('verify');
-  if (files.length) process.exit(flag('enforce') ? verify(idx, files) : (verify(idx, files), 0));
+  if (files.length) {
+    const ma = verify(idx, files);
+    /* 2 = khong phan duoc. Mac dinh chi bao cao, --enforce moi chan. */
+    process.exit(flag('enforce') ? ma : 0);
+  }
 
   const out = path.join(dir, '_anchors.json');
   const data = {

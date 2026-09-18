@@ -64,6 +64,12 @@ function docMeta(text, fileName) {
   const id = (text.match(/Page ID:\s*(\d+)/) || [])[1]
     || (text.match(/^>\s*id\s+(\d+)/m) || [])[1]
     || (fileName.match(/^(\d{6,})/) || [])[1]
+    /*
+     * Id cũng có thể nằm GIỮA tên file, kiểu `ref_1437794348_fs-bulk-update.md`. Đòi nó đứng đầu thì
+     * bỏ sót. Nhưng ở giữa thì bắt buộc 9 chữ số trở lên: id Confluence thật dài 9 tới 10 chữ số, còn
+     * `8` chữ số sẽ nuốt nhầm ngày tháng kiểu `spec-20260918-v2.md`.
+     */
+    || (fileName.match(/(?:^|[^\d])(\d{9,})(?:[^\d]|$)/) || [])[1]
     || null;
   const v = (text.match(/Version:\s*v(\d+)/) || [])[1]
     || (text.match(/^>\s*id\s+\d+\s*[^\d]+\s*version\s+(\d+)/m) || [])[1]
@@ -71,7 +77,15 @@ function docMeta(text, fileName) {
   return { id, version: v ? Number(v) : null };
 }
 
-function scanDir(dir) {
+/*
+ * `requireId: false` lấy CẢ tài liệu không mang page id.
+ *
+ * `docs_health` cần id vì việc của nó là đối chiếu version, không có id thì không hỏi Confluence được.
+ * Nhưng `docs_index` chỉ cần trích dẫn, mà trích dẫn chỉ cần file với số dòng. Đo thật trên SAPP-28515:
+ * 108 KB spec lành, có bảng đầy đủ, nhưng tên file là `spec_bao-luu-...md` nên không có id, và cả hai
+ * máy coi như task đó KHÔNG CÓ tài liệu nào. Vứt tài liệu tốt vì thiếu một con số là sai.
+ */
+function scanDir(dir, { requireId = true } = {}) {
   const out = [];
   (function walk(d) {
     let entries;
@@ -82,11 +96,13 @@ function scanDir(dir) {
       if (!e.name.endsWith('.md')) continue;
       const text = fs.readFileSync(p, 'utf8');
       const meta = docMeta(text, e.name);
-      if (!meta.id) continue;                       // không phải tài liệu fetch từ Confluence
+      if (requireId && !meta.id) continue;          // không đối chiếu version được
       const body = text.replace(/^#[^\n]*\n/gm, '').trim();
       out.push({
         file: p,
-        id: meta.id,
+        /* Không có id thì lấy chính đường dẫn làm khoá, để hai file khác nhau không bị gộp làm một. */
+        id: meta.id || `file:${p}`,
+        coId: Boolean(meta.id),
         version: meta.version,
         bytes: body.length,
         dongBang: text.split('\n').filter((l) => l.trim().startsWith('|')).length,
@@ -120,11 +136,25 @@ function confluenceClient() {
   });
 }
 
+/*
+ * Ngưỡng entity tính theo TỈ LỆ trên 1000 ký tự, không theo số đếm.
+ *
+ * Bản đầu dùng `entity > 0` và đã loại oan hai file spec chính của một task: 34 KB với 151 dòng bảng
+ * bị vứt vì **một** entity, 48 KB bị vứt vì **ba**. Tệ hơn, chỉ mục sau đó quay sang kết tội testcase
+ * là trích luật không tồn tại, trong khi luật nằm đúng trong hai file vừa bị loại.
+ *
+ * Đo trên 483 tài liệu: 58 file còn entity, và chúng tách thành hai chế độ rõ rệt.
+ *   · rải rác     — cao nhất **1,00** trên 1000 ký tự (4 entity trong 4 KB). Chữ vẫn đọc được.
+ *   · hỏng hệ thống — thấp nhất **1,55**, lên tới 28. Đây là file chưa giải entity bao giờ.
+ * Ngưỡng đặt vào giữa khoảng trống đó. Số này lấy từ corpus thật, không phải chọn cho tròn.
+ */
+const NGUONG_ENTITY_RATE = 1.2;
+
 /** Một file coi là LÀNH khi không dính phép đo nào. */
 function lanh(r) {
   if (r.bytes < NGUONG_RONG) return false;
   if (r.srcTables > 0 && r.dongBang === 0) return false;
-  if (r.entity > 0) return false;
+  if (r.entity / (r.bytes / 1000) > NGUONG_ENTITY_RATE) return false;
   if (r.liveVersion && r.version !== r.liveVersion) return false;
   return true;
 }
@@ -141,7 +171,7 @@ function baoCao(rows, { strict }) {
 
   const rong = soat.filter((r) => r.bytes < NGUONG_RONG);
   const matBang = soat.filter((r) => r.srcTables > 0 && r.dongBang === 0);
-  const conEntity = soat.filter((r) => r.entity > 0);
+  const conEntity = soat.filter((r) => r.entity / (r.bytes / 1000) > NGUONG_ENTITY_RATE);
   const lech = soat.filter((r) => r.liveVersion && r.version && r.liveVersion !== r.version);
   const chuaBiet = soat.filter((r) => r.liveVersion && !r.version);
 
@@ -250,7 +280,7 @@ async function main() {
  * dòng, mà file do bộ đổi cũ sinh ra dồn cả trang vào một dòng — trích dẫn vào đó là vô nghĩa. Vì vậy
  * phải chép chung một định nghĩa "lành", không được có hai bản lệch nhau.
  */
-module.exports = { scanDir, lanh, docMeta, NGUONG_RONG };
+module.exports = { scanDir, lanh, docMeta, NGUONG_RONG, NGUONG_ENTITY_RATE };
 
 if (require.main === module) {
   main().catch((e) => { console.error(e.message); process.exit(2); });

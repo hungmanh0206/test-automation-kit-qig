@@ -7,6 +7,41 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-18 (khuya) — Dụng cụ đo sai thì mọi "phát hiện" của nó đều là báo oan
+
+**Định làm gì.** Bước E của kế hoạch là cho `docs:index` mọc răng: neo không tra được thì chặn.
+Trước khi bật, đo bán kính nổ trên **cả 16 task** trong `outputs/`.
+
+**Đo lần đầu: 14 trên 16 task có số không tài liệu lành.** Hai task còn lại bị báo là trích luật
+không tồn tại. Nếu bật chặn lúc đó thì gate đã đổ lỗi cho người viết testcase vì một lỗi của chính dụng cụ.
+
+**Ba khiếm khuyết trong dụng cụ, đều là của bản vừa giao hôm nay:**
+
+| Lỗi | Hậu quả đo được |
+| --- | --- |
+| ngưỡng `entity > 0` | file spec 34 KB với 151 dòng bảng bị vứt vì **một** entity; file 48 KB vứt vì **ba** |
+| id phải đứng đầu tên file | bỏ sót `ref_1437794348_fs-bulk-update.md` |
+| đòi phải có page id | bỏ sót 108 KB spec lành vì tên file không mang id |
+
+Sửa xong, đo lại: **0 trên 16 task có neo không tra được**. Một task từ 14 neo "bịa" xuống 0, task kia
+từ 25 xuống 0. Toàn bộ phát hiện của bản cũ là báo oan.
+
+**Ngưỡng entity nay tính theo TỈ LỆ.** Đo 483 tài liệu: 58 file còn entity, tách thành hai chế độ rõ
+rệt. Rải rác cao nhất **1,00** trên 1000 ký tự. Hỏng hệ thống thấp nhất **1,55**, lên tới 28. Ngưỡng đặt
+vào giữa khoảng trống đó.
+
+**Thêm trạng thái thứ ba: KHÔNG PHÁN ĐƯỢC.** Luật của kit là "không phán được" KHÔNG thành PASS.
+Không có tài liệu lành, hoặc testcase không nhắc neo nào, thì máy nói thẳng là chưa kết luận được.
+Im lặng exit 0 ở đó là phát ra tín hiệu "đã kiểm và sạch" trong khi chưa kiểm được.
+
+**Đã nối vào `self-review`, mức CẢNH BÁO chứ không chặn.** Số đo cho phép chặn, vì không task nào đỏ.
+Nhưng chính bộ đo này đã báo oan ba lần trong ngày viết ra nó. Công cụ còn non thì chưa nên cầm
+quyền chặn. Bật `--enforce` khi nào nó chạy đủ lâu trên task thật.
+
+**Đối chứng âm bắt được thêm một lỗi nữa.** Bản đầu của phần nối vào `self-review` kiểm "neo nào
+thiếu" TRƯỚC khi hỏi "có tài liệu để đối chiếu không". Task không có tài liệu thì mọi neo đều thành
+"không tra được", và máy quay sang kết tội người viết testcase. Đúng cái bẫy vừa chẩn đoán ở trên.
+
 ## 2026-09-18 (tối) — Neo oracle phải tra ngược được về tài liệu, kèm số dòng
 
 **Vấn đề.** Kit đã bắt buộc mọi phán PASS/FAIL phải kèm `oracle_ref`, và có máy kiểm ở

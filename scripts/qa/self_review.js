@@ -226,6 +226,45 @@ if (statusFile && fs.existsSync(statusFile)) {
     }
   }
 
+  // 6b-ter) NEO ORACLE phải tra ngược được về tài liệu.
+  //
+  // Máy cũ (`scripts/lib/expansion/finding.js`) chỉ kiểm HÌNH DẠNG chuỗi `oracle_ref`, nên `BR-99` qua cửa y
+  // như `BR-07` kể cả khi tài liệu không có mục đó. Ở đây hỏi câu còn lại: neo ấy CÓ THẬT trong tài liệu
+  // không. Đo trên 16 task đang có trong `outputs/`: 0 task có neo không tra được, nên bật lên không làm ai
+  // đỏ oan — nhưng vẫn để mức CẢNH BÁO, vì chính bộ đo này đã báo oan ba lần trong ngày viết ra nó (ngưỡng
+  // entity, id phải đứng đầu tên file, luật mơ hồ). Công cụ còn non thì chưa nên cầm quyền chặn.
+  if (taskDir) {
+    try {
+      /* eslint-disable-next-line global-require */
+      const { buildIndex, ANCHOR_RE } = require('../phase1/docs_index');
+      const reqDir = path.join(taskDir, 'requirements');
+      const tcDir = path.join(taskDir, 'test-cases');
+      if (fs.existsSync(reqDir) && fs.existsSync(tcDir)) {
+        const idx = buildIndex(reqDir);
+        const files = fs.readdirSync(tcDir)
+          .filter((f) => f.endsWith('.md') && !f.includes('.bak') && !f.includes('.pre-'));
+        const nhac = new Set();
+        for (const f of files) {
+          const txt = fs.readFileSync(path.join(tcDir, f), 'utf8');
+          ANCHOR_RE.lastIndex = 0;
+          let m = ANCHOR_RE.exec(txt);
+          while (m) { nhac.add(m[0]); m = ANCHOR_RE.exec(txt); }
+        }
+        const thieu = [...nhac].filter((a) => !idx.anchors.has(a));
+        /*
+         * THỨ TỰ QUAN TRỌNG: hỏi "có tài liệu để đối chiếu không" TRƯỚC.
+         * Bản đầu kiểm `thieu` trước, nên một task không có tài liệu lành nào thì MỌI neo đều "không
+         * tra được" và máy quay sang kết tội người viết testcase. Đối chứng âm bắt được đúng lỗi này.
+         */
+        if (nhac.size && !idx.soFileDung) {
+          warnings.push(`Testcase trích ${nhac.size} neo mà task KHÔNG có tài liệu lành nào để đối chiếu — đây KHÔNG phải là đạt, và cũng KHÔNG phải lỗi của testcase. Chạy \`npm run docs:health -- --task <KEY>\` xem vì sao.`);
+        } else if (thieu.length) {
+          warnings.push(`${thieu.length} neo trong testcase KHÔNG tra được về tài liệu: ${thieu.slice(0, 8).join(', ')}${thieu.length > 8 ? '…' : ''}. Mỗi neo ở đây là một phán quyết chưa có căn cứ, hoặc một neo đã bị gỡ khỏi spec. Soi bằng \`npm run docs:cite -- --task <KEY> <neo>\`.`);
+        }
+      }
+    } catch (e) { /* thiếu tài liệu hoặc thư mục → các nhánh khác của self-review đã nói rồi */ }
+  }
+
   // 6c) system/ — bộ TC có case guard/phân quyền/trạng thái mà chưa có bản đồ nào ⇒ oracle của mấy case đó
   // đang phải suy từ app (tautology). Dò bằng dấu hiệu trong tiêu đề case, không đoán theo module.
   if (taskDir && !countJson('system')) {
