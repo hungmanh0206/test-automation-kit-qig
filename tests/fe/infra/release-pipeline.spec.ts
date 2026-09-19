@@ -211,12 +211,21 @@ test.describe('@infra phát hành kit — script chạy được từ ZIP (khôn
    * Phía GitLab suy ra bằng danh sách strip, không viết tay.
    */
   test('bảng số đo trong QUICKSTART khớp cây thật (file track · số spec, cả hai remote)', () => {
-    const qs = fs.readFileSync(path.join(REPO, 'QUICKSTART.md'), 'utf8');
-    const strip = JSON.parse(fs.readFileSync(path.join(REPO, '.agent/config/gitlab_strip.json'), 'utf8')).strip as { path: string }[];
-
+    /*
+     * MỌI điều kiện bỏ qua phải đứng TRƯỚC lần đọc file đầu tiên.
+     * Bản trước đọc `gitlab_strip.json` ở dòng đầu rồi mới `test.skip`, nên nó ĐỎ trong gói phát hành —
+     * gói cố ý không mang file đó (nó khai đường dẫn riêng của repo này, thuộc lớp PROJECT).
+     * Bài học lặp lại lần thứ hai trong cùng một phiên: spec hạ tầng mới phải chạy thử TRONG GÓI, không
+     * chỉ trong repo.
+     */
     const { spawnSync } = require('child_process');
+    const stripPath = path.join(REPO, '.agent/config/gitlab_strip.json');
+    test.skip(!fs.existsSync(stripPath), 'gói phát hành không mang gitlab_strip.json (lớp PROJECT) — không có mốc để so');
     const lsFiles = spawnSync('git', ['ls-files'], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
     test.skip(lsFiles.status !== 0, 'không có .git (gói phát hành) — không đếm được cây track');
+
+    const qs = fs.readFileSync(path.join(REPO, 'QUICKSTART.md'), 'utf8');
+    const strip = JSON.parse(fs.readFileSync(stripPath, 'utf8')).strip as { path: string }[];
     const soFile = String(lsFiles.stdout).split(/\r?\n/).filter((x: string) => x.trim()).length;
 
     const sc = spawnSync(process.execPath, [path.join(REPO, 'scripts/qa/ci_scope_check.js')], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
