@@ -92,8 +92,15 @@ const ok = (name, cond, got) => {
   ok('MỌI thẻ ghi nguồn trong repo', await p.locator('.tcard .cfoot:not(:empty)').count() === total);
   await p.fill('#q', 'oracle doc lap'); await p.waitForTimeout(300);
   ok('tìm không dấu ra được từ có chữ đ', await p.locator('.tcard').count() > 0);
-  await p.locator('.tcard').first().click(); await p.waitForTimeout(400);
-  ok('drawer mở đúng mục', await p.locator('#dTitle').innerText() === 'Oracle độc lập');
+  /* So drawer với CHÍNH thẻ vừa bấm, không neo vào một tên cố định.
+     Bản cũ neo cứng 'Oracle độc lập' nên nó đang đo THỨ HẠNG TÌM KIẾM chứ không đo thứ nó nói là đo:
+     thêm một mục mới có chữ "oracle" và "lập chỉ mục" là nó đỏ, dù drawer vẫn mở đúng thẻ. */
+  const theDau = p.locator('.tcard').first();
+  const tenThe = (await theDau.locator('h3, .tname').first().innerText()).trim();
+  /* Chốt chống pass-giả: bộ chọn tên hỏng thì tenThe rỗng, và rỗng === rỗng sẽ xanh mà không kiểm gì. */
+  ok('đọc được tên thẻ để đối chiếu', tenThe.length > 2, tenThe);
+  await theDau.click(); await p.waitForTimeout(400);
+  ok('drawer mở đúng mục vừa bấm', (await p.locator('#dTitle').innerText()).trim() === tenThe, tenThe);
   ok('drawer có khối "vì sao"', await p.locator('#secWhy:not([hidden])').count() === 1);
   ok('drawer có khối "dùng thế nào"', await p.locator('#dHow li').count() > 0);
   ok('drawer có ví dụ và bẫy', await p.locator('#secEx:not([hidden])').count() === 1

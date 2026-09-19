@@ -582,6 +582,41 @@ if (!exists(COURSE_MD)) {
      * hàng loạt, mà không phiền vài chỗ dùng hợp lý.
      *
      * Sàn lấy từ số đo THẬT sau khi đã dọn một lượt, cộng biên độ nhỏ. */
+    /* LIÊN KẾT CHÉO giữa các mục thư viện.
+     *
+     * Mỗi mục có trường rel trỏ sang mục khác, và trang dựng đường đi từ đó. Trỏ sai id thì liên kết
+     * biến mất IM LẶNG: không lỗi, không cảnh báo, chỉ là mục đó bớt một đường tới. Đã dính hai lần.
+     * Đo ngày 19/09/2026: 207 mục · 0 rel đứt · 0 id trùng — nên mốc là 0 tuyệt đối, không phải ratchet. */
+    {
+      const tDir = path.join(ROOT, 'docs', 'library', 'src', 'terms');
+      let src = '';
+      for (const f of fs.readdirSync(tDir)) {
+        if (f === '_merge.js') continue;
+        src += fs.readFileSync(path.join(tDir, f), 'utf8') + '\n';
+      }
+      const ids = new Set();
+      const dem = Object.create(null);
+      for (const m of src.matchAll(/\{\s*id:'([^']+)'/g)) {
+        ids.add(m[1]);
+        dem[m[1]] = (dem[m[1]] || 0) + 1;
+      }
+      const dut = [];
+      for (const m of src.matchAll(/\bid:'([^']+)'[\s\S]*?rel:\[([^\]]*)\]/g)) {
+        for (const r of m[2].matchAll(/'([^']+)'/g)) {
+          if (!ids.has(r[1])) dut.push(m[1] + ' → ' + r[1]);
+        }
+      }
+      const trung = Object.keys(dem).filter((k) => dem[k] > 1);
+      if (dut.length || trung.length) {
+        const dong = [];
+        if (dut.length) dong.push(dut.length + ' liên kết rel trỏ tới id KHÔNG tồn tại:\n        ' + dut.slice(0, 10).join('\n        '));
+        if (trung.length) dong.push(trung.length + ' id bị TRÙNG: ' + trung.join(', '));
+        problems.push('thư viện thuật ngữ đứt liên kết:\n      ' + dong.join('\n      '));
+      } else {
+        ok.push(ids.size + ' mục thư viện: 0 rel đứt · 0 id trùng');
+      }
+    }
+
     /* Byte điều khiển trong NGUỒN CỦA TRANG.
      *
      * Đã dính hai lần. Lần đầu ở một bài giảng (ví dụ kiểm includes('\0') viết bằng NUL thật), lần

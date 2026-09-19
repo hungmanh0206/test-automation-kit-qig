@@ -78,6 +78,40 @@ const TERMS_CONCEPT2 = [
   detail:'Case rời khỏi Excel canonical thì chuyển Deprecated. Quay lại thì chuyển Published.',
   why:'Ràng buộc của công cụ, nhưng hoá ra lại đúng hướng: giữ case nghĩa là giữ nguyên lịch sử các lượt chạy đã gắn vào nó. Xoá cho sạch là mất luôn phần lịch sử đó.',
   trap:'Vì không xoá được nên phải dry-run trước mọi lượt publish, đẩy nhầm thì không rút lại được.',
-  src:'scripts/integrations/aio/README.md', rel:['f-aio','g-aio_deprecate_stale','sk-jira_testcase_publisher'] }
+  src:'scripts/integrations/aio/README.md', rel:['f-aio','g-aio_deprecate_stale','sk-jira_testcase_publisher'] },
+
+/* ── Bốn khái niệm rút ra từ đợt sửa dụng cụ đo tháng 9/2026 ─────────────── */
+
+{ id:'c-tin-hieu-sach-gia', t:'Tín hiệu sạch-giả', cat:'concept',
+  def:'Máy đo in ra "không có vấn đề" trong khi nó chưa hề nhìn tới phần lớn dữ liệu.',
+  detail:'Nguy hiểm hơn không có máy, vì không có máy thì người ta còn đi kiểm tay; có máy báo sạch thì không ai kiểm nữa. Ba dạng đã gặp trong kit này: máy chỉ nhận MỘT khuôn dữ liệu rồi bỏ qua khuôn khác mà vẫn in sạch · câu tóm tắt đọc ra nghĩa mạnh hơn thứ máy thật sự đo · và phép so bằng THỜI GIAN thay vì bằng NỘI DUNG.',
+  why:'Bốn lần đo sai trong repo này đều cùng một hình dạng: dụng cụ hỏng, và mọi "phát hiện" của nó là báo oan hoặc bỏ sót. Con số "13 task không có tài liệu lành" hoá ra sai hẳn; số thật là 2.',
+  how:['Mỗi máy mới phải có ĐỐI CHỨNG ÂM: bơm vào một mẫu sai đã biết, máy phải gọi đúng tên nó.','Câu máy in ra phải nói đúng thứ nó đo. "Không có tài liệu Confluence nào" khác hẳn "không đọc được id của tài liệu nào".','Nghi ngờ mọi phép đo trả về 0 vi phạm ngay lượt đầu.'],
+  ex:'docs:health bản đầu chỉ nhận khuôn "Page ID:" nên bỏ sót nguyên một thư mục 16 file, mà vẫn in tín hiệu sạch.',
+  src:'scripts/phase1/docs_health.js', rel:['g-docs_health','c-gate-real-content','g-mutation_check','c-oracle'] },
+
+{ id:'c-noi-dung-khong-phai-thoi-gian', t:'So nội dung, đừng so thời gian', cat:'concept',
+  def:'Câu hỏi "bản sinh ra có khớp nguồn không" phải trả lời bằng cách dựng lại rồi đối chiếu, không bằng dấu thời gian.',
+  detail:'Hai cách lấy thời gian làm proxy đều đã hỏng trong repo này. Theo mtime: git không giữ mtime nên sau khi clone, thứ tự checkout quyết định tất cả, và bản build luôn bị coi là CŨ hơn nguồn trên CI. Theo thời điểm commit: hết đỏ oan nhưng sinh lỗi ngược — commit một file nguồn mà output không đổi làm bản build trông như cũ mãi mãi.',
+  why:'Cả hai đều đang đo một thứ KHÁC với thứ cần biết. Thời gian chỉ tương quan với nội dung, và tương quan thì gãy ở đúng những lúc đáng tin nhất.',
+  how:['Ghép lại trong bộ nhớ rồi so, không ghi gì ra đĩa.','Dùng chính đường ghép thật, đừng nhân bản logic sang gate — hai bản sẽ trôi khỏi nhau.','Điều kiện cần: quá trình dựng phải TẤT ĐỊNH. Hai lượt phải cho ra byte giống nhau.'],
+  ex:'library:drift đổi sang build.js --check: ghép trong bộ nhớ rồi đối chiếu nội dung. Trước đó cây làm việc báo đúng còn hai worktree vừa checkout và log CI đều báo oan.',
+  src:'docs/library/build.js', rel:['g-library_drift','c-tin-hieu-sach-gia','c-crlf-cua-doc'] },
+
+{ id:'c-crlf-cua-doc', t:'Chuẩn hoá xuống dòng ở CỬA ĐỌC', cat:'concept',
+  def:'Đổi CRLF về LF một lần ngay lúc đọc file, thay vì vá từng biểu thức chính quy.',
+  detail:'Git áp core.autocrlf nên bản checkout trên Windows là CRLF, còn blob và CI là LF. Mọi regex phụ thuộc \n đều vỡ ở máy mà vẫn xanh ở CI — đúng loại lỗi khó nhất để tin.',
+  why:'Một file có 281 chỗ dùng \n và 0 chỗ phòng CRLF thì vá từng chỗ là sai cách: chỉ cần bỏ sót một chỗ là lỗi vẫn còn, mà lại khó thấy hơn. Chuẩn hoá một dòng ở cửa đọc phủ hết.',
+  how:['Chuẩn hoá ở MỌI cửa đọc, kể cả cửa chỉ đọc để đếm.','Nội dung đi qua JSON.stringify thì \r sống sót thành escape, khiến bản build trên Windows KHÁC bản build trên Linux dù nguồn y hệt.'],
+  ex:'Một gốc lỗi, ba biểu hiện cùng ngày: parser giáo trình đọc ra 0 chặng, bản build lệch theo hệ điều hành, và gate đếm được 0 khối mã trong khi sàn là 78.',
+  src:'docs/library/src/course_parse.js', rel:['c-noi-dung-khong-phai-thoi-gian','g-library_drift','c-tin-hieu-sach-gia'] },
+
+{ id:'c-bo-doi-confluence', t:'Bộ đổi tài liệu ăn mất bảng', cat:'concept',
+  def:'Gỡ thẻ HTML bằng một biểu thức chính quy làm mất sạch bảng và khối mã, mà file vẫn trông bình thường.',
+  detail:'Cách làm cũ là replace thẻ bằng dấu cách rồi gộp khoảng trắng. Kết quả: cả trang thành một dòng, không còn dòng bảng nào, và khối CDATA bị ăn trọn khi ruột không có dấu lớn hơn — tức mất luôn AC viết bằng Gherkin trong macro code.',
+  why:'Ở tài liệu dự án này thì điều kiện chấp nhận NẰM TRONG BẢNG. File fetch về vẫn có heading, vẫn có chữ, nên không ai nghi ngờ. Đo trên 12 trang thật: giữ được bảng 0/12, dòng Given/When/Then 0/66.',
+  how:['Tách bộ đổi ra module dùng chung rồi test nó, thay vì để trong thân script CLI — phần nằm trong thân script không export gì thì không có cách nào phủ test.','Test phải chốt HAI vế: bộ đổi giữ được bảng, VÀ các fetcher thực sự gọi nó. Thiếu vế hai thì ai cũng có thể viết lại một dòng gỡ thẻ mà test vẫn xanh.'],
+  ex:'Sau khi sửa: bảng 12/12, Given/When/Then 66/66, không trang nào còn bị gộp một dòng.',
+  src:'scripts/lib/confluence/storage_to_markdown.js', rel:['g-docs_health','g-docs_index','c-tin-hieu-sach-gia','sk-requirements_analyzer'] },
 
 ];

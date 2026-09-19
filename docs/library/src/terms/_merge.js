@@ -3,7 +3,7 @@
    tách file chỉ để dễ sửa, không tạo thêm nhóm mới trên bản đồ (bản đồ 3D có đúng 6 cụm). */
 const TERMS = [].concat(
   TERMS_RULE,
-  TERMS_GATE, TERMS_GATE2, TERMS_GATE3, TERMS_GATE4,
+  TERMS_GATE, TERMS_GATE2, TERMS_GATE3, TERMS_GATE4, TERMS_GATE5,
   TERMS_SKILL,
   TERMS_CONCEPT, TERMS_CONCEPT2,
   TERMS_STATUS,
