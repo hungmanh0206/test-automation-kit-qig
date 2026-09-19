@@ -85,6 +85,15 @@ function readDynamically(key: string, blob: string, suffixes: string[]): boolean
  * của luật ①, dài ra là luật mất tác dụng.
  */
 const DOC_ONLY: Record<string, string> = {
+  /*
+   * Ba khoá HubSpot: TRONG REPO thì `tests/support/setup/db/verify.*.spec.ts` có đọc, nhưng mấy spec
+   * đó thuộc lớp PROJECT và cố ý KHÔNG đi theo gói phát hành. Hệ quả đo được ngày 19/09/2026: giải
+   * nén gói rồi chạy suite thì luật này ĐỎ, vì trong gói thật sự không còn ai đọc. Khai ở đây để
+   * người nhận biết ba khoá này là chỗ ghi thông tin tích hợp, không phải thứ máy nào trong gói đọc.
+   */
+  HUBSPOT_BASE_URL: 'chỗ ghi endpoint HubSpot của dự án; code đọc nó là spec DB lớp PROJECT, không đi theo gói',
+  HUBSPOT_PORTAL_ID: 'id portal để người/agent tra cứu; cùng lý do với HUBSPOT_BASE_URL',
+  HUBSPOT_ACCESS_TOKEN: 'token cho spec DB lớp PROJECT; gói generic không mang spec đó nên không máy nào trong gói đọc',
   TASK_OUTPUT_DIR: 'dẫn xuất từ PROJECT_OUTPUT_DIR + TASK_KEY; khai ra để người dùng biết nó tồn tại và có thể ghi đè',
   OPS_URL: 'URL gốc của app để người/agent tra cứu; code dùng OPS_BASE_URL cho việc điều hướng thật',
   OPS_LOGIN_URL: 'ghi lại đường đăng nhập cho người mới vào dự án; luồng login thật dựng từ OPS_BASE_URL',

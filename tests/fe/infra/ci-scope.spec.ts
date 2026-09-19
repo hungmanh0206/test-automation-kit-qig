@@ -380,6 +380,16 @@ test.describe('@infra sync:gitlab — strip phải khai được và có máy th
   const CFG_STRIP = path.join(REPO, '.agent/config/gitlab_strip.json');
   const SCRIPT = path.join(REPO, 'scripts/utils/sync_gitlab.js');
 
+  /*
+   * `gitlab_strip.json` khai đường dẫn cần gỡ khi đẩy lên mirror GitLab CỦA MỘT CÔNG TY CỤ THỂ, nên
+   * nó không đi theo gói phát hành. Người nhận không có mirror đó, và cũng không có mấy file bị gỡ.
+   * Đo 19/09/2026: giải nén gói rồi chạy suite thì luật "đường dẫn strip phải có thật" ĐỎ, vì cả
+   * config lẫn file bị strip đều vắng. Bỏ qua khi VẮNG CẢ FILE CONFIG là đúng — còn nếu config có
+   * mặt thì mọi luật dưới vẫn chạy đủ răng.
+   */
+  const coConfig = fs.existsSync(CFG_STRIP);
+  test.skip(!coConfig, 'không có gitlab_strip.json — gói phát hành không mang mirror của công ty nào');
+
   test('mỗi mục strip PHẢI có `why` (strip im lặng = mất dấu quyết định)', () => {
     const cfg = JSON.parse(fs.readFileSync(CFG_STRIP, 'utf8'));
     expect(Array.isArray(cfg.strip)).toBe(true);

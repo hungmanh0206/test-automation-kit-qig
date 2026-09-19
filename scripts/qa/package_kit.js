@@ -57,7 +57,7 @@ const KEEP_FILES = [
   '.agent/config/kit-layers.md', '.agent/config/verdict_taxonomy.json',
   '.agent/config/case_types.json', '.agent/config/branch_parity.json', '.agent/config/ci_scope.json',
   '.agent/config/ci_parity.json',
-  '.agent/config/locators.schema.json', '.agent/config/gitlab_strip.json',
+  '.agent/config/locators.schema.json',
   /*
    * CẤU HÌNH MÁY MÓC — lớp GENERIC, phải đi theo gói.
    *

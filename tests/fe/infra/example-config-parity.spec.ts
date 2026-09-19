@@ -94,10 +94,15 @@ test('có ít nhất một cặp .example.json ↔ bản thật để đối chi
   expect(cap.length, 'không tìm thấy cặp nào — kiểm lại quy ước đặt tên').toBeGreaterThan(0);
 });
 
-test('mọi miễn trừ đều trỏ tới cặp CÓ THẬT (không để lại miễn trừ chết)', () => {
-  const co = new Set(cap.map((c) => c.ex));
-  const chet = Object.keys(MIEN_TRU).filter((f) => !co.has(f));
-  expect(chet, `miễn trừ trỏ vào cặp không còn tồn tại: ${chet.join(', ')}`).toEqual([]);
+test('mọi miễn trừ đều trỏ tới file mẫu CÓ THẬT (không để lại miễn trừ chết)', () => {
+  /*
+   * Đo theo FILE MẪU, không theo CẶP. Trong gói phát hành, bản `.json` thật của lớp PROJECT cố ý
+   * không đi kèm, nên cặp không tồn tại và miễn trừ nằm im — đó là đúng, không phải chết. Bản đầu
+   * của test này đo theo cặp nên ĐỎ ngay trong gói, tức là báo oan ở đúng nơi cần yên.
+   */
+  const coMau = new Set(fs.readdirSync(CONFIG).filter((f) => f.endsWith('.example.json')));
+  const chet = Object.keys(MIEN_TRU).filter((f) => !coMau.has(f));
+  expect(chet, `miễn trừ trỏ vào file mẫu không còn tồn tại: ${chet.join(', ')}`).toEqual([]);
 });
 
 for (const c of cap.filter((x) => !MIEN_TRU[x.ex])) {
