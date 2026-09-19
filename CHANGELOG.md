@@ -7,6 +7,39 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## v2.1.2 — 2026-09-19 — Soi chính thứ đã phát hành, không soi thứ định phát hành
+
+Lượt rà này tải về đúng file `kit-2.1.1.tar.gz` từ GitHub Release rồi kiểm trên đó. Góc đó tìm ra hai
+thứ mà kiểm trên bản dựng tại chỗ không thể thấy.
+
+### Prompt template GENERIC đang khai sự thật về DB của một dự án cụ thể
+
+`kit-layers.md` khai `prompt_templates/**` và `.agent/**` là lớp GENERIC. Ràng buộc nguyên văn: "phải
+KHÔNG chứa tên hệ thống hoặc task hoặc URL của dự án cụ thể". Nhưng gói 2.1.1 phát ra ngoài kèm mục
+"Hai giới hạn ĐÃ ĐO của DB NÀY". Mục đó khẳng định hai bảng cụ thể không có cột audit.
+Người nhận ở dự án khác đọc đó là sự thật về DB của họ. Họ cầm oracle của người khác.
+
+Vì sao không cửa nào bắt: `package_kit` cố ý bỏ qua mọi file `.md`. Lý do khai là "tài liệu tồn tại để
+kể ví dụ có thật". Lý do đó đúng với `README.md`, thứ người ĐỌC. Nó sai với prompt và workflow, thứ
+agent THI HÀNH. Nay `.md` dưới hai thư mục đó bị quét ở mức CHẶN, cùng mức với file dữ liệu.
+Đo trước khi bật: sau khi khái quát hoá 3 dòng vi phạm thì 0 hit trên cả hai thư mục.
+
+### Gói phát hành dùng LF, bản nghiệm thu tại chỗ dùng CRLF
+
+Gói trên Release dựng trên Linux nên toàn bộ 346 file là LF. Bản tôi nghiệm thu dựng trên Windows
+nên là CRLF. Nội dung giống hệt sau khi bỏ qua CR. Nhưng nghĩa là con số "508 xanh" trước đó đo trên
+bản thay thế, không phải trên bytes người dùng tải về.
+
+Đã chạy lại trên chính gói LF, trên Windows: 508 xanh, 19 bỏ qua, 0 đỏ. Công sức chuẩn hoá CRLF giữ
+được cả hai chiều.
+
+### Hai remote và toàn bộ lịch sử
+
+So blob SHA từng file: GitHub và GitLab giống hệt nhau. Chên lệch đúng 2 file strip có chủ ý.
+Quét secret trên **4.925 blob của toàn bộ lịch sử**, không chỉ cây hiện tại: **0 secret thật**.
+Hai phát hiện duy nhất là placeholder bị HTML-escape. Bộ lọc placeholder đã được dạy thêm dạng
+`&lt;...&gt;`.
+
 ## v2.1.1 — 2026-09-19 — Rà lại trước khi phát hành, và tìm ra một đường rò dữ liệu
 
 Một câu hỏi của chủ repo về "bộ nhớ có theo clone không" mở ra một lượt rà toàn bộ. Lượt đó tìm ra bốn

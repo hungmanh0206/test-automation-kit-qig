@@ -17,7 +17,12 @@ const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 // Luật secret khai ở `lib/secret_patterns.js` — MỘT NGUỒN, dùng chung với `package_kit.js`.
 const { PATTERNS, CRED_FILE, CRED_CONTENT } = require(require('path').resolve(__dirname, 'lib', 'secret_patterns'));
 const SKIP = /(\.example($|\.)|example\.env|\.md$|\.png$|\.jpg$|\.jpeg$|\.webp$|\.gif$|\.pdf$|\.zip$|\.xlsx$|\.ico$|package-lock\.json$)/i;
-const PLACEHOLDER = /your[-_]?|<[^>]+>|xxx+|placeholder|example|changeme|process\.env|\$\{?[A-Z_]/i;
+/*
+ * `&lt;...&gt;` là CHÍNH `<...>` sau khi HTML-escape. Thiếu vế đó thì cùng một dòng placeholder bị bỏ qua
+ * trong file `.md` nhưng lại bị báo trong file `.html`. Đo 19/09/2026 khi quét 4.925 blob lịch sử: đúng 2
+ * phát hiện, cả hai là `HUBSPOT_ACCESS_TOKEN=&lt;TEST_PRIVATE_APP_ACCESS_TOKEN&gt;` trong HTML xuất ra.
+ */
+const PLACEHOLDER = /your[-_]?|<[^>]+>|&lt;[^&\s]+&gt;|xxx+|placeholder|example|changeme|process\.env|\$\{?[A-Z_]/i;
 const BINARY = /\x00/;
 
 const SKIP_DIR = /^(node_modules|\.git|outputs|playwright-report|test-results|reports|\.claude|dist|build|coverage)$/;

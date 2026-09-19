@@ -154,8 +154,29 @@ function scanPackage(root, files) {
      *     "cùng khái niệm tiền, hai kiểu lưu" bằng bảng thật — đó là tri thức có ích, không phải oracle. Chặn
      *     ở đây là chặn oan, và gate báo oan một lần là mất uy tín vĩnh viễn.
      *
-     * Bản `.example.*` và `.md` bỏ qua hoàn toàn: chúng TỒN TẠI để kể ví dụ có thật.
+     * Bản `.example.*` và `.md` bỏ qua: chúng TỒN TẠI để kể ví dụ có thật.
+     *
+     * NGOẠI LỆ — `.md` dưới `prompt_templates/` và `.agent/` thì KHÔNG bỏ qua, và là CHẶN.
+     * Hai thư mục đó được `kit-layers.md` khai là lớp GENERIC với ràng buộc nguyên văn "phải KHÔNG chứa tên
+     * hệ thống/task/URL của dự án cụ thể". Khác biệt không nằm ở đuôi file mà ở VAI TRÒ: `README.md` là thứ
+     * người ĐỌC, còn prompt template và workflow là thứ agent THI HÀNH — chúng đóng vai oracle y như file
+     * dữ liệu, nên cùng mức chặn.
+     *
+     * Đo 19/09/2026: luật cũ bỏ qua mọi `.md` nên gói `kit-2.1.1` phát ra ngoài kèm mục
+     * "Hai giới hạn ĐÃ ĐO của DB NÀY" trong `prompt_templates/phase1/dimensions/23_db_persistence.md`,
+     * khẳng định `ic_payment_orders` không có cột audit. Người nhận ở dự án khác đọc đó là sự thật về DB
+     * của họ. Sau khi khái quát hoá lại: 0 hit trên toàn bộ `prompt_templates/**` và `.agent/**`, nên bật
+     * mức CHẶN không báo oan file nào đang có.
+     *
+     * Muốn giữ ví dụ thì khái quát hoá tên ("bảng đơn", "bảng giao dịch") — đó cũng đúng thứ luật lớp đòi.
      */
+    const laGenericDoc = /^(prompt_templates|\.agent)\//.test(f.split(path.sep).join('/'));
+    if (/\.md$/.test(f) && laGenericDoc) {
+      for (const m of PROJECT_MARKERS) {
+        if (m.re.test(body)) hits.push(`${f} — lớp GENERIC (prompt/workflow agent THI HÀNH) mang ${m.name}`);
+      }
+      continue;
+    }
     if (/\.md$|\.example\./.test(f)) continue;
     const isData = /\.(json|ya?ml)$/i.test(f);
     for (const m of PROJECT_MARKERS) {

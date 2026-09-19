@@ -52,7 +52,7 @@ Chạy pass này cho toàn bộ selected TC trước khi sinh/cập nhật spec.
 8. **Case Create/Update/Delete ⇒ kiểm CẢ bản ghi dưới DB (chiều §23, tag `[DbPersist]`):**
    `tests/support/setup/db/dbVerify.ts` — `expectRow` · `expectSoftDeleted` · `expectAbsent` · `expectCount` ·
    `snapshot`+`expectNoChange`. So sánh bằng matcher theo NGHĨA (`money`/`instant`/`text`), KHÔNG so thô:
-   cùng khái niệm tiền mà `ic_payment_orders.final_price` là `bigint` còn `transaction_orders.amount` là
+   cùng khái niệm tiền mà bảng đơn lưu `final_price` kiểu `bigint` còn bảng giao dịch lưu `amount` kiểu
    `varchar` ⇒ so thô đỏ hàng loạt dù DB lưu đúng.
    Vì sao bắt buộc: response API thường ECHO lại request và FE format lại giá trị, nên 7 lớp lỗi (đổi kiểu
    số · lệch múi giờ · cắt `varchar(n)` · xoá mềm hỏng · bảng liên quan không đổi · double-submit · rollback

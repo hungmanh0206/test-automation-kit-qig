@@ -97,6 +97,22 @@ test.describe('@infra phát hành kit — gói chỉ mang lớp GENERIC', () => 
     expect(r.warns.join(' '), 'code nhắc tên bảng phải được cảnh báo').toMatch(/b\.ts/);
     expect([...r.hits, ...r.warns].join(' '), 'tài liệu .md kể ví dụ là giá trị của tài liệu, không phải rò rỉ').not.toMatch(/c\.md/);
   });
+
+  /*
+   * `.md` ở `prompt_templates/` và `.agent/` KHÁC mọi `.md` khác: agent THI HÀNH chúng, nên tên bảng của
+   * dự án A trong đó là oracle sai đặt vào tay dự án B. Gói `kit-2.1.1` đã phát ra ngoài kèm đúng lỗi này.
+   */
+  test('.md lớp GENERIC (prompt/workflow) mang tên bảng dự án thì CHẶN, .md khác thì không', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pkgscan2-'));
+    const sub = path.join(tmp, 'prompt_templates', 'phase1');
+    fs.mkdirSync(sub, { recursive: true });
+    fs.writeFileSync(path.join(sub, 'd.md'), 'DB này: `ic_payment_orders` không có cột audit.');
+    fs.writeFileSync(path.join(tmp, 'e.md'), 'README kể lại `ic_payment_orders` như một ví dụ.');
+    const r = kit.scanPackage(tmp, ['prompt_templates/phase1/d.md', 'e.md']);
+    fs.rmSync(tmp, { recursive: true, force: true });
+    expect(r.hits.join(' '), 'prompt template mang tên bảng dự án phải CHẶN').toMatch(/d\.md/);
+    expect([...r.hits, ...r.warns].join(' '), '.md ngoài hai thư mục đó vẫn được kể ví dụ').not.toMatch(/e\.md/);
+  });
 });
 
 test.describe('@infra phát hành kit — workflow release', () => {

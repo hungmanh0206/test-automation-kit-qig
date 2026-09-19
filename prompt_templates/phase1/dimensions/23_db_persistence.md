@@ -144,10 +144,14 @@ Kết quả có giá trị nhất của vòng 3 lại là một câu **phủ đ�
 1.500.000) mà **con số đó không xuất hiện ở bất kỳ nhãn nào** trên tab Overview ⇒ lý do treo đổi từ *"trùng giá
 trị"* sang *"màn này không hiển thị"* — hai việc phải làm hoàn toàn khác nhau.
 
-## Hai giới hạn ĐÃ ĐO của DB này (đừng hứa thứ máy không làm được)
+## Hai giới hạn ĐÃ ĐO trên DỰ ÁN THAM CHIẾU (đừng hứa thứ máy không làm được)
 
-- **Không có audit hành động người dùng.** `ic_payment_orders` và `ic_payment_transaction_orders` KHÔNG có
-  cột nào ghi người sửa; `ic_payment_webhook_logs` là log webhook. ⇒ Ca #5 chỉ kiểm `updated_at`,
+> Hai mục dưới là số đo của MỘT dự án cụ thể, chép lại để kể **hình dạng của giới hạn**, không phải
+> sự thật về DB của bạn. Phải tự đo lại trên `information_schema` của dự án mình rồi mới khai
+> `conventions`. Dùng lại con số ở đây là lấy oracle của dự án khác.
+
+- **Không có audit hành động người dùng.** Bảng đơn và bảng giao dịch KHÔNG có cột nào ghi người sửa;
+  bảng log webhook chỉ là log. ⇒ Ca #5 chỉ kiểm `updated_at`,
   `expectAudit()` sẽ **từ chối** thay vì trả kết quả rỗng.
 - **39/39 cột thời gian là `timestamp WITHOUT time zone`** — dữ liệu không mang offset.
   `conventions.timestamps.storedZone = "UTC"`, xác định 27/08/2026 bằng phép đo READ-ONLY: bản ghi mới nhất
