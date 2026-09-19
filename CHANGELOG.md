@@ -7,6 +7,39 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-19 (xuất bản) — Gói đã phát hành được: 508 xanh, 0 đỏ ngay trong gói
+
+**Chốt trạng thái.** `release:verify` đạt **13 trên 13**.
+Quan trọng hơn: giải nén gói rồi **CHẠY THẬT** bộ tự-kiểm bên trong.
+Kết quả **508 xanh, 7 bỏ qua, 0 đỏ**. `release:verify` chỉ liệt kê test chứ không chạy nó.
+Nên bước này mới là bằng chứng.
+
+**Số test đỏ trong gói đi từ 25 xuống 0**, qua bốn lượt.
+Mỗi lượt là một lỗi thật. Không lỗi nào nhìn thấy được từ trong repo:
+
+| Lỗi | Vì sao vô hình trong repo |
+| --- | --- |
+| thiếu 10 ảnh của USER_GUIDE | repo luôn có `docs/` |
+| thiếu `GATES.md` ⇒ `gate:policy` đỏ | repo luôn có file đó |
+| thiếu 5 config generic (`writing_style`, `env_lanes`…) | repo luôn có bản thật |
+| `risk_model.example.json` thiếu `minCasesPerDimension` | repo dùng bản thật, không ai chép mẫu |
+| `gitlab_strip.json` khai file không có trong gói | repo có đủ file bị strip |
+| 3 khoá `HUBSPOT_*` không ai đọc trong gói | repo có spec DB lớp PROJECT đọc chúng |
+| QUICKSTART bảo "cập nhật" file gói không có | repo luôn có sẵn |
+
+**Hai bước setup nay đã có trong tài liệu.**
+Chép `project_context` và `risk_model` từ bản mẫu, rồi chạy chính bộ tự-kiểm để biết đã lắp đúng.
+Trước đó QUICKSTART bảo "cập nhật" một file gói không có. Người nhận theo tài liệu sẽ không bao
+giờ tới được trạng thái xanh.
+
+**Sạch nhận diện.** Gói không còn logo, không khẩu hiệu, không màu thương hiệu.
+Bản mẫu branding cũng đổi giá trị ví dụ thành chỗ trống có nhãn. Nó là thứ người nhận chép ra để
+gắn thương hiệu CỦA HỬ. Chữ "SAPP" còn lại là MÃ TASK dùng làm dẫn chứng đo, giữ có chủ ý.
+
+**Bảy test bỏ qua đều có lý do tự khai.**
+Ba cần dữ liệu trong `knowledge/`, mà thư mục đó gitignore nên gói không mang.
+Bốn cần `gitlab_strip.json`, là mirror của một công ty nên không ship.
+
 ## 2026-09-19 (phát hành) — Chạy thật luồng xuất bản, lộ ra hai lỗi chỉ thấy khi soạn gói
 
 **Lần đầu chạy trọn `package:kit` rồi `release:verify`: 12/13 bước đạt, KỐT CUỘC LÀ KHÔNG PHÁT HÀNH.**
