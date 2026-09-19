@@ -125,18 +125,28 @@ module.exports = defineConfig({
     screenshot: 'only-on-failure',
     video: process.env.PW_VIDEO || 'off',
     trace: process.env.PW_TRACE || 'off',
-    // Tắt cờ automation của Chromium: một số SPA phát hiện automation → chặn redirect OIDC (Keycloak/
-    // Auth0/Okta…) hoặc loop trang login trắng. Vô hại với app không kiểm tra. Kèm `addInitScript`
-    // override `navigator.webdriver` ở helper login của app.
-    // Đã nghiệm thu: arg này KHÔNG làm Firefox/WebKit vỡ (bị bỏ qua) → an toàn để ở global `use`.
-    launchOptions: { args: ['--disable-blink-features=AutomationControlled'] },
   },
   // Desktop chạy tests/ trừ mobile-web|load|support; mobile-web chạy trên thiết bị thật (touch/UA/isMobile).
   // Không để project mobile phủ toàn bộ suite (tránh nhân 3 lần). Task-scoped scripts (automation/*.js)
   // KHÔNG dùng projects này — chúng tự emulate qua browser.newContext({ ...devices[...] }), xem
   // prompt_templates/phase2/04_execute_fe_playwright.md.
+  /*
+   * Cờ CHỈ DÀNH CHO CHROMIUM. Tắt dấu hiệu automation: một số SPA phát hiện automation rồi chặn
+   * redirect OIDC (Keycloak/Auth0/Okta…) hoặc loop trang login trắng. Kèm `addInitScript` override
+   * `navigator.webdriver` ở helper login của app.
+   *
+   * TRƯỚC ĐÂY ĐẶT Ở GLOBAL `use` kèm ghi chú "đã nghiệm thu: không làm Firefox/WebKit vỡ". Ghi chú đó
+   * SAI, và sai theo NỀN TẢNG: trên Windows WebKit bỏ qua cờ lạ, còn trên Linux nó từ chối thẳng —
+   * `Cannot parse arguments: Unknown option --disable-blink-features=AutomationControlled` — rồi thoát
+   * với exit 1. Hậu quả: mọi test webkit trên CI chết ở bước launch, và lane cross-browser hỏng suốt
+   * từ lúc thêm cờ. Nó ẩn lâu vì job đó chỉ chạy khi bấm tay.
+   *
+   * Bài học: "chạy được ở máy tôi" không chứng minh cờ của engine này vô hại với engine khác.
+   */
   projects: [
-    desktop('chromium-desktop', 'Desktop Chrome'), // lane mặc định (PR): 1 engine, phản hồi nhanh
+    desktop('chromium-desktop', 'Desktop Chrome', {
+      use: { ...devices['Desktop Chrome'], launchOptions: { args: ['--disable-blink-features=AutomationControlled'] } },
+    }), // lane mặc định (PR): 1 engine, phản hồi nhanh
     // Lane cross-browser — CHỈ khi CROSS_BROWSER=1 (nightly/manual). WebKit đã có sẵn trong CI vì
     // devices['iPhone 13'] dùng engine webkit; FIREFOX phải thêm vào bước `playwright install`.
     ...(CROSS_BROWSER
