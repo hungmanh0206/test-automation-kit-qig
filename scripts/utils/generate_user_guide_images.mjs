@@ -176,11 +176,11 @@ function boardHtml(b) {
 
   return `<!doctype html><html lang="vi"><head><meta charset="utf-8">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--accent:#4F46E5;--accent-600:#4338CA;--ink:#16161A;--wash:#F7F8FA;--card:#FFFFFF;
   --b-subtle:#E6E0D5;--b-soft:#EFE9DD;--t1:#16161A;--t2:#57534A;--t3:#79736A;--accent-wash:#EEF0FF;--accent-800:#3730A3;}
-body{font-family:'Inter',system-ui,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;background:var(--wash);}
+body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;background:var(--wash);}
 .board{width:1520px;background:var(--wash);padding:32px;display:grid;
   grid-template-columns:308px 248px 1fr 248px;gap:20px;align-items:stretch;}
 
@@ -258,10 +258,10 @@ function traceabilityHtml() {
   const line = (a, html) => `<div class="tnode line" style="--a:${a}">${html}</div>`;
   return `<!doctype html><html lang="vi"><head><meta charset="utf-8">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--accent:#4F46E5;--ink:#16161A;--wash:#F7F8FA;--b-subtle:#E6E0D5;--b-soft:#EFE9DD;--t1:#16161A;--t2:#57534A;--t3:#79736A;}
-body{font-family:'Inter',system-ui,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;background:var(--wash)}
+body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;background:var(--wash)}
 .diagram{width:1120px;background:var(--wash);padding:40px 48px}
 .dhead{text-align:center;margin-bottom:24px}
 .deyebrow{color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}

@@ -21,9 +21,9 @@ và màu thương hiệu của một công ty cụ thể không có chỗ ở đ
 | màu thương hiệu | vàng `#FFB700` và `#E6A300` | chàm `#4F46E5` |
 | nền ấm của DS | mực `#1A1916`, nền `#FAF8F3` | trung tính `#16161A`, `#F7F8FA` |
 
-Font đổi từ Be Vietnam Pro sang Inter.
-Cả hai đều là font công cộng và đều đủ dấu tiếng Việt.
-Đổi vì Be Vietnam Pro được khai trong design system của công ty.
+**Font GIỮ NGUYÊN Be Vietnam Pro.** Lượt đầu tôi đổi sang Inter vì font này được khai trong design
+system của công ty, nhưng chủ repo yêu cầu giữ lại. Đã trả về. Be Vietnam Pro là font công cộng trên
+Google Fonts, không phải tài sản riêng của công ty, và nó đủ dấu tiếng Việt.
 
 **Quét chữ không đủ để nghiệm thu.** Sau lượt thay token đầu, quét chữ thì sạch.
 Nhưng **mở ảnh ra vẫn thấy mũi tên màu vàng**. Hai hex `#E6A300` và `#6B4C00` nằm thẳng trong SVG,
