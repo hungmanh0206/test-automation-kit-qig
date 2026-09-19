@@ -21,7 +21,19 @@ const DIR = path.join(REPO, '.claude', 'commands');
 const SCRIPTS: Record<string, string> = require(path.join(REPO, 'package.json')).scripts;
 
 const files = fs.existsSync(DIR) ? fs.readdirSync(DIR).filter((f) => f.endsWith('.md')) : [];
-const body = (f: string) => fs.readFileSync(path.join(DIR, f), 'utf8');
+
+/*
+ * CHUẨN HOÁ CRLF ngay ở cửa đọc.
+ *
+ * Test dưới đây hỏi `b.startsWith('---\n')`. Checkout trên Windows cho ra `---\r\n` (`core.autocrlf`),
+ * nên máy báo "thiếu frontmatter" ở CẢ 10 command dù không ai sửa gì. CI chạy Linux nên xanh, còn
+ * người checkout mới trên Windows thì đỏ — kết quả phụ thuộc môi trường checkout thì "xanh" hết nghĩa.
+ * Đây là cửa đọc thứ năm cùng lớp lỗi, sau `library_drift`, `build.js`, `course_parse.js` và
+ * `course_maturity.js`.
+ */
+const CR = String.fromCharCode(13);
+const docSach = (p: string) => fs.readFileSync(p, 'utf8').split(CR + '\n').join('\n');
+const body = (f: string) => docSach(path.join(DIR, f));
 
 test.describe('@infra slash commands — con trỏ phải trỏ đúng chỗ', () => {
   test('có thư mục command và ít nhất 5 lệnh', () => {
@@ -128,12 +140,12 @@ test.describe('@infra skill ui_debug_agent', () => {
      * frontmatter không làm index sai — nhưng lệch thì người đọc file lại tưởng skill tên khác.
      */
     expect(fs.existsSync(SKILL)).toBe(true);
-    const b = fs.readFileSync(SKILL, 'utf8');
+    const b = docSach(SKILL);
     expect((b.match(/^name:\s*(\S+)/m) || [])[1]).toBe(path.basename(path.dirname(SKILL)));
   });
 
   test('khai Never-auto + xác nhận UAT, và KHÔNG chép bảng ưu tiên locator', () => {
-    const b = fs.readFileSync(SKILL, 'utf8');
+    const b = docSach(SKILL);
     expect(b, 'phải khai mức tự chủ Never-auto').toMatch(/Never-auto/);
     expect(b, 'phải nhắc xác nhận trước khi chạm UAT').toMatch(/xác nhận với user/);
     expect(b, 'phải trỏ về nguồn canonical').toContain('.agent/rules/locator_strategy.md');
@@ -142,7 +154,7 @@ test.describe('@infra skill ui_debug_agent', () => {
   });
 
   test('có đủ 4 dạng safe_target, 7 playbook, và mục phân loại verdict', () => {
-    const b = fs.readFileSync(SKILL, 'utf8');
+    const b = docSach(SKILL);
     for (const m of ['safe_target.section', 'safe_target.one', 'safe_target.clickVerified', 'safe_target.readValue']) {
       expect(b, `thiếu ${m}`).toContain(m);
     }
@@ -155,7 +167,7 @@ test.describe('@infra skill ui_debug_agent', () => {
   });
 
   test('3 output bắt buộc đều có mặt', () => {
-    const b = fs.readFileSync(SKILL, 'utf8');
+    const b = docSach(SKILL);
     expect(b, 'thiếu bảng locator đề xuất').toMatch(/Sentinel nghiệm thu/);
     expect(b, 'thiếu yêu cầu ghi knowledge/locators').toContain('knowledge/locators/');
     expect(b, 'thiếu fieldMap theo màn').toMatch(/fieldMap.*theo MÀN|byScreen/);
@@ -167,7 +179,7 @@ test.describe('@infra skill ui_debug_agent', () => {
      * nào. Skill mà chỉ dẫn tool không tồn tại thì không ai làm theo được — nên nếu còn nhắc MCP, bắt buộc
      * phải nói rõ tình trạng và ánh xạ sang cơ chế đang dùng thật.
      */
-    const b = fs.readFileSync(SKILL, 'utf8');
+    const b = docSach(SKILL);
     if (!/MCP/.test(b)) return;
     expect(b, 'nhắc MCP mà không nói repo chưa cài').toMatch(/chưa cài browser MCP/i);
     expect(b, 'phải có ánh xạ sang Playwright đang dùng').toContain('ariaSnapshot');
