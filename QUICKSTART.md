@@ -25,8 +25,10 @@
 | 3 | Cài dependencies | `npm install` |
 | 4 | Cài Playwright browsers | `npx playwright install` |
 | 5 | Tạo env local | Copy `.env.example` thành `.env.local` hoặc `.env` |
-| 6 | Cấu hình MCP | Dùng template trong `.agent/config/mcp_config.md` |
-| 7 | Cấu hình project context | Cập nhật `.agent/config/project_context.md` |
+| 6 | Cấu hình MCP | Xem mục **MCP** trong `USER_GUIDE.md` (bảng server và dùng khi nào). Bản cụ thể của mỗi đội nằm ở `.agent/config/mcp_config.md` — file này mang endpoint riêng nên KHÔNG đi theo gói, tự tạo |
+| 7 | Cấu hình project context | `cp .agent/config/project_context.example.md .agent/config/project_context.md` rồi điền theo dự án. **Chưa có file này thì `preflight` CHẶN** — cố ý, để kit không chạy trên ngữ cảnh trống |
+| 8 | Cấu hình risk model | `cp .agent/config/risk_model.example.json .agent/config/risk_model.json` rồi chỉnh Impact theo module của bạn. Thiếu thì `dim:coverage` mất ngưỡng theo chiều |
+| 9 | Kiểm lại | `npx playwright test tests/fe/infra` — bộ tự-kiểm của kit, phải xanh hết trước khi dùng thật |
 
 ## Inputs
 
