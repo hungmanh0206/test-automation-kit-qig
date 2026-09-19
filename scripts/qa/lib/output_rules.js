@@ -97,12 +97,8 @@ function splitIdeas(text) {
     .filter((s) => s.length > 2);
 }
 
-// Comment run-on = 1 đoạn dài KHÔNG bullet nhồi nhiều ý (RULE_GLOBAL §comment mục 4).
-function looksRunOn(text) {
-  const t = String(text || '').trim();
-  if (!t) return false;
-  const lines = t.split(/\r?\n/).filter((l) => l.trim());
-  if (lines.some((l) => /^\s*[-*•]\s+/.test(l))) return false; // đã có bullet → OK
+// Một DÒNG có phải "1 mạch text nhồi nhiều ý" không.
+function lineLooksRunOn(t) {
   const ideas = splitIdeas(t);
   if (t.length > 160 && ideas.length >= 2) return true;
   if (ideas.length >= 3) return true;
@@ -113,6 +109,23 @@ function looksRunOn(text) {
   if (andCount >= 3) return true;                            // ≥3 liên từ nối clause = nhồi nhiều ý
   if (andCount + commas >= 4 && t.length > 80) return true;  // hỗn hợp nhiều dấu ngắt + dài
   return false;
+}
+
+// Comment run-on = 1 đoạn dài KHÔNG bullet nhồi nhiều ý (RULE_GLOBAL §comment mục 4).
+//
+// ⚠️ Đã tách "xét theo DÒNG" (25/08/2026) sau khi gate BÁO OAN trên chính canonical của nó:
+// `bug_reporter.cellToText` tách `<br>` thành nhiều dòng rồi `cleanField` XOÁ dấu `- ` ở đầu mỗi dòng,
+// nên text tới đây đã đúng một-ý-một-dòng nhưng KHÔNG còn ký tự bullet — bản cũ gộp cả khối lại,
+// đếm ra ≥3 ý và chặn. Trong khi `addBulletListOrParagraph` sau đó render mỗi dòng thành 1 bullet ADF
+// thật, tức output cuối CÓ bullet. Nay: đã xuống dòng thì xét TỪNG dòng, chỉ chặn khi có dòng tự nó
+// nhồi nhiều ý. Run-on thật (1 dòng dài dồn nhiều ý) vẫn bị chặn y như cũ.
+function looksRunOn(text) {
+  const t = String(text || '').trim();
+  if (!t) return false;
+  const lines = t.split(/\r?\n/).filter((l) => l.trim());
+  if (lines.some((l) => /^\s*[-*•]\s+/.test(l))) return false; // đã có bullet → OK
+  if (lines.length >= 2) return lines.some((l) => lineLooksRunOn(l.trim()));
+  return lineLooksRunOn(t);
 }
 
 /**

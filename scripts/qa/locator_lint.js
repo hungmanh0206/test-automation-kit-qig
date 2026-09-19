@@ -73,7 +73,14 @@ const RULES = [
   { id: 'xpath-locator', sev: 'P1', re: /(?:locator|\$x)\s*\(\s*['"`](?:\/\/|\(\/\/)|xpath\s*=/,
     why: 'XPath bám cấu trúc DOM (thứ tự, cấp cha-con) — đổi layout là vỡ, và khi vỡ nó vẫn "tìm thấy" phần tử khác chứ không báo lỗi rõ.',
     fix: '`getByRole`/`getByLabel` + accessible name trong scope đã neo; cần quan hệ DOM thì dùng `locator(css).filter({ hasText })`.' },
-  { id: 'weak-assert', sev: 'P1', re: /expect\s*\(\s*(?:await\s+)[^)]*\)\s*\.\s*(?:toBeTruthy|not\s*\.\s*toBeNull)\s*\(\s*\)|expect\s*\(\s*(?:page|locator|el|row|scope|card|modal)\b[^)]*\)\s*\.\s*(?:toBeTruthy|not\s*\.\s*toBeNull)\s*\(\s*\)/,
+  /*
+   * MỘT CẤP NGOẶC LỒNG. `[^)]*` dừng ở dấu `)` đầu tiên nên rule bỏ sót MỌI biểu thức có gọi hàm —
+   * tức gần như toàn bộ ca thật: `expect(await row.textContent()).toBeTruthy()` KHÔNG bị bắt, chỉ
+   * `expect(await row.text).toBeTruthy()` mới bị. Test `dimension-threshold.spec.ts` đã chỉ ra từ trước
+   * mà lỗi vẫn còn (sửa 24/08/2026). Vẫn KHÔNG bắt giá trị JS thuần (`expect(cfg.enabled).toBeTruthy()`):
+   * nhánh 1 đòi `await`, nhánh 2 đòi tên biến thuộc danh sách page|locator|el|row|scope|card|modal.
+   */
+  { id: 'weak-assert', sev: 'P1', re: /expect\s*\(\s*(?:await\s+)(?:[^()]|\([^()]*\))*\)\s*\.\s*(?:toBeTruthy|not\s*\.\s*toBeNull)\s*\(\s*\)|expect\s*\(\s*(?:page|locator|el|row|scope|card|modal)\b(?:[^()]|\([^()]*\))*\)\s*\.\s*(?:toBeTruthy|not\s*\.\s*toBeNull)\s*\(\s*\)/,
     why: '"Có tồn tại" KHÔNG phải oracle: `toBeTruthy()` trên giá trị đọc từ app pass với BẤT KỲ chuỗi khác rỗng — kể cả giá trị SAI. Đây là cách nhanh nhất tạo PASS giả.',
     fix: 'So với GIÁ TRỊ CỤ THỂ theo spec (`toBe`, `toHaveText`, `toContainText` với chuỗi verbatim). Nếu chỉ cần biết có hiện: `toBeVisible()`.' },
 ];

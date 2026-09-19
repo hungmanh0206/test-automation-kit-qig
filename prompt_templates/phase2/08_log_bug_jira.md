@@ -249,3 +249,50 @@ Output bắt buộc:
 - Nếu CREATE fail, report phải ghi rõ lỗi API đã sanitize.
 - Nếu DRY_RUN, report/console phải thể hiện rõ là preview và Jira chưa bị thay đổi.
 ```
+
+---
+
+## Severity của bug — chấm bằng CÂY QUYẾT ĐỊNH
+
+Severity = **hậu quả THỰC TẾ của lỗi vừa tìm được**. Khác `Priority` (= thứ tự sửa). Hai trục tách nhau là bình thường:
+lỗi cosmetic ở màn thanh toán trước ngày demo = `Trivial` + ưu tiên `High`; mất dữ liệu ở module sprint này
+không ai dùng = `Blocker` + ưu tiên `Medium`.
+
+**Chấm bằng CÂY QUYẾT ĐỊNH — đi từ trên xuống, dừng ở câu ĐÚNG đầu tiên. Không chấm theo cảm giác.**
+
+| # | Câu hỏi phân biệt | Nếu ĐÚNG |
+|---|---|---|
+| 1 | Có **mất/sai dữ liệu không hồi được**, **sai số tiền/doanh thu**, **lộ dữ liệu người khác**, hoặc **hệ thống/luồng chính không dùng được** và KHÔNG có đường vòng? | **Blocker** |
+| 2 | Luồng chính sai/không hoàn thành được, nhưng **có đường vòng** (thao tác khác, sửa tay, làm lại) — hoặc dữ liệu sai nhưng **phát hiện và sửa được** trước khi ảnh hưởng tiền/đối soát? | **Critical** |
+| 3 | Một **chức năng phụ** sai, hoặc luồng chính sai ở **nhánh điều kiện hẹp** (1 loại đơn, 1 role, 1 cấu hình) — người dùng vẫn làm được việc chính? | **Major** |
+| 4 | **Hiển thị/nội dung sai** nhưng dữ liệu bên dưới ĐÚNG: sai nhãn, sai định dạng, sai đơn vị hiển thị, thiếu/thừa trường, sai thứ tự, sai thông báo? | **Minor** |
+| 5 | Chỉ **thẩm mỹ**: lệch spacing/màu/căn lề, typo không gây hiểu sai, tooltip thiếu? | **Trivial** |
+
+**Quy tắc phân định khi lưỡng lự (bắt buộc áp dụng, theo thứ tự):**
+1. **Tiền và dữ liệu thắng mọi thứ** — dính tiền/doanh thu/đối soát mà sai SỐ ⇒ tối thiểu `Critical`, sai không hồi được ⇒ `Blocker`. Sai đơn vị/định dạng *hiển thị* mà số lưu vẫn đúng ⇒ `Minor` (đừng đẩy lên vì thấy chữ "tiền").
+2. **Có đường vòng hay không** là ranh giới `Blocker` / `Critical`. Phải viết đường vòng đó ra trong `Kết quả mong đợi`/`Assumptions`; không nêu được ⇒ coi là không có.
+3. **Phạm vi hẹp không hạ severity của hậu quả** — chỉ hạ khi hậu quả nhẹ. 1 role mất dữ liệu vẫn là `Blocker`. Phạm vi hẹp thuộc §7 `Ưu tiên`.
+4. **Case negative/guard** lấy severity theo **hậu quả nếu guard KHÔNG chặn** (vd thu vượt trên đơn đã trả đủ ⇒ `Critical`), không phải theo độ khó tái hiện.
+5. **Không suy severity từ Impact của module.** Impact ở `risk_model.json` dùng cho risk band cấp module; severity là hậu quả của **chính case này**.
+
+**Ví dụ đã chốt (dùng làm mốc so sánh):**
+
+| Tình huống thật | Severity | Vì sao |
+|---|---|---|
+| Callback thanh toán trùng làm Paid Amount cộng đôi, đối soát lệch | Blocker | sai số tiền, đã ghi nhận, không tự hồi |
+| Đơn đã trả đủ vẫn tạo được giao dịch thu thêm (guard thiếu) | Critical | sai tiền nhưng phát hiện/hủy được trước đối soát |
+| Đồng bộ sang hệ ngoài lấy nhầm nguồn (Contact vs Deal) nên field sai người | Critical | dữ liệu sai bản chất, phải sửa lại thủ công |
+| Order gia hạn thiếu 1 option trong dropdown tính phí | Major | chức năng phụ / nhánh hẹp, việc chính vẫn chạy |
+| Discount 10 USD hiển thị "10đ" (giá trị lưu vẫn đúng) | Minor | sai đơn vị HIỂN THỊ, dữ liệu dưới đúng |
+| Section thiếu trường `Net Price` | Minor | thiếu thông tin hiển thị, không sai dữ liệu |
+| Lệch spacing giữa checkbox và các box còn lại | Trivial | thuần thẩm mỹ |
+
+> ⚠️ **Chỗ này CHƯA có máy kiểm.** Câu "có máy kiểm ⇒ CHẶN" ở bản cũ là của cột `Severity` trong bộ
+> testcase — cột đó đã bỏ, nên gate đó không còn áp vào đây. Severity của bug hiện chỉ do người chấm, dùng
+> đúng thang `Blocker|Critical|Major|Minor|Trivial` và **không** ghi giá trị này vào `Priority`.
+> ⚠️ **Jira hiện CHƯA có field Severity** → giá trị này chỉ sống trong testcase + report, **KHÔNG** đẩy lên Jira. `Priority` của bug vẫn lấy từ cột §7.
+
+> **Chuyển về đây 21/08/2026** từ `phase1/02_gen_testcases.md` §8. Trước đó Severity là một cột của bộ
+> testcase — sai chỗ: lúc viết case thì lỗi chưa xảy ra, chấm hậu quả là đoán. Chấm ở đây, khi đã có lỗi thật.
+> Lưu ý Jira hiện CHƯA có field Severity ⇒ giá trị này sống trong mô tả bug + report, `Priority` của bug lấy
+> từ cột `Ưu tiên` của testcase.

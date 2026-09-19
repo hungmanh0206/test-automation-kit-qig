@@ -24,6 +24,7 @@ const { groupNumbered, splitNumbered } = require(path.join(REPO, 'scripts/lib/te
 
 const PUBLISH = 'scripts/integrations/aio/publish_testcases_aio.js';
 const PROMPT = 'prompt_templates/phase1/02_gen_testcases.md';
+const PROMPT_PUBLISH = 'prompt_templates/phase1/04_auto_publish_jira.md';
 
 test.describe('@infra publish AIO — ánh xạ bước ↔ kết quả', () => {
   test('groupNumbered gộp dòng con vào bước của nó và KHÔNG mất chữ nào', () => {
@@ -354,5 +355,94 @@ test.describe('@infra publish AIO — ánh xạ bước ↔ kết quả', () => 
     expect(p).toContain('HỢP ĐỒNG bước ↔ kết quả');
     expect(p, 'phải nói rõ khối = dòng đánh số + các dòng con của nó').toMatch(/dòng đánh số N \+ MỌI dòng con/);
     expect(p, 'phải cấm consumer zip theo chỉ số phẳng').toContain('groupNumbered');
+  });
+});
+
+/*
+ * Lớp ③ của verify_fields — `story` và ĐƯỜNG DẪN FOLDER.
+ * Vì sao có: 07/09/2026 bộ SAPP-26878 297 case đối soát trả "1881/1881 khớp" mà KHÔNG case nào nối Jira
+ * story. `MAPPING` chỉ soi cột CÓ TRONG FILE, còn story là tham số lúc publish nên rơi ngoài tầm cả hai lớp.
+ */
+test.describe('@infra verify_fields lớp ③ — thuộc tính đặt lúc publish', () => {
+  const VERIFY = 'scripts/integrations/aio/verify_fields_aio.js';
+  // eslint-disable-next-line global-require, import/no-dynamic-require
+  const { checkPublishAttrs } = require(path.join(REPO, 'scripts/integrations/aio/verify_fields_aio'));
+  const ROOT = 'A/B/C';
+  const ok = [
+    { tcId: 'T1', reqIds: ['58606'], folderPath: 'A/B/C/Nhóm 1' },
+    { tcId: 'T2', reqIds: ['58606'], folderPath: 'A/B/C/Nhóm 2' },
+  ];
+
+  test('bộ case nối story đúng và nằm đúng cây thì KHÔNG báo vấn đề', () => {
+    expect(checkPublishAttrs(ok, { story: 'SAPP-26878', storyId: '58606', folderRoot: ROOT })).toEqual([]);
+  });
+
+  test('case KHÔNG nối story nào thì bị bắt — đây là ca thật đã lọt', () => {
+    const seen = [{ tcId: 'T1', reqIds: [], folderPath: 'A/B/C/Nhóm 1' }];
+    const p = checkPublishAttrs(seen, { story: 'SAPP-26878', storyId: '58606', folderRoot: ROOT });
+    expect(p.join(' ')).toMatch(/KHÔNG nối story nào/);
+    expect(p.join(' '), 'phải chỉ đúng nguyên nhân gốc để lần sau khỏi mò').toMatch(/TASK_ENV/);
+  });
+
+  test('nối story KHÔNG đồng nhất giữa các case thì bị bắt', () => {
+    const seen = [{ tcId: 'T1', reqIds: ['58606'], folderPath: 'A/B/C/x' },
+      { tcId: 'T2', reqIds: ['55208'], folderPath: 'A/B/C/x' }];
+    expect(checkPublishAttrs(seen, { story: '', storyId: null, folderRoot: '' }).join(' '))
+      .toMatch(/KHÔNG đồng nhất/);
+  });
+
+  test('nối nhầm sang issue khác thì bị bắt khi biết được id thật', () => {
+    expect(checkPublishAttrs(ok, { story: 'SAPP-24395', storyId: '55208', folderRoot: '' }).join(' '))
+      .toMatch(/nối nhầm issue khác/);
+  });
+
+  test('case nằm ngoài cây folder yêu cầu thì bị bắt — lớp ② chỉ so TÊN LÁ nên không thấy', () => {
+    const seen = [{ tcId: 'T1', reqIds: ['58606'], folderPath: 'A/B/KHÁC/Nhóm 1' }];
+    expect(checkPublishAttrs(seen, { story: '', storyId: null, folderRoot: ROOT }).join(' '))
+      .toMatch(/nằm NGOÀI cây/);
+  });
+
+  test('thiếu credential Jira thì KHÔNG được tự nhận đã xác minh', () => {
+    const src = read(VERIFY);
+    expect(src, 'phải nói rõ chỉ kiểm được mức có-nối-và-đồng-nhất')
+      .toMatch(/CHƯA đổi được[\s\S]{0,120}chỉ kiểm được/);
+    expect(src, 'không có credential thì trả null chứ không đoán').toMatch(/if \(!base \|\| !user \|\| !token\) return null;/);
+  });
+
+  test('bỏ qua lớp ③ phải NÓI RA, không im lặng', () => {
+    const src = read(VERIFY);
+    expect(src).toMatch(/BỎ QUA theo --no-publish-attrs[\s\S]{0,80}KHÔNG được kiểm/);
+  });
+
+  test('prompt publish dặn truyền --story và --folder-root khi đối soát', () => {
+    const p = read(PROMPT_PUBLISH);
+    expect(p).toMatch(/aio:verify-fields[^\n]*--story[^\n]*--folder-root/);
+    expect(p, 'phải cảnh báo --story cũng là tên folder gốc mặc định').toMatch(/tên folder gốc mặc định/);
+  });
+});
+
+/*
+ * POST /testcase nhận jiraRequirementIDs, trả 2xx, rồi ÂM THẦM BỎ — chỉ PUT detail mới ghi được.
+ * Đo 11/09/2026: 3 case vừa TẠO có jiraRequirementIDs=[] dù đã truyền --story; 173 case đi đường UPDATE
+ * cùng lượt thì nối đúng. Nghĩa là bộ case chỉ nối story nếu tình cờ được publish lần thứ hai.
+ */
+test.describe('@infra publish AIO — liên kết Jira story ở đường TẠO MỚI', () => {
+  test('sau khi TẠO phải gọi thêm PUT detail để đóng liên kết story', () => {
+    const src = read(PUBLISH);
+    expect(src, 'phải có nhịp PUT detail riêng cho case vừa tạo')
+      .toMatch(/if \(!key && reqIds\.length\)[\s\S]{0,400}mergePut\(`\/testcase\/\$\{newKey\}\/detail`, \{ jiraRequirementIDs: reqIds \}\)/);
+  });
+
+  test('nối story thất bại thì tính là LỖI, không im lặng', () => {
+    const src = read(PUBLISH);
+    expect(src, 'publish trả LỖI 0 mà case không nối story là đúng cái bug này')
+      .toMatch(/KHÔNG nối được story[\s\S]{0,40}HTTP/);
+    expect(src).toMatch(/if \(link\.status >= 300\) \{ failed\+\+;/);
+  });
+
+  test('code ghi lại VÌ SAO cần nhịp phụ, để người sau không gộp lại', () => {
+    const src = read(PUBLISH);
+    expect(src).toMatch(/ÂM THẦM BỎ/);
+    expect(src, 'phải nêu số đo thật').toMatch(/11\/09\/2026/);
   });
 });

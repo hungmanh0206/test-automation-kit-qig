@@ -287,6 +287,16 @@ function gateTestcaseRow(row, { strictSemicolon = false } = {}) {
   if (rules.hasRangeGrouping(row.steps)) problems.push(`${id}: "Các bước" gộp range (vd 1-2.) — mỗi bước 1 số`);
   if (rules.hasRangeGrouping(row.expected)) problems.push(`${id}: "Kết quả mong đợi" gộp range (vd 1-2.) — mỗi bước 1 kết quả`);
   const sN = rules.leadingNumbers(row.steps); const eN = rules.leadingNumbers(row.expected);
+  /*
+   * KẾT QUẢ CÓ ĐÁNH SỐ MÀ BƯỚC KHÔNG CÓ DÒNG SỐ NÀO = luôn sai, và trước đây LỌT.
+   * Điều kiện cũ `sN.length >= 2` bỏ qua hẳn dòng có 0 bước đánh số, nên một dòng bảng bị LỆCH CỘT
+   * (cột bước nhận nhầm nội dung khác) vẫn qua với "0 CHẶN". Đã dính thật 28/08/2026: 4 dòng của
+   * bộ SAPP-26878 bị vá lệch một ô, gate vẫn xanh, chỉ `validate` bắt được nhờ luật thang `Ưu tiên`.
+   * Giữ nguyên ngưỡng >= 2 cho phép so khớp số, chỉ thêm ca "bước rỗng số" — không đụng bộ TC cũ.
+   */
+  if (eN.length && !sN.length) {
+    problems.push(`${id}: "Kết quả mong đợi" có đánh số [${[...new Set(eN)].sort((a, b) => a - b).join(',')}] nhưng "Các bước" KHÔNG có dòng đánh số nào — nhiều khả năng lệch cột, hoặc các bước bị viết dính thành một khối`);
+  }
   if (sN.length >= 2 && eN.length) {
     const s = [...new Set(sN)].sort((a, b) => a - b).join(','); const e = [...new Set(eN)].sort((a, b) => a - b).join(',');
     if (s !== e) problems.push(`${id}: "Kết quả mong đợi" đánh số [${e}] KHÔNG khớp "Các bước" [${s}]`);

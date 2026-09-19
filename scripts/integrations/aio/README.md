@@ -25,6 +25,10 @@ npm run aio:publish:apply -- --file <x.xlsx> --story <JIRA-KEY>
 npm run aio:deprecate-stale -- --story <JIRA-KEY> --file <x.xlsx>
 npm run aio:deprecate-stale:apply -- --story <JIRA-KEY> --file <x.xlsx>
 
+# ĐỐI SOÁT từng trường nguồn ↔ AIO (BẮT BUỘC sau mỗi lượt publish; 2xx không chứng minh mapping đúng)
+npm run aio:verify-fields -- --file <...>.xlsx                  # ① cấu trúc + ② giá trị
+npm run aio:verify-fields -- --file <...>.xlsx --structure-only  # chỉ ①, chạy được ở CI không token
+
 # KÉO testcase từ AIO về Excel canonical (nguồn cho Phase 2 khi TESTCASE_SOURCE=aio)
 npm run aio:pull -- --story <JIRA-KEY>            # xem trước
 npm run aio:pull:write -- --story <JIRA-KEY>      # ghi test-cases/from-aio/*.xlsx + manifest độ tươi
@@ -56,12 +60,11 @@ Env: `AIO_API_TOKEN` (bắt buộc) · `AIO_PROJECT_KEY` (mặc định `JIRA_PR
 
 ## Chín đặc tính của AIO đã đo — đừng phát hiện lại bằng cách mất dữ liệu
 
-1. **KHÔNG có API xoá**: case · attachment · run-cuối-của-case · case-khỏi-cycle · cycle-hệ-thống.
+1. **XOÁ — phân biệt "không có endpoint" với "có endpoint nhưng server từ chối"** (soi `openapi.json` 21/08/2026: toàn spec có **đúng 2** endpoint DELETE). KHÔNG có endpoint: **case · attachment · folder · tag** ⇒ sai là dọn tay trên UI. CÓ endpoint: `DELETE /testcycle/{id}`, `DELETE /testcycle/{id}/testrun/{id}` — giới hạn đã đo: không xoá được run CUỐI của một case, không xoá được cycle hệ thống (adhoc). *Bản cũ viết gọn thành "KHÔNG có API xoá" cho cả 5 thứ — nói quá, khiến người sau bỏ luôn việc dọn cycle/run vốn làm được.*
    Sửa sai **chỉ làm được trên UI** ⇒ mọi script ở đây mặc định **dry-run**. Nhưng *cleanup* KHÁC *xoá*:
    vòng đời testcase làm bằng caseStatus `Deprecated` (`aio:deprecate-stale`), không cần API xoá.
 2. `PUT .../detail` **ghi đè toàn phần**, không phải patch ⇒ luôn dùng `mergePut()`.
-3. `tags` gửi lên trả **200 nhưng không lưu** (thử `[{ID,name}]`, `[{name}]`, `[ID]`) ⇒ TC ID để ở
-   **`automationKey`**, không dùng tag.
+3. `tags` **lưu được** — nhưng `tags` là mảng `CaseTag`, tag LỒNG trong khoá `tag`: `[{ tag: { ID, name } }]`. Ba dạng phẳng `[{ID,name}]`/`[{name}]`/`[ID]` nhận 200 rồi bị bỏ im lặng (ghi chú cũ kết luận sai vì chỉ thử 3 dạng đó). Tag phải có sẵn trong registry: `GET /tag` · `POST /tag` body là **mảng** `[{name}]` · **không có DELETE**. TC ID vẫn để ở `automationKey` vì đó là khoá liên kết.
 4. `scriptType` **bắt buộc** khi case có steps (spec không đánh dấu required).
 5. Upload attachment **phải có MIME**; thiếu → `400 Unsupported attachment type`. Dùng `MIME_BY_EXT`
    của `scripts/qa/lib/output_rules.js` (1 nguồn, chung với uploader Jira).

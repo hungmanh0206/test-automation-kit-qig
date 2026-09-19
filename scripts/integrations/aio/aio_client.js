@@ -8,11 +8,20 @@
  * (scripts/lib/testcase) vẫn dùng chung, chỉ tầng gọi API là khác.
  *
  * BẢY ĐẶC TÍNH CỦA AIO ĐÃ ĐO ĐƯỢC (đừng phát hiện lại bằng cách mất dữ liệu):
- *  1. KHÔNG có API xoá: case · attachment · run-cuối-của-case · case-khỏi-cycle · cycle-hệ-thống.
+ *  1. XOÁ — phân biệt "KHÔNG CÓ ENDPOINT" với "có endpoint nhưng server từ chối" (soi openapi.json
+ *     21/08/2026: toàn spec chỉ có ĐÚNG 2 endpoint DELETE):
+ *       · KHÔNG có endpoint: **case · attachment · folder · tag** ⇒ sai là dọn tay trên UI, hết cách.
+ *       · CÓ endpoint: `DELETE /testcycle/{id}` và `DELETE /testcycle/{id}/testrun/{id}`. Giới hạn đã đo:
+ *         không xoá được run CUỐI của một case, và không xoá được cycle hệ thống (adhoc).
+ *     Bản ghi chú cũ viết gọn thành "KHÔNG có API xoá" cho cả 5 thứ — nói quá, và nói quá kiểu đó khiến
+ *     người sau bỏ luôn việc dọn cycle/run vốn LÀM ĐƯỢC. Cùng lỗi với ca `tags` (xem #3).
  *     Sửa sai chỉ làm được TRÊN UI → mọi script ghi phải có dry-run.
  *  2. `PUT .../detail` là GHI ĐÈ TOÀN PHẦN, không phải patch → luôn GET detail rồi merge (mergePut).
- *  3. `tags` gửi lên nhận HTTP 200 nhưng KHÔNG lưu (thử [{ID,name}], [{name}], [ID] đều vậy).
- *     → đừng dựa vào tag; TC ID để ở `automationKey`.
+ *  3. `tags` LƯU ĐƯỢC, nhưng phải đúng hình dạng spec: mảng `CaseTag` = tag LỒNG trong khoá `tag`,
+ *     `[{ tag: { ID, name } }]`. Ba dạng phẳng [{ID,name}] / [{name}] / [ID] đều nhận 200 rồi BỊ BỎ
+ *     im lặng — ghi chú cũ ở đây kết luận "AIO không lưu tags" chính vì chỉ thử 3 dạng phẳng đó
+ *     (sửa 21/08/2026, sau khi đọc `CaseTag` trong openapi.json). Tag phải TỒN TẠI trong registry
+ *     cấp project trước: `GET /tag`, `POST /tag` với body là MẢNG `[{name}]`. Registry KHÔNG có DELETE.
  *  4. `scriptType` BẮT BUỘC khi tạo case có steps (spec không đánh dấu required).
  *  5. Upload attachment PHẢI có MIME; thiếu → 400 "Unsupported attachment type".
  *  6. Có rate limit: ~200 request liên tiếp là bắt đầu trả body RỖNG (không phải mã lỗi) → retry.

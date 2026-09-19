@@ -406,6 +406,36 @@ async function main() {
     }
   }
 
+  /*
+   * GATE `Tag`: case SINH MỚI phải khai khối `[<Loại>][<Chiều>][<Oracle-ref>]` ở cột `Tag`.
+   *
+   * VÌ SAO CẦN GATE RIÊNG (đo 21/08/2026): bỏ hẳn cột `Tag` thì `md_to_xlsx` và `output_gate` đều cho
+   * qua exit 0. Chốt duy nhất còn lại là `dim:coverage --enforce` — nó CÓ chặn (exit 2) nhưng chỉ được
+   * gọi theo prompt, KHÔNG có trong CI. Tức bộ không tag chỉ bị bắt nếu agent chịu chạy đúng bước.
+   * Tệ hơn: không tag thì gate chiều rơi về chế độ GỢI Ý và tự từ chối chặn ⇒ mất luôn cả hai luật
+   * (phủ chiều VÀ oracle) một cách im lặng. Chặn ở đây cho xác định.
+   *
+   * Cùng lý lẽ với gate `Loại case` ngay trên: chặn ở BIÊN SINH CASE, không ở `validate()` dùng chung —
+   * bộ TC cũ (9 cột, không convert lại) vì thế không bị đỏ oan.
+   *
+   * CHỈ lo "thiếu tag". Tag ghi hai chỗ / tiền tố hằng số đã do `validate.js` bắt ở design gate.
+   */
+  {
+    const LENIENT = args.includes("--lenient") || process.env.QA_STRICT === "0";
+    const QA_APPROVED = args.includes("--qa-approved");
+    const doc = canonical.parseMarkdown(fs.readFileSync(inputPath, "utf8"));
+    const noTag = (doc.tests || []).filter((t) => !canonical.tagNamesOf(t.tags, t.title).length).map((t) => t.tcId || "(no-id)");
+    if (noTag.length) {
+      const head = `${noTag.length}/${(doc.tests || []).length} case KHÔNG có tag chiều: ${noTag.slice(0, 12).join(", ")}${noTag.length > 12 ? ` … +${noTag.length - 12}` : ""}`;
+      const msg = `[gate tag] ✗ ${head}
+→ Thêm cột \`Tag\` với khối \`[<Loại>][<Chiều>][<Oracle-ref>]\` cho từng case (prompt 02 §0b) rồi convert lại.
+  Không có tag thì \`dim:coverage --enforce\` tự từ chối chặn ⇒ mất cả luật phủ chiều lẫn luật oracle.`;
+      if (!LENIENT && !QA_APPROVED) { console.error(msg); process.exit(1); }
+      console.warn(`${msg}
+  [${LENIENT ? "--lenient/QA_STRICT=0" : "--qa-approved"}] bỏ qua gate — vẫn convert.`);
+    }
+  }
+
   // GATE gen-testcase: CHẶN convert nếu "Kết quả mong đợi" không khớp số bước / gộp range / chung chung.
   // `;`-packing chỉ cảnh báo (không chặn). Bỏ qua: --lenient / QA_STRICT=0 / --qa-approved.
   {

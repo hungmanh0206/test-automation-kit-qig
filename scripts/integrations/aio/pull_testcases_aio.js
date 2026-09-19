@@ -36,9 +36,21 @@ const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 
 const flag = (n) => process.argv.includes(`--${n}`);
 
 // Giữ ĐÚNG bộ cột/độ rộng của Excel canonical — lệch một cột là parseXlsx đọc sai field mà không báo lỗi.
-const HEADERS = ['TC ID', 'Loại case', 'Nhóm chức năng', 'Module', 'Trường hợp kiểm thử', 'Tiền điều kiện', 'Dữ liệu test', 'Các bước thực hiện', 'Kết quả mong đợi', 'Ưu tiên', 'Mức độ rủi ro'];
-const COL_WIDTHS = [16, 14, 22, 22, 50, 42, 40, 60, 60, 12, 14];
+const HEADERS = ['TC ID', 'Loại case', 'Tag', 'Nhóm chức năng', 'Module', 'Trường hợp kiểm thử', 'Tiền điều kiện', 'Dữ liệu test', 'Các bước thực hiện', 'Kết quả mong đợi', 'Ưu tiên'];
+const COL_WIDTHS = [16, 14, 30, 22, 22, 50, 42, 40, 60, 60, 12];
 const PRIORITY_NAME = { 1: 'Critical', 2: 'High', 3: 'Medium', 4: 'Low', 5: 'Lowest' };
+/**
+ * `Module` đọc từ CUSTOM FIELD của AIO. Dự phòng `description` cho case publish trong khoảng thời gian
+ * ngắn trước khi AIO có field này (định dạng cũ `Module: … · Severity: …`).
+ * KHÔNG lấy đường dẫn folder cha làm chuẩn: nó ra tên nhánh Cash management, khác hẳn Module của nguồn.
+ */
+function moduleOf(c) {
+  const cf = ((c && c.customFields) || []).find((f) => String(f.name || '').toLowerCase() === 'module');
+  if (cf && String(cf.value || '').trim()) return String(cf.value).trim();
+  const m = String((c && c.description) || '').match(/Module:\s*([^·]+)/);
+  return m ? m[1].trim() : '';
+}
+
 const numbered = (arr) => arr.map((s, i) => `${i + 1}. ${String(s || '').trim()}`).join('\n');
 
 /** Đổi Jira issue KEY → id số. AIO lưu id, nên so key với `jiraRequirementIDs` sẽ luôn ra 0 case. */
@@ -119,22 +131,39 @@ async function main() {
   const rows = [];
   const noSteps = [];
   for (const [i, c] of picked.entries()) {
-    const d = (await aio.call('GET', `/testcase/${c.key}/detail`)).json || {};
+    /*
+     * PHÂN BIỆT "gọi hỏng" VỚI "case không có bước". AIO khi quá tải trả BODY RỖNG chứ không trả mã
+     * lỗi (aio_client ghi chú #6); cạn retry thì `.json` là null. Nếu cứ `|| {}` thì case có bước
+     * vẫn rơi vào nhánh "không có bước" và mirror ghi ra ô rỗng — đã đo thật ngày 20/08/2026:
+     * SAP_SYNC_TC_043 bị báo không bước, gọi lại thì có đủ 5. Mirror sai kiểu này KHÔNG ai thấy.
+     */
+    const res = await aio.call('GET', `/testcase/${c.key}/detail`);
+    if (!res.json) throw new Error(`Đọc chi tiết ${c.key} (${c.automationKey || '?'}) thất bại: HTTP ${res.status}, body rỗng sau khi cạn retry — DỪNG để khỏi ghi mirror thiếu bước.`);
+    const d = res.json;
     const steps = d.steps || [];
     if (!steps.length) noSteps.push(c.automationKey || c.key);
     const folderPath = pathById[(c.folder || {}).ID] || '';
     rows.push([
       c.automationKey || '',
       (c.type || {}).name || '',                        // Loại case ← Case Type trên AIO (round-trip)
+      /*
+       * Tag ← Field Tags của AIO. `tags` là mảng CaseTag nên tên nằm ở `x.tag.name`, KHÔNG phải `x.name`
+       * — lấy sai chỗ thì mirror ra cột rỗng mà không báo lỗi, và bộ kéo về mất hết chiều lẫn oracle.
+       */
+      (c.tags || []).map((x) => `[${((x && x.tag) || {}).name || ''}]`).filter((x) => x !== '[]').join(''),
       (c.folder || {}).name || '',                       // Nhóm chức năng = folder lá (đúng chiều publish)
-      folderPath.split('/').slice(0, -1).join(' / '),     // Module = nhánh cha
+      /*
+       * Module: ưu tiên giá trị publish đã cất ở `description` (đó mới là Module THẬT của nguồn, đang
+       * chở mã US). Đường dẫn folder cha chỉ là phương án dự phòng cho case publish bởi bản cũ —
+       * nó KHÁC nguồn (ra tên nhánh Cash management), dùng làm chuẩn là round-trip sai mà im lặng.
+       */
+      (moduleOf(c) || folderPath.split('/').slice(0, -1).join(' / ')),
       c.title || '',
       c.precondition || '',
       (steps[0] && steps[0].data) || '',                 // publish đặt Dữ liệu Test ở step đầu
       numbered(steps.map((s) => s.step)),
       numbered(steps.map((s) => s.expectedResult)),
       PRIORITY_NAME[(c.priority || {}).ID] || '',
-      '',                                                // Mức độ rủi ro: AIO không có field tương ứng
     ]);
     if ((i + 1) % 25 === 0) process.stdout.write(`  ...${i + 1}/${picked.length}\n`);
     await aio.pause();

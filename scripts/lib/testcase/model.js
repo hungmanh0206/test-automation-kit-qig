@@ -167,11 +167,17 @@ function dimensionsOf(title) {
  * dùng lại đúng cơ chế đang đọc `[Positive]`/`[Display]`. Một tín hiệu gác được HAI chiều: chặn case có oracle
  * nghiệp vụ mà không trỏ rule, VÀ tự append `covered_by` cho rule (hết phụ thuộc người nhớ điền).
  *
- * Nhận mọi tiền tố knowledge đang có: BR (domain) · SM/PM/SS/DM (system). Đọc trên tiêu đề GỐC (không
+ * Nhận mọi tiền tố knowledge đang có: BR (domain) · SM/PM/SS/DM/UI (system). Đọc trên tiêu đề GỐC (không
  * normalize) để giữ đúng chữ hoa và dấu gạch — id là khoá tra cứu, sai một ký tự là tra không ra.
+ *
+ * `UI` bổ sung 08/09/2026: `knowledge/SCHEMA.md` §system/ đã định nghĩa `type: "ui_contract"` với id
+ * `UI-<SLUG>-<NNN>` (repo có sẵn `UI-ORDERDETAIL-001`), và `system:check` nhận nó hợp schema — nhưng regex
+ * này thiếu `UI` nên case `[Display]` neo vào một ui_contract CÓ THẬT vẫn bị `domain:trace-back` báo
+ * "KHÔNG trỏ id rule/bản đồ nào". Đó là cảnh báo OAN, và oan có hệ thống: ui_contract chính là loại record
+ * dành cho oracle hiển thị, tức đúng thứ chiều `[Display]` cần trỏ tới.
  */
 // KHÔNG export: regex có cờ /g nên .test() lặp sẽ sai vì lastIndex. Dùng oracleRefsOf() thay vì tự khớp.
-const KNOWLEDGE_ID_RE = /\b(?:BR|SM|PM|SS|DM)-[A-Z0-9]+-\d{3}\b/g;
+const KNOWLEDGE_ID_RE = /\b(?:BR|SM|PM|SS|DM|UI)-[A-Z0-9]+-\d{3}\b/g;
 function oracleRefsOf(title) {
   const out = new Set();
   for (const m of String(title || '').match(KNOWLEDGE_ID_RE) || []) out.add(m);

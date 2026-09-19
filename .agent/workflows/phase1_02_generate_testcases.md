@@ -9,7 +9,7 @@ Sinh bộ testcase đủ chi tiết để automation engineer có thể execute 
 ## Template Bắt Buộc
 
 ```markdown
-| TC ID | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |
+| TC ID | Loại case | Tag | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên |
 ```
 
 ## Workflow

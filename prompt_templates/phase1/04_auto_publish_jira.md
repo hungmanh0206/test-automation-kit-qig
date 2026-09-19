@@ -55,11 +55,15 @@ Env/config:
 - ⚠ **AIO KHÔNG có API xoá** (case · attachment · run cuối của case · cycle). Publish nhầm là phải vào UI dọn tay từng cái ⇒ mọi lệnh mặc định **dry-run**, chỉ `--apply` mới ghi.
 - Ánh xạ cột Excel → field AIO (case AIO KHÔNG phải Jira issue nên không có assignee/label/issue-link):
   - `Trường hợp kiểm thử` → `title` (không thêm prefix `[TC] <ID> -`)
-  - `TC ID` → `automationKey` (**không dùng `tags`**: AIO trả 200 nhưng không lưu — đã đo)
+  - `TC ID` → `automationKey` (khoá nối; **không** khớp theo tiêu đề — nhiều case dùng lại cùng tên)
+  - `Tag` → **Field Tags** của AIO. `tags` là mảng `CaseTag`, tag **lồng** trong khoá `tag`: `[{ tag: { ID, name } }]`; ba dạng phẳng `[{ID,name}]`/`[{name}]`/`[ID]` nhận 200 rồi **bị bỏ im lặng**. Tag phải có sẵn trong registry cấp project (`GET /tag`, `POST /tag` body là **mảng**; **không có DELETE**)
+  - `Loại case` → `type` (Case Type). Người khai, **không** suy từ tên nhóm
+  - `Module` → **custom field `Module`** (`customFields: [{ ID, value }]`, tra ID theo TÊN qua `GET /config`)
   - `Tiền điều kiện` → field `precondition` **trong case** (AIO không có Precondition issue dùng chung; mã `[PRE-NN]` vẫn nằm trong text để tra chéo)
   - `Nhóm chức năng` → **folder** `<root>/<nhóm>` (cây dựng TỪ Excel, không hardcode danh sách tên)
   - `Các bước thực hiện` / `Kết quả mong đợi` → `steps[]` ghép theo số thứ tự · `Dữ liệu Test` → `steps[0].data`
-  - `Ưu tiên` → `priority` · nhóm bắt đầu bằng `API` / chứa `security|phân quyền` → `type` tương ứng
+  - `Ưu tiên` → `priority`
+  - **KHÔNG còn cột `Severity`/`Mức độ rủi ro`** trong template (bỏ 21/08/2026 — thuộc tính của bug). Bộ TC cũ còn cột này thì nó khai local-only, không đẩy lên AIO
 - Cây folder chỉ **2 cấp** (`<root>/<nhóm chức năng>`): `--folder-root` mặc định là `[JIRA_STORY_KEY]` (fallback tên file Excel). Bộ testcase cũ có cây sâu 3 cấp — muốn thêm case vào bộ đó thì vá tại chỗ (`--only`), đừng publish lại cả bộ.
 - KHÔNG còn (vì AIO case không phải Jira issue): Test Set, requirement issue-link/panel Test Coverage, Precondition issue riêng, Test Type field, assignee, label `group-*`/`tc-*`. Đừng đi tìm rồi kết luận "thiếu".
 
@@ -92,9 +96,23 @@ Các bước thực hiện:
    - Error/blocker.
 8. Nếu mode là `PUBLISH` và QA đã APPROVED, chạy publish thật:
    `npm run aio:publish:apply -- --file <...>.xlsx --story [JIRA_STORY_KEY] --qa-approved`
+   - ⚠️ `JIRA_STORY_KEY` nằm trong `profiles/<TASK>/task.env`, chỉ có giá trị khi đã đặt `TASK_ENV=profiles/<TASK>/task.env`. Thiếu biến này thì publish vẫn chạy `LỖI 0` nhưng **case không nối story nào** — kiểm dòng `story: <KEY>` ở đầu output, thấy `(không)` là dừng lại sửa.
+   - ⚠️ `--story` cũng là **tên folder gốc mặc định**. Truyền `--story` mà quên `--folder-root` thì script dựng cây mới mang tên story và **chuyển chỗ toàn bộ case**. Luôn truyền `--folder-root` đường dẫn đầy đủ.
    - Dedup theo `automationKey`: case đã có thì **UPDATE** (`↻ KEY`), chưa có thì tạo (`✓ KEY`) — chạy lại KHÔNG tạo trùng.
    - `PUT .../detail` là ghi đè toàn phần (script dùng `mergePut`), nên đừng sửa case thẳng trên UI rồi re-publish: bản UI sẽ bị Excel ghi đè.
    - Đọc kỹ dòng tổng `TẠO n · CẬP NHẬT n · LỖI n`; có LỖI thì exit code khác 0.
+8b. **BẮT BUỘC — đối soát TỪNG TRƯỜNG sau khi ghi.** `TẠO n · CẬP NHẬT n · LỖI 0` chỉ nói mọi request trả 2xx; nó **KHÔNG** chứng minh mapping đúng. Đo thật 21/08/2026 trên bộ 101 case: lượt publish `LỖI 0` vẫn để `Module` **rỗng** trên AIO, và một bản trước đó cắt mất **300/682 dòng** `Kết quả mong đợi` ở 83 case — cả hai đều im lặng.
+
+   `npm run aio:verify-fields -- --file <...>.xlsx --story [JIRA_STORY_KEY] --folder-root "<đường dẫn đã dùng lúc publish>"`
+
+   - Lớp ①**cấu trúc** (không cần mạng, thêm `--structure-only`): mọi cột của nguồn phải có đích khai trong `MAPPING`, hoặc khai local-only **kèm lý do**. Cột lạ = **CHẶN**. Lớp này cũng chạy tự động **trước** khi `aio:publish:apply` ghi bất cứ thứ gì.
+   - Lớp ②**giá trị**: đọc lại từng case trên AIO rồi so từng trường (11 trường × n case). Lệch hoặc thiếu case = exit 1.
+   - Bước này chạy **nhịp 800ms/request** (không phải 200ms như các script khác): nó đi ngay sau publish nên ngân sách request đã gần cạn, mà AIO quá tải thì trả **body rỗng** chứ không trả 429. Gãy giữa đường thì chạy lại, hoặc `AIO_THROTTLE_MS=1200`. Script **thà dừng** còn hơn báo "khớp" khi chưa đọc được.
+   - Lớp ③**thuộc tính đặt lúc publish**: `story` và **đường dẫn folder**. Hai thứ này KHÔNG phải cột trong file nên lớp ① không thấy và lớp ② không so. Đo thật 07/09/2026 trên bộ 297 case: đối soát trả `1881/1881 khớp` mà **không case nào nối Jira story** — `jiraRequirementIDs` rỗng sạch, vì chạy publish thiếu `TASK_ENV` nên `JIRA_STORY_KEY` rỗng. Publish có in `story: (không)` ở dòng 2 nhưng người chỉ đọc dòng tổng ở cuối.
+   - Vì vậy **phải truyền `--story` và `--folder-root`** đúng giá trị đã dùng lúc publish. Thiếu `--folder-root` thì script nói rõ *"KHÔNG kiểm folder"* thay vì im lặng bỏ qua. Thiếu credential Jira thì script chỉ kiểm được *"có nối và nối đồng nhất"* và **nói rõ mức đó**, không tự nhận là đã xác minh.
+   - `--no-publish-attrs` chỉ dùng khi **cố ý** push không gắn story; script sẽ ghi rõ là đã bỏ qua.
+   - Thêm cột mới vào template thì **phải** khai một dòng trong `MAPPING` — nếu không lớp ① chặn. Đây đúng là chỗ `Module` đã lọt qua trước đây.
+
 9. Ghi/cập nhật (script TỰ ghi `reports/aio-testcase-publish-summary.md`; agent chỉ cập nhật `task.md`):
    - `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/aio-testcase-publish-summary.md` — mode, tổng case, created/updated/failed, cây folder, key AIO đại diện.
    - `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/task.md`
