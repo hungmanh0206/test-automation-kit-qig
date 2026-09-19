@@ -2,8 +2,9 @@
 'use strict';
 
 // Dashboard tổng hợp — đọc dữ liệu ĐÃ CÓ (knowledge/ + flaky-triage.md), KHÔNG thu thập lại,
-// KHÔNG thêm dependency. Xuất 1 file HTML tĩnh reports/dashboard.html theo SAPP Academy Design System
-// (gold #FFB700, warm ink #1A1916, Be Vietnam Pro, radius 16, logo docs/brand/logo-sapp.png).
+// KHÔNG thêm dependency. Xuất 1 file HTML tĩnh reports/dashboard.html.
+// Giao diện dùng CHUNG một bảng màu với ảnh User Guide: nhấn chàm #4F46E5, mực #16161A,
+// Be Vietnam Pro, radius 16. KHÔNG logo, KHÔNG khẩu hiệu, KHÔNG tên công ty mặc định.
 // Nguồn: knowledge/historical_execution/ (coverage & pass/fail theo task/module),
 //        knowledge/bugs/ (risk theo module), <PROJECT_OUTPUT_DIR>/tasks/*/reports/flaky-triage.md (flaky).
 
@@ -20,19 +21,28 @@ const OUT_DIR = path.join(REPO_ROOT, 'reports');
 const OUT_FILE = path.join(OUT_DIR, 'dashboard.html');
 const BRANDING_FILE = path.join(REPO_ROOT, '.agent', 'config', 'dashboard.branding.json');
 
-// Default = SAPP Academy Design System. Override qua .agent/config/dashboard.branding.json (tùy chọn).
+// Mặc định TRUNG TÍNH, không mang nhận diện công ty nào. Đội nào muốn gắn thương hiệu riêng thì
+// override qua .agent/config/dashboard.branding.json (tên, khẩu hiệu, logo, màu, font).
 const DEFAULT_BRANDING = {
-  brandName: 'SAPP Academy',
-  eyebrow: 'SAPP Academy · QA Automation Kit',
-  motto: 'Advance your career',
-  logoPath: 'docs/brand/logo-sapp.png',
+  brandName: 'QA Automation Kit',
+  eyebrow: 'QA Automation Kit',
+  motto: '',
+  /*
+   * KHÔNG logo mặc định — chủ repo yêu cầu bỏ logo khỏi dashboard (19/09/2026).
+   *
+   * Máy vẫn giữ nguyên khả năng gắn logo: đội nào muốn hiển thị thì khai `logoPath` trong
+   * `.agent/config/dashboard.branding.json`. Bỏ đường dẫn mặc định chứ không xoá cơ chế, vì xoá cơ
+   * chế là lấy mất lựa chọn của người dùng sau. `loadLogo` trả null khi không đọc được và chỗ render
+   * đã có guard, nên để rỗng là không vẽ chip logo nào.
+   */
+  logoPath: '',
   fontFamily: "'Be Vietnam Pro', system-ui, 'Segoe UI', sans-serif",
   fontImport: 'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap',
   colors: {
-    gold: '#FFB700', gold600: '#E6A300', gold800: '#946800', goldWash: '#FFF9EC',
-    ink: '#1A1916', wash: '#FAF8F3', card: '#FFFFFF',
+    gold: '#4F46E5', gold600: '#4338CA', gold800: '#3730A3', goldWash: '#EEF0FF',
+    ink: '#16161A', wash: '#F7F8FA', card: '#FFFFFF',
     bSubtle: '#E6E0D5', bSoft: '#EFE9DD',
-    t1: '#1A1916', t2: '#57534A', t3: '#79736A',
+    t1: '#16161A', t2: '#57534A', t3: '#79736A',
     passBg: '#E9F6EF', passFg: '#14613F', failBg: '#FBEAEA', failFg: '#9E2C2C',
   },
 };
@@ -46,7 +56,7 @@ function loadBranding() {
       colors: { ...DEFAULT_BRANDING.colors, ...(override.colors || {}) },
     };
   } catch (err) {
-    return DEFAULT_BRANDING; // không có file override → giữ SAPP DS
+    return DEFAULT_BRANDING; // không có file override → giữ bản trung tính
   }
 }
 
@@ -183,7 +193,7 @@ function findNonFunctional() {
   return { available: true, items };
 }
 
-// ---------- render (SAPP Academy Design System) ----------
+// ---------- render ----------
 
 function statusChip(kind, label) {
   return `<span class="chip chip-${kind}">${esc(label)}</span>`;
@@ -294,7 +304,7 @@ function render({ coverage, moduleRisk, flaky, nonFunctional, metrics, generated
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>QA Automation Dashboard — SAPP Academy</title>
+<title>QA Automation Dashboard</title>
 <style>
 @import url('${b.fontImport}');
 :root{
@@ -310,13 +320,13 @@ body{font-family:${b.fontFamily};-webkit-font-smoothing:antialiased;
   background:var(--wash);color:var(--t1);padding:28px;line-height:1.4}
 .page{max-width:1120px;margin:0 auto}
 
-/* Header — dark ink band + gold corner glow (SAPP DS) */
+/* Header — dải mực đậm + quầng sáng màu nhấn ở góc */
 .hero{position:relative;overflow:hidden;background:var(--ink);border-radius:24px;padding:30px 34px;color:#fff;
-  box-shadow:0 16px 40px rgba(26,25,22,.16);margin-bottom:22px}
+  box-shadow:0 16px 40px rgba(22,22,26,.16);margin-bottom:22px}
 .hero::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(115% 85% at 100% 0%, rgba(255,183,0,.30), rgba(255,183,0,0) 55%)}
+  background:radial-gradient(115% 85% at 100% 0%, rgba(79,70,229,.30), rgba(79,70,229,0) 55%)}
 .hero::after{content:'';position:absolute;left:-40px;bottom:-70px;width:200px;height:200px;
-  background:radial-gradient(circle, rgba(255,183,0,.12), rgba(255,183,0,0) 70%)}
+  background:radial-gradient(circle, rgba(79,70,229,.12), rgba(79,70,229,0) 70%)}
 .hero>*{position:relative;z-index:1}
 .eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .hero h1{font-size:34px;font-weight:800;letter-spacing:-.02em;margin-top:10px}
@@ -329,14 +339,14 @@ body{font-family:${b.fontFamily};-webkit-font-smoothing:antialiased;
 /* KPI tiles */
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px}
 .tile{background:var(--card);border:1px solid var(--b-subtle);border-radius:16px;padding:20px 22px;
-  box-shadow:0 2px 6px rgba(26,25,22,.06);border-top:3px solid var(--gold)}
+  box-shadow:0 2px 6px rgba(22,22,26,.06);border-top:3px solid var(--gold)}
 .tile-danger{border-top-color:var(--fail-fg)}
 .tile-n{font-size:34px;font-weight:800;letter-spacing:-.02em;color:var(--t1)}
 .tile-l{font-size:12.5px;font-weight:600;color:var(--t3);margin-top:2px}
 
 /* Sections */
 section{background:var(--card);border:1px solid var(--b-subtle);border-radius:16px;padding:22px 24px;
-  box-shadow:0 2px 6px rgba(26,25,22,.06);margin-bottom:20px}
+  box-shadow:0 2px 6px rgba(22,22,26,.06);margin-bottom:20px}
 .sec-eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);
   margin-bottom:16px;display:flex;align-items:center;gap:9px}
 .sec-eyebrow::before{content:'';width:16px;height:3px;border-radius:999px;background:var(--gold)}

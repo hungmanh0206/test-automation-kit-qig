@@ -7,6 +7,31 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-19 (khuya) — Dashboard và thư viện dùng chung giao diện với ảnh User Guide
+
+Chủ repo yêu cầu hai trang này trông giống ảnh User Guide.
+Đã đồng bộ **43 chỗ màu** trên 6 file. Dùng ĐÚNG bảng ánh xạ đã áp cho ảnh, không chế màu mới.
+
+| Thứ | Trước | Sau |
+| --- | --- | --- |
+| logo | `logo-sapp.png` nhúng base64 ở cả hai trang | bỏ |
+| khẩu hiệu | "Advance your career" | bỏ |
+| tên thương hiệu | `brandName` và `eyebrow` mang tên công ty | "QA Automation Kit" |
+| màu nhấn | vàng `#FFB700` | chàm `#4F46E5` |
+| mực và nền | `#1A1916`, `#FAF8F3` | `#16161A`, `#F7F8FA` |
+
+Font giữ Be Vietnam Pro theo yêu cầu.
+
+**Giữ nguyên CƠ CHẾ gắn logo, chỉ bỏ đường dẫn mặc định.**
+Đội nào muốn thương hiệu riêng thì khai `logoPath` trong `.agent/config/dashboard.branding.json`.
+Xoá cơ chế là lấy mất lựa chọn của người dùng sau.
+
+**Nghiệm thu bằng MẮT, không bằng grep.** Chụp màn cả hai trang rồi mở ra xem. Grep trước đó đã bỏ
+lọt mũi tên màu vàng trong ảnh User Guide, nên lần này không tin grep một mình nữa.
+
+**Chữ "SAPP" còn lại trong hai trang là MÃ TASK**, kiểu `SAPP-26878` trong bảng dữ liệu và ví dụ.
+Đó không phải nhận diện, và xoá đi là mất nghĩa. Giữ.
+
 ## 2026-09-19 (tối) — Vẽ lại 10 ảnh User Guide, gỡ sạch nhận diện công ty
 
 **Vì sao.** `USER_GUIDE.md` thuộc LỚP GENERIC, tức đi theo gói phát hành tới đội khác. Logo, khẩu hiệu

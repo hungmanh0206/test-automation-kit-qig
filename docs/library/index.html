@@ -1,14 +1,14 @@
 <title>Thư viện Test Automation Kit</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>/* SAPP Academy Design System — token nguồn: scripts/qa/dashboard_generate.js */
+<style>/* Token nguồn: scripts/qa/dashboard_generate.js — cùng bảng màu với ảnh User Guide */
 :root{
-  --gold:#FFB700; --gold600:#E6A300; --gold800:#946800; --goldWash:#FFF9EC;
-  --ink:#1A1916; --wash:#FAF8F3; --card:#FFFFFF;
+  --gold:#4F46E5; --gold600:#4338CA; --gold800:#3730A3; --goldWash:#EEF0FF;
+  --ink:#16161A; --wash:#F7F8FA; --card:#FFFFFF;
   --bSubtle:#E6E0D5; --bSoft:#EFE9DD;
-  --t1:#1A1916; --t2:#57534A; --t3:#79736A;
+  --t1:#16161A; --t2:#57534A; --t3:#79736A;
   --passBg:#E9F6EF; --passFg:#14613F; --failBg:#FBEAEA; --failFg:#9E2C2C;
   --info:#2A6FDB; --success:#1F8A5B; --danger:#D64545; --amber:#F59E0B;
-  --shadow:0 1px 2px rgba(26,25,22,.05), 0 8px 24px rgba(26,25,22,.06);
+  --shadow:0 1px 2px rgba(22,22,26,.05), 0 8px 24px rgba(22,22,26,.06);
   --radius:16px;
 }
 :root:not([data-theme="light"]){ color-scheme:light }
@@ -45,15 +45,14 @@ a{color:inherit}
 /* ── Header band ── */
 .band{position:relative; background:var(--ink); color:#F5F1E8; overflow:hidden; border-radius:0 0 24px 24px}
 .band::after{content:''; position:absolute; right:-120px; top:-160px; width:460px; height:460px; border-radius:50%;
-  background:radial-gradient(circle, rgba(255,183,0,.30) 0%, rgba(255,183,0,0) 65%); pointer-events:none}
+  background:radial-gradient(circle, rgba(79,70,229,.30) 0%, rgba(79,70,229,0) 65%); pointer-events:none}
 .band .wrap{padding-top:26px; padding-bottom:26px; position:relative; z-index:1}
 .topbar{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap}
 .brandline{display:flex; align-items:center; gap:12px}
-.logo{height:34px; width:auto; display:block; background:#fff; border-radius:8px; padding:4px 8px}
-.motto{font-size:12px; color:#C9C2B5; letter-spacing:.04em}
+.wordmark{font-size:14px; font-weight:800; letter-spacing:.04em; color:#EFEFF4}
 .toplinks{display:flex; align-items:center; gap:6px; flex-wrap:wrap}
 .toplink{font-size:13px; color:#C9C2B5; text-decoration:none; padding:6px 10px; border-radius:999px}
-.toplink:hover{color:var(--gold); background:rgba(255,183,0,.10)}
+.toplink:hover{color:var(--gold); background:rgba(79,70,229,.10)}
 .themebtn{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); color:#F5F1E8;
   border-radius:999px; padding:6px 12px; font:inherit; font-size:13px; cursor:pointer}
 .themebtn:hover{border-color:var(--gold); color:var(--gold)}
@@ -91,8 +90,8 @@ a{color:inherit}
   cursor:pointer; display:inline-flex; align-items:center;
   transition:border-color .12s, color .12s, background .12s}
 .mode:hover{border-color:var(--gold600); color:var(--t1); background:color-mix(in srgb, var(--gold) 7%, var(--card))}
-.mode[aria-selected="true"]{background:var(--gold); border-color:var(--gold); color:#1A1916;
-  box-shadow:0 1px 8px rgba(255,183,0,.22)}
+.mode[aria-selected="true"]{background:var(--gold); border-color:var(--gold); color:#16161A;
+  box-shadow:0 1px 8px rgba(79,70,229,.22)}
 
 /* MÀN HẸP thì quay lại MỘT HÀNG CUỘN, không xuống dòng.
    Đo được: ở 390px, 8 tab xuống dòng thành 4 hàng và khối .modes cao 193px. Khối này position:sticky
@@ -156,10 +155,10 @@ main{padding:26px 0 60px}
 .empty{padding:40px 0; text-align:center; color:var(--t3)}
 
 /* ── Detail drawer ── */
-.scrim{position:fixed; inset:0; background:rgba(26,25,22,.42); z-index:60; opacity:0; pointer-events:none; transition:opacity .18s}
+.scrim{position:fixed; inset:0; background:rgba(22,22,26,.42); z-index:60; opacity:0; pointer-events:none; transition:opacity .18s}
 .scrim.on{opacity:1; pointer-events:auto}
 .drawer{position:fixed; z-index:61; right:0; top:0; bottom:0; width:min(460px,100%); background:var(--card);
-  border-left:1px solid var(--bSubtle); box-shadow:-12px 0 40px rgba(26,25,22,.14); overflow-y:auto;
+  border-left:1px solid var(--bSubtle); box-shadow:-12px 0 40px rgba(22,22,26,.14); overflow-y:auto;
   transform:translateX(102%); transition:transform .22s ease}
 .drawer.on{transform:none}
 .drawer .dh{padding:20px 22px 16px; border-bottom:1px solid var(--bSoft); position:relative}
@@ -196,7 +195,7 @@ main{padding:26px 0 60px}
 .btn{border:1px solid var(--bSubtle); background:var(--card); color:var(--t1); border-radius:11px;
   padding:10px 20px; font:inherit; font-size:14.5px; font-weight:700; cursor:pointer}
 .btn:hover{border-color:var(--gold600)}
-.btn.pri{background:var(--gold); border-color:var(--gold); color:#1A1916}
+.btn.pri{background:var(--gold); border-color:var(--gold); color:#16161A}
 .btn.ok{background:var(--passBg); border-color:var(--passFg); color:var(--passFg)}
 .btn.no{background:var(--failBg); border-color:var(--failFg); color:var(--failFg)}
 .score{text-align:center; padding:34px 20px}
@@ -271,19 +270,19 @@ footer b{color:var(--gold)}
 .dsec.ex .dlab, .dsec.ex p{color:var(--passFg)}
 .dsec.trap{border-color:var(--failFg); background:var(--failBg)}
 .dsec.trap .dlab, .dsec.trap p{color:var(--failFg)}
-pre.cmd{margin:0; background:#1A1916; border-radius:10px; padding:11px 13px; overflow-x:auto}
+pre.cmd{margin:0; background:#16161A; border-radius:10px; padding:11px 13px; overflow-x:auto}
 pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; white-space:pre}
 
 /* ═══════ Tiêu đề mục có số ═══════ */
 .subhead{display:flex; align-items:center; gap:10px; margin:34px 0 14px; font-size:17px; font-weight:800}
-.subhead .num{flex:none; width:26px; height:26px; border-radius:8px; background:var(--gold); color:#1A1916;
+.subhead .num{flex:none; width:26px; height:26px; border-radius:8px; background:var(--gold); color:#16161A;
   display:grid; place-items:center; font-size:13px; font-weight:800}
 
 /* ═══════ Tab Hướng dẫn — stepper luồng chính ═══════ */
 .flowwrap{display:flex; flex-direction:column}
 .fstep{display:flex; gap:14px; align-items:stretch}
 .frail{flex:none; width:34px; display:flex; flex-direction:column; align-items:center}
-.fnum{flex:none; width:34px; height:34px; border-radius:50%; background:var(--gold); color:#1A1916;
+.fnum{flex:none; width:34px; height:34px; border-radius:50%; background:var(--gold); color:#16161A;
   display:grid; place-items:center; font-weight:800; font-size:14px}
 .frail::after{content:''; flex:1; width:2px; background:var(--bSubtle); margin:6px 0}
 .fstep:last-child .frail::after{display:none}
@@ -395,7 +394,7 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
 #graph{display:block; width:100%; height:min(74vh,660px); touch-action:none; cursor:grab}
 #graph.dragging{cursor:grabbing}
 .gtools button.wide{width:auto; padding:0 11px; font-size:12px; font-weight:800; letter-spacing:.04em}
-.gtools button.wide[aria-pressed="true"]{background:var(--gold); border-color:var(--gold); color:#1A1916}
+.gtools button.wide[aria-pressed="true"]{background:var(--gold); border-color:var(--gold); color:#16161A}
 .ghint #ghint3d{display:block; margin-bottom:2px; color:var(--t2)}
 
 /* ═══════ Tab Hành trình ═══════ */
@@ -429,7 +428,7 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
 .chead{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; margin-bottom:8px}
 .cnum{flex:none; width:26px; height:26px; border-radius:8px; background:var(--wash); border:1px solid var(--bSubtle);
   color:var(--t2); display:grid; place-items:center; font-size:12.5px; font-weight:800}
-.clesson.ready .cnum{background:var(--gold); border-color:var(--gold); color:#1A1916}
+.clesson.ready .cnum{background:var(--gold); border-color:var(--gold); color:#16161A}
 .chead h4{margin:0; flex:1; min-width:0; font-size:15px; font-weight:800; line-height:1.35}
 .cdur{font-size:11px; font-weight:700; color:var(--t3); background:var(--wash);
   border:1px solid var(--bSubtle); border-radius:999px; padding:2px 9px; white-space:nowrap}
@@ -524,7 +523,7 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
 .wfstep{background:var(--card);border:1px solid var(--bSubtle);border-radius:12px;padding:13px 14px;
   display:flex;flex-direction:column}
 .wfhead{display:flex;gap:9px;align-items:center;margin-bottom:9px}
-.wfnum{flex:none;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#1A1916;
+.wfnum{flex:none;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#16161A;
   display:grid;place-items:center;font-size:12px;font-weight:800}
 .wfhead b{font-size:14px}
 .wfio{display:grid;gap:2px;margin-bottom:10px}
@@ -747,8 +746,7 @@ body.lropen{overflow:hidden}
   <div class="wrap">
     <div class="topbar">
       <div class="brandline">
-        <img class="logo" src="data:image/png;base64,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" alt="SAPP Academy">
-        <span class="motto">Advance your career</span>
+        <span class="wordmark">QA Automation Kit</span>
       </div>
       <nav class="toplinks">
         <a class="toplink" href="#p-info">Về dự án</a>
@@ -967,7 +965,7 @@ body.lropen{overflow:hidden}
     <h2 class="sechead">Về dự án</h2>
     <div class="prose">
       <p>Đây là thư viện thuật ngữ của <b>test-automation-kit_v2</b> — bộ kit QA automation đang dùng cho các
-        dự án SAPP. Toàn bộ nội dung được trích từ chính repo: <code>CLAUDE.md</code>, <code>RULE_GLOBAL.md</code>,
+        dự án này. Toàn bộ nội dung được trích từ chính repo: <code>CLAUDE.md</code>, <code>RULE_GLOBAL.md</code>,
         <code>.agent/rules/</code>, <code>.agent/config/</code>, <code>.agent/skills/</code>,
         <code>scripts/qa/</code>, <code>README.md</code> và <code>USER_GUIDE.md</code>.
         Mỗi thuật ngữ đều ghi kèm đường dẫn file gốc để tra lại khi cần bản đầy đủ.</p>
@@ -1016,7 +1014,7 @@ body.lropen{overflow:hidden}
   <div class="wrap">
     <b>Thư viện thuật ngữ Test Automation Kit v2</b> — sinh từ nội dung có sẵn trong repo
     <code style="color:#EFE9DD">test-automation-kit_v2</code>. Không chứa secret, không chứa PII.
-    Bản dựng: <span data-stat="terms">0</span> thuật ngữ · SAPP Academy Design System.
+    Bản dựng: <span data-stat="terms">0</span> thuật ngữ.
   </div>
 </footer>
 
@@ -1090,7 +1088,7 @@ const LESSONS = {"accessibility":{"t":"Bài 22 — Máy click được chưa có
    Mỗi entry: id · t (thuật ngữ) · cat · def (1 câu) · detail · src (file trong repo) · rel (id liên quan) */
 
 const CATS = {
-  rule:    { label: 'Nguyên tắc',            color: '#FFB700', desc: '6 điều không-thương-lượng, đọc trước mọi việc.' },
+  rule:    { label: 'Nguyên tắc',            color: '#4F46E5', desc: '6 điều không-thương-lượng, đọc trước mọi việc.' },
   gate:    { label: 'Gate máy-kiểm',         color: '#D64545', desc: 'Script chặn thật, sai chuẩn là không push được.' },
   skill:   { label: 'Skill',                 color: '#2A6FDB', desc: '21 năng lực agent gọi theo phase.' },
   concept: { label: 'Khái niệm QA',          color: '#1F8A5B', desc: 'Tư duy nền: oracle, flaky, evidence, risk…' },
@@ -2963,8 +2961,8 @@ const CHECKLISTS = [
 
 /* ── README: kiến trúc theo tầng ── */
 const ARCH_LAYERS = [
-  { k:'Phase 1', c:'#FFB700', d:'Đọc requirement/design/API rồi sinh testcase Markdown + Excel + coverage report + Setup Strategy contract (PRE-NN) + Precondition Execution Matrix. Excel là source of truth khi gen và publish.' },
-  { k:'Testcase Publish (AIO)', c:'#E6A300', d:'Step riêng trong Phase 1: sau khi QA xác nhận Excel thì tạo/cập nhật case trên AIO Tests, nhóm bằng folder 2 cấp, TC ID ở automationKey. Mặc định dry-run.' },
+  { k:'Phase 1', c:'#4F46E5', d:'Đọc requirement/design/API rồi sinh testcase Markdown + Excel + coverage report + Setup Strategy contract (PRE-NN) + Precondition Execution Matrix. Excel là source of truth khi gen và publish.' },
+  { k:'Testcase Publish (AIO)', c:'#4338CA', d:'Step riêng trong Phase 1: sau khi QA xác nhận Excel thì tạo/cập nhật case trên AIO Tests, nhóm bằng folder 2 cấp, TC ID ở automationKey. Mặc định dry-run.' },
   { k:'Phase 2', c:'#2A6FDB', d:'Đọc testcase từ nguồn canonical (mặc định kéo từ AIO), chạy Precondition Resolution Pass, sinh/cập nhật Playwright spec, execute thật rồi thu evidence.' },
   { k:'Setup Layer', c:'#0E9AA7', d:'tests/support/setup/ — factory, hook, fixture, mock, cleanup, contract dùng chung để dựng tiền điều kiện. Không dựng state bằng DB; DB chỉ read-only verify qua guarded client.' },
   { k:'Rerun', c:'#1F8A5B', d:'Chạy lại case fail hoặc bug Jira đã fix. Không dùng để đồng bộ tài liệu nguồn mới.' },
@@ -3472,7 +3470,7 @@ function makeGraph(opt) {
 
   function draw() {
     if (!W || !H) { if (!sizeCanvas()) return; }
-    var cInk = tok('--t1') || '#1A1916', cLine = tok('--t3') || '#79736A';
+    var cInk = tok('--t1') || '#16161A', cLine = tok('--t3') || '#79736A';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
 

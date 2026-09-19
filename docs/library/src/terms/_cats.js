@@ -2,7 +2,7 @@
    Mỗi entry: id · t (thuật ngữ) · cat · def (1 câu) · detail · src (file trong repo) · rel (id liên quan) */
 
 const CATS = {
-  rule:    { label: 'Nguyên tắc',            color: '#FFB700', desc: '6 điều không-thương-lượng, đọc trước mọi việc.' },
+  rule:    { label: 'Nguyên tắc',            color: '#4F46E5', desc: '6 điều không-thương-lượng, đọc trước mọi việc.' },
   gate:    { label: 'Gate máy-kiểm',         color: '#D64545', desc: 'Script chặn thật, sai chuẩn là không push được.' },
   skill:   { label: 'Skill',                 color: '#2A6FDB', desc: '21 năng lực agent gọi theo phase.' },
   concept: { label: 'Khái niệm QA',          color: '#1F8A5B', desc: 'Tư duy nền: oracle, flaky, evidence, risk…' },

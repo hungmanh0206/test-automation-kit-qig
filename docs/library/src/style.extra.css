@@ -18,19 +18,19 @@
 .dsec.ex .dlab, .dsec.ex p{color:var(--passFg)}
 .dsec.trap{border-color:var(--failFg); background:var(--failBg)}
 .dsec.trap .dlab, .dsec.trap p{color:var(--failFg)}
-pre.cmd{margin:0; background:#1A1916; border-radius:10px; padding:11px 13px; overflow-x:auto}
+pre.cmd{margin:0; background:#16161A; border-radius:10px; padding:11px 13px; overflow-x:auto}
 pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; white-space:pre}
 
 /* ═══════ Tiêu đề mục có số ═══════ */
 .subhead{display:flex; align-items:center; gap:10px; margin:34px 0 14px; font-size:17px; font-weight:800}
-.subhead .num{flex:none; width:26px; height:26px; border-radius:8px; background:var(--gold); color:#1A1916;
+.subhead .num{flex:none; width:26px; height:26px; border-radius:8px; background:var(--gold); color:#16161A;
   display:grid; place-items:center; font-size:13px; font-weight:800}
 
 /* ═══════ Tab Hướng dẫn — stepper luồng chính ═══════ */
 .flowwrap{display:flex; flex-direction:column}
 .fstep{display:flex; gap:14px; align-items:stretch}
 .frail{flex:none; width:34px; display:flex; flex-direction:column; align-items:center}
-.fnum{flex:none; width:34px; height:34px; border-radius:50%; background:var(--gold); color:#1A1916;
+.fnum{flex:none; width:34px; height:34px; border-radius:50%; background:var(--gold); color:#16161A;
   display:grid; place-items:center; font-weight:800; font-size:14px}
 .frail::after{content:''; flex:1; width:2px; background:var(--bSubtle); margin:6px 0}
 .fstep:last-child .frail::after{display:none}
@@ -142,7 +142,7 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
 #graph{display:block; width:100%; height:min(74vh,660px); touch-action:none; cursor:grab}
 #graph.dragging{cursor:grabbing}
 .gtools button.wide{width:auto; padding:0 11px; font-size:12px; font-weight:800; letter-spacing:.04em}
-.gtools button.wide[aria-pressed="true"]{background:var(--gold); border-color:var(--gold); color:#1A1916}
+.gtools button.wide[aria-pressed="true"]{background:var(--gold); border-color:var(--gold); color:#16161A}
 .ghint #ghint3d{display:block; margin-bottom:2px; color:var(--t2)}
 
 /* ═══════ Tab Hành trình ═══════ */
@@ -176,7 +176,7 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
 .chead{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; margin-bottom:8px}
 .cnum{flex:none; width:26px; height:26px; border-radius:8px; background:var(--wash); border:1px solid var(--bSubtle);
   color:var(--t2); display:grid; place-items:center; font-size:12.5px; font-weight:800}
-.clesson.ready .cnum{background:var(--gold); border-color:var(--gold); color:#1A1916}
+.clesson.ready .cnum{background:var(--gold); border-color:var(--gold); color:#16161A}
 .chead h4{margin:0; flex:1; min-width:0; font-size:15px; font-weight:800; line-height:1.35}
 .cdur{font-size:11px; font-weight:700; color:var(--t3); background:var(--wash);
   border:1px solid var(--bSubtle); border-radius:999px; padding:2px 9px; white-space:nowrap}
@@ -271,7 +271,7 @@ pre.cmd code{font-family:Consolas,monospace; font-size:12.5px; color:#FFD873; wh
 .wfstep{background:var(--card);border:1px solid var(--bSubtle);border-radius:12px;padding:13px 14px;
   display:flex;flex-direction:column}
 .wfhead{display:flex;gap:9px;align-items:center;margin-bottom:9px}
-.wfnum{flex:none;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#1A1916;
+.wfnum{flex:none;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#16161A;
   display:grid;place-items:center;font-size:12px;font-weight:800}
 .wfhead b{font-size:14px}
 .wfio{display:grid;gap:2px;margin-bottom:10px}

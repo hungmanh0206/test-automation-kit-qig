@@ -133,8 +133,8 @@ const CHECKLISTS = [
 
 /* ── README: kiến trúc theo tầng ── */
 const ARCH_LAYERS = [
-  { k:'Phase 1', c:'#FFB700', d:'Đọc requirement/design/API rồi sinh testcase Markdown + Excel + coverage report + Setup Strategy contract (PRE-NN) + Precondition Execution Matrix. Excel là source of truth khi gen và publish.' },
-  { k:'Testcase Publish (AIO)', c:'#E6A300', d:'Step riêng trong Phase 1: sau khi QA xác nhận Excel thì tạo/cập nhật case trên AIO Tests, nhóm bằng folder 2 cấp, TC ID ở automationKey. Mặc định dry-run.' },
+  { k:'Phase 1', c:'#4F46E5', d:'Đọc requirement/design/API rồi sinh testcase Markdown + Excel + coverage report + Setup Strategy contract (PRE-NN) + Precondition Execution Matrix. Excel là source of truth khi gen và publish.' },
+  { k:'Testcase Publish (AIO)', c:'#4338CA', d:'Step riêng trong Phase 1: sau khi QA xác nhận Excel thì tạo/cập nhật case trên AIO Tests, nhóm bằng folder 2 cấp, TC ID ở automationKey. Mặc định dry-run.' },
   { k:'Phase 2', c:'#2A6FDB', d:'Đọc testcase từ nguồn canonical (mặc định kéo từ AIO), chạy Precondition Resolution Pass, sinh/cập nhật Playwright spec, execute thật rồi thu evidence.' },
   { k:'Setup Layer', c:'#0E9AA7', d:'tests/support/setup/ — factory, hook, fixture, mock, cleanup, contract dùng chung để dựng tiền điều kiện. Không dựng state bằng DB; DB chỉ read-only verify qua guarded client.' },
   { k:'Rerun', c:'#1F8A5B', d:'Chạy lại case fail hoặc bug Jira đã fix. Không dùng để đồng bộ tài liệu nguồn mới.' },

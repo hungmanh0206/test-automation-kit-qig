@@ -28,8 +28,7 @@ const read = f => norm(fs.readFileSync(path.join(SRC, f), 'utf8'));
 const DATA_FILES = ['terms/_cats.js','terms/rules.js','terms/gates.js','terms/gates_expansion.js','terms/gates_kit.js','terms/gates_knowledge.js','terms/gates_do_luong.js','terms/skills.js',
   'terms/concepts.js','terms/concepts_expansion.js','terms/status.js','terms/flow.js','terms/flow_kit.js','terms/_merge.js','guide.js'];
 
-const logo = 'data:image/png;base64,' +
-  fs.readFileSync(path.join(ROOT, '..', 'brand', 'logo-sapp.png')).toString('base64');
+/* Không nhúng logo: trang này dùng chung bảng màu trung tính với ảnh User Guide (19/09/2026). */
 
 /* Tab "Khoá học" DẪN XUẤT từ docs/COURSE.md — markdown là nguồn canonical, không chép tay sang
    file .js của trang (hai nguồn thì sẽ trôi). Parse lỗi thì build CHẾT, không sinh tab rỗng. */
@@ -66,7 +65,6 @@ const lessonJs = '/* SINH TỰ ĐỘNG từ docs/course/*.md — đừng sửa �
 
 let html = read('shell.html')
   .replace('/*__CSS__*/', () => read('style.css') + '\n' + read('style.extra.css'))
-  .replace('__LOGO__', () => logo)
   .replace('/*__DATA__*/', () => courseJs + lessonJs + DATA_FILES.map(read).join('\n'))
   .replace('/*__APP__*/', () => read('md.js') + '\n' + read('graph3d.js') + '\n' + read('app.js'));
 

@@ -1,12 +1,12 @@
-/* SAPP Academy Design System — token nguồn: scripts/qa/dashboard_generate.js */
+/* Token nguồn: scripts/qa/dashboard_generate.js — cùng bảng màu với ảnh User Guide */
 :root{
-  --gold:#FFB700; --gold600:#E6A300; --gold800:#946800; --goldWash:#FFF9EC;
-  --ink:#1A1916; --wash:#FAF8F3; --card:#FFFFFF;
+  --gold:#4F46E5; --gold600:#4338CA; --gold800:#3730A3; --goldWash:#EEF0FF;
+  --ink:#16161A; --wash:#F7F8FA; --card:#FFFFFF;
   --bSubtle:#E6E0D5; --bSoft:#EFE9DD;
-  --t1:#1A1916; --t2:#57534A; --t3:#79736A;
+  --t1:#16161A; --t2:#57534A; --t3:#79736A;
   --passBg:#E9F6EF; --passFg:#14613F; --failBg:#FBEAEA; --failFg:#9E2C2C;
   --info:#2A6FDB; --success:#1F8A5B; --danger:#D64545; --amber:#F59E0B;
-  --shadow:0 1px 2px rgba(26,25,22,.05), 0 8px 24px rgba(26,25,22,.06);
+  --shadow:0 1px 2px rgba(22,22,26,.05), 0 8px 24px rgba(22,22,26,.06);
   --radius:16px;
 }
 :root:not([data-theme="light"]){ color-scheme:light }
@@ -43,15 +43,14 @@ a{color:inherit}
 /* ── Header band ── */
 .band{position:relative; background:var(--ink); color:#F5F1E8; overflow:hidden; border-radius:0 0 24px 24px}
 .band::after{content:''; position:absolute; right:-120px; top:-160px; width:460px; height:460px; border-radius:50%;
-  background:radial-gradient(circle, rgba(255,183,0,.30) 0%, rgba(255,183,0,0) 65%); pointer-events:none}
+  background:radial-gradient(circle, rgba(79,70,229,.30) 0%, rgba(79,70,229,0) 65%); pointer-events:none}
 .band .wrap{padding-top:26px; padding-bottom:26px; position:relative; z-index:1}
 .topbar{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap}
 .brandline{display:flex; align-items:center; gap:12px}
-.logo{height:34px; width:auto; display:block; background:#fff; border-radius:8px; padding:4px 8px}
-.motto{font-size:12px; color:#C9C2B5; letter-spacing:.04em}
+.wordmark{font-size:14px; font-weight:800; letter-spacing:.04em; color:#EFEFF4}
 .toplinks{display:flex; align-items:center; gap:6px; flex-wrap:wrap}
 .toplink{font-size:13px; color:#C9C2B5; text-decoration:none; padding:6px 10px; border-radius:999px}
-.toplink:hover{color:var(--gold); background:rgba(255,183,0,.10)}
+.toplink:hover{color:var(--gold); background:rgba(79,70,229,.10)}
 .themebtn{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); color:#F5F1E8;
   border-radius:999px; padding:6px 12px; font:inherit; font-size:13px; cursor:pointer}
 .themebtn:hover{border-color:var(--gold); color:var(--gold)}
@@ -89,8 +88,8 @@ a{color:inherit}
   cursor:pointer; display:inline-flex; align-items:center;
   transition:border-color .12s, color .12s, background .12s}
 .mode:hover{border-color:var(--gold600); color:var(--t1); background:color-mix(in srgb, var(--gold) 7%, var(--card))}
-.mode[aria-selected="true"]{background:var(--gold); border-color:var(--gold); color:#1A1916;
-  box-shadow:0 1px 8px rgba(255,183,0,.22)}
+.mode[aria-selected="true"]{background:var(--gold); border-color:var(--gold); color:#16161A;
+  box-shadow:0 1px 8px rgba(79,70,229,.22)}
 
 /* MÀN HẸP thì quay lại MỘT HÀNG CUỘN, không xuống dòng.
    Đo được: ở 390px, 8 tab xuống dòng thành 4 hàng và khối .modes cao 193px. Khối này position:sticky
@@ -154,10 +153,10 @@ main{padding:26px 0 60px}
 .empty{padding:40px 0; text-align:center; color:var(--t3)}
 
 /* ── Detail drawer ── */
-.scrim{position:fixed; inset:0; background:rgba(26,25,22,.42); z-index:60; opacity:0; pointer-events:none; transition:opacity .18s}
+.scrim{position:fixed; inset:0; background:rgba(22,22,26,.42); z-index:60; opacity:0; pointer-events:none; transition:opacity .18s}
 .scrim.on{opacity:1; pointer-events:auto}
 .drawer{position:fixed; z-index:61; right:0; top:0; bottom:0; width:min(460px,100%); background:var(--card);
-  border-left:1px solid var(--bSubtle); box-shadow:-12px 0 40px rgba(26,25,22,.14); overflow-y:auto;
+  border-left:1px solid var(--bSubtle); box-shadow:-12px 0 40px rgba(22,22,26,.14); overflow-y:auto;
   transform:translateX(102%); transition:transform .22s ease}
 .drawer.on{transform:none}
 .drawer .dh{padding:20px 22px 16px; border-bottom:1px solid var(--bSoft); position:relative}
@@ -194,7 +193,7 @@ main{padding:26px 0 60px}
 .btn{border:1px solid var(--bSubtle); background:var(--card); color:var(--t1); border-radius:11px;
   padding:10px 20px; font:inherit; font-size:14.5px; font-weight:700; cursor:pointer}
 .btn:hover{border-color:var(--gold600)}
-.btn.pri{background:var(--gold); border-color:var(--gold); color:#1A1916}
+.btn.pri{background:var(--gold); border-color:var(--gold); color:#16161A}
 .btn.ok{background:var(--passBg); border-color:var(--passFg); color:var(--passFg)}
 .btn.no{background:var(--failBg); border-color:var(--failFg); color:var(--failFg)}
 .score{text-align:center; padding:34px 20px}

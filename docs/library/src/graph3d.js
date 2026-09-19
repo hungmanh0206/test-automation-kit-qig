@@ -128,7 +128,7 @@ function makeGraph(opt) {
 
   function draw() {
     if (!W || !H) { if (!sizeCanvas()) return; }
-    var cInk = tok('--t1') || '#1A1916', cLine = tok('--t3') || '#79736A';
+    var cInk = tok('--t1') || '#16161A', cLine = tok('--t3') || '#79736A';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
 
