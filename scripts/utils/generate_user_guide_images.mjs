@@ -1,22 +1,27 @@
-// SAPP Academy — User Guide board renderer (HTML/CSS + Playwright)
-// Thay renderer GDI+ cũ (generate_user_guide_images.ps1). Render 8 board theo
-// SAPP Academy Design System: gold #FFB700 + warm ink #1A1916, Be Vietnam Pro,
-// dark phase-band có gold corner-glow, card radius 16, GATE = viền gold + gold-wash.
+// User Guide board renderer (HTML/CSS + Playwright)
+//
+// KHÔNG mang nhận diện của bất kỳ công ty nào. USER_GUIDE.md là tài liệu của LỚP GENERIC — nó đi theo
+// gói phát hành tới đội khác, nên logo, khẩu hiệu và màu thương hiệu của một công ty cụ thể không có
+// chỗ ở đây. Trước 19/09/2026 bộ này nhúng logo, khẩu hiệu và vàng thương hiệu; đã gỡ sạch.
+//
+// Ranh giới cần nhớ: `scripts/qa/dashboard_generate.js` và `docs/library/build.js` VẪN dùng nhận diện
+// công ty, và đúng như vậy — dashboard cùng thư viện giáo trình là tài liệu nội bộ, không phát ra ngoài.
+// Đừng "dọn" hai chỗ đó theo file này.
+//
+// Bảng màu ở đây là token ngữ nghĩa thuần: xanh dương = thông tin, xanh lá = đạt, đỏ = hỏng,
+// hổ phách = cần chú ý, chàm = nhấn cấu trúc và CỔNG.
 //
 // Chạy: node scripts/utils/generate_user_guide_images.mjs
 import { chromium } from 'playwright';
-import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..', '..');
 const outDir = path.join(repoRoot, 'docs', 'user-guide-images');
-const logoB64 = readFileSync(path.join(repoRoot, 'docs', 'brand', 'logo-sapp.png')).toString('base64');
-const logo = `data:image/png;base64,${logoB64}`;
 
-// DS accent palette (semantic tokens + brand gold)
-const C = { info: '#2A6FDB', gold: '#FFB700', amber: '#F59E0B', success: '#1F8A5B', danger: '#D64545', ink: '#3D3A33' };
+// Token NGỮ NGHĨA, không token thương hiệu.
+const C = { info: '#2A6FDB', accent: '#4F46E5', amber: '#F59E0B', success: '#1F8A5B', danger: '#D64545', ink: '#3D3A33' };
 
 const boards = [
   {
@@ -150,12 +155,12 @@ const boards = [
       { icon: 'EXP', c: C.ink, title: 'Exploratory', body: 'nhánh phụ, never-auto, NGOÀI Main Flow' },
       { icon: 'LRN', c: C.success, title: 'Learning loop', body: 'learning_recorder → knowledge/ → risk lần sau' },
     ],
-    outputs: ['risk-register (RBT)', 'dashboard.html (SAPP DS)', 'accessibility/perf/security/load report', 'draft exploratory → tc_validator', 'knowledge/ tích luỹ (RBT tươi)'],
+    outputs: ['risk-register (RBT)', 'dashboard.html ', 'accessibility/perf/security/load report', 'draft exploratory → tc_validator', 'knowledge/ tích luỹ (RBT tươi)'],
   },
 ];
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const chevron = `<svg class="chev" width="20" height="11" viewBox="0 0 20 11" fill="none"><path d="M1 1l9 8 9-8" stroke="#E6A300" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const chevron = `<svg class="chev" width="20" height="11" viewBox="0 0 20 11" fill="none"><path d="M1 1l9 8 9-8" stroke="#4338CA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 function boardHtml(b) {
   const inputs = b.inputs.map((i) => `<li>${esc(i)}</li>`).join('');
@@ -171,61 +176,59 @@ function boardHtml(b) {
 
   return `<!doctype html><html lang="vi"><head><meta charset="utf-8">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--gold:#FFB700;--gold-600:#E6A300;--ink:#1A1916;--wash:#FAF8F3;--card:#FFFFFF;
-  --b-subtle:#E6E0D5;--b-soft:#EFE9DD;--t1:#1A1916;--t2:#57534A;--t3:#79736A;--gold-wash:#FFF9EC;--gold-800:#946800;}
-body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;background:var(--wash);}
+:root{--accent:#4F46E5;--accent-600:#4338CA;--ink:#16161A;--wash:#F7F8FA;--card:#FFFFFF;
+  --b-subtle:#E6E0D5;--b-soft:#EFE9DD;--t1:#16161A;--t2:#57534A;--t3:#79736A;--accent-wash:#EEF0FF;--accent-800:#3730A3;}
+body{font-family:'Inter',system-ui,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;background:var(--wash);}
 .board{width:1520px;background:var(--wash);padding:32px;display:grid;
   grid-template-columns:308px 248px 1fr 248px;gap:20px;align-items:stretch;}
 
-/* Phase band — dark ink + gold corner-glow */
+/* Phase band — nền mực đậm + quầng sáng màu nhấn ở góc */
 .phase{position:relative;overflow:hidden;background:var(--ink);border-radius:24px;padding:34px 30px;
-  color:#fff;display:flex;flex-direction:column;box-shadow:0 16px 40px rgba(26,25,22,.16);}
+  color:#fff;display:flex;flex-direction:column;box-shadow:0 16px 40px rgba(22,22,26,.16);}
 .phase::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(115% 80% at 100% 0%, rgba(255,183,0,.32), rgba(255,183,0,0) 55%);}
+  background:radial-gradient(115% 80% at 100% 0%, rgba(79,70,229,.32), rgba(79,70,229,0) 55%);}
 .phase::after{content:'';position:absolute;left:-40px;bottom:-60px;width:180px;height:180px;
-  background:radial-gradient(circle, rgba(255,183,0,.12), rgba(255,183,0,0) 70%);}
+  background:radial-gradient(circle, rgba(79,70,229,.12), rgba(79,70,229,0) 70%);}
 .phase>*{position:relative;z-index:1}
 .eyebrow-row{display:flex;align-items:center;gap:10px}
-.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
 .num{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;
-  background:var(--gold);color:var(--ink);font-weight:800;font-size:13px;border-radius:999px}
+  background:var(--accent);color:var(--ink);font-weight:800;font-size:13px;border-radius:999px}
 .p-title{font-size:42px;line-height:1.04;font-weight:800;letter-spacing:-.02em;margin-top:16px;color:#fff}
-.p-accent{display:block;width:46px;height:4px;background:var(--gold);border-radius:999px;margin-top:16px}
+.p-accent{display:block;width:46px;height:4px;background:var(--accent);border-radius:999px;margin-top:16px}
 .p-role{margin-top:16px;color:#C9C2B5;font-size:15px;font-weight:500}
 .p-link{margin-top:12px;color:#EFE9DD;font-size:13px;width:fit-content;padding-bottom:2px;
   border-bottom:1px solid rgba(255,255,255,.4)}
 .p-foot{margin-top:auto;padding-top:28px}
-.logo-chip{background:#fff;border-radius:12px;padding:9px 13px;display:inline-flex;
-  box-shadow:0 8px 22px rgba(0,0,0,.28)}
-.logo-chip img{height:32px;display:block}
-.motto{margin-top:16px;color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.wordmark{color:#EFEFF4;font-size:15px;font-weight:800;letter-spacing:.04em;
+  padding-top:14px;border-top:1px solid rgba(255,255,255,.22)}
 
 /* Input / Output columns */
 .col{background:var(--card);border:1px solid var(--b-subtle);border-radius:16px;padding:24px 22px;
-  box-shadow:0 2px 6px rgba(26,25,22,.06)}
+  box-shadow:0 2px 6px rgba(22,22,26,.06)}
 .col-eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);
   margin-bottom:18px;display:flex;align-items:center;gap:8px}
-.col-eyebrow::before{content:'';width:16px;height:3px;border-radius:999px;background:var(--gold)}
+.col-eyebrow::before{content:'';width:16px;height:3px;border-radius:999px;background:var(--accent)}
 .dotlist{list-style:none}
 .dotlist li{position:relative;padding-left:20px;margin-bottom:15px;color:var(--t1);font-size:14.5px;
   font-weight:500;line-height:1.42}
 .dotlist li:last-child{margin-bottom:0}
 .dotlist li::before{content:'';position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:50%;
-  background:var(--gold)}
+  background:var(--accent)}
 
 /* Flow */
 .flow{display:flex;flex-direction:column;justify-content:center}
 .step{background:var(--card);border:1px solid var(--b-soft);border-radius:14px;padding:13px 16px;
-  display:flex;align-items:center;gap:14px;box-shadow:0 2px 6px rgba(26,25,22,.06)}
-.step.gate{background:var(--gold-wash);border:1.5px solid var(--gold);box-shadow:0 8px 22px rgba(255,183,0,.20)}
+  display:flex;align-items:center;gap:14px;box-shadow:0 2px 6px rgba(22,22,26,.06)}
+.step.gate{background:var(--accent-wash);border:1.5px solid var(--accent);box-shadow:0 8px 22px rgba(79,70,229,.20)}
 .chip{width:40px;height:40px;flex:0 0 auto;border-radius:11px;color:#fff;font-weight:800;font-size:12px;
-  letter-spacing:.02em;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(26,25,22,.16)}
-.gatechip{background:var(--gold);color:var(--ink)}
+  letter-spacing:.02em;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(22,22,26,.16)}
+.gatechip{background:var(--accent);color:var(--ink)}
 .txt{min-width:0}
 .st-title{font-size:15.5px;font-weight:700;letter-spacing:-.01em;color:var(--t1)}
-.step.gate .st-title{color:var(--gold-800)}
+.step.gate .st-title{color:var(--accent-800)}
 .st-body{font-size:12.5px;font-weight:500;color:var(--t3);margin-top:2px;line-height:1.35}
 .arrow{display:flex;justify-content:center;padding:5px 0}
 </style></head>
@@ -238,8 +241,7 @@ body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-s
     <div class="p-role">${esc(b.role)}</div>
     <div class="p-link">User Guide</div>
     <div class="p-foot">
-      <div class="logo-chip"><img src="${logo}" alt="SAPP Academy"></div>
-      <div class="motto">Advance your career</div>
+      <div class="wordmark">QA Automation Kit</div>
     </div>
   </aside>
   <section class="col"><div class="col-eyebrow">Inputs</div><ul class="dotlist">${inputs}</ul></section>
@@ -252,21 +254,21 @@ body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-s
 // Sơ đồ traceability AIO Tests (thay mermaid trong USER_GUIDE 5.5.0).
 function traceabilityHtml() {
   const org = (a, t, s) => `<div class="tnode org" style="--a:${a}"><div class="tn-t">${esc(t)}</div><div class="tn-s">${esc(s)}</div></div>`;
-  const chev = (lbl) => `<div class="tchev"><svg width="22" height="12" viewBox="0 0 22 12" fill="none"><path d="M1 1l10 9 10-9" stroke="#E6A300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>${lbl ? `<span>${esc(lbl)}</span>` : ''}</div>`;
+  const chev = (lbl) => `<div class="tchev"><svg width="22" height="12" viewBox="0 0 22 12" fill="none"><path d="M1 1l10 9 10-9" stroke="#4338CA" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>${lbl ? `<span>${esc(lbl)}</span>` : ''}</div>`;
   const line = (a, html) => `<div class="tnode line" style="--a:${a}">${html}</div>`;
   return `<!doctype html><html lang="vi"><head><meta charset="utf-8">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--gold:#FFB700;--ink:#1A1916;--wash:#FAF8F3;--b-subtle:#E6E0D5;--b-soft:#EFE9DD;--t1:#1A1916;--t2:#57534A;--t3:#79736A;}
-body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;background:var(--wash)}
+:root{--accent:#4F46E5;--ink:#16161A;--wash:#F7F8FA;--b-subtle:#E6E0D5;--b-soft:#EFE9DD;--t1:#16161A;--t2:#57534A;--t3:#79736A;}
+body{font-family:'Inter',system-ui,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;background:var(--wash)}
 .diagram{width:1120px;background:var(--wash);padding:40px 48px}
 .dhead{text-align:center;margin-bottom:24px}
-.deyebrow{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.deyebrow{color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
 .dsub{color:var(--t1);font-size:19px;font-weight:700;letter-spacing:-.01em;margin-top:6px}
-.tgroup{background:#fff;border:1px solid var(--b-subtle);border-radius:16px;padding:18px 20px;box-shadow:0 2px 6px rgba(26,25,22,.06)}
+.tgroup{background:#fff;border:1px solid var(--b-subtle);border-radius:16px;padding:18px 20px;box-shadow:0 2px 6px rgba(22,22,26,.06)}
 .tg-eyebrow{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);display:flex;align-items:center;gap:8px}
-.tg-eyebrow::before{content:'';width:16px;height:3px;border-radius:999px;background:var(--gold)}
+.tg-eyebrow::before{content:'';width:16px;height:3px;border-radius:999px;background:var(--accent)}
 .trow{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
 .tnode.org{background:var(--wash);border:1px solid var(--b-soft);border-left:4px solid var(--a);border-radius:12px;padding:13px 15px}
 .tn-t{font-weight:700;color:var(--t1);font-size:15px;letter-spacing:-.01em}
@@ -274,9 +276,9 @@ body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-s
 .tchev{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 0}
 .tchev span{color:var(--t2);font-size:12.5px;font-weight:600}
 .tcenter{display:flex;justify-content:center}
-.tnode.hub{background:var(--gold);color:var(--ink);border-radius:16px;padding:15px 44px;font-size:23px;font-weight:800;letter-spacing:.03em;box-shadow:0 8px 24px rgba(255,183,0,.35);display:flex;flex-direction:column;align-items:center;text-align:center}
-.tnode.hub span{font-size:12.5px;font-weight:600;letter-spacing:0;margin-top:2px;color:#6B4C00}
-.tnode.line{background:#fff;border:1px solid var(--b-subtle);border-left:5px solid var(--a);border-radius:14px;padding:14px 22px;font-size:16px;color:var(--t1);box-shadow:0 2px 6px rgba(26,25,22,.06);text-align:center;width:fit-content;max-width:680px;margin:0 auto}
+.tnode.hub{background:var(--accent);color:var(--ink);border-radius:16px;padding:15px 44px;font-size:23px;font-weight:800;letter-spacing:.03em;box-shadow:0 8px 24px rgba(79,70,229,.35);display:flex;flex-direction:column;align-items:center;text-align:center}
+.tnode.hub span{font-size:12.5px;font-weight:600;letter-spacing:0;margin-top:2px;color:#3730A3}
+.tnode.line{background:#fff;border:1px solid var(--b-subtle);border-left:5px solid var(--a);border-radius:14px;padding:14px 22px;font-size:16px;color:var(--t1);box-shadow:0 2px 6px rgba(22,22,26,.06);text-align:center;width:fit-content;max-width:680px;margin:0 auto}
 .tnode.line b{font-weight:800}
 .tnode.line .sm{color:var(--t3);font-size:13px;font-weight:500}
 .chipset{display:inline-flex;gap:8px;margin-left:12px;vertical-align:middle}
@@ -302,7 +304,7 @@ body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-s
   ${chev('chứa mỗi lần chạy')}
   ${line(C.info, '<b>Cycle</b> — 1 lần chạy = toàn bộ TC <span class="sm">(cùng --cycle-title thì dùng lại, không đẻ trùng)</span>')}
   ${chev('sinh kết quả — evidence neo được xuống TỪNG BƯỚC')}
-  ${line(C.gold, '<b>Run + run-step</b><span class="chipset"><i class="pass">Passed</i><i class="fail">Failed</i><i class="todo">Blocked</i><i class="todo">Not Run</i></span>')}
+  ${line(C.accent, '<b>Run + run-step</b><span class="chipset"><i class="pass">Passed</i><i class="fail">Failed</i><i class="todo">Blocked</i><i class="todo">Not Run</i></span>')}
 </div></body></html>`;
 }
 

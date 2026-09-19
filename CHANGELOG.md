@@ -7,6 +7,40 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-19 (tối) — Vẽ lại 10 ảnh User Guide, gỡ sạch nhận diện công ty
+
+**Vì sao.** `USER_GUIDE.md` thuộc LỚP GENERIC, tức đi theo gói phát hành tới đội khác. Logo, khẩu hiệu
+và màu thương hiệu của một công ty cụ thể không có chỗ ở đó.
+
+**Đã gỡ bốn thứ**, không chỉ cái logo:
+
+| Thứ | Trước | Sau |
+| --- | --- | --- |
+| logo nhúng | `docs/brand/logo-sapp.png` base64 trong mọi board | chữ "QA Automation Kit" |
+| khẩu hiệu | "Advance your career" | bỏ hẳn |
+| màu thương hiệu | vàng `#FFB700` và `#E6A300` | chàm `#4F46E5` |
+| nền ấm của DS | mực `#1A1916`, nền `#FAF8F3` | trung tính `#16161A`, `#F7F8FA` |
+
+Font đổi từ Be Vietnam Pro sang Inter.
+Cả hai đều là font công cộng và đều đủ dấu tiếng Việt.
+Đổi vì Be Vietnam Pro được khai trong design system của công ty.
+
+**Quét chữ không đủ để nghiệm thu.** Sau lượt thay token đầu, quét chữ thì sạch.
+Nhưng **mở ảnh ra vẫn thấy mũi tên màu vàng**. Hai hex `#E6A300` và `#6B4C00` nằm thẳng trong SVG,
+không qua token. Phải đọc ảnh thật mới thấy.
+
+**Một lỗi thật do đổi tên khoá.** Đổi `C.gold` thành `C.accent` làm một chỗ gọi `C.gold` còn sót trỏ
+vào `undefined`. Bắt được nhờ quét lại toàn bộ file sau khi thay, không phải nhờ test.
+
+**KHÔNG đụng hai chỗ khác cùng dùng logo đó.** Đó là `scripts/qa/dashboard_generate.js` và
+`docs/library/build.js`. Hai thứ đó là tài liệu NỘI BỘ, không phát ra ngoài. Chúng còn có quy định
+riêng bắt phải theo design system của công ty. Đã ghi ranh giới này ngay đầu file sinh ảnh.
+
+**Còn ba câu nhắc tên công ty** trong README, QUICKSTART và USER_GUIDE.
+Cả ba cùng một ý: mô tả `npm run dashboard` dùng design system của công ty. Câu đó ĐÚNG sự thật nên
+chưa sửa. Sửa thì hoặc nói sai, hoặc phải gỡ nhận diện cả dashboard. Việc đó trái quy định đang có,
+nên chờ chủ repo quyết.
+
 ## 2026-09-19 (chiều) — Đổi reporter Playwright sang `dot`, và gỡ một quả bom hẹn giờ
 
 **Đổi `['list']` thành `['dot']`.** Đây là việc mà đợt đánh giá RTK chỉ ra, và nó không cần cài gì.
