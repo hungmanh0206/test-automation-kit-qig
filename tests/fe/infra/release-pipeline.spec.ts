@@ -240,12 +240,24 @@ test.describe('@infra phát hành kit — script chạy được từ ZIP (khôn
       return so;
     };
 
+    /*
+     * PHẢI biết đang đứng trên CÂY NÀO. Bản đầu của test này ngầm cho rằng luôn là cây GitHub, nên nó ĐỎ
+     * ngay khi chạy trên bản clone từ GitLab — đúng nửa số người nhận kit. Một máy kiểm chỉ đúng ở một
+     * remote thì tự nó là lỗi "kết quả phụ thuộc môi trường chạy".
+     *
+     * Dấu hiệu: cây GitLab KHÔNG track các đường dẫn khai trong `gitlab_strip.json`.
+     */
+    const dangTrack = new Set(String(lsFiles.stdout).split(/\r?\n/).map((x: string) => x.trim()));
+    const laGitlab = strip.every((x) => !dangTrack.has(x.path));
+    const fileGh = laGitlab ? soFile + nStrip : soFile;
+    const specGh = laGitlab ? soSpec + nSpecStrip : soSpec;
+
     const [fGh, fGl] = doc('file được track');
-    expect(fGh, 'QUICKSTART khai sai số file track phía GitHub').toBe(soFile);
-    expect(fGl, 'QUICKSTART khai sai số file track phía GitLab').toBe(soFile - nStrip);
+    expect(fGh, `QUICKSTART khai sai số file track phía GitHub (đang đo trên cây ${laGitlab ? 'GitLab' : 'GitHub'})`).toBe(fileGh);
+    expect(fGl, 'QUICKSTART khai sai số file track phía GitLab').toBe(fileGh - nStrip);
 
     const [sGh, sGl] = doc('`npm run ci:scope` đếm');
-    expect(sGh, 'QUICKSTART khai sai số spec phía GitHub').toBe(soSpec);
-    expect(sGl, 'QUICKSTART khai sai số spec phía GitLab').toBe(soSpec - nSpecStrip);
+    expect(sGh, `QUICKSTART khai sai số spec phía GitHub (đang đo trên cây ${laGitlab ? 'GitLab' : 'GitHub'})`).toBe(specGh);
+    expect(sGl, 'QUICKSTART khai sai số spec phía GitLab').toBe(specGh - nSpecStrip);
   });
 });
