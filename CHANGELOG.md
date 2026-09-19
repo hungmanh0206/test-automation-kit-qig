@@ -7,6 +7,63 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## v2.1.1 — 2026-09-19 — Rà lại trước khi phát hành, và tìm ra một đường rò dữ liệu
+
+Một câu hỏi của chủ repo về "bộ nhớ có theo clone không" mở ra một lượt rà toàn bộ. Lượt đó tìm ra bốn
+thứ, trong đó một thứ là đường đưa dữ liệu nội bộ lên mirror public.
+
+### `.gitignore` cho `knowledge/` là danh sách liệt kê, nên mọi thứ MỚI đều lọt
+
+Luật cũ kể từng đường dẫn: `knowledge/index.json`, `knowledge/bugs/*.json`, `knowledge/domain/*.json`.
+Danh sách kiểu đó chỉ đúng với thứ đã biết lúc viết. Đo bằng `git check-ignore` trên 7 đường dẫn thực tế:
+**5 trên 7 sẽ bị commit**. Gồm `knowledge/leak_machine_map.json` mà chính `README.md` và `leak_report.js`
+bảo người dùng tạo, và `knowledge/bugs/<key>.md` với tên file là slug tiêu đề defect.
+
+Chuyện này đã xảy ra thật một lần. Lịch sử repo từng có **86 file `knowledge/`** được commit, rồi gỡ ở
+`58a5fe5 chore(security)`. Chúng vẫn nằm trong lịch sử git trên bản public. Quét lại toàn bộ 86 file:
+**0 file chứa email, số điện thoại hay secret**. Nội dung là tiêu đề defect nội bộ, module, Jira key và mã
+testcase. Luật nay đổi thành cấm cả thư mục rồi mở lại đúng `SCHEMA.md` và các `.gitkeep`.
+
+### Hai cửa cùng mù với file `.env` đặt tên khác
+
+`.gitignore` chặn `.env`, `.env.local`, `.env.*.local`, `.env.bak*`. Nên `.env.uat` và `.env.production`
+không bị chặn. Cùng lúc, luật `generic-secret-assign` của `secret:scan` đòi giá trị có dấu nháy, trong khi
+file `.env` viết `KEY=value` không nháy.
+
+Đo 19/09/2026: tạo `.env.uat` chứa OPS_PASSWORD và JIRA_API_TOKEN, `git add`, chạy `secret:scan`. Gate báo
+OK. Hai lỗ khớp nhau thành một đường commit creds UAT lên mirror public mà mọi cửa đều xanh.
+
+Đã vá cả hai. Thêm luật `env-assign-unquoted` neo hẹp vào khoá viết hoa đầu dòng để không báo oan
+`const apiKey = req.body.apiKey`. Nghiệm thu hai chiều: chạy trên 490 file thật ra 0 báo oan, chạy trên
+file `.env` giả thì bắt đúng 2 dòng, và dòng placeholder vẫn không bị tính.
+
+### Máy mới giữ hai luật đó không trôi ngược
+
+`tests/fe/infra/knowledge-ignore.spec.ts` hỏi chính `git check-ignore`, không tự diễn giải `.gitignore` bằng
+regex. Nó có đối chứng âm ở cả hai đầu: khôi phục luật cũ thì đỏ đúng 5 test, mà nếu ai đó sửa thành
+chặn sạch thì ba test khác đỏ vì khung thư mục phải đi theo clone.
+
+### Hai thứ tài liệu chưa nói
+
+**Bộ nhớ của agent không nằm trong repo.** Nó ở `~/.claude/projects/<đường-dẫn>/memory/` và khoá theo
+đường dẫn thư mục, không theo dự án. Đo trên máy chủ repo: cùng một bộ kit đặt ở hai thư mục cho ra hai
+kho riêng, 164 memory và 17 memory, không thấy nhau. Kho 17 memory còn nhớ Xray, công cụ đã bỏ từ 20/08.
+`knowledge:backup` không chạm tới kho này.
+
+**Hai hook forcing-function tắt mặc định.** `.claude/settings.json` là file local và gitignored nên người
+mới nhận kit sẽ chạy mà không có `gate_on_write` lẫn `inject_context`. `preflight` có cảnh báo, nhưng
+QUICKSTART và USER_GUIDE trước đó không chỗ nào nhắc. `QUICKSTART.md` nay có bước bật hook và một mục
+riêng về bộ nhớ agent.
+
+### Vặt
+
+`eslint` trước đây soi cả file nháp `*.tmp.js` đã bị gitignore. Máy dev có file nháp thì thấy `npm run lint`
+ĐỎ trong khi CI xanh. Đó cũng là lớp lỗi "kết quả phụ thuộc môi trường chạy", chỉ là ngược chiều.
+
+Kiểm trên gói `kit-2.1.0` thật: knowledge rỗng không làm vỡ lệnh nào. `dashboard`, `risk`,
+`domain:check`, `system:check`, `decisions:check`, `howto:check` đều exit 0 và báo thẳng là đang có 0 bản
+ghi. Chạy một spec rồi thì `knowledge/metrics/` sinh ra và `reliability` đọc được 37 record.
+
 ## v2.1.0 — 2026-09-19 — Đọc đúng tài liệu, và bản phát hành tự chứng minh được
 
 Bản đầu tiên được **đóng gói và nghiệm thu từ con số 0**.

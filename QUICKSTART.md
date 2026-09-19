@@ -28,7 +28,8 @@
 | 6 | Cấu hình MCP | Xem mục **MCP** trong `USER_GUIDE.md` (bảng server và dùng khi nào). Bản cụ thể của mỗi đội nằm ở `.agent/config/mcp_config.md` — file này mang endpoint riêng nên KHÔNG đi theo gói, tự tạo |
 | 7 | Cấu hình project context | `cp .agent/config/project_context.example.md .agent/config/project_context.md` rồi điền theo dự án. **Chưa có file này thì `preflight` CHẶN** — cố ý, để kit không chạy trên ngữ cảnh trống |
 | 8 | Cấu hình risk model | `cp .agent/config/risk_model.example.json .agent/config/risk_model.json` rồi chỉnh Impact theo module của bạn. Thiếu thì `dim:coverage` mất ngưỡng theo chiều |
-| 9 | Kiểm lại | `npx playwright test tests/fe/infra` — bộ tự-kiểm của kit, phải xanh hết trước khi dùng thật |
+| 9 | Bật 2 hook forcing-function | `.claude/settings.json` là **local, gitignored** nên KHÔNG đi theo clone, tức hook đang TẮT. Copy đoạn JSON trong `scripts/qa/hooks/README.md` vào `.claude/settings.json` rồi mở `/hooks` một lần. `preflight` có cảnh báo chỗ này, không chặn |
+| 10 | Kiểm lại | `npx playwright test tests/fe/infra` — bộ tự-kiểm của kit, phải xanh hết trước khi dùng thật |
 
 ## Hai remote — clone bên nào cũng được, nhưng số đo khác nhau
 
@@ -57,6 +58,8 @@ chúng chạy thật, và bạn thấy **597 xanh, 0 bỏ qua** — đó là Đ�
 | `knowledge/` | chỉ có `SCHEMA.md` | **mất toàn bộ bộ nhớ học** |
 | `profiles/` | chỉ có `task.env.example` | không có credential nào |
 | `outputs/` | rỗng | không có kết quả task cũ |
+| `.claude/settings.json` | không có | 2 hook forcing-function TẮT (bước 9) |
+| bộ nhớ của agent | không có | nằm **ngoài repo hoàn toàn** — đọc mục ngay dưới |
 
 `knowledge/` bị gitignore có chủ ý, vì mirror GitHub là public. Nhưng theo `knowledge/SCHEMA.md`, một
 phần trong đó **không nạp lại được từ nguồn máy**: `domain/`, `system/`, `decisions/`, `setup_recipes/`,
@@ -65,6 +68,26 @@ phần trong đó **không nạp lại được từ nguồn máy**: `domain/`, 
 Máy mới cần dùng tiếp bộ nhớ đó thì: máy cũ chạy `npm run knowledge:backup` (đích **ngoài** repo), chép
 bundle sang rồi khôi phục. Phần nạp lại được thì `npm run learn:bugs:apply` (từ Jira) và
 `npm run learn -- --scan` (từ `test-results/`).
+
+### Bộ nhớ của agent không nằm trong repo
+
+Ngoài `knowledge/`, agent còn một kho ghi nhớ riêng trong thư mục `.claude` ở home của bạn:
+`~/.claude/projects/<đường-dẫn-đã-mã-hoá>/memory/`. Kho này không phải một phần của repo.
+`npm run knowledge:backup` **không** chạm tới nó.
+
+Chỗ dễ hiểu nhầm nhất: kho này khoá theo **đường dẫn thư mục làm việc**, không theo dự án.
+Cùng một bộ kit đặt ở hai thư mục khác nhau sẽ có hai kho riêng, không thấy nhau.
+
+| Tình huống | Nhớ hay không |
+|---|---|
+| Task mới, vẫn chạy trong **cùng** thư mục | nhớ đủ |
+| Clone sang thư mục khác, máy khác, hoặc chỉ đổi tên thư mục | bắt đầu từ 0 |
+
+Thứ vẫn theo mọi thư mục là `~/.claude/CLAUDE.md`, tức quy tắc cá nhân. Còn `CLAUDE.md` trong repo
+là quy tắc dự án và có đi theo clone.
+
+Muốn mang sang máy mới thì chép tay thư mục `memory/` đó. Kho cũ bỏ lâu không dùng thì nên xoá
+thay vì chép. Nó giữ nguyên hiểu biết đã hết hạn và không có cơ chế tự hết hạn.
 
 ## Inputs
 

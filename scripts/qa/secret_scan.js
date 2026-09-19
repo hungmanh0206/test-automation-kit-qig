@@ -66,7 +66,9 @@ for (const rel of trackedFiles()) {
     for (const p of PATTERNS) {
       const m = p.re.exec(line);
       if (!m) continue;
-      if (p.name === 'generic-secret-assign' && PLACEHOLDER.test(line)) continue;
+      // Hai luật "gán giá trị" là luật SUY ĐOÁN theo hình dạng, nên phải lọc bản mẫu/placeholder.
+      // Các luật còn lại nhận diện chuỗi không thể xuất hiện hợp lệ, không cần lọc.
+      if ((p.name === 'generic-secret-assign' || p.name === 'env-assign-unquoted') && PLACEHOLDER.test(line)) continue;
       findings.push({ file: rel, line: i + 1, pattern: p.name, snippet: m[0].slice(0, 6) + '***' });
     }
   });

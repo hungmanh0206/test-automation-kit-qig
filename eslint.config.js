@@ -28,7 +28,10 @@ const commonRules = {
 };
 
 module.exports = [
-  { ignores: ['node_modules/**', 'outputs/**', 'playwright-report/**', 'test-results/**', 'reports/**', 'docs/**', 'tests/**'] },
+  { ignores: ['node_modules/**', 'outputs/**', 'playwright-report/**', 'test-results/**', 'reports/**', 'docs/**', 'tests/**',
+    // File nhap `*.tmp.js` da bi gitignore. Khong bo qua o day thi may dev co file nhap se thay
+    // `npm run lint` DO trong khi CI (checkout sach) XANH — dung lop loi 'ket qua phu thuoc moi truong'.
+    '**/*.tmp.js', '**/*.tmp.mjs'] },
   { files: ['scripts/**/*.js'], languageOptions: { ecmaVersion: 2023, sourceType: 'commonjs', globals }, rules: commonRules },
   { files: ['scripts/**/*.mjs'], languageOptions: { ecmaVersion: 2023, sourceType: 'module', globals }, rules: commonRules },
 ];

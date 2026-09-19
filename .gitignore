@@ -110,30 +110,13 @@ ExportData/
 #   historical  → `npm run learn -- --scan`   metrics → sinh khi chạy test
 #   domain/system/decisions → ghi tay (nguồn: FSD/BA), rồi `npm run domain:index` · `system:index` · `decisions --index`
 # Giữ lại trong repo: `knowledge/SCHEMA.md` (hình dạng entry, đã có mẫu generic PROJ-123) + các `.gitkeep`.
-knowledge/index.json
-knowledge/bug_tc_map.json
-knowledge/bugs/*.json
-knowledge/domain/*.json
-knowledge/system/*.json
-knowledge/decisions/*.json
-knowledge/root_causes/*.json
-knowledge/locators/*.json
-knowledge/historical_execution/*.json
-knowledge/metrics/*
-knowledge/setup_recipes/*.json
-knowledge/environment/*.json
-knowledge/examples/*
-!knowledge/bugs/.gitkeep
-!knowledge/domain/.gitkeep
-!knowledge/system/.gitkeep
-!knowledge/decisions/.gitkeep
-!knowledge/root_causes/.gitkeep
-!knowledge/locators/.gitkeep
-!knowledge/historical_execution/.gitkeep
-!knowledge/metrics/.gitkeep
-!knowledge/setup_recipes/.gitkeep
-!knowledge/environment/.gitkeep
-!knowledge/examples/.gitkeep
+# LUAT: CHAN CA THU MUC roi mo lai dung 2 thu. Truoc day day la DANH SACH LIET KE tung duong dan,
+# nen bat ky thu gi MOI trong knowledge/ deu lot: `leak_machine_map.json` (chinh README bao tao),
+# file .md trong bugs/, hay mot store moi. Do 19/09/2026: 5/7 duong dan that se bi commit.
+knowledge/**
+!knowledge/**/
+!knowledge/SCHEMA.md
+!knowledge/**/.gitkeep
 
 # Agent / AI local files
 .gemini/
@@ -157,6 +140,14 @@ artifacts/
 **/.env.local
 **/.env.*.local
 **/.env.bak*
+# Luat tren liet ke tung bien the (.env.local, .env.*.local, .env.bak*) nen `.env.uat` va
+# `.env.production` deu LOT. Do 19/09/2026: tao `.env.uat` co OPS_PASSWORD roi `git add` thi
+# khong cua nao chan. Chan CA HO `.env.*` roi mo lai dung ban mau.
+.env.*
+**/.env.*
+!.env.example
+!**/.env.example
+!*.env.example
 .agent/config/*.local.md
 
 # Per-project run profiles — KHÔNG commit BẤT CỨ THỨ GÌ trừ file mẫu.

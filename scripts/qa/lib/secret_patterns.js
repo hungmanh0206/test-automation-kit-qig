@@ -21,6 +21,20 @@ const PATTERNS = [
   { name: 'slack-token', re: /\bxox[baprs]-[0-9A-Za-z-]{10,}\b/ },
   { name: 'google-service-account-key', re: /"private_key"\s*:\s*"-----BEGIN/ },
   { name: 'generic-secret-assign', re: /(?:password|passwd|secret|api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*['"][^'"\s]{12,}['"]/i },
+  /*
+   * DÒNG KIỂU FILE .env — giá trị KHÔNG có dấu nháy.
+   *
+   * Luật ngay trên đòi `['"]…['"]`, nên nó đúng với JSON và JS nhưng MÙ với chính hình dạng nguy hiểm
+   * nhất: `OPS_PASSWORD=Tr4nsAct!on9xKp`. Đo 19/09/2026: tạo `.env.uat` chứa OPS_PASSWORD + JIRA_API_TOKEN,
+   * `git add`, rồi chạy gate — gate báo OK. Cùng lúc `.gitignore` chỉ chặn `.env`, `.env.local`,
+   * `.env.*.local`, `.env.bak*`, nên `.env.uat` cũng không bị chặn. Hai lỗ khớp nhau thành một đường
+   * commit creds UAT lên mirror public mà mọi cửa đều xanh.
+   *
+   * Neo hẹp có chủ ý để không báo oan: khoá phải VIẾT HOA từ đầu dòng (hình dạng của file env), không bắt
+   * `const apiKey = req.body.apiKey` trong source. Bộ lọc PLACEHOLDER ở `secret_scan.js` vẫn áp dụng, nên
+   * `OPS_PASSWORD=your-password-here` và `${OPS_PASSWORD}` không tính.
+   */
+  { name: 'env-assign-unquoted', re: /^(?:export\s+)?[A-Z][A-Z0-9_]*(?:PASSWORD|PASSWD|SECRET|TOKEN|APIKEY|API_KEY|CREDENTIAL)[A-Z0-9_]*\s*=\s*[^\s'"#]{8,}\s*$/ },
 ];
 
 const CRED_FILE = /^(service_account.*\.json|.*oauth-credentials.*\.json|token\.json.*|credentials\.json|.*-key\.json)$/i;
