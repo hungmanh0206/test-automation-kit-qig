@@ -34,12 +34,26 @@ const KEEP_DIRS = [
   'scripts', 'prompt_templates', 'partial-rerun', 'exploratory',
   'tests/support', 'tests/fe/infra', 'tests/fe/fixtures', 'tests/fe/pages', 'tests/fe/visual', 'tests/fixtures',
   '.claude/commands', '.github/workflows',
+  /*
+   * Ảnh của USER_GUIDE. Thiếu thư mục này thì tài liệu onboarding chính của kit hiện 10 ẢNH VỠ ngay
+   * lần mở đầu tiên. Đo 19/09/2026: gói không mang `docs/` nào, trong khi `USER_GUIDE.md` nhúng đúng
+   * 10 ảnh ở đây. Ảnh đã gỡ sạch nhận diện công ty nên mang đi được.
+   */
+  'docs/user-guide-images',
 ];
 const KEEP_FILES = [
   '.gitlab-ci.yml', 'playwright.config.js', 'package.json', 'package-lock.json',
   'tsconfig.json', 'eslint.config.js', '.nvmrc', '.gitignore', '.env.example',
   'profiles/task.env.example', 'knowledge/SCHEMA.md',
   'README.md', 'QUICKSTART.md', 'USER_GUIDE.md', 'RULE_GLOBAL.md', 'CHANGELOG.md', 'CLAUDE.md',
+  /*
+   * Danh mục 80 máy của kit. Hai lý do phải mang theo, cả hai đo được:
+   *   · `README.md` trỏ tới file này, không mang là link hỏng ngay ở tài liệu đầu tiên;
+   *   · `gate:policy` trong gói ĐỎ vì `writing:lint:docs` không bề mặt nào nhắc — GATES.md là nơi
+   *     duy nhất nhắc nó, nên bỏ file này ra là tự làm hỏng phép kiểm 1-nguồn-policy của chính gói.
+   * Nội dung là catalogue sinh tự động từ chính source, không mang dữ liệu dự án.
+   */
+  '.agent/config/GATES.md',
   '.agent/config/kit-layers.md', '.agent/config/verdict_taxonomy.json',
   '.agent/config/case_types.json', '.agent/config/branch_parity.json', '.agent/config/ci_scope.json',
   '.agent/config/ci_parity.json',
