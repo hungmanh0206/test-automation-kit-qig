@@ -198,4 +198,54 @@ test.describe('@infra phát hành kit — script chạy được từ ZIP (khôn
       expect(r.status, `${s} lỗi cú pháp`).toBe(0);
     }
   });
+
+  /*
+   * Bảng "Hai remote" trong `QUICKSTART.md` là thứ người cài dùng để tự biết đã lắp đúng chưa. Nó nói thẳng
+   * "số của bạn khác bảng này là có gì đó sai", nên bảng sai là tự tạo báo động giả cho mọi người cài.
+   *
+   * Bảng đã lệch HAI LẦN trong cùng một phiên 19/09/2026, cả hai lần vì thêm một spec. Đó là bằng chứng
+   * nó cần máy canh chứ không cần người cẩn thận hơn.
+   *
+   * CHỈ canh hai con số ĐO ĐƯỢC RẺ và tất định: số file track, và số spec `ci:scope` đếm. Số test xanh
+   * thì phải chạy cả bộ mới biết, không đưa vào đây để khỏi biến test này thành thứ tự đỏ theo môi trường.
+   * Phía GitLab suy ra bằng danh sách strip, không viết tay.
+   */
+  test('bảng số đo trong QUICKSTART khớp cây thật (file track · số spec, cả hai remote)', () => {
+    const qs = fs.readFileSync(path.join(REPO, 'QUICKSTART.md'), 'utf8');
+    const strip = JSON.parse(fs.readFileSync(path.join(REPO, '.agent/config/gitlab_strip.json'), 'utf8')).strip as { path: string }[];
+
+    const { spawnSync } = require('child_process');
+    const lsFiles = spawnSync('git', ['ls-files'], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+    test.skip(lsFiles.status !== 0, 'không có .git (gói phát hành) — không đếm được cây track');
+    const soFile = String(lsFiles.stdout).split(/\r?\n/).filter((x: string) => x.trim()).length;
+
+    const sc = spawnSync(process.execPath, [path.join(REPO, 'scripts/qa/ci_scope_check.js')], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+    const mSpec = String(sc.stdout).match(/(\d+) spec được track/);
+    expect(mSpec, 'không đọc được số spec từ ci:scope').not.toBeNull();
+    const soSpec = Number(mSpec![1]);
+
+    // Strip chỉ gồm file .spec.ts nên cả hai con số cùng giảm đúng bằng số mục strip.
+    const nStrip = strip.length;
+    const nSpecStrip = strip.filter((x) => x.path.endsWith('.spec.ts')).length;
+
+    /* Đọc bảng bằng cách tách cột, không bằng một regex dài — regex dài là thứ tự nó hỏng im lặng. */
+    const doc = (nhan: string): number[] => {
+      const dong = qs.split(/\r?\n/).find((l) => l.startsWith('| ' + nhan));
+      expect(dong, `QUICKSTART không còn dòng "${nhan}" — bảng đổi hình thì máy này mù`).toBeTruthy();
+      const so = String(dong).split('|').slice(2)
+        .map((c) => c.replace(/[^0-9]/g, ''))
+        .filter(Boolean)
+        .map(Number);
+      expect(so.length, `dòng "${nhan}" phải có 2 con số (GitHub, GitLab)`).toBeGreaterThanOrEqual(2);
+      return so;
+    };
+
+    const [fGh, fGl] = doc('file được track');
+    expect(fGh, 'QUICKSTART khai sai số file track phía GitHub').toBe(soFile);
+    expect(fGl, 'QUICKSTART khai sai số file track phía GitLab').toBe(soFile - nStrip);
+
+    const [sGh, sGl] = doc('`npm run ci:scope` đếm');
+    expect(sGh, 'QUICKSTART khai sai số spec phía GitHub').toBe(soSpec);
+    expect(sGl, 'QUICKSTART khai sai số spec phía GitLab').toBe(soSpec - nSpecStrip);
+  });
 });
