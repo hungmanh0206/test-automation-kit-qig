@@ -49,23 +49,27 @@
         "negative",
         "boundary",
         "security"
-      ]
+      ],
+      "minCasesPerDimension": 5
     },
     "Medium": {
       "minCount": 5,
       "requiredDimensions": [
         "negative"
-      ]
+      ],
+      "minCasesPerDimension": 3
     },
     "Low": {
       "minCount": 2,
-      "requiredDimensions": []
+      "requiredDimensions": [],
+      "minCasesPerDimension": 1
     },
     "UNKNOWN": {
       "minCount": 3,
       "requiredDimensions": [
         "negative"
-      ]
+      ],
+      "minCasesPerDimension": 3
     }
   },
   "dimensionKeywords": {
@@ -104,5 +108,6 @@
       "token",
       "permission"
     ]
-  }
+  },
+  "_depthPolicy_note": "minCount = tong so case toi thieu cho MOT MODULE cua band do (risk_gate). minCasesPerDimension = so case toi thieu cho MOI CHIEU khai `required` (dimension_coverage --enforce). Vi sao them 23/08/2026: truoc do do phu la NHI PHAN 'co >=1 case la dat' — bo 530 case that co chieu §12 chi ~12% ma van PASS. Co mat != du."
 }

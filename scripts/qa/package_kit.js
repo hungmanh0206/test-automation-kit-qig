@@ -58,6 +58,22 @@ const KEEP_FILES = [
   '.agent/config/case_types.json', '.agent/config/branch_parity.json', '.agent/config/ci_scope.json',
   '.agent/config/ci_parity.json',
   '.agent/config/locators.schema.json', '.agent/config/gitlab_strip.json',
+  /*
+   * CẤU HÌNH MÁY MÓC — lớp GENERIC, phải đi theo gói.
+   *
+   * Luật "chỉ mang .example, loại mọi config THẬT" viết ra để chặn dữ liệu dự án, nhưng nó loại nhầm
+   * cả cấu hình mà chính máy của kit cần để chạy. Đo 19/09/2026: giải nén gói rồi chạy suite thì
+   * 25 test ĐỎ, phần lớn là ENOENT đúng mấy file này (`writing_style.json`, `env_lanes.json`).
+   * Người nhận gõ `npm test` lần đầu thấy 25 đỏ mà không hiểu vì sao.
+   *
+   * Cả 5 file đã soi: không chứa host, bảng DB, credential hay PII. Chỗ nhắc mã task chỉ là TIỀN LỆ
+   * cho luật (kiểu "bug SAPP-28776 bị Rejected vì đọc thiếu chữ"), giữ lại thì luật mới có căn cứ.
+   */
+  '.agent/config/writing_style.json',
+  '.agent/config/env_lanes.json',
+  '.agent/config/bug_claim.json',
+  '.agent/config/retention.json',
+  '.agent/config/library-drift.allow.json',
 ];
 
 /*
