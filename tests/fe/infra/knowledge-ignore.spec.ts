@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { execFileSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { gateEnv } from './_gate_env';
@@ -24,18 +24,33 @@ import { gateEnv } from './_gate_env';
  * dung là tiêu đề defect nội bộ, module, Jira key và mã testcase.
  *
  * Luật đã sửa thành cấm cả thư mục rồi mở lại đúng hai thứ. Test này giữ cho nó không trôi ngược,
- * và có ĐỐI CHỨNG ÂM: nếu ai đó sửa thành "chặn sạch" thì hai dòng cuối sẽ đỏ.
+ * và có ĐỐI CHỨNG ÂM: nếu ai đó sửa thành "chặn sạch" thì ba test cuối sẽ đỏ.
+ *
+ * KHÔNG CÓ `.git` THÌ BỎ QUA, KHÔNG PHẢI ĐỎ VÀ CŨNG KHÔNG PHẢI XANH. Gói phát hành cố ý không mang
+ * `.git` (`release:verify` kiểm đúng điều đó), nên câu hỏi "đường dẫn này có bị gitignore không" không
+ * có nghĩa ở đó. Bản đầu của file này quên chuyện đó và hỏng theo kiểu tệ nhất khi chạy trong gói:
+ * 9 test ĐỎ, còn 3 test thì XANH NHẦM LÝ DO vì lỗi git bị nuốt thành "không bị chặn".
  */
 const REPO = path.resolve(__dirname, '..', '..', '..');
 
-/** Hỏi CHÍNH git xem một đường dẫn có bị ignore không. Không tự diễn giải `.gitignore` bằng regex. */
+/** Có thật sự đang đứng trong một git work-tree không. Gói phát hành thì không. */
+function coGit(): boolean {
+  const r = spawnSync('git', ['rev-parse', '--is-inside-work-tree'], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+  return r.status === 0 && String(r.stdout).trim() === 'true';
+}
+
+/**
+ * Hỏi CHÍNH git xem một đường dẫn có bị ignore không. Không tự diễn giải `.gitignore` bằng regex.
+ *
+ * `git check-ignore` trả 0 khi BỊ ignore, 1 khi KHÔNG, và khác 0/1 khi lỗi. Phải tách trường hợp lỗi ra,
+ * vì gộp "git hỏng" vào "không bị ignore" là biến một test hỏng thành một test xanh.
+ */
 function biChan(duongDan: string): boolean {
-  try {
-    execFileSync('git', ['check-ignore', '-q', '--', duongDan], { cwd: REPO, stdio: 'ignore', env: gateEnv() });
-    return true;
-  } catch {
-    return false; // exit != 0 nghĩa là KHÔNG bị ignore
+  const r = spawnSync('git', ['check-ignore', '-q', '--', duongDan], { cwd: REPO, env: gateEnv() });
+  if (r.status !== 0 && r.status !== 1) {
+    throw new Error(`git check-ignore lỗi (status=${r.status}) cho ${duongDan}: ${String(r.stderr || '').trim()}`);
   }
+  return r.status === 0;
 }
 
 /*
@@ -57,6 +72,9 @@ const PHAI_CHAN = [
 const PHAI_GIU = ['knowledge/SCHEMA.md', 'knowledge/bugs/.gitkeep', 'knowledge/metrics/.gitkeep'];
 
 test.describe('@infra knowledge/ không lọt ra repo', () => {
+  // Khai lý do bỏ qua một lần, ngay đầu: người đọc log không phải đoán.
+  test.skip(!coGit(), 'không có .git (đang chạy trong gói phát hành) — câu hỏi gitignore không có nghĩa ở đây');
+
   for (const p of PHAI_CHAN) {
     test(`bị gitignore: ${p}`, () => {
       expect(biChan(p), `${p} KHÔNG bị ignore — dữ liệu công ty sẽ lên mirror public`).toBe(true);
@@ -72,8 +90,9 @@ test.describe('@infra knowledge/ không lọt ra repo', () => {
   }
 
   test('cây hiện tại chỉ track SCHEMA.md và các .gitkeep', () => {
-    const ra = execFileSync('git', ['ls-files', 'knowledge'], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
-    const dang = ra.split('\n').map((s) => s.trim()).filter(Boolean);
+    const r = spawnSync('git', ['ls-files', 'knowledge'], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+    expect(r.status, `git ls-files lỗi: ${String(r.stderr || '').trim()}`).toBe(0);
+    const dang = String(r.stdout).split('\n').map((s) => s.trim()).filter(Boolean);
     const la = dang.filter((f) => f !== 'knowledge/SCHEMA.md' && !f.endsWith('/.gitkeep'));
     expect(la, `đang track file knowledge/ ngoài khung: ${la.join(', ')}`).toEqual([]);
   });
