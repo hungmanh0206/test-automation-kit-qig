@@ -56,8 +56,27 @@ async function inspectGeometry(page, selector, opts = {}) {
       if ((el.textContent || '').trim() && diff < 30) problems.push(`chữ gần trùng màu nền (${fg} trên ${bg}) — có text nhưng không đọc được`);
     }
 
-    // 5) Bị CẮT NGẮN: nội dung rộng hơn khung + có ellipsis ⇒ người dùng không đọc được đủ.
-    if (el.scrollWidth > el.clientWidth + 1 && /ellipsis|clip/.test(st.textOverflow + st.overflow)) {
+    /*
+     * 5) Bị CẮT NGẮN: nội dung rộng hơn khung VÀ khung thật sự cắt ⇒ người dùng không đọc được đủ.
+     *
+     * Bản đầu viết `/ellipsis|clip/.test(st.textOverflow + st.overflow)` và có HAI lỗi chồng nhau:
+     *
+     *   a. `clip` là GIÁ TRỊ MẶC ĐỊNH của `text-overflow`. Nên vế đó đúng với MỌI phần tử, và cái
+     *      gọi là "guard" thật ra không gác gì. Luật chỉ còn dựa vào phép so scrollWidth.
+     *   b. `clientWidth` của phần tử INLINE không thay thế được luôn bằng 0 theo spec. Chromium trả
+     *      `scrollWidth` 0 luôn nên phép so im lặng; Firefox trả bề rộng thật (487) nên `487 > 1`
+     *      thành true và báo "BỊ CẮT" cho một cái `<span>` trong khung rộng 1200px.
+     *
+     * Đo 19/09/2026: nhánh cross-browser của nightly đỏ đúng vì chuyện này, và nó ẩn hai tháng vì
+     * job đó chỉ chạy khi bấm tay. Chromium xanh KHÔNG chứng minh luật đúng — nó chỉ im.
+     *
+     * Luật đúng: chỉ xét khi khung CÓ cắt (`overflow` khác `visible`), và bỏ qua phần tử inline vì
+     * `clientWidth` của chúng không mang nghĩa.
+     */
+    const tranBi = String(st.overflowX || st.overflow || 'visible');
+    const khungCoCat = !/^visible/.test(tranBi);
+    const laInline = /^inline$/.test(st.display);
+    if (khungCoCat && !laInline && el.scrollWidth > el.clientWidth + 1) {
       problems.push(`nội dung BỊ CẮT: scrollWidth ${el.scrollWidth} > clientWidth ${el.clientWidth} (${st.textOverflow})`);
     }
 
