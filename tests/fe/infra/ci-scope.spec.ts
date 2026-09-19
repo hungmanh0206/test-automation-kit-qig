@@ -401,6 +401,21 @@ test.describe('@infra sync:gitlab — strip phải khai được và có máy th
 
   test('đường dẫn khai strip phải CÓ THẬT trong repo (config lạc hậu = strip nhầm thứ khác)', () => {
     const cfg = JSON.parse(fs.readFileSync(CFG_STRIP, 'utf8'));
+    const co = cfg.strip.filter((s: { path: string }) => fs.existsSync(path.join(REPO, s.path)));
+
+    /*
+     * PHÂN BIỆT "đã strip rồi" với "config lạc hậu".
+     *
+     * Trên nhánh nguồn, mọi đường dẫn khai strip đều còn — thiếu cái nào là config trỏ nhầm, và luật
+     * này phải đỏ. Nhưng trên NHÁNH ĐÃ STRIP thì mấy file đó bị gỡ là ĐÚNG MỤC ĐÍCH, trong khi config
+     * vẫn đi theo. Bản đầu không phân biệt được nên ai clone từ mirror GitLab cũng thấy 1 test đỏ
+     * (đo 19/09/2026: clone GitLab 594 xanh 1 đỏ, clone GitHub 595 xanh 0 đỏ — cùng một commit).
+     *
+     * Không còn CÁI NÀO = đã strip xong, bỏ qua. Còn MỘT PHẦN = strip dở hoặc config sai, vẫn đỏ.
+     */
+    test.skip(cfg.strip.length > 0 && co.length === 0,
+      'đang ở nhánh ĐÃ strip: mọi đường dẫn khai đều đã bị gỡ, đó là đích của việc strip');
+
     for (const s of cfg.strip) {
       expect(fs.existsSync(path.join(REPO, s.path)), `${s.path} không tồn tại — sửa config`).toBe(true);
     }
