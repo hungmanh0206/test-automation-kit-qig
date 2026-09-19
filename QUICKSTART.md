@@ -46,6 +46,10 @@ rồi chạy thật:
 
 **Số của bạn khác bảng này là có gì đó sai** — đừng bỏ qua. Test bỏ qua đều tự khai lý do khi chạy.
 
+Một ngoại lệ hợp lệ: **tổng luôn là 597**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
+Clone mới thì `knowledge/` rỗng nên 2 test tự bỏ qua. Khôi phục bundle `knowledge:backup` xong thì
+chúng chạy thật, và bạn thấy **597 xanh, 0 bỏ qua** — đó là ĐÚNG, không phải lệch.
+
 ## Thứ KHÔNG đi theo clone
 
 | Thư mục | Sau khi clone | Hệ quả |
