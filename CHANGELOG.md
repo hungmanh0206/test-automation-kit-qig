@@ -7,6 +7,71 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## v2.1.0 — 2026-09-19 — Đọc đúng tài liệu, và bản phát hành tự chứng minh được
+
+Bản đầu tiên được **đóng gói và nghiệm thu từ con số 0**.
+Giải nén ra thư mục sạch, `npm ci`, chạy gate, rồi chạy chính bộ tự-kiểm bên trong gói.
+Kết quả **508 xanh, 0 đỏ**. Trước đó `release:verify` chỉ liệt kê test chứ không chạy nó.
+Nên chưa ai biết gói có hoạt động hay không.
+
+### Việc lớn nhất: agent đang đọc thiếu spec mà không có tín hiệu nào
+
+Hai đường fetch Confluence đổi HTML sang text bằng đúng một dòng gỡ thẻ. Đo trên 12 trang FS/BRD/US thật:
+
+| | trước | sau |
+| --- | --- | --- |
+| trang giữ được bảng | 0 / 12 | **12 / 12** |
+| dòng Given/When/Then giữ được | 0 / 66 | **66 / 66** |
+| trang bị gộp thành một dòng | 12 / 12 | 0 / 12 |
+
+AC của dự án nằm trong bảng. Mất bảng là đọc spec mà không thấy điều kiện chấp nhận.
+File vẫn có chữ, vẫn có tiêu đề, đọc vào vẫn hợp lý. Đó là lớp lỗi im lặng tệ nhất.
+
+### Ba máy mới, mỗi máy neo vào một sự cố có thật
+
+- **`docs:health`** — bốn phép đo trên tài liệu đã fetch: LỆCH BẢN, RỖNG, MẤT BẢNG, CÒN ENTITY. Đo trên
+  một task: 14 trên 23 trang đã bị sửa sau ngày fetch, 2 file fetch về rỗng mà không báo lỗi.
+- **`docs:index` và `docs:cite`** — mọi neo `BR-`, `AC-` phải tra ngược được về file kèm SỐ DÒNG.
+  Máy cũ chỉ kiểm hình dạng chuỗi, nên `BR-99` qua cửa y như `BR-07`.
+- **`example-config-parity`** — bản `.example` phải đủ khoá như bản thật. Nó bắt được
+  `risk_model.example.json` thiếu `minCasesPerDimension`: người nhận chép mẫu ra là mất ngưỡng theo chiều.
+
+### AIO Field Tags
+
+`publish` đẩy Tag dạng lồng và Module vào custom field; `pull` đọc lại được nên round-trip không mất cột.
+Kèm gate chặn bộ sinh mới thiếu khối `[Loại][Chiều][Oracle-ref]`.
+
+### Gói phát hành: 7 lỗi chỉ lộ khi soạn gói
+
+Thiếu 10 ảnh User Guide. Thiếu `GATES.md` làm `gate:policy` đỏ. Thiếu 5 config generic.
+Mẫu `risk_model` đã cũ. `gitlab_strip.json` khai file không có trong gói. Ba khoá `HUBSPOT_*` không ai
+đọc. QUICKSTART bảo "cập nhật" một file gói không có.
+Không lỗi nào nhìn thấy được từ trong repo.
+
+### Bàn giao ra ngoài
+
+Ảnh User Guide, dashboard và thư viện thuật ngữ nay **không mang nhận diện của công ty nào**.
+Đã bỏ logo, bỏ khẩu hiệu, màu nhấn trung tính. Cơ chế gắn logo vẫn còn cho đội muốn thương hiệu riêng.
+`QUICKSTART.md` có luồng clone cho cả hai remote, kèm số đo để người cài tự biết đã lắp đúng chưa.
+
+### Đo được, không phải cảm giác
+
+- `npm test` cắt **92,6%** output (143.542 byte xuống 10.646) bằng một dòng đổi reporter sang `dot`.
+  Chi tiết case đỏ còn nguyên; `results.json` và `learn_reporter` vẫn chạy.
+- Danh mục gate **63 lên 80 máy** — trước đó 16 file với 26 npm script vô hình với `GATES.md`, gồm cả
+  `aio:verify:enforce` là cổng CHẶN.
+- Đánh giá RTK (nén output bash) và **kết luận KHÔNG dùng**, kèm số đo: cách nó nén `npm test` sẽ làm hỏng
+  `results.json` và `learn_reporter`.
+
+### Lớp lỗi lặp lại nhiều nhất trong đợt này
+
+**Kết quả phụ thuộc môi trường chạy thì "xanh" hết nghĩa.**
+Năm cửa đọc không chuẩn hoá CRLF nên đỏ trên checkout Windows.
+Một test ghi cứng ngày nên tự đỏ khi sang ngày.
+`GATES.md` sinh từ source chưa commit nên máy dev xanh mà CI đỏ.
+Cờ riêng của Chromium truyền cho WebKit làm cả lane cross-browser chết ở bước launch.
+Lane đó chỉ chạy khi bấm tay nên hỏng lâu mà không ai thấy.
+
 ## 2026-09-19 (cross-browser) — Một lane hỏng suốt mà không ai thấy, vì nó chỉ chạy khi bấm tay
 
 Chủ repo nói đây là lần xuất bản quan trọng. Nên tôi kích tay nightly thay vì tin lần chạy theo lịch.
