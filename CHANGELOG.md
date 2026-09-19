@@ -7,6 +7,51 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-19 — Đánh giá RTK: KHÔNG dùng, và cái đáng làm thì không cần cài gì
+
+**Kết luận: không cài RTK.** Không phải vì nó tệ, mà vì đo xong thấy hai chuyện.
+
+**Một: nút thắt là reporter của Playwright, và Playwright đã có sẵn cách chữa.**
+
+| Lệnh | bytes | ước token |
+| --- | --- | --- |
+| `npm test` (reporter `list`, đang dùng) | 143.542 | ~35.900 |
+| `npm test` (reporter `dot`) | **10.646** | **~2.700** |
+| `npm run lint` | 7.601 | ~1.900 |
+| `git diff` (lúc có 12 file sửa dở) | 66.066 | ~16.500 |
+| `git status` | 1.283 | ~320 |
+| `library:drift` | 2.874 | ~718 |
+| 8 gate còn lại cộng lại | 2.635 | ~658 |
+| `typecheck` | 55 | ~13 |
+
+Một dòng đổi `['list']` thành `['dot']` cắt **92,6%** output của lệnh tốn nhất. Đã kiểm: `dot` giữ
+NGUYÊN chi tiết lỗi. Dựng một case đỏ cố ý thì cả hai reporter đều in đủ mã case, giá trị mong đợi,
+và `file:dòng`. Còn `results.json` vẫn được ghi (803 KB) và chuỗi reporter vẫn nguyên.
+
+**Hai: cách RTK nén `npm test` sẽ LÀM HỎNG hai cơ chế của kit, mà hỏng IM LẶNG.**
+
+Đọc nguồn `src/cmds/js/playwright_cmd.rs` dòng 262–269: RTK **ép `--reporter=json` và xoá `--reporter`
+của người dùng**. Chạy thử đúng như vậy trên kit:
+
+| | reporter của config | `--reporter=json` (cách RTK làm) |
+| --- | --- | --- |
+| `results.json` | ghi, 13.134 byte | **KHÔNG được ghi** |
+| `learn_reporter.js` | chạy | **không chạy** |
+
+Cả hai đều là cơ chế lõi. `bug_reporter.js` đọc `results.json`; `learn_reporter` là thứ tự động thu
+`knowledge/metrics` và `historical_execution` sau mỗi lượt chạy. Mất hai thứ này mà không báo lỗi là
+đúng lớp hỏng im lặng mà kit mất nhiều ngày để bịt.
+
+**Không chạy tiếp Bước 2 tới 5.** Tiêu chí dừng của chính task: tổng output bash một phiên dưới
+~15k token thì không đáng. Sau khi đổi reporter, tổng còn khoảng 6–8k token cho một phiên bình
+thường. RTK không đụng tới chi phí lớn nhất là nạp tài liệu đầu vào.
+
+**Không cài gì, không sửa gì.** Nguồn RTK chỉ được giải nén ra scratchpad để đọc, không biên dịch,
+không chạy. `playwright.config.js` đã khôi phục nguyên trạng sau khi đo.
+
+**Đề xuất để chủ repo quyết**, không tự làm: đổi `['list']` thành `['dot']` trong
+`playwright.config.js`. Một dòng, không thêm phụ thuộc, không thêm binary, giữ nguyên chi tiết lỗi.
+
 ## 2026-09-18 (dọn) — 455 file nháp ở gốc repo là một đường rò PII
 
 **Gốc repo có 455 file `.tmp.js` và `.out`, 5,4 MB, chưa track.** Quét thử thấy 1 file chứa email
