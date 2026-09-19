@@ -20,6 +20,20 @@ Log/
 # mẫu → chỉ cần một lần `git add .` là commit lộ PII. Xem RULE_GLOBAL.md §Cleanup Rules.
 scratch_*
 
+# Cùng lý do với `scratch_*`, nhưng đây là khuôn đặt tên mà các phiên làm task thực tế đang dùng.
+# Đo 18/09/2026: gốc repo có 455 file loại này, 5,4 MB, mới nhất là sáng cùng ngày. Quét thử thấy
+# 1 file chứa email khách và 1 file chứa số điện thoại. Chúng CHƯA track, nên chỉ cần một lần
+# `git add .` là commit lộ PII lên mirror GitHub đang để public.
+# Ignore chứ KHÔNG xoá: đây là bản nháp người dùng đang làm dở, xoá hộ là phá việc đang chạy.
+*.tmp.js
+*.tmp.mjs
+*.tmp.json
+*.tmp.md
+*.tmp.ts
+*.tmp.txt
+*.out
+*.out.txt
+
 # OS generated files
 .DS_Store
 .DS_Store?

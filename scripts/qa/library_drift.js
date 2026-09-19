@@ -206,7 +206,20 @@ if (exists(cmdDir)) {
 const GATES_MD = path.join(ROOT, '.agent', 'config', 'GATES.md');
 if (exists(GATES_MD)) {
   const h = rd(GATES_MD).match(/Tổng\s+\*\*(\d+)\*\*\s+máy\s+—\s+\*\*(\d+)\s+CHẶN\*\*\s+·\s+(\d+)\s+SINH[^·]*·\s+(\d+)\s+BÁO CÁO/);
-  const p = ALL_TEXT.match(/(\d+)\s+máy:\s*(\d+)\s+CHẶN\s*·\s*(\d+)\s+SINH\s*·\s*(\d+)\s+BÁO CÁO/);
+  /*
+   * Trang viết con số này bằng NHIỀU cách. Bản đầu chỉ khớp khuôn dấu hai chấm `N máy: A CHẶN · B
+   * SINH · C BÁO CÁO`, nên khi danh mục đi từ 63 lên 80 thì nó bắt được đúng 1 chỗ và bỏ lọt 3 chỗ
+   * viết bằng gạch ngang: `63 máy — 42 CHẶN, 15 SINH, 6 BÁO CÁO`. Gate chỉ nhận một cách viết thì
+   * người sửa trang yên tâm là đã xong, trong khi ba câu sai vẫn nằm đó.
+   * Nay bắt MỌI lần xuất hiện, và phân tách `:` hay `—`, `·` hay `,` đều nhận.
+   */
+  const SO_RE = /(\d+)\s+máy\s*[:—-]\s*(\d+)\s+CHẶN\s*[·,]\s*(\d+)\s+SINH[^·,]*[·,]\s*(\d+)\s+BÁO CÁO/g;
+  const tatCa = [...ALL_TEXT.matchAll(SO_RE)];
+  const p = tatCa[0];
+  if (h && tatCa.length > 1) {
+    const khac = tatCa.filter((m) => m.slice(1, 5).join() !== h.slice(1, 5).join());
+    for (const m of khac) problems.push(`danh mục gate lệch ở một chỗ khác trên trang: "${m[0].slice(0, 60)}" — GATES.md ghi ${h[1]} máy / ${h[2]} CHẶN`);
+  }
   if (h && p) {
     const lbl = ['tổng máy', 'CHẶN', 'SINH', 'BÁO CÁO'];
     for (let i = 1; i <= 4; i++) {

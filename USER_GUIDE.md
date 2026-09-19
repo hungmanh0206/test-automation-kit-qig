@@ -487,6 +487,31 @@ Task key là <TASK_KEY>.
 
 Mục tiêu: tạo bộ testcase đủ chi tiết để Team QA review và dùng cho Phase 2.
 
+**Trước khi đọc tài liệu, soát xem nó có lành không.**
+Tài liệu hỏng không tự báo là nó hỏng. File vẫn có chữ, vẫn có tiêu đề, đọc vào vẫn hợp lý.
+
+```bash
+npm run docs:health -- --task <TASK_KEY>     # bốn phép đo, mặc định chỉ báo cáo
+npm run docs:index  -- --task <TASK_KEY>     # lập chỉ mục neo BR/AC/EC/NFR
+npm run docs:cite   -- --task <TASK_KEY> BR-07   # ra file kèm SỐ DÒNG
+```
+
+| Phép đo | Nghĩa là gì | Làm gì |
+|---|---|---|
+| **LỆCH BẢN** | Confluence đã sửa sau ngày fetch | Đọc lại phần đã đổi trước khi gen |
+| **RỔNG** | Fetch về không có thân bài, không báo lỗi | Fetch lại |
+| **MẤT BẢNG** | Nguồn có bảng, file không còn dòng bảng nào | Fetch lại. **AC của dự án này nằm trong bảng** |
+| **CÒN ENTITY** | Chữ còn dạng `&agrave;` thay vì `à` | Fetch lại. Tìm "trên" sẽ không khớp `tr&ecirc;n` |
+
+Mất bảng là lớp lỗi im lặng tệ nhất. Bạn đọc spec mà **không thấy điều kiện chấp nhận**.
+Không tín hiệu nào báo. Đo trên một task thật: 12 trên 12 trang có bảng ở nguồn mà file fetch về
+còn 0 dòng bảng. 66 trên 66 dòng AC viết bằng Gherkin bị xóa sạch.
+
+`docs:cite` dùng khi muốn biết một neo nằm ở đâu.
+Nó còn báo **MƠ HỒ** khi cùng một mã mang luật khác nhau giữa các trang.
+Đo thật: `NFR-02` một bên là "kỳ khoá sổ", bên kia là "chênh lệch deferred revenue".
+Trích trần `NFR-02` chưa chỉ ra được luật nào. Viết kèm trang, kiểu `US-01 BR-07`.
+
 Prompt:
 
 ```text

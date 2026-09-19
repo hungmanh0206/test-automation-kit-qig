@@ -7,6 +7,27 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-18 (dọn) — 455 file nháp ở gốc repo là một đường rò PII
+
+**Gốc repo có 455 file `.tmp.js` và `.out`, 5,4 MB, chưa track.** Quét thử thấy 1 file chứa email
+khách và 1 file chứa số điện thoại. Chỉ cần một lần `git add .` là commit lộ lên mirror GitHub đang để public.
+Đây đúng rủi ro mà luật `scratch_*` sẵn có nói tới. Nó chỉ không phủ khuôn đặt tên mà các phiên
+làm task đang dùng.
+
+**Ignore chứ KHÔNG xoá.** File mới nhất là 10:38 sáng cùng ngày, tức phiên khác đang dùng. Xoá hộ
+là phá việc đang chạy. Sau khi thêm luật, `git status` còn **0** file lạ ở gốc.
+
+**Danh mục gate đi từ 63 lên 80 nhưng trang giáo trình chỉ được sửa 1 trên 4 chỗ.** `library:drift`
+bỏ lọt 3 chỗ vì nó chỉ khớp một cách viết: khuôn dấu hai chấm `N máy: A CHẬN · B SINH`. Ba chỗ còn lại viết bằng gạch ngang.
+Gate chỉ nhận một cách viết thì người sửa trang yên tâm là đã xong. Ba câu sai vẫn nằm đó. Nay bắt MỌI lần xuất hiện, phân tách `:` hay `—`
+đều nhận. Đối chứng âm: bơm lại con số cũ vào chỗ viết bằng gạch ngang thì gate gọi đúng câu đó.
+
+`BUILD_JOURNAL.md` vẫn ghi "59 máy" và **giữ nguyên có chủ ý**.
+Đó là số đo có ngày tháng, không phải khẳng định hiện tại.
+
+**README và USER_GUIDE** nay có `docs:health`, `docs:index`, `docs:cite`, kèm bảng nói mỗi phép đo
+nghĩa là gì và phải làm gì khi nó kêu.
+
 ## 2026-09-18 (vá) — Artifact sinh ra từ source CHƯA COMMIT thì CI đỏ, máy dev xanh
 
 **Sự cố.** CI GitHub đỏ ở `gates:index:check` trong khi máy dev xanh.
