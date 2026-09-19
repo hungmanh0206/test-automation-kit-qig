@@ -80,7 +80,24 @@ module.exports = defineConfig({
     timeout: 10_000,
   },
   reporter: [
-    ['list'],
+    /*
+     * `dot` thay vì `list`, vì người đọc output này thường là AGENT, không phải người.
+     *
+     * Đo 19/09/2026 trên suite hạ tầng 594 test: `list` in 143.542 byte (~35.900 token), `dot` in
+     * 10.646 byte (~2.700 token). Giảm 92,6%, và đó là lệnh tốn nhất trong kit — mọi gate cộng lại
+     * chỉ 2.635 byte. `list` in một dòng cho MỖI test đã pass, tức trả tiền context cho thông tin
+     * "không có gì xảy ra".
+     *
+     * ĐÃ KIỂM là không mất gì:
+     *   · chi tiết case ĐỎ còn nguyên — mã case, giá trị mong đợi, `file:dòng` (dựng case đỏ cố ý để so)
+     *   · `results.json` vẫn ghi (bug_reporter.js đọc file này)
+     *   · `learn_reporter.js` vẫn chạy (`knowledge/metrics/runs.jsonl` tăng đúng 1 dòng mỗi lượt)
+     *   · báo cáo html vẫn sinh
+     *   · CI KHÔNG đổi: mọi job đều truyền `--reporter=blob` hoặc `--reporter=html` nên ghi đè dòng này
+     *
+     * Người ngồi xem trực tiếp muốn thấy tên từng test thì: `PW_REPORTER=list npm test`.
+     */
+    [process.env.PW_REPORTER || 'dot'],
     ['html', { outputFolder: `${testResultsDir}/playwright-report`, open: 'never' }],
     ['json', { outputFile: `${testResultsDir}/results.json` }],
     // TỰ ĐỘNG thu learning data sau mỗi run (knowledge/metrics + historical_execution) — khỏi phải

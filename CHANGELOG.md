@@ -7,6 +7,34 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-19 (chiều) — Đổi reporter Playwright sang `dot`, và gỡ một quả bom hẹn giờ
+
+**Đổi `['list']` thành `['dot']`.** Đây là việc mà đợt đánh giá RTK chỉ ra, và nó không cần cài gì.
+Suớt 594 test hạ tầng: **143.542 byte xuống 10.646**, giảm 92,6%, tức ~33.000 token mỗi lượt chạy.
+`list` in một dòng cho MỎI test đã pass, tức trả tiền context cho thông tin "không có gì xảy ra".
+
+Đã kiểm từng điểm một, không mất gì:
+
+| Điểm kiểm | Kết quả |
+| --- | --- |
+| chi tiết case ĐỎ | còn nguyên mã case, giá trị mong đợi, `file:dòng` (dựng case đỏ cố ý để so) |
+| `results.json` | vẫn ghi, 13.133 byte — `bug_reporter.js` đọc file này |
+| `learn_reporter.js` | vẫn chạy — `knowledge/metrics/runs.jsonl` tăng đúng 1 dòng |
+| báo cáo html | vẫn sinh |
+| CI | **không đổi** — mọi job đều truyền `--reporter=blob` hoặc `--reporter=html`, ghi đè dòng này |
+
+Người ngồi xem trực tiếp muốn thấy tên từng test thì `PW_REPORTER=list npm test`. Theo đúng quy ước
+`PW_*` sẵn có trong config.
+
+**Quả bom hẹn giờ.** Chạy suớt sau khi đổi thì 1 test đỏ, nhưng **không phải do đổi reporter**.
+`fixture-matrix.spec.ts` ghi cứng `verified: '2026-08-19'` trong ca "ma trận sạch". Luật coi fixture
+quá 30 ngày là cũ, nên test xanh tới 18/09 rồi **tự đỏ sang ngày 19/09** mà không ai sửa dòng nào.
+Nay ngày đó tính theo hôm nay. Ca đối chứng ngay trên vẫn ghi cứng `2020-01-01` và ĐÚNG phải ghi
+cứng, vì nó cần luôn cũ để chứng minh cảnh báo có nổ.
+
+Quét tiếp cả bộ spec: không còn chỗ nào đòi "sạch" mà dựa trên ngày ghi cứng. Cùng lớp với luật
+"test không được kế thừa env môi trường", lần này môi trường là đồng hồ.
+
 ## 2026-09-19 — Đánh giá RTK: KHÔNG dùng, và cái đáng làm thì không cần cài gì
 
 **Kết luận: không cài RTK.** Không phải vì nó tệ, mà vì đo xong thấy hai chuyện.

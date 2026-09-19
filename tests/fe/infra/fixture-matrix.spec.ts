@@ -42,11 +42,21 @@ test.describe('@infra fixture_matrix — mỗi ô phải có fixture hoặc n/a 
     expect(old.warnings.some((w: string) => w.includes('quá 30 ngày'))).toBe(true);
   });
 
+  /*
+   * Ngày phải TÍNH THEO HÔM NAY, không ghi cứng.
+   *
+   * Bản đầu ghi `verified: '2026-08-19'`. Luật coi fixture quá 30 ngày là cũ, nên test này xanh cho
+   * tới 18/09/2026 rồi tự đỏ sang ngày 19/09 — không ai sửa dòng code nào. Cùng lớp lỗi "kết quả phụ
+   * thuộc môi trường chạy", ở đây môi trường là đồng hồ. Ca đối chứng ngay phía trên vẫn ghi cứng
+   * `2020-01-01` và ĐÚNG phải ghi cứng, vì nó cần luôn luôn cũ để chứng minh cảnh báo có nổ.
+   */
+  const ngayGanDay = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
   test('ma trận khai đủ (fixture + n/a có lý do) thì SẠCH', () => {
     const a = audit({
       fixtures: [
-        { branch: 'Bảo lưu', state: 'Chờ thanh toán', id: 'a', how: 'tay', verified: '2026-08-19' },
-        { branch: 'Gia hạn', state: 'Chờ thanh toán', id: 'b', how: 'tay', verified: '2026-08-19' },
+        { branch: 'Bảo lưu', state: 'Chờ thanh toán', id: 'a', how: 'tay', verified: ngayGanDay },
+        { branch: 'Gia hạn', state: 'Chờ thanh toán', id: 'b', how: 'tay', verified: ngayGanDay },
       ],
       na: [
         { branch: 'Bảo lưu', state: 'Đã hủy', reason: 'môi trường không có bản ghi nào' },
