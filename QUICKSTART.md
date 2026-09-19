@@ -41,15 +41,15 @@ rồi chạy thật:
 
 | | GitHub | GitLab |
 |---|---|---|
-| file được track | 490 | 488 |
-| `npx playwright test tests/fe/infra` | **595 xanh · 2 bỏ qua · 0 đỏ** | **594 xanh · 3 bỏ qua · 0 đỏ** |
-| `npm run ci:scope` đếm | 62 spec | 60 spec |
+| file được track | 491 | 489 |
+| `npx playwright test tests/fe/infra` | **607 xanh · 2 bỏ qua · 0 đỏ** | **606 xanh · 3 bỏ qua · 0 đỏ** |
+| `npm run ci:scope` đếm | 63 spec | 61 spec |
 
 **Số của bạn khác bảng này là có gì đó sai** — đừng bỏ qua. Test bỏ qua đều tự khai lý do khi chạy.
 
-Một ngoại lệ hợp lệ: **tổng luôn là 597**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
+Một ngoại lệ hợp lệ: **tổng luôn là 609**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
 Clone mới thì `knowledge/` rỗng nên 2 test tự bỏ qua. Khôi phục bundle `knowledge:backup` xong thì
-chúng chạy thật, và bạn thấy **597 xanh, 0 bỏ qua** — đó là ĐÚNG, không phải lệch.
+chúng chạy thật, và bạn thấy **609 xanh, 0 bỏ qua** — đó là ĐÚNG, không phải lệch.
 
 ## Thứ KHÔNG đi theo clone
 
