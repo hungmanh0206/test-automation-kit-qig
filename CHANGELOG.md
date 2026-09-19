@@ -7,6 +7,38 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-19 (cross-browser) — Một lane hỏng suốt mà không ai thấy, vì nó chỉ chạy khi bấm tay
+
+Chủ repo nói đây là lần xuất bản quan trọng. Nên tôi kích tay nightly thay vì tin lần chạy theo lịch.
+Job `cross-browser` khai `if: github.event_name == 'workflow_dispatch'`. Hai nightly gần nhất đều
+**skipped**. Bấm tay mới lộ ba lỗi. Cả ba kết lại thành một điểm mù duy nhất: **Chromium xanh không
+chứng minh luật đúng, nó chỉ im.**
+
+**1. Luật "nội dung BỊ CẮT" chưa bao giờ gác.** Hai lỗi chồng nhau trong `geometry.js`.
+Thứ nhất: `/ellipsis|clip/.test(...)` — `clip` là giá trị MẶC ĐỊNH của `text-overflow`, nên vế đó đúng
+với mọi phần tử. Thứ hai: `clientWidth` của phần tử inline luôn bằng 0 theo spec.
+Chromium trả `scrollWidth` 0 nên phép so im. Firefox trả bề rộng thật nên báo "BỊ CẮT" cho một
+`<span>` nằm trong khung rộng 1200px.
+
+**2. Fixture thiếu khai charset.** `field-inventory.html` không có `<meta charset>`. Chromium và Firefox
+tự đoán UTF-8, WebKit mặc định Latin-1 nên "Trả góp" đọc ra "Trảº£ gÃ³p". Quét cả 3 file HTML được
+track: chỉ file này sót.
+
+**3. Cờ của Chromium truyền cho WebKit, làm CẢ LANE chết ở bước launch.** Đây là cái nặng nhất:
+
+```
+Cannot parse arguments: Unknown option --disable-blink-features=AutomationControlled
+<process did exit: exitCode=1>
+```
+
+Cờ đó nằm ở global `use`, kèm ghi chú "đã nghiệm thu: không làm Firefox/WebKit vỡ".
+Ghi chú SAI, và sai theo NỀN TẢNG. Trên Windows WebKit bỏ qua cờ lạ nên chạy tay vẫn xanh.
+Trên Linux nó từ chối thẳng. Lane này chỉ chạy trên CI Linux, nên hỏng từ lúc thêm cờ.
+Đã chuyển cờ về đúng project `chromium-desktop`.
+
+**Nghiệm thu hai tầng.** Ở máy: 597 xanh trên cả ba engine. Trên CI Linux, sau khi vá: **6 trên 6 job
+đạt**, kể cả `cross-browser` — lần đầu lane này xanh.
+
 ## 2026-09-19 (xuất bản) — Gói đã phát hành được: 508 xanh, 0 đỏ ngay trong gói
 
 **Chốt trạng thái.** `release:verify` đạt **13 trên 13**.
