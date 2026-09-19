@@ -7,6 +7,37 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## 2026-09-19 (phát hành) — Chạy thật luồng xuất bản, lộ ra hai lỗi chỉ thấy khi soạn gói
+
+**Lần đầu chạy trọn `package:kit` rồi `release:verify`: 12/13 bước đạt, KỐT CUỘC LÀ KHÔNG PHÁT HÀNH.**
+
+Hai thiếu sót, đều vô hình khi nhìn trong repo:
+
+1. **Gói không mang `docs/` nào**, trong khi `USER_GUIDE.md` nhúng đúng 10 ảnh ở `docs/user-guide-images/`.
+   Người nhận mở tài liệu onboarding chính thấy **10 ảnh vỡ** ngay lần đầu.
+2. **`gate:policy` trong gói ĐỎF**: npm script `writing:lint:docs` không bề mặt nào nhắc tới. Truy ra
+   `.agent/config/GATES.md` là nơi DUY NHẤT nhắc nó, mà file đó không ship. Bỏ nó ra là tự làm hỏng
+   phép kiểm một-nguồn-policy của chính gói. `README.md` cũng trỏ tới file này.
+
+Thêm hai mục vào danh sách đóng gói. Gói đi từ 358 file / 1,12 MB lên **369 file / 4,32 MB**, và
+`release:verify` nay **13/13 bước đạt**.
+
+**Đóng gói phải chạy từ worktree sạch**, không phải cây làm việc. Cây đang có 12 file sửa dở của
+phiên khác; đóng gói ở đó là nhét việc chưa commit vào bản phát hành. Cùng lớp lỗi với `GATES.md`
+sinh từ source chưa commit hôm qua.
+
+**Một lỗi nữa của cửa đọc CRLF, lần thứ NĂM.** Chạy suite trên worktree sạch thì
+`slash-commands.spec.ts` đỏ: nó hỏi `startsWith('---
+')` mà checkout Windows cho `---
+`, nên báo
+"thiếu frontmatter" ở CẢ 10 command. Cây làm việc của tôi đang LF nên không thấy. Đã chuẩn hoá cả
+6 chỗ đọc trong file, nghiệm thu hai môi trường.
+
+**CÒN MỘT CHẮN THẬT, và không phải việc của đợt này.** Bản đã commit đang **đỏ 13 test**:
+12 ở `publish-field-mapping.spec.ts`, 1 ở `dimension-threshold.spec.ts`. Spec đã commit nhưng phần code
+chúng cần thì chưa: `publish_testcases_aio.js` đã commit không có `displayTitle`, bản có đang nằm
+trong cây làm việc của phiên khác. Phải commit phần đó rồi mới phát hành được.
+
 ## 2026-09-19 (khuya) — Dashboard và thư viện dùng chung giao diện với ảnh User Guide
 
 Chủ repo yêu cầu hai trang này trông giống ảnh User Guide.
