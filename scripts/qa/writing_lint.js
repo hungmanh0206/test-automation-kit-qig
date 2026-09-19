@@ -88,7 +88,17 @@ function measure(text) {
   const t = prose(text);
   const words = (t.match(/\S+/g) || []).length;
   const sents = t.split(/(?<=[.!?…])\s+|\n\n+/).map((s) => s.trim()).filter((s) => s.split(/\s+/).length > 3);
-  const vagueRe = new RegExp(`\\b(${cfg.vagueWords.words.join('|')})\\b`, 'gi');
+  /*
+   * BIÊN TỪ phải nhận CHỮ CÓ DẤU. `\b` của JS chỉ coi [A-Za-z0-9_] là ký tự từ, nên `\bkhá\b` KHỚP
+   * phần đầu của "khác" — biên rơi ngay sau `á`. Đo thật 19/09/2026: một mục QUICKSTART viết "KHÁC
+   * NHAU" ba lần bị tính là ba lượng từ mơ hồ, đẩy chỉ số lên 14,6/1k và chặn oan.
+   *
+   * Lookaround theo `\p{L}\p{M}` mới đúng: sau "khá" là `c` nên không khớp, còn "khá nhiều" thì vẫn
+   * bắt. Cùng họ với bẫy đã ghi trong `.agent/rules` — `\b` và chữ tiếng Việt không đi cùng nhau.
+   */
+  const vagueRe = new RegExp(
+    `(?<![\\p{L}\\p{M}])(${cfg.vagueWords.words.join('|')})(?![\\p{L}\\p{M}])`, 'giu',
+  );
   /*
    * \p{Emoji_Presentation}: bản đầu tôi tự gõ dãy ký tự và đếm 63 "emoji" trong README — nó quét cả
    * mũi tên, dấu giữa câu, ký tự kẻ bảng. Thuộc tính này bắt đúng ✅❌🚀 và bỏ qua ▶ ⚠ → ⇒ · ✓ ─ ①.
