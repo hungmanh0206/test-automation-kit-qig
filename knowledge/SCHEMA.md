@@ -435,8 +435,8 @@ Loại thứ tư của `system/`. Không phải "giá trị đúng" (`domain/`),
 Kiểm 3 store `setup_recipes`/`environment`/`locators`: `npm run howto:check` (`-- --enforce` để chặn) ·
 ghi index: `npm run howto:index`. `system/` (gồm `data_model`): `npm run system:check` · `system:index`.
 
-> **Quirk của TOOLCHAIN** (Jira/AIO Tests/HubSpot API) dùng chung `environment/`, chỉ khác `scope` — vd
-> `"scope": "Toolchain — AIO Tests API"`. Không tạo store riêng: schema `fact/impact/workaround/detection`
+> **Quirk của TOOLCHAIN** (Backlog/Google Sheet/HubSpot API) dùng chung `environment/`, chỉ khác `scope` — vd
+> `"scope": "Toolchain — Backlog API"`. Không tạo store riêng: schema `fact/impact/workaround/detection`
 > vừa khít, và tách ra chỉ làm loãng.
 >
 > **Quy ước đội** (cách publish, đặt tên data test, khi nào ghi PASS-kèm-note) KHÔNG thuộc `knowledge/` —

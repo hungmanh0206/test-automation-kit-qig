@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Khai CI/CD Variables lên GitLab từ .env.local (+ optional profile cho OPS) qua glab CLI.
+# Khai CI/CD Variables lên GitLab từ .env.local qua glab CLI.
 #
 # CHẠY TRÊN MÁY BẠN (không phải trong repo/agent). Yêu cầu:
 #   1) glab đã cài + `glab auth login` (host gitlab.sapp.edu.vn).
@@ -14,21 +14,18 @@
 # Dùng:
 #   bash scripts/ci/set-gitlab-variables.sh                 # dry-run, đọc .env.local
 #   bash scripts/ci/set-gitlab-variables.sh --apply         # set thật
-#   bash scripts/ci/set-gitlab-variables.sh --ops-from profiles/CI/task.env --apply
 #   bash scripts/ci/set-gitlab-variables.sh --env-file .env --apply
 
 set -euo pipefail
 
 APPLY=0
 ENV_FILES=(".env.local" ".env")
-OPS_FROM=""
 REPO_FLAG=()
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --apply) APPLY=1; shift ;;
     --env-file) ENV_FILES=("$2"); shift 2 ;;
-    --ops-from) OPS_FROM="$2"; shift 2 ;;
     -R|--repo) REPO_FLAG=(-R "$2"); shift 2 ;;
     *) echo "Tham số lạ: $1"; exit 2 ;;
   esac
@@ -41,11 +38,9 @@ if ! glab auth status >/dev/null 2>&1; then
   echo "ERROR: chưa đăng nhập glab. Chạy: glab auth login --hostname gitlab.sapp.edu.vn"; exit 1
 fi
 
-# Đọc value của KEY từ danh sách file (ưu tiên OPS_FROM cho OPS_*, rồi ENV_FILES). Không in value.
+# Đọc value của KEY từ danh sách file (ENV_FILES). Không in value.
 get_val() {
-  local key="$1"; local files=()
-  case "$key" in OPS_*) [ -n "$OPS_FROM" ] && files+=("$OPS_FROM") ;; esac
-  files+=("${ENV_FILES[@]}")
+  local key="$1"; local files=("${ENV_FILES[@]}")
   local f line val
   for f in "${files[@]}"; do
     [ -f "$f" ] || continue
@@ -88,34 +83,21 @@ echo "GitLab CI Variables — nguồn: ${ENV_FILES[*]}${OPS_FROM:+ + $OPS_FROM (
 echo "Repo: $(glab repo view 2>/dev/null | head -1 || echo '(auto từ git remote)')"
 echo
 
-# Danh sách này phải PHỦ ĐỦ 6 mục `level: required` của scripts/integrations/jira/check_connection.js.
-# Thiếu một mục là job `integration-check` đỏ với "thiếu N cấu hình bắt buộc" — đã dính đúng vậy ngày
-# 04/09/2026: GitLab có 4/6, thiếu JIRA_PROJECT_KEY (nó phủ CẢ "Jira project key" lẫn "AIO project key"
-# nhờ fallback), nên job không thể xanh. FIGMA_API_KEY chỉ là `warning`, thêm cho phần live check đủ 4 service.
-echo "[Jira / AIO / Confluence — cho integration-check]"
-set_one JIRA_BASE_URL        0
-set_one JIRA_EMAIL           0
-set_one JIRA_API_TOKEN       1
-set_one JIRA_PROJECT_KEY     0
+# Danh sách này phải PHỦ ĐỦ 3 mục `level: required` của scripts/integrations/backlog/check_connection.js
+# (BACKLOG_BASE_URL/API_KEY/PROJECT_KEY). Thiếu một mục là job `integration-check` đỏ với "thiếu N cấu
+# hình bắt buộc". AIO_API_TOKEN và FIGMA_API_KEY chỉ là `warning` (AIO là app Jira-only, có thể không còn
+# dùng được sau khi bỏ Jira hẳn — xem DOC_ONLY ở tests/fe/infra/env-contract.spec.ts), thêm cho live check
+# đủ service khi có.
+echo "[Backlog / AIO / Figma — cho integration-check]"
+set_one BACKLOG_BASE_URL     0
+set_one BACKLOG_API_KEY      1
+set_one BACKLOG_PROJECT_KEY  0
 set_one AIO_API_TOKEN        1
-set_one CONFLUENCE_URL       0
-set_one CONFLUENCE_USERNAME  0
-set_one CONFLUENCE_API_TOKEN 1
 set_one FIGMA_API_KEY        1
 
 echo
-echo "[OPS — cho task-execute / regression (nên là account test UAT riêng cho CI)]"
-set_one OPS_BASE_URL         0
-set_one OPS_USERNAME         0
-set_one OPS_PASSWORD         1
-set_one OPS_USERNAME_LOW     0
-set_one OPS_PASSWORD_LOW     1
-set_one OPS_USERNAME_HIGH    0
-set_one OPS_PASSWORD_HIGH    1
-
-echo
 if [ "$APPLY" = "0" ]; then
-  echo "Xem OK thì chạy lại với --apply. Nhớ: OPS_BASE_URL phải trỏ UAT/staging (không prod)."
+  echo "Xem OK thì chạy lại với --apply."
 else
   echo "Xong. Kiểm: Settings → CI/CD → Variables. Đảm bảo scope Protected branches, không lộ cho fork MR."
 fi

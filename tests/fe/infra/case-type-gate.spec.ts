@@ -79,7 +79,7 @@ test.describe('gate Loại case', () => {
     expect(doc.tests.map((t: any) => t.caseType)).toEqual(['Integration', 'API']);
   });
 
-  test('`Critical` là mức ưu tiên hợp lệ — thang AIO đứng đầu bằng Critical, không phải Highest', () => {
+  test('`Critical` là mức ưu tiên hợp lệ — thang canonical đứng đầu bằng Critical, không phải Highest', () => {
     const [md, out] = fixture(`${H10}| T1 | Functional | ${TAIL}\n| T2 | API | ${NEG}\n`);
     const r = run([CONVERT, md, out]);
     expect(r.code, 'Critical bị chặn = thang ưu tiên vẫn kẹt ở chuẩn Jira cũ').toBe(0);

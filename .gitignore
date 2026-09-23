@@ -106,7 +106,7 @@ ExportData/
 # Mirror GitHub là PUBLIC nên đây là ranh giới bắt buộc, không phải sở thích.
 #
 # MẤT FILE KHÔNG PHẢI MẤT DỮ LIỆU — mỗi store đều nạp lại được từ nguồn thật:
-#   bugs        → `npm run learn:bugs:apply` (nguồn: Jira)
+#   bugs        → `npm run learn:bugs:apply` (nguồn: Backlog)
 #   historical  → `npm run learn -- --scan`   metrics → sinh khi chạy test
 #   domain/system/decisions → ghi tay (nguồn: FSD/BA), rồi `npm run domain:index` · `system:index` · `decisions --index`
 # Giữ lại trong repo: `knowledge/SCHEMA.md` (hình dạng entry, đã có mẫu generic PROJ-123) + các `.gitkeep`.
@@ -183,7 +183,7 @@ service-account.json
 **/token-*.json
 
 # One-off operational backups (chứa accountId/tên nội bộ)
-scripts/integrations/jira/unassign_tests_backup.json
+scripts/integrations/backlog/unassign_tests_backup.json
 **/*_backup.json
 **/*.BACKUP.md
 
@@ -197,6 +197,10 @@ scripts/integrations/jira/unassign_tests_backup.json
 # Gói phát hành sinh ra bởi `npm run package:kit` — artifact, không commit.
 # (`*.zip` đã có, nhưng gói giờ là .tar.gz và cả thư mục nên khai rõ.)
 dist/
+
+# MCP server config cá nhân — trỏ localhost (vd Obsidian Local REST API) và có thể chứa token dạng
+# plaintext trong header. Không có ý nghĩa share qua git (mỗi máy một port/token riêng) — KHÔNG commit.
+.mcp.json
 
 # Claude Code local files — settings/hook là cấu hình MÁY CÁ NHÂN (có thể chứa env, đường dẫn riêng).
 # NGOẠI LỆ: .claude/commands/ ĐƯỢC COMMIT — slash command là ĐIỂM VÀO DÙNG CHUNG của cả nhóm; ignore nó thì
@@ -225,7 +229,7 @@ dist/
 # Record bug (knowledge/bugs/*.json) là dữ liệu NỘI BỘ, KHÔNG publish: tên file sinh từ slug tiêu đề nên
 # chính đường dẫn đã mô tả defect của sản phẩm, mà mirror GitHub là public. Kit vẫn dùng chúng bình thường ở
 # local/CI nội bộ (risk_score + decisions đọc thẳng thư mục này; thiếu thư mục thì cả hai xử lý rỗng an toàn).
-# Nạp lại từ Jira bất cứ lúc nào: `npm run learn:bugs:apply` (nguồn thật là Jira, không phải repo).
+# Nạp lại từ Backlog bất cứ lúc nào: `npm run learn:bugs:apply` (nguồn thật là Backlog, không phải repo).
 knowledge/bugs/*.json
 !knowledge/bugs/.gitkeep
 

@@ -3,7 +3,7 @@
   "domains": [
     {
       "domain": "order",
-      "sources": ["tests/fe/order/**", "tests/api/product-orders-list.spec.ts", "scripts/integrations/jira/push_test_execution.js"],
+      "sources": ["tests/fe/order/**", "tests/api/product-orders-list.spec.ts", "scripts/integrations/backlog/push_test_execution.js"],
       "tests": ["tests/fe/order", "tests/api/product-orders-list.spec.ts"]
     },
     {

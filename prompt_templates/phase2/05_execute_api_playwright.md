@@ -5,14 +5,14 @@
 > ⚡ **Kỷ luật execute (RULE_GLOBAL §"Execution Discipline"):** batch NHIỀU case/1 lượt (ÍT script toàn diện, chạy song song — không "mỗi case 1 vòng"); KHÔNG mặc định TODO/SKIP khi chưa thử (dùng hết fixture/deal/account đã cấp, case negative tự tạo input); KHÔNG hỏi lắt nhắt (gom câu hỏi 1 lần); báo cáo gộp, ít vòng.
 
 > 🛑 **CHECKLIST 6 KHỐI — xác nhận TRƯỚC KHI execute** (forcing function; `output_gate` sẽ **CHẶN** nếu output vi phạm — đọc & làm, đừng lướt):
-> 1. **Nguồn & scope** — `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (AIO/excel) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
+> 1. **Nguồn & scope** — `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (tải mới nhất từ Google Sheet qua Drive MCP) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
 > 2. **Oracle độc lập** — mỗi case có "Kết quả mong đợi" cụ thể (status code/field/giá trị theo API contract). Oracle rỗng hoặc app==app (tautology) → DỪNG, lấy giá trị spec. *(gate: oracle-rỗng = CHẶN · tautology = cảnh báo)*
 > 3. **Batch & drive thật** — gom NHIỀU case/ÍT script chạy song song; dùng hết fixture/deal/account; case negative tự tạo input (payload lỗi, ID không tồn tại). KHÔNG TODO/SKIP khi chưa thử.
 > 4. **Phân tầng kết quả** — mỗi case → PASS/FAIL/SKIP/BLOCKED_SETUP/SKIP_SETUP. FAIL phải PHÂN TẦNG: product/API bug vs `setup_failure` vs infra/flaky. "Không phán được" KHÔNG thành PASS. *(gate: FAIL thiếu tầng-lỗi = CHẶN)*
 > 5. **Loại flaky** — FAIL rerun 2–3 lần loại flaky/setup TRƯỚC khi kết luận product/API bug / log Jira.
 > 6. **Evidence** — mọi case (PASS+FAIL)+step có ảnh/video đúng màn (response/assertion hiển thị), highlight, mask PII; case phức tạp có video. CẤM `.json/.md/.log`. *(gate: thiếu evidence/step-status = CHẶN)*
 
-> 📋 **Attestation (G6) — sau execute, ghi vào `testcase-status.json`:** field `attestation` = `{ "oracleSource": "<aio|spec|api-contract>", "executed": <số case đã chạy>, "allEvidenceAttached": true, "failuresClassified": true, "rerunDone": true }`. Gate ĐỐI CHIẾU tự-khai với sự thật (executed thật, evidence, tầng-lỗi) — lệch = cảnh báo. Khai ĐÚNG, đừng tick suông.
+> 📋 **Attestation (G6) — sau execute, ghi vào `testcase-status.json`:** field `attestation` = `{ "oracleSource": "<sheet|spec|api-contract>", "executed": <số case đã chạy>, "allEvidenceAttached": true, "failuresClassified": true, "rerunDone": true }`. Gate ĐỐI CHIẾU tự-khai với sự thật (executed thật, evidence, tầng-lỗi) — lệch = cảnh báo. Khai ĐÚNG, đừng tick suông.
 
 > 🧩 **Helper (tuỳ chọn) — `scripts/utils/test_context.js`:** automation standalone có thể `const ctx = createTestContext({ taskKey, tcId })` để gom sẵn 1 chỗ: `ctx.evidence()` (EvidenceRecorder đúng task/run), `ctx.onCleanup(fn)`/`ctx.runCleanup()` (dọn data LIFO), `ctx.taskOutputDir`/`ctx.metadata` — thay vì tự wire rời rạc.
 
@@ -34,12 +34,12 @@ Thực thi BE API testcases bằng Playwright request context, không mở brows
   Khi có `RUN_ID`, không sửa testcase Markdown/Excel chính trong lúc execute; ghi status/actual/evidence vào run-scoped report/status.
 - Swagger env: `App 1_SWAGGER_URL`, `APP2_SWAGGER_URL`
 - API base env: `App 1_API_BASE_URL`, `APP2_API_BASE_URL`
-- Testcases: nguồn canonical local theo `TESTCASE_SOURCE` — **mặc định `aio`** (`<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-aio/*.xlsx`, kéo bằng `npm run aio:pull:write -- --story [JIRA_STORY_KEY]` ở Bước 0), hoặc `excel` (`[PATH_TO_TESTCASE_XLSX]` / `test-cases/*.xlsx`). Execute đọc file local — không gọi AIO/Jira từng case.
+- Testcases: nguồn canonical local `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-sheet/*.xlsx` — agent tải bản MỚI NHẤT về từ Google Sheet qua Drive MCP ở Bước 0 TRƯỚC mỗi lượt execute. Execute đọc file local — không gọi Drive/Backlog cho từng case.
 
 # Precondition Resolution Pass (bắt buộc, chạy TRƯỚC khi generate/execute)
 > 📚 **TRA KHO HỌC TRƯỚC KHI TỰ MÒ** (rẻ hơn mò lại nhiều lần, và đây là chỗ 80% thời gian bị tiêu):
 > - **`knowledge/setup_recipes/`** — đã có ai dựng state này chưa? Đọc `steps` (ĐÚNG THỨ TỰ) + `pitfalls` (thứ chỉ biết sau khi vấp) + `verification`. Dựng xong mà chưa verify thì coi như chưa có state.
-> - **`knowledge/environment/`** — trước khi kết luận "app lỗi": token TTL, login throttle/lockout, headless trắng, quirk toolchain (Jira/AIO/HubSpot) đều nằm ở đây. Fail vì mấy thứ này là `setup_failure`/`infra`, KHÔNG phải product bug.
+> - **`knowledge/environment/`** — trước khi kết luận "app lỗi": token TTL, login throttle/lockout, headless trắng, quirk toolchain (Backlog/Google Sheet) đều nằm ở đây. Fail vì mấy thứ này là `setup_failure`/`infra`, KHÔNG phải product bug.
 > - **`knowledge/locators/`** — element khó (menu ⋮, popup, cổng thanh toán): đọc `symptom` xem có khớp triệu chứng đang gặp không, rồi làm theo `technique`. Fail ngắt quãng thường là SAI KỸ THUẬT THAO TÁC, không phải flaky vô cớ.
 > - **`knowledge/system/`** type `data_model` — `test_implication` cho biết mô hình dữ liệu bắt test phải làm khác đi thế nào (vd sau mutation phải resolve theo TÊN, không dùng lại id).
 >
@@ -48,7 +48,7 @@ Thực thi BE API testcases bằng Playwright request context, không mở brows
 
 Cho toàn bộ selected TC, chạy pass này trước khi sinh hoặc chạy bất kỳ spec nào:
 
-1. Đọc selected TC từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-aio/*.xlsx`). Cách dựng precondition lấy từ **tag `[<method>]`** ở đầu cell `Tiền điều kiện`; chi tiết (endpoint/payload/fixture id · verification · cleanup) đọc `### Setup Readiness` trong `reports/phase1-summary.md`, và tra `knowledge/setup_recipes/` trước khi tự mò. Bộ testcase CŨ chưa có tag thì đọc `### Precondition Execution Matrix` như trước.
+1. Đọc selected TC từ nguồn canonical local `test-cases/from-sheet/*.xlsx` (đã tải từ Google Sheet ở Bước 0). Cách dựng precondition lấy từ **tag `[<method>]`** ở đầu cell `Tiền điều kiện`; chi tiết (endpoint/payload/fixture id · verification · cleanup) đọc `### Setup Readiness` trong `reports/phase1-summary.md`, và tra `knowledge/setup_recipes/` trước khi tự mò. Bộ testcase CŨ chưa có tag thì đọc `### Precondition Execution Matrix` như trước.
 2. Với mỗi selected TC, lấy `Setup Method` **từ tag `[<method>]` ở đầu cell `Tiền điều kiện`** (bộ cũ chưa có tag thì đọc `### Precondition Execution Matrix` của `phase1-summary.md`), rồi map:
    - `api` → gọi business/public test API theo `Setup Source`.
    - `factory`/`test_hook` → dùng factory/hook tương ứng.
@@ -65,7 +65,7 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 
 # Các bước thực thi
 1. Echo `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `TASK_OUTPUT_DIR`, `RUN_ID` nếu có; nếu sai task thì dừng.
-2. Đọc `.agent/config/project_context.md` và testcase API từ nguồn canonical local theo `TESTCASE_SOURCE` (mặc định `test-cases/from-aio/*.xlsx`; `excel` → `test-cases/*.xlsx`).
+2. Đọc `.agent/config/project_context.md` và testcase API từ nguồn canonical local `test-cases/from-sheet/*.xlsx`.
 3. Chạy `Precondition Resolution Pass` (section ở trên) cho toàn bộ selected TC trước khi generate/execute. Dùng Swagger spec từ App 1 hoặc App 2 theo testcase; KHÔNG tự đoán payload nếu contract đã có.
 4. Gọi request.post/get/put/delete theo từng TC.
 5. Assert status code, response body schema, headers và response time.

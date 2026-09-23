@@ -150,7 +150,7 @@ test('input rỗng hoặc null trả chuỗi rỗng, không ném', () => {
  */
 const FETCHERS = [
   'scripts/phase1/fetch_confluence_children.js',
-  'scripts/integrations/jira/fetch_confluence.js',
+  'scripts/integrations/backlog/fetch_confluence.js',
 ];
 
 test('cả hai fetcher đều gọi bộ đổi dùng chung', () => {

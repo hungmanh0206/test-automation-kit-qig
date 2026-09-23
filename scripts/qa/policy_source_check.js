@@ -375,7 +375,7 @@ if (fs.existsSync(SKILLS_DIR)) {
   for (const f of FILES) { const abs = path.join(rc.REPO_ROOT, f); if (fs.existsSync(abs)) scanFile(abs); }
 
   if (hits.length) {
-    problems.push(`NO-XRAY: ${hits.length} chỗ còn nhắc công cụ đã bỏ (kit chỉ dùng AIO Tests): ${hits.slice(0, 15).join(' · ')}${hits.length > 15 ? ` … (+${hits.length - 15})` : ''}. Xoá hoặc viết lại theo AIO — đừng để lại đường mòn dẫn tới lệnh/biến không còn tồn tại.`);
+    problems.push(`NO-XRAY: ${hits.length} chỗ còn nhắc công cụ đã bỏ (kit đã bỏ hẳn cả Xray lẫn AIO Tests — testcase/execution giờ ở Google Sheet): ${hits.slice(0, 15).join(' · ')}${hits.length > 15 ? ` … (+${hits.length - 15})` : ''}. Xoá hoặc viết lại theo luồng Sheet — đừng để lại đường mòn dẫn tới lệnh/biến không còn tồn tại.`);
   } else {
     console.log('[policy] ✓ không bề mặt nào của kit còn nhắc công cụ test-management cũ (NO-XRAY sạch).');
   }

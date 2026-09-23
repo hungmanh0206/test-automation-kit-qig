@@ -26,23 +26,23 @@ const C = { info: '#2A6FDB', accent: '#4F46E5', amber: '#F59E0B', success: '#1F8
 const boards = [
   {
     file: 'main-flow.png', number: '1', title: 'QA Workflow', role: 'Team QA',
-    inputs: ['Jira Story', 'Confluence Requirement', 'Figma Design', 'Swagger/OpenAPI', 'Excel baseline'],
+    inputs: ['Backlog Story', 'Confluence Requirement', 'Figma Design', 'Swagger/OpenAPI', 'Excel baseline'],
     steps: [
-      { icon: 'IN', c: C.info, title: '1.1 Requirement intake', body: 'Jira, Confluence, Figma, Swagger' },
+      { icon: 'IN', c: C.info, title: '1.1 Requirement intake', body: 'Backlog, Confluence, Figma, Swagger' },
       { icon: 'AI', c: C.info, title: '1.2 AI generate testcase', body: 'Sinh testcase và test data draft' },
-      { icon: 'XL', c: C.success, title: '1.3 Excel (SoT gen/publish)', body: 'QA review trên Excel; Phase 2 execute từ AIO' },
-      { icon: 'OK', gate: true, title: 'GATE: QA CONFIRMATION', body: 'Approve trước khi publish lên AIO' },
-      { icon: 'PB', c: C.amber, title: '1.4 Auto Publish AIO', body: 'Case + folder theo nhóm chức năng' },
-      { icon: 'EX', c: C.info, title: '1.5 Execute từ AIO', body: 'Phase 2 mặc định pull về local' },
-      { icon: 'TE', c: C.success, title: '1.6 Đẩy cycle lên AIO', body: 'Passed/Failed + evidence từng bước' },
-      { icon: 'BG', c: C.danger, title: '1.7 Triage & Jira bug', body: 'Rerun xác nhận + evidence' },
+      { icon: 'XL', c: C.success, title: '1.3 Excel (SoT gen/publish)', body: 'QA review trên Excel; Phase 2 execute từ Sheet' },
+      { icon: 'OK', gate: true, title: 'GATE: QA CONFIRMATION', body: 'Approve trước khi publish lên Google Sheet' },
+      { icon: 'PB', c: C.amber, title: '1.4 Auto Publish Sheet', body: 'Upload qua Drive MCP; sheet-tab theo nhóm chức năng' },
+      { icon: 'EX', c: C.info, title: '1.5 Execute từ Sheet', body: 'Phase 2 luôn tải bản mới nhất về local' },
+      { icon: 'TE', c: C.success, title: '1.6 Đồng bộ Result lên Sheet', body: 'Pass/Fail + evidence lưu local' },
+      { icon: 'BG', c: C.danger, title: '1.7 Triage & Backlog bug', body: 'Rerun xác nhận + evidence' },
       { icon: 'RR', c: C.success, title: '1.8 Dev fix & Re-run', body: 'Attach evidence, update report' },
     ],
-    outputs: ['Excel (gen/publish)', 'AIO Case + Cycle', 'Thư mục cycle theo sprint', 'Evidence ảnh/video'],
+    outputs: ['Excel (gen/publish)', 'Google Sheet (1 tab/nhóm)', 'Cột Result cập nhật', 'Evidence ảnh/video'],
   },
   {
     file: 'qa-environment.png', number: '0', title: 'QA Setup', role: 'Team QA',
-    inputs: ['VS Code', 'AI chat extension', 'Node.js >= 18', 'Playwright runtime', 'Jira/Confluence/Figma quyền đọc'],
+    inputs: ['VS Code', 'AI chat extension', 'Node.js >= 18', 'Playwright runtime', 'Backlog/Confluence/Figma quyền đọc'],
     steps: [
       { icon: 'VS', c: C.info, title: '0.1 Mở đúng workspace root', body: 'Không mở nhầm folder con' },
       { icon: 'AI', c: C.ink, title: '0.2 AI đọc prompt/rule', body: 'Sinh testcase, report, evidence' },
@@ -56,46 +56,46 @@ const boards = [
     file: 'output-structure.png', number: 'A', title: 'Output Map', role: 'Workspace',
     inputs: ['PROJECT_OUTPUT_DIR', 'TASK_KEY', 'RUN_ID khi cần', 'task.md', 'Excel baseline'],
     steps: [
-      { icon: 'RQ', c: C.info, title: 'requirements/', body: 'Jira, Confluence, Figma, Swagger snapshot' },
-      { icon: 'TC', c: C.success, title: 'test-cases/', body: 'Markdown + Excel (SoT gen/publish) + from-aio/' },
+      { icon: 'RQ', c: C.info, title: 'requirements/', body: 'Backlog, Confluence, Figma, Swagger snapshot' },
+      { icon: 'TC', c: C.success, title: 'test-cases/', body: 'Markdown + Excel (SoT gen/publish) + from-sheet/' },
       { icon: 'RP', c: C.amber, title: 'reports/', body: 'Phase 1, execution, publish summary' },
       { icon: 'EV', c: C.ink, title: 'test-results/', body: 'Screenshot, video, trace, response' },
       { icon: 'CH', c: C.info, title: 'change/regen/', body: 'Partial rerun diff, impact, approved merge' },
       { icon: 'MD', c: C.danger, title: 'task.md', body: 'Status board và decision log' },
     ],
-    outputs: ['Không lẫn story', 'Không ghi đè TASK_KEY khác', 'Excel là baseline (gen/publish)', 'AIO = nguồn execute mặc định', 'Cleanup qua partial rerun'],
+    outputs: ['Không lẫn story', 'Không ghi đè TASK_KEY khác', 'Excel là baseline (gen/publish)', 'Sheet = nguồn execute mặc định', 'Re-publish qua partial rerun'],
   },
   {
     file: 'phase1-quality-gate.png', number: '1', title: 'Phase 1', role: 'Testcase generation',
-    inputs: ['Jira/Confluence', 'Figma', 'Swagger/OpenAPI', 'Business Rules', 'Existing testcase nếu có'],
+    inputs: ['Backlog/Confluence', 'Figma', 'Swagger/OpenAPI', 'Business Rules', 'Existing testcase nếu có'],
     steps: [
       { icon: 'SRC', c: C.info, title: '1.1 AI đọc source', body: 'Requirement, rule, design, API' },
       { icon: 'AMB', gate: true, title: 'GATE: AMBIGUITY', body: 'Mơ hồ Critical/High → hỏi trước, chặn sinh TC' },
       { icon: 'DIM', c: C.info, title: '1.2 Khai CHIỀU coverage', body: 'dimension_manifest: required / n/a KÈM lý do' },
       { icon: 'TC', c: C.info, title: '1.3 Generate testcase', body: 'Group business flow; tag chiều trong tiêu đề; RBT density' },
       { icon: 'DEP', gate: true, title: 'GATE: DIM COVERAGE', body: 'Thiếu chiều required = CHẶN; n/a trái artifact = CHẶN' },
-      { icon: 'XL', c: C.success, title: '1.4 Export Excel', body: 'Excel SoT khi gen/publish (execute từ AIO)' },
+      { icon: 'XL', c: C.success, title: '1.4 Export Excel', body: 'Excel SoT khi gen/publish (execute từ Sheet)' },
       { icon: 'QA', c: C.amber, title: '1.5 QA review + risk gate', body: 'Coverage, risk depth, expected, gap' },
       { icon: 'OK', gate: true, title: 'GATE: QA APPROVAL', body: 'Chỉ publish khi Excel đã approve' },
-      { icon: 'PB', c: C.ink, title: '1.6 Publish AIO', body: 'Case + folder theo nhóm chức năng' },
+      { icon: 'PB', c: C.ink, title: '1.6 Publish Google Sheet', body: 'Sheet-tab theo nhóm chức năng' },
     ],
-    outputs: ['Testcase Markdown', 'Excel (SoT gen/publish)', 'Coverage summary', 'AIO publish summary'],
+    outputs: ['Testcase Markdown', 'Excel (SoT gen/publish)', 'Coverage summary', 'Google Sheet publish summary'],
   },
   {
     file: 'phase2-execution-loop.png', number: '2', title: 'Phase 2', role: 'Execution',
-    inputs: ['Testcase từ AIO (mặc định)', 'Test account', 'App/API URL', 'Playwright'],
+    inputs: ['Testcase từ Google Sheet (mặc định)', 'Test account', 'App/API URL', 'Playwright'],
     steps: [
-      { icon: 'PL', c: C.success, title: '2.1 Pull từ AIO', body: 'Kéo testcase về canonical local' },
+      { icon: 'PL', c: C.success, title: '2.1 Tải từ Sheet', body: 'Kéo testcase về canonical local qua Drive MCP' },
       { icon: 'PRE', c: C.info, title: '2.2 Resolve preconditions', body: 'UI/API/factory/fixture/hook' },
       { icon: 'DB', gate: true, title: 'DB: UAT READ-ONLY', body: 'Verify read-only qua guarded client; không dựng state' },
       { icon: 'RUN', c: C.ink, title: '2.3 Run FE/API', body: 'Playwright execute thật' },
       { icon: 'EV', c: C.amber, title: '2.4 Capture evidence', body: 'Ảnh/video (trace/log chỉ để debug local)' },
-      { icon: 'CL', c: C.info, title: '2.5 Classify + push AIO', body: 'Passed/Failed/Blocked + evidence' },
+      { icon: 'CL', c: C.info, title: '2.5 Classify + đồng bộ Sheet', body: 'Pass/Fail/Pending + evidence' },
     ],
-    outputs: ['Cycle trên AIO', 'Thư mục cycle theo sprint', 'setup_failure nếu chặn'],
+    outputs: ['Cột Result trên Sheet', 'Evidence lưu local', 'setup_failure nếu chặn'],
   },
   {
-    file: 'jira-bug-evidence.png', number: 'B', title: 'Jira Bug', role: 'Bug readiness',
+    file: 'backlog-bug-evidence.png', number: 'B', title: 'Backlog Bug', role: 'Bug readiness',
     inputs: ['Fail candidate', 'Expected result', 'Actual result', 'Evidence', 'Rerun result'],
     steps: [
       { icon: 'EX', c: C.info, title: 'B.1 Execute thật', body: 'Không phải skip hoặc thiếu bước' },
@@ -106,7 +106,7 @@ const boards = [
       // mà lại nằm đúng trong ảnh checklist người ta mở ra TRƯỚC khi log bug.
       { icon: 'EV', c: C.amber, title: 'B.4 Evidence rõ', body: 'CHỈ ảnh/video (log/trace là diagnostic)' },
       { icon: 'OK', gate: true, title: 'GATE: BUG READY', body: 'Chỉ log nếu là product bug thật' },
-      { icon: 'BG', c: C.danger, title: 'B.5 Log Jira bug', body: 'Description đủ 4 phần' },
+      { icon: 'BG', c: C.danger, title: 'B.5 Log Backlog bug', body: 'Description đủ 4 phần' },
     ],
     outputs: ['Precondition', 'Steps', 'Actual', 'Expected', 'Ảnh/video evidence', 'Không log setup/data/automation'],
   },
@@ -119,9 +119,9 @@ const boards = [
       { icon: 'OK', gate: true, title: 'GATE: HUMAN APPROVAL', body: 'Không tự merge testcase' },
       { icon: 'AP', c: C.success, title: 'P.3 Apply approved', body: 'Merge NEW/UPDATED/DEPRECATED' },
       { icon: 'RUN', c: C.ink, title: 'P.4 Partial execute', body: 'Chỉ chạy subset affected' },
-      { icon: 'DP', c: C.danger, title: 'P.5 Optional Deprecate', body: 'Case rời Excel → Deprecated' },
+      { icon: 'DP', c: C.danger, title: 'P.5 Optional unlink', body: 'Case rời Excel tự mất khỏi Sheet; unlink Backlog nếu cần' },
     ],
-    outputs: ['Review checklist', 'Impact matrix', 'Updated Excel baseline', 'Partial execution report', 'Deprecate summary'],
+    outputs: ['Review checklist', 'Impact matrix', 'Updated Excel baseline', 'Partial execution report', 'Unlink summary (optional)'],
   },
   {
     file: 'phase-selection.png', number: 'S', title: 'Prompt Map', role: 'Run đúng nhánh',
@@ -132,11 +132,11 @@ const boards = [
       { icon: 'P2', c: C.amber, title: 'S.3 Execute', body: '/phase2 · run_phase2_template.md' },
       { icon: 'RR', c: C.ink, title: 'S.4 Bug/case đã fix', body: '/rerun · run_phase_re-run_template.md' },
       { icon: 'PR', c: C.info, title: 'S.5 Source changed', body: '/partial-rerun · prepare review' },
-      { icon: 'CL', c: C.danger, title: 'S.6 Excel đổi sau publish', body: 'run_testcase_cleanup.md' },
+      { icon: 'CL', c: C.danger, title: 'S.6 Excel đổi sau publish', body: 'Re-publish (ghi đè Sheet); run_testcase_cleanup.md chỉ để unlink Backlog' },
       { icon: 'EX', c: C.ink, title: 'S.7 Exploratory', body: '/explore · nhánh phụ, never-auto' },
       { icon: 'NF', c: C.amber, title: 'S.8 Non-functional', body: 'perf/security/load/accessibility/risk' },
     ],
-    outputs: ['Không dùng nhầm Re-run', 'Publish cần QA approve', 'Execute mặc định từ AIO', 'Partial rerun cho source change', 'Exploratory/Non-functional là nhánh phụ opt-in'],
+    outputs: ['Không dùng nhầm Re-run', 'Publish cần QA approve', 'Execute mặc định từ Sheet', 'Partial rerun cho source change', 'Exploratory/Non-functional là nhánh phụ opt-in'],
   },
   {
     file: 'advanced-capabilities.png', number: 'A+', title: 'Năng lực nâng cao', role: 'Non-functional · Learning · Nhánh phụ',
@@ -251,7 +251,7 @@ body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-s
 </body></html>`;
 }
 
-// Sơ đồ traceability AIO Tests (thay mermaid trong USER_GUIDE 5.5.0).
+// Sơ đồ traceability Google Sheet (thay mermaid trong USER_GUIDE 5.5.0).
 function traceabilityHtml() {
   const org = (a, t, s) => `<div class="tnode org" style="--a:${a}"><div class="tn-t">${esc(t)}</div><div class="tn-s">${esc(s)}</div></div>`;
   const chev = (lbl) => `<div class="tchev"><svg width="22" height="12" viewBox="0 0 22 12" fill="none"><path d="M1 1l10 9 10-9" stroke="#4338CA" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>${lbl ? `<span>${esc(lbl)}</span>` : ''}</div>`;
@@ -288,23 +288,21 @@ body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;-webkit-font-s
 .chipset .todo{background:#F2EEE6;color:#57534A}
 </style></head><body>
 <div class="diagram" id="diagram">
-  <div class="dhead"><span class="deyebrow">Mô hình AIO Tests · Traceability</span><div class="dsub">1 task chạy trọn bộ testcase — Case → Cycle → Run</div></div>
+  <div class="dhead"><span class="deyebrow">Mô hình Google Sheet · Traceability</span><div class="dsub">1 task chạy trọn bộ testcase — Excel → Sheet → Result</div></div>
   <div class="tgroup">
-    <div class="tg-eyebrow">Case gắn với</div>
+    <div class="tg-eyebrow">Excel canonical gắn với</div>
     <div class="trow">
-      ${org(C.info, 'Story cha (requirement)', 'jiraRequirementIDs — KHÔNG có panel Coverage')}
-      ${org(C.ink, 'Folder <root>/<nhóm>', 'cây 2 cấp, dựng TỪ Excel')}
-      ${org(C.amber, 'precondition', 'field TRONG case — không còn issue riêng')}
+      ${org(C.info, 'Story cha (requirement)', 'metadata trong report — Sheet không có field liên kết riêng')}
+      ${org(C.ink, 'TC ID ở cột ID_TC', 'không còn folder/automationKey như công cụ TMS trước đây')}
+      ${org(C.amber, 'Tiền điều kiện', 'cột TRONG sheet — không còn issue/field riêng')}
     </div>
   </div>
-  ${chev('')}
-  <div class="tcenter"><div class="tnode hub">CASE<span>testcase · TC ID ở automationKey</span></div></div>
-  ${chev('gom theo sprint')}
-  ${line(C.success, '<b>Thư mục cycle</b> — 1 sprint <span class="sm">(--folder; AIO KHÔNG có Test Plan)</span>')}
-  ${chev('chứa mỗi lần chạy')}
-  ${line(C.info, '<b>Cycle</b> — 1 lần chạy = toàn bộ TC <span class="sm">(cùng --cycle-title thì dùng lại, không đẻ trùng)</span>')}
-  ${chev('sinh kết quả — evidence neo được xuống TỪNG BƯỚC')}
-  ${line(C.accent, '<b>Run + run-step</b><span class="chipset"><i class="pass">Passed</i><i class="fail">Failed</i><i class="todo">Blocked</i><i class="todo">Not Run</i></span>')}
+  ${chev('create_file / update_file qua Drive MCP')}
+  <div class="tcenter"><div class="tnode hub">GOOGLE SHEET<span>1 workbook · không Cycle/Run/folder</span></div></div>
+  ${chev('1 tab / nhóm chức năng')}
+  ${line(C.success, '<b>Sheet-tab theo nhóm</b> <span class="sm">(dựng từ md_to_xlsx.js — thay cho folder cũ)</span>')}
+  ${chev('ghi qua merge_execution_status.js')}
+  ${line(C.accent, '<b>Cột Result</b><span class="chipset"><i class="pass">Pass</i><i class="fail">Fail</i><i class="todo">Pending</i></span>')}
 </div></body></html>`;
 }
 
@@ -324,8 +322,8 @@ const run = async () => {
   try { await page.evaluate(() => document.fonts.ready); } catch {}
   await page.waitForTimeout(150);
   const dia = await page.$('#diagram');
-  await dia.screenshot({ path: path.join(outDir, 'aio-traceability.png') });
-  console.log('generated aio-traceability.png');
+  await dia.screenshot({ path: path.join(outDir, 'sheet-traceability.png') });
+  console.log('generated sheet-traceability.png');
   await browser.close();
 };
 run().then(() => console.log('done')).catch((e) => { console.error(e); process.exit(1); });

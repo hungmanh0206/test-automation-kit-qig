@@ -1,6 +1,6 @@
 # GitLab CI — bản tương đương .github/workflows (dùng GitHub thì xoá file này, và ngược lại).
 # static: mỗi push/MR (không secret). integration + regression: manual/scheduled.
-# Secrets khai ở Settings → CI/CD → Variables (masked/protected): JIRA_*, AIO_API_TOKEN, OPS_*, CONFLUENCE_*.
+# Secrets khai ở Settings → CI/CD → Variables (masked/protected): BACKLOG_*, AIO_API_TOKEN.
 
 stages:
   - static
@@ -88,18 +88,18 @@ audit:
     - npm run audit:ci
 
 
-# ---- Integration check (MANUAL, dry-run — KHÔNG publish/log Jira thật) ----
+# ---- Integration check (MANUAL, dry-run — KHÔNG log bug thật) ----
 integration-check:
   stage: integration
   image: node:20
-  # Job gọi Jira/AIO/Confluence/Figma THẬT (chỉ GET, không ghi). Creds đọc từ
-  # scripts/integrations/jira/.env — file KHÔNG track, nên container CI KHÔNG có nó.
+  # Job gọi Backlog/AIO/Figma THẬT (chỉ GET, không ghi). Creds đọc từ
+  # scripts/integrations/backlog/.env — file KHÔNG track, nên container CI KHÔNG có nó.
   # ⇒ Không khai biến CI thì job đỏ CHẮC CHẮN ("thiếu cấu hình bắt buộc", exit 1 sau ~30s).
   # Một nút luôn-đỏ dạy người ta bỏ qua CI, nên job chỉ HIỆN khi thật sự có creds.
-  # Muốn bật: GitLab > Settings > CI/CD > Variables (masked) — JIRA_BASE_URL, JIRA_EMAIL,
-  # JIRA_API_TOKEN, JIRA_PROJECT_KEY, AIO_API_TOKEN, CONFLUENCE_URL, CONFLUENCE_API_TOKEN, FIGMA_API_KEY.
+  # Muốn bật: GitLab > Settings > CI/CD > Variables (masked) — BACKLOG_BASE_URL, BACKLOG_API_KEY,
+  # BACKLOG_PROJECT_KEY, AIO_API_TOKEN, FIGMA_API_KEY.
   rules:
-    - if: '$JIRA_API_TOKEN && $AIO_API_TOKEN'
+    - if: '$BACKLOG_API_KEY && $AIO_API_TOKEN'
       when: manual
       allow_failure: true          # THƯỚC ĐO kết nối, không phải cổng chặn merge
   script:

@@ -42,7 +42,7 @@
         "phase1": "Phase 1 chưa có kết quả execute để soi; chất lượng bộ case do design_gate + tc_validator gác.",
         "partial-rerun": "Nhánh này không execute case nên không có kết quả để soi; chất lượng phần merge do design_gate + dim:coverage gác (Step 2a)."
       },
-      "why": "Chất lượng output trước khi đẩy ra ngoài (evidence ảnh/video, step status, comment sạch, FAIL phân tầng, rerun đủ ngưỡng). Nhánh nào ĐẨY KẾT QUẢ RA NGOÀI (AIO/Jira) đều phải qua."
+      "why": "Chất lượng output trước khi đẩy ra ngoài (evidence ảnh/video, step status, comment sạch, FAIL phân tầng, rerun đủ ngưỡng). Nhánh nào ĐẨY KẾT QUẢ RA NGOÀI (Sheet/Backlog) đều phải qua."
     },
     "expansion:plan": {
       "applies": [
@@ -97,7 +97,7 @@
         "phase2": "Phase 2 execute theo bộ case đã chốt, không sinh/sửa cột canonical.",
         "rerun": "Rerun chạy tập con đã map, không sửa bộ case."
       },
-      "why": "Chặn testcase thiếu cột canonical / rỗng ô lõi / thiếu ui_catalog khi có case hiển thị. Nhánh nào SINH-SỬA bộ case rồi đẩy lên AIO đều phải qua."
+      "why": "Chặn testcase thiếu cột canonical / rỗng ô lõi / thiếu ui_catalog khi có case hiển thị. Nhánh nào SINH-SỬA bộ case rồi đẩy lên Sheet đều phải qua."
     },
     "domain:check": {
       "applies": [

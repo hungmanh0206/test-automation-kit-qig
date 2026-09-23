@@ -107,30 +107,10 @@ function runPreflight({ mode = 'generic', task = '', extraRequire = [], allowMis
       for (const d of getTestcaseDirs(taskDir, { mirrorsFirst: true })) {
         try { found += fs.readdirSync(d).filter((f) => /\.xlsx$/i.test(f)).length; } catch (e) { /* dir chưa có */ }
       }
-      if (!found) problems.push(`phase2: KHÔNG thấy testcase canonical local ở ${rel(tcDir)}(/from-aio) — Phase 2 phải kéo từ AIO (\`npm run aio:pull:write\`) hoặc có Excel TRƯỚC execute`);
-
-      /*
-       * ĐỘ TƯƠI CỦA MIRROR. AIO là source of truth ⇒ "có file" chưa đủ, phải biết file là AIO LÚC NÀO.
-       * `aio:pull:write` ghi manifest kèm `updatedDate` từng case; ở đây chỉ đọc local (preflight phải
-       * chạy được offline), phần so với AIO thật là `npm run aio:verify:enforce`.
-       * Ngưỡng 12 giờ: đủ để một buổi làm việc không bị nhắc liên tục, nhưng mirror qua đêm thì phải
-       * pull lại — QA sửa expected trên AIO là chuyện thường ngày.
-       */
-      const mirrorDir = path.join(tcDir, 'from-aio');
-      if (fs.existsSync(mirrorDir)) {
-        const mans = fs.readdirSync(mirrorDir).filter((f) => f.endsWith('.manifest.json'));
-        if (!mans.length) {
-          warnings.push(`phase2: mirror from-aio KHÔNG có manifest ⇒ không biết bản này là AIO lúc nào. Chạy \`npm run aio:pull:write\` (bản mới ghi manifest) rồi \`npm run aio:verify:enforce\` trước khi execute.`);
-        } else {
-          for (const f of mans) {
-            let m; try { m = JSON.parse(fs.readFileSync(path.join(mirrorDir, f), 'utf8')); } catch (e) { continue; }
-            const ageH = (Date.now() - Date.parse(m.pulledAt)) / 3600000;
-            if (!Number.isFinite(ageH)) continue;
-            if (ageH > 12) problems.push(`phase2: mirror \`${f.replace(/\.manifest\.json$/, '.xlsx')}\` pull cách đây ${Math.round(ageH)} giờ — AIO là source of truth nên execute trên bản này có thể chấm theo expected ĐÃ BỊ SỬA. Chạy \`npm run aio:pull:write\` rồi \`npm run aio:verify:enforce\`.`);
-            else warnings.push(`phase2: mirror pull cách đây ${ageH < 1 ? '<1' : Math.round(ageH)} giờ (${Object.keys(m.cases || {}).length} case) — vẫn nên chạy \`npm run aio:verify:enforce\` để chắc AIO chưa đổi.`);
-          }
-        }
-      }
+      if (!found) problems.push(`phase2: KHÔNG thấy testcase canonical local ở ${rel(tcDir)}(/from-sheet) — Phase 2 cần agent tải Google Sheet mới nhất qua Drive MCP (ghi vào test-cases/from-sheet/) hoặc có Excel local TRƯỚC execute`);
+      // ĐỘ TƯƠI: không còn khái niệm manifest/tuổi mirror như AIO (source of truth REST, có thể lệch giờ
+      // pull) — luồng Sheet luôn tải bản MỚI NHẤT qua MCP ngay trước execute (xem plan migrate AIO→Sheet,
+      // 22/09/2026), nên "có file" đã đồng nghĩa "mới" — không cần gate riêng cho độ tươi nữa.
     }
   }
 

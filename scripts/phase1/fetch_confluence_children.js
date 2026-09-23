@@ -5,7 +5,7 @@ const {
   getProjectOutputDir,
   getTaskKey,
   loadEnv,
-} = require('../integrations/jira/utils');
+} = require('../integrations/backlog/utils');
 const { storageToMarkdown } = require('../lib/confluence/storage_to_markdown');
 
 loadEnv();

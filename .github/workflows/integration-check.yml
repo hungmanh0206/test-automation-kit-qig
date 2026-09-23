@@ -1,5 +1,9 @@
-# Integration check — MANUAL. Kiểm kết nối Jira/Confluence/AIO Tests + DRY-RUN publish/bug.
-# KHÔNG publish/log Jira thật (giữ human gate --qa-approved là hành động local).
+# Integration check — MANUAL. Kiểm kết nối Backlog + DRY-RUN bug reporter.
+# KHÔNG log bug thật (giữ human gate --qa-approved là hành động local).
+# Confluence đã bỏ khỏi job này (22/09/2026, cùng lượt chuyển Jira→Backlog) — chờ quyết Google Docs/Sheet.
+# Testcase publish (AIO Tests → Google Sheet, 22/09/2026) dùng Google Drive MCP — kênh riêng của phiên
+# chat, KHÔNG gọi được từ script CLI/CI headless. Vì vậy job này KHÔNG còn bước dry-run publish testcase;
+# muốn kiểm publish thì làm thủ công trong phiên chat (xem `.agent/workflows/phase1_04_auto_publish_jira.md`).
 name: integration-check
 
 on:
@@ -14,7 +18,7 @@ on:
         required: false
         default: ''
       story_key:
-        description: 'JIRA_STORY_KEY (optional)'
+        description: 'BACKLOG_STORY_KEY (optional)'
         required: false
         default: ''
 
@@ -22,16 +26,9 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     env:
-      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
-      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-      JIRA_USERNAME: ${{ secrets.JIRA_EMAIL }}
-      AIO_API_TOKEN: ${{ secrets.AIO_API_TOKEN }}
-      AIO_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY }}
-      JIRA_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY }}
-      CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
-      CONFLUENCE_USERNAME: ${{ secrets.CONFLUENCE_USERNAME }}
-      CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
+      BACKLOG_BASE_URL: ${{ secrets.BACKLOG_BASE_URL }}
+      BACKLOG_API_KEY: ${{ secrets.BACKLOG_API_KEY }}
+      BACKLOG_PROJECT_KEY: ${{ secrets.BACKLOG_PROJECT_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,18 +37,9 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: Live connection check (Jira/Confluence/AIO Tests)
+      - name: Live connection check (Backlog)
         run: npm run integration:check:live
-
-      # AIO là tool mặc định (GĐ5) ⇒ lệnh Xray cũ TỰ CHẶN, job sẽ đỏ nếu còn gọi. Publisher AIO nhận
-      # --file nên phải tìm Excel canonical của task; không có file thì bỏ qua bước (không fail giả).
-      - name: Dry-run publish testcase lên AIO (KHÔNG ghi thật)
-        if: ${{ inputs.task_key != '' && inputs.story_key != '' && inputs.project_output_dir != '' }}
-        run: |
-          f=$(ls "${{ inputs.project_output_dir }}/tasks/${{ inputs.task_key }}/test-cases/"*.xlsx 2>/dev/null | head -1)
-          if [ -z "$f" ]; then echo "Bỏ qua: không thấy Excel canonical trong test-cases/"; exit 0; fi
-          npm run aio:publish -- --file "$f" --story "${{ inputs.story_key }}"
 
       - name: Dry-run bug reporter (KHÔNG log bug thật)
         if: ${{ inputs.task_key != '' && inputs.story_key != '' && inputs.project_output_dir != '' }}
-        run: npm run jira:bug-report:dry-run -- --project-output "${{ inputs.project_output_dir }}" --task "${{ inputs.task_key }}" --story "${{ inputs.story_key }}"
+        run: npm run backlog:bug-report:dry-run -- --project-output "${{ inputs.project_output_dir }}" --task "${{ inputs.task_key }}" --story "${{ inputs.story_key }}"

@@ -36,9 +36,13 @@ function normalizeHeader(text) {
 
 // ---- matcher cột testcase (normalized) ----
 const COL = {
-  tcId: (n) => n === 'id' || n === 'tc id' || n.endsWith(' tc id'),
+  // `id tc` = "ID_TC" normalized (template QA export mới, xem md_to_xlsx.js FUNC_HEADERS) — thêm bên cạnh
+  // "TC ID"/"ID" cũ, không thay thế (bộ TC cũ dùng "TC ID" vẫn phải khớp nguyên).
+  tcId: (n) => n === 'id' || n === 'tc id' || n === 'id tc' || n.endsWith(' tc id') || n.endsWith(' id tc'),
   module: (n) => n.includes('module') || n.includes('site'),
-  title: (n) => ['scenario', 'test title', 'test case'].includes(n) || n.includes('scenario') || n.includes('truong hop'),
+  // `test case name` = header cột case name trong template QA export mới — thêm bên cạnh 'test case'/
+  // 'scenario' cũ.
+  title: (n) => ['scenario', 'test title', 'test case'].includes(n) || n.includes('scenario') || n.includes('truong hop') || n.includes('test case name'),
   precondition: (n) => n.includes('precondition') || n.includes('pre condition') || n.includes('tien dieu kien'),
   data: (n) => n.includes('test data') || n.includes('du lieu'),
   steps: (n) => n.includes('step') || n.includes('buoc'),

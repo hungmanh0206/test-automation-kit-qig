@@ -4,13 +4,17 @@
 /*
  * leak_report.js — đo "kit đang rò bao nhiêu và rò kiểu gì" (baseline cho mọi cải tiến sau).
  *
- * Vì sao cần: nhãn `auto-bug` chỉ chứng minh bug được TẠO qua tool của kit, KHÔNG chứng minh tool
+ * Migrated từ Jira (22/09/2026). Khác Jira: Backlog KHÔNG có labels tự do, nên nguồn phát hiện
+ * (`found-by-kit`/`found-by-human`, ghi bởi bug_reporter.js — xem buildBugDescription) giờ nằm trong
+ * TEXT của description, không phải field `labels` riêng — đọc bằng string match thay vì `labels.includes`.
+ *
+ * Vì sao cần: đánh dấu found-by chỉ chứng minh bug được TẠO qua tool của kit, KHÔNG chứng minh tool
  * TÌM ra nó. Không tách được "ai phát hiện" thì mọi tranh luận "kit lọt nhiều hay ít" là cảm tính
  * (đã xảy ra thật: từng báo nhầm "bắt 8 / lọt 13" trong khi thực tế QA tìm toàn bộ).
  *
  * Máy này làm 2 việc:
- *   1) Đếm bug theo NGUỒN PHÁT HIỆN — dựa nhãn `found-by-kit` / `found-by-human` (bug_reporter
- *      ghi khi log). Bug cũ chưa có nhãn → xếp vào "chưa phân loại" và nêu tên để gắn bù.
+ *   1) Đếm bug theo NGUỒN PHÁT HIỆN — dựa marker `[found-by-kit]` / `[found-by-human]` trong description
+ *      (bug_reporter ghi khi log). Bug cũ chưa có marker → xếp vào "chưa phân loại" và nêu tên để gắn bù.
  *   2) Phân loại bug theo TRỤC PHÁT HIỆN — trục nào đang rò thì biết phải thêm máy nào:
  *        1 field    — thừa/thiếu/sai nhãn field, cột              → ui_conformance_check (spec→UI)
  *        2 surface  — cùng giá trị hiển thị khác nhau giữa các màn → cross_surface_diff (chưa có)
@@ -22,7 +26,7 @@
  *
  * Dùng:
  *   node scripts/qa/leak_report.js --story SAPP-24395 [--out <file.md>] [--json]
- * Env: JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN (đọc từ .env / task.env như các script Jira khác).
+ * Env: BACKLOG_BASE_URL, BACKLOG_API_KEY, BACKLOG_PROJECT_KEY (đọc từ .env / task.env như các script Backlog khác).
  * Exit: 0 (báo cáo, không chặn).
  */
 
@@ -33,10 +37,10 @@ const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
 const has = (n) => process.argv.includes(`--${n}`);
 
-const STORY = arg('story', process.env.JIRA_STORY_KEY || '');
+const STORY = arg('story', process.env.BACKLOG_STORY_KEY || '');
 const TASK = arg('task', process.env.TASK_KEY || '');
-const BASE = String(process.env.JIRA_BASE_URL || '').replace(/\/+$/, '');
-const AUTH = 'Basic ' + Buffer.from(`${process.env.JIRA_EMAIL || ''}:${process.env.JIRA_API_TOKEN || ''}`).toString('base64');
+const BASE = String(process.env.BACKLOG_BASE_URL || '').replace(/\/+$/, '');
+const API_KEY = process.env.BACKLOG_API_KEY || '';
 
 // Trục phát hiện: mỗi trục = một loại máy. Từ khoá lấy từ cách bug thật được mô tả trong task.
 const AXES = [
@@ -77,16 +81,20 @@ const AXES = [
   },
 ];
 
-function adfText(node) {
-  if (!node) return '';
-  if (typeof node === 'string') return node;
-  if (node.text) return node.text;
-  return (node.content || []).map(adfText).join(' ');
+function apiUrl(pathname, params = {}) {
+  const url = new URL(BASE + pathname);
+  url.searchParams.set('apiKey', API_KEY);
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) value.forEach((v) => url.searchParams.append(`${key}[]`, v));
+    else url.searchParams.set(key, value);
+  }
+  return url;
 }
 
-async function jira(pathname) {
-  const res = await fetch(BASE + pathname, { headers: { Authorization: AUTH, Accept: 'application/json' } });
-  if (!res.ok) throw new Error(`Jira ${res.status} ${pathname.slice(0, 80)}`);
+async function backlog(pathname, params) {
+  const res = await fetch(apiUrl(pathname, params));
+  if (!res.ok) throw new Error(`Backlog ${res.status} ${pathname.slice(0, 80)}`);
   return res.json();
 }
 
@@ -96,23 +104,23 @@ function classify(text) {
 }
 
 (async () => {
-  if (!STORY) { console.error('[leak-report] thiếu --story <JIRA_STORY_KEY> (hoặc env JIRA_STORY_KEY).'); process.exit(2); }
-  if (!BASE || !process.env.JIRA_API_TOKEN) { console.error('[leak-report] thiếu JIRA_BASE_URL / JIRA_EMAIL / JIRA_API_TOKEN.'); process.exit(2); }
+  if (!STORY) { console.error('[leak-report] thiếu --story <BACKLOG_STORY_KEY> (hoặc env BACKLOG_STORY_KEY).'); process.exit(2); }
+  if (!BASE || !API_KEY) { console.error('[leak-report] thiếu BACKLOG_BASE_URL / BACKLOG_API_KEY.'); process.exit(2); }
 
-  const jql = `parent = "${STORY}" AND issuetype in ("Sub-bug", "Bug") ORDER BY key ASC`;
-  const data = await jira(`/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&fields=summary,status,labels,description&maxResults=200`);
-  const issues = data.issues || [];
+  const story = await backlog(`/api/v2/issues/${encodeURIComponent(STORY)}`);
+  if (!story?.id) { console.error(`[leak-report] không tìm thấy story: ${STORY}`); process.exit(2); }
+  const issues = await backlog('/api/v2/issues', { projectId: [story.projectId], parentIssueId: [story.id], count: 100 });
 
   const rows = issues.map((i) => {
-    const labels = i.fields.labels || [];
-    const text = `${i.fields.summary || ''} || ${adfText(i.fields.description)}`;
-    const source = labels.includes('found-by-kit') ? 'kit'
-      : labels.includes('found-by-human') ? 'human'
-        : (labels.some((l) => /^(bug-)?sheet-stt/.test(l)) ? 'human (suy từ nhãn sheet)' : 'chưa phân loại');
+    const desc = i.description || '';
+    const text = `${i.summary || ''} || ${desc}`;
+    const source = desc.includes('[found-by-kit]') ? 'kit'
+      : desc.includes('[found-by-human]') ? 'human'
+        : 'chưa phân loại';
     return {
-      key: i.key,
-      status: (i.fields.status || {}).name || '',
-      summary: (i.fields.summary || '').slice(0, 120),
+      key: i.issueKey,
+      status: (i.status || {}).name || '',
+      summary: (i.summary || '').slice(0, 120),
       source,
       axes: classify(text).map((a) => a.key),
     };
@@ -157,7 +165,7 @@ function classify(text) {
   Object.entries(bySource).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => L.push(`| ${k} | ${v} |`));
   L.push('');
   if (needLabel.length) {
-    L.push(`> ${needLabel.length} bug **chưa có nhãn nguồn** → tỉ lệ rò chưa đo được chính xác. Từ nay log bug kèm \`--found-by kit|human\`; bug cũ gắn bù bằng tay nếu cần số liệu lịch sử.`);
+    L.push(`> ${needLabel.length} bug **chưa có đánh dấu nguồn** → tỉ lệ rò chưa đo được chính xác. Từ nay log bug kèm \`--found-by kit|human\`; bug cũ gắn bù bằng tay nếu cần số liệu lịch sử.`);
     L.push('');
   }
   L.push('## 2. Trục phát hiện — trục nào đang rò thì thiếu máy đó');

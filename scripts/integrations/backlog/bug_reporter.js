@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 /**
- * Create Jira Sub-bug issues for failed Playwright test cases.
+ * Create Backlog Sub-bug issues for failed Playwright test cases.
+ *
+ * Migrated từ Jira (22/09/2026) — API khác hẳn: auth qua `?apiKey=` (không Basic/Bearer), body
+ * form-urlencoded (không JSON), issueType/priority/parent là SỐ (phải resolve theo tên), priority CỐ ĐỊNH
+ * 3 mức (không có Critical/Lowest), KHÔNG có Sprint/labels tự do — xem comment ở từng hàm đổi.
  *
  * Default artifact paths are resolved from:
  *   <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/results.json
@@ -11,14 +15,16 @@
  *   <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/runs/<RUN_ID>/artifacts/
  *
  * Usage:
- *   node scripts/integrations/jira/bug_reporter.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --dry-run
- *   node scripts/integrations/jira/bug_reporter.js --task <TASK_KEY> --story <JIRA_STORY_KEY>
- *   node scripts/integrations/jira/bug_reporter.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --tc-id <TC_ID>
- *   node scripts/integrations/jira/bug_reporter.js --task <TASK_KEY> --story <JIRA_STORY_KEY> --run-id <RUN_ID>
+ *   node scripts/integrations/backlog/bug_reporter.js --task <TASK_KEY> --story <BACKLOG_STORY_KEY> --dry-run
+ *   node scripts/integrations/backlog/bug_reporter.js --task <TASK_KEY> --story <BACKLOG_STORY_KEY>
+ *   node scripts/integrations/backlog/bug_reporter.js --task <TASK_KEY> --story <BACKLOG_STORY_KEY> --tc-id <TC_ID>
+ *   node scripts/integrations/backlog/bug_reporter.js --task <TASK_KEY> --story <BACKLOG_STORY_KEY> --run-id <RUN_ID>
  *
  * Nguồn phát hiện (để đo tỉ lệ rò của kit — xem scripts/qa/leak_report.js):
- *   --found-by kit    → nhãn `found-by-kit`   (máy/automation của kit tự bắt được)
- *   --found-by human  → nhãn `found-by-human` (người báo: sheet bug, BA, QA thủ công)
+ *   --found-by kit    → đánh dấu `[found-by-kit]`   (máy/automation của kit tự bắt được)
+ *   --found-by human  → đánh dấu `[found-by-human]` (người báo: sheet bug, BA, QA thủ công)
+ *   (Backlog không có free-text labels như Jira — đánh dấu này nằm trong summary/description, xem
+ *   `buildBugSummary`/`buildBugDescription`, không còn là field riêng lọc được qua API.)
  */
 
 const fs = require('fs');
@@ -35,7 +41,7 @@ const outputGate = require('../../qa/output_gate'); // gate chất lượng bug 
 
 const SCRIPT_DIR = __dirname;
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..', '..');
-const ASSIGNEE_CACHE_PATH = path.join(REPO_ROOT, '.agent', 'config', '.assignee_cache.json');
+const BACKLOG_CACHE_PATH = path.join(REPO_ROOT, '.agent', 'config', '.backlog_cache.json');
 
 loadEnvFiles([
   path.join(SCRIPT_DIR, '.env.local'),
@@ -68,47 +74,36 @@ const ARTIFACTS_DIR = resolvePath(
 const TESTCASES_DIR = resolvePath(
   argString('testcases') || path.join(TASK_OUTPUT_DIR, 'test-cases'),
 );
-const STORY_KEY = argString('story') || process.env.JIRA_STORY_KEY || TASK_KEY;
-const PROJECT_KEY = argString('project') || process.env.JIRA_PROJECT_KEY || deriveProjectKey(STORY_KEY);
+const STORY_KEY = argString('story') || process.env.BACKLOG_STORY_KEY || TASK_KEY;
+const PROJECT_KEY = argString('project') || process.env.BACKLOG_PROJECT_KEY || deriveProjectKey(STORY_KEY);
 const DRY_RUN = argFlag('dry-run');
 const WRITE_LOG = argFlag('write-log') || (!DRY_RUN && !argFlag('no-write-log'));
 
-const JIRA_BASE_URL = stripTrailingSlash(process.env.JIRA_BASE_URL || process.env.JIRA_URL || '');
-const JIRA_EMAIL = process.env.JIRA_EMAIL || process.env.JIRA_USERNAME || '';
-const JIRA_API_TOKEN = process.env.JIRA_API_TOKEN || '';
-const JIRA_PAT = process.env.JIRA_PAT || '';
-const DEV_ASSIGNEE = process.env.JIRA_DEV_ASSIGNEE || '';
-const FE_DEV_ASSIGNEE = process.env.JIRA_FE_ASSIGNEE || '';
-const BE_DEV_ASSIGNEE = process.env.JIRA_BE_ASSIGNEE || '';
-const ISSUE_TYPE = process.env.JIRA_BUG_ISSUE_TYPE || 'Sub-bug';
-const JIRA_SPRINT_FIELD_ID = argString('sprint-field') || process.env.JIRA_SPRINT_FIELD_ID || '';
-const BUG_LAYER_OVERRIDE = normalizeBugLayer(argString('layer') || process.env.JIRA_BUG_LAYER || '');
-const TC_ID_FILTER = normalizeTcId(argString('tc-id') || argString('tc') || process.env.JIRA_BUG_TC_ID || '');
+const BACKLOG_BASE_URL = stripTrailingSlash(process.env.BACKLOG_BASE_URL || process.env.BACKLOG_URL || '');
+const BACKLOG_API_KEY = process.env.BACKLOG_API_KEY || '';
+const DEV_ASSIGNEE = process.env.BACKLOG_DEV_ASSIGNEE || '';
+const FE_DEV_ASSIGNEE = process.env.BACKLOG_FE_ASSIGNEE || '';
+const BE_DEV_ASSIGNEE = process.env.BACKLOG_BE_ASSIGNEE || '';
+const ISSUE_TYPE = process.env.BACKLOG_BUG_ISSUE_TYPE || 'Sub-bug';
+// Custom field id (SỐ) copy nguyên từ Story sang bug — KHÔNG resolve theo tên "Sprint" như bản Jira cũ:
+// Backlog không có khái niệm Sprint (Agile board), field custom mỗi project một kiểu. Để trống = không copy.
+const BACKLOG_SPRINT_FIELD_ID = argString('sprint-field') || process.env.BACKLOG_SPRINT_FIELD_ID || '';
+const BUG_LAYER_OVERRIDE = normalizeBugLayer(argString('layer') || process.env.BACKLOG_BUG_LAYER || '');
+const TC_ID_FILTER = normalizeTcId(argString('tc-id') || argString('tc') || process.env.BACKLOG_BUG_TC_ID || '');
 const UPDATE_ISSUE_KEY = normalizeIssueKey(argString('update-issue') || argString('issue') || '');
 // Gate chất lượng bug: STRICT mặc định BẬT → chặn tạo bug thiếu ảnh/video (hoặc thiếu video case phức tạp).
 // Tắt: --lenient / QA_STRICT=0. QA cố ý bỏ qua: --qa-approved (vẫn log).
 const QA_APPROVED = argFlag('qa-approved');
 const STRICT = !(argFlag('lenient') || process.env.QA_STRICT === '0');
-const REQUIRED_PARENT_FIELD_IDS = ['customfield_10039', 'customfield_10037'];
-const STANDARD_PARENT_COPY_FIELD_IDS = ['fixVersions'];
-const JIRA_PRIORITY_NAMES = ['Highest', 'High', 'Medium', 'Low', 'Lowest'];
-const JIRA_PRIORITY_ALIASES = {
-  highest: 'Highest',
-  critical: 'Highest',
-  blocker: 'Highest',
-  p0: 'Highest',
-  high: 'High',
-  major: 'High',
-  p1: 'High',
-  medium: 'Medium',
-  p2: 'Medium',
-  low: 'Low',
-  minor: 'Low',
-  p3: 'Low',
-  lowest: 'Lowest',
-  trivial: 'Lowest',
-  p4: 'Lowest',
-};
+/*
+ * Priority Backlog CỐ ĐỊNH 3 mức (không tạo thêm được, không đổi tên): 2=High, 3=Normal, 4=Low. Kit vẫn
+ * nhận input priority 5 mức quen thuộc (Critical/High/Medium/Low/Lowest, có thể đọc từ testcase) và MAP
+ * xuống 3 mức — không có đường 1-1, đây là mất mát dữ liệu có chủ đích (Critical/High đều → High).
+ */
+const BACKLOG_PRIORITY_ID = { critical: 2, high: 2, blocker: 2, p0: 2, p1: 2, major: 2,
+  medium: 3, normal: 3, p2: 3,
+  low: 4, lowest: 4, minor: 4, trivial: 4, p3: 4, p4: 4 };
+const BACKLOG_PRIORITY_NAME = { 2: 'High', 3: 'Normal', 4: 'Low' };
 
 function parseArgs(argv) {
   const out = {};
@@ -153,7 +148,9 @@ function normalizeBugLayer(value) {
   return '';
 }
 
-function normalizeJiraPriority(value) {
+/** Chuỗi priority bất kỳ (Critical/High/Medium/Low/Lowest, hoặc P0-P4...) → Backlog priorityId (2/3/4), hoặc 0 nếu không nhận diện được (không set priority, Backlog tự áp default). Idempotent: gọi lại trên kết quả đã convert (2/3/4) trả nguyên — pipeline gọi hàm này nhiều lớp (parse testcase → main() → createIssue). */
+function normalizeBacklogPriority(value) {
+  if (typeof value === 'number') return [2, 3, 4].includes(value) ? value : 0;
   const normalized = normalizeForMatch(
     String(value || '')
       .replace(/<br\s*\/?>/gi, ' ')
@@ -161,20 +158,17 @@ function normalizeJiraPriority(value) {
       .replace(/<[^>]+>/g, ' ')
       .replace(/[*_]/g, ' '),
   );
-  if (!normalized) return '';
+  if (!normalized) return 0;
 
   const compact = normalized.replace(/\s+/g, '');
-  if (JIRA_PRIORITY_ALIASES[compact]) return JIRA_PRIORITY_ALIASES[compact];
+  if (BACKLOG_PRIORITY_ID[compact]) return BACKLOG_PRIORITY_ID[compact];
 
   const words = normalized.split(/\s+/).filter(Boolean);
-  for (const priorityName of JIRA_PRIORITY_NAMES) {
-    if (words.includes(normalizeForMatch(priorityName))) return priorityName;
-  }
   for (const word of words) {
-    if (JIRA_PRIORITY_ALIASES[word]) return JIRA_PRIORITY_ALIASES[word];
+    if (BACKLOG_PRIORITY_ID[word]) return BACKLOG_PRIORITY_ID[word];
   }
 
-  return '';
+  return 0;
 }
 
 function isChildIssueType(issueType) {
@@ -183,26 +177,21 @@ function isChildIssueType(issueType) {
 
 function validate() {
   if (!STORY_KEY) {
-    fail('Missing story key. Set JIRA_STORY_KEY or pass --story <KEY>.');
+    fail('Missing story key. Set BACKLOG_STORY_KEY or pass --story <KEY>.');
   }
   if (!RESULTS_FILE || !fs.existsSync(RESULTS_FILE)) {
     fail(`results.json not found: ${RESULTS_FILE}`);
   }
   if (!PROJECT_KEY) {
-    fail('Missing Jira project key. Set JIRA_PROJECT_KEY or pass --project <KEY>.');
+    fail('Missing Backlog project key. Set BACKLOG_PROJECT_KEY or pass --project <KEY>.');
   }
 
   if (DRY_RUN) return;
 
-  if (!JIRA_BASE_URL) fail('Missing JIRA_BASE_URL or JIRA_URL.');
-  if (!JIRA_PAT && (!JIRA_EMAIL || !JIRA_API_TOKEN)) {
-    fail('Missing Jira auth. Set JIRA_EMAIL + JIRA_API_TOKEN, or JIRA_PAT.');
-  }
-  if (!/^sub-bug$/i.test(String(ISSUE_TYPE || '').trim())) {
-    fail('Jira bug work type must be Sub-bug. Do not use Sub-task for bug reports.');
-  }
+  if (!BACKLOG_BASE_URL) fail('Missing BACKLOG_BASE_URL or BACKLOG_URL.');
+  if (!BACKLOG_API_KEY) fail('Missing Backlog auth. Set BACKLOG_API_KEY.');
   if (!isChildIssueType(ISSUE_TYPE)) {
-    fail('Jira bug must be a child issue type.');
+    fail('Backlog bug work type must be a child issue type (default: Sub-bug). Set BACKLOG_BUG_ISSUE_TYPE if your project names it differently.');
   }
 }
 
@@ -211,29 +200,20 @@ function fail(message) {
   process.exit(1);
 }
 
-function jiraHeaders(extra = {}, options = {}) {
-  const includeJsonContentType = options.json !== false;
-  const headers = {
-    Accept: 'application/json',
-    ...extra,
-  };
-
-  if (includeJsonContentType) headers['Content-Type'] = 'application/json';
-
-  if (JIRA_PAT) {
-    headers.Authorization = `Bearer ${JIRA_PAT}`;
-  } else {
-    const auth = Buffer.from(`${JIRA_EMAIL}:${JIRA_API_TOKEN}`).toString('base64');
-    headers.Authorization = `Basic ${auth}`;
-  }
-
-  return headers;
-}
-
-async function jiraRequest(method, endpoint, options = {}) {
-  const url = new URL(`${JIRA_BASE_URL}${endpoint}`);
+/**
+ * Backlog auth: KHÔNG dùng header — mọi request thêm `apiKey=BACKLOG_API_KEY` vào query string (đã verify
+ * hoạt động qua `GET /api/v2/users/myself`). Khác Jira: không Basic/Bearer, không cần build header đặc biệt.
+ */
+async function backlogRequest(method, endpoint, options = {}) {
+  const url = new URL(`${BACKLOG_BASE_URL}${endpoint}`);
+  url.searchParams.set('apiKey', BACKLOG_API_KEY);
   for (const [key, value] of Object.entries(options.params || {})) {
-    if (value !== undefined && value !== null) url.searchParams.set(key, value);
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      for (const v of value) url.searchParams.append(`${key}[]`, v);
+    } else {
+      url.searchParams.set(key, value);
+    }
   }
 
   const controller = new AbortController();
@@ -242,12 +222,24 @@ async function jiraRequest(method, endpoint, options = {}) {
 
   try {
     const isFormData = Boolean(options.formData);
-    const response = await fetch(url, {
-      method,
-      headers: jiraHeaders(options.headers || {}, { json: !isFormData }),
-      body: isFormData ? options.formData : options.body === undefined ? undefined : JSON.stringify(options.body),
-      signal: controller.signal,
-    });
+    // Backlog nhận body form-urlencoded ở create/update issue (KHÔNG phải JSON như Jira) — xem
+    // developer.nulab.com/docs/backlog/api/2/add-issue/. `options.body` là object phẳng {key: value|value[]}.
+    let body;
+    let headers = { Accept: 'application/json', ...(options.headers || {}) };
+    if (isFormData) {
+      body = options.formData;
+    } else if (options.body !== undefined) {
+      const form = new URLSearchParams();
+      for (const [key, value] of Object.entries(options.body)) {
+        if (value === undefined || value === null) continue;
+        if (Array.isArray(value)) value.forEach((v) => form.append(`${key}[]`, v));
+        else form.append(key, value);
+      }
+      body = form;
+      headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    }
+
+    const response = await fetch(url, { method, headers, body, signal: controller.signal });
 
     const text = await response.text();
     const data = parseJsonOrText(text);
@@ -288,7 +280,7 @@ function headersToObject(headers) {
 }
 
 function buildApiError(response, data) {
-  const error = new Error(`Jira API ${response.status}`);
+  const error = new Error(`Backlog API ${response.status}`);
   error.response = {
     status: response.status,
     data,
@@ -323,33 +315,73 @@ async function withRetry(fn, retries = 3) {
   throw lastError;
 }
 
-async function resolveAssigneeAccountId(emailOrAccountId) {
-  if (!emailOrAccountId) return null;
-  if (/^[a-f0-9]{24,}$/i.test(emailOrAccountId)) return emailOrAccountId;
+function getBacklogCache() {
+  return readJson(BACKLOG_CACHE_PATH, {});
+}
 
-  const cache = readJson(ASSIGNEE_CACHE_PATH, {});
-  if (cache[emailOrAccountId]) return cache[emailOrAccountId];
+function saveBacklogCache(cache) {
+  fs.mkdirSync(path.dirname(BACKLOG_CACHE_PATH), { recursive: true });
+  fs.writeFileSync(BACKLOG_CACHE_PATH, JSON.stringify(cache, null, 2), 'utf8');
+}
+
+/** BACKLOG_PROJECT_KEY (text) → id số của project, cache lại (đọc 1 lần/máy). */
+async function resolveProjectId() {
+  const cache = getBacklogCache();
+  if (cache.projectId?.[PROJECT_KEY]) return cache.projectId[PROJECT_KEY];
+
+  const response = await withRetry(() => backlogRequest('GET', `/api/v2/projects/${encodeURIComponent(PROJECT_KEY)}`));
+  const id = response.data?.id;
+  if (!id) fail(`Backlog project not found: ${PROJECT_KEY}`);
+
+  cache.projectId = { ...(cache.projectId || {}), [PROJECT_KEY]: id };
+  saveBacklogCache(cache);
+  return id;
+}
+
+/** Tên issue type (vd "Sub-bug") → id số, resolve theo `GET /projects/:id/issueTypes`. Lỗi rõ ràng liệt kê type thật có nếu không khớp — không tự chọn bừa. */
+async function resolveIssueTypeId(projectId) {
+  const cache = getBacklogCache();
+  const cacheKey = `${projectId}:${ISSUE_TYPE}`;
+  if (cache.issueTypeId?.[cacheKey]) return cache.issueTypeId[cacheKey];
+
+  const response = await withRetry(() => backlogRequest('GET', `/api/v2/projects/${projectId}/issueTypes`));
+  const types = response.data || [];
+  const match = types.find((t) => String(t.name || '').trim().toLowerCase() === ISSUE_TYPE.trim().toLowerCase());
+  if (!match) {
+    fail(`Backlog issue type "${ISSUE_TYPE}" not found in project ${PROJECT_KEY}. Types có sẵn: ${types.map((t) => t.name).join(', ') || '(none)'}. Set BACKLOG_BUG_ISSUE_TYPE cho khớp.`);
+  }
+
+  cache.issueTypeId = { ...(cache.issueTypeId || {}), [cacheKey]: match.id };
+  saveBacklogCache(cache);
+  return match.id;
+}
+
+/** Tên/email → id số user trong project (assignee). Cache theo email/tên gõ vào. */
+async function resolveAssigneeAccountId(nameOrEmail, projectId) {
+  if (!nameOrEmail) return null;
+  if (/^\d+$/.test(String(nameOrEmail).trim())) return Number(nameOrEmail);
+
+  const cache = getBacklogCache();
+  cache.assignee = cache.assignee || {};
+  if (cache.assignee[nameOrEmail]) return cache.assignee[nameOrEmail];
 
   try {
-    const response = await withRetry(() =>
-      jiraRequest('GET', '/rest/api/3/user/search', {
-        params: { query: emailOrAccountId },
-      }),
-    );
-    const accountId = response.data?.[0]?.accountId;
-    if (!accountId) return null;
+    const response = await withRetry(() => backlogRequest('GET', `/api/v2/projects/${projectId}/users`));
+    const users = response.data || [];
+    const q = String(nameOrEmail).trim().toLowerCase();
+    const match = users.find((u) => String(u.mailAddress || '').toLowerCase() === q || String(u.name || '').toLowerCase() === q);
+    if (!match) return null;
 
-    cache[emailOrAccountId] = accountId;
-    fs.mkdirSync(path.dirname(ASSIGNEE_CACHE_PATH), { recursive: true });
-    fs.writeFileSync(ASSIGNEE_CACHE_PATH, JSON.stringify(cache, null, 2), 'utf8');
-    return accountId;
+    cache.assignee[nameOrEmail] = match.id;
+    saveBacklogCache(cache);
+    return match.id;
   } catch (error) {
-    console.warn(`WARN: Could not resolve assignee "${emailOrAccountId}": ${formatApiError(error)}`);
+    console.warn(`WARN: Could not resolve assignee "${nameOrEmail}": ${formatApiError(error)}`);
     return null;
   }
 }
 
-async function resolveBugAssigneeAccountId(layer, parentIssue, cache) {
+async function resolveBugAssigneeAccountId(layer, parentIssue, cache, projectId) {
   const normalizedLayer = normalizeBugLayer(layer) || 'FE';
   const configuredAssignee =
     DEV_ASSIGNEE ||
@@ -357,14 +389,14 @@ async function resolveBugAssigneeAccountId(layer, parentIssue, cache) {
 
   if (configuredAssignee) {
     const cacheKey = `${normalizedLayer}:${configuredAssignee}`;
-    if (!cache[cacheKey]) cache[cacheKey] = await resolveAssigneeAccountId(configuredAssignee);
+    if (!cache[cacheKey]) cache[cacheKey] = await resolveAssigneeAccountId(configuredAssignee, projectId);
     if (cache[cacheKey]) {
       console.log(`Assignee: ${normalizedLayer} bug assigned by project rule.`);
       return cache[cacheKey];
     }
   }
 
-  const parentAssigneeId = parentIssue?.fields?.assignee?.accountId || null;
+  const parentAssigneeId = parentIssue?.assignee?.id || null;
   if (parentAssigneeId) {
     console.log('Assignee: using parent Story/Task assignee as fallback.');
     return parentAssigneeId;
@@ -373,249 +405,177 @@ async function resolveBugAssigneeAccountId(layer, parentIssue, cache) {
   return null;
 }
 
-async function searchExistingBug(tcId) {
-  const jql = `project = "${PROJECT_KEY}" AND parent = "${STORY_KEY}" AND labels = "${tcId}" AND labels = "auto-bug" AND statusCategory != Done`;
+/*
+ * Backlog KHÔNG có JQL, và KHÔNG có free-text labels như Jira ("labels = tcId AND labels = auto-bug") —
+ * đánh dấu tcId ngay trong SUMMARY (xem `buildBugSummary`: `[<layer>][<tcId>] ...`) rồi search bằng
+ * `keyword`, lọc lại phía client theo parentIssueId + status còn mở. Đây là full-text match, KHÔNG chính
+ * xác tuyệt đối như JQL — có thể sót/thừa nếu 2 case khác nhau trùng phần đầu keyword; review tay khi nghi ngờ.
+ */
+async function searchExistingBug(tcId, projectId, parentIssueNumericId) {
+  const marker = `[${tcId}]`;
   try {
     const response = await withRetry(() =>
-      jiraRequest('GET', '/rest/api/3/search/jql', {
+      backlogRequest('GET', '/api/v2/issues', {
         params: {
-          jql,
-          maxResults: 1,
-          fields: 'key,summary,status',
+          projectId: [projectId],
+          parentIssueId: [parentIssueNumericId],
+          keyword: tcId,
+          // 1=Open, 2=In Progress — loại 3=Resolved, 4=Closed (tương đương statusCategory != Done của Jira).
+          statusId: [1, 2],
+          count: 20,
         },
       }),
     );
-    return response.data?.issues?.[0] || null;
+    const issues = response.data || [];
+    const match = issues.find((issue) => issue.parentIssueId === parentIssueNumericId && String(issue.summary || '').includes(marker));
+    return match || null;
   } catch (error) {
-    try {
-      const response = await withRetry(() =>
-        jiraRequest('GET', '/rest/api/3/search', {
-          params: {
-            jql,
-            maxResults: 1,
-            fields: 'key,summary,status',
-          },
-        }),
-      );
-      return response.data?.issues?.[0] || null;
-    } catch (fallbackError) {
-      console.warn(`WARN: Duplicate check failed for ${tcId}: ${formatApiError(fallbackError)}`);
-      return null;
-    }
+    console.warn(`WARN: Duplicate check failed for ${tcId}: ${formatApiError(error)}`);
+    return null;
   }
 }
 
-async function assertParentIssue() {
+async function assertParentIssue(projectId) {
   try {
-    const parentCopyFieldIds = await getParentCopyFieldIds();
-    const response = await withRetry(() =>
-      jiraRequest('GET', `/rest/api/3/issue/${encodeURIComponent(STORY_KEY)}`, {
-        params: {
-          fields: ['key', 'summary', 'issuetype', 'status', 'assignee', ...parentCopyFieldIds].join(','),
-        },
-      }),
-    );
-
+    const response = await withRetry(() => backlogRequest('GET', `/api/v2/issues/${encodeURIComponent(STORY_KEY)}`));
     const issue = response.data;
-    if (!issue?.key) fail(`Parent Story/Task not found: ${STORY_KEY}`);
-    issue.parentCopyFieldIds = parentCopyFieldIds;
-    console.log(`Parent Story/Task verified: ${issue.key} - ${issue.fields?.summary || ''}`);
+    if (!issue?.id) fail(`Parent Story/Task not found: ${STORY_KEY}`);
+    console.log(`Parent Story/Task verified: ${issue.issueKey} - ${issue.summary || ''}`);
     return issue;
   } catch (error) {
     fail(`Cannot verify parent Story/Task "${STORY_KEY}": ${formatApiError(error)}`);
   }
 }
 
-async function getParentCopyFieldIds() {
-  // Sub-bug tạo dạng subtask (parent: {key}) sẽ KẾ THỪA Sprint từ parent; set Sprint trực tiếp trên subtask
-  // bị Jira từ chối ("Specify a valid value for Sprint"). Cho phép bỏ qua copy Sprint qua --no-sprint / JIRA_SKIP_SPRINT.
-  const skipSprint = argFlag('no-sprint') || /^(1|true|yes)$/i.test(String(process.env.JIRA_SKIP_SPRINT || ''));
-  const sprintFieldId = skipSprint ? '' : await resolveSprintFieldId();
-  return uniqueLabels([...REQUIRED_PARENT_FIELD_IDS, ...STANDARD_PARENT_COPY_FIELD_IDS, sprintFieldId].filter(Boolean));
-}
-
-async function resolveSprintFieldId() {
-  if (JIRA_SPRINT_FIELD_ID) return JIRA_SPRINT_FIELD_ID;
-
-  try {
-    const response = await withRetry(() => jiraRequest('GET', '/rest/api/3/field'));
-    const sprintField = (response.data || []).find((field) => /^Sprint$/i.test(field.name || ''));
-    return sprintField?.id || '';
-  } catch (error) {
-    console.warn(`WARN: Could not resolve Jira Sprint field: ${formatApiError(error)}`);
-    return '';
-  }
-}
-
-async function createIssue({ tcId, summary, description, assigneeId, layer, priority, parentIssue }) {
-  const fields = {
-    project: { key: PROJECT_KEY },
-    issuetype: { name: ISSUE_TYPE },
+async function createIssue({ tcId, summary, description, assigneeId, priority, parentIssue, projectId, issueTypeId }) {
+  const body = {
+    projectId,
+    issueTypeId,
     summary,
-    description: buildAdfDescription(description),
-    parent: { key: STORY_KEY },
-    labels: uniqueLabels(['auto-bug', tcId, String(layer || '').toLowerCase(), foundByLabel()]),
+    description,
+    parentIssueId: parentIssue.id,
   };
 
-  if (assigneeId) {
-    fields.assignee = { accountId: assigneeId };
-  }
+  if (assigneeId) body.assigneeId = assigneeId;
 
-  const jiraPriority = normalizeJiraPriority(priority);
-  if (jiraPriority) {
-    fields.priority = { name: jiraPriority };
-  }
+  const priorityId = normalizeBacklogPriority(priority);
+  if (priorityId) body.priorityId = priorityId;
 
-  copyRequiredParentFields(fields, parentIssue);
+  copyMilestoneAndCategory(body, parentIssue);
 
-  const response = await withRetry(() => jiraRequest('POST', '/rest/api/3/issue', { body: { fields } }));
-  return response.data.key;
+  const response = await withRetry(() => backlogRequest('POST', '/api/v2/issues', { body }));
+  return response.data;
 }
 
-async function updateIssue(issueKey, { summary, description, priority, parentIssue }) {
-  const fields = {
-    summary,
-    description: buildAdfDescription(description),
-  };
+async function updateIssue(issueIdOrKey, { summary, description, priority, parentIssue }) {
+  const body = { summary, description };
 
-  const jiraPriority = normalizeJiraPriority(priority);
-  if (jiraPriority) {
-    fields.priority = { name: jiraPriority };
-  }
+  const priorityId = normalizeBacklogPriority(priority);
+  if (priorityId) body.priorityId = priorityId;
 
-  copyRequiredParentFields(fields, parentIssue);
+  if (parentIssue) copyMilestoneAndCategory(body, parentIssue);
 
-  await withRetry(() =>
-    jiraRequest('PUT', `/rest/api/3/issue/${encodeURIComponent(issueKey)}`, {
-      body: { fields },
-    }),
-  );
-  return issueKey;
+  const response = await withRetry(() => backlogRequest('PATCH', `/api/v2/issues/${encodeURIComponent(issueIdOrKey)}`, { body }));
+  return response.data;
 }
 
-function copyRequiredParentFields(fields, parentIssue) {
-  const fieldIds = parentIssue?.parentCopyFieldIds || [...REQUIRED_PARENT_FIELD_IDS, ...STANDARD_PARENT_COPY_FIELD_IDS];
-  for (const fieldId of fieldIds) {
-    const value = parentIssue?.fields?.[fieldId];
-    if (!hasParentFieldValue(value)) continue;
-
-    fields[fieldId] = normalizeCopiedParentFieldValue(fieldId, value, parentIssue);
+/** Copy Milestone/Category từ Story sang bug con — thay cho fixVersions/Sprint của bản Jira cũ (không có
+ * tương đương trực tiếp: Milestone Backlog hướng release giống fixVersions hơn là Sprint). Nếu project cần
+ * copy thêm 1 custom field cụ thể (số, không resolve theo tên), set BACKLOG_SPRINT_FIELD_ID. */
+function copyMilestoneAndCategory(body, parentIssue) {
+  const milestoneIds = (parentIssue?.milestone || []).map((m) => m.id).filter(Boolean);
+  if (milestoneIds.length) body.milestoneId = milestoneIds;
+  const categoryIds = (parentIssue?.category || []).map((c) => c.id).filter(Boolean);
+  if (categoryIds.length) body.categoryId = categoryIds;
+  if (BACKLOG_SPRINT_FIELD_ID) {
+    const field = (parentIssue?.customFields || []).find((f) => String(f.id) === String(BACKLOG_SPRINT_FIELD_ID));
+    if (field && field.value != null) body[`customField_${BACKLOG_SPRINT_FIELD_ID}`] = field.value;
   }
 }
 
-function hasParentFieldValue(value) {
-  if (value === undefined || value === null || value === '') return false;
-  if (Array.isArray(value)) return value.length > 0;
-  return true;
-}
-
-function normalizeCopiedParentFieldValue(fieldId, value, parentIssue) {
-  if (fieldId === 'fixVersions' && Array.isArray(value)) {
-    return value
-      .map((version) => {
-        if (version?.id) return { id: String(version.id) };
-        if (version?.name) return { name: version.name };
-        return null;
-      })
-      .filter(Boolean);
-  }
-
-  const sprintFieldId = parentIssue?.parentCopyFieldIds?.find((id) => id === fieldId && !REQUIRED_PARENT_FIELD_IDS.includes(id) && id !== 'fixVersions');
-  if (sprintFieldId) {
-    const sprintValues = Array.isArray(value) ? value : [value];
-    const sprintIds = sprintValues
-      .map((item) => {
-        if (typeof item === 'number') return item;
-        if (typeof item === 'string' && /^\d+$/.test(item)) return Number(item);
-        if (item?.id !== undefined && item.id !== null) return Number(item.id);
-        return null;
-      })
-      .filter((item) => Number.isFinite(item));
-    if (sprintIds.length) return sprintIds;
-  }
-
-  return value;
-}
-
-async function uploadAttachment(issueKey, filePath) {
-  if (!filePath || !fs.existsSync(filePath)) return false;
-  if (!isJiraEvidenceAttachment(filePath)) {
-    console.warn(`WARN: Skipped non-visual Jira evidence attachment: ${path.basename(filePath)}`);
-    return false;
+/** Upload evidence lên Backlog: 2 bước (`POST /space/attachment` rồi gắn `attachmentId[]` vào issue) —
+ * khác Jira (1 bước multipart thẳng vào issue). Trả về attachmentId (hoặc null nếu lỗi). */
+async function uploadAttachmentFile(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return null;
+  if (!isBugEvidenceAttachment(filePath)) {
+    console.warn(`WARN: Skipped non-visual bug evidence attachment: ${path.basename(filePath)}`);
+    return null;
   }
 
   const form = new FormData();
   form.append('file', await fs.openAsBlob(filePath), path.basename(filePath));
 
   try {
-    await withRetry(() =>
-      jiraRequest('POST', `/rest/api/3/issue/${issueKey}/attachments`, {
-        formData: form,
-        headers: {
-          'X-Atlassian-Token': 'no-check',
-        },
-        timeout: 60000,
-      }),
+    const response = await withRetry(() =>
+      backlogRequest('POST', '/api/v2/space/attachment', { formData: form, timeout: 60000 }),
     );
-    return true;
+    return response.data?.id || null;
   } catch (error) {
     console.warn(`WARN: Attachment upload failed for ${path.basename(filePath)}: ${formatApiError(error)}`);
+    return null;
+  }
+}
+
+/** Gắn danh sách attachmentId đã upload vào 1 issue. GHI CHÚ CHƯA VERIFY: giả định `attachmentId[]` trên
+ * PATCH issue THAY THẾ toàn bộ set hiện có (không cộng dồn) — vì vậy gọi 1 LẦN với ĐỦ danh sách, không gọi
+ * lặp lại nhiều lần cho cùng issue. Kiểm lại hành vi thật khi chạy `--apply` lần đầu (xem plan Verification). */
+async function attachIssueAttachments(issueId, attachmentIds) {
+  if (!attachmentIds.length) return true;
+  try {
+    await withRetry(() => backlogRequest('PATCH', `/api/v2/issues/${issueId}`, { body: { attachmentId: attachmentIds } }));
+    return true;
+  } catch (error) {
+    console.warn(`WARN: Could not attach ${attachmentIds.length} file(s) to issue ${issueId}: ${formatApiError(error)}`);
     return false;
   }
 }
 
-function isJiraEvidenceAttachment(filePath) {
+function isBugEvidenceAttachment(filePath) {
   return /\.(png|jpe?g|webp|gif|mp4|webm)$/i.test(String(filePath || ''));
 }
 
-// Ai PHÁT HIỆN ra bug — không phải ai LOG. Không có nhãn này thì không đo được kit đang rò bao nhiêu:
-// nhãn `auto-bug` chỉ chứng minh bug được TẠO qua tool của kit, không chứng minh tool TÌM ra nó.
+// Ai PHÁT HIỆN ra bug — không phải ai LOG. Không đo được thì không biết kit đang rò bao nhiêu.
 // `--found-by kit` = máy/automation của kit phát hiện; `--found-by human` = người báo (sheet bug, BA, QA thủ công).
-function foundByLabel() {
+// Backlog không có labels tự do như Jira (không còn nhãn `found-by-kit`/`found-by-human` ở field riêng) —
+// giá trị này giờ chỉ nằm trong TEXT mô tả (xem `buildBugDescription`), `leak_report.js` phải đọc lại bằng
+// keyword search thay vì lọc theo label field.
+function foundBySource() {
   const raw = argString('found-by').toLowerCase();
   if (!raw) return '';
-  if (['kit', 'auto', 'automation'].includes(raw)) return 'found-by-kit';
-  if (['human', 'manual', 'qa', 'ba', 'sheet'].includes(raw)) return 'found-by-human';
-  console.warn(`[bug-reporter] --found-by "${raw}" không hợp lệ (kit|human) — bỏ qua nhãn nguồn phát hiện.`);
+  if (['kit', 'auto', 'automation'].includes(raw)) return 'kit';
+  if (['human', 'manual', 'qa', 'ba', 'sheet'].includes(raw)) return 'human';
+  console.warn(`[bug-reporter] --found-by "${raw}" không hợp lệ (kit|human) — bỏ qua đánh dấu nguồn phát hiện.`);
   return '';
 }
 
-function uniqueLabels(labels) {
-  return [...new Set(labels.filter(Boolean).map((label) => label.replace(/[^A-Za-z0-9_-]/g, '_')))];
+/*
+ * Backlog description là PLAIN TEXT (hỗ trợ mention `[[...]]`, không phải rich-doc JSON như Jira ADF) —
+ * không cần build content-tree, ghép thẳng string với heading dạng `■ <tên mục>` (quy ước Backlog hay dùng
+ * cho heading trong text thường vì Backlog description không có markdown heading thật).
+ */
+function buildBugDescription(payload) {
+  const parts = [];
+  parts.push('■ Tiền điều kiện:');
+  parts.push(String(payload.preconditions || '(không có thông tin)').slice(0, 30000));
+  parts.push('');
+  parts.push('■ Bước:');
+  parts.push(formatNumberedOrParagraph(payload.steps, '(xem file test case gốc)'));
+  parts.push('');
+  parts.push('■ Kết quả hiện tại:');
+  parts.push(formatBulletOrParagraph(payload.actualResult, '(không có thông tin)'));
+  parts.push('');
+  parts.push('■ Kết quả mong muốn:');
+  parts.push(formatBulletOrParagraph(payload.expectedResult, '(xem file test case gốc)'));
+  if (payload.foundBy) {
+    const tag = payload.foundBy === 'human' ? 'found-by-human' : 'found-by-kit';
+    const desc = payload.foundBy === 'human' ? 'người báo (sheet bug/BA/QA thủ công)' : 'kit (automation tự bắt được)';
+    parts.push('');
+    parts.push(`■ [${tag}] Nguồn phát hiện: ${desc}`);
+  }
+  return parts.join('\n');
 }
 
-function buildAdfDescription(payload) {
-  const content = [];
-
-  addHeading(content, 'Tiền điều kiện:');
-  addParagraph(content, payload.preconditions || '(không có thông tin)');
-  addHeading(content, 'Bước:');
-  addListOrParagraph(content, payload.steps, '(xem file test case gốc)');
-  addHeading(content, 'Kết quả hiện tại:');
-  addBulletListOrParagraph(content, payload.actualResult, '(không có thông tin)');
-  addHeading(content, 'Kết quả mong muốn:');
-  addBulletListOrParagraph(content, payload.expectedResult, '(xem file test case gốc)');
-
-  return { type: 'doc', version: 1, content };
-}
-
-function addHeading(content, text) {
-  content.push({
-    type: 'heading',
-    attrs: { level: 3 },
-    content: [{ type: 'text', text }],
-  });
-}
-
-function addParagraph(content, text) {
-  const safeText = String(text || '').slice(0, 30000);
-  content.push({
-    type: 'paragraph',
-    content: [{ type: 'text', text: safeText }],
-  });
-}
-
-function addListOrParagraph(content, value, fallback) {
+function formatNumberedOrParagraph(value, fallback) {
   const items = Array.isArray(value)
     ? value.filter(Boolean).map(String)
     : String(value || '')
@@ -623,23 +583,8 @@ function addListOrParagraph(content, value, fallback) {
         .map((line) => line.replace(/^\d+[.)]\s*/, '').trim())
         .filter(Boolean);
 
-  if (!items.length) {
-    addParagraph(content, fallback);
-    return;
-  }
-
-  content.push({
-    type: 'orderedList',
-    content: items.map((item) => ({
-      type: 'listItem',
-      content: [
-        {
-          type: 'paragraph',
-          content: [{ type: 'text', text: item.slice(0, 3000) }],
-        },
-      ],
-    })),
-  });
+  if (!items.length) return String(fallback || '');
+  return items.map((item, i) => `${i + 1}. ${item.slice(0, 3000)}`).join('\n');
 }
 
 // Kết quả hiện tại / mong muốn: mỗi ý một bullet cho dễ đọc. Nhận string (tách theo dòng, hỗ trợ <br>)
@@ -654,28 +599,11 @@ function splitIdeas(value) {
     .filter(Boolean);
 }
 
-function addBulletListOrParagraph(content, value, fallback) {
+function formatBulletOrParagraph(value, fallback) {
   const items = splitIdeas(value);
-  if (!items.length) {
-    addParagraph(content, fallback);
-    return;
-  }
-  if (items.length === 1) {
-    addParagraph(content, items[0]);
-    return;
-  }
-  content.push({
-    type: 'bulletList',
-    content: items.map((item) => ({
-      type: 'listItem',
-      content: [
-        {
-          type: 'paragraph',
-          content: [{ type: 'text', text: item.slice(0, 3000) }],
-        },
-      ],
-    })),
-  });
+  if (!items.length) return String(fallback || '');
+  if (items.length === 1) return items[0].slice(0, 3000);
+  return items.map((item) => `- ${item.slice(0, 3000)}`).join('\n');
 }
 
 function extractFailedTests(resultsPath) {
@@ -782,7 +710,9 @@ function buildBugSummary(layer, title, actualResult, tcId = '') {
 
   if (!bugName && !isTcOnlyTitle) bugName = rawTitle;
   if (!bugName) bugName = rawActual || 'Loi phat hien khi execute automation';
-  return `[${layer}] ${bugName}`.slice(0, 255);
+  // `[<tcId>]` trong summary là marker cho duplicate-check (searchExistingBug đọc lại qua keyword) — Backlog
+  // không có labels tự do như Jira nên không thể gắn tcId ở field riêng.
+  return `[${layer}][${tcId}] ${bugName}`.slice(0, 255);
 }
 
 function stripPositiveNegativePrefix(value) {
@@ -905,7 +835,7 @@ function findTestCaseInfo(tcId, testcasesDir) {
         'ket qua mong muon',
         'kết quả mong muốn',
       ]),
-      priority: normalizeJiraPriority(findField(section, [
+      priority: normalizeBacklogPriority(findField(section, [
         'priority',
         'uu tien',
         'ưu tiên',
@@ -927,7 +857,7 @@ function findSelectedTestCaseInfo(tcId) {
   if (!selected) return {};
   return {
     title: selected.scenario || '',
-    priority: normalizeJiraPriority(selected.priority),
+    priority: normalizeBacklogPriority(selected.priority),
     source: path.relative(REPO_ROOT, SELECTION_FILE),
   };
 }
@@ -979,7 +909,6 @@ function findTableRowInfo(content, tcId) {
         'muc do uu tien',
         'priority',
         'priority level',
-        'jira priority',
       ]);
       if (!title && !preconditions && !rawSteps && !expectedResult) continue;
 
@@ -988,7 +917,7 @@ function findTableRowInfo(content, tcId) {
         preconditions: cellToText(preconditions),
         steps: cellToList(rawSteps),
         expectedResult: cellToText(expectedResult),
-        priority: normalizeJiraPriority(priority),
+        priority: normalizeBacklogPriority(priority),
       };
     }
   }
@@ -1245,9 +1174,9 @@ function buildSummary(rows) {
     .join('\n');
 
   return [
-    '## Jira Bug Report Log',
+    '## Backlog Bug Report Log',
     '',
-    '| TC ID | Jira Issue | Status | URL |',
+    '| TC ID | Backlog Issue | Status | URL |',
     '|---|---|---|---|',
     tableRows,
     '',
@@ -1259,7 +1188,7 @@ function writeSummary(summaryText) {
     ? path.join(TASK_OUTPUT_DIR, 'reports', 'runs', RUN_ID)
     : path.join(TASK_OUTPUT_DIR, 'reports');
   const preferred = path.join(reportDir, 'execution-summary.md');
-  const fallback = path.join(reportDir, 'jira_bug_log.md');
+  const fallback = path.join(reportDir, 'backlog_bug_log.md');
 
   fs.mkdirSync(reportDir, { recursive: true });
   if (fs.existsSync(preferred)) {
@@ -1295,12 +1224,16 @@ async function main() {
   console.log(`Found ${failedTests.length} failed test(s). Story: ${STORY_KEY}. Project: ${PROJECT_KEY}.`);
   if (TC_ID_FILTER) console.log(`TC filter: ${TC_ID_FILTER}`);
   if (UPDATE_ISSUE_KEY) console.log(`Update existing issue: ${UPDATE_ISSUE_KEY}`);
-  if (DRY_RUN) console.log('DRY RUN: Jira will not be changed.');
+  if (DRY_RUN) console.log('DRY RUN: Backlog will not be changed.');
 
   let parentIssue = null;
+  let projectId = null;
+  let issueTypeId = null;
   const assigneeCache = {};
   if (!DRY_RUN) {
-    parentIssue = await assertParentIssue();
+    projectId = await resolveProjectId();
+    parentIssue = await assertParentIssue(projectId);
+    issueTypeId = await resolveIssueTypeId(projectId);
   }
 
   const rows = [];
@@ -1312,13 +1245,13 @@ async function main() {
     const artifactInfo = readArtifactInfo(ARTIFACTS_DIR, testCase.tcId);
     const displayTitle = tcInfo.title || selectedTcInfo.title || testCase.title;
     const layer = determineBugLayer(testCase, tcInfo);
-    const priority = normalizeJiraPriority(tcInfo.priority || selectedTcInfo.priority || testCase.priority);
+    const priority = normalizeBacklogPriority(tcInfo.priority || selectedTcInfo.priority || testCase.priority);
     const actualResult = buildActualResult(testCase, artifactInfo, displayTitle);
     const summary = buildBugSummary(layer, displayTitle, actualResult, testCase.tcId);
-    const prioritySuffix = priority ? ` (Priority: ${priority})` : '';
+    const prioritySuffix = priority ? ` (Priority: ${BACKLOG_PRIORITY_NAME[priority] || priority})` : '';
 
     // GATE chất lượng bug (RULE_GLOBAL): ≥1 ảnh/video, video cho case phức tạp, KQ không run-on.
-    const attachmentsPreview = [artifactInfo.screenshotPath, artifactInfo.videoPath].filter(isJiraEvidenceAttachment);
+    const attachmentsPreview = [artifactInfo.screenshotPath, artifactInfo.videoPath].filter(isBugEvidenceAttachment);
     const gateProblems = outputGate.gateBug({
       id: testCase.tcId,
       summary,
@@ -1338,7 +1271,7 @@ async function main() {
         status: UPDATE_ISSUE_KEY
           ? `Would update existing ${layer} bug${prioritySuffix}`
           : `Would create child ${layer} bug${prioritySuffix}`,
-        url: UPDATE_ISSUE_KEY ? `${JIRA_BASE_URL}/browse/${UPDATE_ISSUE_KEY}` : '-',
+        url: UPDATE_ISSUE_KEY ? `${BACKLOG_BASE_URL}/view/${UPDATE_ISSUE_KEY}` : '-',
       });
       continue;
     }
@@ -1349,16 +1282,13 @@ async function main() {
       continue;
     }
 
-    const description = {
-      tcId: testCase.tcId,
-      taskKey: TASK_KEY,
-      timestamp,
+    const description = buildBugDescription({
       preconditions: tcInfo.preconditions || '(không có thông tin tiền điều kiện)',
       steps: tcInfo.steps?.length ? tcInfo.steps : testCase.steps,
       actualResult,
       expectedResult: tcInfo.expectedResult || '(xem file test case gốc)',
-      source: tcInfo.source || selectedTcInfo.source || testCase.sourceFile || '',
-    };
+      foundBy: foundBySource(),
+    });
 
     if (UPDATE_ISSUE_KEY) {
       try {
@@ -1367,7 +1297,7 @@ async function main() {
           tcId: testCase.tcId,
           issueKey: UPDATE_ISSUE_KEY,
           status: 'Updated',
-          url: `${JIRA_BASE_URL}/browse/${UPDATE_ISSUE_KEY}`,
+          url: `${BACKLOG_BASE_URL}/view/${UPDATE_ISSUE_KEY}`,
         });
       } catch (error) {
         const message = formatApiError(error);
@@ -1377,48 +1307,54 @@ async function main() {
       continue;
     }
 
-    const assigneeId = await resolveBugAssigneeAccountId(layer, parentIssue, assigneeCache);
+    const assigneeId = await resolveBugAssigneeAccountId(layer, parentIssue, assigneeCache, projectId);
     if (!assigneeId) {
-      fail('Missing assignee. Configure JIRA_FE_ASSIGNEE/JIRA_BE_ASSIGNEE or assign the parent Story/Task.');
+      fail('Missing assignee. Configure BACKLOG_FE_ASSIGNEE/BACKLOG_BE_ASSIGNEE or assign the parent Story/Task.');
     }
 
-    const existing = await searchExistingBug(testCase.tcId);
+    const existing = await searchExistingBug(testCase.tcId, projectId, parentIssue.id);
     if (existing) {
       rows.push({
         tcId: testCase.tcId,
-        issueKey: existing.key,
+        issueKey: existing.issueKey,
         status: 'Skipped (duplicate)',
-        url: `${JIRA_BASE_URL}/browse/${existing.key}`,
+        url: `${BACKLOG_BASE_URL}/view/${existing.issueKey}`,
       });
       continue;
     }
 
     try {
-      const issueKey = await createIssue({
+      const created = await createIssue({
         tcId: testCase.tcId,
         summary,
         description,
         assigneeId,
-        layer,
         priority,
         parentIssue,
+        projectId,
+        issueTypeId,
       });
 
       const attachments = [
         artifactInfo.screenshotPath,
         artifactInfo.videoPath,
-      ].filter(isJiraEvidenceAttachment);
+      ].filter(isBugEvidenceAttachment);
 
-      for (const attachment of attachments) {
-        const ok = await uploadAttachment(issueKey, attachment);
-        console.log(`  attachment ${path.basename(attachment)}: ${ok ? 'OK' : 'WARN'}`);
+      if (attachments.length) {
+        const attachmentIds = [];
+        for (const attachment of attachments) {
+          const id = await uploadAttachmentFile(attachment);
+          console.log(`  attachment ${path.basename(attachment)}: ${id ? 'OK' : 'WARN'}`);
+          if (id) attachmentIds.push(id);
+        }
+        if (attachmentIds.length) await attachIssueAttachments(created.id, attachmentIds);
       }
 
       rows.push({
         tcId: testCase.tcId,
-        issueKey,
+        issueKey: created.issueKey,
         status: 'Created',
-        url: `${JIRA_BASE_URL}/browse/${issueKey}`,
+        url: `${BACKLOG_BASE_URL}/view/${created.issueKey}`,
       });
     } catch (error) {
       const message = formatApiError(error);
@@ -1444,7 +1380,7 @@ async function main() {
   const errors = rows.filter((row) => row.status.startsWith('Error')).length;
 
   console.log('');
-  console.log('Jira Bug Report complete');
+  console.log('Backlog Bug Report complete');
   console.log(`  Story:      ${STORY_KEY}`);
   console.log(`  Failed TC:  ${failedTests.length}`);
   console.log(`  Created:    ${created}`);

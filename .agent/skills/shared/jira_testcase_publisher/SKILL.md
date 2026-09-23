@@ -1,93 +1,75 @@
 ---
 name: jira_testcase_publisher
-description: Publish testcase từ Excel canonical lên **AIO Tests** sau Phase 1 (`npm run aio:publish`); cleanup lifecycle (Deprecate) thuộc partial-rerun khi Excel thay đổi.
+description: Publish testcase từ Excel canonical lên **Google Sheet** sau Phase 1 (qua Drive MCP: search_files/create_file/update_file).
 ---
 
-# Testcase Publisher (AIO Tests)
+# Testcase Publisher (Google Sheet)
 
-> Tên skill giữ nguyên `jira_testcase_publisher` cho tương thích ngược (AIO Tests là app trong Jira), nhưng đích đến là **AIO Tests**.
+> Tên skill giữ nguyên `jira_testcase_publisher` cho tương thích ngược (đường dẫn được nhiều file khác trỏ tới), nhưng đích đến giờ là **Google Sheet**, không còn Jira/AIO.
 
 ## Purpose
 
-Publish bộ testcase đã được QA xác nhận từ Excel lên **AIO Tests** để QA/Dev review, track và làm nguồn cho Phase 2 execute. Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **authoring/publish** (sửa nội dung ở Excel rồi re-publish); Phase 2 execute mặc định đọc từ AIO (`TESTCASE_SOURCE=aio`). Publish là step riêng trong phạm vi Phase 1. Khi Excel thay đổi sau publish, cleanup lifecycle thuộc nhánh phụ `partial-rerun/run_testcase_cleanup.md`.
+Publish bộ testcase đã được QA xác nhận từ Excel canonical lên **Google Sheet** (qua Google Drive MCP) để QA/Dev review, track và làm nguồn cho Phase 2 execute. File `.xlsx` do `md_to_xlsx.js` xuất ra ở `<TASK_OUTPUT_DIR>/test-cases/` **chính là** nội dung Sheet — không có bước ánh xạ field/model riêng: upload lên Drive là xong, Drive tự convert `.xlsx` → Google Sheets. Publish là step riêng trong phạm vi Phase 1; không cần lifecycle cleanup (Deprecated) như AIO cũ — mỗi lần sync là ghi đè toàn bộ, case bị xoá khỏi Excel tự nhiên biến mất khỏi Sheet ở lần sync sau.
 
 ## Responsibilities
 
 | Trách nhiệm | Yêu cầu |
 |---|---|
-| Source | Chỉ đọc Excel `.xlsx` đã export từ Phase 1, ưu tiên sheet `Test Cases`. |
-| QA gate | Chỉ publish thật khi có QA confirmation rõ ràng **và** `--qa-approved`. |
-| Publish | Tạo/cập nhật **case** trên AIO: `title`, `steps[]`, `precondition`, `priority`, `type`, `scriptType` (bắt buộc khi có steps). |
-| Khoá liên kết | `TC ID` → **`automationKey`** (KHÔNG dùng `tags`: AIO trả 200 nhưng không lưu — đã đo). Story → `jiraRequirementIDs`. |
-| Nhóm chức năng | → **folder** `<root>/<nhóm>`, dựng TỪ Excel. `--folder-root "A/B"` cho cây nhiều cấp (khai đúng nhánh của bộ cũ là thêm case được). |
-| Tiền điều kiện | Nằm trong field `precondition` của chính case; mã `[PRE-NN]` giữ trong text để tra chéo (AIO không có Precondition issue dùng chung). |
-| Safety | **Mặc định dry-run**; chỉ `--apply` mới ghi. AIO **KHÔNG có API xoá** ⇒ sai là phải dọn tay trên UI. |
-| Deduplicate | Theo `automationKey`: đã có → UPDATE (`mergePut`, vì `PUT .../detail` ghi đè toàn phần), chưa có → tạo. Chạy lại không tạo trùng. |
-| Cleanup | Khi Excel bỏ TC đã publish: `npm run aio:deprecate-stale` → đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), sau Human Review approval. |
-| No hard delete | Không xoá case (và cũng không có API để xoá). |
-| Report | Script TỰ ghi `<TASK_OUTPUT_DIR>/reports/aio-testcase-publish-summary.md` (số tạo/cập nhật/lỗi + cây folder + nguồn Excel). |
+| Source | Chỉ đọc Excel `.xlsx` đã export từ Phase 1 (`md_to_xlsx.js`) — chính là nội dung sẽ lên Sheet, không ánh xạ field nào khác. |
+| QA gate | Chỉ publish thật khi có QA confirmation rõ ràng. |
+| Tìm file đã tồn tại | `mcp__claude_ai_Google_Drive__search_files` theo tên chuẩn hoá từ `TASK_KEY` trong folder task trên Drive. |
+| Publish | Có rồi → `update_file` (ghi đè, giữ nguyên `fileId`/link, không tạo file trùng); chưa có → `create_file` (upload `.xlsx`, để Drive tự convert sang Google Sheets, không set `disableConversionToGoogleType`). |
+| Lưu link | Ghi `viewUrl`/link Drive trả về vào `profiles/<TASK_KEY>/task.env` field `GOOGLE_SHEET_URL`. |
+| Không có lifecycle riêng | Không có khái niệm Deprecated/case status trên Sheet — Excel là canonical, Sheet chỉ là bản hiển thị/đồng bộ. Excel bỏ TC nào thì lần `update_file` sau Sheet cũng mất TC đó. |
+| No hard delete thủ công | Không tự xoá dòng trên Sheet qua UI — sửa ở Excel canonical rồi re-publish (`update_file`) để tránh lệch nguồn. |
 
 ## Inputs
 
 | Input | Nguồn |
 |---|---|
-| Excel testcase | `<TASK_OUTPUT_DIR>/test-cases/*.xlsx` qua CLI `--file` |
-| Jira story (requirement) | `JIRA_STORY_KEY` hoặc CLI `--story` |
-| Công cụ TMS | `TEST_MANAGEMENT_TOOL=aio` (mặc định) |
-| Token AIO | `AIO_API_TOKEN` (bắt buộc) — Jira API token KHÔNG dùng được |
-| Project/endpoint | `AIO_PROJECT_KEY` (mặc định `JIRA_PROJECT_KEY`) · `AIO_BASE_URL` · `AIO_THROTTLE_MS` |
-| Gốc cây folder | CLI `--folder-root` (mặc định `JIRA_STORY_KEY`, fallback tên file Excel) |
+| Excel testcase | `<TASK_OUTPUT_DIR>/test-cases/*.xlsx` (output của `md_to_xlsx.js`) |
+| Story/epic liên kết | `BACKLOG_STORY_KEY` (nếu cần ghi chú liên kết, không bắt buộc để publish) |
+| Google Sheet URL đã publish trước đó | `profiles/<TASK_KEY>/task.env` field `GOOGLE_SHEET_URL` (nếu có — dùng để `search_files`/`update_file` đúng file, tránh tạo trùng) |
 | Rules | `RULE_GLOBAL.md`, active prompt |
 
 ## Outputs
 
 | Output | Vị trí |
 |---|---|
-| Case trên AIO Tests | Project AIO theo env |
-| Publish summary | `<TASK_OUTPUT_DIR>/reports/aio-testcase-publish-summary.md` (script tự ghi) |
-| Cleanup summary | `<TASK_OUTPUT_DIR>/reports/aio-deprecate-summary.md` (agent tự ghi) |
+| Google Sheet | Drive, link lưu ở `profiles/<TASK_KEY>/task.env` (`GOOGLE_SHEET_URL`) |
+| Publish summary | Agent tự ghi vào execution summary / `task.md` (file nào tạo/cập nhật, link) |
 
 ## Commands
 
-Dry-run (mặc định — không ghi gì lên AIO):
+Không có script CLI riêng (khác AIO cũ) — publish là thao tác agent làm trực tiếp qua MCP trong phiên chat:
+
+1. `mcp__claude_ai_Google_Drive__search_files` — tìm file Sheet đã publish trước đó (theo `GOOGLE_SHEET_URL` đã lưu, hoặc theo tên chuẩn hoá từ `TASK_KEY`).
+2. Có → `mcp__claude_ai_Google_Drive__update_file` (upload `.xlsx` mới nhất, ghi đè). Chưa có → `mcp__claude_ai_Google_Drive__create_file`.
+3. Ghi/​cập nhật `GOOGLE_SHEET_URL` trong `profiles/<TASK_KEY>/task.env`.
+
+Đồng bộ kết quả execute ngược lại Sheet (Phase 2) dùng script thật (không qua MCP để ghi cell):
 
 ```bash
-npm run aio:publish -- --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx --story <JIRA_STORY_KEY>
-# [--limit 5] [--only TC_001,TC_007] [--folder-root "<tên gốc>"] [--throttle 130]
+node scripts/convert_excel/merge_execution_status.js <local .xlsx> <TASK_OUTPUT_DIR>/test-results/testcase-status.json
 ```
-
-Publish thật (sau khi QA duyệt và đã soi dry-run):
-
-```bash
-npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --qa-approved
-```
-
-Cleanup lifecycle khi Excel bỏ bớt TC (partial-rerun, sau Human Review):
-
-```bash
-npm run aio:deprecate-stale                # xem trước
-npm run aio:deprecate-stale:apply          # đổi caseStatus sang Deprecated
-```
+rồi agent `update_file` đẩy bản đã merge lên Drive.
 
 ## Decision Rules
 
-- Không publish từ Markdown nếu Excel đã tồn tại; Excel là canonical source.
-- Không publish thật nếu QA chưa xác nhận `APPROVED`; script cũng đòi `--qa-approved` (hoặc `JIRA_TESTCASE_QA_APPROVED=1`) khi `--apply`.
-- **Luôn xem dry-run trước** — nhất là danh sách folder sẽ tạo: tên nhóm lệch/typo phải sửa trước khi ghi, vì folder/case tạo rồi không xoá được qua API.
-- Case AIO **không phải Jira issue** ⇒ không có Test Set, requirement issue-link/panel Test Coverage, Precondition issue riêng, Test Type, assignee, label. Đừng đi tìm rồi kết luận "thiếu".
-- Nhóm chính lấy từ cột `Nhóm chức năng` (fallback đoạn đầu `Module`) và thể hiện bằng folder AIO.
-- Nếu Excel không còn TC ID đã publish, dùng `aio:deprecate-stale` (Deprecated), không xoá.
-- Nếu token/quyền chưa sẵn sàng, ghi blocker hoặc chỉ dry-run; không tạo case mơ hồ.
-- Nếu publish lỗi một phần, giữ Excel và report local làm source; không sửa testcase để khớp lỗi publish.
-- Bộ testcase cũ nằm ở cây 3 cấp: truyền `--folder-root "<cấp 1>/<cấp 2>"` rồi `--only <TC_IDs>` để thêm case vào đúng nhánh, đừng publish lại cả bộ.
-- Phase 2 execute mặc định lấy nguồn từ AIO (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx` bằng `npm run aio:pull:write`); `excel` là opt-out.
+- Không publish từ Markdown nếu Excel đã tồn tại; Excel là canonical source, Sheet chỉ là bản đồng bộ.
+- Không publish thật nếu QA chưa xác nhận — publish là ghi đè file thật trên Drive, không có dry-run tách riêng (review trước khi `update_file`/`create_file` chính là bước soát).
+- **Luôn review nội dung `.xlsx` local trước khi ghi đè Sheet** — Drive MCP không có "sửa 1 ô", ghi đè là ghi đè cả file.
+- Sheet không có folder/tag/Cycle/Run/custom field như AIO cũ — đây là đổi mô hình dữ liệu, không phải đổi tên. Đừng đi tìm các khái niệm đó rồi kết luận "thiếu".
+- Nhóm chức năng thể hiện bằng sheet riêng trong cùng workbook (`md_to_xlsx.js` đã tạo 1 sheet/nhóm), không phải folder.
+- Nếu chưa có `GOOGLE_SHEET_URL` và không tìm thấy file qua `search_files`, tạo mới bằng `create_file` rồi lưu link — không đoán ID file.
+- Nếu publish lỗi một phần (network/quyền), giữ Excel và báo blocker; không sửa testcase để khớp lỗi publish.
+- Phase 2 execute LUÔN tải bản Sheet mới nhất về `test-cases/from-sheet/*.xlsx` qua `download_file_content` trước khi execute — không có khái niệm nguồn opt-in/opt-out (`TESTCASE_SOURCE`) như trước.
+- Việc upload/download chỉ làm được khi **agent đang chạy trong phiên chat** (MCP không gọi được từ script CLI/CI headless) — đây là đánh đổi có chủ ý, không phải thiếu sót.
 
 ## Anti-Patterns
 
-- Tạo testcase trên TMS trực tiếp từ requirement khi chưa có Excel.
-- Sửa nội dung case trực tiếp trên UI AIO thay vì sửa Excel rồi re-publish — `PUT .../detail` ghi đè toàn phần nên bản sửa tay sẽ mất.
-- Chạy `--apply` khi chưa soi dry-run (không có API xoá để lùi).
-- Đưa TC ID vào `tags` (AIO trả 200 nhưng không lưu) hoặc ghép `[TC] <ID> -` vào `title`.
-- Khớp case theo **tiêu đề** thay vì `automationKey` — nhiều case trùng tiêu đề ở nhóm khác nhau (đã mất 12 run khi migrate).
-- Publish lại cả bộ chỉ để thêm vài case (đè folder/cây, tốn rate limit).
-- Trộn testcase publish với Jira bug logging sau Phase 2.
+- Tạo testcase trực tiếp trên Sheet khi chưa có Excel canonical.
+- Sửa nội dung case trực tiếp trên Sheet (UI Google Sheets) thay vì sửa Excel rồi re-publish — `update_file` ghi đè toàn phần nên bản sửa tay trên Sheet sẽ mất.
+- Ghi đè Sheet (`update_file`) khi chưa review nội dung `.xlsx` local sắp upload.
+- Trộn testcase publish với Backlog bug logging sau Phase 2 — hai việc khác nhau, khác đích (Sheet vs Backlog).
+- Giả lập/viết code service-account hoặc OAuth mới cho việc này — auth dùng đúng Drive MCP đã kết nối sẵn trong phiên chat; nếu cần automation headless không có Claude, đó là việc khác, quay lại `scripts/integrations/google_sheet/` (scaffolding service-account có sẵn nhưng chưa wire) làm điểm bắt đầu.

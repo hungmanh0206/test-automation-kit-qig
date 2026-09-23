@@ -14,7 +14,7 @@ Nhánh này không thuộc Main Flow, không tự chạy, không block Phase 1/P
 |---|---|
 | Jira/Confluence/Figma/Swagger đổi nội dung nhưng link/path giữ nguyên | Chạy `run_requirement_prepare_review.md`. |
 | Đã có Human Review approve testcase thay đổi | Chạy `run_requirement_apply_approved.md`. |
-| Đã merge Excel/testcase thay đổi và cần đồng bộ mirror trên AIO | Chạy `run_testcase_cleanup.md` (nay dùng `aio:deprecate-stale`). |
+| Đã merge Excel/testcase thay đổi và cần đồng bộ lại Google Sheet | Re-publish Sheet (`update_file` qua Drive MCP) — không cần bước cleanup riêng, lần ghi đè kế tiếp tự phản ánh đúng Excel. `run_testcase_cleanup.md` giờ chỉ còn cần khi muốn unlink stale Test khỏi Story/Task (optional). |
 | Chưa có testcase baseline | Chạy Phase 1 chính, không dùng partial rerun. |
 | Dev fix bug đã log | Dùng Re-run chính, không dùng partial rerun. |
 | Cần log Jira bug | Chuyển về Phase 2/Main Flow bug triage, không log trực tiếp từ partial rerun. |
@@ -34,13 +34,13 @@ Apply Approved
 ↓
 Merge testcase đã approve
 ↓
-Re-publish AIO (update case cũ + tạo case mới, đúng folder)
+Re-publish Google Sheet (update_file qua Drive MCP — ghi đè toàn workbook)
 ↓
-Optional Cleanup — Deprecate case bị bỏ khỏi Excel
+Optional Cleanup — unlink stale Test khỏi Story/Task (nếu QA yêu cầu)
 ↓
-Pull từ AIO → Partial Execute subset (mặc định TESTCASE_SOURCE=aio)
+Tải lại từ Sheet → Partial Execute subset
 ↓
-Push Test Execution + link Test Plan (subset)
+Đồng bộ execution status lên Sheet (subset)
 ↓
 PASS hoặc bug candidate handoff về Main Flow
 ```
@@ -88,11 +88,11 @@ Mục tiêu:
 - Chỉ chạy khi có Human Review approve.
 - Merge testcase theo lifecycle đã approve.
 - Export/update Excel nếu testcase chính thay đổi.
-- **Re-publish AIO** TC `UPDATED` + `NEW` (dedup theo `automationKey`: update case cũ + tạo mới, vào đúng folder); Optional cleanup chỉ đổi `caseStatus` sang **Deprecated**, không xoá.
-- Chọn subset execute: testcase `NEW`, `UPDATED`, và testcase bị ảnh hưởng. Mặc định execute **từ AIO** (pull về canonical local).
+- **Re-publish Google Sheet**: Excel canonical đã merge TC `UPDATED` + `NEW` → agent `update_file` qua Drive MCP ghi đè toàn workbook (không cần dedup theo key riêng, không có khái niệm folder).
+- Chọn subset execute: testcase `NEW`, `UPDATED`, và testcase bị ảnh hưởng. Execute từ bản Sheet mới nhất (tải lại qua Drive MCP về canonical local).
 - Không chạy full regression mặc định.
 - Execute thật subset đã chọn.
-- **Đẩy Test Execution + link Test Plan** cho subset đã execute (như các phase khác); kit chỉ link Test Plan, không tạo.
+- **Đồng bộ execution status lên Sheet** cho subset đã execute (`merge_execution_status.js` rồi `update_file`, như các phase khác).
 - Tạo bug candidate package nếu có fail nghi product bug.
 - Không log Jira trực tiếp.
 
@@ -106,9 +106,9 @@ Output chính:
     ├── execution-summary.md
     ├── bug-candidates.md
     └── artifacts/
-<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-publish-summary.md (re-publish Step 2b)
-<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/aio-execution-summary.md (cycle — Step 6b)
-<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-cleanup-summary.md (nếu chạy cleanup mirror)
+<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-publish-summary.md (re-publish Step 2b — agent tự ghi sau update_file)
+<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/aio-execution-summary.md (execution sync — Step 6b)
+<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-cleanup-summary.md (nếu chạy cleanup unlink)
 ```
 
 ## Lifecycle testcase
@@ -132,8 +132,8 @@ Output chính:
 ## Quy tắc execute
 
 - Sau merge + re-publish, chỉ partial execute subset bị ảnh hưởng.
-- Nguồn execute mặc định là **AIO Tests** (`TESTCASE_SOURCE=aio`): pull về canonical local rồi execute subset; `excel` để chạy thuần local.
-- Execute xong, đẩy **cycle** (chỉ subset) vào thư mục cycle theo sprint (`PUSH_EXECUTION=1`; AIO không có Test Plan).
+- Nguồn execute: tải Google Sheet mới nhất về canonical local (`from-sheet/*.xlsx`) qua Drive MCP rồi execute subset; `excel` local nếu chưa publish.
+- Execute xong, đồng bộ status subset lên Sheet (`merge_execution_status.js` → `update_file`, `PUSH_EXECUTION=1`).
 - Không chạy full regression mặc định.
 - Full regression chỉ khi business flow/API contract/UI shared thay đổi diện rộng hoặc QA Lead yêu cầu.
 - Với `RUN_ID`, output execute nằm dưới:
@@ -145,15 +145,13 @@ Output chính:
 
 ## Cleanup (Deprecate) trong partial rerun
 
-Nếu testcase baseline đã từng publish lên AIO và Apply Approved làm Excel thay đổi:
+Nếu testcase baseline đã từng publish lên Google Sheet và Apply Approved làm Excel thay đổi:
 
-- **Re-publish (Step 2b, `publish_testcases.js`) chạy TRƯỚC cleanup** — re-publish tạo TC mới + update TC cũ; cleanup **chỉ label stale** TC bị bỏ khỏi Excel, KHÔNG tạo/update TC.
-- Chạy `partial-rerun/run_testcase_cleanup.md` sau khi merge + re-publish approved testcase.
-- Luôn dry-run trước, apply thật chỉ khi Human Review/QA approval rõ ràng.
-- Không xoá case (AIO cũng không có API xoá).
-- Case rời Excel chỉ được chuyển `caseStatus` sang **Deprecated** (giữ lịch sử run); quay lại Excel thì trả về Published.
+- **Re-publish (Step 2b) chạy TRƯỚC bất kỳ cleanup nào** — `update_file` ghi đè toàn workbook nên TC mới/update đã có trong lần ghi đè đó; case bị bỏ khỏi Excel cũng tự động biến mất khỏi Sheet ngay lần ghi đè này, không cần bước "deprecate" riêng như AIO cũ.
+- Chạy `partial-rerun/run_testcase_cleanup.md` chỉ khi còn việc unlink Test khỏi Story/Task trên Backlog — không còn việc đổi trạng thái case trên TMS (Sheet không có `caseStatus`).
+- Không có khái niệm xoá/deprecate case trên Sheet — Excel canonical luôn là nguồn, Sheet chỉ phản chiếu đúng Excel sau mỗi lần re-publish.
 - Unlink stale Test khỏi Story/Task là optional, chỉ bật khi QA yêu cầu.
-- Excel vẫn là source of truth khi cleanup; AIO là mirror ở context đó.
+- Excel vẫn là source of truth khi cleanup; Sheet là bản đồng bộ hiển thị.
 
 ## Bug candidate handoff
 

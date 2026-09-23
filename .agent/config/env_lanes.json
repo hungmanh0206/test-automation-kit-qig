@@ -13,88 +13,12 @@
       "_note": "Đây là hai biến DUY NHẤT mà code thật sự chặn khi thiếu (runtime_config.requireValue). Không cần OPS, không cần LMS, không cần AIO."
     },
     "doc-read": {
-      "mo_ta": "Đọc tài liệu nguồn: Jira, Confluence, Figma, Google Doc.",
-      "required": [
-        "JIRA_BASE_URL",
-        "JIRA_EMAIL",
-        "JIRA_API_TOKEN"
-      ],
+      "mo_ta": "Đọc tài liệu nguồn: Figma. (Backlog/Google Docs/Sheet chưa có client trong kit đọc — xem DOC_ONLY ở tests/fe/infra/env-contract.spec.ts.)",
       "optional": [
-        "CONFLUENCE_URL",
-        "CONFLUENCE_API_TOKEN",
         "FIGMA_API_KEY",
         "FIGMA_FILE_KEY"
       ],
-      "_note": "Thiếu Figma thì mất oracle cho chữ hiển thị, nhưng không chặn."
-    },
-    "publish-aio": {
-      "mo_ta": "Đẩy testcase lên AIO sau Phase 1.",
-      "required": [
-        "AIO_API_TOKEN",
-        "JIRA_PROJECT_KEY",
-        "JIRA_BASE_URL",
-        "JIRA_EMAIL",
-        "JIRA_API_TOKEN"
-      ],
-      "optional": [
-        "AIO_BASE_URL",
-        "AIO_PROJECT_KEY"
-      ],
-      "_note": "AIO_BASE_URL có mặc định; AIO_PROJECT_KEY rơi về JIRA_PROJECT_KEY. Bước này còn một CỔNG NGƯỜI: phải thêm --qa-approved, cố ý không tự động."
-    },
-    "phase2-ops": {
-      "mo_ta": "Execute trên OPS. Chỉ cần khi test chạm OPS.",
-      "requiredOneOf": [
-        [
-          "OPS_API_TOKEN"
-        ],
-        [
-          "OPS_USERNAME",
-          "OPS_PASSWORD"
-        ]
-      ],
-      "required": [
-        "OPS_BASE_URL"
-      ],
-      "optional": [
-        "OPS_LOGIN_URL",
-        "OPS_API_BASE_URL",
-        "OPS_TOKEN_LS_KEY"
-      ],
-      "_note": "auth_strategy đi thang rẻ tới đắt: session cache đã lưu > OPS_API_TOKEN > đăng nhập UI. Có token thì KHÔNG cần mật khẩu."
-    },
-    "phase2-lms": {
-      "mo_ta": "Execute trên LMS. Chỉ cần khi test chạm LMS.",
-      "required": [
-        "LMS_BASE_URL"
-      ],
-      "requiredOneOf": [
-        [
-          "LMS_USERNAME",
-          "LMS_PASSWORD"
-        ]
-      ],
-      "optional": [
-        "LMS_LOGIN_URL",
-        "LMS_API_BASE_URL",
-        "LMS_SWAGGER_URL",
-        "LMS_API_TOKEN"
-      ],
-      "_note": "LMS chặn webdriver nên lane này còn cần cấu hình trình duyệt riêng, xem rules."
-    },
-    "bug-jira": {
-      "mo_ta": "Log bug lên Jira sau Phase 2.",
-      "required": [
-        "JIRA_BASE_URL",
-        "JIRA_EMAIL",
-        "JIRA_API_TOKEN",
-        "JIRA_PROJECT_KEY"
-      ],
-      "optional": [
-        "JIRA_FE_ASSIGNEE",
-        "JIRA_BE_ASSIGNEE"
-      ],
-      "_note": "Thiếu assignee thì bug_reporter dừng với lỗi Missing assignee."
+      "_note": "Thiếu Figma thì mất oracle cho chữ hiển thị, nhưng không chặn. Lane 'required' rỗng có chủ ý: kit không còn nguồn spec nào bắt buộc phải đọc qua API kể từ khi bỏ Jira/Confluence."
     },
     "db-verify": {
       "mo_ta": "Tầng kiểm DB, chỉ đọc, chỉ dùng khi task khai §23.",
@@ -120,9 +44,7 @@
       "TASK_OUTPUT_DIR",
       "RUN_ID",
       "TASK_ENV",
-      "OPS_URL",
-      "ALLOW_EMPTY",
-      "TESTCASE_SOURCE"
+      "ALLOW_EMPTY"
     ]
   }
 }

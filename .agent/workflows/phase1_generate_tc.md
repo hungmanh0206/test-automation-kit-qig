@@ -14,7 +14,7 @@ skills:
 
 ## Mục Đích
 
-Sinh bộ testcase chi tiết, có trace requirement, có phân nhóm chức năng, có coverage/risk review và có file Excel source of truth khi gen/publish (Phase 2 execute từ AIO Tests). Auto Publish testcase là step riêng trong phạm vi Phase 1, chỉ chạy sau khi QA xác nhận Excel.
+Sinh bộ testcase chi tiết, có trace requirement, có phân nhóm chức năng, có coverage/risk review và có file Excel source of truth khi gen/publish (Phase 2 execute từ Google Sheet). Auto Publish testcase là step riêng trong phạm vi Phase 1, chỉ chạy sau khi QA xác nhận Excel.
 
 ## Khi Nào Dùng
 
@@ -61,8 +61,8 @@ Sinh bộ testcase chi tiết, có trace requirement, có phân nhóm chức nă
 - Không paste toàn bộ requirement/testcase vào chat nếu đã lưu file local.
 - Requirement chỉ được tính covered khi testcase có trace rõ, assertion đúng behavior và không bị skip.
 - Nếu còn gap Critical/High thì không kết luận PASS dù coverage số học >= 80%.
-- Excel trong `test-cases/` là source of truth khi gen/publish (Phase 1). Sau publish, **Phase 2 execute mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`, kéo về `from-aio/*.xlsx`); `excel` là opt-out. Sửa nội dung testcase ở Excel rồi re-publish, không sửa thẳng trên AIO.
-- Không chạy step Auto Publish Jira nếu chưa có QA confirmation rõ ràng trên Excel/testcase.
+- Excel trong `test-cases/` là source of truth khi gen/publish (Phase 1). Sau publish, **Phase 2 execute LUÔN tải bản Google Sheet mới nhất** về `from-sheet/*.xlsx` qua Drive MCP trước mỗi lượt. Sửa nội dung testcase ở Excel rồi re-publish, không sửa thẳng trên Sheet.
+- Không chạy step Auto Publish Testcase nếu chưa có QA confirmation rõ ràng trên Excel/testcase.
 - Nếu Excel thay đổi sau publish, không cleanup trong Phase 1 chính; chuyển sang `partial-rerun/run_testcase_cleanup.md` sau Human Review approval.
 - Nếu source đổi nội dung sau baseline, không tự đổi luồng chính; chuyển sang `partial-rerun` khi user yêu cầu.
 

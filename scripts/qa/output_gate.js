@@ -2,16 +2,16 @@
 'use strict';
 
 /*
- * output_gate.js — Gate chất lượng output THỰC THI, tự chạy trước khi push AIO/Jira.
+ * output_gate.js — Gate chất lượng output THỰC THI, tự chạy trước khi push Backlog/Sheet.
  *
  * Vì sao: rule chất lượng (RULE_GLOBAL + prompt) trước nay là prose → agent dễ lướt qua →
  * bug/test-execution ra sai (comment run-on, thiếu evidence/step status, thiếu video case phức tạp,
  * bug description thừa phần). Gate này biến rule máy-kiểm-được thành check THỰC THI:
  *   - TỰ SỬA phần deterministic an toàn (--fix): bỏ prefix [PASS], xoá debug key=value trong comment.
  *   - CHẶN (exit 1) phần không tự sửa an toàn được, in checklist để agent tự sửa trong session.
- * NON-INVASIVE: chỉ đọc/ghi file status local, KHÔNG gọi AIO/Jira → chạy/test được không cần mạng.
+ * NON-INVASIVE: chỉ đọc/ghi file status local, KHÔNG gọi Backlog/Sheet → chạy/test được không cần mạng.
  *
- * Dùng (wire vào workflow phase2_04 TRƯỚC push_test_execution):
+ * Dùng (wire vào workflow phase2_04 TRƯỚC merge_execution_status.js):
  *   node scripts/qa/output_gate.js --mode test-execution --status <testcase-status.json>
  *   node scripts/qa/output_gate.js --mode test-execution --status <file> --fix   # tự sửa comment rồi ghi lại
  *   thêm --qa-approved để QA cố ý bỏ qua (vẫn in cảnh báo, exit 0).
@@ -104,7 +104,7 @@ function gateTestExecution(doc, { fix = false } = {}) {
 
     // 2) Evidence: gộp case + step.
     // Kể cả shortcut `failedStep` + `failedStepEvidence` mà template Phase 2 dạy: đó là đường HỢP LỆ để
-    // khai evidence của bước lỗi (push_test_execution/push_execution_aio đều đọc field này). Trước đây
+    // khai evidence của bước lỗi (merge_execution_status.js đọc field này). Trước đây
     // gate không gom nó ⇒ agent làm ĐÚNG template vẫn bị chặn "THIẾU evidence".
     const caseEv = evList(t.evidence)
       .concat(evList(t.failedStepEvidence))
@@ -177,7 +177,7 @@ function gateTestExecution(doc, { fix = false } = {}) {
     if (att.executed != null && Number(att.executed) !== executed) warnings.push(`Attestation "executed=${att.executed}" LỆCH số case execute thật (${executed}) — khai lại đúng.`);
     if (att.allEvidenceAttached === true && evMiss) warnings.push(`Attestation "allEvidenceAttached=true" MÂU THUẪN: gate thấy ${evMiss} vấn đề evidence.`);
     if (att.failuresClassified === true && failLayerMiss) warnings.push(`Attestation "failuresClassified=true" MÂU THUẪN: gate thấy ${failLayerMiss} FAIL thiếu tầng-lỗi.`);
-    if (!att.oracleSource) warnings.push('Attestation thiếu "oracleSource" (nguồn oracle: aio/spec/figma/api-contract…) — nêu để chống oracle tự chế.');
+    if (!att.oracleSource) warnings.push('Attestation thiếu "oracleSource" (nguồn oracle: sheet/spec/figma/api-contract…) — nêu để chống oracle tự chế.');
   }
 
   return { problems, warnings, fixes, executed, doc: Array.isArray(doc) ? { tests } : doc };

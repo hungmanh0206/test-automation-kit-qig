@@ -34,8 +34,8 @@ Mục tiêu là coverage cao nhất có thể trong scope đã cung cấp, bao g
 ## Cột `Loại case` — 9 loại, KHÁC hẳn `Nhóm chức năng`
 
 Hai trục khác nhau, đừng lẫn:
-- **Nhóm chức năng** (sheet/cột riêng) = *"test Ở ĐÂU"* — màn/luồng nghiệp vụ → thành **folder** trên AIO.
-- **Loại case** = *"KIỂM THỬ KIỂU GÌ"* → thành **Case Type** trên AIO, dùng để **lọc và báo cáo**.
+- **Nhóm chức năng** (sheet/cột riêng) = *"test Ở ĐÂU"* — màn/luồng nghiệp vụ → thành **sheet riêng** trong workbook Excel/Google Sheet.
+- **Loại case** = *"KIỂM THỬ KIỂU GÌ"* → thành cột **Loại case**, dùng để **lọc và báo cáo**.
 
 **Thứ tự xét:** Xét CHUYÊN BIỆT trước, `Functional` là mặc định CUỐI CÙNG khi không khớp loại nào. Thứ tự xét: Security → Accessibility → Performance → Database → API → UI → E2E → Integration → Functional. Một case chỉ mang ĐÚNG MỘT loại; nếu thấy hợp 2 loại thì case đang gộp 2 mục đích — tách case, đừng chọn bừa.
 
@@ -61,10 +61,10 @@ Chỉ nhận đúng 9 giá trị trên (đúng chính tả, đúng hoa/thường
 Một case mang **đúng một** loại. Thấy hợp 2 loại nghĩa là case đang gộp 2 mục đích — **tách case**, đừng chọn bừa; case gộp cũng làm `Kết quả mong đợi` không khớp số bước và bị gate chặn ở chỗ khác.
 
 > **Vì sao có cột này:** trước đây kit **suy** loại từ tên nhóm chức năng. Đo trên 1.399 case đã publish:
-> **96% rơi về `Functional`**, `Integration` và `Performance` = **0** ⇒ lọc theo Case Type trên AIO vô dụng,
+> **96% rơi về `Functional`**, `Integration` và `Performance` = **0** ⇒ lọc theo Case Type vô dụng,
 > và người đọc báo cáo dễ kết luận nhầm rằng bộ test không có mảng tích hợp. Ép trục "ở đâu" ra trục
-> "loại nào" thì sai là tất yếu — nên nay là cột **người khai**, không suy. Publisher cũng đã bỏ
-> fallback ngầm: tên không khớp AIO thì **DỪNG**, không đẩy lên với nhãn `Functional`.
+> "loại nào" thì sai là tất yếu — nên nay là cột **người khai**, không suy. `md_to_xlsx.js` cũng đã bỏ
+> fallback ngầm: giá trị không khớp 9 loại đã chốt thì **DỪNG**, không xuất với nhãn `Functional`.
 
 ---
 
@@ -80,7 +80,7 @@ Một case mang **đúng một** loại. Thấy hợp 2 loại nghĩa là case �
 
 ## 0. Phân nhóm testcase bắt buộc
 
-Testcase phải được phân biệt rõ theo **nhóm chính là business flow** để QA review, export Excel và publish AIO Tests dễ lọc (nhóm chức năng → folder AIO).
+Testcase phải được phân biệt rõ theo **nhóm chính là business flow** để QA review, export Excel và publish Google Sheet dễ lọc (nhóm chức năng → sheet riêng trong workbook).
 
 Vẫn giữ đúng template 10 cột — KHÔNG tự thêm cột thứ 11. Thay vào đó, cột `Module` phải dùng format:
 
@@ -96,7 +96,7 @@ Nguyên tắc đặt nhóm:
 - Chỉ dùng nhóm chính `API` khi testcase kiểm endpoint/platform behavior không thuộc flow nghiệp vụ cụ thể nào.
 - Với E2E/cross-app, nếu flow có business flow rõ thì nhóm chính vẫn là flow đó, ví dụ `Tạo / App 1 tạo bản ghi -> App 2 sync`; chỉ dùng `E2E/Cross-app` khi flow chính là sync/tích hợp đa hệ thống.
 - Với permission/security, nếu permission gắn với flow rõ thì nhóm chính vẫn là flow đó, ví dụ `Sửa / Permission role teacher cannot edit`; chỉ dùng `Permission/Security` khi testcase chủ yếu kiểm auth/role/security độc lập.
-- KHÔNG thêm cột label vào bảng testcase. AIO case không phải Jira issue nên **không có label**: nhóm chức năng thể hiện qua **folder AIO** (`<root>/<nhóm chức năng>`, dựng từ sheet chức năng), TC ID nằm ở `automationKey`.
+- KHÔNG thêm cột label vào bảng testcase. **Không có label**: nhóm chức năng thể hiện qua **sheet riêng** trong workbook (1 sheet/nhóm chức năng, do `md_to_xlsx.js` dựng), TC ID nằm ở cột `ID_TC`.
 - `Khác` chỉ dùng khi requirement không thuộc nhóm nào rõ ràng và phải giải thích trong Coverage Gaps.
 
 ### 0b. TAG CHIỀU ở cột `Tag` — BẮT BUỘC, có máy kiểm
@@ -147,11 +147,11 @@ Tag đã ra cột riêng, nên tiêu đề không còn chỗ dựa: đọc một
 | Đoạn kết quả nói chung chung | `… - Hệ thống hoạt động đúng` | Đọc tiêu đề không biết oracle là gì ⇒ người chạy phải mò cả cột `Kết quả mong đợi` mới biết mình đang kiểm gì |
 | **Tiền tố hằng số** | `Cross-app - …` gắn cho **101/101** case | Một trường mà mọi dòng cùng giá trị thì KHÔNG phân biệt được gì. Nó chỉ chiếm chỗ và đẩy nội dung thật ra xa. Thông tin đó thuộc `Loại case` (`E2E`/`Integration`) và tên folder, không thuộc tiêu đề |
 | Dựa vào tag để đủ nghĩa | `Chặn khi khoá sổ` (nghĩa nằm ở `[Negative]`) | Tag giờ ở cột khác; tiêu đề mất tag là mất nghĩa |
-| Lặp lại tên nhóm/folder | `Business Partner - Business Partner - …` | Nhóm đã là folder trên AIO, nhắc lại là dư |
+| Lặp lại tên nhóm/sheet | `Business Partner - Business Partner - …` | Nhóm đã là tên sheet riêng, nhắc lại là dư |
 
 **Vẫn được để `[...]` GIỮA câu** khi đó là tên trường thật trên giao diện/tài liệu — `Kiểm [FBP] Ngày ghi nhận doanh thu - …`. Chỉ khối ngoặc **liền nhau ở đầu chuỗi** mới bị coi là tag.
 
-`publish_testcases_aio.js` còn một lớp chắn cuối: `displayTitle()` cắt khối tag ở đầu tiêu đề trước khi đẩy lên AIO, để bộ TC cũ vẫn ra tiêu đề sạch mà không phải sửa lại nguồn.
+`md_to_xlsx.js` còn một lớp chắn cuối: `displayTitle()` cắt khối tag ở đầu tiêu đề trước khi xuất Excel/Sheet, để bộ TC cũ vẫn ra tiêu đề sạch mà không phải sửa lại nguồn.
 
 ### 0b-bis. Gắn tag rồi thì `Kết quả mong đợi` phải MANG BẰNG CHỨNG của chiều đó
 
@@ -251,7 +251,7 @@ Liệt kê đầy đủ, cụ thể:
 - Không để trống hoặc ghi chung chung "Hệ thống hoạt động bình thường"
 - Mỗi cell `Tiền điều kiện` phải mở đầu bằng **tag cách dựng** `[<method>]`, method ∈ `api` | `factory` | `test_hook` | `ui` | `pre_existing` | `manual`; nhiều precondition thì tách bằng `<br>`, mỗi mảnh một tag.
   Định dạng: `[<method>] <mô tả trạng thái cụ thể>` — vd `[api] Order đã ở trạng thái TO_PURCHASE`, `[pre_existing] Lớp CFA1-01 có ≥2 activity`, `[manual] Thẻ NCB sandbox đã bật OTP`.
-  **Vì sao tag nằm TRONG cell chứ không ở bảng riêng**: precondition giờ chỉ là một TRƯỜNG của testcase (không còn thực thể/issue riêng), và AIO — nơi Phase 2 kéo testcase về — KHÔNG có field nào chứa "cách dựng". Thứ gì phải sống sót round-trip publish→pull thì phải nằm trong chính text precondition.
+  **Vì sao tag nằm TRONG cell chứ không ở bảng riêng**: precondition giờ chỉ là một TRƯỜNG của testcase (không còn thực thể/issue riêng), và Google Sheet — nơi Phase 2 tải testcase về — cũng chỉ là bản phản chiếu của Excel, KHÔNG có field nào riêng chứa "cách dựng". Thứ gì phải sống sót round-trip publish→download thì phải nằm trong chính text precondition.
   Cùng một trạng thái thì phải cùng một method và **mô tả giống hệt** (đây là thứ thay cho dedup của mã cũ; `design:gate` cảnh báo khi một trạng thái có 2 cách dựng).
   KHÔNG có method `db`: dựng state bằng DB bị cấm (RULE_GLOBAL §UAT non-destructive + DB read-only).
 
@@ -349,7 +349,7 @@ Quy tắc cho từng loại dữ liệu:
 ```
 
 ## 7. Ưu tiên
-Chỉ dùng 5 giá trị: `Critical`, `High`, `Medium`, `Low`, `Lowest` (khớp thang priority của AIO Tests). KHÔNG dùng `P0`/`P1`/`Blocker`. Bộ TC cũ ghi `Highest` (tên thang Jira) vẫn được nhận nhưng nên đổi sang `Critical`; khi log bug, kit tự map `Critical → Highest` cho Jira.
+Chỉ dùng 5 giá trị: `Critical`, `High`, `Medium`, `Low`, `Lowest`. KHÔNG dùng `P0`/`P1`/`Blocker`. Bộ TC cũ ghi `Highest` (tên thang cũ) vẫn được nhận nhưng nên đổi sang `Critical`; khi log bug, kit tự map `Critical → Highest`.
 
 | Level | Khi nào |
 |---|---|

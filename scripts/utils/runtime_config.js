@@ -111,7 +111,7 @@ function getTaskKey(options = {}) {
   return requireValue(
     'TASK_KEY',
     value,
-    'Set TASK_KEY or pass --task <TASK_KEY>. Do not rely on JIRA_STORY_KEY as task scope.',
+    'Set TASK_KEY or pass --task <TASK_KEY>. Do not rely on BACKLOG_STORY_KEY as task scope.',
   );
 }
 
@@ -161,14 +161,13 @@ function getTestResultsDir(options = {}) {
 /*
  * MỘT nguồn cho "testcase canonical local nằm ở những thư mục nào".
  *
- * `test-cases/` là Excel người viết; `from-aio/` là bản KÉO VỀ từ AIO Tests (`npm run aio:pull:write`).
- * Trước đây 7 script tự ghép tay đường dẫn và chỉ biết một thư mục mirror — thêm
- * nguồn `from-aio` thì `preflight_gate` CHẶN oan ("không thấy testcase canonical"), còn
- * `dimension_coverage`/`bug_tc_matcher`/`domain_rules`/`system_map`/`learn_task` thì KHÔNG lỗi mà chỉ
- * đếm thiếu trong im lặng — kiểu hỏng tệ hơn, vì báo cáo vẫn ra số và trông vẫn đúng.
+ * `test-cases/` là Excel người viết; `from-sheet/` là bản TẢI VỀ từ Google Sheet (agent tải qua Drive MCP
+ * trước khi execute — xem plan migrate AIO→Sheet, 22/09/2026). Trước đó là `from-aio/` (AIO Tests, ngưng
+ * dùng cùng ngày) — đổi tên thư mục ở ĐÚNG một chỗ này thì mọi consumer (preflight_gate/
+ * dimension_coverage/bug_tc_matcher/domain_rules/system_map/learn_task) tự động theo, không phải sửa 7 chỗ.
  * Thêm nguồn mới về sau: sửa DUY NHẤT mảng này.
  */
-const TESTCASE_MIRROR_DIRS = ['from-aio'];
+const TESTCASE_MIRROR_DIRS = ['from-sheet'];
 
 function getTestcaseDirs(taskOutputDir, { mirrorsFirst = false } = {}) {
   const base = path.join(taskOutputDir, 'test-cases');

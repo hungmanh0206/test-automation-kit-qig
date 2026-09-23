@@ -123,11 +123,15 @@ test.describe('@infra slash commands — con trỏ phải trỏ đúng chỗ', (
     expect(missing, `nhánh không có slash command: ${missing.join(', ')} (thiếu .claude/commands/<nhánh>.md)`).toEqual([]);
   });
 
-  test('publish phải nhắc dry-run TRƯỚC `:apply`', () => {
+  test('publish phải nhắc REVIEW local TRƯỚC khi ghi đè Sheet thật', () => {
+    // Migrate AIO→Google Sheet (22/09/2026): không còn cặp lệnh dry-run/:apply qua REST — an toàn giờ nằm
+    // ở việc agent soi bản merge LOCAL trước khi `update_file` đè lên Drive (Drive không giữ version cũ).
     if (!files.includes('publish.md')) return;
     const b = body('publish.md');
-    expect(b).toMatch(/dry-run/i);
-    expect(b.indexOf('aio:publish\n'), 'dry-run phải xuất hiện trước :apply').toBeLessThan(b.indexOf('aio:publish:apply'));
+    expect(b, 'phải nhắc soi lại LOCAL trước khi ghi đè Sheet thật').toMatch(/soi lại|review|xem lại/i);
+    expect(b, 'phải nói rõ merge_execution_status.js chỉ ghi local, chưa đụng Sheet').toContain('merge_execution_status.js');
+    expect(b.indexOf('CHỈ ghi đè'), 'phải nói rõ TRƯỚC khi nhắc update_file đè lên Drive')
+      .toBeLessThan(b.lastIndexOf('update_file'));
   });
 });
 

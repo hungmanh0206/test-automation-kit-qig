@@ -85,29 +85,19 @@ function readDynamically(key: string, blob: string, suffixes: string[]): boolean
  * của luật ①, dài ra là luật mất tác dụng.
  */
 const DOC_ONLY: Record<string, string> = {
-  /*
-   * Ba khoá HubSpot: TRONG REPO thì `tests/support/setup/db/verify.*.spec.ts` có đọc, nhưng mấy spec
-   * đó thuộc lớp PROJECT và cố ý KHÔNG đi theo gói phát hành. Hệ quả đo được ngày 19/09/2026: giải
-   * nén gói rồi chạy suite thì luật này ĐỎ, vì trong gói thật sự không còn ai đọc. Khai ở đây để
-   * người nhận biết ba khoá này là chỗ ghi thông tin tích hợp, không phải thứ máy nào trong gói đọc.
-   */
-  HUBSPOT_BASE_URL: 'chỗ ghi endpoint HubSpot của dự án; code đọc nó là spec DB lớp PROJECT, không đi theo gói',
-  HUBSPOT_PORTAL_ID: 'id portal để người/agent tra cứu; cùng lý do với HUBSPOT_BASE_URL',
-  HUBSPOT_ACCESS_TOKEN: 'token cho spec DB lớp PROJECT; gói generic không mang spec đó nên không máy nào trong gói đọc',
   TASK_OUTPUT_DIR: 'dẫn xuất từ PROJECT_OUTPUT_DIR + TASK_KEY; khai ra để người dùng biết nó tồn tại và có thể ghi đè',
-  OPS_URL: 'URL gốc của app để người/agent tra cứu; code dùng OPS_BASE_URL cho việc điều hướng thật',
-  OPS_LOGIN_URL: 'ghi lại đường đăng nhập cho người mới vào dự án; luồng login thật dựng từ OPS_BASE_URL',
-  OPS_SWAGGER_URL: 'nơi tra hợp đồng API khi cần kiểm tầng BE — agent mở bằng tay, không script nào tự gọi',
-  LMS_API_BASE_URL: 'ghi lại base URL của LMS-BE để tra khi test giáo viên/học viên; token mượn từ request thật',
-  LMS_SWAGGER_URL: 'nơi tra hợp đồng API của LMS — mở bằng tay như OPS_SWAGGER_URL',
-  FEATURE_1_URL: 'chỗ ghi 3 màn trọng tâm của dự án để người mới biết bắt đầu từ đâu',
-  FEATURE_2_URL: 'màn trọng tâm thứ hai — cùng lý do với FEATURE_1_URL: chỗ ghi để người mới biết bắt đầu từ đâu',
-  FEATURE_3_URL: 'màn trọng tâm thứ ba — cùng lý do với FEATURE_1_URL: chỗ ghi để người mới biết bắt đầu từ đâu',
-  JIRA_EPIC_URL: 'ghi lại epic đang làm để trích dẫn trong báo cáo; script Jira làm việc theo issue key, không theo URL',
-  CONFLUENCE_REQUIREMENT_URL: 'ghi lại trang requirement nguồn để truy nguyên oracle; script Confluence nhận page id',
-  HUBSPOT_ENV: 'ghi môi trường HubSpot đang trỏ (staging/prod) để người đọc biết dữ liệu ở đâu ra',
-  HUBSPOT_UI_DOMAIN: 'domain UI HubSpot để dựng link cho người xem trong báo cáo',
-  HUBSPOT_MCP_PACKAGE: 'ghi lại package MCP HubSpot đang dùng — thông tin môi trường, không phải cấu hình runtime',
+  /*
+   * BACKLOG_USERNAME/EMAIL/PAT/EPIC_URL/STORY_URL: migrate Jira→Backlog (22/09/2026,
+   * scripts/integrations/backlog/*) đã wire xong BACKLOG_URL/BASE_URL/API_KEY/PROJECT_KEY/STORY_KEY/
+   * DEV_ASSIGNEE/FE_ASSIGNEE/BE_ASSIGNEE/BUG_ISSUE_TYPE/SPRINT_FIELD_ID — 5 khoá dưới đây KHÔNG có client
+   * nào đọc vì Backlog tự thân không cần chúng: auth chỉ cần BACKLOG_API_KEY (không username/email/PAT),
+   * và bug_reporter.js resolve story qua BACKLOG_STORY_KEY (không cần URL riêng cho epic/story).
+   */
+  BACKLOG_USERNAME: 'tên đăng nhập Backlog để tra cứu; auth thật dùng BACKLOG_API_KEY qua ?apiKey=, không cần username',
+  BACKLOG_EMAIL: 'email tài khoản Backlog; ghi cho người đọc, Backlog API không cần email để auth',
+  BACKLOG_PAT: 'personal access token dự phòng cho Backlog; API hiện chỉ hỗ trợ apiKey, chưa có nơi dùng PAT',
+  BACKLOG_EPIC_URL: 'ghi lại epic đang làm để trích dẫn trong báo cáo; script resolve theo BACKLOG_STORY_KEY, không theo URL',
+  BACKLOG_STORY_URL: 'ghi lại story đang làm để trích dẫn trong báo cáo; script resolve theo BACKLOG_STORY_KEY, không theo URL',
 };
 
 /*
@@ -223,11 +213,9 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
   test('profiles/task.env.example cũng phải khai đủ khoá mà code đọc theo prefix', () => {
     const f = path.join(REPO, 'profiles/task.env.example');
     expect(fs.existsSync(f), 'thiếu profiles/task.env.example — gói phát hành không nói được task.env cần gì').toBe(true);
-    const keys = keysOf(f);
-    // Ba nhóm bắt buộc: app creds · scope · DB read-only (tầng §23 đọc theo prefix LIB_MASTER_DB_RO_).
-    for (const need of ['OPS_USERNAME', 'OPS_PASSWORD']) {
-      expect(keys.some((k) => k.startsWith(need)), `task.env.example thiếu ${need}*`).toBe(true);
-    }
+    // Nhóm bắt buộc: DB read-only (tầng §23 đọc theo prefix LIB_MASTER_DB_RO_). OPS_USERNAME/PASSWORD đã
+    // BỎ khỏi yêu cầu (kit không còn tích hợp OPS — xem BACKLOG_* thay Jira, không còn LMS/OPS/AIO/
+    // Confluence/HubSpot/Feature trong .env/task.env kể từ khi tổ chức chuyển hẳn sang Backlog).
     const body = fs.readFileSync(f, 'utf8');
     expect(body, 'task.env.example phải nhắc prefix LIB_MASTER_DB_RO_ — tầng §23 đọc creds DB theo prefix đó, và preflight CHẶN khi thiếu')
       .toMatch(/LIB_MASTER_DB_RO_/);

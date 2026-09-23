@@ -30,10 +30,9 @@ Phase này chỉ xử lý phần đã approve. Nó không đọc lại tài li�
 | `APPROVED_REVIEW_FILE` | Yes | Path tới `change/regen/review-checklist.md` đã được review. |
 | `APPROVED_TC_IDS` | Recommended | Nếu bỏ trống, lấy từ review checklist. |
 | `EXECUTION_SCOPE_NOTE` | Optional | Ghi chú nếu QA Lead muốn mở rộng subset. |
-| `REPUBLISH_TESTCASES` | Optional | `1` (mặc định nếu testcase từng publish) — re-publish TC UPDATED+NEW lên **AIO Tests** sau merge (Step 2b). |
-| `TESTCASE_SOURCE` | Optional | `aio` (mặc định) hoặc `excel`. `aio`: sau re-publish, pull TC affected từ AIO làm nguồn execute; `excel`: execute từ Excel local đã merge. |
-| `PUSH_EXECUTION` | Optional | `1` (mặc định như các phase) — tạo **cycle** trên AIO sau execute (Step 6b). |
-| Thư mục cycle | Optional | `--folder "<Tên sprint>"` để nhóm cycle theo sprint (AIO KHÔNG có Test Plan). |
+| `REPUBLISH_TESTCASES` | Optional | `1` (mặc định nếu testcase từng publish) — re-publish (ghi đè) **Google Sheet** sau merge (Step 2b). |
+| `TESTCASE_SOURCE` | Optional | Mặc định tải lại từ Google Sheet sau re-publish làm nguồn execute; `excel` để execute từ Excel local đã merge (chưa publish). |
+| `PUSH_EXECUTION` | Optional | `1` (mặc định như các phase) — đồng bộ status execute lên Sheet sau execute (Step 6b). |
 
 ## Gate Before Running
 
@@ -150,48 +149,27 @@ npm run design:gate                                  # cột canonical, ô lõi 
 TASK_ENV=... npm run dim:coverage -- --enforce        # chiều required + NGƯỠNG theo risk band
 ```
 
-   Vì sao cần: TC `NEW`/`UPDATED` ở đây đi **thẳng lên AIO**. Không có gate nội dung thì case thiếu cột/rỗng
+   Vì sao cần: TC `NEW`/`UPDATED` ở đây đi **thẳng lên Sheet**. Không có gate nội dung thì case thiếu cột/rỗng
    ô lõi/không có oracle vẫn publish được — trong khi cùng loại case đó bị chặn ở Phase 1.
 
-### Step 2b: Re-publish testcase lên AIO (TC UPDATED + NEW)
+### Step 2b: Re-publish testcase lên Google Sheet (TC UPDATED + NEW)
 
-Chỉ chạy khi testcase đã từng publish lên AIO (có `reports/aio-testcase-publish-summary.md`) và `REPUBLISH_TESTCASES != 0`. Mục đích: đẩy phần thay đổi lên AIO để AIO khớp Excel và làm **nguồn execute**.
+Chỉ chạy khi testcase đã từng publish lên Sheet (có `GOOGLE_SHEET_URL` trong `profiles/<TASK_KEY>/task.env`) và `REPUBLISH_TESTCASES != 0`. Mục đích: đẩy phần thay đổi lên Sheet để Sheet khớp Excel và làm **nguồn execute**.
 
-- Chạy `aio:publish` **chỉ cho TC UPDATED + NEW đã approve** — dedup theo `automationKey` (= TC ID) đảm bảo **update case cũ + tạo case mới**, KHÔNG re-create toàn bộ (quan trọng vì **AIO không có API xoá**):
+- Agent `mcp__claude_ai_Google_Drive__update_file` với `.xlsx` canonical đã merge (TC `UPDATED` + `NEW` đã approve nằm sẵn trong đó) — ghi đè toàn workbook, không cần dedup theo key riêng như AIO cũ vì không có khái niệm "tạo trùng".
+- **Review nội dung `.xlsx` local trước khi ghi đè** — Drive MCP không "sửa 1 ô", ghi đè là ghi đè cả file.
+- Precondition đi theo case (cột `Tiền điều kiện`), không cần flag riêng.
+- Nếu testcase CHƯA từng publish lên Sheet → bỏ qua bước này (chạy `TESTCASE_SOURCE=excel`), hoặc publish lần đầu theo `.agent/workflows/phase1_04_auto_publish_jira.md`.
 
-```powershell
-npm run aio:publish -- --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx --story <JIRA_STORY_KEY> --only <UPDATED+NEW TC_IDs> --folder-root "<base folder như lần publish trước>"
-npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --only <UPDATED+NEW TC_IDs> --folder-root "<base folder như lần publish trước>" --qa-approved
-```
+### Step 3: Optional Cleanup — Unlink stale Test khỏi Story/Task (chạy SAU Step 2b re-publish)
 
-- Dùng lại **đúng `--folder-root`** như lần publish gốc; nhóm chức năng thành subfolder cấp 2 (`<root>/<nhóm>`) nên TC NEW tự vào đúng chỗ. ⚠ Bộ cũ có cây 3 cấp — `aio:publish` chỉ dựng 2 cấp, nên với bộ đó hãy vá tại chỗ bằng `--only`.
-- Dry-run là **mặc định**: xác nhận số update/created + cây folder đúng, rồi mới `aio:publish:apply ... --qa-approved`.
-- Precondition đi theo case (field `precondition`), không cần flag riêng — AIO không có Precondition issue.
-- Nếu testcase CHƯA từng publish lên AIO → bỏ qua bước này (chạy `TESTCASE_SOURCE=excel`).
-
-### Step 3: Optional Testcase Cleanup — Deprecate (chạy SAU Step 2b re-publish)
-
-> Cleanup CHỈ gắn label stale/restore cho TC bị **bỏ khỏi Excel** — KHÔNG tạo/không update TC (việc đó do Step 2b re-publish). Chạy sau re-publish để dọn TC không còn hợp lệ.
+> Sheet không có khái niệm case status/deprecate — case bị bỏ khỏi Excel tự động biến mất khỏi Sheet ngay ở Step 2b (ghi đè toàn workbook). Bước này CHỈ còn cần khi muốn unlink liên kết Test↔Story/Task trên Backlog, không liên quan tới TMS.
 
 Chỉ chạy khi tất cả điều kiện đúng:
 
 - Excel/testcase canonical đã merge theo Human Review approval.
-- Testcase đã từng publish lên AIO trước đó.
-- QA/Human Review xác nhận muốn cleanup mirror.
-
-Mặc định chỉ dry-run:
-
-```powershell
-npm run aio:deprecate-stale -- --story <JIRA_STORY_KEY> --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx
-```
-
-Apply thật chỉ khi có approval riêng:
-
-```powershell
-npm run aio:deprecate-stale:apply -- --story <JIRA_STORY_KEY> --file <...>.xlsx
-```
-
-Không xoá case. Case rời khỏi Excel chỉ được chuyển `caseStatus` sang **Deprecated** (`npm run aio:deprecate-stale`), giữ nguyên lịch sử run; TC quay lại Excel thì trả về Published.
+- Testcase đã từng publish lên Sheet trước đó.
+- QA/Human Review xác nhận muốn unlink.
 
 ### Step 4: Select Partial Execution Scope
 
@@ -217,13 +195,9 @@ Output:
 change/partial-execution/selected-tc-list.txt
 ```
 
-**Nguồn execute (mặc định `TESTCASE_SOURCE=aio`):** sau Step 2b re-publish, kéo testcase từ AIO về canonical local để execute (AIO là source of truth khi execute):
+**Nguồn execute:** sau Step 2b re-publish, agent `download_file_content` Sheet mới nhất về canonical local qua Drive MCP để execute (Sheet là bản đã ghi đè ở Step 2b, khớp Excel vừa merge):
 
-```powershell
-npm run aio:pull:write -- --story <JIRA_STORY_KEY>
-```
-
-→ execute từ `test-cases/from-aio/*.xlsx` (chỉ chạy subset TC affected đã chọn). Nếu `TESTCASE_SOURCE=excel`: execute từ Excel local đã merge.
+→ execute từ `test-cases/from-sheet/*.xlsx` (chỉ chạy subset TC affected đã chọn). Nếu `TESTCASE_SOURCE=excel`: execute từ Excel local đã merge (chưa publish).
 
 ### Step 5: Execute And Capture Evidence
 
@@ -255,22 +229,20 @@ change/partial-execution/artifacts/
 | `SKIP_BLOCKED` | Skip có lý do hợp lệ và không thể tránh ngay. |
 | `NEED_REVIEW` | Expected/source vẫn chưa đủ rõ, không merge/execute tiếp. |
 
-### Step 6b: Đẩy kết quả lên AIO — tạo cycle (khi `PUSH_EXECUTION=1`)
+### Step 6b: Đồng bộ kết quả lên Google Sheet (khi `PUSH_EXECUTION=1`)
 
-Sau khi phân loại, tạo **cycle** trên AIO cho **subset đã execute** — như các phase khác:
+Sau khi phân loại, đồng bộ status cho **subset đã execute** — như các phase khác:
 
 - Ghi `test-results[/runs/<RUN_ID>]/testcase-status.json` cho subset đã execute (status theo canonical trong `.agent/config/verdict_taxonomy.json`; bản ghi `FAIL` kèm step-level + evidence bước lỗi).
-- Tạo cycle (và thư mục cycle theo sprint):
+- Merge vào `.xlsx` local rồi ghi đè Sheet:
 
 ```powershell
-npm run aio:push-exec -- --task <TASK_KEY> --only <selected TC_IDs> --folder "<Tên sprint>" [--run-id <RUN_ID>]
-npm run aio:push-exec:apply -- --task <TASK_KEY> --only <selected TC_IDs> --folder "<Tên sprint>" [--run-id <RUN_ID>]
+node scripts/convert_excel/merge_execution_status.js <local .xlsx> test-results[/runs/<RUN_ID>]/testcase-status.json --only <selected TC_IDs>
 ```
+→ agent soi lại file đã merge → `update_file` qua Drive MCP.
 
-- **Chỉ gồm subset đã execute** (partial), không phải toàn bộ task.
-- AIO KHÔNG có Test Plan: dùng `--folder "<Tên sprint>"` để nhóm cycle. Chạy lại cùng `--cycle-title` thì dùng lại cycle cũ, không đẻ cycle trùng.
-- Cơ chế chung (status-map, validate theo `getStatuses`, tên execution, pre-create field bắt buộc, đóng execution) **giống Phase 2 §13b** — xem `prompt_templates/run_phase2_template.md`, không lặp lại ở đây.
-- Dry-run trước rồi `--write`.
+- **Chỉ gồm subset đã execute** (partial), không phải toàn bộ task — dùng `--only` để giới hạn.
+- Cơ chế chung (status-map theo cột `sheet`, gate `output_gate`/`plan_guard`, filter `carriedOver`/non-verdict) **giống Phase 2 §13b** — xem `prompt_templates/run_phase2_template.md`, không lặp lại ở đây.
 
 ### Step 7: Bug Candidate Handoff
 
@@ -304,9 +276,9 @@ Không log Jira trực tiếp trong Partial Rerun. Jira chỉ được log sau k
 - Không đọc tài liệu nguồn để tự regenerate lại trong Phase 2.
 - Không chạy full regression mặc định.
 - Không log Jira bug trực tiếp từ Partial Rerun này.
-- Không cleanup (Deprecate) case trên AIO nếu chưa có QA approval riêng.
-- Re-publish (Step 2b) **chỉ TC UPDATED + NEW** (dedup: update theo TC ID + tạo mới), KHÔNG re-create toàn bộ; dùng lại đúng base folder + subfolder-by-sheet.
-- Execute + Test Execution chỉ cho **subset affected/UPDATED/NEW đã chọn**, không toàn bộ; Test Plan chỉ **link** (không tạo).
+- Không unlink Test khỏi Story/Task trên Backlog nếu chưa có QA approval riêng.
+- Re-publish (Step 2b) ghi đè **toàn workbook** đã merge TC UPDATED + NEW — review nội dung local trước khi `update_file`.
+- Execute + đồng bộ execution chỉ cho **subset affected/UPDATED/NEW đã chọn**, không toàn bộ.
 - Nếu có `FAIL_PRODUCT_CANDIDATE`, phải tạo `bug-candidates.md` thay vì log Jira.
 - Không sửa expected result sau approval nếu không có review lại.
 
@@ -316,7 +288,7 @@ Trả lời ngắn:
 
 - Review file đã dùng.
 - TC đã merge.
-- Re-publish AIO summary (updated/created + cây folder) nếu chạy Step 2b.
+- Re-publish Sheet summary (link Sheet, có ghi đè hay không) nếu chạy Step 2b.
 - TC đã execute (subset).
 - Pass/fail/skip.
 - Evidence path.

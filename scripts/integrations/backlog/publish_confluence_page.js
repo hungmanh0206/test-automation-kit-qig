@@ -459,7 +459,7 @@ function inferredHeadingForImage(filename) {
     'output-structure.png': '4.2 Output của từng story/task',
     'phase1-quality-gate.png': '5.3 Review sau Phase 1',
     'phase2-execution-loop.png': '5.5 Phase 2 - Execute automation',
-    'jira-bug-evidence.png': '5.7 Log Jira bug',
+    'backlog-bug-evidence.png': '5.7 Log Backlog bug',
     'partial-rerun-flow.png': '6.2 Các bước của Partial Rerun',
     'phase-selection.png': '9. Prompt và command thường dùng',
   };

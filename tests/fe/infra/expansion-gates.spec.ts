@@ -38,13 +38,16 @@ function makeExecutedTask(withPlan: boolean) {
   fs.mkdirSync(path.join(t, 'test-cases'), { recursive: true });
   fs.mkdirSync(path.join(t, 'test-results'), { recursive: true });
   fs.mkdirSync(path.join(t, 'reports'), { recursive: true });
-  fs.writeFileSync(path.join(t, 'test-cases', 'tc.md'), `# fixture\n\n${TC_HEADER}${tcRow('TC_001', '1. Net = 2.500.000')}`, 'utf8');
+  const mdPath = path.join(t, 'test-cases', 'tc.md');
+  fs.writeFileSync(mdPath, `# fixture\n\n${TC_HEADER}${tcRow('TC_001', '1. Net = 2.500.000')}`, 'utf8');
   fs.writeFileSync(path.join(t, 'test-results', 'testcase-status.json'), JSON.stringify({
     taskKey: 'T-1',
     tests: [{ tcId: 'TC_001', status: 'PASSED', comment: 'Net đúng 2.500.000 theo bảng giá.', evidence: ['a.png'] }],
   }), 'utf8');
   if (withPlan) fs.writeFileSync(path.join(t, 'reports', 'expansion-plan.md'), '# Kế hoạch mở rộng\n', 'utf8');
-  return { env: { TASK_KEY: 'T-1', PROJECT_OUTPUT_DIR: pod }, taskDir: t };
+  const xlsxPath = path.join(t, 'test-cases', 'tc.xlsx');
+  run([path.join(REPO, 'scripts/convert_excel/md_to_xlsx.js'), mdPath, xlsxPath, '--lenient'], { TASK_KEY: 'T-1', PROJECT_OUTPUT_DIR: pod });
+  return { env: { TASK_KEY: 'T-1', PROJECT_OUTPUT_DIR: pod }, taskDir: t, xlsxPath };
 }
 
 // ── 1. Bắt buộc CÂN NHẮC mở rộng, không bắt buộc mở đủ trục ───────────────────────────────────────────────
@@ -107,26 +110,29 @@ test.describe('@infra self-review --enforce — chặn thật, không chỉ in b
 /*
  * `self-review --enforce` là bước NGƯỜI/agent tự chạy — bỏ qua nó rồi đẩy thẳng kết quả lên TCM thì trước
  * đây không gì cản (lượt execute SAPP-26523: 3 case, 0/5 trục, mọi gate xanh). Nên luật đứng thêm ở
- * `push_execution_aio` — chỗ có exit code nằm trên đường GHI THẬT.
+ * `merge_execution_status.js` (thay `push_execution_aio.js` cũ — AIO ngưng dùng 22/09/2026, xem plan) —
+ * chỗ có exit code nằm trên đường GHI THẬT (merge kết quả vào Excel/Sheet).
  */
 test.describe('@infra luật mở rộng — chặn ở cả finalize lẫn đường publish', () => {
-  test('push_execution_aio CHẶN khi có case band high mà chưa có kế hoạch (chạy offline)', () => {
-    const { env, taskDir } = makeExecutedTask(false);
-    const r = run([path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), '--task', 'T-1', '--task-output', taskDir], env);
-    expect(r.code, 'đường publish không chặn thì bỏ qua finalize là lọt').not.toBe(0);
+  test('merge_execution_status CHẶN khi có case band high mà chưa có kế hoạch (chạy offline)', () => {
+    const { env, taskDir, xlsxPath } = makeExecutedTask(false);
+    const statusPath = path.join(taskDir, 'test-results', 'testcase-status.json');
+    const r = run([path.join(REPO, 'scripts/convert_excel/merge_execution_status.js'), xlsxPath, statusPath, '--task-output', taskDir], env);
+    expect(r.code, 'đường merge không chặn thì bỏ qua finalize là lọt').not.toBe(0);
     expect(r.out).toMatch(/GATE MỞ RỘNG/);
     expect(r.out).toMatch(/expansion:plan/);
     expect(r.out, 'phải có đường thoát có chủ ý').toMatch(/--qa-approved/);
   });
 
   test('có kế hoạch rồi thì gate mở rộng cho qua', () => {
-    const { env, taskDir } = makeExecutedTask(true);
-    const r = run([path.join(REPO, 'scripts/integrations/aio/push_execution_aio.js'), '--task', 'T-1', '--task-output', taskDir], env);
+    const { env, taskDir, xlsxPath } = makeExecutedTask(true);
+    const statusPath = path.join(taskDir, 'test-results', 'testcase-status.json');
+    const r = run([path.join(REPO, 'scripts/convert_excel/merge_execution_status.js'), xlsxPath, statusPath, '--task-output', taskDir], env);
     expect(r.out).not.toMatch(/GATE MỞ RỘNG/);
   });
 
   test('MỘT nguồn: cả hai cửa qua plan_guard, không tự tính band', () => {
-    for (const f of ['scripts/qa/self_review.js', 'scripts/integrations/aio/push_execution_aio.js']) {
+    for (const f of ['scripts/qa/self_review.js', 'scripts/convert_excel/merge_execution_status.js']) {
       const src = fs.readFileSync(path.join(REPO, f), 'utf8');
       expect(src, `${f} phải dùng plan_guard`).toMatch(/plan_guard/);
       expect(src, `${f} không được tự gọi bandOf — luật sẽ trôi khỏi nhau`).not.toMatch(/\.bandOf\(/);
@@ -262,14 +268,6 @@ test.describe('@infra Loại case — cột người khai, không suy từ nhóm
     expect(v.problems.join(' '), 'giá trị lạ phải bị nêu tên').toMatch(/Loại case.*Smoke/);
   });
 
-  test('publish KHÔNG còn suy case type từ tên nhóm', () => {
-    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/publish_testcases_aio.js'), 'utf8');
-    expect(src, 'còn suy từ group là quay lại đúng chỗ cũ: 96% Functional').not.toMatch(/typeOf\(t\.group/);
-    expect(src).toMatch(/caseTypeResolver/);
-    // ID phải hỏi AIO, không hardcode con số như bản cũ (4 = API, 6 = Security).
-    expect(src).toMatch(/cfg\.caseTypes/);
-  });
-
   test('template sinh case DẠY đủ 9 loại, kèm ĐỊNH NGHĨA và ca "KHÔNG chọn khi"', () => {
     const md = fs.readFileSync(path.join(REPO, 'prompt_templates/phase1/02_gen_testcases.md'), 'utf8');
     expect(md).toMatch(/\| TC ID \| Loại case \|/);
@@ -297,23 +295,6 @@ test.describe('@infra Loại case — cột người khai, không suy từ nhóm
     const known = new Set([...m![1].matchAll(/'([a-z0-9]+)'/g)].map((x) => x[1]));
     const missing = CASE_TYPES.types.flatMap((t: any) => t.tags.filter((g: string) => !known.has(g.toLowerCase())).map((g: string) => `${t.name}→[${g}]`));
     expect(missing, `tag không có trong TAG_OF: ${missing.join(', ')}`).toEqual([]);
-  });
-
-  test('publisher KHÔNG còn hạ ngầm về Functional khi tên loại không khớp AIO', () => {
-    /*
-     * Bản cũ in một dòng ⚠ rồi vẫn ghi với `Functional`. Cảnh báo trôi mất trong log của lệnh đẩy hàng
-     * trăm case, còn dữ liệu trên AIO sai vĩnh viễn vì AIO không có API xoá. Đúng cơ chế đã làm 14 case
-     * `Highest` tụt xuống Medium.
-     */
-    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/publish_testcases_aio.js'), 'utf8');
-    expect(src, 'còn hằng số fallback = còn đường hạ ngầm').not.toMatch(/CASE_TYPE_FALLBACK/);
-    expect(src, 'phải DỪNG trước vòng ghi').toMatch(/CT\.problem\(\)/);
-  });
-
-  test('pull mang Case Type từ AIO về lại Excel — round-trip không mất trục', () => {
-    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/pull_testcases_aio.js'), 'utf8');
-    expect(src).toMatch(/'Loại case'/);
-    expect(src).toMatch(/\(c\.type \|\| \{\}\)\.name/);
   });
 });
 

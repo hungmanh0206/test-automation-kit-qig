@@ -8,7 +8,7 @@ Tránh chạy nhầm task, nhầm story hoặc thiếu env khiến testcase bị
 
 ## Workflow
 
-0. **PREFLIGHT (G1 — chạy TRƯỚC MỌI thứ, forcing gate):** `node scripts/qa/preflight_gate.js --mode phase2 --task <TASK_KEY>` → CHẶN nếu thiếu input bắt buộc (project_context, config JSON malformed) hoặc **testcase canonical local chưa có** (chưa kéo AIO / chưa có Excel). Chưa ĐẠT thì DỪNG, đọc/sửa input rồi mới execute — đừng chạy trên nền thiếu.
+0. **PREFLIGHT (G1 — chạy TRƯỚC MỌI thứ, forcing gate):** `node scripts/qa/preflight_gate.js --mode phase2 --task <TASK_KEY>` → CHẶN nếu thiếu input bắt buộc (project_context, config JSON malformed) hoặc **testcase canonical local chưa có** (chưa tải Google Sheet / chưa có Excel). Chưa ĐẠT thì DỪNG, đọc/sửa input rồi mới execute — đừng chạy trên nền thiếu.
 1. Echo lại:
    - `PROJECT_OUTPUT_DIR`
    - `TASK_KEY`
@@ -16,7 +16,7 @@ Tránh chạy nhầm task, nhầm story hoặc thiếu env khiến testcase bị
    - `RUN_ID` nếu có
 2. Nếu yêu cầu hiện tại không nêu rõ `TASK_KEY`, không dùng `TASK_KEY` từ `.env` hoặc context cũ để chạy; phải hỏi lại.
 3. Đọc artifact local:
-   - Nguồn execute theo `TESTCASE_SOURCE`: **mặc định `aio`** → `<TASK_OUTPUT_DIR>/test-cases/from-aio/*.xlsx` (kéo bằng `npm run aio:pull:write -- --story <JIRA_STORY_KEY>` ở Bước 0); `excel` → `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`.
+   - Nguồn execute: `<TASK_OUTPUT_DIR>/test-cases/from-sheet/*.xlsx` — agent tải bản MỚI NHẤT từ Google Sheet qua Drive MCP ở Bước 0 (dùng `GOOGLE_SHEET_URL` trong `profiles/<TASK_KEY>/task.env`) TRƯỚC mỗi lượt execute.
    - `<TASK_OUTPUT_DIR>/test-cases/` Markdown chỉ dùng khi cần đọc chi tiết vượt ngoài cell `Tiền điều kiện` (cách dựng chi tiết nằm ở `### Setup Readiness` của `phase1-summary.md`).
    - `<TASK_OUTPUT_DIR>/reports/phase1-summary.md` (gồm `### Setup Readiness` và `### Precondition Execution Matrix` — dùng để chọn case automatable / cần hook / blocked trước khi execute)
    - `<TASK_OUTPUT_DIR>/reports/capability-request.md` (nếu có — danh sách capability gap; xem Capability gate ở Rules)
@@ -36,7 +36,7 @@ Tránh chạy nhầm task, nhầm story hoặc thiếu env khiến testcase bị
 
 - Không sửa `.env` chung khi có session khác; truyền env theo command nếu cần.
 - Không đọc lại toàn bộ requirement thô nếu Phase 1 summary đã đủ.
-- **Phase 2 execute mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`): kéo về canonical local `test-cases/from-aio/*.xlsx` (`npm run aio:pull:write -- --story <JIRA_STORY_KEY>`) rồi execute từ file đó — KHÔNG gọi AIO/Jira cho từng case lúc execute. `TESTCASE_SOURCE=excel` để dùng Excel local. (Excel là source of truth khi gen/publish.)
+- **Phase 2 execute LUÔN tải bản Google Sheet mới nhất về trước** (`test-cases/from-sheet/*.xlsx`, qua Drive MCP) rồi execute từ file đó — KHÔNG gọi Drive/Backlog cho từng case lúc execute. (Excel/Sheet là source of truth khi gen/publish.)
 - Không chạy Phase 2 nếu không có testcase đã review.
 - Resolve cách dựng precondition theo tag `[<method>]` của từng TC trong scope trước khi execute; thiếu capability thì ghi blocker, KHÔNG dựng bằng DB.
 - Definition of Ready (DoR) trước khi execute mỗi TC: precondition rõ + setup method rõ + test data/fixture rõ + verification + cleanup + capability (API/hook/mock/sandbox/fixture) đã tồn tại. Thiếu bất kỳ điều nào → KHÔNG chạy bừa và KHÔNG connect DB: ghi `BLOCKED_SETUP` (capability/contract chưa đủ) hoặc `SKIP_SETUP` (`Manual-only`) kèm missing capability cụ thể.

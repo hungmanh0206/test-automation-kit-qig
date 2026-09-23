@@ -9,11 +9,11 @@
 | ✅ | Node.js `>=20` và `npm`/`npx` (khớp `engines` trong `package.json` và `.nvmrc`). |
 | ✅ | Playwright browser runtime. |
 | ✅ | AI Agent hoặc IDE có quyền đọc workspace. |
-| ✅ | Token/quyền truy cập Jira, Confluence, Figma nếu Phase 1 cần fetch tài liệu. |
-| ✅ | Credential test cho app/API trong môi trường dev/staging. |
-| ✅ | MCP config cho `atlassian`, `figma`, `playwright` nếu dùng AI Agent tích hợp MCP. |
+| ✅ | Token/quyền truy cập Backlog, Confluence, Figma nếu Phase 1 cần fetch tài liệu. Google Sheet/Google Drive dùng qua Drive MCP đã kết nối sẵn trong phiên chat (không cần token riêng). |
+| ✅ | Credential test cho app/API trong môi trường dev/staging (vd `OPS_BASE_URL`/`OPS_LOGIN_URL`/`OPS_USERNAME`/`OPS_PASSWORD` trong `.env`). |
+| ✅ | MCP config cho `atlassian` (đọc Confluence), `figma`, `playwright` nếu dùng AI Agent tích hợp MCP; Google Drive dùng connector có sẵn của Claude, không cần khai trong `mcp_config.md`. |
 | ➕ | (Optional) Docker hoặc k6 — chỉ cần khi chạy **load test Loại B** (`npm run load`); thiếu thì lệnh tự skip sạch. |
-| ➕ | (Optional) 2 tài khoản test `OPS_USERNAME_LOW/HIGH` trong `task.env` — cho ma trận authz/IDOR của `npm run security`. |
+| ➕ | (Optional) 2 tài khoản test quyền khác nhau (vd `OPS_USERNAME_LOW`/`OPS_USERNAME_HIGH`) trong `task.env` — cho ma trận authz/IDOR của `npm run security`. |
 | ❌ | DB credential/connection string không cần và không dùng trong workflow chuẩn. |
 
 ## Setup
@@ -36,18 +36,18 @@
 Nhánh GitLab **cố ý bị gỡ 2 file** so với GitHub (khai ở `.agent/config/gitlab_strip.json`, do chủ repo
 yêu cầu): `tests/support/setup/db/db2db3.connect.spec.ts` và `tests/support/setup/db/verify.db2db3.spec.ts`.
 
-Nên sau khi cài xong, con số đúng của mỗi bên khác nhau. Đo ngày 19/09/2026 bằng cách clone sạch cả hai
+Nên sau khi cài xong, con số đúng của mỗi bên khác nhau. Đo ngày 23/09/2026 bằng cách clone sạch cả hai
 rồi chạy thật:
 
 | | GitHub | GitLab |
 |---|---|---|
-| file được track | 491 | 489 |
-| `npx playwright test tests/fe/infra` | **609 xanh · 2 bỏ qua · 0 đỏ** | **608 xanh · 3 bỏ qua · 0 đỏ** |
-| `npm run ci:scope` đếm | 63 spec | 61 spec |
+| file được track | 483 | 481 |
+| `npx playwright test tests/fe/infra` | **570 xanh · 2 bỏ qua · 0 đỏ** | **569 xanh · 3 bỏ qua · 0 đỏ** |
+| `npm run ci:scope` đếm | 62 spec | 60 spec |
 
 **Số của bạn khác bảng này là có gì đó sai** — đừng bỏ qua. Test bỏ qua đều tự khai lý do khi chạy.
 
-Một ngoại lệ hợp lệ: **tổng luôn là 611**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
+Một ngoại lệ hợp lệ: **tổng luôn là 572**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
 Clone mới thì `knowledge/` rỗng nên 2 test tự bỏ qua. Khôi phục bundle `knowledge:backup` xong thì
 chúng chạy thật, và bạn thấy **611 xanh, 0 bỏ qua** — đó là ĐÚNG, không phải lệch.
 
@@ -66,7 +66,7 @@ phần trong đó **không nạp lại được từ nguồn máy**: `domain/`, 
 `environment/`, `locators/` và `bug_tc_map.json` là công sức người ghi tay.
 
 Máy mới cần dùng tiếp bộ nhớ đó thì: máy cũ chạy `npm run knowledge:backup` (đích **ngoài** repo), chép
-bundle sang rồi khôi phục. Phần nạp lại được thì `npm run learn:bugs:apply` (từ Jira) và
+bundle sang rồi khôi phục. Phần nạp lại được thì `npm run learn:bugs:apply` (từ Backlog) và
 `npm run learn -- --scan` (từ `test-results/`).
 
 ### Bộ nhớ của agent không nằm trong repo
@@ -95,7 +95,7 @@ thay vì chép. Nó giữ nguyên hiểu biết đã hết hạn và không có 
 |---|---|---|
 | `PROJECT_OUTPUT_DIR` | Yes | Ví dụ: `outputs/<YOUR_PROJECT>`. |
 | `TASK_KEY` | Yes | Scope folder, ví dụ: `<TASK_KEY>`. |
-| Jira Story/Task | Optional | Cần nếu Phase 1 fetch Jira, publish testcase lên Jira hoặc Phase 2 log Jira bug. |
+| Backlog Story/Task | Optional | Cần nếu Phase 1 fetch Backlog, hoặc Phase 2 log Backlog bug. |
 | Confluence Requirement | Optional | Cần nếu requirement nằm trên Confluence. |
 | Figma URL/API key | Optional | Cần nếu testcase phụ thuộc UI design. |
 | Swagger/OpenAPI URL | Optional | Cần cho API testcase hoặc API automation. |
@@ -108,12 +108,11 @@ thay vì chép. Nó giữ nguyên hiểu biết đã hết hạn và không có 
 | `PROJECT_OUTPUT_DIR=outputs/<YOUR_PROJECT>` | Output root của project. |
 | `TASK_KEY=<TASK_KEY>` | Scope folder của task/feature. |
 | `RUN_ID=<safe-run-id>` | Optional; bắt buộc khi chạy song song nhiều session cùng `TASK_KEY`. |
-| `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN` | Jira integration. |
-| `AIO_API_TOKEN` | Publish testcase từ Excel lên **AIO Tests** sau QA confirmation trong Phase 1. |
-| `AIO_PROJECT_KEY`, `AIO_BASE_URL`, `AIO_THROTTLE_MS` | Optional; `AIO_PROJECT_KEY` mặc định lấy `JIRA_PROJECT_KEY`, `AIO_THROTTLE_MS` khi bị rate limit (AIO trả **body rỗng** thay vì 429). |
-| `JIRA_STORY_KEY` / `--story` | Ghi vào `jiraRequirementIDs` của case — đường nối case ↔ Story/Task. |
-| `TESTCASE_SOURCE=aio` (mặc định) | Nguồn execute Phase 2: `npm run aio:pull:write` kéo về `test-cases/from-aio/*.xlsx` **kèm manifest độ tươi**; `excel` là opt-out. AIO là source of truth ⇒ trước khi execute chạy `npm run aio:verify:enforce` (preflight chặn nếu mirror pull >12 giờ). |
-| `PUSH_EXECUTION=confirm` | Đẩy kết quả execute thành **cycle** trên AIO sau khi QA duyệt preview . |
+| `BACKLOG_BASE_URL`, `BACKLOG_USERNAME`/`BACKLOG_EMAIL`, `BACKLOG_API_KEY`, `BACKLOG_PROJECT_KEY` | Backlog integration (bug logging + fetch Confluence/Figma). |
+| `GOOGLE_SHEET_URL` | Link Google Sheet đã publish testcase (ghi trong `profiles/<TASK_KEY>/task.env` sau Phase 1 Auto Publish); dùng để agent tìm đúng file khi re-publish hoặc tải bản mới nhất về execute. |
+| `BACKLOG_STORY_KEY` / `--story` | Metadata liên kết case ↔ Story/Task; ghi trong report, không có field riêng trên Sheet (Sheet không phải issue tracker). |
+| Nguồn testcase Phase 2 (mặc định) | Agent tải bản Google Sheet mới nhất qua Drive MCP về `test-cases/from-sheet/*.xlsx` trước mỗi lượt execute (không cần token — dùng Drive MCP có sẵn trong phiên chat); `TESTCASE_SOURCE=excel` là opt-out khi chưa publish. |
+| `PUSH_EXECUTION=confirm` | Đồng bộ kết quả execute vào cột `Result` của Sheet (`merge_execution_status.js` rồi `update_file`) sau khi QA duyệt preview. |
 | `CONFLUENCE_URL` | Requirement source nếu dùng Confluence. |
 | `FIGMA_API_KEY` | Figma fetch nếu dùng design source. |
 | `<APP>_BASE_URL`, `<APP>_LOGIN_URL` | UI automation. |
@@ -128,7 +127,7 @@ thay vì chép. Nó giữ nguyên hiểu biết đã hết hạn và không có 
 | Node | `node -v` | Version `>=20`. |
 | NPM | `npm -v` | Version printed without error. |
 | Playwright | `npx playwright --version` | Playwright version printed. |
-| Jira dry check | `npm run integration:check` | Connection/config check completes. |
+| Backlog dry check | `npm run integration:check` | Connection/config check completes. |
 | Task test wrapper | `npm run test:task -- --help` | Usage is printed without executing tests. |
 
 ## Slash Commands (điểm vào)
@@ -144,7 +143,7 @@ Mỗi luồng có một slash command trong `.claude/commands/`. Gõ trong Claud
 /explore <phạm vi>          # exploratory session có charter
 /ui-debug <màn>             # khám phá DOM tìm locator bền
 /gates <TASK_KEY>           # bó gate trước khi finalize
-/publish <TASK_KEY>         # đẩy AIO (dry-run trước)
+/publish <TASK_KEY>         # đẩy Google Sheet qua Drive MCP (review trước khi ghi đè)
 ```
 
 Command chỉ là **con trỏ** tới workflow/prompt thật + danh sách gate; nội dung luồng vẫn ở
@@ -152,7 +151,7 @@ Command chỉ là **con trỏ** tới workflow/prompt thật + danh sách gate; 
 
 - **Ambiguity Gate** ở Phase 1 — còn mơ hồ thì hỏi trước, không đoán rồi sinh testcase.
 - **Xác nhận trước khi chạm UAT** ở Phase 2 / rerun / explore / ui-debug.
-- **Dry-run trước `:apply`** khi publish.
+- **Review nội dung local trước khi ghi đè Sheet thật** khi publish.
 
 ## Run Phase 1
 
@@ -162,9 +161,9 @@ Use [prompt_templates/run_phase1_template.md](prompt_templates/run_phase1_templa
 Chạy Phase 1 cho project <YOUR_PROJECT>.
 Module/Feature: <YOUR_FEATURE>
 Task key/scope folder: <TASK_KEY>
-Input: Jira <JIRA_URL>, Confluence <CONFLUENCE_URL>, Figma <FIGMA_FILE_URL>, Swagger <SWAGGER_URL>
+Input: Backlog <BACKLOG_STORY_URL>, Confluence <CONFLUENCE_URL>, Figma <FIGMA_FILE_URL>, Swagger <SWAGGER_URL>
 Output: <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/
-Chỉ sinh testcase, export Excel và summary; không publish Jira và không execute automation.
+Chỉ sinh testcase, export Excel và summary; không publish lên Sheet và không execute automation.
 ```
 
 Luồng Phase 1 chuẩn:
@@ -178,7 +177,7 @@ Excel (Source of truth khi gen/publish)
 ↓
 QA xác nhận
 ↓
-Auto Publish → AIO Tests (source of truth của testcase)
+Auto Publish → Google Sheet (qua Drive MCP)
 ```
 
 **Trước khi QA xác nhận, chạy 2 gate chiều coverage:**
@@ -191,58 +190,33 @@ npm run domain:trace-back                 # case có oracle nghiệp vụ mà kh
 
 Bộ testcase có **hai trục**: *module* = test **ở đâu**, *chiều* = hỏi **loại câu hỏi nào** (validate · hiển thị · công thức · BE conformance · guard · bảo mật · perf · change-impact). Phủ kín module mà trống một chiều thì bộ vẫn *trông* đầy đủ. Mỗi case gắn **tag chiều** trong tiêu đề (`[Positive][Display] …`); 20 chương nội dung ở [`prompt_templates/phase1/dimensions/`](prompt_templates/phase1/dimensions/); luật đầy đủ ở [RULE_GLOBAL §Chiều coverage](RULE_GLOBAL.md).
 
-Auto Publish là step riêng trong phạm vi Phase 1. Excel là source of truth khi gen/publish. Khi chạy Phase 2, agent **mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`: kéo về canonical local `test-cases/from-aio/*.xlsx` rồi execute từ đó), `excel` là opt-out.
+Auto Publish là step riêng trong phạm vi Phase 1. Excel là source of truth khi gen/publish. Khi chạy Phase 2, agent **luôn tải bản Google Sheet mới nhất qua Drive MCP** về canonical local (`test-cases/from-sheet/*.xlsx`) rồi execute từ đó; `TESTCASE_SOURCE=excel` là opt-out khi chưa publish.
 
-## Phase 1 - Auto Publish Testcase (AIO Tests)
+## Phase 1 - Auto Publish Testcase (Google Sheet)
 
-Chỉ chạy sau khi QA đã xác nhận Excel/testcase được phép publish. Dùng prompt riêng [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md).
+Chỉ chạy sau khi QA đã xác nhận Excel/testcase được phép publish. Dùng prompt riêng [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md) (tên file giữ nguyên cho tương thích ngược, nội dung là luồng Google Sheet).
 
-Kiểm tra payload publish trước khi ghi thật (AIO **không có API xoá** — bắt buộc xem dry-run):
+Publish không phải npm script — là thao tác agent làm trực tiếp qua Google Drive MCP trong phiên chat:
 
-```text
-npm run aio:publish -- --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx --story <JIRA_STORY_KEY>
-```
+1. **Review nội dung `.xlsx` local** trước khi ghi đè Sheet thật (Drive MCP không "sửa 1 ô", ghi đè là ghi đè cả file).
+2. `search_files` tìm Sheet đã publish trước đó (theo `GOOGLE_SHEET_URL` trong `profiles/<TASK_KEY>/task.env`, nếu có).
+3. Có rồi → `update_file` (ghi đè, giữ nguyên link). Chưa có → `create_file` (upload, Drive tự convert sang Google Sheets).
+4. Ghi/cập nhật link trả về vào `profiles/<TASK_KEY>/task.env` (`GOOGLE_SHEET_URL`).
 
-Publish thật khi có `AIO_API_TOKEN` và QA đã approve:
+Re-publish sau khi sửa Excel là lặp lại đúng 4 bước trên (bước 3 sẽ luôn là `update_file` vì Sheet đã tồn tại) — không cần dedup theo key riêng, ghi đè toàn workbook tự nhiên phản ánh đúng Excel hiện tại.
 
-```text
-npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --qa-approved
-```
+Nhóm chức năng thành **sheet riêng** trong workbook (1 sheet/nhóm, dựng từ `md_to_xlsx.js`); TC ID nằm ở cột `ID_TC`. Sheet không phải issue tracker nên **không có** Test Set, requirement issue-link, Precondition issue riêng, assignee hay label — tiền điều kiện nằm trong cột `Tiền điều kiện` của chính sheet. Chi tiết mô hình: [.agent/skills/shared/jira_testcase_publisher/SKILL.md](.agent/skills/shared/jira_testcase_publisher/SKILL.md).
 
-Đẩy lại vài case lẻ sau khi sửa Excel (dedup theo `automationKey` nên là UPDATE, không tạo trùng):
+## Partial Rerun - Cleanup testcase
 
-```text
-npm run aio:publish:apply -- --file <...>.xlsx --story <JIRA_STORY_KEY> --qa-approved --only TC_001,TC_007
-```
-
-`--story <JIRA_STORY_KEY>` không chỉ là metadata local: nó được ghi vào `jiraRequirementIDs` của case. Nhóm chức năng thành **folder** `<root>/<nhóm>` (cây 2 cấp, dựng từ Excel); TC ID nằm ở `automationKey` (KHÔNG dùng `tags` — AIO trả 200 nhưng không lưu).
-
-AIO case không phải Jira issue nên **không có** Test Set, requirement issue-link, Precondition issue riêng, assignee hay label — tiền điều kiện nằm trong field `precondition` của chính case. Khác biệt mô hình đầy đủ: [scripts/integrations/aio/README.md](scripts/integrations/aio/README.md).
-
-## Partial Rerun - Cleanup testcase (Deprecate)
-
-Khi Excel source of truth thay đổi sau khi đã publish, cleanup thuộc nhánh phụ Partial Rerun. Trên AIO, cleanup = đổi `caseStatus` sang **Deprecated** (giữ lịch sử run), KHÔNG xoá. Dùng prompt riêng [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md).
-
-Preview trước:
-
-```text
-npm run aio:deprecate-stale -- --story <JIRA_STORY_KEY> --file <TASK_OUTPUT_DIR>/test-cases/<file>.xlsx
-```
-
-Apply thật sau QA approval:
-
-```text
-npm run aio:deprecate-stale:apply -- --story <JIRA_STORY_KEY> --file <...>.xlsx
-```
-
-Nếu QA muốn bỏ link coverage của stale Test khỏi Story/Task, thêm `--unlink`.
+Khi Excel source of truth thay đổi sau khi đã publish, cleanup thuộc nhánh phụ Partial Rerun. **Không còn lifecycle riêng** như công cụ TMS cũ: re-publish (bước ở trên) ghi đè toàn workbook nên case bị bỏ khỏi Excel tự động biến mất khỏi Sheet ngay lần ghi đè kế tiếp. Dùng prompt riêng [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md) chỉ khi còn việc unlink liên kết Test↔Story/Task trên Backlog (optional, cần QA yêu cầu rõ).
 
 ## Parallel Story Safety
 
 | Rule | Required Behavior |
 |---|---|
 | Mỗi story | Dùng một conversation AI riêng. |
-| Run profile | Mỗi task dùng `profiles/<TASK_KEY>/task.env` (giá trị động: scope, link, tài khoản OPS/LMS); giá trị tĩnh giữ ở `.env` chung. Truyền `TASK_ENV=profiles/<TASK_KEY>/task.env` cho mọi command. |
+| Run profile | Mỗi task dùng `profiles/<TASK_KEY>/task.env` (giá trị động: scope, link story/figma cụ thể, `GOOGLE_SHEET_URL`); giá trị tĩnh dùng chung mọi task (Backlog/Figma key, `OPS_*`) giữ ở `.env` chung. Truyền `TASK_ENV=profiles/<TASK_KEY>/task.env` cho mọi command. |
 | Scope echo | Agent phải echo `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `TASK_OUTPUT_DIR` trước khi ghi file/chạy lệnh. |
 | Shared env | Không sửa `.env`/`.env.local` khi session khác đang chạy; ưu tiên profile qua `TASK_ENV` thay vì sửa `.env` chung. |
 | Command env | Truyền `PROJECT_OUTPUT_DIR` và `TASK_KEY` qua từng command nếu cần override. |
@@ -256,7 +230,7 @@ Khi có `RUN_ID`, Playwright results/report/artifacts nằm dưới:
 <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/runs/<RUN_ID>/
 ```
 
-Local execution/rerun/Jira summary cho cùng run nên nằm dưới:
+Local execution/rerun/Backlog summary cho cùng run nên nằm dưới:
 
 ```text
 <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/runs/<RUN_ID>/
@@ -272,8 +246,8 @@ Task key/scope folder: <TASK_KEY>
 Execution mode: SELECTED_TESTCASES
 Selected TC IDs: <TC_ID_1>, <TC_ID_2>
 Generate/update Playwright script nếu cần, execute, auto-heal, tạo local report.
-Không tạo Jira bug thật nếu chưa được xác nhận.
-Nguồn testcase: TESTCASE_SOURCE=aio (mặc định — kéo từ AIO về test-cases/from-aio/ rồi execute) hoặc excel (test-cases/*.xlsx).
+Không tạo Backlog bug thật nếu chưa được xác nhận.
+Nguồn testcase: tải Google Sheet mới nhất qua Drive MCP về test-cases/from-sheet/ (mặc định) rồi execute, hoặc TESTCASE_SOURCE=excel (test-cases/*.xlsx) nếu chưa publish.
 ```
 
 ## Run Task-Scoped Playwright
@@ -288,12 +262,12 @@ npm run test:task:api -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY>
 
 ## Run Rerun
 
-Use [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) only for failed testcase or Jira bug Re-run after Dev fix.
+Use [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) only for failed testcase or Backlog bug Re-run after Dev fix.
 
 ```text
 Chạy rerun bug cho project <YOUR_PROJECT>.
 Task key/scope folder: <TASK_KEY>
-Jira bug keys: <BUG-1>, <BUG-2>
+Backlog bug keys: <BUG-1>, <BUG-2>
 TC IDs: <TC_ID_1>, <TC_ID_2>
 Chỉ Re-run bug/case liên quan, không đồng bộ tài liệu mới trong bước này.
 ```
@@ -306,8 +280,8 @@ Chỉ Re-run bug/case liên quan, không đồng bộ tài liệu mới trong b�
 | Testcase Markdown | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-cases/*.md` |
 | Testcase Excel | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-cases/*.xlsx` |
 | Capability / Test-Hook Request | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/capability-request.md` (khi còn `Needs hook`/`Manual-only`) |
-| Jira testcase publish | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-publish-summary.md` |
-| Jira testcase cleanup | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-cleanup-summary.md` |
+| Google Sheet publish summary | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-publish-summary.md` |
+| Testcase cleanup (unlink Backlog) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-cleanup-summary.md` |
 | Playwright HTML | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/playwright-report/` |
 | Execution results | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/execution-results.md` |
 | Execution summary | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/execution-summary.md` |
@@ -337,11 +311,11 @@ Tái dùng login/catalog; kết quả ghi `<TASK_OUTPUT_DIR>/reports/` và lên 
 | `node` hoặc `npm` không nhận lệnh | Node chưa cài hoặc PATH chưa reload | Cài Node.js `>=18`, mở terminal mới, chạy `node -v`. |
 | Playwright báo thiếu browser | Browser runtime chưa cài | Chạy `npx playwright install`. |
 | MCP không kết nối | Token/quyền hoặc MCP config sai | Kiểm tra `.env.local` và IDE MCP settings. |
-| Phase 1 không fetch được requirement | URL/quyền Jira/Confluence/Figma sai | Kiểm tra link, token, quyền page/file. |
-| Publish testcase bị lỗi | Thiếu `AIO_API_TOKEN`, sai `AIO_PROJECT_KEY`, hoặc AIO trả body rỗng (rate limit) | Chạy dry-run, kiểm tra token/project, thêm `--throttle 130`; case có steps thì `scriptType` là bắt buộc (script tự set) |
-| Case cũ vẫn còn sau khi bỏ TC khỏi Excel | Workflow không xoá case (AIO cũng không có API xoá) | Chạy `npm run aio:deprecate-stale` xem trước, rồi `:apply` để đổi `caseStatus` sang Deprecated; TC quay lại Excel thì tự trả về Published |
+| Phase 1 không fetch được requirement | URL/quyền Backlog/Confluence/Figma sai | Kiểm tra link, token, quyền page/file. |
+| Publish testcase bị lỗi | Chưa kết nối Google Drive MCP, hoặc file `.xlsx` local chưa export/lỗi | Kiểm tra MCP còn sống (`search_files` thử), kiểm tra Excel canonical đã export đúng chưa trước khi `create_file`/`update_file` |
+| Case cũ vẫn còn trên Sheet sau khi bỏ TC khỏi Excel | Chưa re-publish (ghi đè) sau khi sửa Excel | Chạy lại bước publish (`update_file`) — ghi đè toàn workbook sẽ tự phản ánh đúng Excel hiện tại, không cần thao tác riêng |
 | Phase 2 bị `SKIP` nhiều | Auth/data/API/env chưa sẵn sàng hoặc case cần state sâu không có API/hook | Kiểm tra credential, base URL, Swagger URL, fixture/test hook; case thiếu capability an toàn (không dựng được qua API/hook/sandbox) đánh dấu `Needs hook`/`Manual-only` — KHÔNG dùng DB để né (xem `tests/support/setup/hooks/README.md`). |
-| Jira bug không tạo được | Chưa đủ config hoặc chưa được phép log thật | Chạy dry-run trước, kiểm tra `JIRA_*` keys. |
+| Backlog bug không tạo được | Chưa đủ config hoặc chưa được phép log thật | Chạy dry-run trước, kiểm tra `BACKLOG_*` keys. |
 
 ## Why It Matters
 
@@ -354,7 +328,7 @@ Quick Start chuẩn giúp project mới có cùng layout output và cùng điề
 | [README.md](README.md) | Landing page và architecture. |
 | [RULE_GLOBAL.md](RULE_GLOBAL.md) | Quy tắc global. |
 | [prompt_templates/run_phase1_template.md](prompt_templates/run_phase1_template.md) | Template Phase 1. |
-| [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md) | Prompt riêng cho Auto Publish Jira trong Phase 1 sau QA confirmation. |
+| [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md) | Prompt riêng cho Auto Publish testcase (Google Sheet) trong Phase 1 sau QA confirmation. |
 | [prompt_templates/run_phase2_template.md](prompt_templates/run_phase2_template.md) | Template Phase 2. |
-| [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) | Template Re-run bug/case fail và Jira bug đã fix. |
-| [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md) | Prompt cleanup lifecycle testcase (Deprecate trên AIO) sau partial rerun approved. |
+| [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) | Template Re-run bug/case fail và Backlog bug đã fix. |
+| [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md) | Prompt optional unlink Test↔Story/Task trên Backlog sau partial rerun approved (re-publish Sheet đã tự đủ đồng bộ). |

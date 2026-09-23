@@ -120,12 +120,6 @@ test.describe('@infra thang Ưu tiên (Critical) + 9 Loại case', () => {
     }
   });
 
-  test('publisher map Highest → Critical(1), KHÔNG rơi về Medium', () => {
-    const src = fs.readFileSync(path.join(REPO, 'scripts/integrations/aio/publish_testcases_aio.js'), 'utf8');
-    expect(src, 'thiếu alias là hạ ưu tiên âm thầm').toMatch(/highest:\s*1/);
-    expect(src).toMatch(/critical:\s*1/);
-  });
-
   test('Loại case: 9 giá trị đã chốt thì OK, ngoài 9 thì CHẶN, không khai thì chỉ cảnh báo', () => {
     // Đọc từ nguồn thay vì chép: bảng đã đổi 6 → 9 (20/08/2026) và bản chép tay ở đây là chỗ duy nhất
     // trong kit còn giữ danh sách cũ — nó đỏ đúng lúc, nhưng lần sau thì đừng để nó tồn tại nữa.

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Tạo profile task từ template: profiles/task.env.example -> profiles/<TASK_KEY>/task.env
- * Prefill TASK_KEY + JIRA_STORY_KEY (+ PROJECT_OUTPUT_DIR nếu truyền). KHÔNG ghi đè nếu đã tồn tại.
+ * Prefill TASK_KEY + BACKLOG_STORY_KEY (+ PROJECT_OUTPUT_DIR nếu truyền). KHÔNG ghi đè nếu đã tồn tại.
  *
  * Dùng:
  *   node scripts/utils/create_profile.js <TASK_KEY> [--project-output outputs/<YOUR_PROJECT>] [--force]
@@ -54,6 +54,6 @@ content = ls.join('\n');
 fs.mkdirSync(targetDir, { recursive: true });
 fs.writeFileSync(target, content, 'utf8');
 
-console.log(`✅ Đã tạo profiles/${TASK_KEY}/task.env (prefill TASK_KEY=${TASK_KEY}, JIRA_STORY_KEY=${TASK_KEY}${PROJECT_OUTPUT ? `, PROJECT_OUTPUT_DIR=${PROJECT_OUTPUT}` : ''}).`);
-console.log('👉 QA điền tiếp: JIRA_STORY_URL, CONFLUENCE_*, FIGMA_FILE_URL, GOOGLE_DOCUMENT_ID, GOOGLE_SHEET_URL, LMS_*/OPS_* username/password/token.');
-console.log('   File này KHÔNG commit (đã gitignore). Giá trị tĩnh (base URL/API key Figma/Confluence/Jira/AIO/HubSpot) để ở .env chung.');
+console.log(`✅ Đã tạo profiles/${TASK_KEY}/task.env (prefill TASK_KEY=${TASK_KEY}, BACKLOG_STORY_KEY=${TASK_KEY}${PROJECT_OUTPUT ? `, PROJECT_OUTPUT_DIR=${PROJECT_OUTPUT}` : ''}).`);
+console.log('👉 QA điền tiếp: BACKLOG_STORY_URL, FIGMA_FILE_URL, GOOGLE_REQUIREMENT_DOC_URL, GOOGLE_SHEET_URL.');
+console.log('   File này KHÔNG commit (đã gitignore). Giá trị tĩnh (base URL/API key Figma/Backlog/AIO) để ở .env chung.');

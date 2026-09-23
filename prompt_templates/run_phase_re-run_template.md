@@ -25,8 +25,8 @@ Dùng prompt này khi cần chạy lại testcase fail trước đó hoặc veri
 |---|---|---|
 | `PROJECT_OUTPUT_DIR` | Có | Thư mục output gốc của project. |
 | `TASK_KEY` | Có | Phạm vi task/feature. |
-| `TESTCASE_SOURCE` | Không bắt buộc | **`aio` (mặc định)** hoặc `excel`. `aio`: kéo testcase liên quan từ AIO về local trước khi rerun (xem dưới); `excel`: dùng Excel local. |
-| `PUSH_EXECUTION` | Không bắt buộc | `1` để đẩy trạng thái các TC vừa rerun lên AIO dưới dạng cycle mới. |
+| `TESTCASE_SOURCE` | Không bắt buộc | Mặc định tải testcase liên quan từ Google Sheet về local trước khi rerun (xem dưới); `excel` để dùng Excel local. |
+| `PUSH_EXECUTION` | Không bắt buộc | `1` để đồng bộ trạng thái các TC vừa rerun lên Google Sheet. |
 | `RUN_ID` | Không bắt buộc | Bắt buộc nếu rerun song song cùng một `TASK_KEY`. |
 | `TC_IDS_OR_N/A` | Không bắt buộc | Danh sách testcase cần rerun. |
 | `JIRA_BUG_KEYS_OR_N/A` | Không bắt buộc | Bug cần verify hoặc giữ mở. |
@@ -46,7 +46,7 @@ Dùng prompt này khi cần chạy lại testcase fail trước đó hoặc veri
 | Bước | Hành động |
 |---:|---|
 | 1 | Echo scope `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `TASK_OUTPUT_DIR`, `RUN_ID` nếu có; nếu sai task thì dừng. |
-| 1b | **Mặc định (`TESTCASE_SOURCE=aio`)**: kéo testcase liên quan từ AIO về local trước khi rerun — `npm run aio:pull:write -- --story <JIRA_STORY_KEY>`. Dùng `test-cases/from-aio/*.xlsx` làm nguồn expected. Cần `AIO_API_TOKEN`; nếu report cảnh báo TC thiếu steps thì dừng và báo user. Bỏ qua bước này nếu `TESTCASE_SOURCE=excel`. |
+| 1b | **Mặc định**: agent `download_file_content` Google Sheet mới nhất về local trước khi rerun (qua Drive MCP, dùng `GOOGLE_SHEET_URL` trong `profiles/<TASK_KEY>/task.env`). Dùng `test-cases/from-sheet/*.xlsx` làm nguồn expected. Nếu report cảnh báo TC thiếu steps thì dừng và báo user. Bỏ qua bước này nếu `TESTCASE_SOURCE=excel`. |
 | 2 | Xác định rerun type: failed testcase, fixed Jira bug hoặc automation/setup issue trong phạm vi bug rerun. |
 | 3 | Đọc report/task artifact gần nhất theo file priority bên dưới. |
 | 4 | Rerun targeted scope trước, không chạy full suite nếu không cần. |
@@ -55,7 +55,7 @@ Dùng prompt này khi cần chạy lại testcase fail trước đó hoặc veri
 | 5c | **Mở rộng quanh vùng vừa fix** (bug band High/Medium): `TASK_ENV=... npm run expansion:plan -- --task <TASK_KEY>` rồi chạy tối thiểu trục ③ (bền vững sau mutation) + trục ⑤ (trạng thái kế cận). Fix tạo regression ở chỗ LÂN CẬN, không ở chính case đã map; rerun chỉ chạy TC cũ thì không đo được điều đó. Finding không có `oracle_ref` ⇒ `OBSERVATION`, không phải PASS. |
 | 6 | Nếu `PASS` thật cho Jira bug đã fix, attach evidence **đã annotate** + comment ngắn gọn **nhúng ảnh inline** rồi chuyển bug sang `Done` (chi tiết ở mục "Re-run bug Jira đã được fix"). |
 | 7 | Nếu `FAIL`, `SKIP` hoặc `BLOCKED`, giữ bug mở, ghi lý do vào report local; nếu user yêu cầu thì comment tag Dev + evidence annotate (đỏ = điểm lỗi). |
-| 7b | **Sau khi rerun xong — TỰ TẠO cycle trên AIO, KHÔNG cần QA xác nhận** (re-run là mốc verify rõ ràng; trừ `PUSH_EXECUTION=0`): cập nhật `test-results[/runs/RUN_ID]/testcase-status.json` cho các TC vừa chạy — **case FAIL phải kèm `steps[]`/`failedStep` + evidence bước lỗi** → `npm run aio:push-exec -- --task [TASK_KEY] --run-id [RUN_ID] --cycle-title "[TASK_KEY] Test Execution - Lần <N>"` xem preview rồi `npm run aio:push-exec:apply -- ...` luôn (không chờ QA). **Cơ chế chung** (hai gate trước khi ghi · status-map từ `verdict_taxonomy.json` · evidence neo xuống từng bước · guard 0-conclusive · loại case `carriedOver` · comment run gọn) **giống Phase 2 §13b** (`run_phase2_template.md`) — không lặp lại ở đây. **Đặc thù re-run:** mỗi lượt một cycle mới, title `Lần <N>` (N = số lần chạy + 1); `--folder "<Tên sprint>"` để cycle nằm đúng thư mục sprint (AIO không có Test Plan). Chạy lại cùng `--cycle-title` thì dùng lại cycle cũ thay vì đẻ trùng. |
+| 7b | **Sau khi rerun xong — TỰ ĐỒNG BỘ lên Sheet, KHÔNG cần QA xác nhận** (re-run là mốc verify rõ ràng; trừ `PUSH_EXECUTION=0`): cập nhật `test-results[/runs/RUN_ID]/testcase-status.json` cho các TC vừa chạy — **case FAIL phải kèm `steps[]`/`failedStep` + evidence bước lỗi** → `node scripts/convert_excel/merge_execution_status.js <local .xlsx> test-results/runs/<RUN_ID>/testcase-status.json --only <TC_IDs>` rồi agent `update_file` qua Drive MCP luôn (không chờ QA). **Cơ chế chung** (hai gate trước khi ghi · status-map từ `verdict_taxonomy.json` cột `sheet` · guard 0-conclusive · loại case `carriedOver`) **giống Phase 2 §13b** (`run_phase2_template.md`) — không lặp lại ở đây. **Đặc thù re-run:** mỗi lượt ghi đè lại đúng cột `Result` của TC vừa chạy trên cùng Sheet — không có khái niệm cycle/lần riêng như AIO cũ. |
 | 7c | **Sau khi bug sang Done** — `TASK_ENV=... npm run bugs:checklist` cho module vừa fix: "lỗi cùng lớp còn chỗ nào dính?". Đúng thời điểm vàng (root cause còn nóng); chỗ nghi ghi vào rerun report mục "Cùng lớp — cần kiểm", KHÔNG tự mở bug mới ở nhánh rerun. |
 | 8 | Lặp lại cho đến khi toàn bộ bug trong scope đã `Done` hoặc còn blocker/product fail cần Dev xử lý. |
 

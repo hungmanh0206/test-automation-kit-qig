@@ -41,8 +41,8 @@ Lệnh in ra 3 thứ:
 >   345KB toàn tài liệu). Script log ra số tab đọc được — đọc log đó, đừng bỏ qua.
 > - **Spec bổ sung của BA nằm ở nội dung TÔ MÀU / suggested**, không phải văn xuôi thường; phải đọc
 >   `textRun.backgroundColor` mới thấy. Bỏ qua là bỏ nguyên nhóm yêu cầu mới nhất.
-> Google Sheets (`scripts/integrations/google_sheet/`) là **LEGACY**: testcase canonical nay là Excel trong
-> `<TASK_OUTPUT_DIR>/test-cases/` + AIO Tests. Chỉ dùng khi stakeholder ngoài repo yêu cầu bản Sheets.
+> `scripts/integrations/google_sheet/` (đọc Sheet qua REST/service-account) là **LEGACY, không dùng ở bước này**: testcase canonical nay là Excel trong
+> `<TASK_OUTPUT_DIR>/test-cases/`, publish lên Google Sheet qua Drive MCP (khác cơ chế — xem skill `jira_testcase_publisher`). Dòng này chỉ nói về việc ĐỌC spec từ Google Sheet của stakeholder, không phải publish testcase.
 
 3. **⚠⚠ Bản cũ NHỎ HƠN HẲN bản mới** = bản **thiếu nội dung**, không phải "bản khác ngày". Đọc nó là đọc thiếu spec. *(Đã xảy ra thật: export Google Doc trước khi vá `includeTabsContent` chỉ lấy 1/15 tab — 6,6k thay vì 108k.)*
 

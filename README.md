@@ -4,7 +4,7 @@
 
 ## Overview
 
-Test Automation Kit hỗ trợ quy trình kiểm thử end-to-end cho nhiều project: thu thập requirement, sinh testcase chi tiết, export Excel (source of truth khi gen/publish), publish testcase lên AIO Tests, chạy Playwright/API từ testcase canonical local (Phase 2 mặc định kéo từ AIO), tổng hợp report, triage lỗi và log Jira bug khi đủ điều kiện.
+Test Automation Kit hỗ trợ quy trình kiểm thử end-to-end cho nhiều project: thu thập requirement, sinh testcase chi tiết, export Excel (source of truth khi gen/publish), publish testcase lên Google Sheet qua Drive MCP, chạy Playwright/API từ testcase canonical local (Phase 2 luôn tải bản Sheet mới nhất), tổng hợp report, triage lỗi và log Backlog bug khi đủ điều kiện.
 
 Tài liệu này là landing page của toàn bộ kit. Team QA nên đọc cùng [USER_GUIDE.md](USER_GUIDE.md) và [QUICKSTART.md](QUICKSTART.md) trước khi chạy Phase 1 hoặc Phase 2.
 
@@ -16,20 +16,20 @@ flowchart TD
     Kit --> P1["Phase 1<br/>sinh testcase + Excel"]
     Kit --> P2["Phase 2<br/>execute automation"]
     Kit --> RR["Rerun<br/>verify bug đã fix"]
-    Kit --> SS["Shared Services<br/>Jira/AIO Tests, Excel, config"]
+    Kit --> SS["Shared Services<br/>Backlog/Google Sheet, Excel, config"]
     Kit --> PR["Partial Rerun<br/>xử lý đổi tài liệu"]
     Kit --> OUT["Outputs<br/>artifact theo task"]
 ```
 
 | Layer | Purpose |
 |---|---|
-| Phase 1 | Đọc requirement/design/API và sinh testcase Markdown + Excel + coverage report + `### Setup Readiness` (mỗi cell `Tiền điều kiện` mang tag `[<method>]`); Excel là source of truth **khi gen/publish** và là input cho step publish sau QA confirmation (Phase 2 execute mặc định từ AIO Tests). |
-| Testcase Publish (AIO Tests) | Step riêng trong phạm vi Phase 1: sau khi QA xác nhận Excel, đọc Excel canonical, tạo/cập nhật **case** trên AIO (`npm run aio:publish`), nhóm chức năng thành **folder** `<root>/<nhóm>`, TC ID ở `automationKey`, tiền điều kiện trong field `precondition`. Mặc định dry-run — AIO không có API xoá. |
-| Testcase Lifecycle Cleanup | Step thuộc nhánh phụ `partial-rerun`: khi Excel thay đổi sau publish và đã qua Human Review, đối chiếu TC ID với case trên AIO rồi đổi `caseStatus` sang **Deprecated** (giữ lịch sử run); TC quay lại Excel thì trả về Published. Không xoá. |
-| Phase 2 | Đọc testcase từ nguồn canonical local (mặc định kéo từ AIO, `TESTCASE_SOURCE=aio`; `excel` là opt-out), chạy Precondition Resolution Pass qua UI/API public-business, execute Playwright, thu evidence ảnh/video, đẩy kết quả thành cycle trên AIO. |
+| Phase 1 | Đọc requirement/design/API và sinh testcase Markdown + Excel + coverage report + `### Setup Readiness` (mỗi cell `Tiền điều kiện` mang tag `[<method>]`); Excel là source of truth **khi gen/publish** và là input cho step publish sau QA confirmation (Phase 2 execute luôn tải bản Google Sheet mới nhất). |
+| Testcase Publish (Google Sheet) | Step riêng trong phạm vi Phase 1: sau khi QA xác nhận Excel, agent publish qua Google Drive MCP (`search_files` → `create_file`/`update_file`) — file `.xlsx` chính là nội dung Sheet, không ánh xạ field riêng. Nhóm chức năng thành **sheet riêng** trong workbook, TC ID ở cột `ID_TC`, tiền điều kiện trong cột `Tiền điều kiện`. Review nội dung local trước khi ghi đè Sheet thật. |
+| Testcase Re-publish | Khi Excel thay đổi sau publish (kể cả từ nhánh phụ `partial-rerun`): re-publish là ghi đè lại toàn workbook — không cần lifecycle/Deprecate riêng như trước, case bị bỏ khỏi Excel tự động biến mất khỏi Sheet ở lần ghi đè kế tiếp. |
+| Phase 2 | Đọc testcase từ nguồn canonical local (agent luôn tải bản Google Sheet mới nhất qua Drive MCP trước mỗi lượt execute; `excel` local là opt-out khi chưa publish), chạy Precondition Resolution Pass qua UI/API public-business, execute Playwright, thu evidence ảnh/video, đồng bộ kết quả vào cột `Result` của Sheet (`merge_execution_status.js`). |
 | Setup Layer | `tests/support/setup/`: factory/hook/fixture/mock/cleanup/contract dùng chung để dựng tiền điều kiện theo contract; không dựng state bằng DB — chỉ read-only verify UAT qua guarded client `db/uatPgClient.ts` (read-only, chỉ SELECT). |
-| Rerun | Chạy lại case fail hoặc bug Jira đã fix; không dùng để đồng bộ tài liệu nguồn mới. |
-| Shared Services | Jira testcase publisher, Jira bug reporter, Google Sheet, Excel converter, runtime config và helper dùng chung. |
+| Rerun | Chạy lại case fail hoặc bug Backlog đã fix; không dùng để đồng bộ tài liệu nguồn mới. |
+| Shared Services | Testcase publisher (Google Sheet), Backlog bug reporter, Google Doc/Sheet reader, Excel converter, runtime config và helper dùng chung. |
 | Partial Rerun | Nhánh phụ độc lập để xử lý thay đổi tài liệu nguồn và execute subset bị ảnh hưởng; không được gọi từ Main Flow. |
 | Outputs | Lưu requirement artifacts, testcase, execution results, evidence và reports theo từng task. |
 
@@ -48,11 +48,11 @@ flowchart TD
     A[Requirement] --> B[Generate Testcase]
     B --> C["Excel (SoT khi gen/publish)"]
     C --> D[QA Confirmation]
-    D --> E[Auto Publish → AIO Tests]
-    E --> F["Phase 2 (execute từ AIO)"]
+    D --> E[Auto Publish → Google Sheet]
+    E --> F["Phase 2 (execute từ Sheet)"]
     F --> G[Execution]
     G --> H[Bug Triage]
-    H --> I[Jira Bug]
+    H --> I[Backlog Bug]
     I --> J[Dev Fix]
     J --> K[Rerun]
     K --> L([PASS])
@@ -91,10 +91,10 @@ test-automation-kit/
 │   ├── run_phase1_template.md
 │   ├── run_phase2_template.md
 │   ├── run_phase_re-run_template.md
-│   ├── phase1/   # 01 setup → 02 gen testcase → 02b output format → 03 gen test data → 04 publish Jira
+│   ├── phase1/   # 01 setup → 02 gen testcase → 02b output format → 03 gen test data → 04 publish Sheet
 │   │   └── dimensions/   # 20 chương CHIỀU coverage (§3–§23) — mở đúng chiều task cần, không nạp cả 20
 │   │                     #   §22 inbound callback · §23 DB persistence (bản ghi sau CRUD)
-│   └── phase2/   # 04 execute FE → 05 execute API → 06 triage → 07 flaky → 08 log bug Jira
+│   └── phase2/   # 04 execute FE → 05 execute API → 06 triage → 07 flaky → 08 log bug Backlog
 ├── partial-rerun/
 │   ├── run_requirement_prepare_review.md
 │   ├── run_requirement_apply_approved.md
@@ -102,10 +102,10 @@ test-automation-kit/
 │   └── reference.md
 ├── scripts/
 │   ├── convert_excel/
-│   ├── integrations/
+│   ├── integrations/   # backlog/ (bug + fetch Confluence/Figma) · google_doc/ · google_sheet/ (legacy)
 │   └── qa/   # công cụ QA chạy thật: dashboard, accessibility, perf, security, load, risk_score/gate, ui_conformance
 ├── tests/
-│   ├── fe/infra/        # 38 spec KIỂM CHÍNH KIT (gate tự kiểm) — chạy offline, vào CI
+│   ├── fe/infra/        # 48 spec KIỂM CHÍNH KIT (gate tự kiểm) — chạy offline, vào CI
 │   ├── support/setup/   # setup layer dùng chung (factory/hook/fixture/mock/cleanup/contract)
 │   ├── support/setup/db/  # DB Verification Layer (§23) — đọc bản ghi để KHOANH TẦNG lỗi UI vs BE
 │   │                      #   read-only tuyệt đối; so sánh theo NGHĨA (money/instant/text)
@@ -113,7 +113,7 @@ test-automation-kit/
 │   └── load/             # k6 load script (Loại B, opt-in)
 ├── knowledge/            # bộ nhớ học: bugs/domain/system/decisions/locators/historical_execution — learning loop
 │                         #   ⚠ KHÔNG commit (dữ liệu công ty, như .env). Repo chỉ giữ SCHEMA.md + .gitkeep;
-│                         #   nạp lại: npm run learn:bugs:apply (Jira) · npm run learn -- --scan · ghi tay domain/system
+│                         #   nạp lại: npm run learn:bugs:apply (Backlog) · npm run learn -- --scan · ghi tay domain/system
 ├── exploratory/          # nhánh phụ never-auto (charter-based), ngoài Main Flow
 ├── profiles/
 │   └── <TASK_KEY>/task.env   # env động theo task, nạp qua TASK_ENV (tạo bằng npm run profile:create)
@@ -129,7 +129,7 @@ test-automation-kit/
 
 | Component | Purpose |
 |---|---|
-| [USER_GUIDE.md](USER_GUIDE.md) | Hướng dẫn sử dụng Test Automation Kit cho Team QA. Có thể publish sang Confluence cho team: `CONFLUENCE_PAGE_ID=<id> node scripts/integrations/jira/publish_confluence_page.js [--dry-run]` (dry-run trước, script tự backup page cũ). |
+| [USER_GUIDE.md](USER_GUIDE.md) | Hướng dẫn sử dụng Test Automation Kit cho Team QA. Có thể publish sang Confluence cho team: `CONFLUENCE_PAGE_ID=<id> node scripts/integrations/backlog/publish_confluence_page.js [--dry-run]` (dry-run trước, script tự backup page cũ). |
 | [.agent/config/kit-layers.md](.agent/config/kit-layers.md) | **Ranh giới GENERIC (kit dùng chung) vs PROJECT (nội dung dự án)** — tra trước khi sửa: task generic chỉ chạm lớp GENERIC; giao kit cho dự án mới thì bỏ lớp PROJECT. |
 | [CHANGELOG.md](CHANGELOG.md) | Lịch sử thay đổi **kit dùng chung** theo ngày + chủ đề (vấn đề → cách chữa), kèm commit hash. Đọc trước khi nâng cấp kit hoặc khi thấy hành vi lạ sau khi pull. |
 | [QUICKSTART.md](QUICKSTART.md) | Onboarding nhanh cho project mới. |
@@ -138,15 +138,16 @@ test-automation-kit/
 | `.claude/commands/` | **Slash command — điểm vào chuẩn hoá** cho 9 luồng: `/preflight` `/phase1` `/phase2` `/rerun` `/partial-rerun` `/explore` `/ui-debug` `/gates` `/publish`. Mỗi command là **con trỏ mỏng**: chỉ nói đọc workflow nào · chạy npm script nào · dừng ở gate nào — **không** chép policy (kit đã có `gate:policy` giữ `RULE_GLOBAL.md` là canonical). Máy giữ chúng khỏi mục rữa: `tests/fe/infra/slash-commands.spec.ts` kiểm mọi npm script/đường dẫn được nhắc phải tồn tại, và mọi nhánh trong `branch_parity.json` phải có command cùng tên. |
 | `.agent/skills/` | Skill instructions cho agent theo vai trò chuyên biệt (**22 skill**). Danh mục: `.agent/skills/INDEX.md` (sinh lại: `npm run skills:index`). |
 | `.agent/rules/` | Rule bắt buộc cho core behavior, locator, Playwright FE/API. |
-| `prompt_templates/` | Prompt dùng để chạy Phase 1, Phase 2 và rerun. Lưu ý đánh số: prompt con là sub-prompt theo hoạt động, số chạy liên tục theo trình tự pipeline (`phase1/01..04` chuẩn bị→sinh testcase→test data→publish Jira; `phase2/04..08` execute FE→execute API→triage review→flaky→log bug Jira) — KHÁC với workflow `.agent/workflows/` đánh số reset theo từng phase (phase2_01..04). Số prompt không ánh xạ 1:1 với số workflow; chạy từng prompt khi cần đúng hoạt động đó. **`phase1/dimensions/`** giữ 20 chương **chiều coverage** (§3–§23; tách khỏi `02_gen_testcases.md` ngày 14/08/2026) — mở đúng chiều task khai `required`, không nạp cả 20; **`phase1/02b_output_format.md`** giữ Summary Report + Export Excel, chỉ nạp ở cuối lượt. |
+| `prompt_templates/` | Prompt dùng để chạy Phase 1, Phase 2 và rerun. Lưu ý đánh số: prompt con là sub-prompt theo hoạt động, số chạy liên tục theo trình tự pipeline (`phase1/01..04` chuẩn bị→sinh testcase→test data→publish Sheet; `phase2/04..08` execute FE→execute API→triage review→flaky→log bug Backlog) — KHÁC với workflow `.agent/workflows/` đánh số reset theo từng phase (phase2_01..04). Số prompt không ánh xạ 1:1 với số workflow; chạy từng prompt khi cần đúng hoạt động đó. **`phase1/dimensions/`** giữ 20 chương **chiều coverage** (§3–§23; tách khỏi `02_gen_testcases.md` ngày 14/08/2026) — mở đúng chiều task khai `required`, không nạp cả 20; **`phase1/02b_output_format.md`** giữ Summary Report + Export Excel, chỉ nạp ở cuối lượt. |
 | `partial-rerun/` | Nhánh phụ độc lập; không là dependency của Main Flow và có thể xóa mà Main Flow vẫn chạy. |
 | `partial-rerun/run_requirement_prepare_review.md` | Phase 1 của nhánh phụ: tạo diff/impact/testcase draft và dừng chờ Human Review. |
 | `partial-rerun/run_requirement_apply_approved.md` | Phase 2 của nhánh phụ: merge testcase đã approve và partial execute. |
-| `partial-rerun/run_testcase_cleanup.md` | Cleanup lifecycle testcase (Deprecate trên AIO) sau khi Excel thay đổi trong partial rerun và đã có Human Review approval. |
+| `partial-rerun/run_testcase_cleanup.md` | Chỉ còn cần khi muốn unlink Test↔Story/Task trên Backlog cho case rời Excel sau partial rerun (optional) — re-publish (ghi đè Sheet) đã tự đủ đồng bộ, không còn lifecycle Deprecate riêng. |
 | `partial-rerun/reference.md` | Rule tham chiếu duy nhất cho nhánh phụ, thay cho nhiều file workflow/prompt/skill rời rạc. |
-| `scripts/convert_excel/` | Convert testcase Markdown sang Excel. |
-| `scripts/integrations/jira/` | Kiểm tra Jira connection và log bug. |
-| `scripts/integrations/google_sheet/` | Tích hợp Google Sheet khi project cần sync/export. |
+| `scripts/convert_excel/` | Convert testcase Markdown sang Excel (đồng thời là nội dung publish lên Google Sheet). |
+| `scripts/integrations/backlog/` | Kiểm tra Backlog connection, log bug, fetch Confluence/Figma. |
+| `scripts/integrations/google_doc/` | Đọc nội dung Google Doc làm nguồn spec. |
+| `scripts/integrations/google_sheet/` | LEGACY — scaffolding đọc/ghi Sheet qua service account, chưa wire vào luồng chính (luồng chính giờ dùng Drive MCP, xem `.agent/skills/shared/jira_testcase_publisher/SKILL.md`). |
 | `scripts/qa/` | Công cụ QA chạy thật (tái dùng login/catalog): `dashboard_generate` (SAPP DS), `accessibility_check` (axe-core), `perf_check` (Loại A), `security_check` (GET, non-prod), `load_check` (k6 wrapper, Loại B), `risk_score`/`risk_gate` (RBT), `ui_conformance_check`. **Forcing functions (round-3):** `preflight_gate` (miss-file), `output_gate` (execute/gen/bug), `design_gate` (thiết kế TC), `locator_lint` (kỷ luật định vị element — chống bắt sai UI → log sai bug), `self_review` (checklist gộp), `hooks/` (SessionStart inject + PostToolUse gate) — non-negotiables ở `CLAUDE.md`, verdict/rerun ở `.agent/config/verdict_taxonomy.json`. Xem `scripts/qa/README.md`. |
 | `.github/workflows/` + `.gitlab-ci.yml` | CI/CD: `static-check` mỗi push/MR (node --check + validate JSON + dry-run an toàn, **không secret**); `integration-check`/`task-execute`/regression chạy **manual/nightly** (cần secret, hit UAT). Không auto-publish (human gate). Chi tiết trigger/secrets/an toàn: [.github/workflows/README.md](.github/workflows/README.md). GitHub và GitLab là 2 bản tương đương — dùng một, xoá bản kia. |
 | `scripts/ci/` | `set-gitlab-variables.sh`: khai CI Variables lên GitLab từ `.env.local` qua `glab` (mặc định dry-run, `--apply` để set thật; secret set masked+protected, không in giá trị). |
@@ -155,7 +156,7 @@ test-automation-kit/
 | `knowledge/decisions/` | **LÝ DO của quyết định đã chốt** — `false_positive` · `by_design` · `risk_override` · `blocked_pass` · `wont_fix` · `test_approach`. Không có nó thì task sau **log lại đúng bug đã bị Rejected**, FAIL đỏ oan case đã chốt là vướng env, hoặc mò lại cách test đã thử thất bại. Bắt buộc tra trước khi log bug: `node scripts/qa/decisions.js --check "<triệu chứng>"`. `rationale` thiếu = CHẶN; `false_positive` phải do Dev/BA/QA-Lead/PO chốt. Ghi bằng skill `decision_recorder`, kiểm bằng `npm run decisions:check` (nêu tên bug `Rejected` chưa có lý do + quyết định quá `expires_at`). |
 | `knowledge/setup_recipes/` | **LÀM SAO dựng được state** — steps đúng thứ tự + `pitfalls` (thứ chỉ biết sau khi vấp) + `verification`. Đo thật: 59% tri thức tích luỹ thuộc loại này, trước đây không có chỗ chứa. `method` KHÔNG có `db`. |
 | `knowledge/environment/` | **Quirk hạ tầng/env** (token TTL, login throttle, headless trắng…) — không phải bug sản phẩm nhưng không biết thì test fail khó hiểu và dễ kết luận nhầm. |
-| `knowledge/` | Bộ nhớ học (learning loop): bug/root cause/locator heal/snapshot pass-fail đã qua gate → nguồn cho RBT + dashboard. **Thu TỰ ĐỘNG**: reporter `learn_reporter` chạy sau mỗi `playwright test` → `learn_task.js` (KPI + snapshot theo module); bug nạp bằng `learn_bugs.js` (lấy từ Jira theo label `auto-bug`). `knowledge/examples/` là dữ liệu mẫu; `knowledge/` live khởi tạo rỗng. |
+| `knowledge/` | Bộ nhớ học (learning loop): bug/root cause/locator heal/snapshot pass-fail đã qua gate → nguồn cho RBT + dashboard. **Thu TỰ ĐỘNG**: reporter `learn_reporter` chạy sau mỗi `playwright test` → `learn_task.js` (KPI + snapshot theo module); bug nạp bằng `learn_bugs.js` (lấy từ Backlog theo marker `[found-by-kit]`). `knowledge/examples/` là dữ liệu mẫu; `knowledge/` live khởi tạo rỗng. |
 | `scripts/utils/ui/ensure_expanded.js` | Mở panel/accordion ổn định trên DOM "nhiều icon giống nhau": thử ứng viên + nghiệm thu bằng sentinel, tự Escape khi click nhầm modal/dropdown, idempotent. Thay cho click toạ độ chevron (nguồn flaky kinh điển). Regression: `tests/fe/infra/ensure-expanded.spec.ts`. |
 | `tests/fe/support/auth/tokenBroker.ts` | Token Broker: giữ 1 phiên SPA đã login sống → lấy token **tươi** mỗi lần gọi API, 401/403 tự refresh + retry ⇒ execute không đứt vì access token hết hạn giữa lượt chạy, `task.env` chỉ cần user/password. Áp cho mọi SPA gửi `Authorization: Bearer`. |
 | `exploratory/` | Nhánh phụ độc lập (never-auto, charter-based) — dò rủi ro ngoài testcase đã review; draft phải qua `tc_validator` mới tính coverage. |
@@ -168,40 +169,36 @@ test-automation-kit/
 
 | Phase | Input | Output | Gate |
 |---|---|---|---|
-| Phase 1 | Jira, Confluence, Figma, Swagger, file local | Testcase Markdown + Excel source of truth (khi gen/publish) + coverage summary + `### Setup Readiness` (mỗi cell `Tiền điều kiện` mang tag `[<method>]`) | Cột `Loại case` ∈ 6 type AIO; `Ưu tiên` ∈ Critical…Lowest; mọi precondition có tag cách dựng. |
-| Testcase Publish (AIO) | Excel source of truth + QA confirmation | Case trên AIO Tests + publish summary | Step riêng trong Phase 1; publish thật chỉ sau khi QA approve (`--qa-approved`) và đã soi dry-run. |
-| Testcase Cleanup (Deprecate) | Excel source of truth sau partial rerun + Human Review/QA cleanup confirmation | Cleanup summary; case rời Excel chuyển `caseStatus` → Deprecated, quay lại Excel → Published | Không xoá case (AIO không có API xoá); chỉ apply sau Human Review. |
-| Phase 2 | Testcase canonical local (mặc định AIO via `TESTCASE_SOURCE=aio`; Excel là opt-out) + tag `[<method>]` của từng precondition + env/app/API URLs/credentials | Playwright results, evidence, execution summary, cycle trên AIO | Mirror phải TƯƠI (`aio:verify:enforce`; preflight chặn nếu pull >12 giờ); non-destructive UAT; evidence cho mọi case đã execute. |
-| Bug Triage | Failed testcase, logs, screenshot/video | Bug candidate hoặc non-product issue | Không log Jira nếu fail do setup/prompt/test data. |
-| Jira Logging | Confirmed product/API bug | Jira sub-bug + ảnh/video evidence | Có expected, actual, reproduce steps và evidence rõ. |
-| Rerun | Bug/case fail đã fix hoặc cần verify | Rerun report, Jira Done nếu PASS thật | Có evidence PASS ảnh/video nếu chuyển Jira sang Done. |
+| Phase 1 | Backlog, Confluence, Figma, Swagger, file local | Testcase Markdown + Excel source of truth (khi gen/publish) + coverage summary + `### Setup Readiness` (mỗi cell `Tiền điều kiện` mang tag `[<method>]`) | Cột `Loại case` ∈ 9 type canonical; `Ưu tiên` ∈ Critical…Lowest; mọi precondition có tag cách dựng. |
+| Testcase Publish (Google Sheet) | Excel source of truth + QA confirmation | Sheet trên Drive (link lưu `GOOGLE_SHEET_URL`) + publish summary | Step riêng trong Phase 1; agent review nội dung `.xlsx` local trước khi ghi đè Sheet thật qua Drive MCP. |
+| Testcase Re-publish | Excel source of truth sau partial rerun + Human Review/QA confirmation | Sheet ghi đè lại toàn workbook, khớp đúng Excel hiện tại | Không cần lifecycle riêng — case rời Excel tự biến mất khỏi Sheet ở lần ghi đè kế tiếp; chỉ cần Human Review trước khi re-publish. |
+| Phase 2 | Testcase canonical local (agent luôn tải bản Google Sheet mới nhất qua Drive MCP; Excel local là opt-out khi chưa publish) + tag `[<method>]` của từng precondition + env/app/API URLs/credentials | Playwright results, evidence, execution summary, cột `Result` trên Sheet | Sheet luôn tải MỚI trước mỗi lượt execute (không còn khái niệm mirror cũ/staleness); non-destructive UAT; evidence cho mọi case đã execute. |
+| Bug Triage | Failed testcase, logs, screenshot/video | Bug candidate hoặc non-product issue | Không log Backlog nếu fail do setup/prompt/test data. |
+| Backlog Logging | Confirmed product/API bug | Backlog sub-bug + ảnh/video evidence | Có expected, actual, reproduce steps và evidence rõ. |
+| Rerun | Bug/case fail đã fix hoặc cần verify | Rerun report, Backlog Done nếu PASS thật | Có evidence PASS ảnh/video nếu chuyển Backlog sang Done. |
 
-## Mô hình Traceability (AIO Tests)
+## Mô hình Traceability (Google Sheet)
 
-Team chạy **toàn bộ testcase của 1 task cùng lúc**. AIO không có Test Set/Test Plan/Precondition issue (chi tiết + vòng đời status ở [USER_GUIDE §5.5.0](USER_GUIDE.md)):
+Team chạy **toàn bộ testcase của 1 task cùng lúc**. Testcase management giờ là Google Sheet qua Drive MCP — mô hình **phẳng**, không Test Set/Test Plan/Precondition issue/folder/Cycle/Run như công cụ cũ (chi tiết + lịch sử ở [USER_GUIDE §5.5.0](USER_GUIDE.md)):
 
 ```mermaid
 flowchart TD
-    Test["Case (testcase)<br/>automationKey = TC ID"]
-    Task["Task cha — requirement"]
-    Repo["Folder &lt;root&gt;/&lt;nhóm chức năng&gt;<br/>(cây 2 cấp, dựng từ Excel)"]
-    Pre["precondition<br/>(field TRONG case)"]
-    Plan["Thư mục cycle — 1 sprint"]
-    Exec["Cycle<br/>1 lần chạy = toàn bộ TC"]
-    Run["Run + run-step: Passed / Failed / Blocked / Not Run"]
+    Excel["Excel canonical<br/>(TASK_OUTPUT_DIR/test-cases/*.xlsx)"]
+    Sheet["Google Sheet<br/>(1 workbook, upload nguyên file qua Drive MCP)"]
+    Tab["Sheet-tab theo nhóm chức năng<br/>(1 tab/nhóm, TC ID ở cột ID_TC)"]
+    Pre["Tiền điều kiện<br/>(cột trong chính sheet)"]
+    Result["Cột Result<br/>(Pass/Fail/Pending, ghi qua merge_execution_status.js)"]
 
-    Test -->|"jiraRequirementIDs"| Task
-    Test --> Repo
-    Test --> Pre
-    Plan -->|"gom cycle theo sprint"| Exec
-    Exec -->|"gồm case"| Test
-    Exec --> Run
+    Excel -->|"create_file / update_file"| Sheet
+    Sheet --> Tab
+    Tab --> Pre
+    Tab --> Result
 ```
 
-- **Nối case ↔ requirement** bằng `jiraRequirementIDs` (`--story`). AIO case không phải Jira issue nên **không có** panel "Test Coverage", assignee, sprint hay workflow trên case.
-- **Không Test Set** (AIO không có); tổ chức bằng **folder** `<root>/<nhóm chức năng>` — chỉ **2 cấp**, dựng từ Excel. Tiền điều kiện nằm trong field `precondition` của case (mã `[PRE-NN]` giữ trong text).
-- **Status**: `caseStatus` là vòng đời biên soạn (Draft · Under Review · Published · **Deprecated**), KHÔNG phải kết quả chạy; kết quả nằm ở run của cycle. Sub-bug → Done khi verify PASS.
-- **Chín đặc tính của AIO đã đo** (không có API xoá · `PUT .../detail` ghi đè toàn phần · `tags` không lưu · `scriptType` bắt buộc · attachment cần MIME · rate limit trả body rỗng · `key` ≠ `ID` · `POST testcase` vào cycle đẻ run mới · `key` nằm ở `.testCase.key`): [scripts/integrations/aio/README.md](scripts/integrations/aio/README.md) — đọc trước khi tự phát hiện lại bằng cách mất dữ liệu.
+- **Excel là canonical, Sheet chỉ là bản đồng bộ hiển thị** — mọi sửa nội dung case làm ở Excel rồi re-publish (ghi đè); sửa thẳng trên Sheet sẽ mất ở lần ghi đè kế tiếp.
+- **Không folder/tag/Cycle/Run/custom field** như công cụ cũ — nhóm chức năng thể hiện bằng **sheet-tab riêng** trong cùng workbook, dựng từ `md_to_xlsx.js`.
+- **Kết quả execute** ghi vào cột `Result` của đúng dòng (khớp `tcId`) qua `scripts/convert_excel/merge_execution_status.js`, rồi agent `update_file` đẩy lên Drive — không đụng ô khác (Test Type/Priority/ghi chú QA đã sửa tay).
+- **Publish chỉ làm được trong phiên chat** (Drive MCP không gọi được từ script CLI/CI headless) — đánh đổi có chủ ý, đổi lại loại bỏ hẳn nhu cầu quản lý token/rate-limit của công cụ TMS trước đây. Chi tiết mô hình + lịch sử migrate: [`.agent/skills/shared/jira_testcase_publisher/SKILL.md`](.agent/skills/shared/jira_testcase_publisher/SKILL.md).
 
 ## Common Commands
 
@@ -243,10 +240,10 @@ vượt ngưỡng thì `metrics_collect` **cảnh báo**, không chặn.
 /explore <phạm vi>          # phiên exploratory có charter
 /ui-debug <màn>             # khám phá DOM tìm locator bền (Never-auto)
 /gates <TASK_KEY>           # bó gate trước khi finalize (self-review)
-/publish <TASK_KEY>         # đẩy AIO — dry-run trước, :apply sau
+/publish <TASK_KEY>         # đẩy Google Sheet qua Drive MCP — review nội dung local trước khi ghi đè
 ```
 
-Command **không thay thế** npm script: kit có 98 script, gọi trực tiếp vẫn nhanh hơn cho việc lẻ.
+Command **không thay thế** npm script: kit có 110 script, gọi trực tiếp vẫn nhanh hơn cho việc lẻ.
 Chúng chỉ bọc **điểm vào của một luồng công việc**.
 
 | Task | Command |
@@ -270,7 +267,7 @@ Chúng chỉ bọc **điểm vào của một luồng công việc**.
 | Cross-browser lane (nightly/manual) | `CROSS_BROWSER=1 npx playwright test --project=firefox-desktop --project=webkit-desktop` |
 | Thu learning data 1 task (tự chạy sau mỗi test run) | `TASK_ENV=profiles/<TASK>/task.env npm run learn` |
 | Backfill learning data từ task cũ | `npm run learn:backfill` |
-| Nạp bug Jira vào knowledge (sau khi log bug) | `TASK_ENV=profiles/<TASK>/task.env npm run learn:bugs:apply` |
+| Nạp bug Backlog vào knowledge (sau khi log bug) | `TASK_ENV=profiles/<TASK>/task.env npm run learn:bugs:apply` |
 | Kiểm business rule (schema/PII/trace TC/stale) | `npm run domain:check` · `npm run domain:check -- --enforce` · `npm run domain:index` |
 | Bản đồ hệ thống + nghĩa vụ test còn trống | `npm run system:check` · `npm run system:check -- --enforce` · `npm run system:index` · `node scripts/qa/system_map.js --impact "<surface>"` |
 | Tra quyết định cũ trước khi log bug | `node scripts/qa/decisions.js --check "<triệu chứng>" --module <Module>` · `npm run decisions:check` · `npm run decisions:index` |
@@ -306,7 +303,7 @@ Chúng chỉ bọc **điểm vào của một luồng công việc**.
 | Dependency graph — REQ→TC→exec + impact-map (P2) | `npm run dep:graph -- --task <TASK_KEY> [--changed a,b]` |
 | Quality decision — GO/NO-GO (P2) | `npm run quality:decision -- --task <TASK_KEY> [--coverage N] [--gate PASS/WARN/FAIL]` |
 | Mobile-web (device emulation) | `npm run test:mobile-web` |
-| Seed knowledge từ lịch sử Jira | `npm run seed:knowledge` · `npm run seed:knowledge:apply -- --since <YYYY-MM-DD>` |
+| Seed knowledge từ lịch sử Backlog | `npm run seed:knowledge` · `npm run seed:knowledge:apply -- --since <YYYY-MM-DD>` |
 | KPI/reliability (thường do `npm run learn` gọi) | `npm run metrics:collect -- --results <results.json>` · `npm run reliability` |
 | Output gate — tự sửa lỗi format | `npm run gate:output:fix -- --status <status.json>` |
 | Gate policy-source — 1 nguồn rule · file mồ côi · tên skill · đuôi evidence · lệnh gate ở workflow | `npm run gate:policy` |
@@ -320,15 +317,12 @@ Chúng chỉ bọc **điểm vào của một luồng công việc**.
 | Nghiệm thu trang bằng Playwright thật (gồm cả 2 gate trên) | `node docs/library/verify.js` |
 | **Khoá học tự dựng kit từ 0** — [docs/COURSE.md](docs/COURSE.md): giáo trình 20 bài / 44,5 giờ, thứ tự theo THỨ HỌC VIÊN CÓ TRONG TAY (không theo thứ tự lịch sử của kit). Mỗi bài ghi rõ mục tiêu ✅ và thời lượng | — (tài liệu) |
 | **Nhật ký dựng kit từ 0** — [docs/BUILD_JOURNAL.md](docs/BUILD_JOURNAL.md), nguồn canonical cho tab *Hành trình* của trang thư viện. Viết cho người muốn TỰ DỰNG kit tương tự: mỗi chặng ghi vấn đề · đã dựng · đo bằng · bẫy đã vấp · nếu bạn dựng lại | — (sửa markdown rồi `npm run library:build`) |
-| Check Jira connection | `npm run integration:check` |
-| Check Jira connection live | `npm run integration:check:live` |
-| Dry-run publish testcase lên AIO | `npm run aio:publish -- --file <x.xlsx> --story <JIRA_STORY_KEY>` |
-| Publish testcase lên AIO | `npm run aio:publish:apply -- --file <x.xlsx> --story <JIRA_STORY_KEY> --qa-approved` |
-| Đẩy vài case lẻ sau khi sửa Excel | `npm run aio:publish:apply -- --file <x.xlsx> --story <JIRA_STORY_KEY> --only TC_001,TC_007 --qa-approved` |
-| Dry-run cleanup (Deprecate case rời Excel) | `npm run aio:deprecate-stale -- --story <JIRA_STORY_KEY> --file <x.xlsx>` |
-| Apply cleanup (Deprecate) | `npm run aio:deprecate-stale:apply -- --story <JIRA_STORY_KEY> --file <x.xlsx>` |
-| Dry-run Jira bug reporter | `npm run jira:bug-report:dry-run -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR>` |
-| Create Jira bug after approval | `npm run jira:bug-report -- --task <TASK_KEY> --story <JIRA_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR>` |
+| Check Backlog connection | `npm run integration:check` |
+| Check Backlog connection live | `npm run integration:check:live` |
+| Publish testcase lên Google Sheet | Thao tác agent qua Drive MCP (`search_files` → `create_file`/`update_file`), không phải npm script — xem `.agent/workflows/phase1_04_auto_publish_jira.md` |
+| Đồng bộ kết quả execute vào Sheet | `node scripts/convert_excel/merge_execution_status.js <local .xlsx> <testcase-status.json>` rồi agent `update_file` qua Drive MCP |
+| Dry-run Backlog bug reporter | `npm run backlog:bug-report:dry-run -- --task <TASK_KEY> --story <BACKLOG_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR>` |
+| Create Backlog bug after approval | `npm run backlog:bug-report -- --task <TASK_KEY> --story <BACKLOG_STORY_KEY> --project-output <PROJECT_OUTPUT_DIR>` |
 
 ## Output Structure
 
@@ -340,10 +334,10 @@ Mọi artifact của task phải nằm dưới:
 
 | Folder | Content |
 |---|---|
-| `requirements/` | Jira, Confluence, Figma, Swagger hoặc tài liệu đầu vào đã fetch/cache. |
-| `test-cases/` | Testcase Markdown, Excel và snapshot context. |
+| `requirements/` | Backlog, Confluence, Figma, Swagger hoặc tài liệu đầu vào đã fetch/cache. |
+| `test-cases/` | Testcase Markdown, Excel (`from-sheet/*.xlsx` là bản tải từ Google Sheet) và snapshot context. |
 | `test-results/` | Playwright JSON, HTML report, screenshot, video, trace và artifact execute. |
-| `reports/` | Phase summary, Jira testcase publish summary, execution summary, Jira compare, bug log hoặc rerun report. |
+| `reports/` | Phase summary, Google Sheet publish summary, execution summary, Backlog compare, bug log hoặc rerun report. |
 | `change/` | Artifact của nhánh phụ Requirement Change Management nếu user gọi thủ công. |
 | `logs/` | Local logs đã sanitize nếu workflow có sinh ra. |
 
@@ -355,14 +349,14 @@ Mọi artifact của task phải nằm dưới:
 - ✅ Với Phase 2 song song nhiều story, ưu tiên automation story-specific dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/automation/`.
 - ✅ Khi chạy Playwright cho task cụ thể, ưu tiên `npm run test:task* -- --project-output ... --task ...` thay vì gọi `npm test` trực tiếp.
 - ✅ Chạy từng story theo phase rời nhau: Phase 1, chờ Dev implement, Phase 2, chờ Dev fix nếu có, rồi Re-run.
-- ✅ Sau QA confirmation trong Phase 1, publish testcase lên AIO Tests từ Excel canonical; Phase 2 execute mặc định lấy nguồn từ AIO (`TESTCASE_SOURCE=aio`, kéo về canonical local), `excel` là opt-out.
-- ✅ Chạy Auto Publish Jira bằng prompt riêng `prompt_templates/phase1/04_auto_publish_jira.md` sau khi QA xác nhận Excel.
-- ✅ Nhóm chức năng lấy từ cột `Nhóm chức năng` (fallback `Module`) và thành folder trên AIO; không có Test Set để bật.
-- ✅ Khi testcase đã publish nhưng Excel bỏ bớt TC sau partial rerun, chạy cleanup dry-run rồi apply theo prompt `partial-rerun/run_testcase_cleanup.md`; case chuyển **Deprecated**, không xoá.
+- ✅ Sau QA confirmation trong Phase 1, publish testcase lên Google Sheet qua Drive MCP từ Excel canonical; Phase 2 execute luôn tải bản Sheet mới nhất về canonical local, `excel` local là opt-out khi chưa publish.
+- ✅ Chạy Auto Publish testcase bằng prompt riêng `prompt_templates/phase1/04_auto_publish_jira.md` sau khi QA xác nhận Excel.
+- ✅ Nhóm chức năng lấy từ cột `Nhóm chức năng` (fallback `Module`) và thành sheet riêng trong workbook; không có Test Set để bật.
+- ✅ Khi testcase đã publish nhưng Excel bỏ bớt TC sau partial rerun, re-publish (ghi đè Sheet) là đủ — không cần lifecycle riêng; chỉ dùng prompt `partial-rerun/run_testcase_cleanup.md` nếu cần unlink Test↔Story/Task trên Backlog.
 - ✅ Giữ testcase đủ precondition, test data, steps, expected result và assertion intent.
 - ✅ Review coverage bằng requirement/risk gate, không chỉ dựa vào số lượng testcase.
 - ✅ Capture screenshot hoặc video không trắng cho bug phức tạp.
-- ✅ Dùng dry-run trước khi tạo Jira bug thật.
+- ✅ Dùng dry-run trước khi tạo Backlog bug thật.
 - ⚠️ Không commit `.env`, `.env.local`, token, password, cookie, private key hoặc service-account JSON.
 - ⚠️ Không hardcode URL, credential, project key, module name hoặc output path theo task cụ thể.
 - ⚠️ Không sửa `.env`/`.env.local` chung khi có session khác đang chạy; truyền env theo command.
@@ -382,10 +376,10 @@ Kit này được thiết kế để AI Agent và QA cùng đọc được cùng
 | [QUICKSTART.md](QUICKSTART.md) | Setup và chạy lần đầu. |
 | [RULE_GLOBAL.md](RULE_GLOBAL.md) | Quy tắc vận hành bắt buộc. |
 | [prompt_templates/run_phase1_template.md](prompt_templates/run_phase1_template.md) | Prompt chạy Phase 1 dùng chung. |
-| [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md) | Prompt riêng cho step Auto Publish Jira trong Phase 1 sau QA confirmation. |
+| [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md) | Prompt riêng cho step Auto Publish testcase (Google Sheet) trong Phase 1 sau QA confirmation. |
 | [prompt_templates/run_phase2_template.md](prompt_templates/run_phase2_template.md) | Prompt chạy Phase 2 dùng chung. |
-| [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) | Prompt canonical để chạy Re-run bug/case fail và cập nhật Jira bug đã fix. |
+| [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) | Prompt canonical để chạy Re-run bug/case fail và cập nhật Backlog bug đã fix. |
 | [partial-rerun/run_requirement_prepare_review.md](partial-rerun/run_requirement_prepare_review.md) | Prompt Phase 1 cho nhánh phụ khi nội dung tài liệu requirement/design/API thay đổi. |
 | [partial-rerun/run_requirement_apply_approved.md](partial-rerun/run_requirement_apply_approved.md) | Prompt Phase 2 sau khi Human Review approve. |
-| [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md) | Prompt cleanup lifecycle testcase (Deprecate trên AIO) sau khi partial rerun làm Excel thay đổi. |
+| [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md) | Prompt optional unlink Test↔Story/Task trên Backlog sau khi partial rerun làm Excel thay đổi (re-publish Sheet đã tự đủ đồng bộ). |
 | [partial-rerun/reference.md](partial-rerun/reference.md) | Rule chi tiết của nhánh phụ partial rerun. |

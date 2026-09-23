@@ -96,7 +96,10 @@ test.describe('@infra knowledge:backup — thứ mất là mất công sức ng�
 });
 
 test.describe('@infra leak:report — không đo được thì phải nói, không được báo "0 rò"', () => {
-  const BLANK = { JIRA_STORY_KEY: '', TASK_KEY: '', JIRA_BASE_URL: '', JIRA_EMAIL: '', JIRA_API_TOKEN: '' };
+  // Migrate Jira→Backlog (22/09/2026): leak_report.js giờ đọc BACKLOG_BASE_URL/BACKLOG_API_KEY. Phải blank
+  // ĐÚNG các biến này — để lọt biến thật (vd từ .env đã nạp vào process.env của test runner) là test gọi
+  // API Backlog THẬT thay vì đo nhánh "thiếu credential" (đã xảy ra: nhận 404 thật từ /api/v2/issues/SAPP-1).
+  const BLANK = { BACKLOG_STORY_KEY: '', TASK_KEY: '', BACKLOG_BASE_URL: '', BACKLOG_URL: '', BACKLOG_API_KEY: '' };
 
   test('thiếu story ⇒ CHẶN (báo cáo rỗng dễ bị đọc thành "không lọt bug nào")', () => {
     const r = run(LEAK, [], BLANK);
@@ -104,10 +107,10 @@ test.describe('@infra leak:report — không đo được thì phải nói, khô
     expect(r.out).toContain('story');
   });
 
-  test('có story nhưng thiếu credential Jira ⇒ CHẶN, nói rõ thiếu gì', () => {
+  test('có story nhưng thiếu credential Backlog ⇒ CHẶN, nói rõ thiếu gì', () => {
     const r = run(LEAK, ['--story', 'SAPP-1'], BLANK);
     expect(r.code).not.toBe(0);
-    expect(r.out).toMatch(/JIRA_BASE_URL|JIRA_API_TOKEN/);
+    expect(r.out).toMatch(/BACKLOG_BASE_URL|BACKLOG_API_KEY/);
   });
 });
 

@@ -3,15 +3,15 @@
 
 /*
  * traceability_matrix.js (F8) — sinh ma trận REQ → TC → AUTO → EXEC → BUG dạng artifact.
- * Join các artifact có sẵn của task (không gọi AIO/Jira): dựng bức tranh coverage đầu-cuối,
+ * Join các artifact có sẵn của task (không gọi ngoài): dựng bức tranh coverage đầu-cuối,
  * đánh dấu lỗ hổng (TC chưa publish / chưa execute / fail / có bug).
  *
  * Nguồn (trong <TASK_OUTPUT_DIR>):
  *   REQ  = task/story key (context)                     · nhóm theo cột Module của TC
  *   TC   = test-cases/*.md (cột "TC ID" + "Module")
- *   PUBLISH = TC có mặt trong mirror `test-cases/from-aio/*.xlsx` (kéo từ AIO) ⇒ đã publish
+ *   PUBLISH = TC có mặt trong mirror `test-cases/from-sheet/*.xlsx` (tải từ Google Sheet) ⇒ đã publish
  *   AUTO/EXEC = test-results[/runs/<RUN_ID>]/testcase-status.json (tcId→status)  (có status = đã tự động drive)
- *   BUG  = reports/bug-candidates.md (Jira key SAPP-xxxx + TC ref, best-effort)
+ *   BUG  = reports/bug-candidates.md (Backlog key + TC ref, best-effort)
  *
  * Dùng: TASK_ENV=profiles/<TASK>/task.env node scripts/qa/traceability_matrix.js
  *       hoặc --task-output <dir> | --project-output <dir> --task <KEY>
@@ -47,7 +47,7 @@ function parseTestcases(dir) {
 }
 
 /*
- * Tập TC ĐÃ PUBLISH = có mặt trong mirror `test-cases/from-aio/*.xlsx` (bản kéo về từ AIO).
+ * Tập TC ĐÃ PUBLISH = có mặt trong mirror `test-cases/from-sheet/*.xlsx` (bản tải về từ Google Sheet).
  * Lượt refactor bỏ công cụ cũ đã viết ngữ nghĩa này vào header nhưng KHÔNG viết phần dựng biến, chỉ thêm chỗ dùng
  * `publishedTc.has(...)` ⇒ ReferenceError ngay khi map rows. Lệnh này nằm trong bảng gate bắt buộc của
  * `run_phase1_template.md` nên nó vỡ là cả bước Phase 1 vỡ theo.
@@ -56,17 +56,19 @@ function parseTestcases(dir) {
  * biến "chưa kéo mirror về" thành "chưa publish" — báo oan đúng kiểu mà kit cấm.
  */
 async function loadPublished(taskOutputDir) {
-  const dir = path.join(taskOutputDir, 'test-cases', 'from-aio');
-  if (!fs.existsSync(dir)) return null;
-  const files = fs.readdirSync(dir).filter((f) => /\.xlsx$/i.test(f));
+  // Đọc theo `rc.TESTCASE_MIRROR_DIRS` (MỘT nguồn thật, không tự ghép tay 'from-aio' nữa) — đổi tên mirror
+  // ở runtime_config.js thì chỗ này tự theo, không phải sửa lại.
+  const dirs = rc.TESTCASE_MIRROR_DIRS.map((d) => path.join(taskOutputDir, 'test-cases', d)).filter((d) => fs.existsSync(d));
+  if (!dirs.length) return null;
+  const files = dirs.flatMap((dir) => fs.readdirSync(dir).filter((f) => /\.xlsx$/i.test(f)).map((f) => path.join(dir, f)));
   if (!files.length) return null;
   const out = new Set();
   for (const f of files) {
     try {
       // eslint-disable-next-line no-await-in-loop
-      const doc = await testcaseModel.parseXlsx(path.join(dir, f));
+      const doc = await testcaseModel.parseXlsx(f);
       for (const t of doc.tests || []) if (t.tcId) out.add(normId(t.tcId));
-    } catch (e) { console.warn(`[trace] bỏ qua ${f}: ${e.message}`); }
+    } catch (e) { console.warn(`[trace] bỏ qua ${path.basename(f)}: ${e.message}`); }
   }
   return out;
 }
@@ -78,13 +80,12 @@ async function main() {
   const trDir = RUN_ID ? path.join(T, 'test-results', 'runs', RUN_ID) : path.join(T, 'test-results');
 
   const tcs = parseTestcases(path.join(T, 'test-cases'));
-  const pub = readJson(path.join(T, 'reports', 'jira-testcase-publish.json'));
 
   const statusDoc = readJson(path.join(trDir, 'testcase-status.json')) || readJson(path.join(T, 'test-results', 'testcase-status.json'));
   const execByTc = new Map();
   for (const t of (statusDoc && (statusDoc.tests || statusDoc.testcases)) || []) if (t.tcId) execByTc.set(normId(t.tcId), String(t.status || '').toUpperCase());
 
-  // BUG best-effort: gom Jira key + TC ref từ bug-candidates.md.
+  // BUG best-effort: gom Backlog key + TC ref từ bug-candidates.md.
   const bugMd = (() => { try { return fs.readFileSync(path.join(T, 'reports', 'bug-candidates.md'), 'utf8'); } catch (e) { return ''; } })();
   const bugByTc = new Map();
   const bugKeysAll = [...new Set((bugMd.match(/\bSAPP-\d+\b/g) || []))];
@@ -122,9 +123,9 @@ async function main() {
   const failed = rows.filter((r) => /FAIL/.test(r.exec)).length;
   const withBug = rows.filter((r) => r.bug !== '—').length;
   const L = ['# Traceability Matrix — ' + taskKey, '',
-    `> ${new Date().toISOString().slice(0, 19).replace('T', ' ')} · join REQ→TC→AUTO→EXEC→BUG từ artifact task (không gọi AIO/Jira).`,
+    `> ${new Date().toISOString().slice(0, 19).replace('T', ' ')} · join REQ→TC→AUTO→EXEC→BUG từ artifact task (không gọi ngoài).`,
     `> TC: ${rows.length} · đã publish: ${knowPublish ? publishedCount : 'không rõ'} · execute: ${executed} · FAIL: ${failed} · có bug: ${withBug} · bug keys: ${bugKeysAll.join(', ') || '—'}`,
-    `> Lỗ hổng: ${knowPublish ? `${rows.length - publishedCount} TC chưa publish` : 'publish: KHÔNG RÕ (chưa có mirror test-cases/from-aio — chạy `npm run aio:pull:write`)'} · ${rows.length - executed} TC chưa execute.`, '',
+    `> Lỗ hổng: ${knowPublish ? `${rows.length - publishedCount} TC chưa publish` : 'publish: KHÔNG RÕ (chưa có mirror test-cases/from-sheet — agent cần tải Sheet mới nhất qua Drive MCP trước)'} · ${rows.length - executed} TC chưa execute.`, '',
     '| REQ | Module | TC | PUBLISH | AUTO | EXEC | BUG | Flags |', '|---|---|---|---|---|---|---|---|'];
   for (const r of rows) L.push(`| ${r.req} | ${r.module} | ${r.tcId} | ${r.published === null ? '?' : (r.published ? 'yes' : '—')} | ${r.auto} | ${r.exec} | ${r.bug} | ${r.flags} |`);
   fs.writeFileSync(path.join(T, 'reports', 'traceability-matrix.md'), L.join('\n'), 'utf8');

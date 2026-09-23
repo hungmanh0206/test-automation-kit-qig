@@ -19,7 +19,7 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 
 > Trước đây file này **không trỏ tới hai prompt execute** ở trên, nên ai chỉ đọc `run_phase2` là execute mà thiếu toàn bộ kỷ luật FE/API (47KB). Đó là lý do có bảng này — xem `CHANGELOG` 2026-08-13.
 
-**Chi tiết từng bước** (định dạng execution summary, Shared Change Log, Automation Promotion Status, checklist Jira gate): [`.agent/workflows/phase2_execute.md`](../.agent/workflows/phase2_execute.md) — file tổng quan, bên trong liệt kê đủ 4 step `phase2_01…04`. Mở khi cần đúng khuôn mẫu output của một bước; thứ tự bước và lệnh gate thì lấy ở ngay file này.
+**Chi tiết từng bước** (định dạng execution summary, Shared Change Log, Automation Promotion Status, checklist Backlog gate): [`.agent/workflows/phase2_execute.md`](../.agent/workflows/phase2_execute.md) — file tổng quan, bên trong liệt kê đủ 4 step `phase2_01…04`. Mở khi cần đúng khuôn mẫu output của một bước; thứ tự bước và lệnh gate thì lấy ở ngay file này.
 
 ## Gate bắt buộc chạy trong Phase 2
 
@@ -34,13 +34,13 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase2_*`*
 | **Sau execute, TRƯỚC finalize** | `npm run expansion:plan -- --task <TASK_KEY>` | Kế hoạch mở rộng 5 trục theo risk band + **chi phí ước lượng** (lượt tải trang · phút · MB) để CHỐT phạm vi. Chỉ đọc Excel, vài giây. Task có case band **high** mà thiếu `reports/expansion-plan.md` thì self-review CHẶN |
 | **Task có case Create/Update/Delete** | `INFRA_VERIFY=1 … npx playwright test tests/support/setup/db/readonly.verify.spec.ts --project=infra-verify` rồi dùng `dbVerify` trong spec (chiều §23, tag `[DbPersist]`) | Kiểm CẢ bản ghi dưới DB, không chỉ UI/API: response thường ECHO lại request và FE format lại giá trị ⇒ 7 lớp lỗi (đổi kiểu số · lệch múi giờ · cắt varchar · xoá mềm hỏng · bảng liên quan không đổi · double-submit · rollback sai) đều "UI thấy đúng". DB là oracle PHỤ (khoanh tầng UI×DB ⇒ `failureLayer`), CHỈ dùng cột đã neo ở `fieldMap.anchored`, và DB KHÔNG phải evidence. Bắt buộc role CHỈ ĐỌC — spec nghiệm thu ở cột bên cạnh chặn nếu user có quyền ghi |
 | **Ngay sau khi sinh/sửa spec, TRƯỚC khi execute** | `npm run lint:locator` → `npm run lint:locator:enforce` | Gate chất lượng CODE automation (khâu duy nhất trước đây không có gate): click toạ độ · `force:true` · regex trên `body.innerText` · `querySelectorAll('*')` · `.first()`/`.nth()` cấp trang · hard-wait ≥5s · XPath · assertion yếu (`toBeTruthy()` trên giá trị đọc từ app pass với mọi chuỗi khác rỗng). Code brittle không chặn ở đây thì lộ ra lúc chạy dưới dạng "FAIL" trông như bug sản phẩm. Bỏ qua phải ghi lý do: `// locator-lint-disable-next-line <lý do>` |
-| **Sau execute, TRƯỚC finalize** | `npm run expansion:plan -- --audit --enforce` | CHẶN nếu có finding mở rộng ghi PASS/FAIL mà **không có `oracle_ref`** — nhất quán KHÔNG phải bằng chứng của đúng. `aio:push-exec` cũng chặn ở `plan_guard`, chạy sớm ở đây thì biết trước một bước |
+| **Sau execute, TRƯỚC finalize** | `npm run expansion:plan -- --audit --enforce` | CHẶN nếu có finding mở rộng ghi PASS/FAIL mà **không có `oracle_ref`** — nhất quán KHÔNG phải bằng chứng của đúng. `merge_execution_status.js` cũng chặn ở `plan_guard`, chạy sớm ở đây thì biết trước một bước |
 | Khi bug lọt ra ngoài (dev/BA/khách báo) | `npm run leak:report -- --story <STORY_KEY>` | Bug người ngoài tìm ra = **lỗi của máy**: báo cáo bắt buộc chỉ ra máy nào lẽ ra bắt được. Không có nó thì "lọt bug" mãi là chuyện cảm tính |
 | Task có case band **high**, hoặc sau khi sửa assertion diện rộng | `npm run mutation:check -- --catalog <ui_catalog.json>` | Bóp méo response ở tầng `page.route()` rồi xem suite có ĐỎ không — thứ duy nhất trả lời "suite xanh vì app đúng, hay vì suite không kiểm gì". Không chạm dữ liệu thật; mutant *survived* = chỗ suite mù |
 | **Trước finalize/publish** | `npm run self-review:enforce -- --task <TASK_KEY>` | **G9** checklist gộp (preflight + design + row-quality + execution + attestation + 5 trục mở rộng). Bản `:enforce` **exit 1 khi còn CHẶN** — bản `self-review` thường chỉ in báo cáo rồi exit 0, nên finalize phải dùng bản này. **Còn đỏ thì đừng viết report, đừng log bug** |
-| **Sau MỌI lần execute** (không chỉ khi có bug) | `npm run learn -- --scan` và `npm run learn:bugs:apply` | Thu learning data về `knowledge/` (snapshot execution + đồng bộ trạng thái bug từ Jira). **Bỏ bước này là vòng học đứt** — risk model chạy trên dữ liệu cũ |
+| **Sau MỌI lần execute** (không chỉ khi có bug) | `npm run learn -- --scan` và `npm run learn:bugs:apply` | Thu learning data về `knowledge/` (snapshot execution + đồng bộ trạng thái bug từ Backlog). **Bỏ bước này là vòng học đứt** — risk model chạy trên dữ liệu cũ |
 | **Cuối task — BÁO CÁO ĐÃ HỌC GÌ** | `npm run learn:report -- --task <TASK_KEY> --write` | Sinh `reports/learning-summary.md`: **đã học** (record thuộc task, gom theo store) + **CHƯA học** (bug không map được module nên bị risk_score loại · rule chưa TC nào dùng · bug chưa có root cause · store còn rỗng). Không có bước này thì không ai biết vòng học có chạy hay bỏ sót gì. |
-| **Cuối task/sprint — sau khi ghi record mới** | `KNOWLEDGE_BACKUP_DIR=<dir NGOÀI repo> npm run knowledge:backup` (rồi `-- --verify <bundle>`) | Sao lưu phần knowledge **KHÔNG nạp lại được** (`domain/ system/ decisions/ setup_recipes/ environment/ locators/ explorations/`). `knowledge/**` bị gitignore nên không remote nào giữ hộ — mất máy là mất công sức xác nhận của BA/dev qua nhiều tháng. `bugs/`+`historical_execution/`+`metrics/` cố ý KHÔNG sao lưu (nạp lại được từ Jira/AIO). `self-review` cảnh báo khi bundle cũ ≥7 ngày |
+| **Cuối task/sprint — sau khi ghi record mới** | `KNOWLEDGE_BACKUP_DIR=<dir NGOÀI repo> npm run knowledge:backup` (rồi `-- --verify <bundle>`) | Sao lưu phần knowledge **KHÔNG nạp lại được** (`domain/ system/ decisions/ setup_recipes/ environment/ locators/ explorations/`). `knowledge/**` bị gitignore nên không remote nào giữ hộ — mất máy là mất công sức xác nhận của BA/dev qua nhiều tháng. `bugs/`+`historical_execution/`+`metrics/` cố ý KHÔNG sao lưu (nạp lại được từ Backlog/Google Sheet). `self-review` cảnh báo khi bundle cũ ≥7 ngày |
 
 > 🗣️ **BẮT BUỘC — kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Sinh ra `learning-summary.md` rồi im lặng
 > là chưa xong: user phải đi mở file mới biết. Cuối lượt chạy, nói thẳng **ba phần**:
@@ -58,23 +58,23 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase2_*`*
 > Copy khối dưới đây, thay placeholder rồi gửi cho agent.
 
 ```text
-Chạy Phase 2 cho module/task sau: generate/update automation scripts nếu cần, execute testcases thật, auto-heal lỗi automation/setup, tổng hợp report và chỉ log bug Jira khi đã đủ điều kiện xác nhận.
+Chạy Phase 2 cho module/task sau: generate/update automation scripts nếu cần, execute testcases thật, auto-heal lỗi automation/setup, tổng hợp report và chỉ log bug Backlog khi đã đủ điều kiện xác nhận.
 
 Project:
 - Project là toàn bộ LMS + Operations automation workspace.
 - Phạm vi hiện tại là module/task/feature được cung cấp bên dưới.
-- Jira key hoặc module name chỉ là task/feature scope, không phải tên project.
+- Backlog key hoặc module name chỉ là task/feature scope, không phải tên project.
 
 Phạm vi:
 - Module/Feature: [MODULE_FEATURE]
 - Task key/scope folder: [TASK_KEY]
 - Site liên quan: [LMS / Operations / LMS + Operations]
-- Nguồn testcase: [TESTCASE_SOURCE = aio (mặc định) | excel]
-- Đẩy trạng thái lên AIO sau execute: [PUSH_EXECUTION = confirm (mặc định, QA duyệt preview rồi mới tạo) | auto | 0]
+- Nguồn testcase: Google Sheet (agent tải bản mới nhất về `test-cases/from-sheet/*.xlsx` qua Drive MCP trước execute)
+- Đồng bộ kết quả lên Sheet sau execute: [PUSH_EXECUTION = confirm (mặc định, QA duyệt preview rồi mới ghi đè Sheet) | auto | 0]
 
 Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ điền trực tiếp ở đây khi muốn override profile)
-- Jira Epic: [JIRA_EPIC_URL]
-- Jira Story/Task: [JIRA_STORY_URL]
+- Backlog Epic: [BACKLOG_EPIC_URL]
+- Backlog Story/Task: [BACKLOG_STORY_URL]
 - Confluence Requirement: [CONFLUENCE_REQUIREMENT_URL]
 - Figma: [FIGMA_FILE_URL]
 - LMS URL: [LMS_BASE_URL]
@@ -84,19 +84,16 @@ Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ �
 - Other docs/files: [OTHER_DOCS hoặc N/A]
 
 Run profile (chạy song song an toàn):
-- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, tài khoản OPS/LMS theo task); giá trị TĨNH (Figma/Confluence/Jira/AIO/HubSpot key + base URL) giữ ở .env chung.
+- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, `GOOGLE_SHEET_URL`); giá trị TĨNH (Figma/Backlog key + base URL) giữ ở .env chung.
 - Truyền TASK_ENV=profiles/[TASK_KEY]/task.env cho MỌI command; không đọc TASK_KEY từ .env chung, không sửa .env/.env.local chung.
 - Chi tiết: QUICKSTART.md (mục Parallel Story Safety).
 
 Input artifacts:
-- Nguồn testcase (`TESTCASE_SOURCE`, **mặc định `aio`**):
-  - `aio`: testcase trên **AIO Tests** → kéo về canonical local TRƯỚC khi execute bằng `npm run aio:pull:write -- --story [JIRA_STORY_KEY]`, rồi đọc từ `test-cases/from-aio/*.xlsx`. Đi cùng `TEST_MANAGEMENT_TOOL=aio`; cột/định dạng giữ đúng Excel canonical nên parser không phân biệt nguồn.
-  - `excel`: đọc Excel người dùng trong `test-cases/*.xlsx` (opt-out — dùng khi chưa publish hoặc muốn chạy thuần local).
+- Nguồn testcase: **Google Sheet** (đã publish ở Phase 1) → agent `download_file_content` qua Drive MCP TRƯỚC khi execute (dùng `GOOGLE_SHEET_URL` trong `profiles/[TASK_KEY]/task.env`), ghi vào canonical local `test-cases/from-sheet/*.xlsx`. Cột/định dạng giữ đúng Excel canonical nên parser không phân biệt nguồn tải về.
 - Testcase folder:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/`
-- Testcase Excel source of truth (theo `TESTCASE_SOURCE`):
-  - `excel`: `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/*.xlsx`
-  - `aio`: `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-aio/*.xlsx` (do `npm run aio:pull:write` sinh)
+- Testcase Excel source of truth:
+  `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-sheet/*.xlsx` (tải về từ Google Sheet qua Drive MCP)
 - Requirement/context folder:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/requirements/`
 - Phase 1 summary report:
@@ -126,15 +123,13 @@ Parallel story safety:
   hoặc `npm run test:task:fe` / `npm run test:task:api`.
 - Khi có `RUN_ID`, Playwright output nằm dưới:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-results/runs/[RUN_ID]/`
-- Khi có `RUN_ID`, execution summary/local Jira log cho run đó nằm dưới:
+- Khi có `RUN_ID`, execution summary/local Backlog log cho run đó nằm dưới:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/reports/runs/[RUN_ID]/`
 - Khi có `RUN_ID`, không cập nhật trực tiếp testcase Markdown/Excel chính trong `test-cases/`; ghi `Status`, `Actual Result`, `Evidence` vào run-scoped report/status. Chỉ merge ngược khi user chọn run đó làm canonical.
 
 Nguyên tắc tiết kiệm token:
-- Phase 2 dùng canonical local (`reports/phase1-summary.md`, `task.md`, Excel testcase theo `TESTCASE_SOURCE`) làm source of truth cho TC ID/steps/expected; chỉ fetch lại Jira/Confluence/Figma/Swagger khi cần xác minh expected/spec.
-- Nguồn execute theo `TESTCASE_SOURCE`:
-  - `aio` (**mặc định**): coi AIO Tests là nguồn (Phase 1 đã publish testcase lên đó). Chạy `npm run aio:pull:write` MỘT lần để tái tạo canonical local `test-cases/from-aio/*.xlsx`, rồi execute từ file đó y như Excel thường — không gọi AIO/Jira cho từng case lúc execute (token thấp + offline được).
-  - `excel`: dùng Excel local `test-cases/*.xlsx`; KHÔNG đọc mirror của TMS. Dùng khi chưa publish hoặc muốn chạy thuần local.
+- Phase 2 dùng canonical local (`reports/phase1-summary.md`, `task.md`, Excel testcase từ Sheet) làm source of truth cho TC ID/steps/expected; chỉ fetch lại Backlog/Confluence/Figma/Swagger khi cần xác minh expected/spec.
+- Nguồn execute: tải Google Sheet MỘT lần qua Drive MCP về canonical local `test-cases/from-sheet/*.xlsx`, rồi execute từ file đó y như Excel thường — không gọi Sheet/Backlog cho từng case lúc execute (token thấp + offline được sau khi đã tải).
 - Đọc testcase theo index/TC ID/module trước, chỉ mở full file khi selected scope yêu cầu.
 - Không paste full Playwright report, trace, DOM, network log hoặc `results.json` vào chat/report; trích lỗi chính và lưu artifact local.
 - Chạy targeted test trước theo selected TC IDs/spec/endpoint. Chỉ chạy full suite khi `Execution mode = ALL_TESTCASES`, sửa shared helper/auth/setup, hoặc cần kiểm regression rộng.
@@ -151,7 +146,7 @@ Nguyên tắc chất lượng khi tối ưu:
 Output:
 - Output root bắt buộc lấy từ `PROJECT_OUTPUT_DIR`.
 - Nếu không có `PROJECT_OUTPUT_DIR`, dừng và yêu cầu user cung cấp; không dùng fallback hardcode.
-- Nếu không có `TASK_KEY`, dừng và yêu cầu user cung cấp; không dùng fallback từ `JIRA_STORY_KEY` hoặc task cũ.
+- Nếu không có `TASK_KEY`, dừng và yêu cầu user cung cấp; không dùng fallback từ `BACKLOG_STORY_KEY` hoặc task cũ.
 - Output cho scope này phải nằm trong:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/`
 
@@ -201,10 +196,10 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
 
 ## Thứ tự Phase 2 bắt buộc
 
-0. **Nguồn testcase (mặc định `aio`)** — kéo testcase từ AIO Tests về canonical local trước khi execute:
-   `npm run aio:pull -- --story [JIRA_STORY_KEY]` (xem trước) → kiểm tra số TC/steps đúng kỳ vọng → `npm run aio:pull:write -- --story [JIRA_STORY_KEY]` để ghi `test-cases/from-aio/[TASK_KEY]_from_aio.xlsx`. Truyền `PROJECT_OUTPUT_DIR`/`TASK_KEY` (hoặc `TASK_ENV`) như mọi command. Yêu cầu `AIO_API_TOKEN` + Phase 1 ĐÃ publish testcase lên AIO; nếu pull không thấy case nào → chưa publish (publish trước, hoặc tạm chạy `TESTCASE_SOURCE=excel`). Nếu report cảnh báo TC thiếu steps thì DỪNG và báo user. Từ Bước 1 trở đi, "Excel canonical" = file `from-aio/*.xlsx`. **Nếu `TESTCASE_SOURCE=excel`**: bỏ qua bước này, dùng `test-cases/*.xlsx` local.
+0. **Nguồn testcase** — tải Google Sheet về canonical local trước khi execute:
+   Agent `mcp__claude_ai_Google_Drive__download_file_content` file Sheet theo `GOOGLE_SHEET_URL` trong `profiles/[TASK_KEY]/task.env` → ghi `test-cases/from-sheet/[TASK_KEY]_from_sheet.xlsx` → kiểm tra số TC/steps đúng kỳ vọng. Yêu cầu Phase 1 ĐÃ publish testcase lên Sheet (`GOOGLE_SHEET_URL` đã có trong profile); chưa có thì publish trước (`.agent/workflows/phase1_04_auto_publish_jira.md`), hoặc tạm dùng `test-cases/*.xlsx` local nếu chưa cần publish. Nếu report cảnh báo TC thiếu steps thì DỪNG và báo user. Từ Bước 1 trở đi, "Excel canonical" = file `from-sheet/*.xlsx`.
 1. Đọc `reports/phase1-summary.md` và `task.md` trước để xác định scope, coverage, testcase Excel files và rủi ro.
-2. Đọc reviewed testcase từ nguồn canonical local (theo `TESTCASE_SOURCE`: mặc định `test-cases/from-aio/*.xlsx`, hoặc `test-cases/*.xlsx`) theo selected TC IDs/module; nếu chạy toàn bộ thì lập danh sách TC trước rồi mở Markdown liên quan khi cần Setup Strategy chi tiết.
+2. Đọc reviewed testcase từ nguồn canonical local (`test-cases/from-sheet/*.xlsx`, hoặc `test-cases/*.xlsx` nếu chưa publish) theo selected TC IDs/module; nếu chạy toàn bộ thì lập danh sách TC trước rồi mở Markdown liên quan khi cần Setup Strategy chi tiết.
 3. Generate/update Playwright automation scripts nếu missing hoặc stale; mặc định sinh task-scoped automation dưới `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/automation/`, chỉ sửa/generate spec/helper bị ảnh hưởng.
    Nếu cần sửa shared file, áp dụng `Shared Change Gate` trước.
    **MỞ NGAY BÂY GIỜ** (không viết script trước rồi mới đọc): [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md) nếu scope có case UI, và/hoặc [`phase2/05_execute_api_playwright.md`](phase2/05_execute_api_playwright.md) nếu có case API. Hai file đó là nơi chứa kỷ luật execute (khoanh tầng lỗi FE/BE, oracle mapping nêu cả hai giá trị, `ui_conformance_check`, **5 trục mở rộng quanh case**, chuẩn evidence) — thiếu chúng thì script vẫn chạy nhưng bug hiển thị/mapping sẽ lọt.
@@ -238,9 +233,9 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
 11b. **Cổng review hiển thị/visual (BẮT BUỘC nếu scope có UI)**: sau khi có screenshot, với MỖI màn đối chiếu (a) DOM-extract toàn bộ tên cột/label/format và (b) ảnh full-page vs `requirements/ui_catalog.md` + Figma/FS; liệt kê **MỌI deviation** (tên cột sai, format sai, thiếu/thừa/sai thứ tự cột, thiếu field, spacing/màu/radius/font lệch). Chụp full-page/scroll ngang để không sót cột. **KHÔNG tự lọc "lỗi nhỏ"**; mỗi deviation là 1 finding ứng viên, map về TC Conformance/Design tương ứng và ghi FAIL nếu lệch spec. Text-step automation không "nhìn" được toàn cảnh — nếu có vision-model/visual-diff thì dùng; nếu không, review ảnh có cấu trúc theo từng dòng của catalog (không bỏ dòng nào).
 12. Phân loại mọi testcase đã execute thành `PASS`, `FAIL`, hoặc `SKIP` và cập nhật testcase output với `Actual Result` rõ ràng.
     Nếu có `RUN_ID`, không sửa testcase Markdown/Excel chính trong lúc execute; ghi phân loại vào run-scoped report/status.
-    Đồng thời ghi file máy-đọc để đẩy trạng thái lên TMS: `test-results/testcase-status.json` (có `RUN_ID` thì `test-results/runs/[RUN_ID]/testcase-status.json`). **`status` dùng ĐÚNG tên canonical trong `.agent/config/verdict_taxonomy.json`** (`PASS` | `FAIL` | `BLOCKED_SETUP` | `TODO` | …; script vẫn nhận alias `PASSED/FAILED/TO DO/EXECUTING` và tự map sang trạng thái run của AIO — 1 nguồn duy nhất là taxonomy, KHÔNG hardcode bảng khác). Schema:
-    `{ "taskKey": "[TASK_KEY]", "generatedAt": "<ISO>", "tests": [ { "tcId": "<TC ID chính xác như Excel>", "status": "PASSED|FAILED|TO DO|EXECUTING", "comment": "<actual/lý do; nêu rõ nếu vốn là SKIP/BLOCKED>", "evidence": ["<path ảnh/video, tùy chọn>"], "steps": [ { "status": "PASSED|FAILED|TODO", "comment": "<tùy chọn>", "evidence": ["<path>"] } ], "failedStep": <index 1-based — shortcut thay cho steps[]>, "failedStepEvidence": ["<path>"] } ] }` — `tcId` phải khớp TC ID canonical vì đó là khoá nối sang case trên AIO (`automationKey`) — **tuyệt đối không khớp theo tiêu đề**: nhiều case trùng tiêu đề ở các nhóm khác nhau, khớp kiểu đó dồn nhiều run vào một case (đã mất 12 run khi migrate).
-    - **Case FAILED — BẮT BUỘC ghi rõ step nào fail + evidence ở step đó** (để Test Run hiện đúng bước lỗi, không chỉ FAIL tổng): dùng **`steps[]`** (status từng bước; bước lỗi `FAILED` kèm `evidence` là ảnh/video của chính bước đó; bước chưa chạy để `TODO`) HOẶC shortcut **`failedStep`** (index 1-based) + **`failedStepEvidence`** (kit tự suy: trước = PASSED, tại đó = FAILED + evidence, sau = TODO). `aio:push-exec` neo evidence xuống ĐÚNG bước khi biết bước nào (`steps[].evidence` / `failedStep`), không biết thì để cấp run — không bịa vị trí. Map positional theo số step thật của case (dư → cắt, thiếu → TODO).
+    Đồng thời ghi file máy-đọc để đồng bộ trạng thái lên Sheet: `test-results/testcase-status.json` (có `RUN_ID` thì `test-results/runs/[RUN_ID]/testcase-status.json`). **`status` dùng ĐÚNG tên canonical trong `.agent/config/verdict_taxonomy.json`** (`PASS` | `FAIL` | `BLOCKED_SETUP` | `TODO` | …; script vẫn nhận alias `PASSED/FAILED/TO DO/EXECUTING` và tự map sang giá trị cột `Result` trên Sheet — 1 nguồn duy nhất là taxonomy, KHÔNG hardcode bảng khác). Schema:
+    `{ "taskKey": "[TASK_KEY]", "generatedAt": "<ISO>", "tests": [ { "tcId": "<TC ID chính xác như Excel>", "status": "PASSED|FAILED|TO DO|EXECUTING", "comment": "<actual/lý do; nêu rõ nếu vốn là SKIP/BLOCKED>", "evidence": ["<path ảnh/video, tùy chọn>"], "steps": [ { "status": "PASSED|FAILED|TODO", "comment": "<tùy chọn>", "evidence": ["<path>"] } ], "failedStep": <index 1-based — shortcut thay cho steps[]>, "failedStepEvidence": ["<path>"] } ] }` — `tcId` phải khớp TC ID canonical (cột `ID_TC`) vì đó là khoá nối sang đúng dòng trên Sheet — **tuyệt đối không khớp theo tiêu đề**: nhiều case trùng tiêu đề ở các nhóm khác nhau, khớp kiểu đó dồn nhiều run vào một case (đã mất 12 run khi migrate, thời còn dùng AIO).
+    - **Case FAILED — BẮT BUỘC ghi rõ step nào fail + evidence ở step đó**: dùng **`steps[]`** (status từng bước; bước lỗi `FAILED` kèm `evidence` là ảnh/video của chính bước đó; bước chưa chạy để `TODO`) HOẶC shortcut **`failedStep`** (index 1-based) + **`failedStepEvidence`** (kit tự suy: trước = PASSED, tại đó = FAILED + evidence, sau = TODO). Evidence vẫn lưu local (`test-results/artifacts/`) — Sheet chỉ giữ status tổng ở cột `Result`, không đính ảnh/video per-step.
     - **Case PASSED KHÔNG cần `steps[]`** — mọi step tự set = PASSED. Nhưng **case PASSED VẪN bắt buộc có evidence cấp case là ảnh/video** (highlight + mask PII), không được bỏ trống.
     - **`evidence` CHỈ nhận ảnh (`.png/.jpg/.jpeg/.webp`) hoặc video (`.mp4/.webm`)** — cấm `.json/.md/.txt/.log/.html/.csv/trace.zip` hay file dữ liệu thô (kể cả `order_state.json`, dump API/state). Cần chứng minh dữ liệu → chụp ảnh màn hiển thị dữ liệu. Ảnh phải đúng màn (không 404/blank/sai bước), highlight đúng element, mask PII khách. Chi tiết: mục **Evidence — Quy chuẩn bắt buộc** trong `RULE_GLOBAL.md`.
     - **`comment` phải gọn, dễ đọc — KHÔNG dán debug.** 1–2 câu kết quả quan sát được; cấm `key=value`/dump state (`tx 2→2`, `editable=false`, `match=true`, `val="…"`, regex/selector); KHÔNG mở đầu bằng `[PASS]`/`[Positive]`/`[Negative]` (status đã có badge; kit tự tag SKIP/BLOCKED); caveat xuống dòng `Lưu ý:`; số/tiền dạng người đọc (`6.000.000đ`); KHÔNG placeholder kiểu `Xem xxx_results.json`. Chi tiết: mục **Comment kết quả (Test Execution) — Quy chuẩn trình bày** trong `RULE_GLOBAL.md`.
@@ -248,18 +243,17 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
     `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/reports/`
     Nếu có `RUN_ID`, ghi summary của run vào:
     `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/reports/runs/[RUN_ID]/`
-13b. **Đẩy trạng thái testcase lên AIO Tests — tạo Cycle từ `testcase-status.json`.** MẶC ĐỊNH `PUSH_EXECUTION=confirm`: khi ĐÃ HOÀN TẤT cycle execute chính thức (đã triage, run conclusive), chạy **dry-run trình PREVIEW** (tên cycle, số Passed/Failed/Not Run, thư mục sẽ dùng) **cho QA duyệt; CHỈ `:apply` sau khi QA XÁC NHẬN**. **KHÔNG** đề xuất push cho run debug/chạy dở/`setup_failure` diện rộng. `=auto` để tạo ngay không cần hỏi (unattended/CI); `=0` để tắt hẳn.
-    Lệnh: `npm run aio:push-exec -- --task [TASK_KEY] [--folder "<Tên sprint>"] [--cycle-title "..."]` (+ `--run-id [RUN_ID]` nếu có) → xem preview → **QA OK** → `npm run aio:push-exec:apply -- ...`.
-    - **Hai gate TRƯỚC khi ghi**: (1) `output_gate.gateTestExecution` — chất lượng output; (2) **mở rộng 5 trục** — task có case band *high* đã execute mà chưa có `reports/expansion-plan.md` thì CHẶN (gỡ bằng `npm run expansion:plan`, vài giây). Cố ý bỏ qua: `--qa-approved`.
-    - **Guard**: thiếu `AIO_API_TOKEN` → dừng rõ ràng, không ghi nửa vời; run **0 conclusive** (toàn Not Run) → KHÔNG tạo cycle rác (`--force` nếu vẫn muốn); case `carriedOver` (shard cũ của lượt trước) tự bị loại (`--include-carried-over` để giữ).
-    - **Title**: mỗi lần push tạo **1 Cycle mới** — mặc định `[TASK_KEY] Test Execution - <ngày>`; `--cycle-title` để đặt tên (vd `... - Lần <N>`). Chạy lại **cùng `--cycle-title`** thì **dùng lại cycle cũ** và bỏ qua evidence đã có (dedup theo từng bước) — không đẻ cycle trùng.
-    - **Status map**: 1 nguồn duy nhất `.agent/config/verdict_taxonomy.json` (cột `aio`) → tên trạng thái; ID nội bộ lấy từ `GET /config` của chính AIO. `BLOCKED_SETUP` nay giữ đúng nghĩa **Blocked** (không bị ép thành "chưa chạy").
-    - **Evidence xuống TỪNG BƯỚC**: khai `steps[].evidence`, hoặc `failedStep` + `failedStepEvidence` cho case FAIL. Không biết bước nào thì để cấp run — **không bịa vị trí**. Đính lại lần nữa không xoá attachment đã có (đã đo) nên chạy lại an toàn.
-    - **Thư mục cycle thay Test Plan**: AIO KHÔNG có Test Plan; dùng `--folder "<Tên sprint>"` để nhóm cycle theo sprint.
-    - **Không có**: assignee/sprint/workflow trên case (case không phải Jira issue), và **KHÔNG có API xoá** cycle/attachment/run cuối ⇒ sai thì phải vào UI dọn tay. Xem trước rồi mới `:apply`.
+13b. **Đồng bộ trạng thái testcase lên Google Sheet — ghi cột `Result` từ `testcase-status.json`.** MẶC ĐỊNH `PUSH_EXECUTION=confirm`: khi ĐÃ HOÀN TẤT cycle execute chính thức (đã triage, run conclusive), chạy `node scripts/convert_excel/merge_execution_status.js <local .xlsx> test-results/testcase-status.json` (ghi vào bản `.xlsx` local, **chưa đụng Sheet thật**) → agent tự soi lại file đã merge cho QA duyệt → **CHỈ `update_file` qua Drive MCP đè lên Sheet thật sau khi QA XÁC NHẬN**. **KHÔNG** đề xuất sync cho run debug/chạy dở/`setup_failure` diện rộng. `=auto` để ghi đè ngay không cần hỏi (unattended); `=0` để tắt hẳn.
+    - **Hai gate TRƯỚC khi ghi file local**: (1) `output_gate.gateTestExecution` — chất lượng output; (2) **mở rộng 5 trục** — task có case band *high* đã execute mà chưa có `reports/expansion-plan.md` thì CHẶN (gỡ bằng `npm run expansion:plan`, vài giây). Cố ý bỏ qua: `--qa-approved`.
+    - **Guard**: run **0 conclusive** (toàn Not Run) → KHÔNG ghi đè (`--force` nếu vẫn muốn); case `carriedOver` (shard cũ của lượt trước) tự bị loại (`--include-carried-over` để giữ).
+    - **Ghi đè toàn file**: mỗi lần sync là ghi đè TOÀN BỘ `.xlsx` rồi `update_file` — không có khái niệm Cycle/Run riêng như trước; chạy lại chỉ cập nhật lại đúng cột `Result` của case khớp `tcId`, không đụng ô khác (Test Type/Priority/Note QA đã sửa tay trên Sheet vẫn giữ nguyên).
+    - **Status map**: 1 nguồn duy nhất `.agent/config/verdict_taxonomy.json` (cột `sheet`) → giá trị `Pass|Fail|Pending`. `BLOCKED_SETUP`/`SKIP` map về `Pending`.
+    - **Evidence**: vẫn lưu local (`test-results/artifacts/`), Sheet chỉ giữ status tổng ở cột `Result` — không đính ảnh/video per-step lên Sheet (khác AIO cũ).
+    - **Không có**: folder/tag/Cycle/Run/custom field như AIO cũ — đây là đổi mô hình dữ liệu (Sheet phẳng), không phải đổi tên; nhóm chức năng thể hiện bằng sheet riêng trong cùng workbook.
+    - Việc `update_file` chỉ làm được khi agent đang chạy trong phiên chat (Drive MCP không gọi được từ CI headless).
     - **Vòng giảm skip**: còn nhiều skip thì CHƯA push; skip tối thiểu → QA duyệt push.
 14. Đánh giá `Automation Promote Review`: giữ task-scoped, pending review, hoặc đã promote nếu có approval.
-15. Chỉ chạy bước log bug Jira khi thỏa mãn toàn bộ điều kiện log bug bên dưới và user/prompt hiện tại cho phép.
+15. Chỉ chạy bước log bug Backlog khi thỏa mãn toàn bộ điều kiện log bug bên dưới và user/prompt hiện tại cho phép.
 16. Cập nhật:
     `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/task.md`
 
@@ -319,7 +313,7 @@ Chỉ coi Phase 2 hoàn tất khi:
 - Các case PASS thật sự validate đúng behavior/expected result, không pass do thiếu assertion hoặc skip logic.
 - Không còn FAIL do prompt template chưa rõ, setup, test data, mock/stub sai, timeout, dependency, auth, locator hoặc execute flow.
 - FAIL còn lại đã được rerun đủ để loại trừ flaky/setup và có evidence rõ ràng.
-- Report cuối cùng có đủ tổng case, PASS/FAIL/SKIP, danh sách skip, lỗi đã sửa, rủi ro còn lại và Jira logging status.
+- Report cuối cùng có đủ tổng case, PASS/FAIL/SKIP, danh sách skip, lỗi đã sửa, rủi ro còn lại và Backlog logging status.
 - Report ghi rõ shared files có sửa hay không và trạng thái automation promotion.
 - Không còn lỗi do output thiếu thông tin, artifact trắng/hỏng, report tiếng Việt không chuẩn, hoặc thiếu mapping testcase -> kết quả -> evidence.
 
@@ -349,13 +343,13 @@ Summary phải có:
 - Với mỗi FAIL, phân loại nguyên nhân: automation/harness, test data/environment, dependency, timeout/flaky, requirement unclear, product bug, hoặc API contract mismatch.
 - Evidence quality check: ảnh/video mở được, không trắng (log/response/trace là diagnostic, đối chiếu khi cần).
 - **Display/Visual deviations** (chuẩn "đủ" ở [`phase1/dimensions/12_display.md`](phase1/dimensions/12_display.md) — mở nó nếu chưa rõ deviation nào phải tính): danh sách khác biệt hiển thị phát hiện qua cổng review (mục 11b) — tên cột sai, format sai, thiếu/thừa/sai thứ tự cột, thiếu field, token màu/spacing/radius/font — **kể cả minor**; mỗi dòng map về TC Conformance/Design + verdict. Nếu không có, ghi rõ `Không có deviation hiển thị`.
-- Jira logging status: chưa chạy, dry-run, đã tạo bug, hoặc bị skip theo yêu cầu user.
+- Backlog logging status: chưa chạy, dry-run, đã tạo bug, hoặc bị skip theo yêu cầu user.
 
 `task.md`, execution summary và execution results phải viết bằng tiếng Việt chuẩn có dấu; technical terms, endpoint, command, enum/status có thể giữ nguyên tiếng Anh.
 
-## Điều kiện log bug lên Jira
+## Điều kiện log bug lên Backlog
 
-Chỉ được log bug lên Jira khi đã đảm bảo đầy đủ các yếu tố sau:
+Chỉ được log bug lên Backlog khi đã đảm bảo đầy đủ các yếu tố sau:
 
 - Testcase đã được execute thực sự, không phải pass/fail do skip hoặc chạy thiếu bước.
 - Case fail đã được chạy lại ít nhất 2-3 lần để loại trừ flaky issue.
@@ -370,10 +364,10 @@ Chỉ được log bug lên Jira khi đã đảm bảo đầy đủ các yếu t
 - Đã cố gắng sửa các lỗi khiến case bị skip/fail do test setup hoặc execute process.
 - Case fail vẫn còn fail sau khi đã sửa các nguyên nhân không thuộc product bug.
 - Expected result đã được xác nhận là đúng bằng requirement/API/design hoặc review hợp lệ.
-- Actual result có evidence rõ ràng đã sanitize. Log/response/trace/error-context có thể dùng cho phân tích local, nhưng evidence upload lên Jira chỉ được là ảnh/video.
+- Actual result có evidence rõ ràng đã sanitize. Log/response/trace/error-context có thể dùng cho phân tích local, nhưng evidence upload lên Backlog chỉ được là ảnh/video.
 - Video evidence không bắt buộc cho mọi bug. Với case phức tạp mà screenshot không mô tả đủ chuỗi thao tác/trạng thái trước-sau lỗi, phải rerun với video và upload video kèm screenshot nếu có thể.
 
-Không được log Jira bug nếu:
+Không được log Backlog bug nếu:
 - Case đang bị SKIP.
 - Case fail do prompt/test/setup chưa chuẩn.
 - Chưa rerun để xác nhận.
@@ -381,26 +375,26 @@ Không được log Jira bug nếu:
 - Chưa xác nhận expected result.
 - Failure có khả năng flaky nhưng chưa được phân loại/rerun đủ.
 
-Khi log Jira bug:
-- Jira Description chỉ được có đúng 4 phần, theo testcase/requirement:
+Khi log Backlog bug:
+- Backlog description chỉ được có đúng 4 phần, theo testcase/requirement:
   1. `Tiền điều kiện`
   2. `Bước`
   3. `Kết quả hiện tại`
   4. `Kết quả mong muốn`
-- Không đưa `Evidence`, `Xác nhận trước khi log`, `Mức độ ảnh hưởng`, `Execution summary`, `TC ID`, `Source`, `Generated`, bảng kết quả test, link report hoặc metadata automation vào Jira Description.
-- Evidence phải nằm ở Jira attachment bên dưới issue, không phải trong description.
-- Với Jira attachment, chỉ dùng screenshot/video; không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md` hoặc execution summary.
+- Không đưa `Evidence`, `Xác nhận trước khi log`, `Mức độ ảnh hưởng`, `Execution summary`, `TC ID`, `Source`, `Generated`, bảng kết quả test, link report hoặc metadata automation vào Backlog description.
+- Evidence phải nằm ở Backlog attachment bên dưới issue, không phải trong description.
+- Với Backlog attachment, chỉ dùng screenshot/video; không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md` hoặc execution summary.
 - Testcase liên quan, số lần rerun, các nguyên nhân đã loại trừ, mức độ ảnh hưởng và ghi chú flaky/environment phải ghi trong execution summary/report local, không ghi vào description.
-- Không tự động tạo Jira comment/Activity khi log bug hoặc cập nhật bug. Chỉ comment lên Jira khi user yêu cầu rõ, hoặc khi có tình huống đặc biệt bắt buộc cần lưu vết trong Activity (vd báo kết quả re-verify sau khi Dev fix); khi đó phải nêu lý do trong report local. **Khi comment**: trình bày ngắn gọn + gạch đầu dòng, tag Dev bằng mention `[~accountid:...]`, và **nhúng ảnh evidence đã annotate/highlight inline** (đỏ=điểm lỗi, xanh=đã đúng) qua REST v2 wiki `!file|width=900!` — chi tiết ở `prompt_templates/phase2/08_log_bug_jira.md` (mục Evidence attachment + Jira comment).
+- Không tự động tạo Backlog comment khi log bug hoặc cập nhật bug. Chỉ comment khi user yêu cầu rõ, hoặc khi có tình huống đặc biệt bắt buộc cần lưu vết (vd báo kết quả re-verify sau khi Dev fix); khi đó phải nêu lý do trong report local. **Khi comment**: trình bày ngắn gọn + gạch đầu dòng, tag Dev bằng mention `@<tên đăng nhập>` (CHƯA VERIFY cú pháp chính xác trên Backlog), và **đính kèm ảnh evidence đã annotate/highlight** (đỏ=điểm lỗi, xanh=đã đúng) qua attachment của comment — chi tiết ở `prompt_templates/phase2/08_log_bug_jira.md` (mục Evidence attachment + Backlog comment).
 
 Nếu đủ điều kiện log bug và user/prompt cho phép:
 - Đọc prompt con: `prompt_templates/phase2/08_log_bug_jira.md`.
 - Chạy dry-run trước:
-  `node scripts/integrations/jira/bug_reporter.js --task [TASK_KEY] --story [JIRA_STORY_KEY] --project-output [PROJECT_OUTPUT_DIR] --dry-run`
-- Chỉ tạo Jira thật khi user yêu cầu hoặc prompt hiện tại cho phép thay đổi Jira:
-  `node scripts/integrations/jira/bug_reporter.js --task [TASK_KEY] --story [JIRA_STORY_KEY] --project-output [PROJECT_OUTPUT_DIR]`
-- Bug Jira phải là child/sub-bug của đúng Story/Task `[JIRA_STORY_KEY]`, không tạo bug độc lập.
-- Không in Jira token/credential.
+  `node scripts/integrations/backlog/bug_reporter.js --task [TASK_KEY] --story [BACKLOG_STORY_KEY] --project-output [PROJECT_OUTPUT_DIR] --dry-run`
+- Chỉ tạo Backlog issue thật khi user yêu cầu hoặc prompt hiện tại cho phép thay đổi Backlog:
+  `node scripts/integrations/backlog/bug_reporter.js --task [TASK_KEY] --story [BACKLOG_STORY_KEY] --project-output [PROJECT_OUTPUT_DIR]`
+- Bug Backlog phải là child/sub-bug của đúng Story/Task `[BACKLOG_STORY_KEY]`, không tạo bug độc lập.
+- Không in Backlog token/credential.
 
 Execution mode:
 - [ALL_TESTCASES hoặc SELECTED_TESTCASES]
