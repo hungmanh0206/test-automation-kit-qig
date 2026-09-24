@@ -5,10 +5,10 @@ import path from 'path';
 /*
  * MÔ HÌNH TESTCASE CANONICAL (scripts/lib/testcase) + GATE TAG/PRIORITY GẮN VỚI NÓ.
  *
- * Tách ra 22/09/2026 từ `publish-field-mapping.spec.ts` khi AIO Tests ngưng dùng (thay bằng Google Sheet —
- * xem plan migrate): phần lớn file cũ khoá SHAPE payload publish lên AIO (CaseTag lồng, custom field
+ * Tách ra 22/09/2026 từ `publish-field-mapping.spec.ts` khi Google Sheet ngưng dùng (thay bằng Google Sheet —
+ * xem plan migrate): phần lớn file cũ khoá SHAPE payload publish lên Google Sheet (CaseTag lồng, custom field
  * Module, folder hierarchy, story-link) — không còn đối tượng để test, đã xoá cùng
- * `scripts/integrations/aio/**`. Các test GIỮ LẠI ở đây không phụ thuộc AIO — chúng khoá đúng
+ * `scripts/integrations/aio/**`. Các test GIỮ LẠI ở đây không phụ thuộc Google Sheet — chúng khoá đúng
  * `scripts/lib/testcase/model.js`/`validate.js` (đọc bằng TÊN cột, không theo hệ thống đích), gate `Tag`
  * của `md_to_xlsx.js`, và cách tính risk band từ Ưu tiên — tất cả vẫn đúng nguyên với luồng Sheet mới.
  */
@@ -60,7 +60,7 @@ test.describe('@infra tag chiều — nguồn DUY NHẤT là tc.dimensions, khô
   /*
    * TAG RA CỘT RIÊNG (21/08/2026) — lớp lỗi: gate nào TỰ regex tag từ tiêu đề sẽ IM LẶNG khi tiêu đề
    * sạch. Đã dính thật: `validate.js` đọc `tc.title.match(/\[..\]/g)` nên 45 cảnh báo tag↔loại của bộ
-   * SAPP-26878 tụt về 0 mà không có một dòng lỗi nào. Nguồn tag DUY NHẤT là `tc.dimensions` của model
+   * CSDL-26878 tụt về 0 mà không có một dòng lỗi nào. Nguồn tag DUY NHẤT là `tc.dimensions` của model
    * (hợp của cột `Tag` và tiêu đề) — các test dưới khoá đúng chỗ đó.
    */
   test('model lấy tag từ CỘT `Tag` và từ tiêu đề — cả hai đời bộ TC', () => {
@@ -161,7 +161,7 @@ test.describe('@infra tag chiều — nguồn DUY NHẤT là tc.dimensions, khô
 test.describe('@infra Ưu tiên → risk band — PRIO_RANK phải phủ đủ 5 mức', () => {
   /*
    * `bandOf` lấy max(risk, priority) mà `PRIO_RANK` lại THIẾU khoá `critical` ⇒ bỏ cột Severity thì 28 case
-   * `Ưu tiên: Critical` của SAPP-26878 tụt band high → low (5 trục mở rộng còn 1) — sai đúng chiều
+   * `Ưu tiên: Critical` của CSDL-26878 tụt band high → low (5 trục mở rộng còn 1) — sai đúng chiều
    * nguy hiểm nhất. Vá PRIO_RANK rồi thì bỏ cột làm đổi band 0/1977 case toàn repo.
    */
   test('PRIO_RANK phủ đủ 5 mức ưu tiên — thiếu `critical` là hạ band case quan trọng nhất', () => {

@@ -77,19 +77,19 @@ const CI_OK = {
 const INFRA_OK = { 'tests/fe/infra/gates.spec.ts': "import { test } from '@playwright/test';\ntest('x', () => {});\n" };
 
 test.describe('@infra ci:scope — spec theo task không được vào suite chung', () => {
-  test('spec trong thư mục SAPP-<số> được track ⇒ CHẶN, kèm cách gỡ', () => {
+  test('spec trong thư mục dự án trước-<số> được track ⇒ CHẶN, kèm cách gỡ', () => {
     const root = sandbox({
       ...CI_OK, ...INFRA_OK, '.agent/config/ci_scope.json': CFG(),
-      'tests/mobile-web/SAPP-22827/student_delete.spec.ts': "import { test } from '@playwright/test';\n",
+      'tests/mobile-web/CSDL-22827/student_delete.spec.ts': "import { test } from '@playwright/test';\n",
     });
     const r = run(root);
     expect(r.code, 'để lọt = nightly sẽ chạy nó trên UAT').toBe(1);
-    expect(r.out).toContain('SAPP-22827');
+    expect(r.out).toContain('CSDL-22827');
     expect(r.out, 'phải nói cách gỡ, không chỉ mắng').toContain('git rm --cached');
   });
 
   test('nợ ĐÃ KHAI ở taskSpecDebt ⇒ cảnh báo, không chặn (nợ thấy được ≠ nợ ngầm)', () => {
-    const f = 'tests/fe/SAPP-26523/dropdown.spec.ts';
+    const f = 'tests/fe/CSDL-26523/dropdown.spec.ts';
     const root = sandbox({
       ...CI_OK, ...INFRA_OK, '.agent/config/ci_scope.json': CFG({ taskSpecDebt: [f] }),
       [f]: "import { test } from '@playwright/test';\n",
@@ -97,7 +97,7 @@ test.describe('@infra ci:scope — spec theo task không được vào suite chu
     const r = run(root);
     expect(r.code, r.out).toBe(0);
     expect(r.out).toContain('⚠');
-    expect(r.out).toContain('SAPP-26523');
+    expect(r.out).toContain('CSDL-26523');
   });
 });
 
@@ -329,7 +329,7 @@ test.describe('@infra không có .git — gate phải chạy được, không cr
   const zipLike = () => sandbox({
     ...CI_OK, ...INFRA_OK,
     '.agent/config/ci_scope.json': CFG(),
-    'tests/mobile-web/SAPP-22827/student_delete.spec.ts': `import { test } from '@playwright/test';${NL}`,
+    'tests/mobile-web/CSDL-22827/student_delete.spec.ts': `import { test } from '@playwright/test';${NL}`,
   }, { git: false });
 
   test('ci:scope: KHÔNG crash, exit 0, và nói rõ đang quét working-tree', () => {

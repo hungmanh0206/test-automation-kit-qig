@@ -36,7 +36,7 @@
       "Rejected": 0.1
     },
     "halfLifeDays": 180,
-    "_noteLifecycle": "Vòng đời bug: trọng số mỗi bug = statusWeight[jira_status] × 0.5^(tuổi/halfLifeDays). Bug đã Done/cũ KHÔNG còn nặng như bug mới mở, để risk model phản ánh HIỆN TẠI thay vì lệch về quá khứ. halfLifeDays=0 để tắt decay; statusWeight={} để mọi bug bằng nhau (hành vi cũ)."
+    "_noteLifecycle": "Vòng đời bug: trọng số mỗi bug = statusWeight[backlog_status] × 0.5^(tuổi/halfLifeDays). Bug đã Done/cũ KHÔNG còn nặng như bug mới mở, để risk model phản ánh HIỆN TẠI thay vì lệch về quá khứ. halfLifeDays=0 để tắt decay; statusWeight={} để mọi bug bằng nhau (hành vi cũ)."
   },
   "bands": {
     "High": 12,

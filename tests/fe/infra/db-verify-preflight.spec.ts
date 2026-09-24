@@ -156,7 +156,7 @@ test.describe('@infra preflight DB verify — kiểm TĨNH có răng', () => {
   });
 
   test('user tên đúng quy ước ⇒ không cảnh báo (không nhiễu)', () => {
-    for (const u of ['qa_readonly', 'sapp_qa_readonly', 'svc_ro', 'reporting_ro_1']) {
+    for (const u of ['qa_readonly', 'qa_readonly', 'svc_ro', 'reporting_ro_1']) {
       const r = run({ env: GOOD_ENV.replace('qa_readonly', u) });
       expect(r.warnings.join(' '), `"${u}" bị cảnh báo oan`).not.toMatch(/dấu hiệu read-only/);
     }
@@ -262,7 +262,7 @@ test.describe('@infra tầng DB — seam đủ trung tính để thêm MySQL/Mon
     for (const kw of ['SELECT ', 'INSERT ', 'UPDATE ', 'DELETE ', 'information_schema', '::uuid', ' WHERE ']) {
       expect(src, `dbVerify.ts lọt SQL: "${kw}"`).not.toContain(kw);
     }
-    expect(src, 'dbVerify.ts phải là nơi DUY NHẤT biết dialect nào có adapter').toContain("conn.dialect !== 'postgres'");
+    expect(src, 'dbVerify.ts phải là nơi DUY NHẤT biết dialect nào có adapter').toContain("conn.dialect !== 'mssql'");
   });
 
   test('guard.ts (lớp PHÁN) không được import adapter nào', () => {
@@ -276,9 +276,15 @@ test.describe('@infra tầng DB — seam đủ trung tính để thêm MySQL/Mon
     // guard.ts KHÔNG được khai lại danh sách quyền ghi
     expect(read('guard.ts'), 'guard.ts khai lại WRITE_PRIVILEGES ⇒ hai bản sẽ trôi khỏi nhau')
       .not.toContain('WRITE_PRIVILEGES = [');
-    // postgres adapter phải chuẩn hoá ở CẢ HAI chỗ đọc quyền
-    const pg = fs.readFileSync(path.join(REPO, 'tests/support/setup/db/adapters/postgres.ts'), 'utf8');
-    expect((pg.match(/normalizePrivilege\(/g) || []).length, 'adapter phải chuẩn hoá ở mọi chỗ trả GrantRow').toBeGreaterThanOrEqual(2);
+    /*
+     * Adapter phải chuẩn hoá ở MỌI chỗ trả `GrantRow`. Bản Postgres đọc quyền ở hai chỗ nên khoá `>= 2`;
+     * bản mssql gộp về một helper `readGrants()` duy nhất — tốt hơn, nhưng thế thì đếm số lần gọi không
+     * còn là phép đo đúng. Đo thay bằng: CÓ gọi chuẩn hoá, VÀ không chỗ nào dựng `privilege:` thô.
+     */
+    const adapter = fs.readFileSync(path.join(REPO, 'tests/support/setup/db/adapters/mssql.ts'), 'utf8');
+    expect((adapter.match(/normalizePrivilege\(/g) || []).length, 'adapter phải gọi chuẩn hoá').toBeGreaterThanOrEqual(1);
+    const rawAssign = adapter.match(/privilege:\s*(?!normalizePrivilege)[A-Za-z'"`]/g) || [];
+    expect(rawAssign.length, 'adapter dựng privilege thô, bỏ qua chuẩn hoá').toBe(0);
   });
 
   test('normalizePrivilege dịch đúng từ vựng của cả SQL và Mongo', () => {

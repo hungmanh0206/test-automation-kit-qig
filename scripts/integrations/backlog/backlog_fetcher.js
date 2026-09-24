@@ -1,12 +1,12 @@
 /**
  * Backlog Fetcher - Lấy Requirement / Story / Issue từ Backlog
  *
- * Migrated từ jira_fetcher.js (22/09/2026). Khác Jira:
+ * Migrated từ backlog_fetcher.js (22/09/2026). Khác Backlog:
  *   - Auth qua query param `apiKey=` (không Basic/Bearer/PAT).
  *   - KHÔNG có JQL — filter theo field (`projectId[]`, `keyword`, `statusId[]`, `parentIssueId[]`...).
  *   - KHÔNG có khái niệm "Epic" — `--epic <KEY>` giờ nghĩa là "lấy issue con của issue cha <KEY>"
- *     (dùng `parentIssueId[]`, gần nhất với Epic children của Jira).
- *   - description đã là plain text — không cần bước convert ADF→Markdown.
+ *     (dùng `parentIssueId[]`, gần nhất với Epic children của Backlog).
+ *   - description đã là plain text — không cần bước convert rich-doc sang Markdown như hệ cũ.
  *
  * Sử dụng:
  *   node backlog_fetcher.js --issue ABC-123
@@ -121,7 +121,7 @@ async function fetchProjectIssues(projectKey, keyword = '', maxResults = 100) {
 }
 
 /**
- * Lấy tất cả issue con (subtask) của một issue cha — thay cho "Epic children" của Jira (Backlog không có
+ * Lấy tất cả issue con (subtask) của một issue cha — thay cho "Epic children" của Backlog (Backlog không có
  * Epic; parent-child issue là cấu trúc gần nhất).
  * @param {string} parentKey - VD: "PROJ-10"
  * @returns {object[]}
@@ -402,7 +402,7 @@ Options:
   --issue <KEY>       Lấy 1 issue cụ thể (VD: PROJ-123)
   --project <KEY>     Lấy issues theo project key
   --keyword <TEXT>    Lọc theo từ khoá (dùng với --project) — Backlog KHÔNG có JQL
-  --epic <KEY>        Lấy issue con (subtask) của issue cha <KEY> — gần nhất với "Epic children" của Jira
+  --epic <KEY>        Lấy issue con (subtask) của issue cha <KEY> — gần nhất với "Epic children" của Backlog
   --max <NUMBER>      Số kết quả tối đa - default: 50/100 tuỳ mode
   --format <FMT>      Định dạng output: json (default) hoặc md
   --attachments       Tải kèm file đính kèm (lưu vào <ticketKey>/<issueKey>/)

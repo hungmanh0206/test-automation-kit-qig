@@ -108,8 +108,8 @@ function normalizePriority(raw) {
 }
 
 // Bỏ khối `[Positive][Calc][BR-xxx]` đầu tiêu đề để hiển thị tên case sạch trong cột `Test Case Name`.
-// Cùng regex với `displayTitle` ở scripts/integrations/aio/publish_testcases_aio.js — không import chéo
-// sang AIO (đang bỏ dùng cho publish) để tránh phụ thuộc code sắp orphan.
+// Cùng regex với `displayTitle` ở scripts/integrations/aio/publish qua Drive MCP.js — không import chéo
+// sang công cụ cũ (đã bỏ) để tránh phụ thuộc code orphan.
 function displayTitle(raw) {
   const text = String(raw || "");
   return text.replace(/^(?:\s*\[[^\]]*\])+\s*/, "").trim() || text.trim();
@@ -616,7 +616,7 @@ async function main() {
    * ĐÚNG biên sinh case: bộ cũ không convert lại nên không bị đụng, bộ mới thì không lọt.
    *
    * VÌ SAO PHẢI CHẶN: kit từng SUY loại từ tên nhóm chức năng ⇒ đo trên 1.399 case đã publish thì 96% rơi
-   * về `Functional`, `Integration` và `Performance` = 0 ⇒ lọc/báo cáo theo Case Type trên AIO vô dụng.
+   * về `Functional`, `Integration` và `Performance` = 0 ⇒ lọc/báo cáo theo Case Type trên Google Sheet vô dụng.
    * Để trống rồi suy sau là quay lại đúng chỗ đó.
    *
    * CHỈ LO "CỘT VẮNG MẶT". Giá trị điền SAI (vd `Regression`) đã do `validate.js` — bộ đọc dùng chung —

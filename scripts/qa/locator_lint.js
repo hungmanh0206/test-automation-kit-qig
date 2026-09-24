@@ -8,7 +8,7 @@
  * `body.innerText` 204 · `querySelectorAll('*')` 166 · `.nth(N)` 141 · `mouse.click(x,y)` 31.
  * Những pattern này KHÔNG "khó chịu" — chúng khiến script bấm/đọc nhầm đối tượng một cách IM LẶNG,
  * rồi assertion đọc sai màn → kết luận "bug" trong khi sản phẩm vẫn đúng. Rerun KHÔNG cứu được
- * (sai ổn định, không phải flaky) nên lỗi lọt tới tận Jira.
+ * (sai ổn định, không phải flaky) nên lỗi lọt tới tận Backlog.
  *
  * Triết lý: **mơ hồ phải THÀNH LỖI, không được tự chọn bừa.** Lint chặn ở khâu viết code;
  * runtime thì dùng `scripts/utils/ui/safe_target.js` (resolve đúng-1, click có nghiệm thu).

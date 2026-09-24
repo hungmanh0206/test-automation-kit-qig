@@ -6,7 +6,7 @@ const { ensureExpanded } = require('../../../scripts/utils/ui/ensure_expanded');
 
 /*
  * @infra — regression cho helper mở panel/accordion (KHÔNG cần UAT, chạy trên fixture local nên nhanh + tất định).
- * Fixture `expand-trap.html` tái hiện đúng cái bẫy gặp thật ở form Service Fee Order (SAPP-24395):
+ * Fixture `expand-trap.html` tái hiện đúng cái bẫy gặp thật ở form Service Fee Order (CSDL-24395):
  *   - header "Product" có NHIỀU icon giống nhau; toggle THẬT nằm GIỮA (không phải icon cuối, không phải button)
  *   - icon CUỐI mở dropdown Add-on Course · button ĐẦU mở modal Promotion Code
  * → 2 chiến thuật cũ đều click nhầm (đã đo). Helper phải: né được, tự Escape, mở đúng, và idempotent.

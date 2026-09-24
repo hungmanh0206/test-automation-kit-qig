@@ -9,7 +9,7 @@
 | Main Flow workflows | OK | Phase 1, Phase 2 và Re-run có file tổng quan + step files riêng, không phụ thuộc `partial-rerun`. |
 | Partial Rerun | OK | Chỉ nằm trong `partial-rerun/`, gọi thủ công khi tài liệu nguồn đổi nội dung. |
 | Playwright rules | OK | Rule canonical ở `RULE_GLOBAL.md`; digest + Playwright rules ở `.agent/rules/core_rules.md`, `locator_strategy.md`, `playwright_fe.md`, `playwright_api.md`. |
-| Backlog scripts | OK | Skill Jira (tên thư mục giữ nguyên) trỏ tới `scripts/integrations/backlog/`. |
+| Backlog scripts | OK | Skill Backlog (tên thư mục giữ nguyên) trỏ tới `scripts/integrations/backlog/`. |
 | Framework ngoài Playwright | Removed | Đã loại khỏi core skill vì kit hiện dùng Playwright. |
 
 ## Skill đang giữ
@@ -22,9 +22,9 @@
 | `.agent/skills/phase2/flaky_test_analyzer/SKILL.md` | Phân tích và giảm flaky. |
 | `.agent/skills/shared/test_data_generator/SKILL.md` | Sinh data traceable, unique, rollback được. |
 | `.agent/skills/shared/precondition_setup_planner/SKILL.md` | Phân loại tiền điều kiện, chọn setup method, ghi readiness/blocker cho Setup Strategy contract. |
-| `.agent/skills/shared/jira_integration/SKILL.md` | Fetch/read Backlog/Figma context khi được gọi (Confluence ngoài phạm vi hiện tại). |
-| `.agent/skills/shared/jira_testcase_publisher/SKILL.md` | Publish testcase từ Excel source of truth lên Jira trong Phase 1 sau QA confirmation. |
-| `.agent/skills/shared/jira_bug_reporter/SKILL.md` | Log Backlog bug khi Phase 2 đủ gate. |
+| `.agent/skills/shared/backlog_integration/SKILL.md` | Fetch/read Backlog/Figma context khi được gọi (tài liệu nguồn ngoài phạm vi hiện tại). |
+| `.agent/skills/shared/backlog_testcase_publisher/SKILL.md` | Publish testcase từ Excel source of truth lên Backlog trong Phase 1 sau QA confirmation. |
+| `.agent/skills/shared/backlog_bug_reporter/SKILL.md` | Log Backlog bug khi Phase 2 đủ gate. |
 
 ## Quy tắc duy trì
 

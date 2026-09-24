@@ -140,9 +140,9 @@ function gateTestExecution(doc, { fix = false } = {}) {
       /*
        * RERUN PHẢI ĐỊNH LƯỢNG. `verdict_taxonomy.rerun` đã khai `min: 2 · max: 3` từ lâu, nhưng workflow
        * chỉ ghi "rerun đủ vòng" và KHÔNG máy nào đếm ⇒ "đủ" là bao nhiêu tuỳ người. Case FAIL ở tầng
-       * product/api_bug là case sắp thành bug Jira, nên đúng chỗ phải chứng minh đã loại flaky:
+       * product/api_bug là case sắp thành bug Backlog, nên đúng chỗ phải chứng minh đã loại flaky:
        * khai `reruns: <số lần đã chạy lại>` trong record. Chỉ đòi ở tầng bug — setup_failure/script_error
-       * không cần (chúng đi sửa, không đi Jira), tránh siết chỗ không cần.
+       * không cần (chúng đi sửa, không đi Backlog), tránh siết chỗ không cần.
        */
       const layer = String(t.failureLayer || '').toLowerCase();
       const isBugLayer = /product|api/.test(layer) && !/setup|script|infra|flaky/.test(layer);
@@ -291,7 +291,7 @@ function gateTestcaseRow(row, { strictSemicolon = false } = {}) {
    * KẾT QUẢ CÓ ĐÁNH SỐ MÀ BƯỚC KHÔNG CÓ DÒNG SỐ NÀO = luôn sai, và trước đây LỌT.
    * Điều kiện cũ `sN.length >= 2` bỏ qua hẳn dòng có 0 bước đánh số, nên một dòng bảng bị LỆCH CỘT
    * (cột bước nhận nhầm nội dung khác) vẫn qua với "0 CHẶN". Đã dính thật 28/08/2026: 4 dòng của
-   * bộ SAPP-26878 bị vá lệch một ô, gate vẫn xanh, chỉ `validate` bắt được nhờ luật thang `Ưu tiên`.
+   * bộ CSDL-26878 bị vá lệch một ô, gate vẫn xanh, chỉ `validate` bắt được nhờ luật thang `Ưu tiên`.
    * Giữ nguyên ngưỡng >= 2 cho phép so khớp số, chỉ thêm ca "bước rỗng số" — không đụng bộ TC cũ.
    */
   if (eN.length && !sN.length) {

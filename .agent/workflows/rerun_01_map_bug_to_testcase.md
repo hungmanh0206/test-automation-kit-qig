@@ -8,14 +8,14 @@
 
 ## Workflow
 
-1. Nhận Jira bug key, story key hoặc task scope.
+1. Nhận Backlog bug key, story key hoặc task scope.
 2. Nếu yêu cầu hiện tại không nêu rõ `TASK_KEY`, không dùng `TASK_KEY` từ `.env` hoặc context cũ để chạy; phải hỏi lại.
 3. Tìm mapping trong:
    - `task.md`
    - `reports/execution-summary.md`
-   - Jira bug log local
+   - Backlog bug log local
    - User input
-4. Lấy danh sách bug còn mở trong scope nếu Jira credential sẵn sàng.
+4. Lấy danh sách bug còn mở trong scope nếu Backlog credential sẵn sàng.
 5. Loại bug đã Done khỏi scope, trừ khi user yêu cầu re-verify.
 6. Xác định TC ID/spec/endpoint cần rerun.
 

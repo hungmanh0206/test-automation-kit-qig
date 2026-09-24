@@ -34,7 +34,7 @@ Năm việc:
 4. Đẩy kết quả thành một lượt chạy có lịch sử (30 phút).
 5. Đối soát độ tươi trước khi execute, để không chấm theo bản cũ (20 phút).
 
-> **Bộ kit này dùng AIO Tests làm bản hiện thực mẫu.** Team bạn dùng Xray, Zephyr hay một hệ khác
+> **Bộ kit này dùng Google Sheet làm bản hiện thực mẫu.** Team bạn dùng Xray, Zephyr hay một hệ khác
 > thì các lời gọi API khác đi, còn bốn nguyên tắc ở Việc 2 và ba máy ở Việc 4–6 thì giữ nguyên. Đừng
 > đọc bài này như hướng dẫn dùng một sản phẩm. Một kit để dùng cho nhiều dự án thì không được khoá
 > vào một nhà cung cấp.
@@ -135,7 +135,7 @@ function sangPayload(c) {
     })),
     priority: c.priority,
     folder: `${folderRoot}/${c.module}`,
-    jiraRequirementIDs: [story]
+    backlogRequirementIDs: [story]
   };
 }
 
@@ -188,7 +188,7 @@ main().catch((e) => { console.error('[publish] lỗi: ' + e.message); process.ex
 - Giá trị không bị biến đổi (thang giá trị khác, cắt độ dài, chuẩn hoá).
 - Trường không nằm trong danh sách cho phép ghi — bị bỏ qua âm thầm.
 
-> Chuyện thật: bộ case dùng `Highest` cho Ưu tiên (thang Jira), nhưng công cụ map theo **tên** và thang của nó
+> Chuyện thật: bộ case dùng `Highest` cho Ưu tiên (thang Backlog), nhưng công cụ map theo **tên** và thang của nó
 > là `Critical`. Kết quả: 14 case rơi về `Medium`. Mặc định. API trả `201` cho cả 14 case. Log trông hoàn
 > hảo. Không ai biết cho tới khi có người mở công cụ ra xem.
 

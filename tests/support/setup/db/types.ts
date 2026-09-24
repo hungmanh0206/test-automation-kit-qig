@@ -7,7 +7,7 @@
  * BA NGUYÊN TẮC ĐÃ CHỐT (đừng nới):
  *  1. DB là oracle PHỤ. Nguồn sự thật là `knowledge/domain/BR-*`; lấy giá trị từ DB rồi so với chính DB là
  *     tautology. Giá trị lớn nhất của kiểm song song là KHOANH TẦNG lỗi (UI đúng + DB sai = bug persist).
- *  2. So sánh phải THEO NGHĨA của field, không so thô. Đo trên `sapp-platform-uat` 27/08/2026:
+ *  2. So sánh phải THEO NGHĨA của field, không so thô. Đo trên `một DB UAT thật` 27/08/2026:
  *     `ic_payment_orders.final_price` là `bigint`, còn `ic_payment_transaction_orders.amount` là
  *     `character varying` — CÙNG khái niệm tiền, HAI kiểu. So thô thì `540000 !== '540000'` ⇒ báo oan ngay
  *     ngày đầu, rồi sẽ có người bọc `String()` cho hết đỏ và mất luôn khả năng bắt "số bị đổi kiểu".
@@ -16,7 +16,7 @@
  *     là đoán — comparator trả `inconclusive`, KHÔNG trả `false`.
  */
 
-export type Dialect = 'postgres' | 'mysql' | 'mssql' | 'mongo';
+export type Dialect = 'mssql' | 'mysql' | 'mongo';
 
 export type WhereOp =
   | { op: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte'; value: unknown }
@@ -57,10 +57,22 @@ export interface DbClient {
  * Hợp đồng: **adapter PHẢI trả `privilege` theo tập chuẩn dưới đây**, tự dịch từ phương ngữ của nó. Lớp phán
  * (`guard.ts`) chỉ được biết tập chuẩn — không được biết Postgres hay Mongo.
  */
-export type Privilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'OTHER';
+export type Privilege =
+  | 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'ALTER' | 'CONTROL' | 'OTHER';
 
-/** Quyền đủ để ĐỔI dữ liệu. `REFERENCES`/`TRIGGER`/`OTHER` không đổi dữ liệu trực tiếp ⇒ không tính. */
-export const WRITE_PRIVILEGES: readonly Privilege[] = ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE'];
+/*
+ * Quyền đủ để ĐỔI dữ liệu. `REFERENCES`/`TRIGGER`/`VIEW DEFINITION`/`OTHER` không đổi dữ liệu trực tiếp
+ * ⇒ không tính.
+ *
+ * `ALTER` và `CONTROL` PHẢI nằm trong danh sách này — đo 24/09/2026 trên DB nghiệp vụ UAT (SQL Server 2019):
+ * T-SQL KHÔNG có quyền đối tượng tên `TRUNCATE`; `TRUNCATE TABLE` chỉ cần **ALTER** trên bảng, và `CONTROL`
+ * bao trùm mọi quyền khác. Nếu chỉ xét INSERT/UPDATE/DELETE/TRUNCATE như bản Postgres thì một user thuộc
+ * `db_ddladmin` (có ALTER, xoá trắng bảng được) sẽ bị kết luận là "read-only" — đúng loại lỗ hổng tệ nhất:
+ * sai mà mọi phép kiểm đều xanh.
+ */
+export const WRITE_PRIVILEGES: readonly Privilege[] = [
+  'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'ALTER', 'CONTROL',
+];
 
 /**
  * Dịch tên quyền của từng phương ngữ sang tập chuẩn. Hàm THUẦN, dùng bởi adapter.
@@ -74,6 +86,8 @@ export function normalizePrivilege(raw: string): Privilege {
     UPDATE: 'UPDATE',
     DELETE: 'DELETE', REMOVE: 'DELETE',
     TRUNCATE: 'TRUNCATE', DROP: 'TRUNCATE', DROPCOLLECTION: 'TRUNCATE',
+    // T-SQL: không có quyền `TRUNCATE`; ALTER cho phép TRUNCATE TABLE, CONTROL bao trùm mọi quyền.
+    ALTER: 'ALTER', CONTROL: 'CONTROL', 'TAKE OWNERSHIP': 'CONTROL',
   };
   return MAP[p] || 'OTHER';
 }

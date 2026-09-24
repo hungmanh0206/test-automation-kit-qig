@@ -28,9 +28,9 @@
    node scripts/convert_excel/md_to_xlsx.js <testcase.md> <testcase.xlsx>
    ```
    - **Design gate (G5) + gate gen-testcase TỰ CHẠY khi convert**: (a) design_gate CHẶN nếu thiếu cột canonical / rỗng ô lõi; (b) gen-testcase CHẶN (không tạo xlsx) nếu "Kết quả mong đợi" không khớp số bước / gộp range `1-2.` / ghi trơ "thành công"/"đúng" / oracle rỗng; `;`-nhồi-ý + tautology chỉ cảnh báo. **Gate CHẶN → tự sửa Markdown rồi convert lại tới khi PASS, không chờ user nhắc.** Kiểm trước: `npm run design:gate -- --dir <test-cases/> --with-rows`.
-5. Ghi trạng thái `Jira testcase publish: Pending QA confirmation` trong `task.md`.
-   - Không publish Jira trong bước này.
-   - Step publish riêng là [phase1_04_auto_publish_jira.md](phase1_04_auto_publish_jira.md), chỉ chạy sau khi QA xác nhận Excel.
+5. Ghi trạng thái `Backlog testcase publish: Pending QA confirmation` trong `task.md`.
+   - Không publish Backlog trong bước này.
+   - Step publish riêng là [phase1_04_auto_publish_backlog.md](phase1_04_auto_publish_backlog.md), chỉ chạy sau khi QA xác nhận Excel.
 6. **Ma trận traceability (F8)**: chạy `npm run trace:matrix` (hoặc `node scripts/qa/traceability_matrix.js`) → sinh `reports/traceability-matrix.{md,csv}` join REQ→TC→AUTO→EXEC→BUG từ artifact task; đánh dấu TC **chưa publish / chưa execute**. Ở Phase 1 ma trận là bản coverage (TC+publish); refresh lại sau Phase 2 để có EXEC/BUG đầy đủ.
 7. Cập nhật `snapshot_context.json`, `phase1-summary.md` và `task.md`.
 6a. **Risk gate (RBT depth):** chạy `TASK_ENV=... npm run risk:gate` (skill `risk_scorer`) đối chiếu testcase với `depthPolicy` theo band. Module **High risk** thiếu độ sâu → CRITICAL = **Critical gap → không PASS** coverage gate (đồng bộ Decision Rules `tc_validator`). Mặc định cảnh báo; `risk:gate:enforce` chặn CI. QA override band / `gate_waiver` trong `risk-register.json` cho ngoại lệ có lý do.

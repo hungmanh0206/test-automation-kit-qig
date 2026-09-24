@@ -1,73 +1,63 @@
 {
-  "_note": "G4 (round-3) — NGUỒN DUY NHẤT cho verdict/trạng thái kết quả + ngưỡng rerun. Gate validate status ∈ statuses (unknown = cảnh báo); prompt/rule TRỎ VỀ đây thay vì hardcode rải rác. Đổi số/nghĩa ở ĐÂY, KHÔNG sửa từng file. TÊN status khớp cột Status của testcase (canonical). | Cột `aio` = tên trạng thái run của AIO Tests (ĐÃ NGƯNG DÙNG 22/09/2026, thay bằng Google Sheet — giữ cột lại phòng cần quay lại, không đọc nữa). | Cột `sheet` = giá trị ghi vào cột `Result` của Excel/Sheet canonical (dropdown `Pass|Fail|Pending|Un_test`, xem `scripts/convert_excel/md_to_xlsx.js` DROPDOWN.result) — `null` = KHÔNG ghi (loại khỏi merge, cùng luật với `aio: null` trước đây), `\"\"` = để trống (không đổi ô, coi như Un_test mặc định).",
+  "_note": "G4 (round-3) — NGUỒN DUY NHẤT cho verdict/trạng thái kết quả + ngưỡng rerun. Gate validate status ∈ statuses (unknown = cảnh báo); prompt/rule TRỎ VỀ đây thay vì hardcode rải rác. Đổi số/nghĩa ở ĐÂY, KHÔNG sửa từng file. TÊN status khớp cột Status của testcase (canonical). | Cột `sheet` = giá trị ghi vào cột `Result` của Excel/Sheet canonical (dropdown `Pass|Fail|Pending|Un_test`, xem `scripts/convert_excel/md_to_xlsx.js` DROPDOWN.result) — `null` = KHÔNG ghi (loại khỏi merge), `\"\"` = để trống (không đổi ô, coi như Un_test mặc định).",
   "statuses": {
     "PASS": {
       "executed": true,
       "loggableAsBug": false,
-      "aio": "Passed",
       "sheet": "Pass",
       "meaning": "Chạy thật, đúng kỳ vọng (oracle độc lập theo spec)."
     },
     "FAIL": {
       "executed": true,
       "loggableAsBug": true,
-      "aio": "Failed",
       "sheet": "Fail",
       "meaning": "Chạy thật, sai kỳ vọng — PHẢI phân tầng lỗi (xem failureLayers)."
     },
     "SKIP": {
       "executed": false,
       "loggableAsBug": false,
-      "aio": "Not Run",
       "sheet": "Pending",
       "meaning": "Không chạy — kèm lý do + khả năng fix."
     },
     "BLOCKED_SETUP": {
       "executed": false,
       "loggableAsBug": false,
-      "aio": "Blocked",
       "sheet": "Pending",
       "meaning": "Readiness=Needs hook mà thiếu capability (hook/mock/sandbox) — nêu missing cụ thể."
     },
     "SKIP_SETUP": {
       "executed": false,
       "loggableAsBug": false,
-      "aio": "Not Run",
       "sheet": "Pending",
       "meaning": "Readiness=Manual-only — không tự setup."
     },
     "TODO": {
       "executed": false,
       "loggableAsBug": false,
-      "aio": "Not Run",
       "sheet": "",
-      "meaning": "Chưa thực thi (AIO `1 Not Run`) — KHÔNG dùng khi đã chạy được."
+      "meaning": "Chưa thực thi (`1 Not Run` của công cụ cũ) — KHÔNG dùng khi đã chạy được."
     },
     "EXPANSION_FINDING": {
       "executed": true,
       "loggableAsBug": true,
-      "aio": null,
       "sheet": null,
       "meaning": "Phát hiện từ MỞ RỘNG quanh case (5 trục), KHÔNG phải verdict của case gốc: app tự mâu thuẫn với chính nó (giá trị lệch giữa 2 bề mặt · mắt đứt trong chuỗi lưu trữ · field thừa/thiếu so tài liệu). Không cần oracle ngoài vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một nơi sai. CỐ Ý không map sang status run của TMS: trộn vào execution sẽ làm pass-rate mất nghĩa và triage lẫn lộn — báo riêng ở reports/expansion-findings.md."
     },
     "OBSERVATION": {
       "executed": true,
       "loggableAsBug": false,
-      "aio": null,
       "sheet": null,
       "meaning": "Quan sát được nhưng KHÔNG có oracle độc lập ⇒ không kết luận đúng/sai. Bắt buộc kèm open_question. Nhất quán KHÔNG phải bằng chứng của đúng: 4 điểm khớp nhau vẫn có thể sai cả 4 (ca thật: USD không quy đổi, form/payload/api/ui đều = 10 trong khi đúng phải 260.500)."
     },
     "PASS_WITH_DEVIATION": {
       "executed": true,
       "loggableAsBug": false,
-      "aio": "Passed",
       "sheet": "Pass",
       "meaning": "Case PASS nhưng CHỈ pass sau khi lệch khỏi kịch bản (thêm wait · retry · đổi locator · refresh · đi đường khác). Rủi ro đặc thù của agent: gặp trở ngại thì có xu hướng LÀM CHO NÓ CHẠY, và mỗi lần như vậy là một bug tiềm năng bị lấp. Deviation là TÍN HIỆU, không phải tiện lợi ⇒ phải liệt kê deviation trong Actual và xếp vào diện nghi vấn cần review; KHÔNG được ghi PASS trơn."
     },
     "SUSPECT_REAL_BUG": {
       "executed": true,
       "loggableAsBug": true,
-      "aio": "Failed",
       "sheet": "Fail",
       "meaning": "FAIL không ổn định (vd 1/5 lần) mà CHƯA giải thích được CƠ CHẾ. Cơ chế flaky triage có thể đang CHÔN bug thật: race condition · cache · timezone lúc chuyển ngày đều trông y như flaky, retry 3 lần có 1 lần xanh là bị dán nhãn flaky rồi bỏ qua. Chỉ được đổi sang failureLayer=flaky khi nêu được cơ chế cụ thể (và cách chứng minh); không nêu được thì giữ trạng thái này."
     }
@@ -89,11 +79,11 @@
     },
     "setup_failure": {
       "loggableAsBug": false,
-      "desc": "Lỗi dựng precondition/data/auth/hook/env — KHÔNG log Jira."
+      "desc": "Lỗi dựng precondition/data/auth/hook/env — KHÔNG log Backlog."
     },
     "script_error": {
       "loggableAsBug": false,
-      "desc": "Lỗi SCRIPT test: bắt sai element/locator mơ hồ, click nhầm control, đọc giá trị sai vùng (regex toàn trang), thao tác khi chưa đúng màn. Triệu chứng: FAIL LẶP LẠI ỔN ĐỊNH (rerun không cứu) nhưng thao tác tay lại đúng → KHÔNG log Jira, phải sửa script."
+      "desc": "Lỗi SCRIPT test: bắt sai element/locator mơ hồ, click nhầm control, đọc giá trị sai vùng (regex toàn trang), thao tác khi chưa đúng màn. Triệu chứng: FAIL LẶP LẠI ỔN ĐỊNH (rerun không cứu) nhưng thao tác tay lại đúng → KHÔNG log Backlog, phải sửa script."
     },
     "infra": {
       "loggableAsBug": false,
@@ -111,10 +101,10 @@
   "rerun": {
     "min": 2,
     "max": 3,
-    "purpose": "Rerun case FAIL để loại flaky/setup TRƯỚC khi kết luận product/API bug (và trước khi log Jira).",
+    "purpose": "Rerun case FAIL để loại flaky/setup TRƯỚC khi kết luận product/API bug (và trước khi log Backlog).",
     "flakyRequiresMechanism": "Một FAIL KHÔNG được gọi là `flaky` cho tới khi giải thích được CƠ CHẾ gây bất định (vd: animation chưa xong · race giữa 2 request · cache CDN · đổi ngày lúc 00:00). Không giải thích được ⇒ `SUSPECT_REAL_BUG`, không phải `FLAKY`. Metric phải theo dõi: % flaky đã xác định được nguyên nhân — tỷ lệ thấp nghĩa là đang chôn bug."
   },
-  "principle": "\"Không phán được\" KHÔNG thành PASS. Mỗi verdict xuất trạng thái rõ; FAIL bắt buộc kèm failureLayer. SKIP/BLOCKED_SETUP/SKIP_SETUP/setup_failure KHÔNG log Jira. FAIL lặp lại ổn định KHÔNG đồng nghĩa product bug: rerun chỉ loại flaky, KHÔNG loại được sai-element. Trước khi kết luận product/api_bug phải chứng minh đã thao tác ĐÚNG đối tượng (evidence highlight đúng element + xác minh lại bằng 1 đường định vị độc lập hoặc thao tác tay); nếu không → script_error. MỞ RỘNG quanh case chỉ được PASS/FAIL khi có `oracle_ref` trỏ knowledge (BR-/SM-/PM-/SS-/DM-/UI-); không có neo thì là OBSERVATION, KHÔNG phải PASS — nếu không, mở sang field lân cận rồi kết luận \"đúng vì app đang hiện thế\" là tautology nhân theo số trục. Case chỉ pass SAU KHI lệch kịch bản ⇒ `PASS_WITH_DEVIATION` (deviation là tín hiệu, không phải tiện lợi). FAIL bất định mà chưa nêu được cơ chế ⇒ `SUSPECT_REAL_BUG`, KHÔNG được dán nhãn flaky rồi bỏ qua.",
+  "principle": "\"Không phán được\" KHÔNG thành PASS. Mỗi verdict xuất trạng thái rõ; FAIL bắt buộc kèm failureLayer. SKIP/BLOCKED_SETUP/SKIP_SETUP/setup_failure KHÔNG log Backlog. FAIL lặp lại ổn định KHÔNG đồng nghĩa product bug: rerun chỉ loại flaky, KHÔNG loại được sai-element. Trước khi kết luận product/api_bug phải chứng minh đã thao tác ĐÚNG đối tượng (evidence highlight đúng element + xác minh lại bằng 1 đường định vị độc lập hoặc thao tác tay); nếu không → script_error. MỞ RỘNG quanh case chỉ được PASS/FAIL khi có `oracle_ref` trỏ knowledge (BR-/SM-/PM-/SS-/DM-/UI-); không có neo thì là OBSERVATION, KHÔNG phải PASS — nếu không, mở sang field lân cận rồi kết luận \"đúng vì app đang hiện thế\" là tautology nhân theo số trục. Case chỉ pass SAU KHI lệch kịch bản ⇒ `PASS_WITH_DEVIATION` (deviation là tín hiệu, không phải tiện lợi). FAIL bất định mà chưa nêu được cơ chế ⇒ `SUSPECT_REAL_BUG`, KHÔNG được dán nhãn flaky rồi bỏ qua.",
   "beVsFe": {
     "principle": "CẤM gán tầng FE/BE chỉ bằng quan sát giao diện. Phải đối chiếu dữ liệu API trước khi kết luận.",
     "howTo": [

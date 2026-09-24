@@ -2,7 +2,7 @@
 
 /*
  * parseXlsx — adapter đọc .xlsx testcase → canonical TestCaseDoc (dùng cho consumer đọc xlsx:
- * publish/pull AIO). Tái dùng model.buildTestCase/buildSetup (cùng schema với parseMarkdown).
+ * publish/pull công cụ cũ). Tái dùng model.buildTestCase/buildSetup (cùng schema với parseMarkdown).
  * Cần ExcelJS (đã là dep). Bất đồng bộ (đọc file).
  */
 

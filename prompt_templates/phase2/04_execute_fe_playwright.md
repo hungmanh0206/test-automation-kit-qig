@@ -9,7 +9,7 @@
 > 2. **Oracle độc lập** — mỗi case có "Kết quả mong đợi" cụ thể (giá trị/URL/element theo spec). Oracle rỗng hoặc app==app (tautology) → DỪNG, lấy giá trị spec. *(gate: oracle-rỗng = CHẶN · tautology = cảnh báo)*
 > 3. **Batch & drive thật** — gom NHIỀU case/ÍT script chạy song song; dùng hết fixture/deal/account; case negative tự tạo input. KHÔNG TODO/SKIP khi chưa thử.
 > 4. **Phân tầng kết quả** — mỗi case → PASS/FAIL/SKIP/BLOCKED_SETUP/SKIP_SETUP. FAIL phải PHÂN TẦNG: product bug vs `setup_failure` vs infra/flaky. "Không phán được" KHÔNG thành PASS. *(gate: FAIL thiếu tầng-lỗi = CHẶN)*
-> 5. **Loại flaky** — FAIL rerun 2–3 lần loại flaky/setup TRƯỚC khi kết luận product bug / log Jira.
+> 5. **Loại flaky** — FAIL rerun 2–3 lần loại flaky/setup TRƯỚC khi kết luận product bug / log Backlog.
 > 6. **Evidence** — mọi case (PASS+FAIL)+step có ảnh/video đúng màn, highlight, mask PII; case phức tạp có video. CẤM `.json/.md/.log`. *(gate: thiếu evidence/step-status = CHẶN)*
 
 > 📋 **Attestation (G6) — sau execute, ghi vào `testcase-status.json`:** field `attestation` = `{ "oracleSource": "<sheet|spec|figma|api-contract>", "executed": <số case đã chạy>, "allEvidenceAttached": true, "failuresClassified": true, "rerunDone": true }`. Gate ĐỐI CHIẾU tự-khai với sự thật (executed thật, evidence, tầng-lỗi) — lệch = cảnh báo. Khai ĐÚNG, đừng tick suông.
@@ -31,7 +31,7 @@ Framework:
 - Testcase output: cập nhật `Status` = PASS/FAIL/SKIP và `Actual Result` sau execution.
 
 Input:
-- Test Cases: nguồn canonical local `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-sheet/*.xlsx` — agent tải bản MỚI NHẤT về từ Google Sheet qua Drive MCP ở Bước 0 TRƯỚC mỗi lượt execute (không còn khái niệm mirror cũ/mới như AIO; luôn tải lại). Execute đọc file local — không gọi Drive/Backlog cho từng case.
+- Test Cases: nguồn canonical local `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-sheet/*.xlsx` — agent tải bản MỚI NHẤT về từ Google Sheet qua Drive MCP ở Bước 0 TRƯỚC mỗi lượt execute (không còn khái niệm mirror cũ/mới như công cụ cũ; luôn tải lại). Execute đọc file local — không gọi Drive/Backlog cho từng case.
 - URL: [URL staging]
 - Credentials: lấy từ env variables, không hardcode credential.
   - **Login helper dùng chung**: mỗi app 1 helper ở `tests/fe/support/<app>Login.ts` (+ `support/auth/` cho reuse-session). Login ĐÚNG 1 LẦN/worker rồi cache/reuse — nhiều hệ thống khoá theo SỐ LẦN đăng nhập (throttle/lockout).
@@ -62,13 +62,13 @@ Cho toàn bộ selected TC, chạy pass này trước khi sinh hoặc chạy b�
    - `pre_existing`/`pre_existing_fixture` → verify fixture tồn tại, không tạo mới.
    - `ui` → chỉ setup qua UI khi không có API/factory và vẫn đúng mục tiêu testcase.
    - `manual` (`Readiness=Manual-only`) → không tự setup, đánh dấu SKIP hợp lệ kèm lý do.
-3. Reuse setup layer dùng chung `tests/support/setup/` (factories/hooks/fixtures/cleanup/contracts); phần đặc thù story tạo task-scoped trong `<TASK_OUTPUT_DIR>/automation/setup/` (namespace theo `RUN_ID` nếu chạy song song). Không sửa shared khi story khác đang chạy. Không thêm DB client/DB query mới (chỉ dùng guarded client `db/uatPgClient.ts` cho read-only verify UAT). Setup/verify fail ném/được phân loại `SetupFailure` → `setup_failure`.
+3. Reuse setup layer dùng chung `tests/support/setup/` (factories/hooks/fixtures/cleanup/contracts); phần đặc thù story tạo task-scoped trong `<TASK_OUTPUT_DIR>/automation/setup/` (namespace theo `RUN_ID` nếu chạy song song). Không sửa shared khi story khác đang chạy. Không thêm DB client/DB query mới (chỉ dùng guarded client `db/uatDbClient.ts` cho read-only verify UAT). Setup/verify fail ném/được phân loại `SetupFailure` → `setup_failure`.
 4. Verify precondition theo `Setup Verification` TRƯỚC khi mở UI/gọi assertion chính. Verify fail thì KHÔNG chạy bước test chính.
-5. Nếu setup/verify fail → phân loại `setup_failure` (KHÔNG phải product bug, KHÔNG log Jira): sửa setup/data/auth/hook/env rồi rerun. `Readiness=Needs hook` mà capability (hook/mock/sandbox) chưa có → `BLOCKED_SETUP` + nêu missing capability cụ thể. `Readiness=Manual-only` → `SKIP_SETUP` + lý do.
+5. Nếu setup/verify fail → phân loại `setup_failure` (KHÔNG phải product bug, KHÔNG log Backlog): sửa setup/data/auth/hook/env rồi rerun. `Readiness=Needs hook` mà capability (hook/mock/sandbox) chưa có → `BLOCKED_SETUP` + nêu missing capability cụ thể. `Readiness=Manual-only` → `SKIP_SETUP` + lý do.
 6. Sau khi chạy xong (PASS/FAIL), cleanup theo `Cleanup/Rollback`, scope theo `RUN_ID`; ghi rõ data đã dọn / lý do không dọn được.
 
 Ghi kết quả vào execution summary mục `Precondition Resolution`: mỗi TC → setup method, verify pass/fail, blocker (nếu có), cleanup status. Chỉ khi precondition đã verify đạt mà behavior vẫn sai mới được phân loại product bug.
-Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal state → `Manual-only`/`BLOCKED_SETUP` + manual steps (không dựng state bằng DB). VERIFY state có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) khi API/UI không expose.
+Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal state → `Manual-only`/`BLOCKED_SETUP` + manual steps (không dựng state bằng DB). VERIFY state có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only, chỉ SELECT) khi API/UI không expose.
 
 # Các bước thực thi
 1. Echo `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `TASK_OUTPUT_DIR`, `RUN_ID` nếu có; nếu sai task thì dừng.
@@ -83,7 +83,7 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 10. Nếu testcase bị SKIP, phải ghi TC ID, lý do skip, đã thử sửa gì, có thể sửa để chạy được không; nếu sửa được thì ưu tiên sửa và rerun thay vì giữ skip.
 11. Nếu product fail, rerun case fail theo ngưỡng `.agent/config/verdict_taxonomy.json` §rerun (min–max, hiện 2–3 lần) để loại trừ flaky/setup, rồi lưu evidence theo rule bên dưới.
 12. Cập nhật testcase output và execution summary. Nếu có `RUN_ID`, chỉ cập nhật run-scoped report/status, không ghi trực tiếp testcase Markdown/Excel chính.
-13. Chỉ log Jira sau khi report PASS/FAIL/SKIP hoàn tất, fail đã được rerun/xác nhận và user/prompt cho phép.
+13. Chỉ log Backlog sau khi report PASS/FAIL/SKIP hoàn tất, fail đã được rerun/xác nhận và user/prompt cho phép.
 
 # Quy tắc bắt buộc
 - Không được xóa assertion quan trọng hoặc giảm phạm vi verify để làm case PASS.
@@ -93,7 +93,7 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 - PASS chỉ hợp lệ khi testcase thực sự validate behavior/expected result.
 - SKIP chỉ hợp lệ khi không thể chạy sau khi đã thử sửa setup/data/dependency hợp lý.
 - SKIP vì setup chỉ hợp lệ khi `Automation Readiness = Manual-only` trong Setup Strategy contract. Với `Ready`, phải setup theo `Setup Source`, không được skip vì setup. Với `Needs hook` mà hook chưa tồn tại, ghi blocker + đề xuất hook, không false-pass và không skip âm thầm.
-- Không dùng direct DB connection, `TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*` hoặc backend source inspection để làm tiền điều kiện (DỰNG state). Read-only verify/chẩn đoán trên **UAT DB** được phép qua guarded client `tests/support/setup/db/uatPgClient.ts` (chỉ `LIB_MASTER_DB_*`, read-only, chỉ SELECT); DB không phải evidence Jira, PII phải mask.
+- Không dùng direct DB connection, `TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*` hoặc backend source inspection để làm tiền điều kiện (DỰNG state). Read-only verify/chẩn đoán trên **UAT DB** được phép qua guarded client `tests/support/setup/db/uatDbClient.ts` (chỉ `LIB_MASTER_DB_*`, read-only, chỉ SELECT); DB không phải evidence Backlog, PII phải mask.
 - Không coi FE/UI/E2E execution hoàn tất nếu còn fail do prompt chưa rõ, locator, setup, data, auth, mock sai, timeout hoặc execute flow.
 
 # Quan sát sâu khi execute — Nghi ngờ hiển thị & đối chiếu Network/API (BẮT BUỘC)
@@ -215,10 +215,10 @@ Log bug mới thì truyền `--found-by kit|human` — nhãn `auto-bug` chỉ ch
 - **Case mapping/đồng bộ: kết luận PHẢI ghi GIÁ TRỊ HAI ĐẦU và so bằng.** ⚙️ `output_gate` **CHẶN** kết luận chỉ ở mức "có dữ liệu" (`populate`, `map đủ field`, `hiển thị đúng`) và **cảnh báo** khi chỉ liệt kê giá trị một phía rồi kết luận `sync_status = SUCCESS`. Lý do không phải hình thức: field lấy nhầm nguồn/nhầm property **vẫn populate**, và trạng thái "đồng bộ thành công" **không** chứng minh bên nhận nhận đúng số. Viết: `OPS Net 4.250.000 = Deal amount 4.250.000` — không viết "đồng bộ đúng".
 - **Case hiển thị/UI phải execute QUA UI.** Chạy API cho case màn hình thì lỗi mapping phía FE **không thể** lộ ra — không phải xui, mà là bất khả theo định nghĩa. Muốn nhanh thì dùng API để **dựng data**, còn phần verify của case đó phải đọc trên màn.
 - **Chạy `ui_conformance_check` với `ui_catalog.json` cho mọi màn trong scope** — đây là thứ duy nhất bắt "thiếu trường / thừa cột / hai màn lệch nhãn"; test theo bước không thấy vì thiếu field vẫn chạy xanh.
-- **Quan sát bất thường phải có NƠI ĐẾN.** Thấy điều lạ mà case vẫn PASS thì ghi chú suông sẽ bốc hơi — đã xảy ra thật: một ghi chú "nghi thiếu cấu hình X" bị bỏ lại, sau đó chính chỗ đó là bug do người khác tìm ra. ⚙️ `output_gate` CHẶN case PASS có từ nghi vấn (`nghi`, `có vẻ`, `chưa rõ`, `cần xác nhận`…) mà không trỏ tới **bug Jira (kèm key)** / **câu hỏi cho BA-Dev** / **quyết định `DEC-*` trong knowledge**.
+- **Quan sát bất thường phải có NƠI ĐẾN.** Thấy điều lạ mà case vẫn PASS thì ghi chú suông sẽ bốc hơi — đã xảy ra thật: một ghi chú "nghi thiếu cấu hình X" bị bỏ lại, sau đó chính chỗ đó là bug do người khác tìm ra. ⚙️ `output_gate` CHẶN case PASS có từ nghi vấn (`nghi`, `có vẻ`, `chưa rõ`, `cần xác nhận`…) mà không trỏ tới **bug Backlog (kèm key)** / **câu hỏi cho BA-Dev** / **quyết định `DEC-*` trong knowledge**.
 - **Chặn kỹ thuật (fixture wall) KHÔNG được tan vào SKIP.** Thử vài lượt không dựng được data rồi đi tiếp = cả vùng đó không ai kiểm mà báo cáo vẫn xanh (đã mất nguyên một họ màn hình vì lý do này). Phải liệt kê thành mục **"Vùng chưa kiểm"** trong report cuối: vùng nào, chặn vì cái gì, cần gì để mở — hoặc ghi `knowledge/decisions/` type `test_approach` kèm `expires_at`. ⚙️ `self-review` CHẶN nếu có case SKIP/BLOCKED mà không có khai báo này.
 - KHÔNG kết luận PASS/FAIL cho case có giá trị đáng ngờ nếu CHƯA đối chiếu response.
-- Response chỉ để **chẩn đoán/phân loại**; **evidence Jira vẫn phải là ẢNH màn UI** hiển thị giá trị đó. Cần chứng minh data BE → render **visual evidence page** hiển thị response đã redact rồi screenshot, KHÔNG đính file JSON thô (theo Evidence rule bên dưới).
+- Response chỉ để **chẩn đoán/phân loại**; **evidence Backlog vẫn phải là ẢNH màn UI** hiển thị giá trị đó. Cần chứng minh data BE → render **visual evidence page** hiển thị response đã redact rồi screenshot, KHÔNG đính file JSON thô (theo Evidence rule bên dưới).
 
 # Phủ dropdown/filter khi execute — testcase ghi 1 giá trị, execute VÉT HẾT (BẮT BUỘC)
 
@@ -243,7 +243,7 @@ Gen chỉ ghi 1 giá trị mẫu trong testcase (tránh nổ số case). Khi exe
 - Evidence cấp case đính từ `evidence[]`; evidence **từng bước** đính từ `steps[].evidence` (hoặc `failedStep` + `failedStepEvidence` cho case FAIL). Gate `output_gate.gateTestExecution` chạy TRƯỚC khi push và gộp cả hai chỗ khi đếm — case đã execute mà không có ảnh/video nào thì bị CHẶN ngay ở đó, không cần cờ riêng.
 
 # Phân loại failure và yêu cầu evidence
-Trước hết loại trừ `setup_failure` (failure ở bước setup/verify precondition trong Precondition Resolution Pass — sửa setup rồi rerun, KHÔNG log Jira bug). Chỉ khi precondition đã verify đạt mà behavior vẫn sai mới phân loại product failure theo 3 nhóm evidence:
+Trước hết loại trừ `setup_failure` (failure ở bước setup/verify precondition trong Precondition Resolution Pass — sửa setup rồi rerun, KHÔNG log Backlog bug). Chỉ khi precondition đã verify đạt mà behavior vẫn sai mới phân loại product failure theo 3 nhóm evidence:
 
 ## `simple_api`
 Pure API/status/data validation, không cần quan sát UI thật.
@@ -260,10 +260,10 @@ Evidence bắt buộc:
 - Actual result ghi rõ method, endpoint, expected status, actual status, main error.
 - Nếu chạy qua Playwright browser context, render một visual evidence page trước khi fail để screenshot/video không bị trắng.
 
-Jira upload:
+Backlog upload:
 - Upload screenshot visual evidence nếu có.
 - Video optional nếu giúp đọc actual/expected nhanh hơn.
-- Không upload request/response log, `trace.zip`, markdown, text/log, JSON hoặc `error-context.md` lên Jira.
+- Không upload request/response log, `trace.zip`, markdown, text/log, JSON hoặc `error-context.md` lên Backlog.
 
 ## `simple_ui`
 UI fail đơn giản, một màn hình hoặc một state tĩnh.
@@ -279,10 +279,10 @@ Evidence bắt buộc:
 - Error-context/log.
 - Actual result ghi rõ step fail, expected, actual.
 
-Jira upload:
+Backlog upload:
 - Upload screenshot.
 - Upload video nếu thao tác trước fail cần nhìn sequence ngắn.
-- Không upload `trace.zip`, markdown, text/log, JSON hoặc `error-context.md` lên Jira.
+- Không upload `trace.zip`, markdown, text/log, JSON hoặc `error-context.md` lên Backlog.
 
 ## `complex_ui_e2e`
 Flow UI/E2E phức tạp hoặc khó tái hiện chỉ bằng ảnh.
@@ -306,17 +306,17 @@ Evidence bắt buộc:
 - Error-context/log.
 
 Trace policy:
-- `trace.zip` là diagnostic artifact, không phải default Jira evidence.
-- Không upload `trace.zip` lên Jira. Trace chỉ được giữ local để debug và ghi rõ `trace retained locally only` trong report nếu có sinh trace.
+- `trace.zip` là diagnostic artifact, không phải default Backlog evidence.
+- Không upload `trace.zip` lên Backlog. Trace chỉ được giữ local để debug và ghi rõ `trace retained locally only` trong report nếu có sinh trace.
 - Với bug phức tạp liên quan route/state nhiều page, network race, async job, console/runtime error cần timeline hoặc flaky timing, ưu tiên capture video; trace chỉ là diagnostic local.
 
-# Quy tắc evidence Jira
+# Quy tắc evidence Backlog
 - Với `complex_ui_e2e`, set `PW_VIDEO=retain-on-failure` trước khi chạy hoặc rerun case fail với video enabled.
 - Set `PW_TRACE=retain-on-failure` chỉ khi case thuộc nhóm cần trace theo policy ở trên.
 - Nếu screenshot/video trắng do fail trước khi render UI, phải render visual evidence page có TC ID, expected, actual, sanitized response/context rồi rerun để sinh evidence mới.
-- Jira evidence attachment chỉ được là ảnh/video: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.mp4`, `.webm`.
-- Không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md` hoặc execution summary lên Jira.
-- Không lưu hoặc upload password/token/API key/cookie trong evidence/report/Jira.
+- Backlog evidence attachment chỉ được là ảnh/video: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.mp4`, `.webm`.
+- Không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md` hoặc execution summary lên Backlog.
+- Không lưu hoặc upload password/token/API key/cookie trong evidence/report/Backlog.
 - Evidence path nên có hoặc map được về TC ID:
   - `test-results/artifacts/[TC_ID]/screenshot-fail.png`
   - `test-results/artifacts/[TC_ID]/video.webm`

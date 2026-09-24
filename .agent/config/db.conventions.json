@@ -1,5 +1,5 @@
 {
-  "_why": "Quy ước DB của dự án — TRI THỨC, không phải secret, nên file này ĐƯỢC COMMIT. Creds đi riêng ở `profiles/<TASK_KEY>/task.env` (prefix `LIB_MASTER_DB_RO_`). Mọi giá trị dưới đây ĐO TỪ SCHEMA THẬT `sapp-platform-uat` ngày 27/08/2026 qua `information_schema`, không phỏng đoán.",
+  "_why": "Quy ước DB của dự án — TRI THỨC, không phải secret, nên file này ĐƯỢC COMMIT. Creds đi riêng ở `profiles/<TASK_KEY>/task.env` (prefix `LIB_MASTER_DB_RO_`). Mọi giá trị dưới đây ĐO TỪ SCHEMA THẬT `một DB UAT thật` ngày 27/08/2026 qua `information_schema`, không phỏng đoán.",
   "_enforced_by": "tests/support/setup/db/config.ts + guard.ts. Bảng/khái niệm chưa khai ở đây thì helper TỪ CHỐI phán (trả `inconclusive`) thay vì đoán — đoán ra số từ DB là cách tạo bug ma trông rất thuyết phục.",
   "idColumn": "id",
   "softDelete": {
@@ -78,10 +78,10 @@
     ]
   },
   "safety": {
-    "requireReadonlyUser": true,
-    "allowedHosts": [
-      "db-uat.sapp.edu.vn"
-    ],
+    "_why_requireReadonlyUser": "TAT 24/09/2026 theo quyet dinh cua chu du an. Login `csdl` tren DB nghiep vu UAT map sang `dbo` va thuoc db_owner + db_datawriter + db_ddladmin (du INSERT/UPDATE/DELETE/ALTER/CONTROL/TAKE OWNERSHIP tren 888 bang). Bat co nay lai thi assertReadOnly() se CHAN moi ket noi. Doi lai, lop chan duy nhat con lai la lint `assertReadOnlySql`/`assertReadOnlyQuery` trong tien trinh — T-SQL KHONG co transaction READ ONLY nhu Postgres. Xin duoc login chi SELECT thi bat lai thanh true.",
+    "requireReadonlyUser": false,
+    "_why_allowedHosts": "Repo PUBLIC ma file nay DUOC COMMIT => KHONG ghi host noi bo vao day. Khai host that o `LIB_MASTER_DB_ALLOWED_HOSTS` trong `.env` / `profiles/<TASK>/task.env` (gitignored); loadConventions() gop env TRUOC roi moi toi danh sach nay. Bo trong ca hai => khong ap allowlist.",
+    "allowedHosts": [],
     "denyHostPatterns": [
       "prod",
       "production",
@@ -204,7 +204,7 @@
     },
     "_method_enum_by_groups": "Neo cot ENUM khong hien dang chuoi: lay HAI NHOM don CUNG MAN khac nhau dung o cot do, roi tim nhan nao (a) co o MOI don ca hai nhom, (b) gia tri KHONG DOI trong tung nhom, (c) gia tri KHAC nhau giua hai nhom. Thieu (b) thi moi nhan hien so tien deu lot; thieu (a) thi khac biet do thu khac cung lot. VA moi nhom phai >= 3 don CUA CAC KHACH KHAC NHAU: hai don gan-ban-sao (cung khach, cung so tien) lam moi phep so nhom ra ket qua GIA. Cai dat: tests/support/setup/db/fieldmap.anchor.spec.ts, test \"SO HAI NHOM\".",
     "_instrument_note": "INSTRUMENT MU tung lam suyt ket luan sai: bo doc form ban dau bao \"select=0\" o MOI form OPS. OPS dung ant-select (div, khong phai <select>) nen input.value RONG, va radio/checkbox thi `value` la hang so cua tung o (doc value la ra gia tri o CHUA CHON). Phai doc .ant-select-selection-item + trang thai checked. Mot form nghiep vu OPS co 0 dropdown la dau hieu SUA CONG CU, khong phai ket luan \"form khong co field\".",
-    "_oracle_source": "FSD cua task: outputs/<project>/tasks/SAPP-24395/docs/fsd.txt (+ docs/spec_sheet.xlsx, requirements/figma/). Luat: chu hien thi neo vao FIGMA, con MIEN GIA TRI (enum nao hop le o man nao) neo vao FSD. Ba muc `_deviations` duoi day da doi chieu voi FSD ngay 29/08 — doc oracle TRUOC khi ket luan, dung ket luan roi moi tim oracle."
+    "_oracle_source": "FSD cua task: outputs/<project>/tasks/CSDL-24395/docs/fsd.txt (+ docs/spec_sheet.xlsx, requirements/figma/). Luat: chu hien thi neo vao FIGMA, con MIEN GIA TRI (enum nao hop le o man nao) neo vao FSD. Ba muc `_deviations` duoi day da doi chieu voi FSD ngay 29/08 — doc oracle TRUOC khi ket luan, dung ket luan roi moi tim oracle."
   },
   "rates": {
     "_why": "TACH KHOI khoi \"money\". DO bien do gia tri: service_fee_rate n=39 distinct=3 min=0 max=20; fixed_discount n=3 distinct=3 min=5 max=15. Bien do 0..20 khong the la tien VND. Goi money() len chung thi thong diep sai (\"lech 5 dong\" cho mot ti le) va so sanh sai ngu nghia.",

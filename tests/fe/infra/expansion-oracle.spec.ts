@@ -14,7 +14,7 @@ const fnd = L('finding');
 const depth = L('depth');
 
 test.describe('@infra luật oracle — nhất quán KHÔNG phải bằng chứng của đúng', () => {
-  test('bẫy PASS giả (ca thật SAPP-28403): 4 điểm khớp nhau, không neo ⇒ OBSERVATION', () => {
+  test('bẫy PASS giả (ca thật CSDL-28403): 4 điểm khớp nhau, không neo ⇒ OBSERVATION', () => {
     // form/payload/api/ui đều = 10 trong khi giá trị ĐÚNG là 260.500 (USD không quy đổi).
     const f = fnd.makeFinding({ axis: 'persist', base_tc: 'OPS_PAY_TC_363', surface: 'form→payload→api→ui', expected: '10', actual: '10' });
     expect(f.verdict, 'khớp mà không có oracle thì KHÔNG được PASS').toBe('OBSERVATION');

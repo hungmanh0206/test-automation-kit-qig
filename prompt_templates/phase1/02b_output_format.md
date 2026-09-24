@@ -16,7 +16,7 @@ Report phải đủ chi tiết để review chất lượng bộ testcase mà kh
 
 1. **Tổng quan Phase 1**
    - Task key / module / scope.
-   - Nguồn requirement đã đọc: Jira, Confluence, Figma, Swagger, file local.
+   - Nguồn requirement đã đọc: Backlog, tài liệu nguồn, Figma, Swagger, file local.
    - Đường dẫn testcase Markdown, Excel đã export và trạng thái `Google Sheet publish: Pending QA confirmation`.
 2. **Thống kê testcase**
    - Tổng số testcase đã gen/cập nhật.
@@ -80,7 +80,7 @@ Report phải đủ chi tiết để review chất lượng bộ testcase mà kh
    - Mọi cell `Tiền điều kiện` có tag `[<method>]` hợp lệ + mô tả trạng thái (KHÔNG còn `[PRE-NN]`, KHÔNG còn sheet `Preconditions`). `npm run design:gate` chặn cell thiếu tag/tag lạ và cảnh báo khi một trạng thái có 2 cách dựng.
    - **Chi tiết dựng KHÔNG nằm trong file testcase**: cell chỉ mang tag `[<method>]` + mô tả trạng thái; endpoint/payload/fixture id/cách xác minh/cách dọn thuộc kho tái dùng `knowledge/setup_recipes/` (`npm run howto:check`). Cell là thứ đi theo case lên Google Sheet nên phải tự đọc được; recipe là thứ dùng lại giữa các task nên phải ở kho.
    - Nếu matrix còn `Needs hook`/`Manual-only`: `reports/capability-request.md` tồn tại và liệt kê capability còn thiếu (loại/endpoint/PRE/TC/owner).
-   - `task.md` đã được cập nhật đường dẫn output và trạng thái chờ QA xác nhận trước khi publish Jira testcase.
+   - `task.md` đã được cập nhật đường dẫn output và trạng thái chờ QA xác nhận trước khi publish Backlog testcase.
 
 7. **Capability / Test-Hook Request (handoff Dev) — BẮT BUỘC khi còn `Needs hook`/`Manual-only`**
 
@@ -121,9 +121,9 @@ Sau khi lưu file Markdown testcase:
 5. Sau khi export, kiểm tra file `.xlsx` tồn tại và cập nhật đường dẫn Excel vào `task.md` hoặc summary output.
 6. Nếu thiếu dependency `exceljs`, báo rõ blocker; không bỏ qua bước Excel và không coi Phase 1 hoàn tất.
 7. Sau khi export Excel, coi file Excel là source of truth **khi gen/publish**. Đây cũng là nội dung sẽ upload lên Google Sheet (agent tự làm qua Drive MCP — xem bước Auto Publish bên dưới); Phase 2 execute luôn tải bản Sheet mới nhất về trước khi chạy.
-8. Không upload lên Google Sheet trong prompt sinh testcase. Ghi trạng thái `Google Sheet publish: Pending QA confirmation`; Auto Publish là step riêng trong phạm vi Phase 1 và chỉ chạy bằng `prompt_templates/phase1/04_auto_publish_jira.md` (tên file giữ nguyên, nội dung đã đổi sang Google Sheet) sau khi QA xác nhận Excel.
+8. Không upload lên Google Sheet trong prompt sinh testcase. Ghi trạng thái `Google Sheet publish: Pending QA confirmation`; Auto Publish là step riêng trong phạm vi Phase 1 và chỉ chạy bằng `prompt_templates/phase1/04_auto_publish_backlog.md` (tên file giữ nguyên, nội dung đã đổi sang Google Sheet) sau khi QA xác nhận Excel.
 9. Sau khi export Excel, tạo/cập nhật `reports/phase1-summary.md` theo format Phase 1 Summary Report ở trên.
-10. Cập nhật `task.md` với đường dẫn Markdown testcase, Excel testcase, trạng thái chờ QA xác nhận publish Jira và Phase 1 summary report.
+10. Cập nhật `task.md` với đường dẫn Markdown testcase, Excel testcase, trạng thái chờ QA xác nhận publish Backlog và Phase 1 summary report.
 
 ---
 

@@ -403,7 +403,7 @@ Tách hai định dạng là cố ý. `ket-qua.json` cho máy: gate đọc nó, 
 `bao-cao.html` cho người, và nó chỉ là một lớp trình bày trên cùng dữ liệu.
 
 > Bản HTML phải **tự chứa**: ảnh nhúng thẳng vào file, không gọi ra host ngoài. Lý do rất thực dụng:
-> report được gửi qua chat, được lưu vào Jira, được mở lại sau ba tháng. Mọi đường dẫn tới máy bạn
+> report được gửi qua chat, được lưu vào Backlog, được mở lại sau ba tháng. Mọi đường dẫn tới máy bạn
 > đều sẽ chết. Cách làm cụ thể nằm ở bài [Dashboard và báo cáo](dashboard-va-bao-cao.md).
 
 ### Xây gate: chạy rồi mà không có bằng chứng thì chặn

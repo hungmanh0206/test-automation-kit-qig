@@ -10,7 +10,7 @@
  *
  * Cách dùng trong automation task-scoped (standalone Playwright):
  *   const { EvidenceRecorder } = require('<repo>/scripts/utils/evidence_recorder');
- *   const rec = new EvidenceRecorder({ taskKey:'SAPP-XXXX', projectOutputDir:'outputs/lms-operations-automation', runId });
+ *   const rec = new EvidenceRecorder({ taskKey:'dự án trước-XXXX', projectOutputDir:'outputs/lms-operations-automation', runId });
  *   const tc = rec.case('OPS_ORD_TC_021');
  *   await tc.step(page, 'Mở dropdown Hình thức', { highlight: page.getByLabel('Hình thức'),
  *        assert: async () => (await page.getByRole('option').count()) === 2 });   // pass/fail suy từ assert
@@ -188,7 +188,7 @@ class EvidenceRecorder {
      * Gộp mọi shard là CỐ Ý (nhiều worker, và giữ được case đã xong khi process chết). Nhưng nó cũng
      * kéo theo kết quả của những LƯỢT CHẠY TRƯỚC: chạy lại 3 case mà status ra 51 case PASSED, đóng
      * dấu `generatedAt` hôm nay — đẩy lên TCM là báo PASS cho 48 case lượt này chưa hề chạy.
-     * (Đã xảy ra thật: SAPP-26523 chạy 3 case, status gộp thành 51, 48 case từ 13/07.)
+     * (Đã xảy ra thật: CSDL-26523 chạy 3 case, status gộp thành 51, 48 case từ 13/07.)
      * Nên: entry cũ hơn lượt này được gắn `carriedOver` + `carriedFrom`, và cảnh báo ra stdout.
      * Ngưỡng GRACE 6h chứ không so đúng mốc start: Playwright khởi động các worker LỆCH NHAU vài giây,
      * so chính xác sẽ gắn nhầm cờ cho case của worker chạy trước.

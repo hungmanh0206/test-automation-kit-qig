@@ -2,13 +2,13 @@
 
 > Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
 >
-> Tên file (`04_auto_publish_jira.md`) giữ nguyên sau khi AIO Tests ngưng dùng (22/09/2026, thay bằng Google
+> Tên file (`04_auto_publish_backlog.md`) giữ nguyên sau khi Google Sheet ngưng dùng (22/09/2026, thay bằng Google
 > Sheet) để không phá mọi chỗ trỏ tới file này; nội dung bên dưới đã cập nhật cho Sheet.
 
 Dùng prompt này như một step riêng trong phạm vi Phase 1, chỉ sau khi Phase 1 đã sinh testcase, export Excel và QA đã xác nhận Excel/testcase đủ điều kiện publish. Không dùng prompt này để log bug Backlog.
 
-> **Công cụ lưu testcase: Google Sheet** (thay AIO Tests — app Jira Marketplace, không tương thích Backlog).
-> Khác biệt lớn nhất so với AIO: **không có folder/tag/custom-field riêng** — Sheet CHÍNH LÀ file Excel
+> **Công cụ lưu testcase: Google Sheet** (thay Google Sheet — app Backlog Marketplace, không tương thích Backlog).
+> Khác biệt lớn nhất so với công cụ cũ: **không có folder/tag/custom-field riêng** — Sheet CHÍNH LÀ file Excel
 > canonical (dashboard + 1 sheet/nhóm chức năng, xem `scripts/convert_excel/md_to_xlsx.js`), nên "publish"
 > chỉ là UPLOAD FILE, không phải map từng field sang một schema khác.
 
@@ -55,11 +55,11 @@ Env/config:
 - Upload thật cần: kết nối MCP Google Drive của agent đang hoạt động (không phải biến env — MCP là kênh
   riêng của phiên chat, không phải token script đọc). Kiểm bằng cách gọi thử `search_files`/`list_recent_files`
   trước; lỗi kết nối thì DỪNG, báo rõ, không giả vờ đã upload.
-- Không còn khái niệm mapping field (Field Tags/custom field/folder hierarchy như AIO) — Sheet là chính file
+- Không còn khái niệm mapping field (Field Tags/custom field/folder hierarchy như công cụ cũ) — Sheet là chính file
   `.xlsx` này, mọi cột (`Loại case`, `Tag`, `Module`, `Ưu tiên`...) đã ở sẵn đúng vị trí, không cần dịch sang
   schema khác.
 - `BACKLOG_STORY_KEY` (nếu có) chỉ dùng để ĐẶT TÊN file trên Drive cho dễ tra (vd `<BACKLOG_STORY_KEY> -
-  Testcase.xlsx`), không còn ý nghĩa "field liên kết" như `jiraRequirementIDs` của AIO.
+  Testcase.xlsx`), không còn ý nghĩa "field liên kết" như `backlogRequirementIDs` của công cụ cũ.
 
 Mode:
 - [DRY_RUN / PUBLISH]
@@ -101,14 +101,14 @@ Quy tắc bắt buộc:
   (thêm/xoá cột, đổi tên sheet) trực tiếp trên Sheets rồi mong Phase 1 sau đọc lại đúng — QA có thể tự sửa
   GIÁ TRỊ (Result, ghi chú) trên Sheets, nhưng thay đổi CẤU TRÚC phải đi qua Phase 1 re-gen.
 - Phase 2 execute LUÔN tải bản Sheet mới nhất về `test-cases/from-sheet/*.xlsx` qua Drive MCP trước khi
-  chạy — không có khái niệm mirror cũ/mới như AIO (`aio:verify:enforce`), vì luôn tải lại từ đầu. Đồng bộ
+  chạy — không có khái niệm mirror cũ/mới như công cụ cũ (bước verify riêng), vì luôn tải lại từ đầu. Đồng bộ
   kết quả execute NGƯỢC lại Sheet dùng `node scripts/convert_excel/merge_execution_status.js` (xem
   `prompt_templates/phase2/04_execute_fe_playwright.md`) rồi `update_file` đè lên Drive.
 - Không publish thật khi QA chưa xác nhận `APPROVED`.
 - Nếu Excel đã bỏ bớt TC sau khi đã publish, re-upload (`update_file`) sẽ TỰ ĐỘNG phản ánh đúng: case bị xoá
-  biến mất khỏi Sheet lần sync sau — không cần bước "deprecate" riêng như AIO (AIO không có API xoá nên
+  biến mất khỏi Sheet lần sync sau — không cần bước "deprecate" riêng như công cụ cũ (Sheet ghi đè toàn bộ mỗi lần sync nên
   từng phải đổi status; Sheet chỉ là ghi đè toàn file).
-- Không log bug Backlog trong prompt này; log bug thuộc `prompt_templates/phase2/08_log_bug_jira.md`.
+- Không log bug Backlog trong prompt này; log bug thuộc `prompt_templates/phase2/08_log_bug_backlog.md`.
 - Không đưa secret vào report hoặc console.
 - Nếu upload lỗi (mất kết nối MCP, quyền Drive), ghi blocker rõ trong `task.md`; không sửa testcase để né lỗi.
 

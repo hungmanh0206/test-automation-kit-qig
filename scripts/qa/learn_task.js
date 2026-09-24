@@ -10,7 +10,7 @@
  *   1) KPI/flaky  → knowledge/metrics/{runs,tc-history}.jsonl   (gọi metrics_collect.js, nguồn: results.json)
  *   2) Snapshot   → knowledge/historical_execution/<TASK>__<date>.json  (nguồn: testcase-status.json)
  *      `modules` map theo TÊN MODULE NGHIỆP VỤ (không phải tên file) vì risk_score.js cộng fail/total
- *      theo module — map tcId→Module lấy từ testcase canonical (test-cases/*.md | from-aio/*.xlsx).
+ *      theo module — map tcId→Module lấy từ testcase canonical (test-cases/*.md | from-sheet/*.xlsx).
  *   3) index.json → thêm entry type=historical_execution (schema knowledge/SCHEMA.md).
  *
  * IDEMPOTENT: snapshot cùng {task,date} và metrics cùng {label,at} sẽ bị bỏ qua → chạy lại/backfill nhiều
@@ -52,7 +52,7 @@ function bucket(status) {
 /** Map tcId → module nghiệp vụ từ testcase canonical. Cột `Module` dạng "Nhóm / US" → lấy phần NHÓM. */
 function buildModuleMap(taskDir) {
   const map = new Map();
-  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + bản kéo về từ AIO (from-aio)
+  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + bản kéo về từ Google Sheet (from-aio)
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) continue;
     for (const f of fs.readdirSync(dir)) {

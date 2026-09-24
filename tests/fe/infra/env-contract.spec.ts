@@ -12,8 +12,8 @@ import { gateEnv } from './_gate_env';
  *   ① Khoá CHẾT: `RELEASE_VERSION=` khai trong bản mẫu mà **không code/CI nào đọc**. Người nhận điền vào rồi
  *      tưởng đã cấu hình xong một thứ — trong khi nó không có tác dụng gì. Version thật lấy từ
  *      `package.json`.
- *   ② Khoá THIẾU: `.env` thật dùng `JIRA_uat_ASSIGNEE` — một khoá **không ai đọc** (đúng tên là
- *      `JIRA_FE_ASSIGNEE`/`JIRA_BE_ASSIGNEE`). Bản mẫu không khai nên không ai phát hiện được sự lệch đó.
+ *   ② Khoá THIẾU: `.env` thật dùng `BACKLOG_uat_ASSIGNEE` — một khoá **không ai đọc** (đúng tên là
+ *      `BACKLOG_FE_ASSIGNEE`/`BACKLOG_BE_ASSIGNEE`). Bản mẫu không khai nên không ai phát hiện được sự lệch đó.
  *
  * Hai luật dưới đây biến "bản mẫu đúng" thành phép kiểm, thay vì trông vào việc ai đó nhớ cập nhật nó.
  */
@@ -51,7 +51,7 @@ function sourceBlob(): string {
 /*
  * TÊN ENV GHÉP ĐỘNG — bộ đo phải thấy chúng, không thì nó báo "chết" cho khoá đang dùng.
  *
- * Đã suýt sai thật: `uatPgClient.ts` dựng tên bằng `${prefix}_HOST` với prefix mặc định `LIB_MASTER_DB`, nên
+ * Đã suýt sai thật: `uatDbClient.ts` dựng tên bằng `${prefix}_HOST` với prefix mặc định `LIB_MASTER_DB`, nên
  * 6 khoá `LIB_MASTER_DB_{HOST,PORT,NAME,USERNAME,PASSWORD,SSL}` KHÔNG hề chết — nhưng tìm theo chuỗi literal
  * thì không thấy, và bộ đo bản đầu của tôi định khuyên xoá chúng. Cùng lớp lỗi "instrument mù" đã gặp ở
  * ant-select: phép đo không thấy ≠ thứ đó không tồn tại.
@@ -63,7 +63,7 @@ function dynamicSuffixes(blob: string): string[] {
   /*
    * Dạng 2: suffix truyền vào HÀM helper dưới dạng string literal — `opt('STATEMENT_TIMEOUT_MS')`,
    * `v('HOST')`. Bản đầu chỉ bắt dạng 1 nên `LIB_MASTER_DB_STATEMENT_TIMEOUT_MS` bị báo chết oan: nó được
-   * đọc qua `opt('STATEMENT_TIMEOUT_MS')` trong `uatPgClient`. Cách ghép tên env nhiều kiểu hơn ta tưởng.
+   * đọc qua `opt('STATEMENT_TIMEOUT_MS')` trong `uatDbClient`. Cách ghép tên env nhiều kiểu hơn ta tưởng.
    */
   for (const m of blob.matchAll(/['"]([A-Z][A-Z0-9_]{2,})['"]/g)) out.add(m[1]);
   return [...out];
@@ -87,7 +87,7 @@ function readDynamically(key: string, blob: string, suffixes: string[]): boolean
 const DOC_ONLY: Record<string, string> = {
   TASK_OUTPUT_DIR: 'dẫn xuất từ PROJECT_OUTPUT_DIR + TASK_KEY; khai ra để người dùng biết nó tồn tại và có thể ghi đè',
   /*
-   * BACKLOG_USERNAME/EMAIL/PAT/EPIC_URL/STORY_URL: migrate Jira→Backlog (22/09/2026,
+   * BACKLOG_USERNAME/EMAIL/PAT/EPIC_URL/STORY_URL: migrate hệ bug-tracking cũ → Backlog (22/09/2026,
    * scripts/integrations/backlog/*) đã wire xong BACKLOG_URL/BASE_URL/API_KEY/PROJECT_KEY/STORY_KEY/
    * DEV_ASSIGNEE/FE_ASSIGNEE/BE_ASSIGNEE/BUG_ISSUE_TYPE/SPRINT_FIELD_ID — 5 khoá dưới đây KHÔNG có client
    * nào đọc vì Backlog tự thân không cần chúng: auth chỉ cần BACKLOG_API_KEY (không username/email/PAT),
@@ -104,7 +104,7 @@ const DOC_ONLY: Record<string, string> = {
  * CHẾT THẬT, chờ chủ repo quyết xoá — **hiện RỖNG**.
  *
  * Ngày 04/09/2026 danh sách này có 10 khoá; chủ repo quyết xoá hết (cùng `RELEASE_VERSION` và
- * `JIRA_TESTCASE_ISSUE_TYPE` ở bản mẫu lồng của Jira), nên `.env.example` từ 85 → 75 khoá.
+ * `BACKLOG_TESTCASE_ISSUE_TYPE` ở bản mẫu lồng của Backlog), nên `.env.example` từ 85 → 75 khoá.
  *
  * Giữ lại cấu trúc RỖNG có chủ ý: lần sau phát hiện khoá chết thì có chỗ khai kèm lý do thay vì im lặng bỏ
  * qua — nhưng test ③ chặn nó ở 0, nên muốn khai phải đồng thời quyết xoá. Nợ không có chỗ trú.
@@ -119,7 +119,7 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
 
   test('CHỈ ĐƯỢC CÓ MỘT `.env.example` trong repo', () => {
     /*
-     * Trước 04/09/2026 có BỐN: gốc + `jira/` + `google_doc/` + `google_sheet/`. Bản Jira trùng 21/21 khoá
+     * Trước 04/09/2026 có BỐN: gốc + `backlog/` + `google_doc/` + `google_sheet/`. Bản Backlog trùng 21/21 khoá
      * với bản gốc, hai bản Google chỉ còn 3 khoá sống. Hai bản mẫu env là hai nguồn SẼ TRÔI khỏi nhau — và
      * chúng đã làm hỏng một phép đo thật: `git grep "khoá nào được đọc"` đếm cả file example, nên 6 khoá
      * CHẾT bị tưởng là sống và tôi đã thêm chúng vào `.env`.
@@ -214,8 +214,8 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
     const f = path.join(REPO, 'profiles/task.env.example');
     expect(fs.existsSync(f), 'thiếu profiles/task.env.example — gói phát hành không nói được task.env cần gì').toBe(true);
     // Nhóm bắt buộc: DB read-only (tầng §23 đọc theo prefix LIB_MASTER_DB_RO_). OPS_USERNAME/PASSWORD đã
-    // BỎ khỏi yêu cầu (kit không còn tích hợp OPS — xem BACKLOG_* thay Jira, không còn LMS/OPS/AIO/
-    // Confluence/HubSpot/Feature trong .env/task.env kể từ khi tổ chức chuyển hẳn sang Backlog).
+    // BỎ khỏi yêu cầu (kit không còn tích hợp OPS — xem BACKLOG_* thay Backlog, không còn LMS/OPS/công cụ cũ/
+    // tài liệu nguồn/HubSpot/Feature trong .env/task.env kể từ khi tổ chức chuyển hẳn sang Backlog).
     const body = fs.readFileSync(f, 'utf8');
     expect(body, 'task.env.example phải nhắc prefix LIB_MASTER_DB_RO_ — tầng §23 đọc creds DB theo prefix đó, và preflight CHẶN khi thiếu')
       .toMatch(/LIB_MASTER_DB_RO_/);
@@ -241,7 +241,7 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
   });
 
   /*
-   * SAPP-29229 — tester sau bàn giao báo: "không bắt buộc phải có env token của LMS và OPS thì mới
+   * CSDL-29229 — tester sau bàn giao báo: "không bắt buộc phải có env token của LMS và OPS thì mới
    * test được, check lại". Đo lại thì code ĐÃ ĐÚNG, cái sai là tài liệu không nói lane nào cần gì.
    * Ba phép kiểm dưới đây khoá câu trả lời đó, để mai kia không ai lặng lẽ thêm ràng buộc vào phase1.
    */
@@ -251,7 +251,7 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
     expect([...(p1.required || [])].sort()).toEqual(['PROJECT_OUTPUT_DIR', 'TASK_KEY']);
     expect(p1.requiredOneOf, 'phase1 không được có nhóm biến thay thế nào').toBeUndefined();
     const all = JSON.stringify(p1);
-    expect(/OPS_|LMS_|AIO_/.test(all), 'phase1 không được đòi biến của lane khác').toBe(false);
+    expect(/OPS_|LMS_|công cụ cũ_/.test(all), 'phase1 không được đòi biến của lane khác').toBe(false);
   });
 
   test('mọi biến khai trong env_lanes.json đều có mặt ở .env.example', () => {

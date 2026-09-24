@@ -132,7 +132,7 @@ const ok = (name, cond, got) => {
   await p.locator('.mode[data-mode="readme"]').click(); await p.waitForTimeout(400);
   ok('có kiến trúc theo tầng', await p.locator('.arow').count() > 5);
   ok('có cây thư mục', await p.locator('.trow2').count() > 10);
-  ok('có mô hình AIO Tests', await p.locator('.xrow').count() === 5);
+  ok('có mô hình Google Sheet', await p.locator('.xrow').count() === 5);
   const cmdRows = await p.locator('.cmdrow').count();
   ok('có bảng lệnh đầy đủ', cmdRows >= 45, cmdRows);
   ok('có quy ước 3 mức', await p.locator('.prbox').count() === 3);

@@ -110,7 +110,7 @@ test.describe('@infra dim:coverage — ngưỡng theo risk band', () => {
  *   ① khâu sinh CODE automation không có gate (Phase 1 có design_gate, Phase 2 thì không) ⇒ nối lint:locator
  *      vào phase2_02 + điểm-vào, thêm 2 rule: XPath và assertion yếu.
  *   ② "rerun đủ vòng" — taxonomy đã khai `rerun.min=2` nhưng không máy nào đếm ⇒ output_gate đòi `reruns`
- *      ở FAIL tầng product/api (case sắp thành bug Jira), KHÔNG đòi ở setup/script (chúng đi sửa, không đi Jira).
+ *      ở FAIL tầng product/api (case sắp thành bug Backlog), KHÔNG đòi ở setup/script (chúng đi sửa, không đi Backlog).
  *   ③ mutation `--enforce` từng chặn khi còn 1 mutant sống = ngưỡng NGẦM 100% ⇒ `--min-score` khai được.
  */
 test.describe('@infra phase2 — ngưỡng rerun/lint/mutation có số', () => {
@@ -122,7 +122,7 @@ test.describe('@infra phase2 — ngưỡng rerun/lint/mutation có số', () => 
   const doc = (o: Record<string, unknown>) => ({ taskKey: 'T', tests: [{ tcId: 'TC_1', status: 'FAILED', comment: 'so với BR-X: expected 5, actual 7', evidence: ['a.png'], ...o }] });
   const rerunProblems = (d: unknown) => gate.gateTestExecution(d).problems.filter((p: string) => /rerun/i.test(p));
 
-  test('FAIL tầng product_bug không khai `reruns` ⇒ CHẶN (đây là case sắp thành bug Jira)', () => {
+  test('FAIL tầng product_bug không khai `reruns` ⇒ CHẶN (đây là case sắp thành bug Backlog)', () => {
     expect(rerunProblems(doc({ failureLayer: 'product_bug' })).length).toBeGreaterThan(0);
   });
 
@@ -136,7 +136,7 @@ test.describe('@infra phase2 — ngưỡng rerun/lint/mutation có số', () => 
     expect(rerunProblems(doc({ failureLayer: 'product_bug', reruns: TAX.rerun.min }))).toEqual([]);
   });
 
-  test('setup_failure / script_error KHÔNG bị đòi rerun (không đi Jira ⇒ siết là báo oan)', () => {
+  test('setup_failure / script_error KHÔNG bị đòi rerun (không đi Backlog ⇒ siết là báo oan)', () => {
     for (const layer of ['setup_failure', 'script_error', 'infra_flaky']) {
       expect(rerunProblems(doc({ failureLayer: layer })), layer).toEqual([]);
     }
@@ -157,7 +157,7 @@ test.describe('@infra phase2 — ngưỡng rerun/lint/mutation có số', () => 
       return r.re as RegExp;
     };
     expect(re('xpath-locator').test("page.locator('//div[@id=\"x\"]')")).toBe(true);
-    expect(re('xpath-locator').test("page.locator('.sapp-btn')"), 'CSS thường KHÔNG phải XPath').toBe(false);
+    expect(re('xpath-locator').test("page.locator('.app-btn')"), 'CSS thường KHÔNG phải XPath').toBe(false);
     expect(re('weak-assert').test('expect(await row.textContent()).toBeTruthy()')).toBe(true);
     // 219 chỗ trong tests/fe/infra dùng toBeTruthy() cho giá trị JS thuần — bắt hết là gate chết ngay lần đầu.
     expect(re('weak-assert').test('expect(cfg.enabled).toBeTruthy()'), 'giá trị JS thuần KHÔNG được bắt').toBe(false);

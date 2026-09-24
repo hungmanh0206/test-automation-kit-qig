@@ -5,7 +5,7 @@
 # chúng luôn chạy TRONG repo (có .git, có node_modules, có lớp PROJECT) còn người nhận kit thì không có gì
 # trong số đó.
 #
-# KHÔNG chạm UAT, KHÔNG cần secret của UAT/AIO/Jira. Nếu workflow này cần secret thì nó đã bị thiết kế sai:
+# KHÔNG chạm UAT, KHÔNG cần secret của UAT/Sheet/Backlog. Nếu workflow này cần secret thì nó đã bị thiết kế sai:
 # nó chỉ đọc repo, đóng gói, và chạy gate offline. `GITHUB_TOKEN` mặc định là đủ để tạo Release.
 name: release
 

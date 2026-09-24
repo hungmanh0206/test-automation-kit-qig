@@ -2,11 +2,11 @@
 /**
  * cross_surface_diff.js — TRỤC 2: **cùng một giá trị, khác nơi hiển thị**.
  *
- * VÌ SAO CÓ FILE NÀY: đây là trục RÒ NHIỀU NHẤT — đo trên SAPP-24395 có **21/69 bug** thuộc lớp này, và không
+ * VÌ SAO CÓ FILE NÀY: đây là trục RÒ NHIỀU NHẤT — đo trên CSDL-24395 có **21/69 bug** thuộc lớp này, và không
  * phép kiểm nào của kit chạm tới, vì mỗi màn xét riêng đều "đúng":
- *   - SAPP-28521: tab Hubspot Information hiện D.O.B thô `2001-05-20`, tab Overview hiện `20/05/2001`.
- *   - SAPP-28405: Extension Course Package khác nhau giữa màn Create/Edit và màn Order Detail.
- *   - SAPP-28446: màn Checkout rút gọn + sai chính tả tên khoá học so với Ops.
+ *   - CSDL-28521: tab Hubspot Information hiện D.O.B thô `2001-05-20`, tab Overview hiện `20/05/2001`.
+ *   - CSDL-28405: Extension Course Package khác nhau giữa màn Create/Edit và màn Order Detail.
+ *   - CSDL-28446: màn Checkout rút gọn + sai chính tả tên khoá học so với Ops.
  * Chỉ khi ĐẶT CẠNH NHAU thì lệch mới hiện ra. Và phải tách hai lớp: **khác GIÁ TRỊ** (nghiêm trọng: lấy sai
  * nguồn/sai field) vs **khác ĐỊNH DẠNG** (cùng giá trị, format khác — vẫn là bug hiển thị, nhưng khác nguyên nhân).
  *

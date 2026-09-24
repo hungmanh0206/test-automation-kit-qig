@@ -14,7 +14,7 @@ Sau khi Human Review approve, `run_requirement_apply_approved.md` sẽ (tự đ�
 
 | Scenario | Use This Prompt |
 |---|---|
-| BA cập nhật nội dung Jira/Confluence nhưng link không đổi | Yes |
+| BA cập nhật nội dung Backlog/tài liệu nguồn nhưng link không đổi | Yes |
 | UIUX cập nhật nội dung Figma nhưng link/file không đổi | Yes |
 | BE cập nhật nội dung Swagger/OpenAPI nhưng URL/file không đổi | Yes |
 | Cần biết testcase nào bị ảnh hưởng bởi nội dung tài liệu mới | Yes |
@@ -29,7 +29,7 @@ Sau khi Human Review approve, `run_requirement_apply_approved.md` sẽ (tự đ�
 | `PROJECT_OUTPUT_DIR` | Yes | Ví dụ `outputs/<YOUR_PROJECT>`. |
 | `TASK_KEY` | Yes | Task/feature scope. |
 | `UPDATED_DOC_URLS_OR_FILES` | Yes | Cùng link/file source đã dùng trước đó; nội dung có thể đã đổi. |
-| `CHANGE_SOURCE` | Recommended | Jira, Confluence, Figma, Swagger/OpenAPI hoặc local file. |
+| `CHANGE_SOURCE` | Recommended | Backlog, tài liệu nguồn, Figma, Swagger/OpenAPI hoặc local file. |
 | `CHANGE_NOTE` | Recommended | Tóm tắt phần BA/UIUX/BE đã sửa để giảm token. |
 | `SCOPE_HINT` | Optional | Module, TC ID, endpoint, screen, user story. |
 
@@ -183,7 +183,7 @@ WAITING_FOR_HUMAN_REVIEW
 
 - Không merge testcase chính.
 - Không execute testcase.
-- Không log Jira bug.
+- Không log Backlog bug.
 - Không tự chuyển sang Phase 2.
 - Không tự thay source link/path.
 - Không đổi expected result nếu source mới chưa rõ.
@@ -209,7 +209,7 @@ Trả lời ngắn:
 PROJECT_OUTPUT_DIR=outputs/<YOUR_PROJECT>
 TASK_KEY=<TASK_KEY>
 UPDATED_DOC_URLS_OR_FILES=<same links/files>
-CHANGE_SOURCE=Confluence + Swagger
+CHANGE_SOURCE=tài liệu nguồn + Swagger
 CHANGE_NOTE=<BA/BE update summary>
 SCOPE_HINT=<module/endpoints/TC IDs nếu có>
 ```

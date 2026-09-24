@@ -56,4 +56,4 @@ fs.writeFileSync(target, content, 'utf8');
 
 console.log(`✅ Đã tạo profiles/${TASK_KEY}/task.env (prefill TASK_KEY=${TASK_KEY}, BACKLOG_STORY_KEY=${TASK_KEY}${PROJECT_OUTPUT ? `, PROJECT_OUTPUT_DIR=${PROJECT_OUTPUT}` : ''}).`);
 console.log('👉 QA điền tiếp: BACKLOG_STORY_URL, FIGMA_FILE_URL, GOOGLE_REQUIREMENT_DOC_URL, GOOGLE_SHEET_URL.');
-console.log('   File này KHÔNG commit (đã gitignore). Giá trị tĩnh (base URL/API key Figma/Backlog/AIO) để ở .env chung.');
+console.log('   File này KHÔNG commit (đã gitignore). Giá trị tĩnh (base URL/API key Figma/Backlog/Google Sheet) để ở .env chung.');

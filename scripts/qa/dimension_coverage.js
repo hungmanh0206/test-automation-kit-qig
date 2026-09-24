@@ -81,7 +81,7 @@ const DIMS = [
 
   // Chiều thêm 23/08/2026 sau khi ĐO: kit có idempotency phía GỬI (§5/§8) và webhook ĐI RA (§9), nhưng
   // KHÔNG chiều nào đứng ở phía NHẬN callback bên thứ ba — nơi mình không kiểm soát số lần/thứ tự gửi.
-  // Bằng chứng là bug thật: callback thanh toán trùng làm Paid Amount cộng đôi (SAPP-28236), do NGƯỜI
+  // Bằng chứng là bug thật: callback thanh toán trùng làm Paid Amount cộng đôi (CSDL-28236), do NGƯỜI
   // phát hiện chứ không máy nào bắt.
   { id: 'inbound_callback', sec: '§22', label: 'Inbound Callback / Webhook (phía NHẬN)', group: /callback|webhook|ipn/, re: /callback|webhook|\bipn\b|secure ?hash|hmac|chu ky (sai|hop le)|replay|gui lai callback|callback trung|at[- ]least[- ]once|vnp_/ },
 
@@ -102,7 +102,7 @@ const DIMS = [
 }
 
 function loadTests() {
-  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + bản kéo về từ AIO (from-aio)
+  const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + bản kéo về từ Google Sheet (from-aio)
   const byId = new Map();
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) continue;

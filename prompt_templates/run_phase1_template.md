@@ -15,7 +15,7 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 | [`phase1/dimensions/*.md`](phase1/dimensions/) | **mở đúng chiều `required`** | **Bước 3, sau khi khai manifest** — 15 chương chiều coverage (§3–§17), tách khỏi `02` (14/08/2026) để không gánh 9,9k cho chiều task không dùng. Thứ tự: khai `requirements/dimension_manifest.json` → mở file các chiều `required` → sinh case có tag §0b → `npm run dim:coverage -- --enforce`. Bảng chiều→tag→file→"mở khi" nằm ở §3–17 của `02` |
 | [`phase1/02b_output_format.md`](phase1/02b_output_format.md) | **BẮT BUỘC ở CUỐI lượt** | **Bước cuối** — Phase 1 Summary Report + Export Excel. Tách khỏi `02` (14/08/2026) để bỏ **3,7k token** khỏi lúc đang sinh case: đây là định dạng OUTPUT, không phải luật nội dung case. Cả hai đều có gate đứng sau (`design_gate` trong `md_to_xlsx`, `self_review` đọc Summary Report) nên bỏ qua là bị chặn |
 | [`phase1/03_gen_test_data.md`](phase1/03_gen_test_data.md) | khi cần | Cần **bảng test data riêng** + `DataGenerator` cho Phase 2 (4 nhóm data, đặt tên traceable, `Data State` khớp Setup Strategy). Nếu chỉ cần cột "Dữ liệu Test" trong TC thì §4 của `02` là đủ |
-| [`phase1/04_auto_publish_jira.md`](phase1/04_auto_publish_jira.md) | **BẮT BUỘC** khi publish | **Bước sau QA duyệt** — đẩy TC lên **Google Sheet** qua Drive MCP |
+| [`phase1/04_auto_publish_backlog.md`](phase1/04_auto_publish_backlog.md) | **BẮT BUỘC** khi publish | **Bước sau QA duyệt** — đẩy TC lên **Google Sheet** qua Drive MCP |
 | [`phase1/05_manual_quick.md`](phase1/05_manual_quick.md) | nhánh thay thế | Requirement đã RÕ và chỉ cần bộ TC **chạy tay** nhanh — KHÔNG nhắm automation. Requirement còn mơ hồ hoặc cần TC cho automation thì **đừng** dùng nhánh này |
 | [`phase1/06_cross_module.md`](phase1/06_cross_module.md) | khi cần | Scope chạm nhiều module/hệ thống, cần ma trận tổ hợp (skill `combinatorial_matrix` cũng gọi file này) |
 
@@ -30,7 +30,7 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`*
 | **Ngay sau khi kéo tài liệu về, TRƯỚC khi đọc** | `npm run docs:budget` (thêm `--contract` nếu có file >25k) | Đo từng tài liệu → đọc trực tiếp / chỉ mục cần / **giao subagent trích**. Bắt luôn 2 bẫy đo được thật: tài liệu có **nhiều bản** (đọc bản dư = tốn ~670k token vô ích) và **bản cũ nhỏ hơn hẳn bản mới = bản THIẾU nội dung** (đọc nó là đọc thiếu spec) |
 | Đầu phase, trước khi phân tích | `npm run risk` | Risk register theo module — quyết định độ sâu test (RBT). Không có thì gen dàn đều, chỗ rủi ro cao bị test nông |
 | Khi chuẩn bị context | `npm run domain:check` · `npm run system:check` | Đối chiếu business rule + bản đồ hệ thống đã xác nhận trong `knowledge/` — đây là nguồn oracle độc lập, tra trước để không suy oracle từ app (tautology) |
-| Sau khi QA duyệt Excel | Agent `search_files` → `create_file`/`update_file` qua Drive MCP | Đẩy TC lên Google Sheet. **Luôn review nội dung `.xlsx` local trước khi ghi đè**; chi tiết ở `phase1/04_auto_publish_jira.md` |
+| Sau khi QA duyệt Excel | Agent `search_files` → `create_file`/`update_file` qua Drive MCP | Đẩy TC lên Google Sheet. **Luôn review nội dung `.xlsx` local trước khi ghi đè**; chi tiết ở `phase1/04_auto_publish_backlog.md` |
 | Ngay sau khi export Excel (bước 7) | tự chạy trong `md_to_xlsx` | **`design_gate` (G5)** CHẶN nếu thiếu cột canonical / rỗng ô lõi / bộ có case hiển thị mà thiếu `ui_catalog.json` |
 | Sau export | `npm run design:gate` | Chạy tay khi muốn soi trước lúc convert |
 | **Ngay khi có bộ testcase** | `npm run domain:trace-back` → sửa xong thì `npm run domain:trace-back -- --apply` | **Chiều TC→rule** (trước đây KHÔNG gì kiểm): case mang tag cần-oracle (`[Calc]/[BEData]/[Display]/[Security]/[Guard]`) mà không trỏ `[BR-…]`/`[SM-…]` → cảnh báo "expected lấy từ đâu?"; trỏ id không tồn tại → "oracle ma"; `--apply` **tự append `covered_by`**. Đo: bộ 530 hiện tại **0/530** case trỏ rule dù §12 đã yêu cầu từ lâu |
@@ -65,7 +65,7 @@ Chạy Phase 1 cho module/task sau: collect context và sinh/update testcases.
 Project:
 - Project là toàn bộ LMS + Operations automation workspace.
 - Phạm vi hiện tại là module/task/feature được cung cấp bên dưới.
-- Jira key hoặc module name chỉ là task/feature scope, không phải tên project.
+- Backlog key hoặc module name chỉ là task/feature scope, không phải tên project.
 
 Phạm vi:
 - Module/Feature: [MODULE_FEATURE]
@@ -73,9 +73,9 @@ Phạm vi:
 - Site liên quan: [LMS / Operations / LMS + Operations]
 
 Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ điền trực tiếp ở đây khi muốn override profile)
-- Jira Epic: [JIRA_EPIC_URL]
-- Jira Story/Task: [JIRA_STORY_URL]
-- Confluence Requirement: [CONFLUENCE_REQUIREMENT_URL]
+- Backlog Epic: [BACKLOG_EPIC_URL]
+- Backlog Story/Task: [BACKLOG_STORY_URL]
+- tài liệu nguồn Requirement: [REQUIREMENT_DOC]
 - Figma: [FIGMA_FILE_URL]
 - LMS URL: [LMS_BASE_URL]
 - Operations URL: [OPS_BASE_URL]
@@ -84,7 +84,7 @@ Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ �
 - Other docs/files: [OTHER_DOCS hoặc N/A]
 
 Run profile (chạy song song an toàn):
-- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, tài khoản OPS/LMS theo task, `GOOGLE_SHEET_URL`); giá trị TĨNH (Figma/Confluence/Jira/HubSpot key + base URL) giữ ở .env chung.
+- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, tài khoản OPS/LMS theo task, `GOOGLE_SHEET_URL`); giá trị TĨNH (Figma/tài liệu nguồn/Backlog/HubSpot key + base URL) giữ ở .env chung.
 - Truyền TASK_ENV=profiles/[TASK_KEY]/task.env cho MỌI command; không đọc TASK_KEY từ .env chung, không sửa .env/.env.local chung.
 - Chi tiết: QUICKSTART.md (mục Parallel Story Safety).
 
@@ -92,7 +92,7 @@ Context/config:
 - Đọc `.agent/config/project_context.md` nếu có.
 - Đọc `.env.example` để biết env keys cần có.
 - Credential/token thật lấy từ `.env.local` hoặc `.env`, không ghi vào markdown/log/report.
-- Jira testcase publish: KHÔNG publish trong prompt này. Auto Publish Jira là step riêng trong phạm vi Phase 1, chỉ chạy bằng `prompt_templates/phase1/04_auto_publish_jira.md` sau khi QA xác nhận Excel.
+- Backlog testcase publish: KHÔNG publish trong prompt này. Auto Publish Backlog là step riêng trong phạm vi Phase 1, chỉ chạy bằng `prompt_templates/phase1/04_auto_publish_backlog.md` sau khi QA xác nhận Excel.
 - Công cụ test management nếu chạy step publish riêng: **Google Sheet** qua Drive MCP (agent search_files/create_file/update_file, không cần token — dùng MCP đã kết nối sẵn trong phiên chat).
 - Step publish (04) đẩy lên **Google Sheet**: file `.xlsx` do `md_to_xlsx.js` xuất ra chính là nội dung Sheet (dashboard + 1 sheet/nhóm chức năng) — không ánh xạ field riêng, upload nguyên file.
 - Testcase cleanup: KHÔNG cleanup trong prompt này. Sheet tự phản ánh đúng Excel ở mỗi lần re-publish (ghi đè toàn workbook) — không cần bước lifecycle riêng. Nếu cần unlink Test↔Story/Task trên Backlog, xem `partial-rerun/run_testcase_cleanup.md`.
@@ -109,7 +109,7 @@ Parallel story safety:
 - Nếu cần thử nhiều hướng cho cùng story, dùng task branch/suffix riêng, ví dụ `<TASK_KEY>-draft-a`, rồi Human Review trước khi merge về task chính.
 
 Nguyên tắc tiết kiệm token:
-- Ưu tiên đọc link/file theo đường dẫn và lưu raw artifacts vào `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/requirements/`; không paste toàn bộ Jira/Confluence/Figma/Swagger vào chat hoặc report.
+- Ưu tiên đọc link/file theo đường dẫn và lưu raw artifacts vào `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/requirements/`; không paste toàn bộ Backlog/tài liệu nguồn/Figma/Swagger vào chat hoặc report.
 - Nếu đã có requirement artifact, snapshot hoặc `reports/phase1-summary.md` local, dùng làm nguồn chính và chỉ đọc raw docs khi summary chưa đủ.
 - Chỉ mở section/anchor/page/API path liên quan tới `[MODULE_FEATURE]`; không đọc toàn bộ tài liệu lớn nếu scope chỉ là một module/flow.
 - Không đọc các file `run_phase*_example_*` trừ khi user yêu cầu rõ hoặc đang cần so sánh example.
@@ -125,12 +125,12 @@ Nguyên tắc chất lượng khi tối ưu:
 Output:
 - Output root bắt buộc lấy từ `PROJECT_OUTPUT_DIR`.
 - Nếu không có `PROJECT_OUTPUT_DIR`, dừng và yêu cầu user cung cấp; không dùng fallback hardcode.
-- Nếu không có `TASK_KEY`, dừng và yêu cầu user cung cấp; không dùng fallback từ `JIRA_STORY_KEY` hoặc task cũ.
+- Nếu không có `TASK_KEY`, dừng và yêu cầu user cung cấp; không dùng fallback từ `BACKLOG_STORY_KEY` hoặc task cũ.
 - Output cho scope này phải nằm trong:
   `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/`
 
 Phase 1 tasks:
-1. Fetch/read Jira, Confluence, Figma, Swagger/OpenAPI và file local nếu được cung cấp. **Đọc THẬT KỸ, KHÔNG qua loa** phần trong scope — mọi mục/bảng/ghi chú/footnote/comment liên quan; bóc đủ AC/rule/validation/enum/state/edge/phân quyền/biên; đối chiếu chéo nguồn và nêu mâu thuẫn (raw content lưu local, không dán vào prompt; phần ngoài scope thì lướt). Canonical: `RULE_GLOBAL.md` §"Analysis & Ambiguity Gate".
+1. Fetch/read Backlog, tài liệu nguồn, Figma, Swagger/OpenAPI và file local nếu được cung cấp. **Đọc THẬT KỸ, KHÔNG qua loa** phần trong scope — mọi mục/bảng/ghi chú/footnote/comment liên quan; bóc đủ AC/rule/validation/enum/state/edge/phân quyền/biên; đối chiếu chéo nguồn và nêu mâu thuẫn (raw content lưu local, không dán vào prompt; phần ngoài scope thì lướt). Canonical: `RULE_GLOBAL.md` §"Analysis & Ambiguity Gate".
 1b. **Ambiguity Gate (gate cứng):** sau khi đọc nguồn, rà mâu thuẫn/thiếu rule bắt buộc/expected không rõ. Nếu có điểm mơ hồ Critical/High → xuất Q&A đánh số + assumption mặc định ra `reports/phase1-clarifications.md`, ghi `AMBIGUITY_GATE: PENDING` vào `task.md` và DỪNG chờ QA/BA. KHÔNG sinh testcase khi gate PENDING. Chi tiết: `.agent/workflows/phase1_01_prepare_context.md` bước 7.
 2. Phân tích requirement, UI design, API docs và context dự án.
 2b. **UI Conformance Catalog (BẮT BUỘC nếu scope có màn UI)**: với mỗi màn/bảng/danh sách/field trong scope, trích **NGUYÊN VĂN từ FS/Figma** ra `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/requirements/ui_catalog.md` — mỗi phần tử → (tên cột/label chính xác, format dữ liệu, số cột + thứ tự, field bắt buộc, empty-state/placeholder/label nút/tiêu đề, token style nếu có Figma). Đây là **nguồn-sự-thật cho expected của mọi case hiển thị** ở cả Phase 1 (sinh case) lẫn Phase 2 (assert). CẤM lấy expected hiển thị từ build đang chạy (chống oracle tautological). Chi tiết ở [`phase1/dimensions/12_display.md`](phase1/dimensions/12_display.md).
@@ -144,16 +144,16 @@ Phase 1 tasks:
    Ví dụ:
    `node scripts/convert_excel/md_to_xlsx.js <PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/[TESTCASE_BASENAME].md <PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/[TESTCASE_BASENAME].xlsx`
 8. Coi Excel đã export là source of truth khi gen/publish (Phase 2 execute mặc định từ Google Sheet) và chuẩn bị trạng thái `Pending QA confirmation` cho step Auto Publish testcase.
-   - Không publish Jira trong prompt này.
+   - Không publish Backlog trong prompt này.
    - Sau khi QA xác nhận Excel/testcase đạt, chạy prompt riêng:
-     `prompt_templates/phase1/04_auto_publish_jira.md`
+     `prompt_templates/phase1/04_auto_publish_backlog.md`
    - Excel là source-of-truth khi GEN/PUBLISH. Phase 2 **execute mặc định đọc từ Google Sheet** → **publish (step 04) là bước cần trước Phase 2**; Phase 2 tự tải Sheet về canonical local qua Drive MCP để chạy. Muốn chạy thuần Excel local thì đặt `TESTCASE_SOURCE=excel`.
-   - Nếu Excel thay đổi sau khi đã publish, chỉ cần re-publish (ghi đè Sheet) — không cần lifecycle riêng như AIO cũ; xem `partial-rerun/run_testcase_cleanup.md` nếu chỉ cần unlink Backlog.
+   - Nếu Excel thay đổi sau khi đã publish, chỉ cần re-publish (ghi đè Sheet) — không cần lifecycle riêng như công cụ test-management cũ; xem `partial-rerun/run_testcase_cleanup.md` nếu chỉ cần unlink Backlog.
 9. Lưu requirement/context artifacts dưới:
    `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/requirements/`
 10. Cập nhật:
    `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/task.md`
-   Trong `task.md`, ghi rõ đường dẫn Markdown testcase, Excel testcase đã export và trạng thái `Jira testcase publish: Pending QA confirmation`.
+   Trong `task.md`, ghi rõ đường dẫn Markdown testcase, Excel testcase đã export và trạng thái `Backlog testcase publish: Pending QA confirmation`.
 11. Sinh/cập nhật Phase 1 report dưới:
    `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/reports/phase1-summary.md`
    Report phải đầy đủ và có thể review độc lập, bao gồm:
@@ -184,7 +184,7 @@ Phase 1 tasks:
    - `Final Decision` chỉ được dùng một trong: `PASS`, `CONDITIONAL PASS`, `FAIL`, `BLOCKED`.
    - Chỉ kết luận `PASS` khi coverage >= 80%, core/high-risk flows được cover đầy đủ, không còn open question Critical/High, không có testcase quan trọng bị skip, assertion rõ ràng, và negative/permission/rollback/error case được cover nếu nằm trong scope.
    - Coverage gaps, assumptions, rủi ro còn lại và testcase đề xuất bổ sung nếu có.
-12. Cập nhật `task.md` để ghi rõ đường dẫn report Phase 1 và trạng thái chờ QA xác nhận trước khi publish Jira testcase.
+12. Cập nhật `task.md` để ghi rõ đường dẫn report Phase 1 và trạng thái chờ QA xác nhận trước khi publish Backlog testcase.
 
 Yêu cầu testcase output:
 - Mỗi testcase phải có precondition, test data, steps và expected result rõ ràng.
@@ -200,7 +200,7 @@ Yêu cầu testcase output:
 - API testcase phải reference method + endpoint + expected status/body.
 - Phải vét cạn UI edge/boundary theo các dimension ở [`phase1/dimensions/`](phase1/dimensions/) (mục 3 Field-Level mở rộng: Date/Month, Time HH:mm, Computed/derived, File upload boundary; mục 7 Export/Import file output; mục 8 Resilience/Concurrency; mục 9 Side-effect/Notification; mục 10 Cross-layer guard; mục 11 Design/Visual compliance — token Figma; **mục 12 Display/Field Conformance — tên cột exact, format từng field, số cột + thứ tự, field bắt buộc, empty-state; expected trích từ `ui_catalog.md`/tài liệu, KHÔNG từ build**). Dimension không áp dụng phải ghi `N/A + lý do` trong Coverage Gaps.
 - File Excel phải được tạo thành công sau khi file Markdown hoàn tất; Excel phải có cột/sheet phân nhóm để lọc theo các nhóm thực tế trong cột `Module`. Mỗi nhóm chức năng nên là một sheet riêng — tên sheet sẽ trở thành subfolder Test Repository khi publish (bỏ qua sheet `Summary`, `Test Cases`); catalog precondition đặt ở sheet `Setup Contracts`. Nếu thiếu dependency `exceljs`, báo rõ blocker và không coi Phase 1 là hoàn tất.
-- Sau khi Excel tạo thành công, không publish Jira trong prompt này. Ghi trạng thái `Pending QA confirmation`; step publish thật chạy bằng prompt riêng sau khi QA xác nhận.
+- Sau khi Excel tạo thành công, không publish Backlog trong prompt này. Ghi trạng thái `Pending QA confirmation`; step publish thật chạy bằng prompt riêng sau khi QA xác nhận.
 - Phase 1 report phải được tạo/cập nhật sau khi Markdown và Excel testcase hoàn tất; không coi Phase 1 hoàn tất nếu thiếu report này.
 - `task.md`, testcase Markdown và Phase 1 report phải viết bằng tiếng Việt chuẩn có dấu; technical terms, endpoint, command, enum/status có thể giữ nguyên tiếng Anh.
 - Không execute automation trong Phase 1.

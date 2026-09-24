@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * fixture_matrix.js — TRỤC 4 + 5: **nhánh/biến thể** × **trạng thái kế cận** (42/69 bug của SAPP-24395).
+ * fixture_matrix.js — TRỤC 4 + 5: **nhánh/biến thể** × **trạng thái kế cận** (42/69 bug của CSDL-24395).
  *
  * VÌ SAO CÓ FILE NÀY: hai trục rò nhiều nhất sau trục 2, và lý do rò thì rất tầm thường — **không có dữ liệu để
  * thử**. Case viết ra cho "đơn Chuyển đổi đã thanh toán rồi hủy" mà không ai dựng nổi fixture đó thì case chìm

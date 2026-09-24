@@ -55,7 +55,7 @@ const CURRENCY = [
  * @param {import('@playwright/test').Page} page
  * @param {{scopeSelector?: string, labelSelector?: string, maskPii?: boolean}} [opts]
  *   `maskPii` mặc định BẬT. Tắt phải tường minh, và khi tắt thì artifact sinh ra CHỨA PII — không được ghi
- *   ra file, không được đính vào evidence/Jira.
+ *   ra file, không được đính vào evidence/Backlog.
  */
 async function snapshotScreen(page, opts = {}) {
   const scope = opts.scopeSelector || 'body';

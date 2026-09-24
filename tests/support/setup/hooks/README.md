@@ -2,7 +2,7 @@
 
 > Hợp đồng cho **test hook** — endpoint chỉ dùng cho test, để dựng/verify trạng thái mà
 > `api`/`factory`/`fixture` không tạo được an toàn. Đây là cách chuẩn để đóng các case bị đánh dấu
-> `Needs hook` → `BLOCKED_SETUP` ở Phase 2, **thay cho việc DỰNG state bằng DB** (kit không dựng state bằng DB; DB chỉ read-only verify UAT qua `../db/uatPgClient.ts`, read-only).
+> `Needs hook` → `BLOCKED_SETUP` ở Phase 2, **thay cho việc DỰNG state bằng DB** (kit không dựng state bằng DB; DB chỉ read-only verify UAT qua `../db/uatDbClient.ts`, read-only).
 
 ## Test hook là gì và khi nào cần
 

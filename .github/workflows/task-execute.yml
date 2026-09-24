@@ -11,7 +11,7 @@ on:
         description: 'PROJECT_OUTPUT_DIR (vd outputs/lms-operations-automation)'
         required: true
       task_key:
-        description: 'TASK_KEY (vd SAPP-26276)'
+        description: 'TASK_KEY (vd CSDL-26276)'
         required: true
       suite:
         description: 'Suite'

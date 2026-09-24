@@ -8,7 +8,7 @@
 |---|---|---|
 | Project name | `<YOUR_PROJECT_NAME>` | Tên project để phân biệt output, ví dụ `crm-automation`. |
 | Output convention | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/` | Ví dụ `outputs/crm/tasks/CRM-123`. |
-| Task key convention | `<TASK_KEY>` | Jira key hoặc scope ngắn, ví dụ `PROJ-123`. |
+| Task key convention | `<TASK_KEY>` | Backlog key hoặc scope ngắn, ví dụ `PROJ-123`. |
 
 ## Sites
 
@@ -29,10 +29,10 @@
 
 ## Dashboard branding (optional)
 
-Dashboard (`npm run dashboard`) mặc định dùng **SAPP Academy Design System**. Để đổi branding cho project
+Dashboard (`npm run dashboard`) mặc định dùng **dự án trước Academy Design System**. Để đổi branding cho project
 khác (màu/logo/font/tên), copy `.agent/config/dashboard.branding.example.json` →
-`.agent/config/dashboard.branding.json` và chỉ khai field muốn đổi (phần thiếu kế thừa default SAPP).
-Không có file override → giữ nguyên SAPP DS.
+`.agent/config/dashboard.branding.json` và chỉ khai field muốn đổi (phần thiếu kế thừa default dự án trước).
+Không có file override → giữ nguyên dự án trước DS.
 
 ## Learning data
 

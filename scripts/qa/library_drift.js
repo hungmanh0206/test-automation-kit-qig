@@ -7,7 +7,7 @@
  * nhật gần nhất, lần nào cũng tìm ra fact đã cũ mà không có tín hiệu nào báo:
  *   · công cụ test-management cũ vẫn được dạy như đường chính (sau khi nó đã bị bỏ hẳn)
  *   · "9 cột canonical" (thực tế 7) · "15 chiều coverage" (thực tế 20) · "21 skill" (thực tế 22)
- *   · ba mục AIO chỉ ĐỔI TÊN, ruột vẫn mô tả mô hình cũ
+ *   · ba mục Google Sheet chỉ ĐỔI TÊN, ruột vẫn mô tả mô hình cũ
  *   · hai chỗ rơi dấu nháy trong data ⇒ trang trắng, mà `build` vẫn báo OK
  * Tức trang chỉ đúng vào lúc có người NHỚ RA phải cập nhật. Đây đúng là lớp lỗi mà kit luôn xử lý bằng
  * cách dựng máy, không bằng cách thêm quy định.
@@ -558,7 +558,7 @@ if (!exists(COURSE_MD)) {
     const NOI_BO_KIT = [
       'RULE_GLOBAL', 'verdict_taxonomy', 'dimension-manifest', 'dimension_manifest',
       'policy_check', 'gates_index', 'self_review', 'preflight_gate', 'inventory_gate',
-      'secret_scan', 'PROJECT_OUTPUT_DIR', 'TASK_KEY', 'SAPP'
+      'secret_scan', 'PROJECT_OUTPUT_DIR', 'TASK_KEY', 'dự án trước'
     ];
     const danKit = [];
     for (const rel of lessonFiles.concat(['COURSE.md'])) {

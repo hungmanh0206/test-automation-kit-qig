@@ -129,7 +129,7 @@ module.exports = { layToken };
 Ba điều đáng nhớ khi làm việc với token:
 
 - **Trừ hao trước hạn.** Token hết hạn đúng giữa lượt chạy tạo ra một loạt đỏ trông như lỗi sản phẩm.
-- **Đừng in token ra log.** Nó là bí mật, và log thì đi lên CI, lên Jira, lên chỗ nhiều người đọc.
+- **Đừng in token ra log.** Nó là bí mật, và log thì đi lên CI, lên Backlog, lên chỗ nhiều người đọc.
 - **Đừng lấy token bằng cách đọc từ trình duyệt** nếu API có đường đăng nhập riêng. Ít bước hơn thì ít
   chỗ hỏng hơn.
 

@@ -7,7 +7,7 @@ description: Phân tích requirement/UI/API artifact để tạo scope, business
 
 ## Purpose
 
-Chuyển Jira/Confluence/Figma/Swagger/local artifact thành requirement summary, business rule, open question và coverage input phục vụ sinh testcase.
+Chuyển Backlog/tài liệu nguồn/Figma/Swagger/local artifact thành requirement summary, business rule, open question và coverage input phục vụ sinh testcase.
 
 ## Responsibilities
 
@@ -24,7 +24,7 @@ Chuyển Jira/Confluence/Figma/Swagger/local artifact thành requirement summary
 
 | Input | Nguồn |
 |---|---|
-| Requirement | Jira, Confluence, file local |
+| Requirement | Backlog, tài liệu nguồn, file local |
 | UI design | Figma hoặc screenshot/spec local |
 | API spec | Swagger/OpenAPI |
 | Project context | `.agent/config/project_context.md` |
@@ -53,7 +53,7 @@ Chuyển Jira/Confluence/Figma/Swagger/local artifact thành requirement summary
 
 ## Anti-Patterns
 
-- Paste toàn bộ raw Confluence/Figma/Swagger vào chat.
+- Paste toàn bộ raw tài liệu nguồn/Figma/Swagger vào chat.
 - Bỏ qua permission/error/rollback/API side-effect trong coverage input.
 - Bỏ qua vùng ảnh hưởng ngoài scope khi story đụng data/endpoint/component/rule/status/permission dùng chung (change impact — mục 17).
 - Coi số lượng testcase cao là coverage tốt nếu thiếu core/high-risk rule.

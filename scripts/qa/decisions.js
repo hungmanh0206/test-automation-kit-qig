@@ -7,7 +7,7 @@
  * VÌ SAO CẦN: kit đang lưu được "cái đúng" (`domain/`), "hệ thống được phép làm gì" (`system/`) và
  * "cái đã sai" (`bugs/`, `root_causes/`) — nhưng KHÔNG lưu **vì sao đã kết luận như thế**. Những kết luận
  * đắt nhất lại chính là loại này:
- *   - "triệu chứng X KHÔNG phải bug — dev đã verify code, Jira Rejected"  → task sau log lại đúng bug đó
+ *   - "triệu chứng X KHÔNG phải bug — dev đã verify code, Backlog Rejected"  → task sau log lại đúng bug đó
  *   - "case Y ghi PASS kèm note vì vướng data/env, không phải defect"      → task sau lại FAIL đỏ oan
  *   - "module Z QA hạ band High→Medium vì lý do nghiệp vụ"                → mỗi lần chạy risk lại phải override tay
  *   - "cách test W không dùng được (lý do kỹ thuật cụ thể)"               → task sau lại mò lại từ đầu
@@ -84,7 +84,7 @@ function validate(r) {
   }
   if (d.type === 'risk_override' && !(d.scope && (d.scope.modules || []).length)) problems.push(at('`risk_override` phải khoanh `scope.modules`'));
   if (d.type === 'blocked_pass' && !(d.scope && (d.scope.tc_ids || []).length)) problems.push(at('`blocked_pass` phải khoanh `scope.tc_ids`'));
-  if (!String(d.evidence || '').trim()) warnings.push(at('thiếu `evidence` — nên trỏ ảnh/video/Jira key/commit làm bằng'));
+  if (!String(d.evidence || '').trim()) warnings.push(at('thiếu `evidence` — nên trỏ ảnh/video/Backlog key/commit làm bằng'));
   if (d.expires_at && String(d.expires_at) < TODAY && d.status === 'active') warnings.push(at(`HẾT HẠN ${d.expires_at} mà vẫn \`active\` — phải kiểm lại rồi gia hạn hoặc chuyển \`superseded\``));
 
   const blob = JSON.stringify(d);
@@ -153,10 +153,10 @@ if (!flag('index')) {
   const bugs = loadAll(BUGS_DIR);
   const explained = new Set();
   for (const r of decisions) for (const k of ((r.data || {}).scope || {}).bug_keys || []) explained.add(String(k));
-  const orphans = bugs.map((b) => b.data || {}).filter((b) => /reject|won.?t do|cancel|duplicate/i.test(String(b.jira_status || '')) && !explained.has(String(b.id)));
+  const orphans = bugs.map((b) => b.data || {}).filter((b) => /reject|won.?t do|cancel|duplicate/i.test(String(b.backlog_status || '')) && !explained.has(String(b.id)));
   if (orphans.length) {
     console.log(`\n[decisions] ${orphans.length} bug bị Rejected/Won't-Do mà CHƯA có lý do lưu lại:`);
-    orphans.slice(0, MAX_ROWS).forEach((b) => console.log(`  ‼ ${b.id} [${b.module}] "${String(b.bug || '').slice(0, 70)}" (${b.jira_status})`));
+    orphans.slice(0, MAX_ROWS).forEach((b) => console.log(`  ‼ ${b.id} [${b.module}] "${String(b.bug || '').slice(0, 70)}" (${b.backlog_status})`));
     console.log('    → Ghi 1 quyết định `false_positive`/`by_design` kèm lý do dev đưa ra, nếu không task sau sẽ log lại đúng bug này.');
   } else if (bugs.length) {
     console.log('[decisions] ✓ Không có bug Rejected nào bị bỏ trống lý do.');

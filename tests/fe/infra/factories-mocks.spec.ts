@@ -13,7 +13,7 @@ import { SetupFailure } from '../../support/setup/contracts/preconditionTypes';
  *
  * Ba chế độ hỏng được khoá, đều là chế độ "sai mà không ai biết":
  *   ① lỗi setup bị ném thành lỗi thường ⇒ verdict thành FAIL (product bug) thay vì `setup_failure`
- *      ⇒ đi log Jira oan. Factory PHẢI ném `SetupFailure`.
+ *      ⇒ đi log Backlog oan. Factory PHẢI ném `SetupFailure`.
  *   ② tạo bản ghi mà KHÔNG đăng ký cleanup ⇒ rác tích trên UAT sau mỗi run (orphan).
  *   ③ mock lỗi ngoài mà bắt sai URL / không đủ chế độ ⇒ test "resilience" chạy trên đường sạch, xanh vô nghĩa.
  */
@@ -36,7 +36,7 @@ test.describe('@infra factories — lỗi setup phải là setup_failure, không
     const err = await createRecord(ctx, { name: 'IT test record' }, { resourcePath: '/api/v1/x', preconditionId: 'PRE-01' })
       .then(() => null, (e: unknown) => e);
     expect(err, 'phải ném').not.toBeNull();
-    expect(err instanceof SetupFailure, `ném ${(err as Error)?.constructor?.name} ⇒ verdict sẽ thành FAIL product bug, log Jira oan`).toBe(true);
+    expect(err instanceof SetupFailure, `ném ${(err as Error)?.constructor?.name} ⇒ verdict sẽ thành FAIL product bug, log Backlog oan`).toBe(true);
     expect(String((err as Error).message)).toContain('500');
   });
 

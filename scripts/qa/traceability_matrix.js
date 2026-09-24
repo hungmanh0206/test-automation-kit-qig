@@ -85,12 +85,19 @@ async function main() {
   const execByTc = new Map();
   for (const t of (statusDoc && (statusDoc.tests || statusDoc.testcases)) || []) if (t.tcId) execByTc.set(normId(t.tcId), String(t.status || '').toUpperCase());
 
-  // BUG best-effort: gom Backlog key + TC ref từ bug-candidates.md.
+  /*
+   * BUG best-effort: gom Backlog key + TC ref từ bug-candidates.md.
+   *
+   * Mẫu khoá phải TỔNG QUÁT (`[A-Z][A-Z0-9]+-\d+`), KHÔNG hardcode tiền tố dự án. Bản trước khoá cứng
+   * một tiền tố cố định; khi tổ chức đổi tiền tố khoá task thì nó tìm ra **0 bug và không báo gì** —
+   * ma trận truy vết vẫn in ra bình thường, chỉ là trống cột bug. Đúng loại tín hiệu sạch-giả.
+   * Cùng mẫu với `quality_decision.js` để hai nơi không trôi khỏi nhau.
+   */
   const bugMd = (() => { try { return fs.readFileSync(path.join(T, 'reports', 'bug-candidates.md'), 'utf8'); } catch (e) { return ''; } })();
   const bugByTc = new Map();
-  const bugKeysAll = [...new Set((bugMd.match(/\bSAPP-\d+\b/g) || []))];
+  const bugKeysAll = [...new Set((bugMd.match(/\b[A-Z][A-Z0-9]+-\d+\b/g) || []))];
   for (const line of bugMd.split(/\r?\n/)) {
-    const keys = line.match(/\bSAPP-\d+\b/g) || [];
+    const keys = line.match(/\b[A-Z][A-Z0-9]+-\d+\b/g) || [];
     const tcRefs = line.match(/\bTC[_-]?\d+\b/gi) || [];
     for (const ref of tcRefs) { const k = normId(ref).replace(/[_-]/g, '_'); for (const bk of keys) (bugByTc.get(k) || bugByTc.set(k, []).get(k)).push(bk); }
   }

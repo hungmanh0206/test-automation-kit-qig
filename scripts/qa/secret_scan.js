@@ -85,7 +85,7 @@ for (const rel of trackedFiles()) {
  * giải nén (chế độ working-tree) thì nó bắt được `scripts/integrations/google_doc/service_account.json`
  * kèm `private_key` — file gitignore đúng, nhưng vẫn đi theo mọi bản ZIP.
  * Nên kiểm SỰ TỒN TẠI theo TÊN FILE, độc lập với việc track hay chưa, và luôn chạy ở cả 2 chế độ.
- * Cách đúng: để credential NGOÀI repo (vd `~/.sapp-keys/<tên>/`) rồi trỏ bằng biến env đường dẫn TUYỆT ĐỐI.
+ * Cách đúng: để credential NGOÀI repo (vd `~/.qa-keys/<tên>/`) rồi trỏ bằng biến env đường dẫn TUYỆT ĐỐI.
  */
 /*
  * Khớp TÊN rồi XÁC NHẬN NỘI DUNG. Chỉ tên là không đủ: `.*-key.json` bắt luôn
@@ -109,7 +109,7 @@ const credOnDisk = [];
 if (credOnDisk.length) {
   console.error(`[secret-scan] ✗ ${credOnDisk.length} file credential nằm TRONG cây repo (dù có gitignore hay không):`);
   for (const f of credOnDisk) console.error('  - ' + f);
-  console.error('  -> .gitignore KHONG bao ve khi zip/copy/artifact. Chuyen ra ngoai repo (vd ~/.sapp-keys/<ten>/)');
+  console.error('  -> .gitignore KHONG bao ve khi zip/copy/artifact. Chuyen ra ngoai repo (vd ~/.qa-keys/<ten>/)');
   console.error('     roi tro bang bien env duong dan TUYET DOI (xem .env.example o goc repo).');
   process.exit(1);
 }

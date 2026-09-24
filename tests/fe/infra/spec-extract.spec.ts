@@ -8,7 +8,7 @@ import { gateEnv } from './_gate_env';
 /**
  * @infra — hợp đồng của `scripts/qa/spec_extract.js` (FSD → screens.json → ui_catalog.json).
  *
- * Mọi luật dưới đây SINH RA TỪ ĐO TRÊN FSD THẬT của SAPP-24395 (49 bảng field), không phải từ suy đoán. Mỗi
+ * Mọi luật dưới đây SINH RA TỪ ĐO TRÊN FSD THẬT của CSDL-24395 (49 bảng field), không phải từ suy đoán. Mỗi
  * `test` tương ứng một lần luật đó đã báo oan hoặc bỏ sót trong lượt đo đầu — giữ test để không ai nới ngược.
  */
 

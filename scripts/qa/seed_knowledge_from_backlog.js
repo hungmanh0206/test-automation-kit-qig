@@ -4,11 +4,11 @@
 /*
  * Seed Knowledge từ lịch sử Backlog (Suggest-only, DRY-RUN mặc định).
  *
- * Migrated từ seed_knowledge_from_jira.js (22/09/2026). Khác Jira:
+ * Migrated từ seed_knowledge_from_backlog.js (22/09/2026). Khác Backlog:
  *   - KHÔNG có JQL — filter theo field (projectId/issueTypeId/statusId/updatedSince).
- *   - KHÔNG có Components/Labels tự do — module suy từ Category (gần nhất với Jira Components).
+ *   - KHÔNG có Components/Labels tự do — module suy từ Category (gần nhất với Backlog Components).
  *   - Có Resolution (Fixed/Won't Fix/Duplicate/Invalid/Cannot Reproduce...) — giữ được logic lọc "chỉ
- *     seed bug đã fix thật", tên resolution có thể khác Jira đôi chút, review bảng map khi seed lần đầu.
+ *     seed bug đã fix thật", tên resolution có thể khác Backlog đôi chút, review bảng map khi seed lần đầu.
  *
  * Vì sao: kit chỉ điền knowledge/ khi bug qua gate ở Phase 2 (learning_recorder).
  * Dự án mới → knowledge rỗng → risk_score cold-start chỉ dựa Impact (đoán Likelihood).
@@ -26,7 +26,7 @@
  *
  * Dùng:
  *   node scripts/qa/seed_knowledge_from_backlog.js                         # dry-run, project = BACKLOG_PROJECT_KEY
- *   node scripts/qa/seed_knowledge_from_backlog.js --project SAPP --since 2025-01-01
+ *   node scripts/qa/seed_knowledge_from_backlog.js --project dự án trước --since 2025-01-01
  *   node scripts/qa/seed_knowledge_from_backlog.js --apply                 # ghi thật vào knowledge/
  */
 
@@ -62,7 +62,7 @@ const scrubPII = (s) => String(s || '')
   .replace(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi, '[email]')
   .replace(/(?<![\w.])(?:\+?84|0)\d{8,10}(?![\w.])/g, '[phone]');
 
-// Backlog statusId cố định: 1=Open, 2=In Progress, 3=Resolved, 4=Closed (không phải statusCategory động như Jira).
+// Backlog statusId cố định: 1=Open, 2=In Progress, 3=Resolved, 4=Closed (không phải statusCategory động như Backlog).
 function backlogStatusOf(issue) {
   const id = issue.status?.id;
   if (id === 3 || id === 4) return 'Done';
@@ -70,7 +70,7 @@ function backlogStatusOf(issue) {
   return 'Open';
 }
 
-// Module suy từ Category (Backlog KHÔNG có Components/free-text Labels như Jira).
+// Module suy từ Category (Backlog KHÔNG có Components/free-text Labels như Backlog).
 function resolveModule(issue, fallbackModule) {
   const cats = (issue.category || []).map((c) => c.name).filter(Boolean);
   if (cats.length) return cats[0];
@@ -149,7 +149,7 @@ function rebuildIndex() {
       entries.push({ type, file: `${dir}/${f}`, module: o.module || null, tags: o.tags || [], task_key: o.task_key || o.id || null, status: statusPick(o) });
     }
   };
-  add('bug', 'bugs', (o) => o.backlog_status || o.jira_status || null);
+  add('bug', 'bugs', (o) => o.backlog_status || o.backlog_status || null);
   add('root_cause', 'root_causes', (o) => o.status || null);
   add('historical_execution', 'historical_execution', () => null);
   add('locator', 'locators', () => null);
@@ -167,7 +167,7 @@ async function seedBugs() {
   const filterParams = {
     projectId: [projectId],
     issueTypeId: [issueTypeId],
-    statusId: [3, 4], // Resolved, Closed — tương đương statusCategory = Done của Jira
+    statusId: [3, 4], // Resolved, Closed — tương đương statusCategory = Done của Backlog
     updatedSince: SINCE || undefined,
   };
   console.log(`[seed] Backlog filter: ${JSON.stringify(filterParams)}`);

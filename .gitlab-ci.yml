@@ -1,6 +1,6 @@
 # GitLab CI — bản tương đương .github/workflows (dùng GitHub thì xoá file này, và ngược lại).
 # static: mỗi push/MR (không secret). integration + regression: manual/scheduled.
-# Secrets khai ở Settings → CI/CD → Variables (masked/protected): BACKLOG_*, AIO_API_TOKEN.
+# Secrets khai ở Settings → CI/CD → Variables (masked/protected): BACKLOG_*, GOOGLE_SHEET_CREDENTIALS.
 
 stages:
   - static
@@ -92,14 +92,14 @@ audit:
 integration-check:
   stage: integration
   image: node:20
-  # Job gọi Backlog/AIO/Figma THẬT (chỉ GET, không ghi). Creds đọc từ
+  # Job gọi Backlog/Google Sheet/Figma THẬT (chỉ GET, không ghi). Creds đọc từ
   # scripts/integrations/backlog/.env — file KHÔNG track, nên container CI KHÔNG có nó.
   # ⇒ Không khai biến CI thì job đỏ CHẮC CHẮN ("thiếu cấu hình bắt buộc", exit 1 sau ~30s).
   # Một nút luôn-đỏ dạy người ta bỏ qua CI, nên job chỉ HIỆN khi thật sự có creds.
   # Muốn bật: GitLab > Settings > CI/CD > Variables (masked) — BACKLOG_BASE_URL, BACKLOG_API_KEY,
-  # BACKLOG_PROJECT_KEY, AIO_API_TOKEN, FIGMA_API_KEY.
+  # BACKLOG_PROJECT_KEY, GOOGLE_SHEET_CREDENTIALS, FIGMA_API_KEY.
   rules:
-    - if: '$BACKLOG_API_KEY && $AIO_API_TOKEN'
+    - if: '$BACKLOG_API_KEY && $GOOGLE_SHEET_CREDENTIALS'
       when: manual
       allow_failure: true          # THƯỚC ĐO kết nối, không phải cổng chặn merge
   script:

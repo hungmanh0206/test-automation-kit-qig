@@ -118,7 +118,7 @@ function build() {
    * TẬP MÁY = mọi file trong `scripts/qa/` CỘNG mọi file mà một npm script trỏ vào, ở bất kỳ đâu.
    *
    * Bản đầu chỉ đọc `scripts/qa/` nên bảng này bỏ sót 16 file với 26 npm script, trong đó có
-   * `aio:verify:enforce` (CHẶN) và `aio:publish:apply` (cổng người). Một danh mục tự nhận "liệt kê mọi
+   * bước verify riêng (CHẶN) và `aio:publish:apply` (cổng người). Một danh mục tự nhận "liệt kê mọi
    * máy" mà thiếu đúng nhóm cổng chặn thì tệ hơn không có danh mục: người đọc tra không thấy rồi kết
    * luận là không có máy nào canh.
    *
@@ -210,7 +210,7 @@ function render({ rows, orphanFiles }) {
  * CẢNH BÁO NGUỒN BẨN — nói thẳng vì sao bảng lệch, thay vì bắt người ta đi truy.
  *
  * Đã trả giá thật ngày 18/09/2026: `GATES.md` được sinh trong cây làm việc đang có
- * `publish_testcases_aio.js` sửa dở CHƯA COMMIT. Bản sửa đó đổi cách phân loại từ CHẶN sang
+ * `publish qua Drive MCP.js` sửa dở CHƯA COMMIT. Bản sửa đó đổi cách phân loại từ CHẶN sang
  * CHẶN-có-cờ, nên bảng commit lên mang một mức mà source đã commit KHÔNG sinh ra. Máy dev xanh, CI đỏ,
  * và thông báo lúc đó chỉ nói "bảng lệch source" nên mất một vòng mới truy ra.
  *

@@ -1,7 +1,7 @@
 import path from 'path';
 import { asMatcher } from './match';
 import { loadConventions, loadConnection, softDeleteFor, type DbConventions } from './config';
-import { PostgresAdapter } from './adapters/postgres';
+import { MssqlAdapter } from './adapters/mssql';
 import { DbGuardError, type DbClient, type Expected, type Row, type Where } from './types';
 
 /*
@@ -24,10 +24,10 @@ export async function getDb(): Promise<{ client: DbClient; conv: DbConventions }
   if (cached) return cached;
   const conv = loadConventions(REPO);
   const conn = loadConnection();                     // mặc định prefix LIB_MASTER_DB_RO — không rơi về user ghi
-  if (conn.dialect !== 'postgres') {
-    throw new DbGuardError(`Chưa có adapter cho dialect "${conn.dialect}". Hiện chỉ có postgres — thêm adapter thì khai ở đây.`);
+  if (conn.dialect !== 'mssql') {
+    throw new DbGuardError(`Chưa có adapter cho dialect "${conn.dialect}". Hiện chỉ có mssql — thêm adapter thì khai ở đây.`);
   }
-  cached = { client: new PostgresAdapter(conn, conv), conv };
+  cached = { client: new MssqlAdapter(conn, conv), conv };
   return cached;
 }
 

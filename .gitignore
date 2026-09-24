@@ -152,7 +152,7 @@ artifacts/
 
 # Per-project run profiles — KHÔNG commit BẤT CỨ THỨ GÌ trừ file mẫu.
 # Trước đây chỉ ignore `task.env`, nên mọi artifact khác trong thư mục task vẫn commit được. Đo 13/08/2026:
-# 6 file đang ở trạng thái commit-được, gồm `profiles/SAPP-14127/detail-review.csv` có cột `full_name`,
+# 6 file đang ở trạng thái commit-được, gồm `profiles/<TASK_KEY>/detail-review.csv` có cột `full_name`,
 # `student_code`, `deal_id` — PII khách hàng. Chưa lọt (mới untracked) nhưng một lệnh `git add -A` là lên
 # repo. Thư mục task profile là nơi chứa creds + output chạy thật ⇒ chặn cả thư mục, giống `knowledge/`.
 profiles/*
@@ -242,19 +242,20 @@ knowledge/bugs/*.json
 tests/fe/visual/**-snapshots/
 
 # ── Test THEO TASK — không thuộc kit dùng chung ─────────────────────────────────────────────────────
-#  Vì sao: commit 6773d1e vô tình track 46 spec của SAPP-22827 + 8 spec DB dựng-tay. Hậu quả đo được:
+#  Vì sao: commit 6773d1e vô tình track 46 spec của một task + 8 spec DB dựng-tay. Hậu quả đo được:
 #  nightly `npx playwright test` (01:00 VN) chạy CẢ suite ⇒ tự động drive OPS UAT (`student_delete*`,
 #  `calendar_destructive`, `calendar_create`…) hằng đêm mà không ai xác nhận — vi phạm "UAT
 #  non-destructive + xác nhận trước mỗi lượt chạm UAT". Test theo task ở lại máy người chạy task.
 #  `.gitignore` KHÔNG hỗ trợ comment cuối dòng — để chung dòng thì cả chuỗi comment thành phần của
 #  pattern và luật mất tác dụng IM LẶNG (đã dính 24/08/2026, phát hiện bằng `git check-ignore`).
 #  Tổng quát cho MỌI thư mục test theo task (fe/api/mobile-web/...), không chỉ mobile-web:
-tests/**/SAPP-*/
+# Mẫu TỔNG QUÁT theo định dạng khoá task `<TIỀN TỐ>-<số>` (vd `CSDL-1234`), không khoá cứng
+# một tiền tố: đổi tiền tố là luật câm, spec của task lại lọt vào repo.
+tests/**/[A-Z]*-[0-9]*/
 tests/support/setup/db/connection.check.spec.ts
 tests/support/setup/db/db2.connect.spec.ts
 tests/support/setup/db/verify.beforeafter.spec.ts
 tests/support/setup/db/verify.confirm.spec.ts
 tests/support/setup/db/verify.db2.beforeafter.spec.ts
 tests/support/setup/db/verify.rootcause.spec.ts
-tests/support/setup/db/verify.sapp14127.spec.ts
 tests/support/setup/db/verify.validate-dryrun.spec.ts

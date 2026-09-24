@@ -7,7 +7,7 @@
  * Biến `tc_validator` (SKILL agent-gọi, bỏ được) thành check máy-chặn cho phần CHƯA được ép ở nơi khác:
  *   - STRUCTURAL : bảng testcase phải đủ cột canonical (thiếu/đổi tên cột = CHẶN → downstream vỡ).
  *   - COMPLETENESS: mỗi TC không được rỗng ô lõi (Module/Trường hợp/Các bước/Ưu tiên/Mức độ rủi ro) = CHẶN.
- *   - VALUE      : Ưu tiên ∈ 5 priority Jira · Mức độ rủi ro ∈ High|Medium|Low = CHẶN (bug lấy Priority TỪ cột này;
+ *   - VALUE      : Ưu tiên ∈ 5 priority Backlog · Mức độ rủi ro ∈ High|Medium|Low = CHẶN (bug lấy Priority TỪ cột này;
  *                  risk:gate ép độ sâu theo cột kia — giá trị lạ bị bỏ qua âm thầm). 2 cột nói ngược nhau = cảnh báo.
  *   - DIMENSION  : bộ testcase nên có ≥1 case [Negative]; High-risk nên có [Boundary]/[Security] = cảnh báo.
  * KHÔNG viết lại phần đã có: row-quality/oracle → output_gate (--mode gen-testcase); depth/dimension

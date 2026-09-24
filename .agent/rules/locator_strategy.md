@@ -62,7 +62,7 @@ Cần ngoại lệ thật thì ghi `// locator-lint-disable-next-line <lý do>` 
 - Trước khi kết luận `product_bug`/`api_bug`, phải chứng minh **đã thao tác đúng đối tượng**:
   evidence highlight đúng element **và** (xác minh lại bằng một đường định vị độc lập **hoặc** thao tác tay).
 - Không chứng minh được → `failureLayer: script_error` (`.agent/config/verdict_taxonomy.json`,
-  `loggableAsBug: false`) → **KHÔNG log Jira**, sửa script rồi chạy lại.
+  `loggableAsBug: false`) → **KHÔNG log Backlog**, sửa script rồi chạy lại.
 - Lỗi do `safe_target` ném ra đã mang tiền tố `[script_error]` để phân loại đúng ngay.
 
 ## Anti-Patterns

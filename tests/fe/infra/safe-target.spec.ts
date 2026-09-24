@@ -19,7 +19,7 @@ test.describe('@infra safe_target — mơ hồ phải thành LỖI, không chọ
     expect(err, 'phải ném lỗi thay vì chọn đại').toBeTruthy();
     expect(err.message).toContain('[script_error]');
     expect(err.message).toMatch(/MƠ HỒ: \d+ match/);
-    expect((err as any).failureLayer, 'phân loại đúng để KHÔNG bị log Jira').toBe('script_error');
+    expect((err as any).failureLayer, 'phân loại đúng để KHÔNG bị log Backlog').toBe('script_error');
   });
 
   test('one(): 0 match → ném script_error (không im lặng bỏ qua)', async ({ page }) => {

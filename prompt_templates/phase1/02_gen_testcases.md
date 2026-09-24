@@ -14,7 +14,7 @@ Mục tiêu là coverage cao nhất có thể trong scope đã cung cấp, bao g
 
 > **Gate cứng. TUYỆT ĐỐI KHÔNG viết testcase nào trước khi hoàn tất bước này.** Canonical: `RULE_GLOBAL.md` §"Analysis & Ambiguity Gate"; workflow: `.agent/workflows/phase1_01_prepare_context.md`.
 
-1. **Đọc tài liệu THẬT KỸ, KHÔNG qua loa** — toàn bộ phần **trong scope** của requirement/BRD/Figma/Swagger/Jira: mọi mục, **bảng, ghi chú, footnote, comment, phụ lục** liên quan (phần ngoài scope thì lướt — không mâu thuẫn với mục "Tiết kiệm token" bên dưới). Bóc hết acceptance criteria, business rule, validation, enum/giá trị, state & transition, edge, xử lý lỗi, phân quyền, biên. **Đối chiếu chéo** các nguồn; mâu thuẫn thì nêu ra, không tự chọn bừa. Phân biệt "tài liệu ghi thật" vs "tôi suy luận".
+1. **Đọc tài liệu THẬT KỸ, KHÔNG qua loa** — toàn bộ phần **trong scope** của requirement/BRD/Figma/Swagger/Backlog: mọi mục, **bảng, ghi chú, footnote, comment, phụ lục** liên quan (phần ngoài scope thì lướt — không mâu thuẫn với mục "Tiết kiệm token" bên dưới). Bóc hết acceptance criteria, business rule, validation, enum/giá trị, state & transition, edge, xử lý lỗi, phân quyền, biên. **Đối chiếu chéo** các nguồn; mâu thuẫn thì nêu ra, không tự chọn bừa. Phân biệt "tài liệu ghi thật" vs "tôi suy luận".
 2. **Gom MỌI điểm mờ/phân vân thành MỘT danh sách câu hỏi** `Q1, Q2…` ghi `<TASK_OUTPUT_DIR>/reports/phase1-clarifications.md` — mỗi câu bám **spec cụ thể** (giá trị/URL/element/điều kiện/enum/oracle), kèm **assumption mặc định đề xuất** + **scope bị chặn** nếu chưa trả lời. Phân loại **Blocking** (Critical/High) vs **Non-blocking** (Medium/Low, có default). Ghi cả hai loại để QA thấy hết điểm mờ.
 3. Còn câu **Blocking** → ghi `AMBIGUITY_GATE: PENDING` vào `task.md`, **DỪNG** chờ QA/BA trả lời (hoặc tick chấp nhận assumption). **KHÔNG tự đoán qua Blocking rồi gen.**
 4. Mọi Blocking đã RESOLVED → **phân tích lại + chỉnh** coverage map/scope theo câu trả lời → đặt `AMBIGUITY_GATE: RESOLVED` → mới bắt đầu gen. Câu Blocking không được trả lời → phần scope đó ghi "chờ làm rõ" ở Coverage Gaps, **KHÔNG gen** case cho nó.
@@ -72,7 +72,7 @@ Một case mang **đúng một** loại. Thấy hợp 2 loại nghĩa là case �
 
 ## 0. Tiết kiệm token và context
 
-- Ưu tiên đọc requirement từ file/link/artifact local; không yêu cầu dán toàn bộ Jira/Confluence/Figma/Swagger vào prompt.
+- Ưu tiên đọc requirement từ file/link/artifact local; không yêu cầu dán toàn bộ Backlog/tài liệu nguồn/Figma/Swagger vào prompt.
 - Nếu đã có `task.md`, raw requirement, snapshot hoặc `reports/phase1-summary.md`, dùng chúng làm nguồn chính và chỉ đọc thêm section còn thiếu.
 - Khi tài liệu lớn, chỉ mở phần liên quan đến module, user story, acceptance criteria, screen, endpoint hoặc business rule trong scope.
 - Coverage map có thể tạo nội bộ hoặc lưu vào `reports/phase1-summary.md`; không cần paste toàn bộ coverage map vào chat.
@@ -169,7 +169,7 @@ Tag chứng minh case **có mặt** ở chiều đó; nó **không** chứng min
 
 Chiều khác (`[UI]` `[API]` `[E2E]` `[Export]` `[SideEffect]` `[Design]` `[Impact]`) **cố ý không khai luật** — chưa phát biểu được "bằng chứng tối thiểu" một cách chính xác thì thà không gác, còn hơn gác bằng luật mơ hồ rồi báo oan.
 
-**Vì sao có mục này:** `OPS_PAY_TC_175` liệt kê form Add Transaction **có** field Recipient Bank Account nhưng không phát biểu ràng buộc nào ⇒ case **XANH** trong khi bug `SAPP-28420` (modal cho chọn pháp nhân khác order ⇒ HubSpot ghi sai pháp nhân) vẫn sống. Tag `[Display]` một mình không cứu được ca đó; **bằng chứng tối thiểu** thì cứu được.
+**Vì sao có mục này:** `OPS_PAY_TC_175` liệt kê form Add Transaction **có** field Recipient Bank Account nhưng không phát biểu ràng buộc nào ⇒ case **XANH** trong khi bug `CSDL-28420` (modal cho chọn pháp nhân khác order ⇒ HubSpot ghi sai pháp nhân) vẫn sống. Tag `[Display]` một mình không cứu được ca đó; **bằng chứng tối thiểu** thì cứu được.
 
 > Hiện là **CẢNH BÁO**, chưa chặn. Sẽ bật `--strict` sau khi đo trên bộ gen mới đầu tiên (<10% case thiếu). Đo trên bộ 530 hiện tại: **0 cảnh báo** — vì bộ đó chưa có tag chiều nào, nên luật này không báo oan lấy một ca.
 
@@ -316,7 +316,7 @@ Quy tắc cho từng loại dữ liệu:
 - **HỢP ĐỒNG bước ↔ kết quả (đây là chỗ từng làm mất 44% nội dung khi publish):** khối kết quả của bước N = **dòng đánh số N + MỌI dòng con `- …` đứng sau nó** cho tới dòng đánh số kế tiếp. Khối đó là **một đơn vị**: khi publish lên TMS nó đi trọn vào `expectedResult` của đúng bước N.
   - Vì thế ràng buộc đúng là **số dòng ĐÁNH SỐ của cột kết quả = số bước**; số dòng con thì tuỳ ý. KHÔNG phải "số dòng bằng số bước".
   - Consumer **KHÔNG được** ghép `steps[i] ↔ expected[i]` theo chỉ số phẳng: mảng sau `splitNumbered` có dòng con mang `n = null`, ghép kiểu đó vừa lệch bước vừa cắt mất phần dôi. Dùng `groupNumbered()` của `scripts/lib/testcase`.
-  - Đo thật trên bộ SAPP-26878 (101 case) trước khi vá: **300/682 dòng kết quả (44,0%) bị vứt ở 83/101 case**, và bước sau nhận nhầm kết quả của bước trước — ví dụ bước "mở hóa đơn bộ B" lại mang con số của bộ A.
+  - Đo thật trên bộ CSDL-26878 (101 case) trước khi vá: **300/682 dòng kết quả (44,0%) bị vứt ở 83/101 case**, và bước sau nhận nhầm kết quả của bước trước — ví dụ bước "mở hóa đơn bộ B" lại mang con số của bộ A.
 - Mô tả CHÍNH XÁC: text nào hiển thị, URL chuyển đến đâu, element nào thay đổi
 - Bao gồm cả response HTTP nếu là API test
 - Với UI, nêu rõ field state: enabled/disabled/readonly/visible/hidden, selected value, validation message, toast, row count, pagination, modal state.
@@ -363,7 +363,7 @@ Chỉ dùng 5 giá trị: `Critical`, `High`, `Medium`, `Low`, `Lowest`. KHÔNG 
 
 Không còn cột `Severity` trong bộ testcase (bỏ 21/08/2026) — nên **không** còn bước "chấm Severity trước rồi dịch ra Priority". Chấm `Ưu tiên` trực tiếp bằng bảng 5 mức ở §7, tự hỏi: *case này fail thì hậu quả tới đâu, và có đường vòng không?*
 
-> **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase — chấm lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc. Bug thật vẫn có Severity: chấm lúc log bug, cây quyết định nằm ở [`phase2/08_log_bug_jira.md`](../phase2/08_log_bug_jira.md).
+> **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase — chấm lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc. Bug thật vẫn có Severity: chấm lúc log bug, cây quyết định nằm ở [`phase2/08_log_bug_backlog.md`](../phase2/08_log_bug_backlog.md).
 >
 > Việc duy nhất cột đó còn gánh trong kit là **risk band** (mở rộng 5 trục hay 1 trục). `bandOf()` lấy `max(risk, priority)`; sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột làm đổi band 0 case** ⇒ `Ưu tiên` một mình đủ quyết định độ sâu. Đừng điền lại cột này "cho chắc": thêm cột lạ sẽ bị gate chặn.
 

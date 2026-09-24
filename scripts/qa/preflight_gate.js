@@ -108,8 +108,8 @@ function runPreflight({ mode = 'generic', task = '', extraRequire = [], allowMis
         try { found += fs.readdirSync(d).filter((f) => /\.xlsx$/i.test(f)).length; } catch (e) { /* dir chưa có */ }
       }
       if (!found) problems.push(`phase2: KHÔNG thấy testcase canonical local ở ${rel(tcDir)}(/from-sheet) — Phase 2 cần agent tải Google Sheet mới nhất qua Drive MCP (ghi vào test-cases/from-sheet/) hoặc có Excel local TRƯỚC execute`);
-      // ĐỘ TƯƠI: không còn khái niệm manifest/tuổi mirror như AIO (source of truth REST, có thể lệch giờ
-      // pull) — luồng Sheet luôn tải bản MỚI NHẤT qua MCP ngay trước execute (xem plan migrate AIO→Sheet,
+      // ĐỘ TƯƠI: không còn khái niệm manifest/tuổi mirror như công cụ cũ (source of truth REST, có thể lệch giờ
+      // pull) — luồng Sheet luôn tải bản MỚI NHẤT qua MCP ngay trước execute (xem plan migrate sang Sheet,
       // 22/09/2026), nên "có file" đã đồng nghĩa "mới" — không cần gate riêng cho độ tươi nữa.
     }
   }
@@ -192,7 +192,7 @@ async function main() {
    * `--lanes`: trả lời câu "tôi cần khai biến nào" bằng MỘT LỆNH, thay vì bắt người mới đọc 79 biến
    * trong .env.example rồi tự đoán.
    *
-   * Vì sao có (SAPP-29229, tester báo sau bàn giao): "không bắt buộc phải có env token của LMS và OPS
+   * Vì sao có (CSDL-29229, tester báo sau bàn giao): "không bắt buộc phải có env token của LMS và OPS
    * thì mới test được". Đo lại thì code ĐÃ ĐÚNG — gỡ sạch biến OPS_ và LMS_ rồi chạy `--mode phase1`
    * và `--mode generic` vẫn exit 0, 0 CHẶN. Cái sai nằm ở chỗ .env.example liệt kê 15 ô trống của
    * OPS và LMS ngay khối đầu mà không nói lane nào cần, nên người mới điền hết rồi tưởng là bắt buộc.

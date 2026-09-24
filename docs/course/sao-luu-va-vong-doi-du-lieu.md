@@ -42,11 +42,11 @@ Liệt kê mọi thứ kit của bạn sinh ra, rồi hỏi một câu: *mất t
 | Bộ testcase đã publish | kéo về từ công cụ test-management | **nạp lại được** |
 | Kết quả lượt chạy đã đẩy | có trên công cụ, dạng cycle | **nạp lại được** |
 | Mã kit (script, gate, test) | git | **nạp lại được** |
-| Bug đã log | Jira | **nạp lại được** |
+| Bug đã log | Backlog | **nạp lại được** |
 | **`knowledge/domain/`** — luật đã xác nhận + nguồn | **không có nguồn nào khác** | ⛔ **mất hẳn** |
 | **`knowledge/decisions/`** — quyết định + **lý do** | lý do không ở đâu khác | ⛔ **mất hẳn** |
 | **`knowledge/fixture/`** — cách dựng dữ liệu | phải mò lại từ đầu | ⛔ **mất hẳn** |
-| **`knowledge/leak/`** — bug đã lọt + máy nào lẽ ra bắt | Jira có bug, không có phần "máy nào lẽ ra bắt" | ⛔ **mất hẳn** |
+| **`knowledge/leak/`** — bug đã lọt + máy nào lẽ ra bắt | Backlog có bug, không có phần "máy nào lẽ ra bắt" | ⛔ **mất hẳn** |
 | `outputs/` — ảnh, video, status từng lượt | chạy lại được (nhưng tốn) | tuỳ |
 
 Bốn dòng ⛔ là toàn bộ lý do bài này tồn tại. Chúng có ba điểm chung, và cả ba đều nguy hiểm:
@@ -250,7 +250,7 @@ Một người thì `knowledge/` nằm trên máy bạn là đủ. Ba người t
 
 | Từ | Nghĩa gọn |
 |---|---|
-| **Nạp lại được** | Mất thì kéo lại từ nguồn gốc (Jira, công cụ test-management, git) |
+| **Nạp lại được** | Mất thì kéo lại từ nguồn gốc (Backlog, công cụ test-management, git) |
 | **Do người tạo** | Không có nguồn nào khác. Mất là **mất hẳn** |
 | **Tỉa** (prune) | Xoá bớt dữ liệu cũ theo luật đã khai trước |
 

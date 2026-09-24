@@ -23,7 +23,7 @@ và Dashboard (Giai đoạn 2).
 
 Chỉ ghi entry khi tất cả đúng:
 
-1. **Bug đã qua Jira gate** ở `.agent/workflows/phase2_04_report_and_jira_gate.md` (đã loại
+1. **Bug đã qua Backlog gate** ở `.agent/workflows/phase2_04_report_and_backlog_gate.md` (đã loại
    flaky/setup/data/prompt) — tức đã xác nhận là product bug thật, có evidence.
 2. `confirmed_via_gate = true`. Bug fail do setup/flaky/prompt (`BLOCKED_SETUP`/`SKIP_SETUP`/
    `setup_failure`) **KHÔNG** được ghi — chúng không phải product bug.
@@ -37,13 +37,13 @@ Chỉ ghi entry khi tất cả đúng:
 | Ghi/nối root cause | Nếu đã xác định root cause, tạo/cập nhật `knowledge/root_causes/<slug>.json`; link 2 chiều `root_cause_ref` ↔ `related_bugs`. |
 | Snapshot execution | Ghi `knowledge/historical_execution/<TASK_KEY>__<date>.json` từ execution summary (per-module pass/fail + unassisted pass rate). |
 | Cập nhật index | Thêm/cập nhật `entries` trong `knowledge/index.json` + `updated_at` cho mọi file vừa ghi. |
-| Đồng bộ trạng thái | Khi rerun chuyển bug → Done: cập nhật `jira_status` của bug + `status`/`resolved_at` của root cause. |
+| Đồng bộ trạng thái | Khi rerun chuyển bug → Done: cập nhật `backlog_status` của bug + `status`/`resolved_at` của root cause. |
 
 ## Inputs
 
 | Input | Nguồn |
 |---|---|
-| Bug đã qua gate | `<TASK_OUTPUT_DIR>/reports/execution-summary.md` (sau Jira gate) |
+| Bug đã qua gate | `<TASK_OUTPUT_DIR>/reports/execution-summary.md` (sau Backlog gate) |
 | Root cause | Kết luận trong execution summary / rerun report |
 | Số liệu execute | `execution-summary.md` (tổng/PASS/FAIL/SKIP theo module, unassisted pass rate) |
 | TASK_KEY, ngày | Context task hiện tại (ISO date) |
@@ -83,6 +83,6 @@ Chỉ ghi entry khi tất cả đúng:
 ## Related
 
 - [[precondition_setup_planner]] — phân loại `BLOCKED_SETUP`/`SKIP_SETUP`; recorder KHÔNG ghi các nhãn này thành bug.
-- Neo workflow: `.agent/workflows/phase2_04_report_and_jira_gate.md` (ghi entry sau gate),
-  `.agent/workflows/rerun_03_update_jira_and_report.md` (đồng bộ trạng thái khi Done).
+- Neo workflow: `.agent/workflows/phase2_04_report_and_backlog_gate.md` (ghi entry sau gate),
+  `.agent/workflows/rerun_03_update_backlog_and_report.md` (đồng bộ trạng thái khi Done).
 - Consumer: `git_impact_analyzer` (risk theo module), Dashboard (Giai đoạn 2).

@@ -16,7 +16,7 @@ có case đứng canh.
 npm run bugs:checklist -- --module "<tên nhóm chức năng>"     # hoặc --task <TASK_KEY>, --tag <tag>
 ```
 
-Lệnh đọc `knowledge/bugs/*.json` (field `module`, `tags`, `bug`, `task_key`, `jira_status`) và in ra bug đã
+Lệnh đọc `knowledge/bugs/*.json` (field `module`, `tags`, `bug`, `task_key`, `backlog_status`) và in ra bug đã
 từng xảy ra ở module đó. Không có entry nào ⇒ ghi `N/A: module chưa có bug lịch sử` vào Coverage Gaps.
 
 ### Bước 2 — Mỗi bug lịch sử phải quy về MỘT trong ba kết cục
@@ -42,5 +42,5 @@ Bug cũ là **ví dụ**, không phải case. Từ mỗi bug hãy hỏi *"lớp 
 Module xuất hiện nhiều lần trong `knowledge/bugs/` là vùng **đã chứng minh là dễ vỡ**; ưu tiên sinh case ở đó
 trước, và cân nhắc nâng `Mức độ rủi ro` của các case liên quan (ảnh hưởng band mở rộng ở Phase 2).
 
-> ⚠️ Bug mang `jira_status` là *Rejected* / *false positive* thì **KHÔNG** sinh case canh — canh một thứ không
+> ⚠️ Bug mang `backlog_status` là *Rejected* / *false positive* thì **KHÔNG** sinh case canh — canh một thứ không
 > phải lỗi là tự tạo case sai. Ghi vào Coverage Gaps để lần sau khỏi soi lại.

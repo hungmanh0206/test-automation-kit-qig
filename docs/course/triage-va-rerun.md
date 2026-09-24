@@ -79,31 +79,31 @@ Nên: một file, mọi nơi trỏ về.
 
   "statuses": {
     "PASS": {
-      "daChay": true, "logJira": false, "tms": "Passed",
+      "daChay": true, "logBacklog": false, "tms": "Passed",
       "nghia": "Chạy thật, đúng kỳ vọng theo oracle độc lập. VẪN bắt buộc có bằng chứng."
     },
     "FAIL": {
-      "daChay": true, "logJira": true, "tms": "Failed",
+      "daChay": true, "logBacklog": true, "tms": "Failed",
       "nghia": "Chạy thật, sai kỳ vọng. BẮT BUỘC kèm tangLoi."
     },
     "PASS_WITH_DEVIATION": {
-      "daChay": true, "logJira": false, "tms": "Passed",
+      "daChay": true, "logBacklog": false, "tms": "Passed",
       "nghia": "Chỉ pass sau khi lệch khỏi kịch bản (thêm wait, retry, đổi locator, refresh). Phải liệt kê deviation trong phần Actual và xếp vào diện cần review. KHÔNG ghi PASS trơn."
     },
     "SUSPECT_REAL_BUG": {
-      "daChay": true, "logJira": true, "tms": "Failed",
+      "daChay": true, "logBacklog": true, "tms": "Failed",
       "nghia": "Fail không ổn định mà CHƯA giải thích được cơ chế. Chỉ được đổi sang tangLoi=flaky khi nêu được cơ chế cụ thể."
     },
     "SKIP": {
-      "daChay": false, "logJira": false, "tms": "Not Run",
+      "daChay": false, "logBacklog": false, "tms": "Not Run",
       "nghia": "Không chạy — phải kèm lyDo và khả năng khắc phục."
     },
     "BLOCKED_SETUP": {
-      "daChay": false, "logJira": false, "tms": "Blocked",
+      "daChay": false, "logBacklog": false, "tms": "Blocked",
       "nghia": "Mức sẵn sàng là 'cần hook' mà capability chưa có. Phải nêu CỤ THỂ thiếu gì."
     },
     "SKIP_SETUP": {
-      "daChay": false, "logJira": false, "tms": "Not Run",
+      "daChay": false, "logBacklog": false, "tms": "Not Run",
       "nghia": "Mức sẵn sàng là 'chỉ làm tay'. Không ai phải làm gì thêm."
     }
   },
@@ -111,13 +111,13 @@ Nên: một file, mọi nơi trỏ về.
   "dongNghia": { "Passed": "PASS", "Failed": "FAIL", "Skipped": "SKIP", "Blocked": "BLOCKED_SETUP" },
 
   "tangLoi": {
-    "product_bug": { "logJira": true,  "nghia": "Lỗi thật của sản phẩm. Ghi rõ tầng FE hay BE." },
-    "api_bug":     { "logJira": true,  "nghia": "API trả sai hoặc thiếu so với spec. Chỉ kết luận sau khi ĐỌC response thật." },
-    "setup_failure": { "logJira": false, "nghia": "Lỗi dựng dữ liệu, xác thực, hook, môi trường. Lỗi của phía test." },
-    "script_error":  { "logJira": false, "nghia": "Lỗi script: bắt sai element, click nhầm, đọc sai vùng. Triệu chứng: FAIL LẶP LẠI ỔN ĐỊNH nhưng làm tay lại đúng." },
-    "infra":       { "logJira": false, "nghia": "Hạ tầng, CI, timeout môi trường. Khác api_bug: API chết hẳn, không phải trả sai." },
-    "flaky":       { "logJira": false, "nghia": "Chập chờn — pass sau retry, VÀ đã nêu được cơ chế." },
-    "dependency":  { "logJira": false, "nghia": "Phụ thuộc ngoài chưa sẵn. Ghi rõ đang chờ gì, từ ai." }
+    "product_bug": { "logBacklog": true,  "nghia": "Lỗi thật của sản phẩm. Ghi rõ tầng FE hay BE." },
+    "api_bug":     { "logBacklog": true,  "nghia": "API trả sai hoặc thiếu so với spec. Chỉ kết luận sau khi ĐỌC response thật." },
+    "setup_failure": { "logBacklog": false, "nghia": "Lỗi dựng dữ liệu, xác thực, hook, môi trường. Lỗi của phía test." },
+    "script_error":  { "logBacklog": false, "nghia": "Lỗi script: bắt sai element, click nhầm, đọc sai vùng. Triệu chứng: FAIL LẶP LẠI ỔN ĐỊNH nhưng làm tay lại đúng." },
+    "infra":       { "logBacklog": false, "nghia": "Hạ tầng, CI, timeout môi trường. Khác api_bug: API chết hẳn, không phải trả sai." },
+    "flaky":       { "logBacklog": false, "nghia": "Chập chờn — pass sau retry, VÀ đã nêu được cơ chế." },
+    "dependency":  { "logBacklog": false, "nghia": "Phụ thuộc ngoài chưa sẵn. Ghi rõ đang chờ gì, từ ai." }
   },
 
   "rerun": {
@@ -141,10 +141,10 @@ const TAXONOMY = JSON.parse(
 const DA_CHAY = Object.entries(TAXONOMY.statuses)
   .filter(([, v]) => v.daChay).map(([k]) => k);
 
-const LOG_JIRA = Object.entries(TAXONOMY.tangLoi)
-  .filter(([, v]) => v.logJira).map(([k]) => k);
+const LOG_BACKLOG = Object.entries(TAXONOMY.tangLoi)
+  .filter(([, v]) => v.logBacklog).map(([k]) => k);
 
-module.exports = { TAXONOMY, DA_CHAY, LOG_JIRA };
+module.exports = { TAXONOMY, DA_CHAY, LOG_BACKLOG };
 ```
 
 > Nhớ lại Bài 15: gate bằng chứng có hằng số `DA_CHAY = ['PASS', 'FAIL']` **viết tay**. Đó là bản đơn giản
@@ -186,7 +186,7 @@ Bỏ bước 1 thì bạn đang khoanh tầng cho một lỗi có thể không p
 
 Khi test đỏ, câu hỏi không phải "bug gì" mà là "lỗi ở tầng nào".
 
-| Tầng | Log Jira? | Nhận ra bằng |
+| Tầng | Log Backlog? | Nhận ra bằng |
 |---|---|---|
 | `product_bug` | ✅ | Dữ liệu BE đúng, màn hiện sai |
 | `api_bug` | ✅ | Đọc response thật: BE trả sai hoặc thiếu |
@@ -196,7 +196,7 @@ Khi test đỏ, câu hỏi không phải "bug gì" mà là "lỗi ở tầng nà
 | `flaky` | ❌ | Pass sau retry, **và** nêu được cơ chế |
 | `dependency` | ❌ | Hệ thống ngoài chưa sẵn |
 
-> Log năm tầng dưới lên Jira là **tiếng ồn**: Dev mở ra, điều tra, phát hiện không phải lỗi của họ, trả về.
+> Log năm tầng dưới lên Backlog là **tiếng ồn**: Dev mở ra, điều tra, phát hiện không phải lỗi của họ, trả về.
 > Mất thời gian hai phía và làm nhiễu thống kê defect của sprint.
 
 ### Phân tầng FE hay BE: đọc response trước khi kết luận
@@ -402,8 +402,8 @@ if (chuaChamTang.length) {
   console.log(`\n⚠ ${chuaChamTang.length} case FAIL chưa chấm tầng lỗi: ` +
     chuaChamTang.map((x) => x.id).join(' '));
   console.log('  Rerun 2–3 lần, đọc response, rồi điền tangLoi. Chỉ ' +
-    Object.entries(TAXONOMY.tangLoi).filter(([, v]) => v.logJira).map(([k]) => k).join('/') +
-    ' mới được log Jira.');
+    Object.entries(TAXONOMY.tangLoi).filter(([, v]) => v.logBacklog).map(([k]) => k).join('/') +
+    ' mới được log Backlog.');
 }
 ```
 
@@ -532,7 +532,7 @@ Cấp độ này còn 3 bài nữa.
 ## Tự kiểm
 
 - [ ] Chỉ có một file khai trạng thái; không hardcode chuỗi trạng thái ở đâu khác.
-- [ ] Tôi phân biệt được cả bảy tầng lỗi, và biết chỉ hai tầng được log Jira.
+- [ ] Tôi phân biệt được cả bảy tầng lỗi, và biết chỉ hai tầng được log Backlog.
 - [ ] Tôi biết quy trình bốn bước khoanh tầng FE/BE, và không bỏ bước đọc response.
 - [ ] Tôi nhận ra `script_error` bằng triệu chứng "fail ổn định nhưng làm tay đúng".
 - [ ] `sinh-status.js` của tôi map pass-sau-retry thành `PASS_WITH_DEVIATION`.
@@ -543,14 +543,14 @@ Cấp độ này còn 3 bài nữa.
 
 ## Bài tập về nhà
 
-Mở **năm** bug gần nhất team bạn log lên Jira. Với mỗi bug, chấm lại tầng theo bảng ở mục 2 và trả lời:
+Mở **năm** bug gần nhất team bạn log lên Backlog. Với mỗi bug, chấm lại tầng theo bảng ở mục 2 và trả lời:
 
 1. Bug đó có phải `product_bug`/`api_bug` thật không, hay là `setup_failure`/`script_error`?
 2. Có đủ bốn phần mô tả không?
 3. Có đọc response trước khi gán FE/BE không?
 
 Nếu có bug bị Dev từ chối, xem lại nó rơi vào tầng nào. Rất thường là `script_error` hoặc `setup_failure` —
-và cả hai đều **không nên** lên Jira ngay từ đầu.
+và cả hai đều **không nên** lên Backlog ngay từ đầu.
 
 ## Đọc thêm
 

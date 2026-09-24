@@ -11,8 +11,8 @@ Chưa chiều nào đứng ở vị trí **mình là người NHẬN** — nơi 
 nội dung gửi.
 
 Bằng chứng đây là lỗ thật ở dự án này:
-`knowledge/bugs/SAPP-24395__be-callback-thanh-toan-trung-lap-lam-paid-amount.json` — cổng thanh toán gọi
-callback **trùng**, hệ thống cộng `Paid Amount` **hai lần** (SAPP-28236). Bug đó do **người** phát hiện
+`knowledge/bugs/dự án trước-24395__be-callback-thanh-toan-trung-lap-lam-paid-amount.json` — cổng thanh toán gọi
+callback **trùng**, hệ thống cộng `Paid Amount` **hai lần** (CSDL-28236). Bug đó do **người** phát hiện
 khi dựng fixture, không do máy nào bắt. Theo luật của kit ("bug do người ngoài tìm ra = lỗi của máy"),
 đúng cái phải vá là **chỗ này**: không có checklist nào dạy sinh case "gửi lại callback y hệt".
 
@@ -31,7 +31,7 @@ mình tự trả.
 
 | # | Ca | Cách dựng | Oracle (đo ở đâu) |
 |---|---|---|---|
-| 1 | **Callback TRÙNG y hệt** (cùng payload, cùng transaction ref) gửi 2–3 lần | POST lại đúng body đã gửi | `Paid Amount` / số dư **không đổi sau lần 1**; danh sách transaction có **đúng 1** bản ghi. Đây là ca đã đẻ SAPP-28236 |
+| 1 | **Callback TRÙNG y hệt** (cùng payload, cùng transaction ref) gửi 2–3 lần | POST lại đúng body đã gửi | `Paid Amount` / số dư **không đổi sau lần 1**; danh sách transaction có **đúng 1** bản ghi. Đây là ca đã đẻ CSDL-28236 |
 | 2 | **Chữ ký/HMAC SAI** (sửa 1 ký tự trong `vnp_SecureHash`) | đổi 1 byte của hash | Bị **từ chối**, và **KHÔNG** ghi nhận tiền. Trả 200 mà vẫn ghi = lỗ nghiêm trọng nhất |
 | 3 | **Thiếu hẳn chữ ký** | bỏ field hash | Từ chối; không ghi |
 | 4 | **Replay payload CŨ** (callback hợp lệ của giao dịch đã đóng, gửi lại sau N giờ) | lưu payload cũ, gửi lại | Từ chối hoặc no-op; không cộng tiền lần nữa; không mở lại đơn đã đóng |
@@ -56,4 +56,4 @@ mình tự trả.
 
 - §5 API (idempotency phía GỬI) · §8 Resilience (đồng thời/retry) · §9 Side-effect (webhook ĐI RA)
 - §15 Security cho ca 2/3/7 (chữ ký, IDOR) — case có thể mang **cả 2 tag**
-- `knowledge/bugs/SAPP-24395__be-callback-thanh-toan-trung-lap-lam-paid-amount.json` (bug gốc)
+- `knowledge/bugs/dự án trước-24395__be-callback-thanh-toan-trung-lap-lam-paid-amount.json` (bug gốc)

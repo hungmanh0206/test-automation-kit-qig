@@ -49,11 +49,11 @@ Phase 2 chỉ execute phần có thể chạy an toàn qua UI/API public-busines
 - Khi execute, lấy TC ID/steps/expected/status target từ nguồn canonical local (xem Inputs); không gọi Google Sheet/Backlog từng case. (Excel là source of truth khi gen/publish.)
 - Trước khi generate/execute, chạy Precondition Resolution Pass cho selected TC: đọc Precondition Execution Matrix → map setup method → reuse setup layer `tests/support/setup/` (đặc thù story để ở `<TASK_OUTPUT_DIR>/automation/setup/`) → verify precondition trước assertion chính → cleanup theo `RUN_ID`. Chỉ promote setup helper vào `tests/support/setup/` khi generic và được approve.
 - Setup precondition theo tag `[<method>]` của chính TC: setup/verify/cleanup qua UI/API/factory/hook an toàn, KHÔNG dùng DB; fail ở tầng này là `setup_failure`, không phải product bug.
-- Không dùng direct DB connection, `TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*` hoặc backend source inspection để DỰNG precondition. Nếu contract yêu cầu trạng thái sâu nhưng chỉ có DB/backend mới dựng được, ghi `BLOCKED_SETUP`/`SKIP_SETUP` và tạo manual steps. VERIFY state có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) khi API/UI không expose.
-- Setup/verify fail là `setup_failure`: sửa setup rồi rerun, không kết luận product bug và không log Jira.
+- Không dùng direct DB connection, `TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*` hoặc backend source inspection để DỰNG precondition. Nếu contract yêu cầu trạng thái sâu nhưng chỉ có DB/backend mới dựng được, ghi `BLOCKED_SETUP`/`SKIP_SETUP` và tạo manual steps. VERIFY state có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only, chỉ SELECT) khi API/UI không expose.
+- Setup/verify fail là `setup_failure`: sửa setup rồi rerun, không kết luận product bug và không log Backlog.
 - Áp Definition of Ready trước khi execute: thiếu precondition/setup method/data/verification/cleanup/capability → `BLOCKED_SETUP` (capability hook/mock/sandbox chưa có) hoặc `SKIP_SETUP` (`Manual-only`) kèm missing capability cụ thể; không chạy bừa.
 - Nếu fail do locator/timing/setup/data/auth/dependency/test code, sửa root cause rồi rerun targeted.
-- Nếu fail còn lại là product/API bug, rerun đủ để loại flaky/setup trước khi chuyển Jira gate.
+- Nếu fail còn lại là product/API bug, rerun đủ để loại flaky/setup trước khi chuyển Backlog gate.
 - Nếu selected scope không đủ tin cậy, mở rộng scope hợp lý thay vì bỏ sót testcase.
 - Nếu thiếu env/credential/source quan trọng, ghi blocker; không tạo pass/skip giả.
 
@@ -69,11 +69,11 @@ Phase 2 chỉ execute phần có thể chạy an toàn qua UI/API public-busines
 ## Constraints
 
 - Kit hiện dùng Playwright; không sinh framework/script ngoài Playwright.
-- Không dựng state bằng DB. Chỉ read-only verify/chẩn đoán trên UAT DB qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT). Dependency `pg` chỉ được import trong file đó; DB không phải evidence Jira.
+- Không dựng state bằng DB. Chỉ read-only verify/chẩn đoán trên UAT DB qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only, chỉ SELECT). Dependency `tedious` chỉ được import trong file đó; DB không phải evidence Backlog.
 - Không xóa assertion quan trọng, không đổi expected result tùy tiện.
 - Không mock/stub logic chính nếu testcase cần kiểm thử behavior thật.
-- Không upload secret hoặc raw log nhạy cảm vào report/Jira.
-- Không log Jira trực tiếp nếu chưa qua điều kiện trong `prompt_templates/phase2/08_log_bug_jira.md`.
+- Không upload secret hoặc raw log nhạy cảm vào report/Backlog.
+- Không log Backlog trực tiếp nếu chưa qua điều kiện trong `prompt_templates/phase2/08_log_bug_backlog.md`.
 - Không đưa task-scoped automation vào regression suite chung nếu chưa có approval.
 
 ## Examples

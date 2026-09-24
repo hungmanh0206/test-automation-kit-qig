@@ -9,9 +9,9 @@
 | ✅ | Node.js `>=20` và `npm`/`npx` (khớp `engines` trong `package.json` và `.nvmrc`). |
 | ✅ | Playwright browser runtime. |
 | ✅ | AI Agent hoặc IDE có quyền đọc workspace. |
-| ✅ | Token/quyền truy cập Backlog, Confluence, Figma nếu Phase 1 cần fetch tài liệu. Google Sheet/Google Drive dùng qua Drive MCP đã kết nối sẵn trong phiên chat (không cần token riêng). |
+| ✅ | Token/quyền truy cập Backlog, tài liệu nguồn, Figma nếu Phase 1 cần fetch tài liệu. Google Sheet/Google Drive dùng qua Drive MCP đã kết nối sẵn trong phiên chat (không cần token riêng). |
 | ✅ | Credential test cho app/API trong môi trường dev/staging (vd `OPS_BASE_URL`/`OPS_LOGIN_URL`/`OPS_USERNAME`/`OPS_PASSWORD` trong `.env`). |
-| ✅ | MCP config cho `atlassian` (đọc Confluence), `figma`, `playwright` nếu dùng AI Agent tích hợp MCP; Google Drive dùng connector có sẵn của Claude, không cần khai trong `mcp_config.md`. |
+| ✅ | MCP config cho `figma`, `playwright` nếu dùng AI Agent tích hợp MCP; Google Drive dùng connector có sẵn của Claude, không cần khai trong `mcp_config.md`. Tài liệu nguồn đọc từ Markdown trong task folder (đưa sang từ Obsidian vault). |
 | ➕ | (Optional) Docker hoặc k6 — chỉ cần khi chạy **load test Loại B** (`npm run load`); thiếu thì lệnh tự skip sạch. |
 | ➕ | (Optional) 2 tài khoản test quyền khác nhau (vd `OPS_USERNAME_LOW`/`OPS_USERNAME_HIGH`) trong `task.env` — cho ma trận authz/IDOR của `npm run security`. |
 | ❌ | DB credential/connection string không cần và không dùng trong workflow chuẩn. |
@@ -20,7 +20,7 @@
 
 | Step | Action | Command/File |
 |---:|---|---|
-| 1 | Clone repo | GitHub: `git clone https://github.com/hungmanh0206/test-automation-kit_v2.git` · GitLab (cần VPN + SSH key): `git clone git@gitlab.sapp.edu.vn:tester/test_automation_test_kit_v2.git`. **Hai nhánh KHÁC NHAU có chủ ý** — xem mục *Hai remote* bên dưới |
+| 1 | Clone repo | GitHub: `git clone https://github.com/hungmanh0206/test-automation-kit_v2.git` · GitLab (cần VPN + SSH key): `git clone git@gitlab.example.com:tester/test_automation_test_kit_v2.git`. **Hai nhánh KHÁC NHAU có chủ ý** — xem mục *Hai remote* bên dưới |
 | 2 | Vào workspace | `cd <YOUR_PROJECT>` |
 | 3 | Cài dependencies | `npm ci` — KHÔNG dùng `npm install`, phải theo lockfile |
 | 4 | Cài Playwright browsers | `npx playwright install` |
@@ -41,9 +41,9 @@ rồi chạy thật:
 
 | | GitHub | GitLab |
 |---|---|---|
-| file được track | 483 | 481 |
+| file được track | 467 | 465 |
 | `npx playwright test tests/fe/infra` | **570 xanh · 2 bỏ qua · 0 đỏ** | **569 xanh · 3 bỏ qua · 0 đỏ** |
-| `npm run ci:scope` đếm | 62 spec | 60 spec |
+| `npm run ci:scope` đếm | 55 spec | 53 spec |
 
 **Số của bạn khác bảng này là có gì đó sai** — đừng bỏ qua. Test bỏ qua đều tự khai lý do khi chạy.
 
@@ -96,7 +96,7 @@ thay vì chép. Nó giữ nguyên hiểu biết đã hết hạn và không có 
 | `PROJECT_OUTPUT_DIR` | Yes | Ví dụ: `outputs/<YOUR_PROJECT>`. |
 | `TASK_KEY` | Yes | Scope folder, ví dụ: `<TASK_KEY>`. |
 | Backlog Story/Task | Optional | Cần nếu Phase 1 fetch Backlog, hoặc Phase 2 log Backlog bug. |
-| Confluence Requirement | Optional | Cần nếu requirement nằm trên Confluence. |
+| tài liệu nguồn Requirement | Optional | Cần nếu requirement nằm trên tài liệu nguồn. |
 | Figma URL/API key | Optional | Cần nếu testcase phụ thuộc UI design. |
 | Swagger/OpenAPI URL | Optional | Cần cho API testcase hoặc API automation. |
 | App/API credentials | Yes for execution | Không ghi secret vào Markdown/report. |
@@ -108,12 +108,12 @@ thay vì chép. Nó giữ nguyên hiểu biết đã hết hạn và không có 
 | `PROJECT_OUTPUT_DIR=outputs/<YOUR_PROJECT>` | Output root của project. |
 | `TASK_KEY=<TASK_KEY>` | Scope folder của task/feature. |
 | `RUN_ID=<safe-run-id>` | Optional; bắt buộc khi chạy song song nhiều session cùng `TASK_KEY`. |
-| `BACKLOG_BASE_URL`, `BACKLOG_USERNAME`/`BACKLOG_EMAIL`, `BACKLOG_API_KEY`, `BACKLOG_PROJECT_KEY` | Backlog integration (bug logging + fetch Confluence/Figma). |
+| `BACKLOG_BASE_URL`, `BACKLOG_USERNAME`/`BACKLOG_EMAIL`, `BACKLOG_API_KEY`, `BACKLOG_PROJECT_KEY` | Backlog integration (bug logging + fetch tài liệu nguồn/Figma). |
 | `GOOGLE_SHEET_URL` | Link Google Sheet đã publish testcase (ghi trong `profiles/<TASK_KEY>/task.env` sau Phase 1 Auto Publish); dùng để agent tìm đúng file khi re-publish hoặc tải bản mới nhất về execute. |
 | `BACKLOG_STORY_KEY` / `--story` | Metadata liên kết case ↔ Story/Task; ghi trong report, không có field riêng trên Sheet (Sheet không phải issue tracker). |
 | Nguồn testcase Phase 2 (mặc định) | Agent tải bản Google Sheet mới nhất qua Drive MCP về `test-cases/from-sheet/*.xlsx` trước mỗi lượt execute (không cần token — dùng Drive MCP có sẵn trong phiên chat); `TESTCASE_SOURCE=excel` là opt-out khi chưa publish. |
 | `PUSH_EXECUTION=confirm` | Đồng bộ kết quả execute vào cột `Result` của Sheet (`merge_execution_status.js` rồi `update_file`) sau khi QA duyệt preview. |
-| `CONFLUENCE_URL` | Requirement source nếu dùng Confluence. |
+| `DOC_URL` | Requirement source nếu dùng tài liệu nguồn. |
 | `FIGMA_API_KEY` | Figma fetch nếu dùng design source. |
 | `<APP>_BASE_URL`, `<APP>_LOGIN_URL` | UI automation. |
 | `<APP>_USERNAME`, `<APP>_PASSWORD` | Test account. |
@@ -161,7 +161,7 @@ Use [prompt_templates/run_phase1_template.md](prompt_templates/run_phase1_templa
 Chạy Phase 1 cho project <YOUR_PROJECT>.
 Module/Feature: <YOUR_FEATURE>
 Task key/scope folder: <TASK_KEY>
-Input: Backlog <BACKLOG_STORY_URL>, Confluence <CONFLUENCE_URL>, Figma <FIGMA_FILE_URL>, Swagger <SWAGGER_URL>
+Input: Backlog <BACKLOG_STORY_URL>, tài liệu nguồn <DOC_URL>, Figma <FIGMA_FILE_URL>, Swagger <SWAGGER_URL>
 Output: <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/
 Chỉ sinh testcase, export Excel và summary; không publish lên Sheet và không execute automation.
 ```
@@ -194,7 +194,7 @@ Auto Publish là step riêng trong phạm vi Phase 1. Excel là source of truth 
 
 ## Phase 1 - Auto Publish Testcase (Google Sheet)
 
-Chỉ chạy sau khi QA đã xác nhận Excel/testcase được phép publish. Dùng prompt riêng [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md) (tên file giữ nguyên cho tương thích ngược, nội dung là luồng Google Sheet).
+Chỉ chạy sau khi QA đã xác nhận Excel/testcase được phép publish. Dùng prompt riêng [prompt_templates/phase1/04_auto_publish_backlog.md](prompt_templates/phase1/04_auto_publish_backlog.md) (tên file giữ nguyên cho tương thích ngược, nội dung là luồng Google Sheet).
 
 Publish không phải npm script — là thao tác agent làm trực tiếp qua Google Drive MCP trong phiên chat:
 
@@ -205,7 +205,7 @@ Publish không phải npm script — là thao tác agent làm trực tiếp qua 
 
 Re-publish sau khi sửa Excel là lặp lại đúng 4 bước trên (bước 3 sẽ luôn là `update_file` vì Sheet đã tồn tại) — không cần dedup theo key riêng, ghi đè toàn workbook tự nhiên phản ánh đúng Excel hiện tại.
 
-Nhóm chức năng thành **sheet riêng** trong workbook (1 sheet/nhóm, dựng từ `md_to_xlsx.js`); TC ID nằm ở cột `ID_TC`. Sheet không phải issue tracker nên **không có** Test Set, requirement issue-link, Precondition issue riêng, assignee hay label — tiền điều kiện nằm trong cột `Tiền điều kiện` của chính sheet. Chi tiết mô hình: [.agent/skills/shared/jira_testcase_publisher/SKILL.md](.agent/skills/shared/jira_testcase_publisher/SKILL.md).
+Nhóm chức năng thành **sheet riêng** trong workbook (1 sheet/nhóm, dựng từ `md_to_xlsx.js`); TC ID nằm ở cột `ID_TC`. Sheet không phải issue tracker nên **không có** Test Set, requirement issue-link, Precondition issue riêng, assignee hay label — tiền điều kiện nằm trong cột `Tiền điều kiện` của chính sheet. Chi tiết mô hình: [.agent/skills/shared/backlog_testcase_publisher/SKILL.md](.agent/skills/shared/backlog_testcase_publisher/SKILL.md).
 
 ## Partial Rerun - Cleanup testcase
 
@@ -280,8 +280,8 @@ Chỉ Re-run bug/case liên quan, không đồng bộ tài liệu mới trong b�
 | Testcase Markdown | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-cases/*.md` |
 | Testcase Excel | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-cases/*.xlsx` |
 | Capability / Test-Hook Request | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/capability-request.md` (khi còn `Needs hook`/`Manual-only`) |
-| Google Sheet publish summary | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-publish-summary.md` |
-| Testcase cleanup (unlink Backlog) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-cleanup-summary.md` |
+| Google Sheet publish summary | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/backlog-testcase-publish-summary.md` |
+| Testcase cleanup (unlink Backlog) | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/backlog-testcase-cleanup-summary.md` |
 | Playwright HTML | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/playwright-report/` |
 | Execution results | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/execution-results.md` |
 | Execution summary | `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/execution-summary.md` |
@@ -293,7 +293,7 @@ Tái dùng login/catalog; kết quả ghi `<TASK_OUTPUT_DIR>/reports/` và lên 
 
 | Việc | Lệnh | Autonomy / an toàn |
 |---|---|---|
-| Dashboard tổng hợp (SAPP DS) | `npm run dashboard` | đọc `knowledge/` → `reports/dashboard.html` |
+| Dashboard tổng hợp (dự án trước DS) | `npm run dashboard` | đọc `knowledge/` → `reports/dashboard.html` |
 | Accessibility (axe-core) | `npm run accessibility -- --catalog <ui_catalog.json>` | never-auto; finding review |
 | Performance Loại A | `npm run perf -- --catalog <perf_catalog.json>` | threshold-gated; verdict **advisory** (median N) |
 | Security basic | `npm run security -- --catalog <security_catalog.json> --confirm-nonprod` | never-auto, **GET/non-prod**, mask PII |
@@ -311,7 +311,7 @@ Tái dùng login/catalog; kết quả ghi `<TASK_OUTPUT_DIR>/reports/` và lên 
 | `node` hoặc `npm` không nhận lệnh | Node chưa cài hoặc PATH chưa reload | Cài Node.js `>=18`, mở terminal mới, chạy `node -v`. |
 | Playwright báo thiếu browser | Browser runtime chưa cài | Chạy `npx playwright install`. |
 | MCP không kết nối | Token/quyền hoặc MCP config sai | Kiểm tra `.env.local` và IDE MCP settings. |
-| Phase 1 không fetch được requirement | URL/quyền Backlog/Confluence/Figma sai | Kiểm tra link, token, quyền page/file. |
+| Phase 1 không fetch được requirement | URL/quyền Backlog/tài liệu nguồn/Figma sai | Kiểm tra link, token, quyền page/file. |
 | Publish testcase bị lỗi | Chưa kết nối Google Drive MCP, hoặc file `.xlsx` local chưa export/lỗi | Kiểm tra MCP còn sống (`search_files` thử), kiểm tra Excel canonical đã export đúng chưa trước khi `create_file`/`update_file` |
 | Case cũ vẫn còn trên Sheet sau khi bỏ TC khỏi Excel | Chưa re-publish (ghi đè) sau khi sửa Excel | Chạy lại bước publish (`update_file`) — ghi đè toàn workbook sẽ tự phản ánh đúng Excel hiện tại, không cần thao tác riêng |
 | Phase 2 bị `SKIP` nhiều | Auth/data/API/env chưa sẵn sàng hoặc case cần state sâu không có API/hook | Kiểm tra credential, base URL, Swagger URL, fixture/test hook; case thiếu capability an toàn (không dựng được qua API/hook/sandbox) đánh dấu `Needs hook`/`Manual-only` — KHÔNG dùng DB để né (xem `tests/support/setup/hooks/README.md`). |
@@ -328,7 +328,7 @@ Quick Start chuẩn giúp project mới có cùng layout output và cùng điề
 | [README.md](README.md) | Landing page và architecture. |
 | [RULE_GLOBAL.md](RULE_GLOBAL.md) | Quy tắc global. |
 | [prompt_templates/run_phase1_template.md](prompt_templates/run_phase1_template.md) | Template Phase 1. |
-| [prompt_templates/phase1/04_auto_publish_jira.md](prompt_templates/phase1/04_auto_publish_jira.md) | Prompt riêng cho Auto Publish testcase (Google Sheet) trong Phase 1 sau QA confirmation. |
+| [prompt_templates/phase1/04_auto_publish_backlog.md](prompt_templates/phase1/04_auto_publish_backlog.md) | Prompt riêng cho Auto Publish testcase (Google Sheet) trong Phase 1 sau QA confirmation. |
 | [prompt_templates/run_phase2_template.md](prompt_templates/run_phase2_template.md) | Template Phase 2. |
 | [prompt_templates/run_phase_re-run_template.md](prompt_templates/run_phase_re-run_template.md) | Template Re-run bug/case fail và Backlog bug đã fix. |
 | [partial-rerun/run_testcase_cleanup.md](partial-rerun/run_testcase_cleanup.md) | Prompt optional unlink Test↔Story/Task trên Backlog sau partial rerun approved (re-publish Sheet đã tự đủ đồng bộ). |

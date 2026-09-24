@@ -5,7 +5,7 @@
  * merge_execution_status.js — ghi kết quả execute (testcase-status.json) NGƯỢC vào cột `Result` của file
  * Excel/Sheet canonical.
  *
- * Thay cho `scripts/integrations/aio/push_execution_aio.js` (AIO Tests ngưng dùng 22/09/2026, thay bằng
+ * Thay cho `scripts/integrations/aio/push_execution_aio.js` (Google Sheet ngưng dùng 22/09/2026, thay bằng
  * Google Sheet) — không còn Cycle/Run/step-evidence, chỉ còn 1 cột `Result` trên đúng file testcase đang
  * publish lên Sheet. Evidence (ảnh/video) VẪN ở local `test-results/artifacts/` như trước, không đẩy đi đâu.
  *
@@ -99,7 +99,7 @@ async function main() {
   }
   if (!tests.length) { console.error('ERROR: sau khi lọc không còn case nào để ghi.'); process.exit(2); }
 
-  // Gate chất lượng — cùng gate push_execution_aio.js từng chạy trước khi ghi AIO; không phải đặc thù AIO.
+  // Gate chất lượng — cùng gate từng chạy trước khi ghi kết quả; không phải đặc thù Google Sheet.
   const gate = outputGate.gateTestExecution({ ...doc, tests });
   if (gate.problems.length) {
     console.error(`GATE CHẤT LƯỢNG — ${gate.problems.length} vi phạm:\n  - ${gate.problems.join('\n  - ')}`);

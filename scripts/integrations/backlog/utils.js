@@ -2,10 +2,10 @@
  * Backlog Integration - Utility Functions
  * Các hàm xử lý chung cho việc tích hợp Backlog và Figma.
  *
- * Migrated từ Jira (22/09/2026). Backlog auth khác hẳn Jira: query param `apiKey=` (không Basic/Bearer),
+ * Migrated từ hệ bug-tracking cũ (22/09/2026). Backlog auth khác hẳn hệ cũ: query param `apiKey=` (không Basic/Bearer),
  * description là plain text (không ADF) nên không còn hàm convert rich-doc.
- * Confluence (fetch_confluence.js/publish_confluence_page.js) NGOÀI PHẠM VI migrate này — chờ quyết
- * chuyển sang Google Docs/Sheet; các biến CONFLUENCE_ và JIRA_EMAIL đã bị xoá khỏi .env nên 2 file đó hiện
+ * tài liệu nguồn (fetch_tai_lieu_nguon.js/publish_tai_lieu_nguon_page.js) NGOÀI PHẠM VI migrate này — chờ quyết
+ * chuyển sang Google Docs/Sheet; các biến TAI_LIEU_ và BACKLOG_EMAIL đã bị xoá khỏi .env nên 2 file đó hiện
  * không chạy được, đó là trạng thái CỐ Ý (đã ghi trong DOC_ONLY của tests/fe/infra/env-contract.spec.ts).
  */
 
@@ -51,7 +51,7 @@ function validateEnvVars(requiredVars) {
 
 /**
  * Backlog xác thực qua QUERY PARAM `apiKey`, không phải header. Trả về object `{ apiKey }` để spread vào
- * `params` của axios (hoặc `URLSearchParams`) — không có "headers" cần build như Jira Basic/Bearer.
+ * `params` của axios (hoặc `URLSearchParams`) — không có "headers" cần build như Backlog Basic/Bearer.
  * @returns {{apiKey: string}}
  */
 function backlogAuthParams() {
@@ -64,7 +64,7 @@ function backlogAuthParams() {
 }
 
 /**
- * Format Backlog issue data thành dạng readable — tương đương `formatIssue` bản Jira cũ nhưng field khác
+ * Format Backlog issue data thành dạng readable — tương đương `formatIssue` bản Backlog cũ nhưng field khác
  * hẳn (issue.summary/description ở top-level, không nằm trong `fields.*`; description đã là plain text).
  * @param {object} issue - Backlog issue raw data (GET /api/v2/issues/:issueIdOrKey)
  * @returns {object} Formatted issue

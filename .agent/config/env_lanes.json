@@ -1,5 +1,5 @@
 {
-  "_why": "SAPP-29229, tester báo sau bàn giao: 'không bắt buộc phải có env token của LMS và OPS thì mới test được, check lại'. Đo lại thì CODE ĐÃ ĐÚNG — gỡ sạch mọi biến OPS_ và LMS_ rồi chạy `preflight --mode phase1` và `--mode generic` đều exit 0, 0 CHẶN, 0 cảnh báo. `requireValue` chỉ gác PROJECT_OUTPUT_DIR và TASK_KEY.",
+  "_why": "CSDL-29229, tester báo sau bàn giao: 'không bắt buộc phải có env token của LMS và OPS thì mới test được, check lại'. Đo lại thì CODE ĐÃ ĐÚNG — gỡ sạch mọi biến OPS_ và LMS_ rồi chạy `preflight --mode phase1` và `--mode generic` đều exit 0, 0 CHẶN, 0 cảnh báo. `requireValue` chỉ gác PROJECT_OUTPUT_DIR và TASK_KEY.",
   "_van_de_that": "Tài liệu, không phải code. `.env.example` có 79 biến, trong đó 8 biến OPS_ và 7 biến LMS_ nằm ngay khối đầu, và 0 dòng nào cho biết lane nào cần biến nào. Người mới copy file ra thấy 15 ô trống thì kết luận hợp lý là phải điền hết mới chạy được.",
   "_cach_chua": "Khai LANE ở đây, gắn nhãn vào .env.example, và cho `preflight --lanes` in ra lane nào sẵn sàng. Câu hỏi 'tôi cần gì' thành một dòng lệnh.",
   "_measured_at": "2026-09-18",
@@ -10,7 +10,7 @@
         "PROJECT_OUTPUT_DIR",
         "TASK_KEY"
       ],
-      "_note": "Đây là hai biến DUY NHẤT mà code thật sự chặn khi thiếu (runtime_config.requireValue). Không cần OPS, không cần LMS, không cần AIO."
+      "_note": "Đây là hai biến DUY NHẤT mà code thật sự chặn khi thiếu (runtime_config.requireValue). Không cần OPS, không cần LMS."
     },
     "doc-read": {
       "mo_ta": "Đọc tài liệu nguồn: Figma. (Backlog/Google Docs/Sheet chưa có client trong kit đọc — xem DOC_ONLY ở tests/fe/infra/env-contract.spec.ts.)",
@@ -18,7 +18,7 @@
         "FIGMA_API_KEY",
         "FIGMA_FILE_KEY"
       ],
-      "_note": "Thiếu Figma thì mất oracle cho chữ hiển thị, nhưng không chặn. Lane 'required' rỗng có chủ ý: kit không còn nguồn spec nào bắt buộc phải đọc qua API kể từ khi bỏ Jira/Confluence."
+      "_note": "Thiếu Figma thì mất oracle cho chữ hiển thị, nhưng không chặn. Lane 'required' rỗng có chủ ý: kit không còn nguồn spec nào bắt buộc phải đọc qua API kể từ khi bỏ Backlog/tài liệu nguồn."
     },
     "db-verify": {
       "mo_ta": "Tầng kiểm DB, chỉ đọc, chỉ dùng khi task khai §23.",

@@ -6,7 +6,7 @@
  * số trục. Lúc đó không giảm bug lọt mà **sản xuất PASS giả nhìn rất thuyết phục**.
  *
  * Bằng chứng đây không phải lo xa: `persistence_probe` bản đầu trả `ok: true` khi 4 điểm khớp nhau. Test của
- * chính nó (case SAPP-28403, USD không quy đổi) có `form/payload/api/ui = 10` — **khớp cả 4 mà sai cả 4**, giá
+ * chính nó (case CSDL-28403, USD không quy đổi) có `form/payload/api/ui = 10` — **khớp cả 4 mà sai cả 4**, giá
  * trị đúng phải là 260.500. Tên field `ok` chính là mầm PASS giả.
  *
  * BA LOẠI KẾT LUẬN — luật cứng:

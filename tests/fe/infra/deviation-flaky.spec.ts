@@ -45,7 +45,7 @@ test.describe('@infra flaky không được chôn bug thật', () => {
     const s = tax.statuses.SUSPECT_REAL_BUG;
     expect(s, 'phải có trạng thái riêng cho FAIL bất định chưa giải thích được').toBeTruthy();
     expect(s.loggableAsBug, 'chưa giải thích được cơ chế thì vẫn là nghi bug thật, không phải bỏ qua').toBe(true);
-    expect(s.aio).toBe('Failed');
+    expect(s.sheet).toBe('Fail');
   });
 
   test('luật rerun đòi CƠ CHẾ trước khi được gọi là flaky', () => {
@@ -53,9 +53,9 @@ test.describe('@infra flaky không được chôn bug thật', () => {
     expect(String(tax.rerun.flakyRequiresMechanism)).toMatch(/SUSPECT_REAL_BUG/);
   });
 
-  test('PASS_WITH_DEVIATION map sang AIO Passed nhưng KHÔNG loggable, và nêu rõ phải liệt kê deviation', () => {
+  test('PASS_WITH_DEVIATION map sang Sheet Pass nhưng KHÔNG loggable, và nêu rõ phải liệt kê deviation', () => {
     const s = tax.statuses.PASS_WITH_DEVIATION;
-    expect(s.aio).toBe('Passed');
+    expect(s.sheet).toBe('Pass');
     expect(s.loggableAsBug).toBe(false);
     expect(String(s.meaning)).toMatch(/liệt kê deviation/);
   });

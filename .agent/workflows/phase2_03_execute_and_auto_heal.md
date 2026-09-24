@@ -15,8 +15,8 @@ Giảm skip/fail giả, đảm bảo case pass thật sự validate đúng behav
    - FAIL
    - SKIP
    - FLAKY/BLOCKED nếu cần
-   - `setup_failure`: fail ở bước setup/verify precondition (Precondition Resolution Pass) — sửa setup rồi rerun, KHÔNG kết luận product bug, KHÔNG log Jira.
-   - `BLOCKED_SETUP` / `SKIP_SETUP`: precondition chưa đủ Definition of Ready (thiếu capability API/hook/mock/sandbox/fixture hoặc contract chưa đủ) — ghi missing capability cụ thể, không connect DB, không phải product bug, không log Jira.
+   - `setup_failure`: fail ở bước setup/verify precondition (Precondition Resolution Pass) — sửa setup rồi rerun, KHÔNG kết luận product bug, KHÔNG log Backlog.
+   - `BLOCKED_SETUP` / `SKIP_SETUP`: precondition chưa đủ Definition of Ready (thiếu capability API/hook/mock/sandbox/fixture hoặc contract chưa đủ) — ghi missing capability cụ thể, không connect DB, không phải product bug, không log Backlog.
 4. Với FAIL/SKIP do automation/setup/data/auth/timeout/dependency:
    - Sửa root cause.
    - Rerun targeted.

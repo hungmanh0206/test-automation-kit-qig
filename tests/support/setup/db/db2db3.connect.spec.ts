@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { isUatDbConfigured, queryUatReadonly } from './uatPgClient';
+import { isUatDbConfigured, queryUatReadonly } from './uatDbClient';
 
 /** Check connect DB2 + DB3 (bỏ DB1) + snapshot nhanh. Read-only, guarded (allowlist localhost). */
 async function snapshot(opts: { dbPrefix: string }) {

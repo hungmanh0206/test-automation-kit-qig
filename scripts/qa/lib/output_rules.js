@@ -17,9 +17,9 @@
 // hằng số này và CHẶN khi lệch. Đo 12/08/2026: cùng danh sách này từng nằm ở 5 nơi với 4 nội dung khác nhau
 // (CLAUDE.md thiếu `.jpeg`; thông báo của output_gate thiếu `.jpeg` mà lại có `.gif`; code có thêm bmp/mov/m4v
 // mà không tài liệu nào nhắc) ⇒ chép tay giá trị máy-kiểm-được là mời drift.
-// Tiêu chí chọn đuôi KHÔNG phải "có phải ảnh không" mà là "reviewer xem được NGAY trong Jira, không phải tải
+// Tiêu chí chọn đuôi KHÔNG phải "có phải ảnh không" mà là "reviewer xem được NGAY trong Backlog, không phải tải
 // về" — evidence tải-về-mới-xem-được thì mất hẳn mục đích. Nên mỗi đuôi ở đây BẮT BUỘC có mime thật trong
-// MIME_BY_EXT (uploader gắn `application/octet-stream` là Jira không preview). `policy_source_check` kiểm ràng
+// MIME_BY_EXT (uploader gắn `application/octet-stream` là Backlog không preview). `policy_source_check` kiểm ràng
 // buộc đó. Đo 12/08/2026 trên 2224 file evidence thật: png 2182 · webm 28 · jpg 14 · gif/bmp/mov/m4v = 0 ⇒ đã
 // bỏ gif/bmp/mov/m4v (bmp/mov/m4v không có mime nên vốn không preview được; gif 256 màu làm bệt khung đỏ +
 // nhãn, mà chuỗi thao tác đã có luật bắt VIDEO riêng). Cần .mov thật thì THÊM mime + ghi vào RULE_GLOBAL,
@@ -27,7 +27,7 @@
 const VISUAL_EXT = /\.(png|jpe?g|webp|mp4|webm)$/i;
 const VIDEO_EXT = /\.(mp4|webm)$/i;
 
-/** Mime cho attachment Jira — 1 NGUỒN, dùng bởi cả gate lẫn uploader (push_test_execution). */
+/** Mime cho attachment Backlog — 1 NGUỒN, dùng bởi cả gate lẫn uploader (push_test_execution). */
 const MIME_BY_EXT = {
   '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp',
   '.mp4': 'video/mp4', '.webm': 'video/webm',
@@ -217,11 +217,11 @@ function vagueExpectedLines(cell) {
 // ---- G2 (round-3): FAIL phân tầng lỗi · oracle tautology (app==app) ----
 
 // FAIL đã được PHÂN TẦNG khi comment/root-cause nêu rõ tầng: product/API bug, setup, infra, flaky,
-// data/quyền/precondition, hoặc gắn Jira key (đã log bug). Thiếu hết = "không phán được" → CHẶN.
+// data/quyền/precondition, hoặc gắn Backlog key (đã log bug). Thiếu hết = "không phán được" → CHẶN.
 const FAILURE_LAYER = new RegExp([
   // Nhận CẢ khoá canonical của verdict_taxonomy (`product_bug`, `api_bug`) lẫn văn xuôi.
   // Trước chỉ có biến thể dấu-cách → khai ĐÚNG chuẩn `failureLayer: "product_bug"` lại bị chặn oan,
-  // đúng vào 2 tầng duy nhất được phép log Jira. Các tầng khác đã có `[_ ]?` nên không dính lỗi này.
+  // đúng vào 2 tầng duy nhất được phép log Backlog. Các tầng khác đã có `[_ ]?` nên không dính lỗi này.
   'lỗi sản phẩm', 'product[_ ]?bug', 'api[_ ]?bug', 'api contract', '\\bbug\\b', '\\bdefect\\b',
   'sai (nghiệp vụ|kết quả|logic|công thức|số liệu|dữ liệu)',
   'setup[_ ]?failure', 'blocked[_ ]?setup', 'skip[_ ]?setup', 'precondition',
@@ -305,7 +305,7 @@ const ANOMALY_HINT = new RegExp([
   'lạ là', 'bất thường', 'bat thuong', 'chưa đúng', 'chua dung',
   'không đúng như', 'khong dung nhu', 'khác mong đợi', 'đáng ngờ',
 ].join('|'), 'i');
-// Nơi đến hợp lệ: Jira key · id quyết định/rule trong knowledge · câu hỏi đã ghi cho BA/Dev.
+// Nơi đến hợp lệ: Backlog key · id quyết định/rule trong knowledge · câu hỏi đã ghi cho BA/Dev.
 const ANOMALY_SINK = /\b[A-Z][A-Z0-9]+-\d{2,}\b|\bDEC-[A-Z0-9]+-\d{3}\b|\bBR-[A-Z0-9]+-\d{3}\b|\bSM-[A-Z0-9]+-\d{3}\b|hỏi (BA|Dev|QA-Lead|PO)|clarification|coverage gap/i;
 
 /**
@@ -319,7 +319,7 @@ function lintStrayAnomaly({ status = '', comment = '' } = {}) {
   if (ANOMALY_SINK.test(s)) return null;
   return {
     level: 'problem',
-    message: 'case PASS nhưng kết luận có ghi nhận BẤT THƯỜNG mà không trỏ tới đâu — anomaly phải thành 1 trong 3: bug Jira (kèm key), câu hỏi cho BA/Dev (ghi rõ "hỏi BA/Dev" + đưa vào clarifications/coverage gap), hoặc quyết định trong knowledge/decisions (DEC-*). Ghi chú suông sẽ biến mất và chỗ đó thành bug do người khác tìm ra.',
+    message: 'case PASS nhưng kết luận có ghi nhận BẤT THƯỜNG mà không trỏ tới đâu — anomaly phải thành 1 trong 3: bug Backlog (kèm key), câu hỏi cho BA/Dev (ghi rõ "hỏi BA/Dev" + đưa vào clarifications/coverage gap), hoặc quyết định trong knowledge/decisions (DEC-*). Ghi chú suông sẽ biến mất và chỗ đó thành bug do người khác tìm ra.',
   };
 }
 
@@ -383,7 +383,7 @@ function lintBugProvenance({ steps = '', attachments = [], runRef = '' } = {}) {
  *
  * VẤN ĐỀ: tag chiều (`[Calc]`, `[Display]`…) chứng minh case CÓ MẶT ở chiều đó, KHÔNG chứng minh nó assert
  * đủ sâu. Ca đắt nhất đã xảy ra: `OPS_PAY_TC_175` liệt kê form Add Transaction CÓ field Recipient Bank Account
- * nhưng không phát biểu ràng buộc nào ⇒ case XANH, bug `SAPP-28420` (modal cho chọn pháp nhân khác order) sống.
+ * nhưng không phát biểu ràng buộc nào ⇒ case XANH, bug `CSDL-28420` (modal cho chọn pháp nhân khác order) sống.
  *
  * VÌ SAO CÁCH NÀY KHÁC 3 LẦN SUY DIỄN ĐÃ THẤT BẠI: những lần đó tôi bắt máy PHÂN LOẠI ("case này thuộc chiều
  * nào?") — trên tiếng Việt thì recall/precision đánh đổi nhau (`hiển thị` là động từ của MỌI expected). Ở đây

@@ -11,4 +11,4 @@ export * from './mocks/externalDependencyMock';
 export * from './factories/authFactory';
 export * from './factories/userFactory';
 export * from './factories/domainFactory';
-export * from './db/uatPgClient';
+export * from './db/uatDbClient';

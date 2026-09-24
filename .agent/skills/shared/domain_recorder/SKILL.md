@@ -9,7 +9,7 @@ description: Ghi business rule ĐÃ ĐƯỢC XÁC NHẬN vào knowledge/domain/ 
 
 Kit **cấm oracle tautological**: expected phải lấy từ spec/business rule, KHÔNG suy từ app đang chạy
 (prompt gen §12/§13, `output_gate.looksTautology`). Nhưng nếu knowledge chỉ lưu **bug history** (cái đã sai)
-mà không lưu **business truth** (cái đúng), agent buộc phải đọc lại Jira/Confluence mỗi lần — dễ miss —
+mà không lưu **business truth** (cái đúng), agent buộc phải đọc lại Backlog/tài liệu nguồn mỗi lần — dễ miss —
 hoặc suy từ app, rơi đúng vào tautology bị cấm.
 
 Skill này lấp chỗ đó: mỗi rule nghiệp vụ **đã được người có thẩm quyền chốt** → 1 file JSON trong

@@ -15,7 +15,7 @@ test.describe('@infra cross_surface_diff — chuẩn hoá & thẩm quyền kết
     expect(x.core('1.234.567 đ').v).toBe(x.core('1234567').v);
   });
 
-  test('ngày: dd/mm/yyyy và yyyy-mm-dd là cùng một ngày (SAPP-28521 là lệch ĐỊNH DẠNG)', () => {
+  test('ngày: dd/mm/yyyy và yyyy-mm-dd là cùng một ngày (CSDL-28521 là lệch ĐỊNH DẠNG)', () => {
     expect(x.core('20/05/2001').v).toBe(x.core('2001-05-20').v);
     expect(x.core('20/05/2001').v).not.toBe(x.core('2001-05-21').v);
   });

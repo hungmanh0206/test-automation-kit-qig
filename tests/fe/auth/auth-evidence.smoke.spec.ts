@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { haveOpsCreds, OPS_BASE, OPS_USER, loginOps } from '../support/opsLogin';
+import { haveOpsCreds, haveOpsUnit, OPS_BASE, OPS_USER, loginOps } from '../support/opsLogin';
 import { ensureOpsAuth } from '../support/auth/opsAuth';
 import { readOpsToken, brokerRequest } from '../support/auth/tokenBroker';
 
@@ -13,7 +13,12 @@ const sessionCache = require('../../../scripts/utils/auth/session_cache');
  * Non-destructive: chỉ login + xem trang + chụp; KHÔNG tạo/sửa/xoá dữ liệu. Login 1 LẦN (run2 reuse → né throttle).
  */
 test.describe('@smoke Auth reuse + Evidence highlight (infra)', () => {
-  test.skip(!haveOpsCreds, 'Thiếu OPS creds → skip (chạy với TASK_ENV=profiles/<TASK>/task.env).');
+  /*
+   * Phải chờ CẢ creds LẪN đơn vị: QEMIS bắt chọn Sở/Trường trước khi đăng nhập, thiếu thì `loginOps`
+   * NÉM chứ không đăng nhập được. Skip theo đúng điều kiện chạy được, không để đỏ oan vì chưa cấu hình.
+   */
+  test.skip(!haveOpsCreds || !haveOpsUnit,
+    'Thiếu OPS creds hoặc QEMIS_SO/QEMIS_TRUONG → skip (chạy với TASK_ENV=profiles/<TASK>/task.env).');
 
   test('login+cache rồi reuse (không login lại); EvidenceRecorder highlight capture', async ({ browser }) => {
     const key = 'ops-smoke';
@@ -28,7 +33,7 @@ test.describe('@smoke Auth reuse + Evidence highlight (infra)', () => {
     expect(sessionCache.isFresh(key, 25), 'session đã được cache').toBeTruthy();
 
     // #3 evidence highlight + settle + capture (dùng chính EvidenceRecorder path).
-    const rec = new EvidenceRecorder({ taskKey: 'SAPP-26523', projectOutputDir: process.env.PROJECT_OUTPUT_DIR || 'outputs/lms-operations-automation', repoRoot: process.cwd(), log: false });
+    const rec = new EvidenceRecorder({ taskKey: 'CSDL-26523', projectOutputDir: process.env.PROJECT_OUTPUT_DIR || 'outputs/lms-operations-automation', repoRoot: process.cwd(), log: false });
     const c = rec.case('AUTH_EV_SMOKE_TC_001');
     const st = await c.step(p1, 'Chụp có highlight (verify capture)', { highlight: p1.locator('body'), status: 'PASSED' });
     expect(st, 'step capture PASSED').toBe('PASSED');

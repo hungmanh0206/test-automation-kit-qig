@@ -10,7 +10,7 @@ const FLOW_STEPS = [
     gate:'Chưa rõ TASK_KEY và PROJECT_OUTPUT_DIR thì chưa chạy gì cả.' },
 
   { n:'1', k:'phase1', title:'Phase 1 — Sinh testcase', who:'AI Agent + QA',
-    goal:'Đọc Jira/Confluence/Figma/Swagger, phân tích, hỏi cho rõ, rồi sinh bộ testcase.',
+    goal:'Đọc Backlog/tài liệu nguồn/Figma/Swagger, phân tích, hỏi cho rõ, rồi sinh bộ testcase.',
     out:['testcase Markdown','Excel canonical (7 cột bắt buộc)','phase1-summary.md','Setup Strategy contract (PRE-NN)','task.md'],
     cmd:'/phase1 <TASK_KEY>',
     gate:'Ambiguity Gate — còn chỗ mơ hồ thì DỪNG, gộp câu hỏi hỏi BA rồi mới gen.' },
@@ -21,11 +21,11 @@ const FLOW_STEPS = [
     cmd:'npm run design:gate -- --dir <test-cases/> --with-rows',
     gate:'Chưa review xong thì KHÔNG chạy Phase 2 — tránh execute trên expected sai.' },
 
-  { n:'3', k:'publish', title:'Publish lên AIO Tests', who:'QA',
-    goal:'Đưa testcase từ Excel canonical lên AIO Tests để cả team thấy và để Phase 2 kéo về.',
-    out:['Case trên AIO + folder theo nhóm chức năng','publish summary'],
+  { n:'3', k:'publish', title:'Publish lên Google Sheet', who:'QA',
+    goal:'Đưa testcase từ Excel canonical lên Google Sheet để cả team thấy và để Phase 2 kéo về.',
+    out:['Case trên Google Sheet + folder theo nhóm chức năng','publish summary'],
     cmd:'npm run aio:publish:apply -- --file <x.xlsx> --story <KEY> --qa-approved',
-    gate:'Dry-run trước — AIO KHÔNG có API xoá. Publish thật chỉ sau khi QA xác nhận Excel.' },
+    gate:'Dry-run trước — Sheet ghi đè toàn bộ mỗi lần sync. Publish thật chỉ sau khi QA xác nhận Excel.' },
 
   { n:'4', k:'wait', title:'Chờ Dev implement', who:'Dev',
     goal:'Tính năng phải có thật thì mới execute được.',
@@ -33,31 +33,31 @@ const FLOW_STEPS = [
     gate:'Đây là điểm dừng có chủ ý, không phải thời gian chết: dùng để dựng precondition và chuẩn bị fixture.' },
 
   { n:'5', k:'phase2', title:'Phase 2 — Execute', who:'AI Agent + QA',
-    goal:'Kéo testcase từ AIO, dựng tiền điều kiện, chạy thật, thu evidence.',
+    goal:'Kéo testcase từ Google Sheet, dựng tiền điều kiện, chạy thật, thu evidence.',
     out:['Playwright results','evidence ảnh/video','execution-summary.md','testcase-status.json','expansion-plan.md'],
     cmd:'/phase2 <TASK_KEY>   (gate: /preflight <TASK_KEY>)',
     gate:'preflight_gate phải xanh trước. Execute KHÔNG chỉ bám chữ trong case — phải mở rộng 5 trục quanh nó theo risk band.' },
 
-  { n:'5b', k:'push', title:'Đẩy kết quả lên AIO', who:'QA',
+  { n:'5b', k:'push', title:'Đẩy kết quả lên Google Sheet', who:'QA',
     goal:'Tạo cycle, gắn trạng thái và evidence theo từng bước của case.',
-    out:['AIO Cycle + Run','evidence neo đúng bước'],
+    out:['sheet kết quả execution','evidence neo đúng bước'],
     cmd:'npm run aio:push-exec:apply -- --task <TASK_KEY> --folder "<Tên sprint>"',
     gate:'Chạy HAI gate trước khi ghi: chất lượng output, và kế hoạch mở rộng 5 trục. Task có case band high đã execute mà chưa có reports/expansion-plan.md thì CHẶN — gỡ bằng npm run expansion:plan.' },
 
   { n:'6', k:'triage', title:'Triage fail/skip', who:'QA',
     goal:'Phân loại từng FAIL: lỗi sản phẩm, lỗi API, lỗi setup, lỗi script, chập chờn hay hạ tầng.',
     out:['tầng lỗi cho từng case','danh sách bug ứng viên'],
-    gate:'Rerun 2–3 lần trước. setup_failure và script_error KHÔNG log Jira.' },
+    gate:'Rerun 2–3 lần trước. setup_failure và script_error KHÔNG log Backlog.' },
 
-  { n:'7', k:'bug', title:'Log Jira bug', who:'QA',
+  { n:'7', k:'bug', title:'Log Backlog bug', who:'QA',
     goal:'Tạo sub-bug cho những lỗi sản phẩm đã xác nhận, gán đúng tầng FE/BE.',
-    out:['Jira sub-bug + evidence ảnh/video'],
-    cmd:'npm run jira:bug-report:dry-run -- …',
+    out:['Backlog sub-bug + evidence ảnh/video'],
+    cmd:'npm run backlog:bug-report:dry-run -- …',
     gate:'output_gate soi trước khi push: đủ 4 phần mô tả, có evidence, case phức tạp phải có video.' },
 
   { n:'8', k:'rerun', title:'Re-run sau khi Dev fix', who:'QA',
     goal:'Xác nhận lỗi đã hết trên bản build mới.',
-    out:['rerun report','evidence PASS','Jira chuyển Done nếu PASS thật'],
+    out:['rerun report','evidence PASS','Backlog chuyển Done nếu PASS thật'],
     cmd:'/rerun <TASK_KEY>',
     gate:'Chỉ chuyển Done khi có evidence PASS. Kết quả rerun hết hạn nếu có deploy chen vào.' }
 ];
@@ -71,7 +71,7 @@ const SETUP_CARDS = [
     items:['Mở đúng thư mục root test-automation-kit_v2'],
     note:'Mở sai folder là nguyên nhân số một của lỗi "AI không tìm thấy file".' },
   { icon:'🔌', title:'MCP server',
-    items:['Jira / Confluence','Figma','các nguồn tài liệu khác'],
+    items:['Backlog / tài liệu nguồn','Figma','các nguồn tài liệu khác'],
     note:'Cấu hình ở .agent/config/mcp_config.md.' },
   { icon:'🔑', title:'Env và quyền truy cập',
     items:['.env.example → .env.local hoặc .env (giá trị TĨNH)','profiles/<TASK_KEY>/task.env (giá trị ĐỘNG theo task)'],
@@ -90,7 +90,7 @@ const SETUP_CARDS = [
 /* ── Lỗi thường gặp (USER_GUIDE §10) ── */
 const TROUBLES = [
   { p:'AI không tìm thấy file', c:'Mở sai folder trong VS Code.', f:'Mở đúng root test-automation-kit_v2.' },
-  { p:'Phase 1 thiếu requirement', c:'Link, token hoặc quyền chưa đủ; hoặc đọc sai phạm vi.', f:'Kiểm tra Jira/Confluence/Figma/Swagger và file .env.' },
+  { p:'Phase 1 thiếu requirement', c:'Link, token hoặc quyền chưa đủ; hoặc đọc sai phạm vi.', f:'Kiểm tra Backlog/tài liệu nguồn/Figma/Swagger và file .env.' },
   { p:'Excel không export được', c:'Thiếu dependency, hoặc bảng testcase sai format.', f:'Chạy npm install; kiểm tra bảng có cột TC ID.' },
   { p:'ui_conformance_check báo "thiếu HẾT cột"', c:'Gần như luôn là quên truyền TASK_ENV → không có creds → đứng ở màn login → mọi màn đọc ra 0 cột.', f:'Chạy lại với TASK_ENV=profiles/<TASK_KEY>/task.env. Gặp exit 2 thì ĐỪNG đọc report của lần đó.', hot:1 },
   { p:'design_gate chặn: thiếu requirements/ui_catalog.json', c:'Bộ có case hiển thị nhưng chưa có bản kiểm kê field/cột. Không có nó thì "thiếu một trường" không bao giờ lộ ra — mọi step vẫn xanh.', f:'Dựng catalog theo schema ở scripts/qa/README.md, lấy nhãn từ FSD/Figma KHÔNG lấy từ build. Task cũ thì chạy kèm --no-catalog và nêu lý do trong report.', hot:1 },
@@ -98,14 +98,14 @@ const TROUBLES = [
   { p:'Phase 2 skip nhiều', c:'Auth, dữ liệu, API hoặc môi trường chưa sẵn sàng.', f:'Sửa setup/dữ liệu/nguyên nhân gốc rồi execute lại — đừng để nguyên rồi báo cáo.' },
   { p:'Evidence trắng', c:'Chụp sai thời điểm hoặc trang chưa render xong.', f:'Chụp lại sau khi trang ổn định; case phức tạp thì quay video.' },
   { p:'Fail không rõ nguyên nhân', c:'Chưa phân loại product / setup / data / automation.', f:'Rerun đúng case đó và đọc artifact liên quan.' },
-  { p:'Jira bug thiếu thông tin', c:'Chưa có expected, actual hoặc evidence đủ rõ.', f:'Bổ sung đủ 4 phần mô tả và đính ảnh/video.' },
+  { p:'Backlog bug thiếu thông tin', c:'Chưa có expected, actual hoặc evidence đủ rõ.', f:'Bổ sung đủ 4 phần mô tả và đính ảnh/video.' },
   { p:'Re-run vẫn fail', c:'Bug chưa được fix thật, hoặc setup vẫn lỗi.', f:'Giữ bug mở, ghi actual mới kèm evidence mới.' },
   { p:'aio:push-exec bị chặn: thiếu reports/expansion-plan.md', c:'Task có case band high đã execute nhưng chưa quyết định mở rộng 5 trục. Gate đứng ở ĐƯỜNG PUBLISH chứ không chỉ ở self-review, vì bỏ qua self-review rồi đẩy thẳng thì trước đây không gì cản.', f:'Chạy npm run expansion:plan (vài giây, chỉ đọc Excel). Cố ý bỏ qua thì thêm --qa-approved và nêu lý do.', hot:1 },
-  { p:'Publish AIO trả 2xx mà trường vẫn sai', c:'2xx chỉ chứng minh request được nhận, KHÔNG chứng minh mapping đúng — đã có lượt đổ nhầm cột mà log trông hoàn toàn bình thường.', f:'Chạy npm run aio:verify-fields sau MỖI lượt publish. Ở CI không có token thì dùng --structure-only.', hot:1 },
-  { p:'Ưu tiên bị tụt về Medium sau khi publish', c:'Giá trị "Highest" là thang cũ của Jira; AIO map theo TÊN nên rơi về fallback. Đo được 14 case của một bộ bị tụt mà không ai biết.', f:'Dùng thang canonical của AIO: Critical | High | Medium | Low | Lowest.' },
-  { p:'Case cũ vẫn còn sau khi bỏ TC khỏi Excel', c:'Chưa chạy cleanup, hoặc chưa được QA duyệt.', f:'Chạy npm run aio:deprecate-stale xem trước rồi :apply — case chuyển Deprecated, không xoá (AIO không có API xoá).' },
+  { p:'Publish lên Sheet trả 2xx mà trường vẫn sai', c:'2xx chỉ chứng minh request được nhận, KHÔNG chứng minh mapping đúng — đã có lượt đổ nhầm cột mà log trông hoàn toàn bình thường.', f:'Chạy npm run aio:verify-fields sau MỖI lượt publish. Ở CI không có token thì dùng --structure-only.', hot:1 },
+  { p:'Ưu tiên bị tụt về Medium sau khi publish', c:'Giá trị "Highest" là thang cũ của Backlog; công cụ cũ map theo TÊN nên rơi về fallback. Đo được 14 case của một bộ bị tụt mà không ai biết.', f:'Dùng thang canonical của kit: Critical | High | Medium | Low | Lowest.' },
+  { p:'Case cũ vẫn còn sau khi bỏ TC khỏi Excel', c:'Chưa chạy cleanup, hoặc chưa được QA duyệt.', f:'Chạy npm run aio:deprecate-stale xem trước rồi :apply — case chuyển Deprecated, không xoá (Sheet ghi đè toàn bộ mỗi lần sync).' },
   { p:'Tài liệu nguồn thay đổi', c:'Dùng nhầm Re-run.', f:'Chạy Partial Rerun Prepare Review, không phải Re-run.' },
-  { p:'gate:policy chặn: còn nhắc công cụ test-management cũ', c:'Kit chỉ còn AIO Tests — script đã xoá, biến môi trường đã xoá, dữ liệu đã di trú đủ 2103/2103 lượt run. Mỗi câu còn nhắc công cụ trước đó là một đường mòn dẫn đi tìm lệnh không còn tồn tại.', f:'Xoá hoặc viết lại theo AIO. Đừng để lại ghi chú "legacy" — luật này cấm cả cái tên.' },
+  { p:'gate:policy chặn: còn nhắc công cụ test-management cũ', c:'Kit chỉ còn Google Sheet — script đã xoá, biến môi trường đã xoá, dữ liệu đã di trú đủ 2103/2103 lượt run. Mỗi câu còn nhắc công cụ trước đó là một đường mòn dẫn đi tìm lệnh không còn tồn tại.', f:'Xoá hoặc viết lại theo luồng Google Sheet. Đừng để lại ghi chú "legacy" — luật này cấm cả cái tên.' },
   { p:'gates:index:check chặn: bảng lệch source', c:'Thêm/sửa một máy trong scripts/qa/ mà chưa sinh lại danh mục gate.', f:'Chạy npm run gates:index. Nếu bảng báo sai mức (CHẶN/SINH/BÁO CÁO) thì soi lại — 4 "phát hiện" đầu tiên khi mới dựng bảng đều là lỗi của BẢNG, không của kit.' },
   { p:'Đọc RULE_GLOBAL tốn 12,8k token cho một câu hỏi', c:'File 465 dòng, không auto-load nhưng cũng không có mục lục nên phải đọc cả file.', f:'npm run rule:toc để xem mục, rồi npm run rule -- <mục>. Riêng mục Security chỉ 287 token.' }
 ];
@@ -114,32 +114,32 @@ const TROUBLES = [
 const CHECKLISTS = [
   { role:'QA Member', icon:'✅', rows:[
     ['Phase 1', 'testcase Markdown · Excel canonical · phase1-summary.md · task.md'],
-    ['Publish Jira', 'QA confirmation · publish summary · mirror created hoặc dry-run rõ ràng'],
+    ['Publish Backlog', 'QA confirmation · publish summary · mirror created hoặc dry-run rõ ràng'],
     ['Review Phase 1', 'coverage % · Final Decision · High/Critical gap rõ ràng'],
     ['Phase 2', 'execution summary · pass/fail/skip · evidence · phân tầng lỗi · testcase-status.json'],
-    ['Đẩy AIO', 'Cycle đã tạo · evidence neo đúng bước · đúng thư mục cycle của sprint'],
-    ['Jira bug', 'mô tả 4 phần · evidence ảnh/video · expected và actual rõ'],
-    ['Re-run', 'rerun report · evidence PASS/FAIL · Jira Done nếu PASS thật']
+    ['Đẩy kết quả lên Sheet', 'Cycle đã tạo · evidence neo đúng bước · đúng thư mục cycle của sprint'],
+    ['Backlog bug', 'mô tả 4 phần · evidence ảnh/video · expected và actual rõ'],
+    ['Re-run', 'rerun report · evidence PASS/FAIL · Backlog Done nếu PASS thật']
   ]},
   { role:'QA Lead', icon:'🔎', rows:[
     ['Có đủ testcase để test chưa?', 'reports/phase1-summary.md'],
     ['Coverage có đạt không?', 'reports/phase1-summary.md'],
     ['Có gap cần BA/BE/UIUX trả lời không?', 'reports/phase1-summary.md · task.md'],
     ['Test đã execute thật chưa?', 'reports/execution-summary.md'],
-    ['Bug có đáng log Jira không?', 'execution-summary.md · evidence · testcase liên quan'],
-    ['Bug đã fix thật chưa?', 'rerun report · Jira status · evidence PASS']
+    ['Bug có đáng log Backlog không?', 'execution-summary.md · evidence · testcase liên quan'],
+    ['Bug đã fix thật chưa?', 'rerun report · Backlog status · evidence PASS']
   ]}
 ];
 
 /* ── README: kiến trúc theo tầng ── */
 const ARCH_LAYERS = [
   { k:'Phase 1', c:'#4F46E5', d:'Đọc requirement/design/API rồi sinh testcase Markdown + Excel + coverage report + Setup Strategy contract (PRE-NN) + Precondition Execution Matrix. Excel là source of truth khi gen và publish.' },
-  { k:'Testcase Publish (AIO)', c:'#4338CA', d:'Step riêng trong Phase 1: sau khi QA xác nhận Excel thì tạo/cập nhật case trên AIO Tests, nhóm bằng folder 2 cấp, TC ID ở automationKey. Mặc định dry-run.' },
-  { k:'Phase 2', c:'#2A6FDB', d:'Đọc testcase từ nguồn canonical (mặc định kéo từ AIO), chạy Precondition Resolution Pass, sinh/cập nhật Playwright spec, execute thật rồi thu evidence.' },
+  { k:'Testcase Publish (Google Sheet)', c:'#4338CA', d:'Step riêng trong Phase 1: sau khi QA xác nhận Excel thì tạo/cập nhật case trên Google Sheet, nhóm bằng folder 2 cấp, TC ID ở automationKey. Mặc định dry-run.' },
+  { k:'Phase 2', c:'#2A6FDB', d:'Đọc testcase từ nguồn canonical (mặc định kéo từ Google Sheet), chạy Precondition Resolution Pass, sinh/cập nhật Playwright spec, execute thật rồi thu evidence.' },
   { k:'Setup Layer', c:'#0E9AA7', d:'tests/support/setup/ — factory, hook, fixture, mock, cleanup, contract dùng chung để dựng tiền điều kiện. Không dựng state bằng DB; DB chỉ read-only verify qua guarded client.' },
-  { k:'Rerun', c:'#1F8A5B', d:'Chạy lại case fail hoặc bug Jira đã fix. Không dùng để đồng bộ tài liệu nguồn mới.' },
+  { k:'Rerun', c:'#1F8A5B', d:'Chạy lại case fail hoặc bug Backlog đã fix. Không dùng để đồng bộ tài liệu nguồn mới.' },
   { k:'Partial Rerun', c:'#7C5CD6', d:'Nhánh phụ độc lập xử lý thay đổi tài liệu nguồn và execute subset bị ảnh hưởng. Không được gọi từ Main Flow.' },
-  { k:'Shared Services', c:'#D64545', d:'Jira testcase publisher, Jira bug reporter, Google Sheet, Excel converter, runtime config và helper dùng chung.' },
+  { k:'Shared Services', c:'#D64545', d:'Backlog testcase publisher, Backlog bug reporter, Google Sheet, Excel converter, runtime config và helper dùng chung.' },
   { k:'Outputs', c:'#79736A', d:'Requirement artifacts, testcase, execution results, evidence và reports — lưu theo từng task.' }
 ];
 
@@ -167,7 +167,7 @@ const TREE = [
 
 /* ── README: output của một task ── */
 const OUTPUT_DIRS = [
-  ['requirements/','Jira, Confluence, Figma, Swagger hoặc tài liệu đầu vào đã fetch. Chứa cả ui_catalog.json và dimension_manifest.json.'],
+  ['requirements/','Backlog, tài liệu nguồn, Figma, Swagger hoặc tài liệu đầu vào đã fetch. Chứa cả ui_catalog.json và dimension_manifest.json.'],
   ['test-cases/','Testcase Markdown, Excel canonical và snapshot ngữ cảnh. Có from-aio/ khi Phase 2 kéo về.'],
   ['test-results/','Playwright JSON, HTML report, screenshot, video, trace.'],
   ['reports/','phase1-summary · execution-summary · publish summary · bug log · rerun report.'],
@@ -175,12 +175,12 @@ const OUTPUT_DIRS = [
   ['logs/','Log local đã sanitize.']
 ];
 
-/* ── README: mô hình AIO Tests ── */
+/* ── README: mô hình Google Sheet ── */
 const TMS_MODEL = [
-  { k:'Case', d:'Một testcase trên AIO. Nối tới Task cha bằng jiraRequirementIDs; TC ID nằm ở automationKey.', note:'caseStatus (Draft/Under Review/Published/Deprecated) là vòng đời biên soạn, KHÔNG phải kết quả chạy.' },
-  { k:'Folder', d:'Tổ chức case theo nhóm chức năng: cây 2 cấp <root>/<nhóm>, dựng TỪ Excel.', note:'AIO không có Test Set — team chạy cả bộ cùng lúc nên cũng không cần.' },
+  { k:'Case', d:'Một dòng testcase trong Google Sheet. Nối tới Task cha bằng backlogRequirementIDs; TC ID nằm ở automationKey.', note:'caseStatus (Draft/Under Review/Published/Deprecated) là vòng đời biên soạn, KHÔNG phải kết quả chạy.' },
+  { k:'Folder', d:'Tổ chức case theo nhóm chức năng: cây 2 cấp <root>/<nhóm>, dựng TỪ Excel.', note:'Google Sheet không có Test Set — team chạy cả bộ cùng lúc nên cũng không cần.' },
   { k:'precondition', d:'Tiền điều kiện — là FIELD trong case, không còn issue dùng chung.', note:'Sinh từ Setup Strategy contract ở Phase 1; mã [PRE-NN] giữ trong text để tra chéo.' },
-  { k:'Thư mục cycle', d:'Gom các lần chạy của một sprint. AIO KHÔNG có Test Plan.', note:'Truyền --folder "<Tên sprint>"; kit tự tạo thư mục nếu chưa có.' },
+  { k:'Thư mục cycle', d:'Gom các lần chạy của một sprint. Sheet không có khái niệm Test Plan.', note:'Truyền --folder "<Tên sprint>"; kit tự tạo thư mục nếu chưa có.' },
   { k:'Cycle', d:'Một lần chạy toàn bộ testcase. Cùng --cycle-title thì dùng lại cycle cũ, không đẻ trùng.', note:'Run + run-step nhận Passed / Failed / Blocked / Not Run; evidence neo được xuống TỪNG BƯỚC.' }
 ];
 
@@ -196,7 +196,7 @@ const CMD_GROUPS = [
   { g:'Gate bắt buộc', items:[
     ['npm run preflight','Kiểm input và config đủ trước khi chạy phase'],
     ['npm run design:gate -- --dir <test-cases/> --with-rows','Soi thiết kế bộ testcase'],
-    ['npm run gate:output -- --status <status.json>','Soi output trước khi push AIO/Jira'],
+    ['npm run gate:output -- --status <status.json>','Soi output trước khi push Sheet/Backlog'],
     ['npm run self-review -- --task <TASK_KEY>  ·  /gates <TASK_KEY>','Checklist gộp trước khi finalize'],
     ['npm run gate:policy','Một nguồn policy · file mồ côi · tên skill · đuôi evidence'],
     ['npm run self-review:enforce -- --task <TASK_KEY>','Bản chặn thật của checklist gộp'],
@@ -241,15 +241,15 @@ const CMD_GROUPS = [
     ['npm run explore:check  ·  npm run explore:check:enforce','Kiểm ràng buộc của phiên dò'],
     ['npm run explore:close','Đóng vòng học của phiên dò']
   ]},
-  { g:'Jira & AIO Tests', items:[
-    ['npm run integration:check','Kiểm kết nối Jira'],
+  { g:'Backlog & Google Sheet', items:[
+    ['npm run integration:check','Kiểm kết nối Backlog'],
     ['npm run aio:publish -- --file <x.xlsx> --story <KEY>','Xem trước khi publish testcase (mặc định dry-run)'],
     ['npm run aio:publish:apply -- … --qa-approved','Publish thật sau khi QA duyệt'],
     ['npm run aio:verify-fields -- --file <x.xlsx>','BẮT BUỘC sau publish — 2xx không chứng minh mapping đúng'],
     ['npm run aio:verify  ·  npm run aio:verify:enforce','Đối soát độ tươi mirror trước khi execute'],
-    ['npm run jira:bug-report:dry-run -- …','Xem trước bug sẽ tạo'],
+    ['npm run backlog:bug-report:dry-run -- …','Xem trước bug sẽ tạo'],
     ['npm run aio:push-exec -- --task <KEY> --folder "<Sprint>"','Đẩy kết quả execute thành cycle (dry-run → :apply)'],
-    ['npm run aio:pull:write -- --story <KEY>','Kéo testcase từ AIO về canonical local'],
+    ['(Drive MCP)','Tải bản Google Sheet mới nhất về canonical local'],
     ['npm run aio:deprecate-stale -- --story <KEY> --file <x.xlsx>','Cleanup: case rời Excel → Deprecated']
   ]},
   { g:'Kit: tự kiểm toán & phát hành', items:[
@@ -261,11 +261,11 @@ const CMD_GROUPS = [
   ]},
   { g:'Bộ nhớ học', items:[
     ['TASK_ENV=… npm run learn','Thu learning data của một task'],
-    ['TASK_ENV=… npm run learn:bugs:apply','Nạp bug Jira vào knowledge sau khi log'],
+    ['TASK_ENV=… npm run learn:bugs:apply','Nạp bug Backlog vào knowledge sau khi log'],
     ['npm run domain:check  ·  npm run system:check','Kiểm business rule · bản đồ hệ thống'],
     ['node scripts/qa/decisions.js --check "<triệu chứng>"','Tra quyết định cũ TRƯỚC khi log bug'],
     ['npm run knowledge:backup','Sao lưu knowledge ghi tay ra ngoài repo'],
-    ['npm run dashboard','Sinh QA Dashboard theo SAPP DS']
+    ['npm run dashboard','Sinh QA Dashboard theo dự án trước DS']
   ]}
 ];
 
@@ -278,7 +278,7 @@ const PRACTICES = [
     'Ưu tiên npm run test:task* thay vì gọi npm test trực tiếp.',
     'Giữ testcase đủ precondition, test data, steps, expected và ý đồ assertion.',
     'Review coverage bằng requirement/risk gate, không chỉ đếm số lượng testcase.',
-    'Dùng dry-run trước khi tạo Jira bug thật.'
+    'Dùng dry-run trước khi tạo Backlog bug thật.'
   ]},
   { lv:'warn', t:'Thận trọng', items:[
     'Không commit .env, .env.local, token, password, cookie, private key hay service-account JSON.',
@@ -290,6 +290,6 @@ const PRACTICES = [
     'Không skip testcase chỉ để tăng pass rate.',
     'Không sửa expected result khi chưa có requirement/API/design xác nhận.',
     'Không dựng precondition bằng câu lệnh DB.',
-    'Không xoá case — case rời Excel chỉ chuyển caseStatus sang Deprecated (AIO cũng không có API xoá).'
+    'Không xoá case — case rời Excel chỉ chuyển caseStatus sang Deprecated (công cụ cũng không có API xoá).'
   ]}
 ];

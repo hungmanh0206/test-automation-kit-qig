@@ -12,7 +12,7 @@ chọn setup method, chỉ ra capability cần (API/factory/hook/fixture/mock), 
 cleanup, đánh dấu readiness/blocker. Sinh tag `[<method>]` cho từng cell `Tiền điều kiện` + phần chi tiết ở `### Setup Readiness` của `phase1-summary.md`.
 và `### Precondition Execution Matrix` ở Phase 1, và là chuẩn để Phase 2 đánh giá Definition of Ready.
 
-Skill này không đề xuất DB để DỰNG state hoặc đọc toàn bộ source backend. Nếu state cần can thiệp sâu mà không có API/test hook/fixture an toàn, đánh dấu `Needs hook` hoặc `Manual-only`. VERIFY state (khi API/UI không expose) có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) làm `Setup Verification`.
+Skill này không đề xuất DB để DỰNG state hoặc đọc toàn bộ source backend. Nếu state cần can thiệp sâu mà không có API/test hook/fixture an toàn, đánh dấu `Needs hook` hoặc `Manual-only`. VERIFY state (khi API/UI không expose) có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only, chỉ SELECT) làm `Setup Verification`.
 
 ## Responsibilities
 
@@ -48,7 +48,7 @@ Mapping sang code: `tests/support/setup/` (`factories/`, `hooks/`, `fixtures/`, 
 - Chỉ dùng `ui` làm setup khi không có API/factory/hook và đã ghi rõ lý do.
 - Ngược lại, nếu chính case là "tạo X qua UI" thì bước tạo đó là behavior under test, không phải
   precondition — không setup bằng API.
-- Không dùng DB để DỰNG precondition (setup vẫn qua api/factory/test_hook/fixture). VERIFY: nếu API/UI không expose state, có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) làm `Setup Verification`; nếu cả DB UAT cũng không expose → ghi missing capability và chuyển `Needs hook`/`Manual-only`.
+- Không dùng DB để DỰNG precondition (setup vẫn qua api/factory/test_hook/fixture). VERIFY: nếu API/UI không expose state, có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only, chỉ SELECT) làm `Setup Verification`; nếu cả DB UAT cũng không expose → ghi missing capability và chuyển `Needs hook`/`Manual-only`.
 
 ## Pattern cho các nhóm khó (generic)
 
@@ -91,7 +91,7 @@ capability cụ thể.
 | `Needs hook` | Cần hook/mock/sandbox CHƯA có | `BLOCKED_SETUP` + missing capability |
 | `Manual-only` | Không có capability an toàn để tự động setup (API/factory/hook/fixture/sandbox đều không dựng được state); KHÔNG dùng DB để thay thế | `SKIP_SETUP` + lý do/manual steps |
 
-`BLOCKED_SETUP` và `SKIP_SETUP` KHÔNG phải product bug và không log Jira bug.
+`BLOCKED_SETUP` và `SKIP_SETUP` KHÔNG phải product bug và không log Backlog bug.
 
 ## Blocker Root Cause — phân loại đúng gốc rễ (routing)
 
@@ -113,7 +113,7 @@ Chỉ `needs_hook`/`needs_account`/`needs_sandbox` là "capability gap" đi vào
 | Input | Nguồn |
 |---|---|
 | Testcase + precondition | Bảng testcase Phase 1 |
-| Requirement/API spec | Swagger/OpenAPI, Confluence, business rule |
+| Requirement/API spec | Swagger/OpenAPI, tài liệu nguồn, business rule |
 | Capability hiện có | `tests/support/setup/`, env (`TEST_HOOK_BASE_URL`, sandbox) |
 
 ## Outputs
@@ -131,14 +131,14 @@ Chỉ `needs_hook`/`needs_account`/`needs_sandbox` là "capability gap" đi vào
 - Endpoint/payload phải dựa trên Swagger thật; không có cách setup → `Needs hook`, không bịa.
 - `state_mutation`/data tạo mới bắt buộc có cleanup hoặc lý do.
 - Capability thiếu phải nêu rõ tên (hook nào, mock/sandbox nào), không ghi chung chung.
-- Không đề xuất DB setup/mutation hoặc backend source inspection như một capability. DB read-only verify trên UAT (guarded client `tests/support/setup/db/uatPgClient.ts`, read-only) là phương án `Setup Verification` hợp lệ — KHÔNG phải capability gap; setup/mutation bằng DB vẫn không dùng.
+- Không đề xuất DB setup/mutation hoặc backend source inspection như một capability. DB read-only verify trên UAT (guarded client `tests/support/setup/db/uatDbClient.ts`, read-only) là phương án `Setup Verification` hợp lệ — KHÔNG phải capability gap; setup/mutation bằng DB vẫn không dùng.
 
 ## Constraints
 
 - Không hardcode task/domain cụ thể vào pattern/template chung.
 - Không mock behavior đang test; mock chỉ cho dependency ngoài scope.
 - Không ghi secret vào contract/report.
-- Không connect DB ngoài guarded client `tests/support/setup/db/uatPgClient.ts` (UAT read-only). Không đưa connection string/credential DB vào bất kỳ testcase/report/prompt nào.
+- Không connect DB ngoài guarded client `tests/support/setup/db/uatDbClient.ts` (UAT read-only). Không đưa connection string/credential DB vào bất kỳ testcase/report/prompt nào.
 
 ## Anti-Patterns
 

@@ -2,10 +2,10 @@ import { test } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
-import { isUatDbConfigured, queryUatReadonly } from './uatPgClient';
+import { isUatDbConfigured, queryUatReadonly } from './uatDbClient';
 
 /**
- * VERIFY SAPP-14127 — DB2 (before) → DB3 (after = kết quả chạy command trên baseline DB2).
+ * VERIFY CSDL-14127 — DB2 (before) → DB3 (after = kết quả chạy command trên baseline DB2).
  * 1 spec: tính flag trên DB2 vs HubSpot, rồi đối chiếu THUẦN sang DB3, trả lời 4 câu + liệt kê bản ghi.
  * Read-only cả HubSpot lẫn DB. EXISTS-based nên miễn nhiễm với việc DB3 nhân đôi dòng class_user_instances.
  */
@@ -71,7 +71,7 @@ async function classifyOnAfter(rows: { uid: string; code: string; cid: string }[
 const mdTable = (rows: string[][], head: string[]) =>
   rows.length ? [`| ${head.join(' | ')} |`, `| ${head.map(() => '---').join(' | ')} |`, ...rows.map((r) => `| ${r.join(' | ')} |`)].join('\n') : '_(không có)_';
 
-test('verify SAPP-14127 DB2(before) → DB3(after)', async () => {
+test('verify CSDL-14127 DB2(before) → DB3(after)', async () => {
   test.skip(!isUatDbConfigured('LIB_MASTER_DB2') || !isUatDbConfigured('LIB_MASTER_DB3'), 'Thiếu DB2 hoặc DB3.');
   test.setTimeout(600_000);
 
@@ -160,7 +160,7 @@ test('verify SAPP-14127 DB2(before) → DB3(after)', async () => {
 
   const plainRemoved = removePlain.length - c2plainActive.length;
   const variantActive = bk(removeVariant, cVar, 'active').length;
-  const report = `# Verify SAPP-14127 — DB2 (before) → DB3 (after) — 4 câu + chi tiết
+  const report = `# Verify CSDL-14127 — DB2 (before) → DB3 (after) — 4 câu + chi tiết
 
 - Thời điểm: ${new Date().toISOString()}
 - before = DB2 \`postgres-update\` | after = DB3 \`postgres-update-2\` (DB3 = kết quả chạy command trên baseline DB2).
@@ -189,7 +189,7 @@ ${mdTable(c3wrong.map((r) => [r.uid, r.code, r.cid, cKeep.get(`${r.uid}|${r.cid}
 ## Câu 4 — HV ĐÁNG THÊM nhưng DB3 CHƯA thêm (${c4not.length})
 ${mdTable(c4not.map((r) => [r.uid, r.code, r.cid, cAdd.get(`${r.uid}|${r.cid}`) ?? 'gone']), ['user_id', 'class_code', 'class_id', 'bucket'])}
 `;
-  const outPath = path.join('outputs', 'lms-operations-automation', process.env.TASK_KEY || 'SAPP-14127', 'verify-db2-vs-db3.md');
+  const outPath = path.join('outputs', 'lms-operations-automation', process.env.TASK_KEY || 'CSDL-14127', 'verify-db2-vs-db3.md');
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, report, 'utf8');
   // eslint-disable-next-line no-console

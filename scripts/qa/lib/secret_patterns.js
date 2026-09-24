@@ -25,7 +25,7 @@ const PATTERNS = [
    * DÒNG KIỂU FILE .env — giá trị KHÔNG có dấu nháy.
    *
    * Luật ngay trên đòi `['"]…['"]`, nên nó đúng với JSON và JS nhưng MÙ với chính hình dạng nguy hiểm
-   * nhất: `OPS_PASSWORD=Tr4nsAct!on9xKp`. Đo 19/09/2026: tạo `.env.uat` chứa OPS_PASSWORD + JIRA_API_TOKEN,
+   * nhất: `OPS_PASSWORD=Tr4nsAct!on9xKp`. Đo 19/09/2026: tạo `.env.uat` chứa OPS_PASSWORD + BACKLOG_API_KEY,
    * `git add`, rồi chạy gate — gate báo OK. Cùng lúc `.gitignore` chỉ chặn `.env`, `.env.local`,
    * `.env.*.local`, `.env.bak*`, nên `.env.uat` cũng không bị chặn. Hai lỗ khớp nhau thành một đường
    * commit creds UAT lên mirror public mà mọi cửa đều xanh.

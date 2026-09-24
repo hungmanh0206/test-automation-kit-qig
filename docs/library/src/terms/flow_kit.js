@@ -6,7 +6,7 @@ const TERMS_FLOW2 = [
   def:'Chín điểm vào gõ được thẳng trong phiên chat, thay cho việc tự nhớ đọc file nào trước.',
   detail:'/phase1 · /phase2 · /rerun · /partial-rerun · /publish · /preflight · /gates · /explore · /ui-debug. Mỗi file khai một description ngắn rồi liệt kê ĐÚNG THỨ TỰ những file phải đọc và những gate bắt buộc phải chạy, với $ARGUMENTS là mã task.',
   why:'Trước đó điểm vào là "đọc prompt_templates/run_phase1_template.md rồi đọc tiếp bốn workflow theo thứ tự". Tức là người dùng phải nhớ cả thứ tự lẫn tên file, và bỏ sót một bước thì không có gì báo. Đưa vào slash command là biến trình tự đó thành thứ gọi được bằng một dòng.',
-  ex:'/phase1 SAPP-12345 sẽ nạp đúng chuỗi: run_phase1_template → scope planning → prepare context → generate tc, kèm hai gate bắt buộc.',
+  ex:'/phase1 CSDL-12345 sẽ nạp đúng chuỗi: run_phase1_template → scope planning → prepare context → generate tc, kèm hai gate bắt buộc.',
   trap:'Slash command KHÔNG thay thế gate, nó chỉ dẫn đúng đường. Gate vẫn là thứ chặn.',
   src:'.claude/commands/', rel:['f-phase1','f-phase2','f-rerun','f-skills-index','g-preflight_gate'] },
 

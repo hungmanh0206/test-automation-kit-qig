@@ -12,8 +12,8 @@
 
 const RISK_RANK = { blocker: 3, critical: 3, major: 2, minor: 1 };
 /*
- * Thang `Ưu tiên` của AIO là Critical|High|Medium|Low|Lowest — PHẢI có đủ 5, đặc biệt `critical`.
- * Lỗi đo được 21/08/2026: thiếu `critical` nên case ưu tiên CAO NHẤT bị rank 0. Trên SAPP-26878 điều đó
+ * Thang `Ưu tiên` của công cụ cũ là Critical|High|Medium|Low|Lowest — PHẢI có đủ 5, đặc biệt `critical`.
+ * Lỗi đo được 21/08/2026: thiếu `critical` nên case ưu tiên CAO NHẤT bị rank 0. Trên CSDL-26878 điều đó
  * ẩn đi vì cột `Mức độ rủi ro` đang gánh; thử bỏ cột đó thì 28 case `Critical` tụt band high → low, tức
  * từ 5 trục mở rộng còn 1 — sai đúng chiều nguy hiểm nhất (case quan trọng nhất bị soi mỏng nhất).
  */

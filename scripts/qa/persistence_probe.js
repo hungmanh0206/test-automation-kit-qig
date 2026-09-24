@@ -3,12 +3,12 @@
  * persistence_probe.js — TRỤC 3: chuỗi lưu trữ `form → payload → đọc lại (API) → UI`.
  *
  * VÌ SAO CÓ FILE NÀY: một lớp bug rất đắt mà test theo case gần như không bắt: **giá trị nhập vào không sống sót
- * qua chuỗi**. Đo trên SAPP-24395 có 13 bug thuộc trục này, và mỗi cái đều "đúng" ở vài điểm nên nhìn từng điểm
+ * qua chuỗi**. Đo trên CSDL-24395 có 13 bug thuộc trục này, và mỗi cái đều "đúng" ở vài điểm nên nhìn từng điểm
  * riêng lẻ thì thấy bình thường:
- *   - SAPP-28310: form nhập Service Fee 1.000.000 → **BE lưu 0** → đơn tự nhảy "Đã thanh toán" (thất thu).
- *   - SAPP-28376: form tính Net Amount đúng → **payload gửi 0** khi tick "included in Course Payment".
- *   - SAPP-28442: gói chuyển nhượng **không được gửi lên payload**, API trả success nhưng không tạo Order.
- *   - SAPP-28403: tiền USD **không quy đổi** sang VND ⇒ Net Amount sai một bậc độ lớn.
+ *   - CSDL-28310: form nhập Service Fee 1.000.000 → **BE lưu 0** → đơn tự nhảy "Đã thanh toán" (thất thu).
+ *   - CSDL-28376: form tính Net Amount đúng → **payload gửi 0** khi tick "included in Course Payment".
+ *   - CSDL-28442: gói chuyển nhượng **không được gửi lên payload**, API trả success nhưng không tạo Order.
+ *   - CSDL-28403: tiền USD **không quy đổi** sang VND ⇒ Net Amount sai một bậc độ lớn.
  * Điểm chung: phải so **4 điểm cùng một giá trị mồi**, và phải nói được **mắt nào đứt** — vì "kết quả sai" thì
  * FE và BE đẩy qua đẩy lại, còn "payload đã gửi 0" thì hết tranh luận.
  *
@@ -106,7 +106,7 @@ function evaluate(chain) {
     present,
     missing,
     breaks,
-    // KHÔNG đặt tên `ok`: 4 điểm khớp CHỈ chứng minh **nhất quán**, không chứng minh ĐÚNG. Ca thật SAPP-28403
+    // KHÔNG đặt tên `ok`: 4 điểm khớp CHỈ chứng minh **nhất quán**, không chứng minh ĐÚNG. Ca thật CSDL-28403
     // (USD không quy đổi) khớp cả 4 điểm ở giá trị 10 trong khi đúng phải 260.500 ⇒ tên `ok` là mầm PASS giả.
     // Muốn PASS thì phải có `oracle_ref` — xem scripts/lib/expansion/finding.js.
     consistent: breaks.length === 0 && missing.length === 0,

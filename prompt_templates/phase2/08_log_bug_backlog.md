@@ -2,12 +2,12 @@
 
 > Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
 >
-> Tên file (`08_log_bug_jira.md`) giữ nguyên sau khi tổ chức chuyển Jira→Backlog (22/09/2026) để không phá
+> Tên file (`08_log_bug_backlog.md`) giữ nguyên sau khi tổ chức chuyển hệ bug-tracking cũ → Backlog (22/09/2026) để không phá
 > mọi chỗ trỏ tới file này; nội dung bên dưới đã cập nhật cho Backlog.
 
 Dùng prompt này như một bước con của Phase 2, chỉ chạy sau khi đã execute testcase, auto-heal và sinh local execution summary PASS/FAIL/SKIP. Không chạy prompt này như một phase độc lập.
 
-Prompt này chỉ để log Backlog bug sau execute. Phase 1 hiện KHÔNG publish testcase lên đâu (AIO publish đã dừng — xem quyết định 22/09/2026); `prompt_templates/phase1/04_auto_publish_jira.md` đang chờ cập nhật theo, đừng chạy.
+Prompt này chỉ để log Backlog bug sau execute. Phase 1 hiện KHÔNG publish testcase lên đâu (publish đã dừng — xem quyết định 22/09/2026); `prompt_templates/phase1/04_auto_publish_backlog.md` đang chờ cập nhật theo, đừng chạy.
 
 ```text
 Chạy bước log bug Backlog trong Phase 2.
@@ -65,7 +65,7 @@ Env/config:
   - Nếu không cấu hình assignee riêng, fallback sang assignee của Backlog Story/Task parent khi có.
 - `BACKLOG_BUG_ISSUE_TYPE` phải là issue type con `Sub-bug` (tên issue type có thật trong project Backlog — reporter tự resolve tên → id, báo lỗi rõ nếu không khớp). Không dùng `Sub-task` cho bug.
 - Khi tạo/update Sub-bug, phải tự động copy `Milestone` và `Category` từ Backlog Story/Task parent `[BACKLOG_STORY_KEY]` (Backlog KHÔNG có Sprint — Milestone là tương đương gần nhất, hướng release chứ không phải iteration).
-  - Nếu project cần copy thêm 1 custom field cụ thể từ parent (id số, không phải tên — Backlog không resolve field theo tên như Jira "Sprint"), cấu hình `BACKLOG_SPRINT_FIELD_ID`.
+  - Nếu project cần copy thêm 1 custom field cụ thể từ parent (id số, không phải tên — Backlog không resolve field theo tên như Backlog "Sprint"), cấu hình `BACKLOG_SPRINT_FIELD_ID`.
   - Nếu parent không có `Milestone` hoặc `Category`, bỏ qua field trống và ghi nhận trong summary nếu cần.
 - `Priority` của Backlog Sub-bug phải lấy từ cột `Ưu tiên`/`Priority` của testcase. Backlog chỉ có 3 mức cố định: `High`, `Normal`, `Low` — kit tự map `Critical/High → High`, `Medium → Normal`, `Low/Lowest → Low` (mất độ phân giải so với thang 5 mức của testcase, có chủ đích).
 - Nếu `BACKLOG_PROJECT_KEY` bỏ trống, không truyền flag `--project`; reporter sẽ suy ra project key từ `BACKLOG_STORY_KEY` khi có thể.
@@ -150,7 +150,7 @@ Quy tắc Backlog issue:
   - BE bug: ưu tiên `BACKLOG_BE_ASSIGNEE`.
   - `BACKLOG_DEV_ASSIGNEE` dùng khi muốn ép cùng một assignee cho mọi layer.
   - Nếu không có env assignee, dùng assignee của Backlog Story/Task parent nếu có.
-- Đánh dấu (Backlog KHÔNG có labels tự do như Jira — các thông tin dưới đây nằm trong SUMMARY/DESCRIPTION, không phải field riêng):
+- Đánh dấu (Backlog KHÔNG có labels tự do như Backlog — các thông tin dưới đây nằm trong SUMMARY/DESCRIPTION, không phải field riêng):
   - `[<TC_ID>]` nhúng đầu summary (truy vết testcase + chống trùng).
   - `[FE]`/`[BE]` nhúng đầu summary (layer).
   - `[found-by-kit]`/`[found-by-human]` trong description khi chạy `--found-by kit|human` (nguồn phát hiện).
@@ -170,7 +170,7 @@ Ví dụ:
 - `[FE][HS_TC_012] Không đăng nhập được App 2 sau khi submit form`
 - `[BE][ORD_TC_045] API tạo bản ghi trả sai status khi thiếu required_field`
 
-Description (plain text — Backlog KHÔNG dùng rich-doc như Jira ADF):
+Description (plain text — Backlog không dùng định dạng rich-doc):
 
 Description chỉ được có đúng 4 phần bên dưới, theo đúng thứ tự. Tất cả nội dung phải mô tả theo testcase/requirement đang fail:
 1. `Tiền điều kiện`
@@ -226,8 +226,8 @@ Backlog comment:
 - **Format comment (dễ nhìn, ngắn gọn)**: KHÔNG viết một đoạn dài. Dùng cấu trúc:
   - 1 dòng tiêu đề trạng thái, vd `QA re-verify (build staging <ngày>): ✅ Đã fix` hoặc `⚠️ Chưa fix hẳn`.
   - **Gạch đầu dòng cho từng ý**; nếu vừa có phần đúng vừa có phần lỗi thì tách 2 nhóm ("Đã đúng:" / "Còn lỗi (<màn>):"), mỗi nhóm 1-3 bullet ngắn.
-  - Tag người cần xử lý: Backlog dùng mention `@<tên đăng nhập>` trong nội dung comment (khác cú pháp `[~accountid:...]` của Jira). CHƯA VERIFY cú pháp chính xác trên space `enetviet.backlog.com` — kiểm bằng comment thử trước khi dùng thật.
-  - **Nhúng ảnh evidence trong comment**: Backlog có cơ chế riêng khác hẳn ADF/wiki-markup của Jira (không dùng `!filename|width=900!`). CHƯA VERIFY cú pháp — trước mắt đính kèm ảnh dưới dạng attachment của comment (`attachmentId[]` qua `POST /api/v2/issues/:id/comments`) và ghi rõ trong comment "xem ảnh đính kèm", không cố nhúng inline cho tới khi verify được cú pháp thật.
+  - Tag người cần xử lý: Backlog dùng mention `@<tên đăng nhập>` trong nội dung comment (khác cú pháp `[~accountid:...]` của Backlog). CHƯA VERIFY cú pháp chính xác trên space `enetviet.backlog.com` — kiểm bằng comment thử trước khi dùng thật.
+  - **Nhúng ảnh evidence trong comment**: Backlog có cơ chế đính kèm riêng (không dùng cú pháp nhúng `!filename|width=900!`). CHƯA VERIFY cú pháp — trước mắt đính kèm ảnh dưới dạng attachment của comment (`attachmentId[]` qua `POST /api/v2/issues/:id/comments`) và ghi rõ trong comment "xem ảnh đính kèm", không cố nhúng inline cho tới khi verify được cú pháp thật.
 
 Evidence attachment:
 - Evidence không phải là một section trong description.

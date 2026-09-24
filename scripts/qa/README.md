@@ -209,7 +209,7 @@ Ghi 3 thứ (theo `knowledge/SCHEMA.md`):
 | Output | Nguồn | Ai tiêu thụ |
 |---|---|---|
 | `knowledge/metrics/{runs,tc-history}.jsonl` | `results.json` (Playwright JSON) | `reliability_index` (flaky/quarantine), dashboard KPI |
-| `knowledge/historical_execution/<TASK>__<date>.json` | `testcase-status.json` + map `tcId→Module` từ **testcase canonical** (`test-cases/*.md` \| `from-aio/*.xlsx`) | **`risk_score`** cộng `fail/total` theo module → Likelihood thật (hết cold-start); `dashboard` coverage |
+| `knowledge/historical_execution/<TASK>__<date>.json` | `testcase-status.json` + map `tcId→Module` từ **testcase canonical** (`test-cases/*.md` \| `from-sheet/*.xlsx`) | **`risk_score`** cộng `fail/total` theo module → Likelihood thật (hết cold-start); `dashboard` coverage |
 | `knowledge/index.json` | (trên) | tra cứu theo module/tag |
 
 **Quan trọng:**
@@ -220,31 +220,31 @@ Ghi 3 thứ (theo `knowledge/SCHEMA.md`):
 
 ---
 
-# learn_bugs.js — bug đã log Jira → knowledge/bugs (khép nốt vòng học)
+# learn_bugs.js — bug đã log Backlog → knowledge/bugs (khép nốt vòng học)
 
-`learn_task.js` cấp **failRate** theo module, nhưng `risk_score` còn cần **bugCount** — vốn chỉ được ghi khi agent nhớ chạy skill `learning_recorder` (Suggest-only) ⇒ thực tế luôn `knowledge/bugs/` rỗng. Script này lấy bug **từ chính Jira** nên không phụ thuộc trí nhớ agent, và **KHÔNG cần sửa `bug_reporter.js`**.
+`learn_task.js` cấp **failRate** theo module, nhưng `risk_score` còn cần **bugCount** — vốn chỉ được ghi khi agent nhớ chạy skill `learning_recorder` (Suggest-only) ⇒ thực tế luôn `knowledge/bugs/` rỗng. Script này lấy bug **từ chính Backlog** nên không phụ thuộc trí nhớ agent, và **KHÔNG cần sửa `bug_reporter.js`**.
 
 ```bash
 TASK_ENV=profiles/<TASK>/task.env npm run learn:bugs          # DRY-RUN (mặc định, chỉ in)
 TASK_ENV=profiles/<TASK>/task.env npm run learn:bugs:apply    # ghi thật vào knowledge/bugs + index
-[--story <JIRA_STORY_KEY>] [--project SAPP] [--max 100]
+[--story <BACKLOG_STORY_KEY>] [--project dự án trước] [--max 100]
 ```
 
 - **Nguồn canonical**: bug do kit tạo luôn có label `auto-bug` + label `<tcId>`, là sub-task của story ⇒ JQL đúng bộ đó **chỉ học bug ĐÃ QUA GATE** (không dính flaky/setup — đúng `knowledge/SCHEMA.md`).
 - **Module** suy từ `tcId → cột Module` của testcase canonical (dùng chung map với `learn_task.js`).
-- **Idempotent**: đã có file thì chỉ **đồng bộ `jira_status`** (rerun chuyển Done → cập nhật), không tạo trùng.
+- **Idempotent**: đã có file thì chỉ **đồng bộ `backlog_status`** (rerun chuyển Done → cập nhật), không tạo trùng.
 - Nghiệm thu trên 1 task thật: 7 bug được nạp, module map đúng theo cột `Module`; `risk_score` từ `0 bug` → `7 bug` làm dữ liệu, module có 3 bug được nâng band lên **Medium**.
 - `self_review` **cảnh báo** khi có case FAILED mà `knowledge/bugs/` chưa có entry của task.
 - `self_review` check #6 **knowledge ghi tay**: 3 store `domain/`/`system/`/`decisions/` chỉ có người-ghi được (máy không tự thu) nên rất dễ rỗng mãi. Record đã ghi mà sai schema/PII → **CHẶN**; store rỗng thì chỉ nhắc **khi có tín hiệu**: clarifications đã RESOLVED mà `domain/` rỗng · bộ TC có case phân quyền/trạng thái mà `system/` rỗng · bug Rejected chưa lưu lý do · quyết định quá `expires_at`. Không nhắc chung chung để cảnh báo không thành tiếng ồn.
 
 ---
 
-# seed_knowledge_from_jira.js — nạp lịch sử bug Jira vào knowledge (Suggest-only)
+# seed_knowledge_from_backlog.js — nạp lịch sử bug Backlog vào knowledge (Suggest-only)
 
-Bootstrap Risk-Based Testing: kit chỉ điền `knowledge/` khi bug qua Jira gate ở Phase 2, nên dự án mới → knowledge rỗng → `risk_score` cold-start chỉ dựa **Impact** (đoán Likelihood). Script này nạp **bug đã resolved** (→ `knowledge/bugs/`, cấp `bugCount`)  → `risk_score` có Likelihood thật ngay từ ngày đầu. **Không sửa `risk_score`, chỉ cấp dữ liệu.**
+Bootstrap Risk-Based Testing: kit chỉ điền `knowledge/` khi bug qua Backlog gate ở Phase 2, nên dự án mới → knowledge rỗng → `risk_score` cold-start chỉ dựa **Impact** (đoán Likelihood). Script này nạp **bug đã resolved** (→ `knowledge/bugs/`, cấp `bugCount`)  → `risk_score` có Likelihood thật ngay từ ngày đầu. **Không sửa `risk_score`, chỉ cấp dữ liệu.**
 
 ```bash
-node scripts/qa/seed_knowledge_from_jira.js                    # DRY-RUN: in bảng map module, chưa ghi
+node scripts/qa/seed_knowledge_from_backlog.js                    # DRY-RUN: in bảng map module, chưa ghi
 
 npm run seed:knowledge:apply -- --since 2025-01-01             # ghi thật vào knowledge/ + rebuild index.json
 ```
@@ -252,17 +252,17 @@ npm run seed:knowledge:apply -- --since 2025-01-01             # ghi thật vào
 | Flag | Ý nghĩa |
 |---|---|
 | `--apply` | Ghi thật (mặc định DRY-RUN — chỉ preview). |
-| `--project <KEY>` | Jira project (mặc định `JIRA_PROJECT_KEY`). |
+| `--project <KEY>` | Backlog project (mặc định `BACKLOG_PROJECT_KEY`). |
 | `--jql "<...>"` | Override toàn bộ JQL bug (bỏ qua project/since mặc định). |
 | `--since <YYYY-MM-DD>` | Chỉ bug `resolutiondate >=` ngày này. |
-| `--module-from component\|label` | Suy `module` từ Jira **component** (mặc định) hay **label**. |
+| `--module-from component\|label` | Suy `module` từ Backlog **component** (mặc định) hay **label**. |
 | `--label-prefix <p>` | Khi dùng label: chỉ label bắt đầu bằng `p` là module (cắt prefix). |
 
 | `--max <N>` / `--exec-max <N>` | Cap số bug (500) / test execution (50). |
 | `--include-all-resolutions` | Bỏ lọc resolution=fix (mặc định loại Duplicate/Won't Do/Cannot Reproduce...). |
 | `--fallback-module <name>` | Gán module này khi bug không có component/label (mặc định: bỏ qua). |
 
-**An toàn:** read-only (JQL/GraphQL query, KHÔNG tạo/sửa issue) · DRY-RUN mặc định · mask email/SĐT · idempotent (dedup theo bug id) · đánh dấu `source: "jira-seed"` (xem `knowledge/SCHEMA.md`). Bug chỉ seed khi resolution = fix thật. **QA soi bảng map module trước khi `--apply`** (confidence trong `risk_score` bão hoà nhanh → map sai làm risk lệch).
+**An toàn:** read-only (JQL/GraphQL query, KHÔNG tạo/sửa issue) · DRY-RUN mặc định · mask email/SĐT · idempotent (dedup theo bug id) · đánh dấu `source: "backlog-seed"` (xem `knowledge/SCHEMA.md`). Bug chỉ seed khi resolution = fix thật. **QA soi bảng map module trước khi `--apply`** (confidence trong `risk_score` bão hoà nhanh → map sai làm risk lệch).
 
 ---
 

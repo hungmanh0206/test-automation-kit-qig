@@ -1,12 +1,12 @@
 ---
-name: jira_bug_reporter
+name: backlog_bug_reporter
 description: Log Backlog sub-bug từ testcase FAIL đã xác nhận sau Phase 2.
 ---
 
 # Backlog Bug Reporter
 
-> Tên thư mục skill (`jira_bug_reporter`) giữ nguyên sau khi tổ chức chuyển Jira→Backlog (22/09/2026) —
-> đổi tên thư mục sẽ phá mọi chỗ gọi `Skill(shared:jira_bug_reporter)`. Nội dung bên dưới đã cập nhật cho
+> Tên thư mục skill (`backlog_bug_reporter`) giữ nguyên sau khi tổ chức chuyển hệ bug-tracking cũ → Backlog (22/09/2026) —
+> đổi tên thư mục sẽ phá mọi chỗ gọi `Skill(shared:backlog_bug_reporter)`. Nội dung bên dưới đã cập nhật cho
 > Backlog; script thật nằm ở `scripts/integrations/backlog/bug_reporter.js`.
 
 ## Purpose
@@ -56,7 +56,7 @@ node scripts/integrations/backlog/bug_reporter.js --task <TASK_KEY> --story <BAC
 
 Hoặc qua npm: `npm run backlog:bug-report:dry-run -- --task <TASK_KEY> --story <BACKLOG_STORY_KEY>` / `npm run backlog:bug-report -- ...`.
 
-## Khác biệt so với Jira (đọc trước khi log lần đầu)
+## Khác biệt so với Backlog (đọc trước khi log lần đầu)
 
 - Priority chỉ 3 mức (High/Normal/Low, không có Critical/Lowest riêng) — Critical/High testcase đều map vào Backlog "High".
 - Không có Sprint — set `BACKLOG_SPRINT_FIELD_ID` (id số, không phải tên) nếu project cần copy 1 custom field cụ thể từ Story, để trống thì bỏ qua.

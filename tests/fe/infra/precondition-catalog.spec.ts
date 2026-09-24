@@ -6,7 +6,7 @@ import path from 'path';
  * @infra — mã `[PRE-NN]` phải neo được vào catalog Setup Strategy.
  *
  * Vì sao cần: mã tiền điều kiện giờ chỉ là TEXT trong case — trước đây mỗi mã là một issue riêng nên thiếu là thấy ngay
- * trên Jira. Nay tiền điều kiện chỉ là TEXT trong case ⇒ mã trỏ vào hư không vẫn publish trót lọt, và
+ * trên Backlog. Nay tiền điều kiện chỉ là TEXT trong case ⇒ mã trỏ vào hư không vẫn publish trót lọt, và
  * Phase 2 không có gì để dựng. Luật đã ghi trong prompt gen từ lâu ("mô tả khớp catalog") nhưng chưa có máy.
  *
  * Test chạy trên doc canonical dựng tại chỗ (không cần file/mạng), và kiểm CẢ HAI CHIỀU + không báo oan.
@@ -94,17 +94,17 @@ test.describe('@infra [PRE-NN] ↔ catalog Setup Strategy', () => {
 });
 
 /*
- * @infra — THANG ƯU TIÊN & LOẠI CASE phải khớp thứ AIO thật sự nhận.
+ * @infra — THANG ƯU TIÊN & LOẠI CASE phải khớp thứ Google Sheet thật sự nhận.
  *
- * Đo 20/08/2026: AIO `casePriorities` = Critical|High|Medium|Low|Lowest, còn Jira = Highest|…. Kit trước
- * đây dùng tên Jira nên publisher (map theo TÊN, không có khoá `highest`) đẩy mọi case `Highest` về
+ * Đo 20/08/2026: Google Sheet `casePriorities` = Critical|High|Medium|Low|Lowest, còn Backlog = Highest|…. Kit trước
+ * đây dùng tên Backlog nên publisher (map theo TÊN, không có khoá `highest`) đẩy mọi case `Highest` về
  * fallback Medium — 14 case của một bộ bị hạ ưu tiên âm thầm. Nay canonical dùng `Critical`, `Highest`
- * chỉ còn là alias có cảnh báo, và đường log bug tự map `Critical → Highest` cho Jira.
+ * chỉ còn là alias có cảnh báo, và đường log bug tự map `Critical → Highest` cho Backlog.
  */
 test.describe('@infra thang Ưu tiên (Critical) + 9 Loại case', () => {
   const mk = (priority: string, risk = 'Major', caseType = '') => doc([{ ...tc('T1', '[api] x'), priority, risk, caseType }], []);
 
-  test('Critical hợp lệ ở cột Ưu tiên (đỉnh thang AIO)', () => {
+  test('Critical hợp lệ ở cột Ưu tiên (đỉnh thang Google Sheet)', () => {
     expect(validate(mk('Critical')).problems.filter((x: string) => x.includes('Ưu tiên'))).toEqual([]);
   });
 

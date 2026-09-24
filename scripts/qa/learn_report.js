@@ -68,7 +68,7 @@ for (const s of ['setup_recipes', 'environment', 'locators']) {
 // ── xuất
 const L = [];
 L.push(`# Đã học được gì — ${TASK}`, '');
-L.push(`> Sinh bởi \`npm run learn:report\`. Kho học là dữ liệu LOCAL (không commit) — nạp lại được từ Jira/test-results.`, '');
+L.push(`> Sinh bởi \`npm run learn:report\`. Kho học là dữ liệu LOCAL (không commit) — nạp lại được từ Backlog/test-results.`, '');
 const totalMine = STORES.reduce((n, s) => n + learned[s].length, 0);
 L.push(`## Đã học (${totalMine} record thuộc task này)`, '');
 if (!totalMine) {

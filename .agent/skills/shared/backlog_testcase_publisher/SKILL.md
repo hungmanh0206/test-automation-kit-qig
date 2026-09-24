@@ -1,15 +1,15 @@
 ---
-name: jira_testcase_publisher
+name: backlog_testcase_publisher
 description: Publish testcase từ Excel canonical lên **Google Sheet** sau Phase 1 (qua Drive MCP: search_files/create_file/update_file).
 ---
 
 # Testcase Publisher (Google Sheet)
 
-> Tên skill giữ nguyên `jira_testcase_publisher` cho tương thích ngược (đường dẫn được nhiều file khác trỏ tới), nhưng đích đến giờ là **Google Sheet**, không còn Jira/AIO.
+> Tên skill giữ nguyên `backlog_testcase_publisher` cho tương thích ngược (đường dẫn được nhiều file khác trỏ tới), nhưng đích đến giờ là **Google Sheet**, không còn bug-tracker nào.
 
 ## Purpose
 
-Publish bộ testcase đã được QA xác nhận từ Excel canonical lên **Google Sheet** (qua Google Drive MCP) để QA/Dev review, track và làm nguồn cho Phase 2 execute. File `.xlsx` do `md_to_xlsx.js` xuất ra ở `<TASK_OUTPUT_DIR>/test-cases/` **chính là** nội dung Sheet — không có bước ánh xạ field/model riêng: upload lên Drive là xong, Drive tự convert `.xlsx` → Google Sheets. Publish là step riêng trong phạm vi Phase 1; không cần lifecycle cleanup (Deprecated) như AIO cũ — mỗi lần sync là ghi đè toàn bộ, case bị xoá khỏi Excel tự nhiên biến mất khỏi Sheet ở lần sync sau.
+Publish bộ testcase đã được QA xác nhận từ Excel canonical lên **Google Sheet** (qua Google Drive MCP) để QA/Dev review, track và làm nguồn cho Phase 2 execute. File `.xlsx` do `md_to_xlsx.js` xuất ra ở `<TASK_OUTPUT_DIR>/test-cases/` **chính là** nội dung Sheet — không có bước ánh xạ field/model riêng: upload lên Drive là xong, Drive tự convert `.xlsx` → Google Sheets. Publish là step riêng trong phạm vi Phase 1; không cần lifecycle cleanup (Deprecated) như công cụ test-management cũ — mỗi lần sync là ghi đè toàn bộ, case bị xoá khỏi Excel tự nhiên biến mất khỏi Sheet ở lần sync sau.
 
 ## Responsibilities
 
@@ -41,7 +41,7 @@ Publish bộ testcase đã được QA xác nhận từ Excel canonical lên **G
 
 ## Commands
 
-Không có script CLI riêng (khác AIO cũ) — publish là thao tác agent làm trực tiếp qua MCP trong phiên chat:
+Không có script CLI riêng (khác công cụ cũ) — publish là thao tác agent làm trực tiếp qua MCP trong phiên chat:
 
 1. `mcp__claude_ai_Google_Drive__search_files` — tìm file Sheet đã publish trước đó (theo `GOOGLE_SHEET_URL` đã lưu, hoặc theo tên chuẩn hoá từ `TASK_KEY`).
 2. Có → `mcp__claude_ai_Google_Drive__update_file` (upload `.xlsx` mới nhất, ghi đè). Chưa có → `mcp__claude_ai_Google_Drive__create_file`.
@@ -59,7 +59,7 @@ rồi agent `update_file` đẩy bản đã merge lên Drive.
 - Không publish từ Markdown nếu Excel đã tồn tại; Excel là canonical source, Sheet chỉ là bản đồng bộ.
 - Không publish thật nếu QA chưa xác nhận — publish là ghi đè file thật trên Drive, không có dry-run tách riêng (review trước khi `update_file`/`create_file` chính là bước soát).
 - **Luôn review nội dung `.xlsx` local trước khi ghi đè Sheet** — Drive MCP không có "sửa 1 ô", ghi đè là ghi đè cả file.
-- Sheet không có folder/tag/Cycle/Run/custom field như AIO cũ — đây là đổi mô hình dữ liệu, không phải đổi tên. Đừng đi tìm các khái niệm đó rồi kết luận "thiếu".
+- Sheet không có folder/tag/Cycle/Run/custom field như công cụ test-management cũ — đây là đổi mô hình dữ liệu, không phải đổi tên. Đừng đi tìm các khái niệm đó rồi kết luận "thiếu".
 - Nhóm chức năng thể hiện bằng sheet riêng trong cùng workbook (`md_to_xlsx.js` đã tạo 1 sheet/nhóm), không phải folder.
 - Nếu chưa có `GOOGLE_SHEET_URL` và không tìm thấy file qua `search_files`, tạo mới bằng `create_file` rồi lưu link — không đoán ID file.
 - Nếu publish lỗi một phần (network/quyền), giữ Excel và báo blocker; không sửa testcase để khớp lỗi publish.

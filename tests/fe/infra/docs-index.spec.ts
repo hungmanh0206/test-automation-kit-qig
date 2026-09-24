@@ -33,7 +33,7 @@ function run(dir: string, extra: string[]) {
   }
 }
 
-/** Hai trang US, CÙNG mã `BR-07` nhưng luật khác hẳn — đúng hình dạng gặp thật trên SAPP-26878. */
+/** Hai trang US, CÙNG mã `BR-07` nhưng luật khác hẳn — đúng hình dạng gặp thật trên CSDL-26878. */
 function docsFixture(): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'docs-index-'));
   const pad = 'Nội dung đủ dài để không bị coi là rỗng. '.repeat(12);

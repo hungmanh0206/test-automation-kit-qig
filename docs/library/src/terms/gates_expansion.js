@@ -1,4 +1,4 @@
-/* NHÓM 2b — lớp máy chống-lọt-bug thế hệ sau (8–9/2026) + tầng AIO Tests.
+/* NHÓM 2b — lớp máy chống-lọt-bug thế hệ sau (8–9/2026) + tầng Google Sheet.
    Vì sao tách file: nhóm này ra đời từ một chương trình riêng — đo "kit đang rò kiểu gì" rồi dựng máy cho
    TỪNG kiểu rò, thay vì thêm quy định. Nguồn: header của chính các script trong scripts/qa/. */
 const TERMS_GATE2 = [
@@ -11,7 +11,7 @@ const TERMS_GATE2 = [
   how:['Chạy vài giây, chỉ đọc Excel, không cần môi trường.','Kết quả ghi ra reports/expansion-plan.md.'],
   cmd:'npm run expansion:plan',
   ex:'Case Minor nhưng Ưu tiên High vẫn được xếp band cao, vì đó vẫn là đường tiền hoặc đường chính, không được soi mỏng.',
-  trap:'Lỗi đo được 21/08/2026: thang Ưu tiên của AIO có 5 mức và thiếu "critical" thì case ưu tiên cao nhất bị rank 0. Thử bỏ cột Mức độ rủi ro thì 28 case Critical tụt từ band high xuống low, tức từ 5 trục còn 1. Sai đúng chiều nguy hiểm nhất.',
+  trap:'Lỗi đo được 21/08/2026: thang Ưu tiên của công cụ cũ có 5 mức và thiếu "critical" thì case ưu tiên cao nhất bị rank 0. Thử bỏ cột Mức độ rủi ro thì 28 case Critical tụt từ band high xuống low, tức từ 5 trục còn 1. Sai đúng chiều nguy hiểm nhất.',
   src:'scripts/qa/expansion_plan.js', rel:['c-expansion-5truc','c-rbt','g-expansion_audit','f-severity'] },
 
 { id:'g-expansion_audit', t:'expansion_audit', cat:'gate',
@@ -120,26 +120,26 @@ const TERMS_GATE2 = [
   cmd:'npm run json:check',
   src:'scripts/qa/json_check.js', rel:['g-preflight_gate','f-knowledge','g-audit_ci'] },
 
-/* ── Tầng AIO Tests ── */
+/* ── Tầng Google Sheet ── */
 { id:'g-aio_verify_fields', t:'aio:verify-fields', cat:'gate',
-  def:'Đối soát từng trường giữa nguồn và AIO sau mỗi lượt publish.',
+  def:'Đối soát từng trường giữa nguồn và Google Sheet sau mỗi lượt publish.',
   detail:'Hai mức: ① đối soát cấu trúc. Chạy được ở CI không cần token; ② đối soát cả giá trị.',
   why:'Trả về 2xx chỉ chứng minh request được nhận, KHÔNG chứng minh mapping đúng. Đã có lượt publish thành công mà trường bị đổ nhầm cột, nhìn log thì hoàn toàn bình thường.',
   cmd:'npm run aio:verify-fields -- --file <x.xlsx>   ·   --structure-only',
   trap:'Đây là bước BẮT BUỘC sau mỗi lượt publish, không phải tuỳ chọn.',
-  src:'scripts/integrations/aio/verify_fields_aio.js', rel:['f-aio','sk-jira_testcase_publisher','f-excel-canonical'] },
+  src:'scripts/integrations/aio/verify_fields_aio.js', rel:['f-aio','sk-backlog_testcase_publisher','f-excel-canonical'] },
 
 { id:'g-aio_verify', t:'aio:verify', cat:'gate',
   def:'Đối soát ĐỘ TƯƠI của bản sao testcase trước khi execute.',
   detail:'So updatedDate của từng case bằng một lệnh list duy nhất. Bản enforce cho exit 1 khi lệch, dùng ở preflight và CI.',
-  why:'AIO là nguồn sự thật khi execute. Chạy trên bản mirror cũ nghĩa là đang chấm theo expected đã bị sửa, kết quả trông hợp lệ nhưng vô nghĩa.',
+  why:'Google Sheet là nguồn sự thật khi execute. Chạy trên bản mirror cũ nghĩa là đang chấm theo expected đã bị sửa, kết quả trông hợp lệ nhưng vô nghĩa.',
   cmd:'npm run aio:verify   ·   npm run aio:verify:enforce',
   src:'scripts/integrations/aio/verify_mirror.js', rel:['f-aio','c-canonical','g-preflight_gate','f-phase2'] },
 
 { id:'g-aio_deprecate_stale', t:'aio:deprecate-stale', cat:'gate',
   def:'Vòng đời case: rời khỏi Excel thì chuyển Deprecated, quay lại thì Published.',
-  detail:'Đối chiếu Excel canonical với AIO rồi đổi trạng thái case tương ứng. Mặc định chỉ xem trước, phải thêm :apply mới ghi thật.',
-  why:'AIO KHÔNG có API xoá. Nên dọn dẹp ở đây có nghĩa là đánh dấu Deprecated chứ không phải xoá, và điều đó lại tốt hơn: giữ nguyên lịch sử các lượt chạy đã gắn vào case đó.',
+  detail:'Đối chiếu Excel canonical với công cụ cũ rồi đổi trạng thái case tương ứng. Mặc định chỉ xem trước, phải thêm :apply mới ghi thật.',
+  why:'Sheet ghi đè toàn bộ mỗi lần sync. Nên dọn dẹp ở đây có nghĩa là đánh dấu Deprecated chứ không phải xoá, và điều đó lại tốt hơn: giữ nguyên lịch sử các lượt chạy đã gắn vào case đó.',
   cmd:'npm run aio:deprecate-stale -- --story <KEY> --file <x.xlsx>   ·   :apply',
   trap:'Đừng tìm cách xoá cho sạch, mất case là mất luôn lịch sử run của nó.',
   src:'scripts/integrations/aio/deprecate_stale_aio.js', rel:['f-aio','f-partial-rerun','f-excel-canonical'] }

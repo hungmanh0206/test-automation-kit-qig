@@ -138,9 +138,9 @@ test.describe('@infra phát hành kit — workflow release', () => {
     expect(iVerify, 'tạo Release TRƯỚC khi verify ⇒ phát hành bản chưa chứng minh chạy được').toBeLessThan(iRelease);
   });
 
-  test('KHÔNG dùng secret của UAT/AIO/Jira — cần secret là đã thiết kế sai', () => {
+  test('KHÔNG dùng secret của UAT/Sheet/Backlog — cần secret là đã thiết kế sai', () => {
     const b = wf();
-    for (const s of ['OPS_', 'AIO_', 'JIRA_', 'CONFLUENCE_', 'HUBSPOT_', 'LIB_MASTER_DB']) {
+    for (const s of ['OPS_', 'AIO_', 'BACKLOG_', 'TAI_LIEU_', 'HUBSPOT_', 'LIB_MASTER_DB']) {
       expect(b, `release.yml nhắc secret "${s}" — luồng này chỉ đọc repo + đóng gói, không chạm UAT`).not.toContain(s);
     }
   });

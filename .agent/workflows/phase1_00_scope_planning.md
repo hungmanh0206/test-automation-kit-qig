@@ -20,7 +20,7 @@ Coverage Gaps.
 | Input | Nguồn |
 |---|---|
 | Project context | `.agent/config/project_context.md` |
-| Requirement/story | Jira, Confluence, artifact local |
+| Requirement/story | Backlog, tài liệu nguồn, artifact local |
 | Change impact (nếu có) | `<TASK_OUTPUT_DIR>/requirements/git-impact.md` (skill `git_impact_analyzer`) |
 | Risk lịch sử (nếu có) | `knowledge/bugs/` theo module (module hay bug → nghiêng regression) |
 

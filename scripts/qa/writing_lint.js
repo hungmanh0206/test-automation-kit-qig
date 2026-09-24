@@ -25,7 +25,7 @@
  * "Xấp xỉ: 1 token ≈ 3 ký tự" thành "tiếng Việt thì khoảng 3 ký tự là 1 token".
  *
  * LỌC ĐỂ KHỎI BÁO OAN: `/` chỉ tính khi CẢ HAI bên là từ chữ thường. Không lọc thì nó bắt `PASS/FAIL`,
- * `Critical/High`, `UI/API`, `AIO/Jira`, ngày `14/08/2026`, đường dẫn `docs/user/...` — nửa số lần
+ * `Critical/High`, `UI/API`, `Sheet/Backlog`, ngày `14/08/2026`, đường dẫn `docs/user/...` — nửa số lần
  * xuất hiện là từ vựng hợp lệ, và một gate hay báo oan thì bị tắt trong một ngày.
  *
  * BASELINE, không cấm tuyệt đối: chặn khi file vượt max(ngưỡng, mốc baseline). File MỚI phải đạt đích;

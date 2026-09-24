@@ -237,19 +237,19 @@ test.describe('@infra gate:policy — phải THẬT SỰ quét, không no-op', (
 });
 
 /*
- * NO-XRAY (gate:policy): không bề mặt nào của kit được nhắc công cụ test-management cũ.
+ * NO-LEGACY-TOOLS (gate:policy): không bề mặt nào của kit được nhắc Xray/Jira/Confluence/AIO Tests.
  *
  * Vì sao khoá bằng test: luật này là thứ giữ cho việc "bỏ hẳn" không bị trôi lại từng dòng một. Bản
  * trước còn cửa thoát `legacy`, và chính cửa đó để sót 12 chỗ dạy lệnh đã bị xoá. Nay cấm tuyệt đối,
  * nên phải chứng minh: repo thật sạch, VÀ luật thực sự bắt được khi có người viết lại.
  */
-test.describe('@infra gate:policy — NO-XRAY', () => {
+test.describe('@infra gate:policy — NO-LEGACY-TOOLS', () => {
   const GATE = path.join(REPO, 'scripts/qa/policy_source_check.js');
   const LF = String.fromCharCode(10);
 
   test('repo thật: không bề mặt nào của kit nhắc công cụ cũ', () => {
     const r = run([GATE]);
-    expect(r.out).toContain('NO-XRAY sạch');
+    expect(r.out).toContain('NO-LEGACY-TOOLS sạch');
     expect(r.code, 'gate:policy phải xanh trên repo thật').toBe(0);
   });
 
@@ -261,7 +261,7 @@ test.describe('@infra gate:policy — NO-XRAY', () => {
       const r = run([GATE]);
       expect(r.code, 'phải chặn').not.toBe(0);
       expect(r.out).toContain('_noxray_probe.md');
-      expect(r.out).toContain('NO-XRAY');
+      expect(r.out).toContain('NO-LEGACY-TOOLS');
     } finally {
       fs.unlinkSync(tmp);
     }

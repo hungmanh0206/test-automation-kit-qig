@@ -164,7 +164,7 @@ Bốn quyết định trong đoạn trên, mỗi cái chặn một vấn đề:
 |---|---|
 | Tiền tố `IT test` + `MA_TASK` | Người khác nhìn bản ghi biết là dữ liệu test của task nào — không xoá nhầm, không tưởng là dữ liệu thật |
 | `Date.now()` trong tên | Chạy song song không đụng nhau |
-| Ném lỗi có chữ `SETUP:` | Bài 17 phân loại được đây là lỗi dựng, không log Jira |
+| Ném lỗi có chữ `SETUP:` | Bài 17 phân loại được đây là lỗi dựng, không log Backlog |
 | `don()` không throw | Dọn thất bại làm test đỏ thì bạn mất kết quả thật của lượt chạy |
 
 ## Việc 5 — Fixture của Playwright: dựng và dọn tự động
@@ -464,7 +464,7 @@ Câu 3 là câu khó và cũng là câu đáng giá nhất.
 
 ## Đọc thêm
 
-- Bài 17 sẽ dùng chữ `SETUP:` trong lỗi factory để phân loại `setup_failure`, loại không log Jira.
+- Bài 17 sẽ dùng chữ `SETUP:` trong lỗi factory để phân loại `setup_failure`, loại không log Backlog.
 - [`tests/support/setup/`](../../tests/support/setup/) của kit này, setup layer đầy đủ, gồm cả guarded client
   chỉ-đọc cho database.
 

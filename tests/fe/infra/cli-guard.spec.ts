@@ -9,7 +9,7 @@ import path from 'path';
  * `fixture_matrix.js`, `mutation_check.js`). Hậu quả không hiển nhiên: `require()` file đó trong test làm CLI chạy
  * và tự `process.exit(2)` vì thiếu tham số — test chết mà nhìn như lỗi test, mất thời gian truy sai chỗ.
  * Đo 20/08/2026 — phạm vi cũ CHỈ soi `scripts/qa/`, nên cả tầng `scripts/integrations/` nằm ngoài tầm và
- * 5/5 script AIO thiếu guard mà test vẫn xanh. Nguy hơn nhóm qa: mấy file đó có `--apply` ghi vào hệ thống
+ * 5/5 script Google Sheet thiếu guard mà test vẫn xanh. Nguy hơn nhóm qa: mấy file đó có `--apply` ghi vào hệ thống
  * KHÔNG có API xoá. Nay quét cả `scripts/` theo đệ quy.
  *
  * Đây là loại lỗi lặp lại ⇒ phải có máy gác, không dựa vào nhớ.

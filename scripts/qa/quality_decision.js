@@ -60,7 +60,7 @@ function fromTask(taskDir, extra = {}) {
     signals.riskHighGaps = risk.modules.filter((m) => /high|critical/i.test(String(m.band || '')) && (m.gap === true || /critical/i.test(String(m.verdict || '')) || m.gapOpen === true)).length;
   } else if (signals.riskHighGaps == null) missing.push('risk-register (highGaps)');
 
-  // defect → bug-candidates.md (đếm Jira key)
+  // defect → bug-candidates.md (đếm Backlog key)
   try {
     const bugMd = fs.readFileSync(path.join(taskDir, 'reports', 'bug-candidates.md'), 'utf8');
     const keys = new Set((bugMd.match(/\b[A-Z][A-Z0-9]+-\d+\b/g) || []));

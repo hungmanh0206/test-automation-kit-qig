@@ -41,7 +41,7 @@
 | **Trường dẫn xuất lệch bản ghi gốc** | Tổng/số dư/đếm được lưu sẵn (không tính lại lúc đọc) có thể lệch khỏi các dòng sinh ra nó — vd ledger có 1 giao dịch nhưng `total_due` bị trừ 2 lần. So trường tổng vs `SUM()` các dòng gốc |
 
 **Ranh giới — giữ nguyên, không nới:**
-- Chỉ qua guarded client `tests/support/setup/db/uatPgClient.ts` (UAT, `BEGIN TRANSACTION READ ONLY`, chỉ SELECT). **KHÔNG** dựng/sửa state bằng DB — precondition vẫn `api`/`factory`/`test_hook`/`pre_existing`.
+- Chỉ qua guarded client `tests/support/setup/db/uatDbClient.ts` (UAT, SQL Server, chỉ SELECT — chặn bằng lint trong client). **KHÔNG** dựng/sửa state bằng DB — precondition vẫn `api`/`factory`/`test_hook`/`pre_existing`.
 - **KHÔNG phải evidence.** Evidence vẫn là ảnh/video màn hình. Kết quả SELECT chỉ dùng để kết luận và khoanh tầng lỗi.
 - **KHÔNG thay oracle từ spec.** Expected vẫn là giá trị theo tài liệu; DB chỉ trả lời "bản ghi có đúng như thế không".
 - PII đọc ra phải mask, cấm ghi ra file.

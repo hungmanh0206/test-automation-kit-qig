@@ -33,7 +33,7 @@ const pngsOnDisk = (): string[] => (fs.existsSync(IMG_DIR)
  *   · mảng cấu hình:  `file: 'x.png'`
  *   · sơ đồ riêng:    `path.join(outDir, 'x.png')`  ← `aio-traceability.png` đi đường này
  * Bản đầu chỉ đọc `file:` ⇒ báo `aio-traceability.png` là ẢNH MỒ CÔI trong khi generator vẫn sinh nó.
- * Còn nếu bắt MỌI literal `.png` thì lại kéo cả `logo-sapp.png` (logo thương hiệu, không phải sơ đồ)
+ * Còn nếu bắt MỌI literal `.png` thì lại kéo cả `logo-brand.png` (logo thương hiệu, không phải sơ đồ)
  * và sinh ra lỗi "khai mà thiếu file". Neo theo output dir là chỗ đúng.
  */
 const pngsDeclared = (): string[] => {

@@ -12,9 +12,9 @@ Chạy pass này cho toàn bộ selected TC trước khi sinh/cập nhật spec.
 
 1. Đọc selected TC từ nguồn canonical local (`from-sheet/*.xlsx`), sau đó đọc `### Precondition Execution Matrix` (và catalog `## Setup Strategy` trong Markdown khi cần chi tiết).
 2. Map `Setup Method` của từng TC: `api`/`factory`/`test_hook`/`pre_existing`/`ui`/`manual`.
-3. Reuse setup layer dùng chung `tests/support/setup/` (factories/hooks/fixtures/cleanup/contracts); phần đặc thù story tạo task-scoped ở `<TASK_OUTPUT_DIR>/automation/setup/` (namespace `RUN_ID` khi song song); không sửa shared khi story khác đang chạy; không thêm DB client/DB query mới (chỉ dùng guarded client `db/uatPgClient.ts` cho read-only verify UAT).
+3. Reuse setup layer dùng chung `tests/support/setup/` (factories/hooks/fixtures/cleanup/contracts); phần đặc thù story tạo task-scoped ở `<TASK_OUTPUT_DIR>/automation/setup/` (namespace `RUN_ID` khi song song); không sửa shared khi story khác đang chạy; không thêm DB client/DB query mới (chỉ dùng guarded client `db/uatDbClient.ts` cho read-only verify UAT).
 4. Verify precondition theo `Setup Verification` trước khi chạy assertion chính.
-5. Setup/verify fail → `setup_failure` (sửa setup, không phải product bug, không log Jira). `Needs hook` thiếu hook → BLOCKED + đề xuất hook; `Manual-only` → SKIP hợp lệ.
+5. Setup/verify fail → `setup_failure` (sửa setup, không phải product bug, không log Backlog). `Needs hook` thiếu hook → BLOCKED + đề xuất hook; `Manual-only` → SKIP hợp lệ.
 6. Cleanup theo `Cleanup/Rollback` scope `RUN_ID` sau khi chạy.
 
 ## Workflow

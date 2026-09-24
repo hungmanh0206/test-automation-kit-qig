@@ -86,4 +86,4 @@ Giống `domain/`: rule đổi → **bump `version`** + `supersedes: <id>@v<n-1>
 - [[domain_recorder]] — "giá trị đúng là gì"; skill này — "hệ thống được phép làm gì". Hai nửa của oracle.
 - [[learning_recorder]] — ghi cái đã sai (bug/root cause).
 - `prompt_templates/phase1/02_gen_testcases.md` §12 — nơi tra bản đồ khi sinh case guard/permission/negative.
-- `.agent/workflows/phase2_04_report_and_jira_gate.md` — trước khi log bug "hệ thống cho phép X" phải trích `SM-*`/`PM-*`.
+- `.agent/workflows/phase2_04_report_and_backlog_gate.md` — trước khi log bug "hệ thống cho phép X" phải trích `SM-*`/`PM-*`.

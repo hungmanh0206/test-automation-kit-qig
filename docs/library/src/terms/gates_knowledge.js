@@ -1,7 +1,7 @@
 /* NHÓM 2d — máy quản lý bộ nhớ học (knowledge/) và vòng học.
    Trước đây phần này chỉ được nói qua nhóm Skill; nay có mục riêng vì mỗi store có luật kiểm riêng.
    Nguồn: header scripts/qa/{domain_rules,system_map,decisions,howto_store,learn_*,knowledge_backup,
-   seed_knowledge_from_jira,skills_index}.js + danh mục gate tự sinh. */
+   seed_knowledge_from_backlog,skills_index}.js + danh mục gate tự sinh. */
 const TERMS_GATE4 = [
 
 { id:'g-domain_rules', t:'domain:check / domain:index', cat:'gate',
@@ -26,7 +26,7 @@ const TERMS_GATE4 = [
   why:'Kit đã lưu được "cái đúng" ở domain/, "hệ thống được phép làm gì" ở system/, "cái đã sai" ở bugs/ — nhưng không lưu VÌ SAO đã kết luận như thế. Thiếu nó thì task sau log lại đúng bug đã bị Rejected, hoặc đánh FAIL đỏ oan case đã chốt là vướng môi trường.',
   how:['BẮT BUỘC tra trước khi log bug: node scripts/qa/decisions.js --check "<triệu chứng>"'],
   cmd:'npm run decisions:check   ·   npm run decisions:index',
-  src:'scripts/qa/decisions.js', rel:['sk-decision_recorder','c-false-positive','f-knowledge','sk-jira_bug_reporter'] },
+  src:'scripts/qa/decisions.js', rel:['sk-decision_recorder','c-false-positive','f-knowledge','sk-backlog_bug_reporter'] },
 
 { id:'g-howto_store', t:'howto:check / howto:find', cat:'gate',
   def:'Quản lý hai store trả lời câu "LÀM SAO tới được trạng thái đó".',
@@ -58,19 +58,19 @@ const TERMS_GATE4 = [
   src:'scripts/qa/learn_report.js', rel:['g-learn_task','f-knowledge','sk-learning_recorder'] },
 
 { id:'g-learn_bugs', t:'learn:bugs / learn:bugs:apply', cat:'gate',
-  def:'Nối mắt xích còn đứt: bug đã log Jira → knowledge/bugs/.',
-  detail:'Kéo bug từ Jira theo nhãn rồi ghi vào store, kèm tham chiếu root_causes và cập nhật index.',
+  def:'Nối mắt xích còn đứt: bug đã log Backlog → knowledge/bugs/.',
+  detail:'Kéo bug từ Backlog theo nhãn rồi ghi vào store, kèm tham chiếu root_causes và cập nhật index.',
   why:'Bug đã log nhưng không nạp về knowledge thì vòng học hở: risk_score không thấy module đó hay vỡ, và bugs_checklist không có gì để đối chiếu ở lượt sinh case sau.',
   cmd:'TASK_ENV=… npm run learn:bugs:apply',
   src:'scripts/qa/learn_bugs.js', rel:['g-bugs_checklist','g-risk_score','f-knowledge','g-bug_tc_matcher'] },
 
 { id:'g-seed_knowledge', t:'seed:knowledge', cat:'gate',
-  def:'Nạp knowledge từ lịch sử Jira, suggest-only, mặc định dry-run.',
+  def:'Nạp knowledge từ lịch sử Backlog, suggest-only, mặc định dry-run.',
   detail:'Dùng một lần khi mới dựng bộ nhớ cho dự án: quét lịch sử để có dữ liệu ban đầu thay vì bắt đầu từ rỗng.',
   why:'Kho knowledge rỗng thì mọi máy đọc nó đều vô dụng ở những tuần đầu. Seed từ lịch sử có thật rẻ hơn nhiều so với chờ tích luỹ dần.',
   cmd:'npm run seed:knowledge   ·   npm run seed:knowledge:apply -- --since <YYYY-MM-DD>',
   trap:'Suggest-only: nó chỉ đề xuất. Để máy tự ghi thì knowledge nhiễm suy đoán, mà nhiễm rồi không tách lại được.',
-  src:'scripts/qa/seed_knowledge_from_jira.js', rel:['f-knowledge','c-suggest-only','g-risk_score'] },
+  src:'scripts/qa/seed_knowledge_from_backlog.js', rel:['f-knowledge','c-suggest-only','g-risk_score'] },
 
 { id:'g-knowledge_backup', t:'knowledge:backup', cat:'gate',
   def:'Sao lưu và khôi phục những store knowledge KHÔNG nạp lại được từ nguồn máy.',

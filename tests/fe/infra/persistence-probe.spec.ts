@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 /**
- * @infra — backtest `persistence_probe` bằng **bug THẬT đã log** của SAPP-24395.
+ * @infra — backtest `persistence_probe` bằng **bug THẬT đã log** của CSDL-24395.
  *
  * Cách chấm: mỗi case dựng lại chuỗi 4 điểm đúng như bug mô tả, rồi đòi engine chỉ ra **đúng mắt đứt** và **đúng
  * tầng**. Đây là phép thử có đáp án khách quan (bug đã được dev xác nhận), không phải tôi tự chấm tôi.
@@ -12,7 +12,7 @@ import path from 'path';
 const probe = require(path.resolve(__dirname, '../../../scripts/qa/persistence_probe.js'));
 
 test.describe('@infra persistence_probe — backtest trên bug đã biết', () => {
-  test('SAPP-28310: Service Fee nhập 1.000.000 nhưng BE lưu 0 → đứt payload→api, kiểu "thành 0"', () => {
+  test('CSDL-28310: Service Fee nhập 1.000.000 nhưng BE lưu 0 → đứt payload→api, kiểu "thành 0"', () => {
     const r = probe.evaluate({
       name: 'Service Fee (Bảo lưu)',
       points: { form: '1.000.000', payload: 1000000, api: 0, ui: '0đ' },
@@ -23,7 +23,7 @@ test.describe('@infra persistence_probe — backtest trên bug đã biết', () 
     expect(r.breaks.map((b: any) => b.link)).not.toContain('form→payload');
   });
 
-  test('SAPP-28376: form tính Net Amount đúng nhưng payload gửi 0 → đứt form→payload (tầng FE)', () => {
+  test('CSDL-28376: form tính Net Amount đúng nhưng payload gửi 0 → đứt form→payload (tầng FE)', () => {
     const r = probe.evaluate({
       name: 'Net Amount (add-on included in Course Payment)',
       points: { form: '2.500.000', payload: 0, api: 0, ui: '0đ' },
@@ -33,7 +33,7 @@ test.describe('@infra persistence_probe — backtest trên bug đã biết', () 
     expect(r.breaks[0].kind).toContain('THÀNH 0');
   });
 
-  test('SAPP-28442: gói chuyển nhượng KHÔNG có trong payload → kiểu "mất hẳn"', () => {
+  test('CSDL-28442: gói chuyển nhượng KHÔNG có trong payload → kiểu "mất hẳn"', () => {
     const r = probe.evaluate({
       name: 'Transferred package',
       points: { form: 'CFA1 Online (Recorded Online)', payload: undefined, api: undefined, ui: '' },
@@ -42,7 +42,7 @@ test.describe('@infra persistence_probe — backtest trên bug đã biết', () 
     expect(r.breaks[0].kind).toContain('MẤT HẲN');
   });
 
-  test('SAPP-28403: USD không quy đổi sang VND → lệch một bậc độ lớn, KHÔNG phải "thành 0"', () => {
+  test('CSDL-28403: USD không quy đổi sang VND → lệch một bậc độ lớn, KHÔNG phải "thành 0"', () => {
     const r = probe.evaluate({
       name: 'Custom discount (USD → VND)',
       points: { form: '10', payload: 10, api: 10, ui: '10đ' },     // đúng phải là 260.500đ

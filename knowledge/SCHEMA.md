@@ -17,12 +17,12 @@
 >
 > | Store | Nạp lại bằng | Nguồn thật |
 > |---|---|---|
-> | `bugs/` | `npm run learn:bugs:apply` | Jira |
+> | `bugs/` | `npm run learn:bugs:apply` | Backlog |
 > | `historical_execution/` | `npm run learn -- --scan` | `test-results/` của task |
 > | `metrics/` | sinh tự động khi chạy test | test run |
 > | `domain/`, `system/`, `decisions/`, `root_causes/` | ghi tay rồi `npm run domain:index` · `system:index` · `decisions --index` | FSD / BA / dev xác nhận |
 > | `domain/` · `system/` · `decisions/` · `setup_recipes/` · `environment/` · `locators/` | ⛔ **KHÔNG nạp lại được** — dòng "ghi tay rồi `*:index`" ở trên nói về cách DỰNG LẠI INDEX, không phải cách lấy lại NỘI DUNG. "Nguồn thật: FSD/BA/dev xác nhận" **không phải nguồn máy truy vấn lại được** — mất là **làm lại công sức người**. Đo 14/08/2026: **15 file** thuộc diện này, và vì `knowledge/**` bị gitignore nên chúng tồn tại trên **ĐÚNG MỘT máy**. Sao lưu: `npm run knowledge:backup` (bắt buộc đích NGOÀI repo). | không có nguồn máy |
-> | `bug_tc_map.json` | ⛔ **KHÔNG nạp lại được** — là phán đoán của người (đọc TC rồi chốt). Record trong `bugs/` đã backfill thì vẫn giữ `module`, nên mất file *một mình* chưa hỏng gì ngay; hỏng khi **mất file RỒI nạp lại `bugs/` từ Jira** — lúc đó 26 mapping biến mất và bug quay về `(unmapped)`. `learn_bugs` cảnh báo nếu thiếu file mà đang có bug `(unmapped)`. Giữ bản sao ngoài repo. | không có nguồn máy |
+> | `bug_tc_map.json` | ⛔ **KHÔNG nạp lại được** — là phán đoán của người (đọc TC rồi chốt). Record trong `bugs/` đã backfill thì vẫn giữ `module`, nên mất file *một mình* chưa hỏng gì ngay; hỏng khi **mất file RỒI nạp lại `bugs/` từ Backlog** — lúc đó 26 mapping biến mất và bug quay về `(unmapped)`. `learn_bugs` cảnh báo nếu thiếu file mà đang có bug `(unmapped)`. Giữ bản sao ngoài repo. | không có nguồn máy |
 >
 > Đã nghiệm thu bản clone mới (dời sạch 72 file dữ liệu ra ngoài): `preflight` · `lint` · `typecheck` ·
 > `secret:scan` · `gate:policy` · `risk` · `dashboard` **đều exit 0**, và `risk` báo trung thực
@@ -35,7 +35,7 @@ Bảng trên chia knowledge làm hai loại **rất khác nhau về rủi ro**, 
 
 | | Store | Mất thì sao |
 |---|---|---|
-| **Nạp lại được** | `bugs/` · `historical_execution/` · `metrics/` · `index.json` | Chạy 1 lệnh là có lại (Jira / test-results / test run) |
+| **Nạp lại được** | `bugs/` · `historical_execution/` · `metrics/` · `index.json` | Chạy 1 lệnh là có lại (Backlog / test-results / test run) |
 | **KHÔNG nạp lại được** | `domain/` · `system/` · `decisions/` · `setup_recipes/` · `environment/` · `locators/` · `bug_tc_map.json` | **Làm lại công sức người.** Không nguồn máy nào trả lại |
 
 Đo 14/08/2026: **15 file** thuộc loại thứ hai. Và vì toàn bộ `knowledge/**` bị gitignore (mirror GitHub là public), chúng tồn tại trên **ĐÚNG MỘT máy — không remote nào có bản nào**. Hôm nay 15 file; sau 6 tháng là hàng trăm business rule đã được BA xác nhận. **Chi phí của việc này chỉ tăng theo thời gian, và không sửa được sau khi mất.**
@@ -73,8 +73,8 @@ npm run knowledge:backup -- --restore <bundle.json>    # CHỈ ghi file còn THI
 
 ## Nguyên tắc
 
-- **Chỉ ghi fact đã qua gate.** Bug chỉ ghi sau khi qua Jira gate ở
-  `.agent/workflows/phase2_04_report_and_jira_gate.md` (đã loại flaky/setup/data/prompt).
+- **Chỉ ghi fact đã qua gate.** Bug chỉ ghi sau khi qua Backlog gate ở
+  `.agent/workflows/phase2_04_report_and_backlog_gate.md` (đã loại flaky/setup/data/prompt).
 - **Suggest-only.** Knowledge Base là dữ liệu tham chiếu, không tự đưa ra kết luận PASS/FAIL
   hay tự thay đổi scope. Người đọc (QA/agent) quyết định.
 - **Không secret / không PII khách hàng.** Không ghi email/số điện thoại khách hàng, credential,
@@ -116,24 +116,24 @@ knowledge/
   "task_key": "PROJ-123",
   "detected_phase": "phase2",
   "confirmed_via_gate": true,
-  "jira_status": "Open",
+  "backlog_status": "Open",
   "created_at": "2026-07-21"
 }
 ```
 
 | Field | Bắt buộc | Ý nghĩa |
 |---|---|---|
-| `id` | ✓ | Jira key hoặc id nội bộ của bug. |
+| `id` | ✓ | Backlog key hoặc id nội bộ của bug. |
 | `bug` | ✓ | Mô tả ngắn (tiếng Việt, 1 dòng). |
 | `module` | ✓ | Module nghiệp vụ (khớp cột `Module` của testcase). |
 | `tags` | ✓ | Tag tra cứu (kebab/lowercase). |
 | `root_cause_ref` |  | Đường dẫn tương đối tới file trong `root_causes/` (nếu đã xác định). |
 | `task_key` | ✓ | TASK_KEY phát hiện bug. |
 | `detected_phase` | ✓ | `phase1` \| `phase2` \| `rerun`. |
-| `confirmed_via_gate` | ✓ | Luôn `true` — chỉ ghi khi đã qua Jira gate. |
-| `jira_status` | ✓ | `Open` \| `In Progress` \| `Done` (đồng bộ khi rerun chuyển Done). |
+| `confirmed_via_gate` | ✓ | Luôn `true` — chỉ ghi khi đã qua Backlog gate. |
+| `backlog_status` | ✓ | `Open` \| `In Progress` \| `Done` (đồng bộ khi rerun chuyển Done). |
 | `created_at` | ✓ | ISO date (YYYY-MM-DD). |
-| `tc_id` |  | Mã TC canonical mà bug này PHÁ. Nguồn: label Jira → mã nêu trong description → `bug_tc_map.json` (xem dưới). |
+| `tc_id` |  | Mã TC canonical mà bug này PHÁ. Nguồn: label Backlog → mã nêu trong description → `bug_tc_map.json` (xem dưới). |
 | `_coverage_gap` |  | Chỉ có ở bug **không TC nào phát biểu hành vi bị phá**: ghi đã tra những TC nào và tại sao không khớp. Có field này = ứng viên TC ưu tiên cao (đã có bằng chứng defect thật). |
 
 > **Hai thứ `output_gate --mode bug` CẢNH BÁO khi log bug** (đo 14/08/2026 nên mới thêm):
@@ -141,14 +141,14 @@ knowledge/
 > - **Đã nêu nguyên nhân trong description mà chưa có `root_cause_ref`** — `root_causes/` lúc đó có **0 file**, nên không trả lời được "lỗi này cùng nguyên nhân với bug nào", và cùng một gốc bị log lại nhiều lần.
 
 > **Nguồn ghi (provenance).** Bug ghi bởi `learning_recorder` (chạy task qua kit) không có field `source`
-> và `detected_phase ∈ {phase1,phase2,rerun}`. Bug **seed từ lịch sử Jira** (`scripts/qa/seed_knowledge_from_jira.js`)
-> thêm `source: "jira-seed"`, `detected_phase: "historical"`, kèm optional `jira_resolution` + `resolved_at`
+> và `detected_phase ∈ {phase1,phase2,rerun}`. Bug **seed từ lịch sử bug tracker** (`scripts/qa/seed_knowledge_from_backlog.js`)
+> thêm `source: "backlog-seed"`, `detected_phase: "historical"`, kèm optional `backlog_resolution` + `resolved_at`
 > (chỉ seed bug có resolution = fix thật). `confirmed_via_gate` vẫn `true` (bug đã resolved là product bug đã xác nhận).
 > `risk_score.js` đếm mọi bug theo `module` (không lọc theo `source`) nên seed cấp Likelihood ngay; `source` để QA/audit phân biệt.
 
 ### `bug_tc_map.json` — nguồn thứ ba để nối bug về module (chốt bằng tay)
 
-Label Jira và mã nêu trong description đều phụ thuộc người log bug **nhớ ghi**. Đo 14/08/2026: **26/57 bug**
+Label Backlog và mã nêu trong description đều phụ thuộc người log bug **nhớ ghi**. Đo 14/08/2026: **26/57 bug**
 không có cả hai ⇒ `(unmapped)` ⇒ ngoài bảng risk. Không sửa được bằng máy — đã thử và **loại cả hai cách**:
 suy module từ tiêu đề (≥4/9 sai), và bảng tra `label → module` (5/17 label đa nghĩa; `be` trải 6 module, vì
 label thực tế là nhãn **quy trình** chứ không phải nhãn chức năng). Nên nguồn cuối là người chốt, có `basis`
@@ -174,16 +174,16 @@ label thực tế là nhãn **quy trình** chứ không phải nhãn chức năn
 - Sinh ứng viên: `npm run bug:tc-match` (ghép theo idf trên `module+title+steps+expected`; tự kiểm bằng `--all`).
   Đo trên 30 bug đã map: argmax module đúng **40%** — KHÔNG đủ để tự chốt; module thật có trong top-12 **73%**
   ⇒ dùng làm danh sách ứng viên cho người đọc, và script **không có chế độ tự ghi**.
-- Áp: `npm run learn:bugs:apply`. Bản đồ đứng SAU label/description; nếu label Jira trỏ mã **không tồn tại**
+- Áp: `npm run learn:bugs:apply`. Bản đồ đứng SAU label/description; nếu label Backlog trỏ mã **không tồn tại**
   trong bộ canonical thì bản đồ **thắng** (đã gặp: label `..._TC_560` khi bộ chỉ tới `TC_530` làm record đóng
   băng ở `(unmapped)` vĩnh viễn, vì nhánh backfill chỉ chạy khi `tc_id` rỗng).
-- File này **KHÔNG commit** (`.gitignore`) — nó ghép Jira key với module nghiệp vụ, là dữ liệu nội bộ như `bugs/`.
+- File này **KHÔNG commit** (`.gitignore`) — nó ghép Backlog key với module nghiệp vụ, là dữ liệu nội bộ như `bugs/`.
 
 ## `domain/<module-lowercase>__<slug>.json` — Business rule đã XÁC NHẬN (nền của mọi oracle)
 
 **Vì sao cần:** rule của kit **cấm oracle tautological** (expected phải lấy từ spec/business rule, KHÔNG
 suy từ app đang chạy — xem prompt gen §12/§13, `output_gate.looksTautology`). Nhưng nếu KB không lưu
-"đúng là gì" thì mỗi lần agent phải đọc lại Jira/Confluence (dễ miss) hoặc suy từ app (rơi đúng vào
+"đúng là gì" thì mỗi lần agent phải đọc lại Backlog/tài liệu nguồn (dễ miss) hoặc suy từ app (rơi đúng vào
 tautology bị cấm). `domain/` là chỗ lưu **sự thật nghiệp vụ đã được xác nhận**, để oracle luôn **trích được nguồn**.
 
 ```json
@@ -195,7 +195,7 @@ tautology bị cấm). `domain/` là chỗ lưu **sự thật nghiệp vụ đã
   "examples": [
     { "input": "VIP 10%, voucher 15%, đơn 600.000", "expected": "giảm 15% = 90.000" }
   ],
-  "source": "Confluence Pricing v2 §3.2",
+  "source": "Tài liệu Pricing v2 §3.2",
   "confirmed_by": "BA",
   "confirmed_at": "2026-07-20",
   "version": 2,
@@ -318,7 +318,7 @@ Rejected**, **FAIL đỏ oan** case mà lần trước đã chốt là vướng 
   "type": "false_positive",
   "subject": "IPN trả về mã 00 nhưng đơn chưa chuyển sang PAID — nghi bug xác nhận thanh toán",
   "decision": "KHÔNG phải bug. Mã 00 của IPN là ACK đã nhận thông báo, không phải xác nhận đã thanh toán.",
-  "rationale": "Dev đọc code handler và xác nhận: 00 chỉ ack cho cổng thanh toán biết hệ thống đã nhận callback; việc chuyển PAID nằm ở bước đối soát sau đó. Jira đã Rejected.",
+  "rationale": "Dev đọc code handler và xác nhận: 00 chỉ ack cho cổng thanh toán biết hệ thống đã nhận callback; việc chuyển PAID nằm ở bước đối soát sau đó. Backlog đã Rejected.",
   "evidence": "PROJ-28126 (Rejected) + comment của Dev ngày 2026-07-20",
   "decided_by": "Dev", "decided_at": "2026-07-20",
   "scope": { "modules": ["Payment"], "tc_ids": ["OPS_PAY_TC_301"], "bug_keys": ["PROJ-28126"] },
@@ -468,7 +468,7 @@ vì bài học từ `locators/`: thêm store mà không có máy nhắc thì sto
 | `affected_files` |  | File/đường dẫn code liên quan (nếu biết chắc). |
 | `related_bugs` | ✓ | Danh sách `id` bug trong `bugs/`. |
 | `status` | ✓ | `open` \| `resolved`. |
-| `resolved_at` |  | ISO date khi rerun xác nhận PASS thật + Jira Done. |
+| `resolved_at` |  | ISO date khi rerun xác nhận PASS thật + Backlog Done. |
 
 ## `historical_execution/<TASK_KEY>__<YYYY-MM-DD>.json`
 

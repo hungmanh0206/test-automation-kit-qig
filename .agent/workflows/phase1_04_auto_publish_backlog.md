@@ -6,7 +6,7 @@
 
 Đẩy testcase đã được QA xác nhận từ Excel lên Google Sheet để QA/Dev review. Excel là source of truth khi gen/publish; **publish là bước cần TRƯỚC Phase 2** vì Phase 2 execute luôn tải bản Sheet mới nhất về trước khi chạy.
 
-> Công cụ test-management của kit là **Google Sheet** (qua Google Drive MCP), thay cho AIO Tests cũ. File `.xlsx` do `md_to_xlsx.js` xuất ra chính là nội dung Sheet — không có bước ánh xạ field riêng. Chi tiết: skill `jira_testcase_publisher`.
+> Công cụ test-management của kit là **Google Sheet** (qua Google Drive MCP), thay cho Google Sheet cũ. File `.xlsx` do `md_to_xlsx.js` xuất ra chính là nội dung Sheet — không có bước ánh xạ field riêng. Chi tiết: skill `backlog_testcase_publisher`.
 
 ## Preconditions
 
@@ -45,8 +45,8 @@
 - Không publish từ Markdown khi Excel đã tồn tại; Excel canonical là source of truth, Sheet chỉ là bản đồng bộ.
 - Không publish thật nếu thiếu QA confirmation.
 - Không sửa nội dung testcase trực tiếp trên Sheet (UI Google Sheets); authoring ở Excel rồi re-publish (`update_file`) — ghi đè toàn phần nên bản sửa tay trên Sheet sẽ mất.
-- Sheet không có folder/tag/Cycle/Run/custom field như AIO cũ — đổi mô hình dữ liệu, không phải đổi tên; đừng đi tìm các khái niệm đó rồi kết luận "thiếu". Nhóm chức năng thể hiện bằng sheet riêng trong cùng workbook.
-- Nếu Excel bỏ bớt TC sau publish, không cần xử lý cleanup riêng (khác AIO cũ) — lần `update_file` kế tiếp tự động phản ánh đúng Excel hiện tại (case bị xoá khỏi Excel thì cũng biến mất khỏi Sheet).
+- Sheet không có folder/tag/Cycle/Run/custom field như công cụ test-management cũ — đổi mô hình dữ liệu, không phải đổi tên; đừng đi tìm các khái niệm đó rồi kết luận "thiếu". Nhóm chức năng thể hiện bằng sheet riêng trong cùng workbook.
+- Nếu Excel bỏ bớt TC sau publish, không cần xử lý cleanup riêng (khác công cụ cũ) — lần `update_file` kế tiếp tự động phản ánh đúng Excel hiện tại (case bị xoá khỏi Excel thì cũng biến mất khỏi Sheet).
 - Không log bug Backlog trong step này; bug logging thuộc Phase 2.
 - Nếu publish lỗi một phần, giữ Excel canonical và ghi rõ lỗi trong report local.
 - Việc publish chỉ làm được khi agent đang chạy trong phiên chat (MCP không gọi được từ CI headless) — đánh đổi có chủ ý.

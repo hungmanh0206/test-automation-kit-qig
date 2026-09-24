@@ -2,9 +2,9 @@
 const TERMS_RULE = [
 
 { id:'r-security', t:'Bảo mật tuyệt đối', cat:'rule',
-  def:'Không để lọt secret vào repo, và không để lọt thông tin khách hàng ra evidence hay Jira.',
-  detail:'Hai vế tách bạch. Vế thứ nhất là secret của hệ thống: token, password, cookie, API key, file service-account JSON — không được ghi vào file nào được commit. Vế thứ hai là PII của khách: email, số điện thoại, họ tên, địa chỉ. Được phép nhìn thấy trên màn khi test, nhưng mọi thứ rời khỏi máy (ảnh evidence, report, mô tả bug trên Jira) đều phải che.',
-  why:'Repo được đồng bộ qua GitLab/GitHub và evidence được đính thẳng lên Jira, nơi rất nhiều người ngoài team QA đọc được. Một lần commit nhầm token là phải xoay vòng lại toàn bộ credential. Một ảnh chụp còn nguyên email khách là rò rỉ dữ liệu thật.',
+  def:'Không để lọt secret vào repo, và không để lọt thông tin khách hàng ra evidence hay Backlog.',
+  detail:'Hai vế tách bạch. Vế thứ nhất là secret của hệ thống: token, password, cookie, API key, file service-account JSON — không được ghi vào file nào được commit. Vế thứ hai là PII của khách: email, số điện thoại, họ tên, địa chỉ. Được phép nhìn thấy trên màn khi test, nhưng mọi thứ rời khỏi máy (ảnh evidence, report, mô tả bug trên Backlog) đều phải che.',
+  why:'Repo được đồng bộ qua GitLab/GitHub và evidence được đính thẳng lên Backlog, nơi rất nhiều người ngoài team QA đọc được. Một lần commit nhầm token là phải xoay vòng lại toàn bộ credential. Một ảnh chụp còn nguyên email khách là rò rỉ dữ liệu thật.',
   how:[
     'Creds để trong profiles/<TASK>/task.env, file này không commit.',
     'Trước khi push: npm run secret:scan (quét file đã track, tự chặn nếu thấy secret thật).',
@@ -17,7 +17,7 @@ const TERMS_RULE = [
 
 { id:'r-uat', t:'UAT non-destructive · DB read-only', cat:'rule',
   def:'Không làm hỏng dữ liệu trên môi trường UAT, và không dùng câu lệnh DB để dựng dữ liệu cho test.',
-  detail:'UAT là môi trường dùng chung: BA demo trên đó, Dev debug trên đó, QA khác cũng đang chạy trên đó. Vì vậy mỗi lượt thao tác có khả năng thay đổi dữ liệu đều phải xác nhận trước. Riêng database thì chỉ được đọc, đi qua guarded client tests/support/setup/db/uatPgClient.ts và chỉ chạy SELECT.',
+  detail:'UAT là môi trường dùng chung: BA demo trên đó, Dev debug trên đó, QA khác cũng đang chạy trên đó. Vì vậy mỗi lượt thao tác có khả năng thay đổi dữ liệu đều phải xác nhận trước. Riêng database thì chỉ được đọc, đi qua guarded client tests/support/setup/db/uatDbClient.ts và chỉ chạy SELECT.',
   why:'Hai lý do khác nhau. Non-destructive là để không phá việc của người khác. DB read-only là vì dữ liệu dựng bằng UPDATE thẳng vào bảng có thể ở trạng thái mà luồng ứng dụng thật không bao giờ tạo ra được, test trên đó rất dễ đẻ ra "bug" không tồn tại.',
   how:[
     'Dựng state qua UI, qua API, qua factory hoặc test hook, không qua DB.',
@@ -26,7 +26,7 @@ const TERMS_RULE = [
   ],
   ex:'Cần một đơn hàng ở trạng thái đã thanh toán: tạo đơn qua API rồi gọi luồng thanh toán thật, chứ không UPDATE thẳng cột status thành PAID.',
   trap:'Kết quả truy vấn DB không được tính là evidence. Muốn chứng minh thì phải có ảnh hoặc video màn hình.',
-  src:'tests/support/setup/db/uatPgClient.ts', rel:['c-non-destructive','c-db-readonly','c-precondition','c-natural-setup'] },
+  src:'tests/support/setup/db/uatDbClient.ts', rel:['c-non-destructive','c-db-readonly','c-precondition','c-natural-setup'] },
 
 { id:'r-verify', t:'Verify thật trước khi kết luận', cat:'rule',
   def:'Phải chạy thật rồi mới phán kết quả; FAIL phải chạy lại 2–3 lần trước khi gọi là bug.',
@@ -64,13 +64,13 @@ const TERMS_RULE = [
     'Chạy song song cùng một TASK_KEY thì thêm RUN_ID để tách artifact.',
     'Chạy Playwright theo task: npm run test:task -- --project-output … --task …'
   ],
-  ex:'Task SAPP-24395 chạy với TASK_ENV=profiles/SAPP-24395/task.env, output đổ vào outputs/<project>/tasks/SAPP-24395/.',
+  ex:'Task CSDL-24395 chạy với TASK_ENV=profiles/CSDL-24395/task.env, output đổ vào outputs/<project>/tasks/CSDL-24395/.',
   trap:'Không được suy TASK_KEY từ ngữ cảnh của phiên trước. Sai mã task nghĩa là đọc nhầm creds và ghi nhầm chỗ, mà cả hai đều im lặng.',
   src:'CLAUDE.md', rel:['f-task-key','f-task-env','f-output-dir','f-kit-layers'] },
 
 { id:'r-nocheat', t:'Không gian lận để PASS', cat:'rule',
   def:'Không nới assertion, không sửa expected cho khớp build, không skip case để pass rate đẹp.',
-  detail:'Cấm bốn hành vi: xoá hoặc làm lỏng assertion cho test hết đỏ. Đổi expected result khi chưa có requirement/API/design xác nhận. Skip case chỉ để tăng tỉ lệ pass. Và hardcode dữ liệu riêng của một task vào template dùng chung. Nguồn sự thật của testcase là Excel canonical và AIO Tests. Mỗi phase phải đọc lại artifact đó, không dựa vào trí nhớ hội thoại.',
+  detail:'Cấm bốn hành vi: xoá hoặc làm lỏng assertion cho test hết đỏ. Đổi expected result khi chưa có requirement/API/design xác nhận. Skip case chỉ để tăng tỉ lệ pass. Và hardcode dữ liệu riêng của một task vào template dùng chung. Nguồn sự thật của testcase là Excel canonical và Google Sheet. Mỗi phase phải đọc lại artifact đó, không dựa vào trí nhớ hội thoại.',
   why:'Report tồn tại để phản ánh chất lượng thật. Một suite 100% xanh vì đã nới hết assertion còn nguy hiểm hơn suite 70% xanh trung thực, vì nó tạo cảm giác an toàn giả và bug đi thẳng ra production.',
   how:[
     'Expected sai thì đi hỏi BA/Dev để sửa tài liệu, rồi mới sửa testcase, theo thứ tự đó.',

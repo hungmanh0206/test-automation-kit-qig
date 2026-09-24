@@ -7,7 +7,7 @@ import type { Matcher, MatchResult } from './types';
  * nhiều biểu diễn (`pg` trả `numeric`/`bigint` thành string, `mssql` trả number, Mongo trả Decimal128), nên
  * so thô sẽ đỏ hàng loạt dù DB lưu hoàn toàn đúng.
  *
- * Đo trên `sapp-platform-uat` (27/08/2026) — hai bảng lõi lưu tiền KHÁC KIỂU nhau:
+ * Đo trên `một DB UAT thật` (27/08/2026) — hai bảng lõi lưu tiền KHÁC KIỂU nhau:
  *   ic_payment_orders.final_price              bigint
  *   ic_payment_transaction_orders.amount       character varying   ← số tiền lưu dạng CHUỖI
  * và 39/39 cột thời gian là `timestamp WITHOUT time zone` (không có offset trong dữ liệu).

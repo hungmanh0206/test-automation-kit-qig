@@ -1,16 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { isUatDbConfigured } from './uatPgClient';
+import { isUatDbConfigured } from './uatDbClient';
 import { getDb, closeDb, checkRow, expectRow, expectSoftDeleted, expectNotDeleted, expectCount, snapshot, expectNoChange, expectAudit } from './dbVerify';
 import { money, text, instant } from './match';
-import { buildWhere } from './adapters/postgres';
+import { buildWhere } from './adapters/mssql';
 import { DbGuardError } from './types';
 
 /*
- * SMOKE THẬT trên `sapp-platform-uat` — chỉ ĐỌC, và chỉ đọc bản ghi CÓ SẴN (không tạo/không sửa gì).
+ * SMOKE THẬT trên `một DB UAT thật` — chỉ ĐỌC, và chỉ đọc bản ghi CÓ SẴN (không tạo/không sửa gì).
  * Mục đích: chứng minh adapter + dbVerify chạy được với DB thật, và các chốt an toàn/từ-chối-phán có hiệu
  * lực. Đây KHÔNG phải test nghiệp vụ — nghiệp vụ nằm ở case §23 sau khi neo bản đồ cột.
  *
- * Chạy: INFRA_VERIFY=1 TASK_ENV=profiles/SAPP-24395/task.env … --project=infra-verify
+ * Chạy: INFRA_VERIFY=1 TASK_ENV=profiles/CSDL-24395/task.env … --project=infra-verify
  */
 const PREFIX = 'LIB_MASTER_DB_RO';
 const ORDERS = 'ic_payment_orders';
@@ -126,19 +126,20 @@ test.describe('@infra-verify dbVerify trên DB thật', () => {
 test.describe('@infra-verify buildWhere — dịch Where sang SQL (không cần DB)', () => {
   test('giá trị trần = eq; null trần = IS NULL', () => {
     const r = buildWhere({ id: 42, deleted_at: null });
-    expect(r.clause).toBe('"id" = $1 AND "deleted_at" IS NULL');
+    expect(r.clause).toBe('[id] = @p1 AND [deleted_at] IS NULL');
     expect(r.params).toEqual([42]);
   });
 
   test('toán tử: notnull · in · like', () => {
     const r = buildWhere({ deleted_at: { op: 'notnull' }, status: { op: 'in', value: ['a', 'b'] }, name: { op: 'like', value: 'IT test%' } });
-    expect(r.clause).toBe('"deleted_at" IS NOT NULL AND "status" IN ($1, $2) AND "name" LIKE $3');
+    expect(r.clause).toBe('[deleted_at] IS NOT NULL AND [status] IN (@p1, @p2) AND [name] LIKE @p3');
     expect(r.params).toEqual(['a', 'b', 'IT test%']);
   });
 
-  test('`in` với danh sách RỖNG ⇒ FALSE (không sinh `IN ()` sai SQL)', () => {
-    expect(buildWhere({ status: { op: 'in', value: [] } }).clause).toBe('FALSE');
-    expect(buildWhere({ status: { op: 'nin', value: [] } }).clause).toBe('TRUE');
+  /* T-SQL không có hằng boolean TRUE/FALSE như Postgres ⇒ dùng `(1=0)` / `(1=1)`. */
+  test('`in` với danh sách RỖNG ⇒ (1=0) (không sinh `IN ()` sai SQL)', () => {
+    expect(buildWhere({ status: { op: 'in', value: [] } }).clause).toBe('(1=0)');
+    expect(buildWhere({ status: { op: 'nin', value: [] } }).clause).toBe('(1=1)');
   });
 
   test('tên cột lạ ⇒ CHẶN (chống injection qua định danh)', () => {
@@ -146,8 +147,8 @@ test.describe('@infra-verify buildWhere — dịch Where sang SQL (không cần 
     expect(() => buildWhere({ '"; --': 1 })).toThrow();
   });
 
-  test('where rỗng ⇒ TRUE (không sinh `WHERE` cụt)', () => {
-    expect(buildWhere({}).clause).toBe('TRUE');
+  test('where rỗng ⇒ (1=1) (không sinh `WHERE` cụt)', () => {
+    expect(buildWhere({}).clause).toBe('(1=1)');
   });
 });
 

@@ -13,7 +13,7 @@
  *   4. ĐỌC GIÁ TRỊ CÓ NEO.  Không regex trên `body.innerText` (dễ vớ số của section khác).
  *
  * Lỗi ném ra đều mang tiền tố [script_error] — khớp `failureLayer: script_error` trong
- * `.agent/config/verdict_taxonomy.json` (loggableAsBug=false) ⇒ FAIL kiểu này KHÔNG được log Jira,
+ * `.agent/config/verdict_taxonomy.json` (loggableAsBug=false) ⇒ FAIL kiểu này KHÔNG được log Backlog,
  * phải sửa script. Đây là chốt chặn chính chống "log bug sai vì bắt nhầm element".
  *
  * Dùng (CJS — chạy được trong spec Playwright lẫn script node task-scoped):

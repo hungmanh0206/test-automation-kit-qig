@@ -4,7 +4,7 @@
 /*
  * leak_report.js — đo "kit đang rò bao nhiêu và rò kiểu gì" (baseline cho mọi cải tiến sau).
  *
- * Migrated từ Jira (22/09/2026). Khác Jira: Backlog KHÔNG có labels tự do, nên nguồn phát hiện
+ * Migrated từ hệ bug-tracking cũ (22/09/2026). Khác hệ cũ: Backlog KHÔNG có labels tự do, nên nguồn phát hiện
  * (`found-by-kit`/`found-by-human`, ghi bởi bug_reporter.js — xem buildBugDescription) giờ nằm trong
  * TEXT của description, không phải field `labels` riêng — đọc bằng string match thay vì `labels.includes`.
  *
@@ -25,7 +25,7 @@
  *      máy không chắc thì để "chưa rõ" cho người soi, KHÔNG đoán bừa.
  *
  * Dùng:
- *   node scripts/qa/leak_report.js --story SAPP-24395 [--out <file.md>] [--json]
+ *   node scripts/qa/leak_report.js --story CSDL-24395 [--out <file.md>] [--json]
  * Env: BACKLOG_BASE_URL, BACKLOG_API_KEY, BACKLOG_PROJECT_KEY (đọc từ .env / task.env như các script Backlog khác).
  * Exit: 0 (báo cáo, không chặn).
  */
@@ -148,7 +148,7 @@ function classify(text) {
     console.log(`[leak] ĐÓNG VÒNG: ${humanFound.length} bug do NGƯỜI tìm · ${humanFound.length - noMachine.length} đã có máy tương ứng · ${noMachine.length} CHƯA gán được máy`);
     for (const r of noMachine) console.log(`[leak] ✗ ${r.key}: chưa chỉ ra được máy lẽ ra bắt được — ${r.summary.slice(0, 80)}`);
     if (noMachine.length) {
-      console.log('[leak]   Xử lý: gán máy vào `knowledge/leak_machine_map.json` ({"SAPP-xxxxx": {"machine": "...", "why": "..."}})');
+      console.log('[leak]   Xử lý: gán máy vào `knowledge/leak_machine_map.json` ({"dự án trước-xxxxx": {"machine": "...", "why": "..."}})');
       console.log('[leak]   hoặc nếu THẬT SỰ chưa có máy nào phủ trục đó ⇒ ghi đề xuất máy mới vào reports/ (đừng để trống).');
     }
   }

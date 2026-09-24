@@ -11,7 +11,7 @@
       "gạch dài": "5.7 → 10.1",
       "độ dài câu trung bình": "13.8 → 17.6 từ"
     },
-    "lọc để khỏi báo oan": "Gạch chéo chỉ tính khi cả hai bên là từ chữ thường. Không lọc thì nó bắt PASS/FAIL, Critical/High, UI/API, AIO/Jira, ngày 14/08/2026, đường dẫn docs/user — nửa số lần xuất hiện là từ vựng hợp lệ.",
+    "lọc để khỏi báo oan": "Gạch chéo chỉ tính khi cả hai bên là từ chữ thường. Không lọc thì nó bắt PASS/FAIL, Critical/High, UI/API, Sheet/Backlog, ngày 14/08/2026, đường dẫn docs/user — nửa số lần xuất hiện là từ vựng hợp lệ.",
     "mơ hồ đo riêng": "Trên 34 bài mẫu: trung vị 4.8, p75 6.1, max 11.1 trên 1000 từ. Mốc 6 sẽ đánh 9/34 bài CHUẨN nên quá chặt. Đặt 12 để không báo oan trên chính mẫu tham chiếu.",
     "cách chọn mốc": "Đặt ở MAX của 34 bài mẫu, không phải p75. Lý do: mẫu là ĐÍCH, nên đích mà đánh 25% mẫu là đích sai. Max của mẫu: gạch-chéo 1.5 · câu-dài 4 · ký-hiệu 14.1 · gạch-dài 10.4 · mơ-hồ 11.1 · câu tb 15.2. Mốc = max làm tròn lên. Nghĩa của gate: KHÔNG được tệ hơn bản người viết tay."
   },
@@ -41,10 +41,10 @@
         "meanSent": 16
       },
       "emojiMax": 0,
-      "_note": "emoji 0 ở report/bug/testcase là PHÁN ĐOÁN, không phải số đo: ba loại này đi vào Jira và Excel, nơi emoji chỉ là nhiễu."
+      "_note": "emoji 0 ở report/bug/testcase là PHÁN ĐOÁN, không phải số đo: ba loại này đi vào Backlog và Excel, nơi emoji chỉ là nhiễu."
     },
     "bug": {
-      "_dùng cho": "thân bug trước khi log Jira",
+      "_dùng cho": "thân bug trước khi log Backlog",
       "_why": "Dev đọc bug để tái hiện. Lượng từ mơ hồ làm bug bị bounce nên ngưỡng chặt hơn report.",
       "limits": {
         "slash": 2,

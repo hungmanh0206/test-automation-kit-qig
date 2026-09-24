@@ -6,7 +6,7 @@
  *
  * VÌ SAO CẦN: kit CẤM oracle tautological (expected phải từ spec/business rule, không suy từ app —
  * prompt gen §12/§13 + `output_gate.looksTautology`). Nhưng nếu không lưu "đúng là gì" thì agent phải
- * đọc lại Jira/Confluence mỗi lần (dễ miss) hoặc suy từ app (rơi đúng vào tautology bị cấm).
+ * đọc lại Backlog/tài liệu nguồn mỗi lần (dễ miss) hoặc suy từ app (rơi đúng vào tautology bị cấm).
  * File này làm 4 việc để `domain/` không thành nghĩa địa dữ liệu:
  *   --validate  (mặc định) schema + PII + trùng id/version + `source` rỗng (chống rule tự bịa)
  *   --trace     đối chiếu `covered_by` với TC ID THẬT trong testcase canonical → TC ma / rule chưa có TC
@@ -238,7 +238,7 @@ function realTests() {
       } catch (e) { /* file không phải bảng testcase → bỏ qua */ }
     }
   }
-  // DEDUP theo tcId: `from-aio/` là bản mirror kéo từ AIO của CÙNG bộ, nên gộp cả hai thư mục làm mỗi TC
+  // DEDUP theo tcId: `from-sheet/` là bản mirror kéo từ Google Sheet của CÙNG bộ, nên gộp cả hai thư mục làm mỗi TC
   // xuất hiện 2 lần (đo: 550 cho 530 TC) ⇒ mọi con số đếm ở trace-back bị phồng. Bản ở `test-cases/` thắng.
   const byId = new Map();
   for (const t of tests) if (!byId.has(String(t.tcId))) byId.set(String(t.tcId), t);

@@ -12,7 +12,7 @@ Kit đã lưu được: "cái đúng" ([[domain_recorder]]), "hệ thống đư�
 
 | Quyết định đã chốt | Không lưu thì lần sau |
 |---|---|
-| "triệu chứng X không phải bug — dev đã đọc code, Jira Rejected" | **log lại đúng bug đó** → dev bounce, mất uy tín cả bộ report |
+| "triệu chứng X không phải bug — dev đã đọc code, Backlog Rejected" | **log lại đúng bug đó** → dev bounce, mất uy tín cả bộ report |
 | "case Y ghi PASS kèm note vì vướng data/env, không phải defect" | **FAIL đỏ oan** hoặc log bug sai layer |
 | "module Z hạ band High→Medium vì lý do nghiệp vụ" | mỗi lần chạy `risk` lại phải override tay |
 | "cách test W không dùng được (lý do kỹ thuật cụ thể)" | mò lại từ đầu, tốn đúng số giờ đã tốn lần trước |
@@ -79,4 +79,4 @@ node scripts/qa/decisions.js --index     # đưa vào knowledge/index.json
 
 - `knowledge/SCHEMA.md` §`decisions/` — schema đầy đủ.
 - [[learning_recorder]] · [[domain_recorder]] · [[system_mapper]] — 3 nửa còn lại của bộ nhớ.
-- `.agent/workflows/phase2_04_report_and_jira_gate.md` bước 4 — điểm tra cứu bắt buộc trước khi log bug.
+- `.agent/workflows/phase2_04_report_and_backlog_gate.md` bước 4 — điểm tra cứu bắt buộc trước khi log bug.

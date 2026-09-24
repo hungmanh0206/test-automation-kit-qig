@@ -1,7 +1,7 @@
 {
   "_doc": "NGUỒN DUY NHẤT của 9 Case Type. Mọi nơi khác (validate.js · prompt gen §Loại case · publisher · test) ĐỌC file này, không chép lại danh sách. Chép lại là cách 9 loại trở thành 6 ở một chỗ và 9 ở chỗ khác.",
   "_decision_order": "Xét CHUYÊN BIỆT trước, `Functional` là mặc định CUỐI CÙNG khi không khớp loại nào. Thứ tự xét: Security → Accessibility → Performance → Database → API → UI → E2E → Integration → Functional. Một case chỉ mang ĐÚNG MỘT loại; nếu thấy hợp 2 loại thì case đang gộp 2 mục đích — tách case, đừng chọn bừa.",
-  "_aio_note": "Tên phải TRÙNG tên trên AIO (`GET /config` → `caseTypes`). Đối chiếu 20/08/2026: khớp đủ 9/9 — UI(1) Integration(2) Functional(3) API(4) Performance(5) Security(6) Database(7) E2E(8) Accessibility(9). `Unit` là tên CŨ của id 1, đã đổi thành `UI` nên 1.399 case đã publish giữ nguyên ID. Publisher CHẶN khi tên không resolve được — KHÔNG hạ ngầm về Functional.",
+  "_aio_note": "Tên phải TRÙNG tên trên công cụ cũ (`GET /config` → `caseTypes` của công cụ cũ). Đối chiếu 20/08/2026: khớp đủ 9/9 — UI(1) Integration(2) Functional(3) API(4) Performance(5) Security(6) Database(7) E2E(8) Accessibility(9). `Unit` là tên CŨ của id 1, đã đổi thành `UI` nên 1.399 case đã publish giữ nguyên ID. Publisher CHẶN khi tên không resolve được — KHÔNG hạ ngầm về Functional.",
   "types": [
     {
       "name": "Security",
@@ -94,6 +94,6 @@
       "not_when": "Trọng tâm là hiển thị → `UI`; là contract API → `API`; là quyền → `Security`."
     }
   ],
-  "_legacy_note": "KHÔNG có alias nào. `Unit` từng là tên id 1 nhưng đã được đổi thành `UI` trên chính AIO, và đo trên toàn bộ bộ TC đã khai (101 case) thì 0 case dùng `Unit` ⇒ giữ alias là giữ luật chết. Nếu sau này lại đổi tên loại, thêm khoá `legacy` ở đây kèm LÝ DO chứ đừng nới regex.",
+  "_legacy_note": "KHÔNG có alias nào. `Unit` từng là tên id 1 nhưng đã được đổi thành `UI` trên chính công cụ cũ, và đo trên toàn bộ bộ TC đã khai (101 case) thì 0 case dùng `Unit` ⇒ giữ alias là giữ luật chết. Nếu sau này lại đổi tên loại, thêm khoá `legacy` ở đây kèm LÝ DO chứ đừng nới regex.",
   "legacy": {}
 }

@@ -156,10 +156,10 @@ TASK_ENV=... npm run dim:coverage -- --enforce        # chiều required + NGƯ�
 
 Chỉ chạy khi testcase đã từng publish lên Sheet (có `GOOGLE_SHEET_URL` trong `profiles/<TASK_KEY>/task.env`) và `REPUBLISH_TESTCASES != 0`. Mục đích: đẩy phần thay đổi lên Sheet để Sheet khớp Excel và làm **nguồn execute**.
 
-- Agent `mcp__claude_ai_Google_Drive__update_file` với `.xlsx` canonical đã merge (TC `UPDATED` + `NEW` đã approve nằm sẵn trong đó) — ghi đè toàn workbook, không cần dedup theo key riêng như AIO cũ vì không có khái niệm "tạo trùng".
+- Agent `mcp__claude_ai_Google_Drive__update_file` với `.xlsx` canonical đã merge (TC `UPDATED` + `NEW` đã approve nằm sẵn trong đó) — ghi đè toàn workbook, không cần dedup theo key riêng như công cụ test-management cũ vì không có khái niệm "tạo trùng".
 - **Review nội dung `.xlsx` local trước khi ghi đè** — Drive MCP không "sửa 1 ô", ghi đè là ghi đè cả file.
 - Precondition đi theo case (cột `Tiền điều kiện`), không cần flag riêng.
-- Nếu testcase CHƯA từng publish lên Sheet → bỏ qua bước này (chạy `TESTCASE_SOURCE=excel`), hoặc publish lần đầu theo `.agent/workflows/phase1_04_auto_publish_jira.md`.
+- Nếu testcase CHƯA từng publish lên Sheet → bỏ qua bước này (chạy `TESTCASE_SOURCE=excel`), hoặc publish lần đầu theo `.agent/workflows/phase1_04_auto_publish_backlog.md`.
 
 ### Step 3: Optional Cleanup — Unlink stale Test khỏi Story/Task (chạy SAU Step 2b re-publish)
 
@@ -224,7 +224,7 @@ change/partial-execution/artifacts/
 | Status | Meaning |
 |---|---|
 | `PASS` | Testcase chạy đúng expected mới đã approve. |
-| `FAIL_PRODUCT_CANDIDATE` | Có khả năng bug product/API, cần triage theo Main Flow trước khi log Jira. |
+| `FAIL_PRODUCT_CANDIDATE` | Có khả năng bug product/API, cần triage theo Main Flow trước khi log Backlog. |
 | `FAIL_TEST_SETUP` | Fail do setup/data/env/auth/automation. |
 | `SKIP_BLOCKED` | Skip có lý do hợp lệ và không thể tránh ngay. |
 | `NEED_REVIEW` | Expected/source vẫn chưa đủ rõ, không merge/execute tiếp. |
@@ -266,7 +266,7 @@ Bug candidate package phải ghi:
 | Excluded causes | Yes, data/setup/env/mock/automation/flaky |
 | Recommended next step | Yes, chuyển sang Main Flow bug triage nếu đủ điều kiện |
 
-Không log Jira trực tiếp trong Partial Rerun. Jira chỉ được log sau khi user chuyển sang Main Flow bug triage và thỏa Jira gate của Phase 2 chính.
+Không log Backlog trực tiếp trong Partial Rerun. Backlog chỉ được log sau khi user chuyển sang Main Flow bug triage và thỏa Backlog gate của Phase 2 chính.
 
 ## Hard Rules
 
@@ -275,11 +275,11 @@ Không log Jira trực tiếp trong Partial Rerun. Jira chỉ được log sau k
 - Không execute testcase `NEED_REVIEW`.
 - Không đọc tài liệu nguồn để tự regenerate lại trong Phase 2.
 - Không chạy full regression mặc định.
-- Không log Jira bug trực tiếp từ Partial Rerun này.
+- Không log Backlog bug trực tiếp từ Partial Rerun này.
 - Không unlink Test khỏi Story/Task trên Backlog nếu chưa có QA approval riêng.
 - Re-publish (Step 2b) ghi đè **toàn workbook** đã merge TC UPDATED + NEW — review nội dung local trước khi `update_file`.
 - Execute + đồng bộ execution chỉ cho **subset affected/UPDATED/NEW đã chọn**, không toàn bộ.
-- Nếu có `FAIL_PRODUCT_CANDIDATE`, phải tạo `bug-candidates.md` thay vì log Jira.
+- Nếu có `FAIL_PRODUCT_CANDIDATE`, phải tạo `bug-candidates.md` thay vì log Backlog.
 - Không sửa expected result sau approval nếu không có review lại.
 
 ## Final Response

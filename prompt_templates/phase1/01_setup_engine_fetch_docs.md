@@ -21,11 +21,11 @@ Kết nối nguồn tài liệu, tiếp nhận requirement và chuẩn bị cont
 # Các bước thực hiện
 1. Đọc `.agent/config/project_context.md`.
 2. Đọc `.env.example` để biết env keys cần có, không đọc/ghi secret vào output.
-3. Fetch/read Jira story hoặc epic nếu có.
-4. Fetch/read Confluence BA docs hoặc SOP nếu có.
+3. Fetch/read Backlog story hoặc epic nếu có.
+4. Fetch/read tài liệu nguồn BA docs hoặc SOP nếu có.
 5. Fetch/read Figma design nếu có.
 6. Fetch app/site liên quan Swagger spec nếu có, sau đó parse endpoints và schema.
-7. Liên kết logic BA docs, Jira story, Figma flow và API docs.
+7. Liên kết logic BA docs, Backlog story, Figma flow và API docs.
 8. Lưu context vào `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/snapshot_context.json`.
 
 # TRƯỚC KHI ĐỌC: đo tài liệu — `npm run docs:budget`
@@ -42,7 +42,7 @@ Lệnh in ra 3 thứ:
 > - **Spec bổ sung của BA nằm ở nội dung TÔ MÀU / suggested**, không phải văn xuôi thường; phải đọc
 >   `textRun.backgroundColor` mới thấy. Bỏ qua là bỏ nguyên nhóm yêu cầu mới nhất.
 > `scripts/integrations/google_sheet/` (đọc Sheet qua REST/service-account) là **LEGACY, không dùng ở bước này**: testcase canonical nay là Excel trong
-> `<TASK_OUTPUT_DIR>/test-cases/`, publish lên Google Sheet qua Drive MCP (khác cơ chế — xem skill `jira_testcase_publisher`). Dòng này chỉ nói về việc ĐỌC spec từ Google Sheet của stakeholder, không phải publish testcase.
+> `<TASK_OUTPUT_DIR>/test-cases/`, publish lên Google Sheet qua Drive MCP (khác cơ chế — xem skill `backlog_testcase_publisher`). Dòng này chỉ nói về việc ĐỌC spec từ Google Sheet của stakeholder, không phải publish testcase.
 
 3. **⚠⚠ Bản cũ NHỎ HƠN HẲN bản mới** = bản **thiếu nội dung**, không phải "bản khác ngày". Đọc nó là đọc thiếu spec. *(Đã xảy ra thật: export Google Doc trước khi vá `includeTabsContent` chỉ lấy 1/15 tab — 6,6k thay vì 108k.)*
 
@@ -72,7 +72,6 @@ Hai điều lệnh này nói mà đọc tay không thấy:
 # Checklist kiểm tra
 - [ ] **Đã chạy `npm run docs:budget`** và xử lý đúng 3 mục trên (không đọc bản thiếu, không đọc bản dư, tài liệu >25k thì giao trích xuất).
 - [ ] Đã đọc **toàn bộ** tài liệu (không lướt); bóc đủ AC/rule/validation/enum/state/edge/phân quyền/biên; mâu thuẫn giữa các nguồn đã ghi ra.
-- [ ] **Đã chạy `npm run docs:health`** và không còn file RỔNG / MẤT BẢNG / CÒN ENTITY (thấy thì fetch lại).
 - [ ] **Đã chạy `npm run docs:index`** — mọi neo định dùng làm oracle đều tra ngược được về file kèm số dòng.
 - [ ] Tài liệu đủ để sinh testcase.
 - [ ] Domain tag đúng: App 1 / App 2 / Cross-app.

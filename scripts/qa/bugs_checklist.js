@@ -13,7 +13,7 @@
  *
  * Dùng:
  *   npm run bugs:checklist -- --module "Tạo Add-on Order"
- *   npm run bugs:checklist -- --task SAPP-24395     ·     --tag checkout     ·     --all
+ *   npm run bugs:checklist -- --task CSDL-24395     ·     --tag checkout     ·     --all
  */
 
 const fs = require('fs');
@@ -24,7 +24,7 @@ const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 
 const flag = (n) => process.argv.includes(`--${n}`);
 
 const norm = (s) => String(s || '').normalize('NFC').toLowerCase().trim();
-// `jira_status` này = bug KHÔNG có thật ⇒ sinh case canh nó là tự tạo case sai.
+// `backlog_status` này = bug KHÔNG có thật ⇒ sinh case canh nó là tự tạo case sai.
 const REJECTED = /reject|duplicate|won'?t ?fix|not ?a ?bug|cancel/i;
 
 function load() {
@@ -58,7 +58,7 @@ function main() {
     for (const b of all) { const k = b.module || '(không module)'; (by[k] = by[k] || []).push(b); }
     console.log(`[bugs] ${all.length} bug lịch sử · ${Object.keys(by).length} module. Chọn một module để soi:\n`);
     Object.entries(by).sort((a, b) => b[1].length - a[1].length).forEach(([k, v]) => {
-      const live = v.filter((b) => !REJECTED.test(String(b.jira_status || ''))).length;
+      const live = v.filter((b) => !REJECTED.test(String(b.backlog_status || ''))).length;
       console.log(`  ${String(v.length).padStart(3)} bug (${live} còn hiệu lực)  ${k}`);
     });
     console.log('\n  → npm run bugs:checklist -- --module "<tên>"   (hoặc --task / --tag / --all)');
@@ -68,21 +68,21 @@ function main() {
 
   if (!list.length) { console.log(`[bugs] không có bug nào khớp bộ lọc — chiều §20 ghi "N/A: module chưa có bug lịch sử".`); return; }
 
-  const live = list.filter((b) => !REJECTED.test(String(b.jira_status || '')));
-  const dead = list.filter((b) => REJECTED.test(String(b.jira_status || '')));
+  const live = list.filter((b) => !REJECTED.test(String(b.backlog_status || '')));
+  const dead = list.filter((b) => REJECTED.test(String(b.backlog_status || '')));
 
   console.log(`[bugs] ${list.length} bug khớp${mod ? ` · module "${mod}"` : ''}${task ? ` · task ${task}` : ''}${tag ? ` · tag ${tag}` : ''}`);
   console.log(`       ${live.length} còn hiệu lực (PHẢI quy về 1 trong 3 kết cục) · ${dead.length} đã bác bỏ (KHÔNG sinh case canh)\n`);
 
   live.forEach((b, i) => {
     console.log(`${String(i + 1).padStart(3)}. ${b.bug}`);
-    const meta = [b.module, b.task_key, b.jira_status, (b.tags || []).filter((t) => t !== '(unmapped)').join('/')].filter(Boolean);
+    const meta = [b.module, b.task_key, b.backlog_status, (b.tags || []).filter((t) => t !== '(unmapped)').join('/')].filter(Boolean);
     console.log(`     ${meta.join(' · ')}`);
   });
 
   if (dead.length) {
     console.log(`\n  ĐÃ BÁC BỎ (${dead.length}) — canh một thứ không phải lỗi là tự tạo case sai:`);
-    dead.forEach((b) => console.log(`     ✗ ${String(b.bug).slice(0, 96)} [${b.jira_status}]`));
+    dead.forEach((b) => console.log(`     ✗ ${String(b.bug).slice(0, 96)} [${b.backlog_status}]`));
   }
 
   console.log('\n  Mỗi bug còn hiệu lực phải có MỘT kết cục, không được bỏ trống:');

@@ -13,7 +13,7 @@ import { DbGuardError, type Dialect } from './types';
  *                   Secret theo task, đúng luật isolation của kit (DB của task khoá trong task.env, không
  *                   để ở `.env` chung).
  *
- * ĐO THẬT (sapp-platform-uat, 27/08/2026) đã bác một giả định của bản thiết kế đầu:
+ * ĐO THẬT (một DB UAT thật, 27/08/2026) đã bác một giả định của bản thiết kế đầu:
  * `deleted_at` chỉ có ở **9/16** bảng — 7 bảng nối (`*_instances`, `*_promotion_orders`) KHÔNG có cột này.
  * Nên `softDelete` KHÔNG thể là một giá trị toàn cục; phải cho override THEO BẢNG, và bảng nào không khai
  * thì `expectSoftDeleted` phải TỪ CHỐI phán thay vì mặc định đoán `deleted_at`.
@@ -112,7 +112,15 @@ export function loadConventions(repoRoot: string): DbConventions {
     fieldMap: c.fieldMap,
     safety: {
       requireReadonlyUser: c.safety.requireReadonlyUser !== false,   // mặc định BẬT — tắt phải khai tường minh
-      allowedHosts: c.safety.allowedHosts,
+      /*
+       * Allowlist host ƯU TIÊN env `LIB_MASTER_DB_ALLOWED_HOSTS` (danh sách phẩy), rồi mới tới conventions.
+       * Lý do: repo này PUBLIC, mà `db.conventions.json` ĐƯỢC COMMIT — ghi host nội bộ vào đó là đăng địa
+       * chỉ hạ tầng lên GitHub. Giá trị thật để ở `.env`/`task.env` (gitignored); conventions chỉ giữ
+       * khung. Bỏ trống cả hai ⇒ không áp allowlist (rào chính vẫn là credential).
+       */
+      allowedHosts: (process.env.LIB_MASTER_DB_ALLOWED_HOSTS || '')
+        .split(',').map((h) => h.trim()).filter(Boolean)
+        .concat(c.safety.allowedHosts || []),
       denyHostPatterns: c.safety.denyHostPatterns,
       statementTimeoutMs: Number(c.safety.statementTimeoutMs || 5000),
       maxRows: Number(c.safety.maxRows || 500),
@@ -145,7 +153,7 @@ export function loadConnection(prefix = 'LIB_MASTER_DB_RO', env: NodeJS.ProcessE
   const port = Number(env[`${prefix}_PORT`]);
   if (!Number.isInteger(port) || port <= 0) throw new DbGuardError(`${prefix}_PORT không hợp lệ: "${env[`${prefix}_PORT`]}".`);
   return {
-    dialect: (String(env[`${prefix}_DIALECT`] || 'postgres') as Dialect),
+    dialect: (String(env[`${prefix}_DIALECT`] || 'mssql') as Dialect),
     host: String(env[`${prefix}_HOST`]),
     port,
     database: String(env[`${prefix}_NAME`]),

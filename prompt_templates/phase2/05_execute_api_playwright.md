@@ -9,7 +9,7 @@
 > 2. **Oracle độc lập** — mỗi case có "Kết quả mong đợi" cụ thể (status code/field/giá trị theo API contract). Oracle rỗng hoặc app==app (tautology) → DỪNG, lấy giá trị spec. *(gate: oracle-rỗng = CHẶN · tautology = cảnh báo)*
 > 3. **Batch & drive thật** — gom NHIỀU case/ÍT script chạy song song; dùng hết fixture/deal/account; case negative tự tạo input (payload lỗi, ID không tồn tại). KHÔNG TODO/SKIP khi chưa thử.
 > 4. **Phân tầng kết quả** — mỗi case → PASS/FAIL/SKIP/BLOCKED_SETUP/SKIP_SETUP. FAIL phải PHÂN TẦNG: product/API bug vs `setup_failure` vs infra/flaky. "Không phán được" KHÔNG thành PASS. *(gate: FAIL thiếu tầng-lỗi = CHẶN)*
-> 5. **Loại flaky** — FAIL rerun 2–3 lần loại flaky/setup TRƯỚC khi kết luận product/API bug / log Jira.
+> 5. **Loại flaky** — FAIL rerun 2–3 lần loại flaky/setup TRƯỚC khi kết luận product/API bug / log Backlog.
 > 6. **Evidence** — mọi case (PASS+FAIL)+step có ảnh/video đúng màn (response/assertion hiển thị), highlight, mask PII; case phức tạp có video. CẤM `.json/.md/.log`. *(gate: thiếu evidence/step-status = CHẶN)*
 
 > 📋 **Attestation (G6) — sau execute, ghi vào `testcase-status.json`:** field `attestation` = `{ "oracleSource": "<sheet|spec|api-contract>", "executed": <số case đã chạy>, "allEvidenceAttached": true, "failuresClassified": true, "rerunDone": true }`. Gate ĐỐI CHIẾU tự-khai với sự thật (executed thật, evidence, tầng-lỗi) — lệch = cảnh báo. Khai ĐÚNG, đừng tick suông.
@@ -55,13 +55,13 @@ Cho toàn bộ selected TC, chạy pass này trước khi sinh hoặc chạy b�
    - `pre_existing`/`pre_existing_fixture` → verify fixture tồn tại, không tạo mới.
    - `ui` → chỉ setup qua UI khi không có API/factory và vẫn đúng mục tiêu testcase.
    - `manual` (`Readiness=Manual-only`) → không tự setup, đánh dấu SKIP hợp lệ kèm lý do.
-3. Reuse setup layer dùng chung `tests/support/setup/` (factories/hooks/fixtures/cleanup/contracts); phần đặc thù story tạo task-scoped trong `<TASK_OUTPUT_DIR>/automation/setup/` (namespace theo `RUN_ID` nếu chạy song song). Không sửa shared khi story khác đang chạy. Không thêm DB client/DB query mới (chỉ dùng guarded client `db/uatPgClient.ts` cho read-only verify UAT). Setup/verify fail ném/được phân loại `SetupFailure` → `setup_failure`.
+3. Reuse setup layer dùng chung `tests/support/setup/` (factories/hooks/fixtures/cleanup/contracts); phần đặc thù story tạo task-scoped trong `<TASK_OUTPUT_DIR>/automation/setup/` (namespace theo `RUN_ID` nếu chạy song song). Không sửa shared khi story khác đang chạy. Không thêm DB client/DB query mới (chỉ dùng guarded client `db/uatDbClient.ts` cho read-only verify UAT). Setup/verify fail ném/được phân loại `SetupFailure` → `setup_failure`.
 4. Verify precondition theo `Setup Verification` TRƯỚC khi gọi request chính/assertion. Verify fail thì KHÔNG chạy bước test chính.
-5. Nếu setup/verify fail → phân loại `setup_failure` (KHÔNG phải product/API bug, KHÔNG log Jira): sửa setup/data/auth/hook/env rồi rerun. `Readiness=Needs hook` mà capability (hook/mock/sandbox) chưa có → `BLOCKED_SETUP` + nêu missing capability cụ thể. `Readiness=Manual-only` → `SKIP_SETUP` + lý do.
+5. Nếu setup/verify fail → phân loại `setup_failure` (KHÔNG phải product/API bug, KHÔNG log Backlog): sửa setup/data/auth/hook/env rồi rerun. `Readiness=Needs hook` mà capability (hook/mock/sandbox) chưa có → `BLOCKED_SETUP` + nêu missing capability cụ thể. `Readiness=Manual-only` → `SKIP_SETUP` + lý do.
 6. Sau khi chạy xong (PASS/FAIL), cleanup theo `Cleanup/Rollback`, scope theo `RUN_ID`; ghi rõ data đã dọn / lý do không dọn được.
 
 Ghi kết quả vào execution summary mục `Precondition Resolution`: mỗi TC → setup method, verify pass/fail, blocker (nếu có), cleanup status. Chỉ khi precondition đã verify đạt mà response vẫn sai contract mới được phân loại product/API bug.
-Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal state → `Manual-only`/`BLOCKED_SETUP` + manual steps (không dựng state bằng DB). VERIFY state có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT) khi API/UI không expose.
+Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal state → `Manual-only`/`BLOCKED_SETUP` + manual steps (không dựng state bằng DB). VERIFY state có thể dùng read-only UAT DB qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only, chỉ SELECT) khi API/UI không expose.
 
 # Các bước thực thi
 1. Echo `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `TASK_OUTPUT_DIR`, `RUN_ID` nếu có; nếu sai task thì dừng.
@@ -72,7 +72,7 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 6. Cập nhật testcase output: Status + Actual Result + Evidence/log path.
    Nếu có `RUN_ID`, chỉ cập nhật run-scoped report/status, không ghi trực tiếp testcase Markdown/Excel chính.
    - Với API FAIL thuần, chụp ảnh visual evidence page hiển thị request/response đã redact (log text chỉ để debug local, KHÔNG phải evidence).
-   - Khi log Jira cho API FAIL, không upload log/text/markdown/JSON; nếu cần attachment Jira, render visual evidence page hoặc screenshot response summary đã sanitize.
+   - Khi log Backlog cho API FAIL, không upload log/text/markdown/JSON; nếu cần attachment Backlog, render visual evidence page hoặc screenshot response summary đã sanitize.
    - Với API FAIL nằm trong UI/E2E flow hoặc cần chứng minh hành vi người dùng, kèm screenshot fail; flow phức tạp cần video.
 7. Chạy selected API suite/TC IDs/endpoints trước; chỉ chạy toàn bộ API suite khi mode yêu cầu ALL hoặc vừa sửa shared API client/auth/schema helper.
    Automation mới sinh mặc định ghi dưới `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/automation/`; chỉ ghi vào `tests/api/` khi cần core suite và file đã namespace theo `[TASK_KEY]`.
@@ -82,7 +82,7 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 11. FAIL -> retry/auto-heal nếu lỗi do auth/setup/data/mock/dependency/timeout/test code; sau khi sửa phải rerun.
 12. Nếu FAIL còn lại là product/API contract issue, rerun case fail theo ngưỡng `.agent/config/verdict_taxonomy.json` §rerun (min–max, hiện 2–3 lần) để loại trừ flaky/setup trước khi kết luận.
 13. SKIP chỉ được phép khi không thể chạy sau khi đã thử sửa setup/data/dependency hợp lý; report phải ghi TC ID, lý do skip, có thể sửa để chạy được không.
-14. Jira bug chỉ xử lý sau khi execution report hoàn tất, fail đã được rerun/xác nhận và user/prompt cho phép.
+14. Backlog bug chỉ xử lý sau khi execution report hoàn tất, fail đã được rerun/xác nhận và user/prompt cho phép.
 
 # 5 trục mở rộng quanh case — phần áp cho tầng API (BẮT BUỘC)
 
@@ -135,7 +135,7 @@ không neo. Độ sâu theo **risk band** — xem chi phí trước khi chạy: 
 - Không được mock API chính đang cần kiểm thử contract thật, trừ khi testcase là fault injection hoặc dependency ngoài scope.
 - Không được skip case vì thiếu data nếu có thể tạo data bằng API/factory và rollback.
 - Setup phải theo tag `[<method>]` trong cell `Tiền điều kiện` (chi tiết ở `### Setup Readiness` của `phase1-summary.md` + `knowledge/setup_recipes/`): dựng qua api/factory/test_hook/pre_existing/ui, KHÔNG dựng bằng DB, và phải xác minh state trước khi chạy assertion chính.
-- Không dùng direct DB connection, `TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*` hoặc backend source inspection để làm tiền điều kiện (DỰNG state). Read-only verify/chẩn đoán trên **UAT DB** được phép qua guarded client `tests/support/setup/db/uatPgClient.ts` (chỉ `LIB_MASTER_DB_*`, read-only, chỉ SELECT); DB không phải evidence Jira, PII phải mask.
+- Không dùng direct DB connection, `TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*` hoặc backend source inspection để làm tiền điều kiện (DỰNG state). Read-only verify/chẩn đoán trên **UAT DB** được phép qua guarded client `tests/support/setup/db/uatDbClient.ts` (chỉ `LIB_MASTER_DB_*`, read-only, chỉ SELECT); DB không phải evidence Backlog, PII phải mask.
 - Nếu token/auth/env sai, phải sửa cấu hình và rerun trước khi cân nhắc skip.
 - Không coi API execution hoàn tất nếu còn fail do prompt chưa rõ, setup, test data, auth, dependency, timeout hoặc execute flow.
 
@@ -169,9 +169,9 @@ Status `200` + schema đúng KHÔNG đủ để PASS. Bug logic/dữ liệu BE l
 - Sau mỗi TC, bắt buộc cập nhật testcase output với `Status`, `Actual Result`, `Evidence`.
 - `Actual Result` của case FAIL phải rõ: endpoint/method, request data chính, expected status/body, actual status/body, assertion error và log/evidence path.
 - Khi ghi `testcase-status.json`, **case FAILED phải kèm step nào fail + evidence của bước đó**: điền `steps[]` (bước lỗi `FAILED` + `evidence`; bước chưa chạy `TODO`) hoặc shortcut `failedStep` + `failedStepEvidence` (schema ở `run_phase2_template.md`) — để Test Execution hiện đúng bước lỗi thay vì chỉ FAIL tổng.
-- API evidence không được chứa bearer token, password, cookie, API key hoặc secret khác; phải redact trước khi ghi file/report/Jira.
+- API evidence không được chứa bearer token, password, cookie, API key hoặc secret khác; phải redact trước khi ghi file/report/Backlog.
 - Nếu testcase API là một phần của luồng phức tạp, nhiều bước hoặc cross-site, lưu thêm video/screenshot từ browser flow liên quan nếu có.
-- Jira attachment chỉ được là ảnh/video. Không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md` hoặc execution summary lên Jira.
+- Backlog attachment chỉ được là ảnh/video. Không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md` hoặc execution summary lên Backlog.
 - Không ghi actual result chung chung như `API failed`; phải nêu response thực tế quan sát được.
 
 # Đầu ra

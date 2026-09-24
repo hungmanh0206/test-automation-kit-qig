@@ -19,9 +19,9 @@
  * một neo khác, vì gợi ý sai ở đây dẫn thẳng tới việc đổi expected cho khớp một luật không tồn tại.
  *
  * Dùng:
- *   node scripts/phase1/docs_index.js --task SAPP-26878 --write   # ghi _anchors.json
- *   node scripts/phase1/docs_index.js --task SAPP-26878 --cite BR-07
- *   node scripts/phase1/docs_index.js --task SAPP-26878 --verify <file.md|file.xlsx.md ...>
+ *   node scripts/phase1/docs_index.js --task CSDL-26878 --write   # ghi _anchors.json
+ *   node scripts/phase1/docs_index.js --task CSDL-26878 --cite BR-07
+ *   node scripts/phase1/docs_index.js --task CSDL-26878 --verify <file.md|file.xlsx.md ...>
  *
  * Exit (chỉ có ý nghĩa khi bật `--enforce`; mặc định luôn 0 vì đây là báo cáo):
  *   0 đạt · 1 có neo không tra được · 2 KHÔNG PHÁN ĐƯỢC hoặc dùng sai.
@@ -53,7 +53,7 @@ const rest = (n) => {
  * Neo của TÀI LIỆU, không phải id knowledge của kit.
  *
  * Hai hệ khác hẳn nhau và đừng trộn: `BR-SAPSYNC-003` là luật trong `knowledge/domain/` do
- * `domain_rules.js` gác, còn `BR-07` với `AC-2.1` là mục đánh số trong chính trang Confluence. File
+ * `domain_rules.js` gác, còn `BR-07` với `AC-2.1` là mục đánh số trong chính trang tài liệu nguồn. File
  * này chỉ lo hệ thứ hai. Phần đuôi `(?![A-Za-z])` để `BR-07` không nuốt mất `BR-SAPSYNC-003`.
  */
 const ANCHOR_RE = /\b(BR|AC|EC|NFR|OQ|CR|US|FR|REL)-(\d+(?:\.\d+)*)\b(?![A-Za-z])/g;
@@ -70,7 +70,7 @@ function laDinhNghia(line, anchor) {
  * MỖI TRANG CHỈ LẤY MỘT BẢN, và phải là bản tốt nhất.
  *
  * `lanh()` một mình không đủ ở đây. Phép đo MẤT BẢNG cần biết nguồn có `<table>` hay không, mà đó là
- * thông tin lấy từ Confluence. Chỉ mục chạy NGOẠI TUYẾN, nên với file không rõ nguồn thì phép đo đó
+ * thông tin lấy từ tài liệu nguồn. Chỉ mục chạy NGOẠI TUYẾN, nên với file không rõ nguồn thì phép đo đó
  * im lặng và một bản đã mất hết bảng vẫn được coi là lành. Đo thật: 9 file như vậy lọt vào chỉ mục,
  * đều là bản trùng của trang đã có bản tốt hơn.
  *
@@ -167,7 +167,7 @@ function inCite(idx, anchor, trong) {
     console.log(`    ${c.text}`);
   }
   /*
-   * Đo thật trên SAPP-26878: `BR-07` có DỊNH NGHĨA ở 5 trang US khác nhau, mỗi trang một luật khác
+   * Đo thật trên CSDL-26878: `BR-07` có DỊNH NGHĨA ở 5 trang US khác nhau, mỗi trang một luật khác
    * hẳn. Tài liệu đánh số BR theo TỪNG US, nên một testcase chỉ ghi "BR-07" là chưa chỉ ra được luật
    * nào. Phải kèm trang, kiểu "US-01 BR-07".
    */

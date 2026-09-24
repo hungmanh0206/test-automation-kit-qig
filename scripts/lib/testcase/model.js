@@ -3,7 +3,7 @@
 /*
  * Canonical TestCase model (architecture hardening #1) — NGUỒN DUY NHẤT hiểu bảng testcase.
  * Thay ≥6 parser rải rác (md_to_xlsx/output_gate/design_gate/risk_gate/risk_score/traceability/
- * publish/pull AIO) bằng 1 model + adapter. GĐ 1a chỉ định nghĩa model + helper (chưa đụng consumer).
+ * publish/pull công cụ cũ) bằng 1 model + adapter. GĐ 1a chỉ định nghĩa model + helper (chưa đụng consumer).
  *
  * JS CommonJS + JSDoc typedef + testcase.d.ts (không dựng build-step TS; full TS để #7).
  * Dependency-free (chỉ để adapter khác require an toàn).
@@ -58,18 +58,18 @@ const COL = {
    * TRƯỚC 21/08/2026 tag nằm TRONG tiêu đề, lý do ghi ở `dimensionsOf` bên dưới: hồi đó template
    * đang khoá 9 cột nên thêm cột là phá mọi consumer. Lý do đó ĐÃ HẾT HIỆU LỰC — `Loại case` thêm
    * vào thành cột thứ 10, và mọi consumer nay đọc theo TÊN cột qua `colIndex()` chứ không theo vị trí.
-   * Đổi lại vì tag là tín hiệu cho MÁY: người mở case trên AIO để chạy phải đọc qua 3 khối ngoặc mới
+   * Đổi lại vì tag là tín hiệu cho MÁY: người mở case trên Google Sheet để chạy phải đọc qua 3 khối ngoặc mới
    * tới nội dung. Tách ra thì tiêu đề đọc thẳng, mà máy vẫn gác đủ.
    */
   tags: (n) => n === 'tag' || n === 'tags' || n.includes('tag chieu') || n.includes('tag'),
   /*
    * `Loại case` — TRỤC KHÁC HẲN `Nhóm chức năng`.
-   *   Nhóm chức năng trả lời "test Ở ĐÂU" (màn/luồng nghiệp vụ) → thành FOLDER trên AIO.
+   *   Nhóm chức năng trả lời "test Ở ĐÂU" (màn/luồng nghiệp vụ) → thành FOLDER trên Google Sheet.
    *   Loại case      trả lời "LOẠI KIỂM THỬ NÀO" (Unit|Integration|Functional|API|Performance|Security)
-   *                  → thành Case Type trên AIO, dùng để lọc và báo cáo.
+   *                  → thành Case Type trên Google Sheet, dùng để lọc và báo cáo.
    * Trước đây kit SUY loại từ tên nhóm (`/^api/` → API, `/security/` → Security, còn lại → Functional).
    * Đo trên 1.399 case đã publish: **96% rơi về Functional**, Integration và Performance = 0 ⇒ lọc theo
-   * Case Type trên AIO vô dụng, và người đọc dễ kết luận nhầm là bộ test không có mảng tích hợp.
+   * Case Type trên Google Sheet vô dụng, và người đọc dễ kết luận nhầm là bộ test không có mảng tích hợp.
    * Ép một trục ra trục kia thì kết quả sai là tất yếu — nên nay là cột NGƯỜI KHAI.
    */
   caseType: (n) => ['loai case', 'case type', 'loai kiem thu', 'loai test', 'type'].includes(n),
@@ -115,7 +115,7 @@ function splitNumbered(cell) {
  * VÌ SAO CẦN: prompt §6 bắt "mỗi bước một dòng kết quả" ĐỒNG THỜI "mỗi ý một dòng con `- …`". Hai luật đó
  * đúng cho người đọc, nhưng `splitNumbered` trả phẳng: dòng đánh số có `n = 1,2,3`, dòng con có `n = null`.
  * Consumer nào zip `steps[i] ↔ expected[i]` theo CHỈ SỐ là lệch ngay từ dòng con đầu tiên — và phần dôi ra
- * bị cắt mất. Đo thật trên bộ SAPP-26878 (101 case): 300/682 dòng kết quả (44%) bị vứt ở 83 case, và các
+ * bị cắt mất. Đo thật trên bộ CSDL-26878 (101 case): 300/682 dòng kết quả (44%) bị vứt ở 83 case, và các
  * bước sau còn nhận nhầm kết quả của bước trước.
  *
  * HỢP ĐỒNG: khối của bước N = dòng đánh số N + MỌI dòng con đứng sau nó cho tới dòng đánh số kế tiếp.
@@ -167,7 +167,7 @@ function dimensionsOf(title) {
  * VÌ SAO đi bằng TAG chứ không thêm cột: đo 14/08/2026 trên bộ 530 case thật — **0/530 case** nhắc bất kỳ id
  * rule nào, dù `§12` của prompt gen ĐÃ yêu cầu "ghi id rule vào Kết quả mong đợi hoặc Assumptions". Quy định
  * có, tuân thủ 0%, và không máy nào kiểm. Thêm cột thứ 10 thì phá format 9 cột mà mọi consumer đang khoá
- * theo (`md_to_xlsx`, publish/pull AIO, validate) — trong khi tag nằm trong CHÍNH cột `Trường hợp kiểm thử`,
+ * theo (`md_to_xlsx`, publish/pull, validate) — trong khi tag nằm trong CHÍNH cột `Trường hợp kiểm thử`,
  * dùng lại đúng cơ chế đang đọc `[Positive]`/`[Display]`. Một tín hiệu gác được HAI chiều: chặn case có oracle
  * nghiệp vụ mà không trỏ rule, VÀ tự append `covered_by` cho rule (hết phụ thuộc người nhớ điền).
  *
@@ -189,10 +189,10 @@ function oracleRefsOf(title) {
 }
 
 /**
- * Tên tag GIỮ NGUYÊN chữ gốc, để đẩy lên **Field Tags của AIO**.
+ * Tên tag GIỮ NGUYÊN chữ gốc, để đẩy lên **cột `Tag`**.
  *
  * Khác `dimensionsOf` (normalize về id máy: `bedata`, `sideeffect`) — chỗ này là NHÃN CHO NGƯỜI đọc trên
- * AIO nên phải giữ đúng `BEData`, `SideEffect`, `BR-SAPSYNC-001`. Lấy cả tag chiều lẫn id oracle: trên AIO
+ * Google Sheet nên phải giữ đúng `BEData`, `SideEffect`, `BR-SAPSYNC-001`. Lấy cả tag chiều lẫn id oracle: trên Google Sheet
  * lọc "case nào phủ BR-SAPSYNC-004" là việc dùng thật.
  *
  * HAI NGUỒN, KHÔNG hợp bừa:

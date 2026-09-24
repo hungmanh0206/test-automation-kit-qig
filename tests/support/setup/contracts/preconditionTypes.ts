@@ -60,7 +60,7 @@ export interface SetupResult<T = unknown> {
 
 /**
  * Lỗi setup — KHÔNG phải product bug.
- * Phase 2 dùng để phân loại `setup_failure`: sửa setup rồi rerun, không log Jira.
+ * Phase 2 dùng để phân loại `setup_failure`: sửa setup rồi rerun, không log Backlog.
  */
 export class SetupFailure extends Error {
   readonly preconditionId?: string;

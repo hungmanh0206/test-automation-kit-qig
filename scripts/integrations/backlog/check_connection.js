@@ -94,7 +94,7 @@ async function runLiveCheck(label, fn) {
   }
 }
 
-// Backlog auth qua query param `?apiKey=`, không phải header — khác hẳn Jira (Basic/Bearer).
+// Backlog auth qua query param `?apiKey=`, không phải header — khác hẳn Backlog (Basic/Bearer).
 async function testBacklog() {
   const baseUrl = stripTrailingSlash(process.env.BACKLOG_BASE_URL || process.env.BACKLOG_URL);
   await axios.get(`${baseUrl}/api/v2/users/myself`, {

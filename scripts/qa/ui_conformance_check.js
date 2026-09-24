@@ -424,7 +424,7 @@ async function checkScreen(page, base, screen) {
       if (actual.length) dev.push({ type: 'info.loose-labels', name: f.name, note: `section không có <label>; đọc ${actual.length} nhãn theo cặp leaf-node` });
     }
     compareFieldSet(dev, f, actual);
-    // GIÁ TRỊ TRỐNG ở field mà tài liệu nói phải hiển thị. Lớp bug này (SAPP-28317: Checkout bỏ trống CCCD dù API
+    // GIÁ TRỊ TRỐNG ở field mà tài liệu nói phải hiển thị. Lớp bug này (CSDL-28317: Checkout bỏ trống CCCD dù API
     // đã trả đủ) lọt qua mọi phép cũ: nhãn vẫn đủ nên kiểm-kê xanh, và không có giá trị nên so-2-bề-mặt cũng không
     // thấy gì. Ở đây chỉ NÊU (info) vì trống có thể do fixture chưa có dữ liệu — muốn kết luận bug thì phải đối
     // chiếu API (xsurf) để chứng minh "API có mà UI trống".
@@ -446,7 +446,7 @@ async function checkScreen(page, base, screen) {
       // Đo thật trên 4 màn: 3/3 finding đều là **fixture rỗng** (API cũng không có `dob`/`cccd`), không phải bug.
       // Nên để mức GHI CHÚ: một mình nó không kết luận được. Việc chứng minh thuộc phép so UI↔API (trục ②) —
       // `mustHaveValue` chính là danh sách field cần đưa vào `cross_surface.json`.
-      if (blank.length) dev.push({ type: 'info.empty-value', name: f.name, actual: blank, detail: 'tài liệu ghi field hiển thị tự động (M/◎, không kèm điều kiện) mà build đang TRỐNG — cần đối chiếu API để phân biệt "fixture chưa có dữ liệu" với "API có mà UI không render" (lớp SAPP-28317)' });
+      if (blank.length) dev.push({ type: 'info.empty-value', name: f.name, actual: blank, detail: 'tài liệu ghi field hiển thị tự động (M/◎, không kèm điều kiện) mà build đang TRỐNG — cần đối chiếu API để phân biệt "fixture chưa có dữ liệu" với "API có mà UI không render" (lớp CSDL-28317)' });
     }
   }
 

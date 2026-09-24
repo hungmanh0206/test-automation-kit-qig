@@ -1,15 +1,15 @@
 import { test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import { queryUatReadonly, isUatDbConfigured } from './uatPgClient';
+import { queryUatReadonly, isUatDbConfigured } from './uatDbClient';
 
 /*
  * CÔNG CỤ ĐO, không phải test nghiệp vụ: nối lưới UI (đã đọc read-only bởi `_status_label_map.js`) với DB để
- * neo enum → nhãn. Đầu vào khai qua env nên dùng lại được cho màn khác, không khoá cứng vào SAPP-24395.
+ * neo enum → nhãn. Đầu vào khai qua env nên dùng lại được cho màn khác, không khoá cứng vào CSDL-24395.
  * Thiếu đầu vào hoặc thiếu creds ⇒ SKIP: máy khác clone repo về không có file task-scoped, đỏ ở đó là đỏ oan.
  */
 const REQ = path.resolve(process.cwd(), process.env.DB_ANCHOR_DIR
-  || 'outputs/lms-operations-automation/tasks/SAPP-24395/requirements');
+  || 'outputs/lms-operations-automation/tasks/CSDL-24395/requirements');
 const UUID = /^[0-9a-f]{8}[_-][0-9a-f]{4}[_-][0-9a-f]{4}[_-][0-9a-f]{4}[_-][0-9a-f]{12}$/i;
 /*
  * Chuan hoa so: bo MOI ky tu khong phai chu so, giu dau am. Ban dau chi bo khoang trang nen man CORE

@@ -15,7 +15,7 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 | [`phase2/06_triage_review.md`](phase2/06_triage_review.md) | khi cần | Sau generate/heal, muốn **review nhanh automation code** để soi rủi ro. Suite đã pass ổn và không đụng shared layer thì bỏ qua |
 | [`phase2/07_triage_flaky.md`](phase2/07_triage_flaky.md) | khi cần | Case FAIL **không ổn định** giữa các lần chạy — phân biệt flaky vs bug thật trước khi log |
 | [`phase1/dimensions/*.md`](phase1/dimensions/) | **mở đúng chiều đang assert** | **Bước 3–5, khi viết assertion** — 15 chương định nghĩa **assert cái gì mới đủ** cho từng chiều coverage. Phase 2 dùng nhiều nhất: [`12_display`](phase1/dimensions/12_display.md) (tên cột exact · format · số cột + thứ tự · field bắt buộc · **field dẫn xuất phải KHOÁ theo nguồn**) · [`14_be_conformance`](phase1/dimensions/14_be_conformance.md) (phân biệt `null`/rỗng/thiếu key/`0`, mapping BE→UI) · [`15_security`](phase1/dimensions/15_security.md) (IDOR/mass-assignment/injection) · [`10_guard`](phase1/dimensions/10_guard.md) (403/409, chuyển trạng thái bất hợp pháp) · [`08_resilience`](phase1/dimensions/08_resilience.md) (đồng thời, callback trùng, idempotency) · [`16_perf`](phase1/dimensions/16_perf.md). Nằm dưới `phase1/` vì **chủ sở hữu** là prompt gen, nhưng nội dung là **oracle dùng cho cả hai phase** |
-| [`phase2/08_log_bug_jira.md`](phase2/08_log_bug_jira.md) | **BẮT BUỘC** khi log bug | **Bước cuối** — chỉ mở sau khi FAIL đã qua rerun và xác nhận là product/API bug |
+| [`phase2/08_log_bug_backlog.md`](phase2/08_log_bug_backlog.md) | **BẮT BUỘC** khi log bug | **Bước cuối** — chỉ mở sau khi FAIL đã qua rerun và xác nhận là product/API bug |
 
 > Trước đây file này **không trỏ tới hai prompt execute** ở trên, nên ai chỉ đọc `run_phase2` là execute mà thiếu toàn bộ kỷ luật FE/API (47KB). Đó là lý do có bảng này — xem `CHANGELOG` 2026-08-13.
 
@@ -75,7 +75,7 @@ Phạm vi:
 Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ điền trực tiếp ở đây khi muốn override profile)
 - Backlog Epic: [BACKLOG_EPIC_URL]
 - Backlog Story/Task: [BACKLOG_STORY_URL]
-- Confluence Requirement: [CONFLUENCE_REQUIREMENT_URL]
+- tài liệu nguồn Requirement: [REQUIREMENT_DOC]
 - Figma: [FIGMA_FILE_URL]
 - LMS URL: [LMS_BASE_URL]
 - Operations URL: [OPS_BASE_URL]
@@ -128,7 +128,7 @@ Parallel story safety:
 - Khi có `RUN_ID`, không cập nhật trực tiếp testcase Markdown/Excel chính trong `test-cases/`; ghi `Status`, `Actual Result`, `Evidence` vào run-scoped report/status. Chỉ merge ngược khi user chọn run đó làm canonical.
 
 Nguyên tắc tiết kiệm token:
-- Phase 2 dùng canonical local (`reports/phase1-summary.md`, `task.md`, Excel testcase từ Sheet) làm source of truth cho TC ID/steps/expected; chỉ fetch lại Backlog/Confluence/Figma/Swagger khi cần xác minh expected/spec.
+- Phase 2 dùng canonical local (`reports/phase1-summary.md`, `task.md`, Excel testcase từ Sheet) làm source of truth cho TC ID/steps/expected; chỉ fetch lại Backlog/tài liệu nguồn/Figma/Swagger khi cần xác minh expected/spec.
 - Nguồn execute: tải Google Sheet MỘT lần qua Drive MCP về canonical local `test-cases/from-sheet/*.xlsx`, rồi execute từ file đó y như Excel thường — không gọi Sheet/Backlog cho từng case lúc execute (token thấp + offline được sau khi đã tải).
 - Đọc testcase theo index/TC ID/module trước, chỉ mở full file khi selected scope yêu cầu.
 - Không paste full Playwright report, trace, DOM, network log hoặc `results.json` vào chat/report; trích lỗi chính và lưu artifact local.
@@ -160,7 +160,7 @@ Output:
 - Không được đổi expected result nếu chưa chứng minh expected cũ sai bằng requirement, BA/PO confirmation, Swagger/OpenAPI, design, hoặc tài liệu nguồn đáng tin cậy.
 - Mock/stub chỉ được dùng khi testcase yêu cầu fault injection, dependency ngoài scope, hoặc setup/rollback dữ liệu an toàn. Nếu mock làm testcase không còn validate đúng logic thật, phải điều chỉnh lại hoặc chạy bằng dữ liệu thật.
 - Ưu tiên sửa root cause thay vì workaround: locator, timing, setup, test data, auth, dependency, cleanup, API/factory data, mock, timeout, hoặc execute flow.
-- Không dựng state bằng DB và không dùng `TEST_DB_*`/`TEST_DATABASE_URL`/`DATABASE_URL`/`PG*`, không đọc toàn bộ source backend để execute. Ngoại lệ DUY NHẤT: read-only verify/chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatPgClient.ts` (chỉ `LIB_MASTER_DB_*`, read-only, chỉ SELECT). Kho UAT/PROD tách biệt — không cấu hình creds thì không truy cập được. Case cần trạng thái sâu mà không dựng được qua UI/API/fixture/hook thì ghi manual/semi-auto.
+- Không dựng state bằng DB và không dùng `TEST_DB_*`/`TEST_DATABASE_URL`/`DATABASE_URL`/`PG*`, không đọc toàn bộ source backend để execute. Ngoại lệ DUY NHẤT: read-only verify/chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatDbClient.ts` (chỉ `LIB_MASTER_DB_*`, read-only, chỉ SELECT). Kho UAT/PROD tách biệt — không cấu hình creds thì không truy cập được. Case cần trạng thái sâu mà không dựng được qua UI/API/fixture/hook thì ghi manual/semi-auto.
 - Với testcase Design/Visual compliance (đối chiếu Figma): execute bằng `getComputedStyle` (màu/font/border-radius/padding) + `boundingBox` (kích thước/thứ tự/alignment/gap) so token trích từ Figma node, dùng dung sai; kiểm vị trí TƯƠNG ĐỐI, KHÔNG so pixel toạ độ tuyệt đối. Lệch ngoài dung sai ghi FAIL kèm giá trị build vs Figma; không tự nới dung sai để pass.
 - Với testcase **Display/Field Conformance** (tên cột/label/format dữ liệu/thứ tự/số cột/field bắt buộc/empty-state): oracle phải **so khớp CHÍNH XÁC** với giá trị trong `requirements/ui_catalog.md`/FS — equality từng ký tự cho title/label; **regex** cho format (vd giờ `^\d{2}:\d{2}$`, datetime theo spec); đếm **đủ + đúng thứ tự + đúng tên** cột. **CẤM dùng "contains / tồn tại / count>0" làm oracle cho case hiển thị** (dễ pass ảo). Pattern bắt buộc: **extract-all** header/label/format hiển thị qua DOM rồi **compare vs catalog** → mọi khác biệt (kể cả nhỏ: hoa/thường, `-` vs `/`, thiếu 1 cột) = FAIL. Expected lấy từ catalog/tài liệu, **KHÔNG từ build**. Chụp **full-page/scroll ngang** để không sót cột ở bảng rộng.
 
@@ -197,7 +197,7 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
 ## Thứ tự Phase 2 bắt buộc
 
 0. **Nguồn testcase** — tải Google Sheet về canonical local trước khi execute:
-   Agent `mcp__claude_ai_Google_Drive__download_file_content` file Sheet theo `GOOGLE_SHEET_URL` trong `profiles/[TASK_KEY]/task.env` → ghi `test-cases/from-sheet/[TASK_KEY]_from_sheet.xlsx` → kiểm tra số TC/steps đúng kỳ vọng. Yêu cầu Phase 1 ĐÃ publish testcase lên Sheet (`GOOGLE_SHEET_URL` đã có trong profile); chưa có thì publish trước (`.agent/workflows/phase1_04_auto_publish_jira.md`), hoặc tạm dùng `test-cases/*.xlsx` local nếu chưa cần publish. Nếu report cảnh báo TC thiếu steps thì DỪNG và báo user. Từ Bước 1 trở đi, "Excel canonical" = file `from-sheet/*.xlsx`.
+   Agent `mcp__claude_ai_Google_Drive__download_file_content` file Sheet theo `GOOGLE_SHEET_URL` trong `profiles/[TASK_KEY]/task.env` → ghi `test-cases/from-sheet/[TASK_KEY]_from_sheet.xlsx` → kiểm tra số TC/steps đúng kỳ vọng. Yêu cầu Phase 1 ĐÃ publish testcase lên Sheet (`GOOGLE_SHEET_URL` đã có trong profile); chưa có thì publish trước (`.agent/workflows/phase1_04_auto_publish_backlog.md`), hoặc tạm dùng `test-cases/*.xlsx` local nếu chưa cần publish. Nếu report cảnh báo TC thiếu steps thì DỪNG và báo user. Từ Bước 1 trở đi, "Excel canonical" = file `from-sheet/*.xlsx`.
 1. Đọc `reports/phase1-summary.md` và `task.md` trước để xác định scope, coverage, testcase Excel files và rủi ro.
 2. Đọc reviewed testcase từ nguồn canonical local (`test-cases/from-sheet/*.xlsx`, hoặc `test-cases/*.xlsx` nếu chưa publish) theo selected TC IDs/module; nếu chạy toàn bộ thì lập danh sách TC trước rồi mở Markdown liên quan khi cần Setup Strategy chi tiết.
 3. Generate/update Playwright automation scripts nếu missing hoặc stale; mặc định sinh task-scoped automation dưới `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/automation/`, chỉ sửa/generate spec/helper bị ảnh hưởng.
@@ -207,7 +207,7 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
    - Ưu tiên tạo data bằng API/factory và rollback/cleanup sau test.
    - Không mutate dữ liệu business thật nếu không có rollback.
    - Nếu cần fixture có sẵn, phải verify fixture tồn tại qua API/UI/fixture verifier trước khi chạy.
-   - Không setup/dựng state bằng DB. Read-only verify/chẩn đoán trên UAT DB được phép qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only, chỉ SELECT).
+   - Không setup/dựng state bằng DB. Read-only verify/chẩn đoán trên UAT DB được phép qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only, chỉ SELECT).
 5. Execute selected testcases thật; nếu mode là ALL thì chạy suite theo nhóm hợp lý thay vì nhồi toàn bộ vào một lệnh khó debug.
 6. Auto-heal lỗi automation/setup nếu có, tối đa 5 vòng cho mỗi nhóm lỗi nhưng mỗi vòng chỉ đọc/sửa file liên quan trực tiếp.
 7. Rerun targeted các case FAIL/SKIP/flaky ít nhất 2 vòng sau khi đã sửa nguyên nhân không thuộc product bug. Chỉ rerun toàn suite khi thay đổi shared helper/auth/setup hoặc cần regression rộng.
@@ -234,7 +234,7 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
 12. Phân loại mọi testcase đã execute thành `PASS`, `FAIL`, hoặc `SKIP` và cập nhật testcase output với `Actual Result` rõ ràng.
     Nếu có `RUN_ID`, không sửa testcase Markdown/Excel chính trong lúc execute; ghi phân loại vào run-scoped report/status.
     Đồng thời ghi file máy-đọc để đồng bộ trạng thái lên Sheet: `test-results/testcase-status.json` (có `RUN_ID` thì `test-results/runs/[RUN_ID]/testcase-status.json`). **`status` dùng ĐÚNG tên canonical trong `.agent/config/verdict_taxonomy.json`** (`PASS` | `FAIL` | `BLOCKED_SETUP` | `TODO` | …; script vẫn nhận alias `PASSED/FAILED/TO DO/EXECUTING` và tự map sang giá trị cột `Result` trên Sheet — 1 nguồn duy nhất là taxonomy, KHÔNG hardcode bảng khác). Schema:
-    `{ "taskKey": "[TASK_KEY]", "generatedAt": "<ISO>", "tests": [ { "tcId": "<TC ID chính xác như Excel>", "status": "PASSED|FAILED|TO DO|EXECUTING", "comment": "<actual/lý do; nêu rõ nếu vốn là SKIP/BLOCKED>", "evidence": ["<path ảnh/video, tùy chọn>"], "steps": [ { "status": "PASSED|FAILED|TODO", "comment": "<tùy chọn>", "evidence": ["<path>"] } ], "failedStep": <index 1-based — shortcut thay cho steps[]>, "failedStepEvidence": ["<path>"] } ] }` — `tcId` phải khớp TC ID canonical (cột `ID_TC`) vì đó là khoá nối sang đúng dòng trên Sheet — **tuyệt đối không khớp theo tiêu đề**: nhiều case trùng tiêu đề ở các nhóm khác nhau, khớp kiểu đó dồn nhiều run vào một case (đã mất 12 run khi migrate, thời còn dùng AIO).
+    `{ "taskKey": "[TASK_KEY]", "generatedAt": "<ISO>", "tests": [ { "tcId": "<TC ID chính xác như Excel>", "status": "PASSED|FAILED|TO DO|EXECUTING", "comment": "<actual/lý do; nêu rõ nếu vốn là SKIP/BLOCKED>", "evidence": ["<path ảnh/video, tùy chọn>"], "steps": [ { "status": "PASSED|FAILED|TODO", "comment": "<tùy chọn>", "evidence": ["<path>"] } ], "failedStep": <index 1-based — shortcut thay cho steps[]>, "failedStepEvidence": ["<path>"] } ] }` — `tcId` phải khớp TC ID canonical (cột `ID_TC`) vì đó là khoá nối sang đúng dòng trên Sheet — **tuyệt đối không khớp theo tiêu đề**: nhiều case trùng tiêu đề ở các nhóm khác nhau, khớp kiểu đó dồn nhiều run vào một case (đã mất 12 run khi migrate, thời còn dùng Google Sheet).
     - **Case FAILED — BẮT BUỘC ghi rõ step nào fail + evidence ở step đó**: dùng **`steps[]`** (status từng bước; bước lỗi `FAILED` kèm `evidence` là ảnh/video của chính bước đó; bước chưa chạy để `TODO`) HOẶC shortcut **`failedStep`** (index 1-based) + **`failedStepEvidence`** (kit tự suy: trước = PASSED, tại đó = FAILED + evidence, sau = TODO). Evidence vẫn lưu local (`test-results/artifacts/`) — Sheet chỉ giữ status tổng ở cột `Result`, không đính ảnh/video per-step.
     - **Case PASSED KHÔNG cần `steps[]`** — mọi step tự set = PASSED. Nhưng **case PASSED VẪN bắt buộc có evidence cấp case là ảnh/video** (highlight + mask PII), không được bỏ trống.
     - **`evidence` CHỈ nhận ảnh (`.png/.jpg/.jpeg/.webp`) hoặc video (`.mp4/.webm`)** — cấm `.json/.md/.txt/.log/.html/.csv/trace.zip` hay file dữ liệu thô (kể cả `order_state.json`, dump API/state). Cần chứng minh dữ liệu → chụp ảnh màn hiển thị dữ liệu. Ảnh phải đúng màn (không 404/blank/sai bước), highlight đúng element, mask PII khách. Chi tiết: mục **Evidence — Quy chuẩn bắt buộc** trong `RULE_GLOBAL.md`.
@@ -248,8 +248,8 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
     - **Guard**: run **0 conclusive** (toàn Not Run) → KHÔNG ghi đè (`--force` nếu vẫn muốn); case `carriedOver` (shard cũ của lượt trước) tự bị loại (`--include-carried-over` để giữ).
     - **Ghi đè toàn file**: mỗi lần sync là ghi đè TOÀN BỘ `.xlsx` rồi `update_file` — không có khái niệm Cycle/Run riêng như trước; chạy lại chỉ cập nhật lại đúng cột `Result` của case khớp `tcId`, không đụng ô khác (Test Type/Priority/Note QA đã sửa tay trên Sheet vẫn giữ nguyên).
     - **Status map**: 1 nguồn duy nhất `.agent/config/verdict_taxonomy.json` (cột `sheet`) → giá trị `Pass|Fail|Pending`. `BLOCKED_SETUP`/`SKIP` map về `Pending`.
-    - **Evidence**: vẫn lưu local (`test-results/artifacts/`), Sheet chỉ giữ status tổng ở cột `Result` — không đính ảnh/video per-step lên Sheet (khác AIO cũ).
-    - **Không có**: folder/tag/Cycle/Run/custom field như AIO cũ — đây là đổi mô hình dữ liệu (Sheet phẳng), không phải đổi tên; nhóm chức năng thể hiện bằng sheet riêng trong cùng workbook.
+    - **Evidence**: vẫn lưu local (`test-results/artifacts/`), Sheet chỉ giữ status tổng ở cột `Result` — không đính ảnh/video per-step lên Sheet (khác công cụ cũ).
+    - **Không có**: folder/tag/Cycle/Run/custom field như công cụ test-management cũ — đây là đổi mô hình dữ liệu (Sheet phẳng), không phải đổi tên; nhóm chức năng thể hiện bằng sheet riêng trong cùng workbook.
     - Việc `update_file` chỉ làm được khi agent đang chạy trong phiên chat (Drive MCP không gọi được từ CI headless).
     - **Vòng giảm skip**: còn nhiều skip thì CHƯA push; skip tối thiểu → QA duyệt push.
 14. Đánh giá `Automation Promote Review`: giữ task-scoped, pending review, hoặc đã promote nếu có approval.
@@ -385,10 +385,10 @@ Khi log Backlog bug:
 - Evidence phải nằm ở Backlog attachment bên dưới issue, không phải trong description.
 - Với Backlog attachment, chỉ dùng screenshot/video; không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md` hoặc execution summary.
 - Testcase liên quan, số lần rerun, các nguyên nhân đã loại trừ, mức độ ảnh hưởng và ghi chú flaky/environment phải ghi trong execution summary/report local, không ghi vào description.
-- Không tự động tạo Backlog comment khi log bug hoặc cập nhật bug. Chỉ comment khi user yêu cầu rõ, hoặc khi có tình huống đặc biệt bắt buộc cần lưu vết (vd báo kết quả re-verify sau khi Dev fix); khi đó phải nêu lý do trong report local. **Khi comment**: trình bày ngắn gọn + gạch đầu dòng, tag Dev bằng mention `@<tên đăng nhập>` (CHƯA VERIFY cú pháp chính xác trên Backlog), và **đính kèm ảnh evidence đã annotate/highlight** (đỏ=điểm lỗi, xanh=đã đúng) qua attachment của comment — chi tiết ở `prompt_templates/phase2/08_log_bug_jira.md` (mục Evidence attachment + Backlog comment).
+- Không tự động tạo Backlog comment khi log bug hoặc cập nhật bug. Chỉ comment khi user yêu cầu rõ, hoặc khi có tình huống đặc biệt bắt buộc cần lưu vết (vd báo kết quả re-verify sau khi Dev fix); khi đó phải nêu lý do trong report local. **Khi comment**: trình bày ngắn gọn + gạch đầu dòng, tag Dev bằng mention `@<tên đăng nhập>` (CHƯA VERIFY cú pháp chính xác trên Backlog), và **đính kèm ảnh evidence đã annotate/highlight** (đỏ=điểm lỗi, xanh=đã đúng) qua attachment của comment — chi tiết ở `prompt_templates/phase2/08_log_bug_backlog.md` (mục Evidence attachment + Backlog comment).
 
 Nếu đủ điều kiện log bug và user/prompt cho phép:
-- Đọc prompt con: `prompt_templates/phase2/08_log_bug_jira.md`.
+- Đọc prompt con: `prompt_templates/phase2/08_log_bug_backlog.md`.
 - Chạy dry-run trước:
   `node scripts/integrations/backlog/bug_reporter.js --task [TASK_KEY] --story [BACKLOG_STORY_KEY] --project-output [PROJECT_OUTPUT_DIR] --dry-run`
 - Chỉ tạo Backlog issue thật khi user yêu cầu hoặc prompt hiện tại cho phép thay đổi Backlog:

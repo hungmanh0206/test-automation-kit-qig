@@ -4,19 +4,21 @@
 /*
  * docs_health.js — trả lời "tài liệu tôi đang đọc có còn đúng không" bằng MỘT LỆNH.
  *
- * VÌ SAO CÓ FILE NÀY. Ngày 18/09/2026 soát lại SAPP-26878 bằng tay và thấy ba chuyện, cả ba đều im lặng:
+ * VÌ SAO CÓ FILE NÀY. Ngày 18/09/2026 soát lại CSDL-26878 bằng tay và thấy ba chuyện, cả ba đều im lặng:
  *
- *   1. 14 trên 23 trang Confluence đã bị SỬA sau ngày fetch. Trang mới nhất sửa 16/09, bản trong task
+ *   1. 14 trên 23 trang tài liệu nguồn đã bị SỬA sau ngày fetch. Trang mới nhất sửa 16/09, bản trong task
  *      fetch từ 20/08. Một CR đã bị RÚT trong khoảng đó, gỡ theo 4 neo yêu cầu.
  *   2. 2 file fetch về RỖNG hoàn toàn: 72 và 91 byte, chỉ có tiêu đề. Không lỗi, không cảnh báo.
  *   3. 12 trên 12 trang có bảng ở nguồn nhưng file trong task 0 dòng bảng, do bộ đổi cũ (xem
- *      `scripts/lib/confluence/storage_to_markdown.js`). AC của dự án này nằm trong bảng.
+ *      bộ đổi tài liệu đời cũ). AC của dự án này nằm trong bảng.
  *
  * Cả ba đều KHÔNG thể phát hiện bằng cách đọc file. File vẫn có chữ, vẫn có tiêu đề, đọc vào vẫn hợp lý.
  * Đó là lý do phải có máy: mắt người không phân biệt được "tài liệu nói thế" với "tài liệu CÒN nói thế".
  *
- * BỐN PHÉP ĐO, mỗi phép ứng với một sự cố ĐÃ XẢY RA, không phải rủi ro tưởng tượng:
- *   · LỆCH BẢN   — version trên Confluence khác version lúc fetch.
+ * BA PHÉP ĐO, mỗi phép ứng với một sự cố ĐÃ XẢY RA, không phải rủi ro tưởng tượng.
+ * (Phép đo thứ tư — LỆCH BẢN, so version sống với bản đã fetch — đã BỎ ngày 24/09/2026 cùng lượt gỡ
+ *  công cụ tài liệu cũ khỏi kit. Nó là phép đo DUY NHẤT cần gọi API; ba phép còn lại đọc file nên vẫn đúng với
+ *  tài liệu Markdown soạn trong Obsidian rồi đưa sang task folder.)
  *   · RỖNG       — thân tài liệu dưới ngưỡng, tức là fetch hỏng mà không báo.
  *   · MẤT BẢNG   — nguồn có <table> mà file không có dòng bảng nào.
  *   · CÒN ENTITY — chữ còn ở dạng `&agrave;` thay vì `à`. Đo được 10.555 lần trên 16/16 file của một
@@ -28,9 +30,9 @@
  * muốn chặn có chủ đích.
  *
  * Dùng:
- *   node scripts/phase1/docs_health.js --task SAPP-26878
- *   node scripts/phase1/docs_health.js --task SAPP-26878 --json
- *   node scripts/phase1/docs_health.js --task SAPP-26878 --strict     # lệch bản thì exit 1
+ *   node scripts/phase1/docs_health.js --task CSDL-26878
+ *   node scripts/phase1/docs_health.js --task CSDL-26878 --json
+ *   node scripts/phase1/docs_health.js --task CSDL-26878 --strict     # lệch bản thì exit 1
  *   node scripts/phase1/docs_health.js --dir <đường-dẫn>              # soát một thư mục bất kỳ
  *
  * Exit: 0 đạt (hoặc chỉ báo cáo) · 1 có vấn đề và đang bật --strict · 2 dùng sai hoặc thiếu env.
@@ -38,7 +40,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
 const rc = require('../utils/runtime_config');
 
 const argv = process.argv.slice(2);
@@ -66,7 +67,7 @@ function docMeta(text, fileName) {
     || (fileName.match(/^(\d{6,})/) || [])[1]
     /*
      * Id cũng có thể nằm GIỮA tên file, kiểu `ref_1437794348_fs-bulk-update.md`. Đòi nó đứng đầu thì
-     * bỏ sót. Nhưng ở giữa thì bắt buộc 9 chữ số trở lên: id Confluence thật dài 9 tới 10 chữ số, còn
+     * bỏ sót. Nhưng ở giữa thì bắt buộc 9 chữ số trở lên: id tài liệu nguồn thật dài 9 tới 10 chữ số, còn
      * `8` chữ số sẽ nuốt nhầm ngày tháng kiểu `spec-20260918-v2.md`.
      */
     || (fileName.match(/(?:^|[^\d])(\d{9,})(?:[^\d]|$)/) || [])[1]
@@ -80,8 +81,8 @@ function docMeta(text, fileName) {
 /*
  * `requireId: false` lấy CẢ tài liệu không mang page id.
  *
- * `docs_health` cần id vì việc của nó là đối chiếu version, không có id thì không hỏi Confluence được.
- * Nhưng `docs_index` chỉ cần trích dẫn, mà trích dẫn chỉ cần file với số dòng. Đo thật trên SAPP-28515:
+ * `docs_health` cần id vì việc của nó là đối chiếu version, không có id thì không hỏi tài liệu nguồn được.
+ * Nhưng `docs_index` chỉ cần trích dẫn, mà trích dẫn chỉ cần file với số dòng. Đo thật trên CSDL-28515:
  * 108 KB spec lành, có bảng đầy đủ, nhưng tên file là `spec_bao-luu-...md` nên không có id, và cả hai
  * máy coi như task đó KHÔNG CÓ tài liệu nào. Vứt tài liệu tốt vì thiếu một con số là sai.
  */
@@ -114,39 +115,12 @@ function scanDir(dir, { requireId = true } = {}) {
   return out;
 }
 
-function confluenceClient() {
-  const url = (process.env.CONFLUENCE_URL || `${process.env.JIRA_BASE_URL || ''}/wiki`).replace(/\/+$/, '');
-  const user = process.env.CONFLUENCE_USERNAME || process.env.JIRA_EMAIL || process.env.JIRA_USERNAME;
-  const token = process.env.CONFLUENCE_API_TOKEN;
-  if (!url || !user || !token) return null;
-  const base = new URL(url);
-  const auth = Buffer.from(`${user}:${token}`).toString('base64');
-  return (apiPath) => new Promise((resolve, reject) => {
-    let data = '';
-    https.get({
-      hostname: base.hostname,
-      path: `${base.pathname.replace(/\/+$/, '')}${apiPath}`,
-      headers: { Authorization: `Basic ${auth}`, Accept: 'application/json' },
-    }, (res) => {
-      res.on('data', (c) => { data += c; });
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); } catch { reject(new Error(`HTTP ${res.statusCode}`)); }
-      });
-    }).on('error', reject);
-  });
-}
-
 /*
- * Ngưỡng entity tính theo TỈ LỆ trên 1000 ký tự, không theo số đếm.
- *
- * Bản đầu dùng `entity > 0` và đã loại oan hai file spec chính của một task: 34 KB với 151 dòng bảng
- * bị vứt vì **một** entity, 48 KB bị vứt vì **ba**. Tệ hơn, chỉ mục sau đó quay sang kết tội testcase
- * là trích luật không tồn tại, trong khi luật nằm đúng trong hai file vừa bị loại.
- *
- * Đo trên 483 tài liệu: 58 file còn entity, và chúng tách thành hai chế độ rõ rệt.
- *   · rải rác     — cao nhất **1,00** trên 1000 ký tự (4 entity trong 4 KB). Chữ vẫn đọc được.
- *   · hỏng hệ thống — thấp nhất **1,55**, lên tới 28. Đây là file chưa giải entity bao giờ.
- * Ngưỡng đặt vào giữa khoảng trống đó. Số này lấy từ corpus thật, không phải chọn cho tròn.
+ * NGƯỠNG ENTITY — số lấy từ corpus thật, không chọn cho tròn.
+ * Đo trên 483 tài liệu: 58 file còn entity, tách thành hai chế độ rõ rệt.
+ *   · rải rác       — cao nhất 1,00 trên 1000 ký tự (4 entity trong 4 KB). Chữ vẫn đọc được.
+ *   · hỏng hệ thống — thấp nhất 1,55, lên tới 28. Đây là file chưa giải entity bao giờ.
+ * Ngưỡng đặt vào giữa khoảng trống đó.
  */
 const NGUONG_ENTITY_RATE = 1.2;
 
@@ -155,7 +129,6 @@ function lanh(r) {
   if (r.bytes < NGUONG_RONG) return false;
   if (r.srcTables > 0 && r.dongBang === 0) return false;
   if (r.entity / (r.bytes / 1000) > NGUONG_ENTITY_RATE) return false;
-  if (r.liveVersion && r.version !== r.liveVersion) return false;
   return true;
 }
 
@@ -172,10 +145,8 @@ function baoCao(rows, { strict }) {
   const rong = soat.filter((r) => r.bytes < NGUONG_RONG);
   const matBang = soat.filter((r) => r.srcTables > 0 && r.dongBang === 0);
   const conEntity = soat.filter((r) => r.entity / (r.bytes / 1000) > NGUONG_ENTITY_RATE);
-  const lech = soat.filter((r) => r.liveVersion && r.version && r.liveVersion !== r.version);
-  const chuaBiet = soat.filter((r) => r.liveVersion && !r.version);
 
-  console.log(`[docs-health] ${rows.length} tài liệu Confluence · ${coBanLanh.size} trang có bản lành.`);
+  console.log(`[docs-health] ${rows.length} tài liệu · ${coBanLanh.size} trang có bản lành.`);
   if (daBiThay.length) {
     console.log(`  (bỏ qua ${daBiThay.length} file cũ của trang đã có bản lành)`);
   }
@@ -198,85 +169,37 @@ function baoCao(rows, { strict }) {
     }
     console.log('    "tr&ecirc;n" không khớp khi tra "trên". Tài liệu nằm đó mà tra cứu không ra.');
   }
-  if (lech.length) {
-    console.log(`\n  LỆCH BẢN — Confluence đã sửa sau ngày fetch (${lech.length}):`);
-    for (const r of lech) {
-      console.log(`    v${r.version} tại chỗ, v${r.liveVersion} trên Confluence (sửa ${r.liveWhen}) · ${r.title || r.id}`);
-    }
-  }
-  if (chuaBiet.length) {
-    console.log(`\n  KHÔNG ĐỐI CHIẾU ĐƯỢC — file không ghi version lúc fetch (${chuaBiet.length}):`);
-    for (const r of chuaBiet) {
-      console.log(`    hiện là v${r.liveVersion} (sửa ${r.liveWhen}) · ${path.relative(process.cwd(), r.file)}`);
-    }
-    console.log('    File ghi bằng bản fetcher cũ. Fetch lại thì dòng `## Version:` sẽ có.');
-  }
 
-  const xau = rong.length + matBang.length + conEntity.length + lech.length;
-  if (!xau && !chuaBiet.length) console.log('  Không thấy vấn đề nào.');
   console.log('');
   return strict && xau > 0 ? 1 : 0;
 }
 
-async function main() {
+function main() {
   loadEnv();
   let dir = opt('dir');
   if (!dir) {
     const taskKey = opt('task') || process.env.TASK_KEY;
     if (!taskKey) {
-      console.error('CHẶN: cần --task <TASK_KEY> hoặc --dir <đường-dẫn>.');
+      console.error('CHAN: can --task <TASK_KEY> hoac --dir <duong-dan>.');
       process.exit(2);
     }
     dir = path.join(rc.getTaskOutputDir({ taskKey }), 'requirements');
   }
   if (!fs.existsSync(dir)) {
-    console.error(`CHẶN: không thấy thư mục ${dir}`);
+    console.error(`CHAN: khong thay thu muc ${dir}`);
     process.exit(2);
   }
 
-  const rows = scanDir(dir);
-  if (!rows.length) {
-    /*
-     * PHẢI nói rõ "không có file mang page id", KHÔNG được nói gọn thành "không có tài liệu nào".
-     * Máy này cần page id để hỏi version, nên nó bỏ qua tài liệu không có id. Nhưng tài liệu đó vẫn
-     * tồn tại và vẫn đọc được. Đo thật: 11 task in ra "không có tài liệu Confluence nào" trong khi
-     * chúng có tới 68 file spec lành. Câu nói gọn đó là một tín hiệu sạch-giả.
-     */
-    const coFile = scanDir(dir, { requireId: false }).length;
-    console.log(`[docs-health] không file nào trong ${dir} mang page id, nên không đối chiếu version được.`);
-    if (coFile) {
-      console.log(`              Vẫn có ${coFile} tài liệu ở đây — chúng KHÔNG bị bỏ, chỉ là không kiểm được`);
-      console.log('              LỆCH BẢN. Trích dẫn thì dùng `npm run docs:index`, máy đó không cần id.');
-    }
-    process.exit(0);
-  }
-
   /*
-   * Mỗi page id hỏi Confluence ĐÚNG MỘT LẦN, dù nhiều file cùng trỏ vào nó. Bản fetch cũ và bản mới
-   * hay nằm song song trong cùng task, hỏi hai lần là tốn quota mà không thêm thông tin.
+   * `requireId: false` tu 24/09/2026. Truoc day may nay BAT BUOC page id vi phep do LECH BAN can id de
+   * hoi version qua API. Phep do do da bo cung voi tài liệu nguồn, nen doi id nua la loai oan tai lieu khoi
+   * phep soat — dung loai "tin hieu sach gia" ma chinh file nay canh bao: 11 task tung in ra "khong co
+   * tai lieu nao" trong khi co 68 file spec lanh.
    */
-  const get = confluenceClient();
-  if (get) {
-    const cache = new Map();
-    for (const r of rows) {
-      if (!cache.has(r.id)) {
-        try {
-          const j = await get(`/rest/api/content/${r.id}?expand=version,body.storage`);
-          cache.set(r.id, {
-            title: j.title,
-            liveVersion: j.version && j.version.number,
-            liveWhen: j.version && String(j.version.when).slice(0, 10),
-            srcTables: ((j.body && j.body.storage && j.body.storage.value) || '').match(/<table/gi)?.length || 0,
-          });
-        } catch (e) {
-          cache.set(r.id, { err: e.message });
-        }
-      }
-      Object.assign(r, cache.get(r.id));
-    }
-  } else {
-    console.log('[docs-health] thiếu CONFLUENCE_API_TOKEN nên chỉ soát được phần đọc file.');
-    console.log('              Khai lane doc-read để kiểm cả LỆCH BẢN và MẤT BẢNG.\n');
+  const rows = scanDir(dir, { requireId: false });
+  if (!rows.length) {
+    console.log(`[docs-health] khong thay tai lieu nao trong ${dir}.`);
+    process.exit(0);
   }
 
   if (flag('json')) {
@@ -294,5 +217,5 @@ async function main() {
 module.exports = { scanDir, lanh, docMeta, NGUONG_RONG, NGUONG_ENTITY_RATE };
 
 if (require.main === module) {
-  main().catch((e) => { console.error(e.message); process.exit(2); });
+  try { main(); } catch (e) { console.error(e.message); process.exit(2); }
 }

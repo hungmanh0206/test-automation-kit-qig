@@ -12,12 +12,12 @@ Nhánh này không thuộc Main Flow, không tự chạy, không block Phase 1/P
 
 | Tình huống | Hành động |
 |---|---|
-| Jira/Confluence/Figma/Swagger đổi nội dung nhưng link/path giữ nguyên | Chạy `run_requirement_prepare_review.md`. |
+| Backlog/tài liệu nguồn/Figma/Swagger đổi nội dung nhưng link/path giữ nguyên | Chạy `run_requirement_prepare_review.md`. |
 | Đã có Human Review approve testcase thay đổi | Chạy `run_requirement_apply_approved.md`. |
 | Đã merge Excel/testcase thay đổi và cần đồng bộ lại Google Sheet | Re-publish Sheet (`update_file` qua Drive MCP) — không cần bước cleanup riêng, lần ghi đè kế tiếp tự phản ánh đúng Excel. `run_testcase_cleanup.md` giờ chỉ còn cần khi muốn unlink stale Test khỏi Story/Task (optional). |
 | Chưa có testcase baseline | Chạy Phase 1 chính, không dùng partial rerun. |
 | Dev fix bug đã log | Dùng Re-run chính, không dùng partial rerun. |
-| Cần log Jira bug | Chuyển về Phase 2/Main Flow bug triage, không log trực tiếp từ partial rerun. |
+| Cần log Backlog bug | Chuyển về Phase 2/Main Flow bug triage, không log trực tiếp từ partial rerun. |
 
 ## Luồng chuẩn
 
@@ -94,7 +94,7 @@ Mục tiêu:
 - Execute thật subset đã chọn.
 - **Đồng bộ execution status lên Sheet** cho subset đã execute (`merge_execution_status.js` rồi `update_file`, như các phase khác).
 - Tạo bug candidate package nếu có fail nghi product bug.
-- Không log Jira trực tiếp.
+- Không log Backlog trực tiếp.
 
 Output chính:
 
@@ -106,9 +106,9 @@ Output chính:
     ├── execution-summary.md
     ├── bug-candidates.md
     └── artifacts/
-<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-publish-summary.md (re-publish Step 2b — agent tự ghi sau update_file)
+<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/backlog-testcase-publish-summary.md (re-publish Step 2b — agent tự ghi sau update_file)
 <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/aio-execution-summary.md (execution sync — Step 6b)
-<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/jira-testcase-cleanup-summary.md (nếu chạy cleanup unlink)
+<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/backlog-testcase-cleanup-summary.md (nếu chạy cleanup unlink)
 ```
 
 ## Lifecycle testcase
@@ -147,7 +147,7 @@ Output chính:
 
 Nếu testcase baseline đã từng publish lên Google Sheet và Apply Approved làm Excel thay đổi:
 
-- **Re-publish (Step 2b) chạy TRƯỚC bất kỳ cleanup nào** — `update_file` ghi đè toàn workbook nên TC mới/update đã có trong lần ghi đè đó; case bị bỏ khỏi Excel cũng tự động biến mất khỏi Sheet ngay lần ghi đè này, không cần bước "deprecate" riêng như AIO cũ.
+- **Re-publish (Step 2b) chạy TRƯỚC bất kỳ cleanup nào** — `update_file` ghi đè toàn workbook nên TC mới/update đã có trong lần ghi đè đó; case bị bỏ khỏi Excel cũng tự động biến mất khỏi Sheet ngay lần ghi đè này, không cần bước "deprecate" riêng như công cụ test-management cũ.
 - Chạy `partial-rerun/run_testcase_cleanup.md` chỉ khi còn việc unlink Test khỏi Story/Task trên Backlog — không còn việc đổi trạng thái case trên TMS (Sheet không có `caseStatus`).
 - Không có khái niệm xoá/deprecate case trên Sheet — Excel canonical luôn là nguồn, Sheet chỉ phản chiếu đúng Excel sau mỗi lần re-publish.
 - Unlink stale Test khỏi Story/Task là optional, chỉ bật khi QA yêu cầu.
@@ -159,8 +159,8 @@ Nếu partial execute phát hiện fail nghi product bug:
 
 - Tạo `change/partial-execution/bug-candidates.md`.
 - Ghi TC ID, expected, actual, evidence, rerun count và nguyên nhân đã loại trừ.
-- Không log Jira trong partial rerun.
-- User/QA chuyển sang Main Flow Phase 2 bug triage nếu muốn log Jira.
+- Không log Backlog trong partial rerun.
+- User/QA chuyển sang Main Flow Phase 2 bug triage nếu muốn log Backlog.
 
 ## Snapshot schema tối thiểu
 
@@ -172,8 +172,8 @@ Nếu partial execute phát hiện fail nghi product bug:
   "task_key": "<TASK_KEY>",
   "sources": [
     {
-      "source_id": "confluence-xxx",
-      "type": "confluence|jira|figma|swagger|file",
+      "source_id": "tai_lieu_nguon-xxx",
+      "type": "tai_lieu_nguon|backlog|figma|swagger|file",
       "url_or_path": "<same-source-link-or-path>",
       "content_hash_before": "<hash>",
       "content_hash_after": "<hash>",
@@ -183,7 +183,7 @@ Nếu partial execute phát hiện fail nghi product bug:
   "testcases": [
     {
       "tc_id": "<TC_ID>",
-      "source_ids": ["confluence-xxx"],
+      "source_ids": ["tai_lieu_nguon-xxx"],
       "lifecycle": "ACTIVE|UPDATED|DEPRECATED|NEW|NEED_REVIEW",
       "risk": "Critical|High|Medium|Low"
     }
@@ -197,5 +197,5 @@ Nếu partial execute phát hiện fail nghi product bug:
 - Không thêm dependency từ Phase 1/Phase 2/Re-run sang partial-rerun.
 - Không tự động trigger khi chạy Phase 1/Phase 2.
 - Không block Main Flow nếu partial-rerun thiếu file hoặc bị xóa.
-- Không log Jira trực tiếp từ partial-rerun.
+- Không log Backlog trực tiếp từ partial-rerun.
 - Không dùng partial-rerun cho Dev fix bug; dùng Re-run chính.

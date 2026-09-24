@@ -1,6 +1,6 @@
 # Cấu hình MCP
 
-> Template an toàn để cấu hình MCP server cho Jira, Confluence, Figma, HubSpot và Playwright.
+> Template an toàn để cấu hình MCP server cho Backlog, tài liệu nguồn, Figma, HubSpot và Playwright.
 
 ## Mục đích
 
@@ -10,7 +10,7 @@ File này cung cấp mẫu cấu hình MCP dùng chung cho kit. Không lưu toke
 
 | Trường hợp | Cách dùng |
 |---|---|
-| Cần kết nối Jira/Confluence | Dùng server `atlassian`. |
+| Cần đọc tài liệu nguồn | Tài liệu nay nằm ở Obsidian vault / file Markdown trong task folder — không qua MCP. Backlog dùng REST riêng (`scripts/integrations/backlog/`). |
 | Cần đọc Figma design | Dùng server `figma`. |
 | Cần đọc dữ liệu HubSpot test | Dùng server `hubspot` với package đã được team approve. |
 | Cần inspect UI qua browser | Dùng server `playwright`. |
@@ -28,12 +28,12 @@ File này cung cấp mẫu cấu hình MCP dùng chung cho kit. Không lưu toke
         "mcp-atlassian"
       ],
       "env": {
-        "JIRA_URL": "${JIRA_URL}",
-        "JIRA_USERNAME": "${JIRA_USERNAME}",
-        "JIRA_API_TOKEN": "${JIRA_API_TOKEN}",
-        "CONFLUENCE_URL": "${CONFLUENCE_URL}",
-        "CONFLUENCE_USERNAME": "${CONFLUENCE_USERNAME}",
-        "CONFLUENCE_API_TOKEN": "${CONFLUENCE_API_TOKEN}"
+        "BACKLOG_URL": "${BACKLOG_URL}",
+        "BACKLOG_USERNAME": "${BACKLOG_USERNAME}",
+        "BACKLOG_API_KEY": "${BACKLOG_API_KEY}",
+        "DOC_URL": "${DOC_URL}",
+        "DOC_USERNAME": "${DOC_USERNAME}",
+        "DOC_API_TOKEN": "${DOC_API_TOKEN}"
       }
     },
     "figma": {
@@ -77,7 +77,7 @@ File này cung cấp mẫu cấu hình MCP dùng chung cho kit. Không lưu toke
 
 | Server | Mục đích | Package |
 |---|---|---|
-| `atlassian` | Kết nối Jira và Confluence để đọc story, requirement và tài liệu BA. | `mcp-atlassian` |
+| — | Không còn MCP server nào cho bug tracking/tài liệu: Backlog đi qua REST riêng, tài liệu đọc từ Markdown trong task folder. | — |
 | `figma` | Đọc Figma để phân tích UI, flow và hỗ trợ sinh testcase/locator. | `@tmegit/figma-developer-mcp` |
 | `hubspot` | Đọc dữ liệu HubSpot test như contact, company, deal hoặc metadata CRM phục vụ testcase. | `@hubspot/mcp-server@0.4.0` |
 | `playwright` | Inspect UI và hỗ trợ browser automation qua MCP. | `@playwright/mcp` |
@@ -85,7 +85,7 @@ File này cung cấp mẫu cấu hình MCP dùng chung cho kit. Không lưu toke
 ## Setup Local
 
 1. Copy key cần thiết từ `.env.example` sang `.env.local` hoặc `.env`.
-2. Đặt Jira, Confluence, Figma và HubSpot test token thật trong file local hoặc MCP settings của IDE.
+2. Đặt Backlog, tài liệu nguồn, Figma và HubSpot test token thật trong file local hoặc MCP settings của IDE.
 3. Copy JSON template phía trên vào cấu hình MCP local.
 4. Nếu dùng HubSpot, chạy `hs account auth` trước để tạo config CLI tại `C:\Users\<USER>\.hscli\config.yml`.
 5. Nếu IDE không tự expand `${...}`, thay placeholder bằng local env value trong cấu hình local, không sửa file template này.

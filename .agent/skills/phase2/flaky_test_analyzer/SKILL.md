@@ -45,7 +45,7 @@ Xử lý testcase lúc pass lúc fail, timeout không ổn định, race conditi
 
 - Không xóa assertion hoặc giảm expected result để giảm flaky.
 - Không đổi testcase UI thành API-only nếu testcase cần verify UI.
-- Không log Jira khi chưa loại trừ setup/test harness.
+- Không log Backlog khi chưa loại trừ setup/test harness.
 
 ## Anti-Patterns
 

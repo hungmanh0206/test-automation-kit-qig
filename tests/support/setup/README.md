@@ -21,7 +21,7 @@ tests/support/setup/
   hooks/
     testHookClient.ts      # gọi test hook (Setup Strategy = test_hook); thiếu hook => Needs hook
   db/
-    uatPgClient.ts         # READ-ONLY verify trên UAT DB (read-only: chỉ SELECT trong txn READ ONLY). KHÔNG dựng state, KHÔNG phải evidence.
+    uatDbClient.ts         # READ-ONLY verify trên UAT DB (read-only: chỉ SELECT, chặn bằng lint trong client). KHÔNG dựng state, KHÔNG phải evidence.
   cleanup/
     cleanupRegistry.ts     # đăng ký + chạy cleanup theo RUN_ID (LIFO)
   index.ts                 # barrel export
@@ -41,7 +41,7 @@ tests/support/setup/
 ## `setup_failure` (không phải product bug)
 
 Mọi lỗi setup/verify ném `SetupFailure`. Execute layer dùng `isSetupFailure(err)` để phân loại
-`setup_failure`: sửa setup rồi rerun, KHÔNG kết luận product bug, KHÔNG log Jira. `Needs hook`
+`setup_failure`: sửa setup rồi rerun, KHÔNG kết luận product bug, KHÔNG log Backlog. `Needs hook`
 mà thiếu hook → BLOCKED + đề xuất hook.
 
 ## Task-scoped trước, promote sau
@@ -63,7 +63,7 @@ mà thiếu hook → BLOCKED + đề xuất hook.
 | Mock/Test double | Cô lập dependency NGOÀI scope; KHÔNG mock behavior đang test |
 | Cleanup registry | Gom data theo `RUN_ID` để rollback |
 
-DB KHÔNG dùng để DỰNG state. Nếu state không expose qua UI/API/fixture/test hook để **verify**, có thể dùng read-only UAT DB qua `db/uatPgClient.ts` (`queryUatReadonly`; read-only: chỉ SELECT trong transaction READ ONLY); nếu cả DB UAT cũng không expose → `Needs hook`/`Manual-only`. DB chỉ là oracle chẩn đoán — không dựng/mutate state, không phải evidence Jira, PII đọc ra phải mask.
+DB KHÔNG dùng để DỰNG state. Nếu state không expose qua UI/API/fixture/test hook để **verify**, có thể dùng read-only UAT DB qua `db/uatDbClient.ts` (`queryUatReadonly`; read-only: chỉ SELECT, chặn bằng lint trong client); nếu cả DB UAT cũng không expose → `Needs hook`/`Manual-only`. DB chỉ là oracle chẩn đoán — không dựng/mutate state, không phải evidence Backlog, PII đọc ra phải mask.
 
 Cách phân loại precondition và chọn method: xem skill `.agent/skills/shared/precondition_setup_planner/SKILL.md`.
 
@@ -72,4 +72,4 @@ Cách phân loại precondition và chọn method: xem skill `.agent/skills/shar
 - Không hardcode credential/secret — đọc từ env (`API_BASE_URL`, `API_USERNAME`, ... ).
 - Các file ở đây là TEMPLATE generic; đổi endpoint/payload/response shape theo project thật.
 - Không sửa file shared khi story khác đang execute (xem Shared Change Gate).
-- Không thêm DB client/connection/query helper MỚI; DB chỉ qua guarded client read-only `db/uatPgClient.ts` (UAT, read-only). Không hardcode connection string — đọc từ env `LIB_MASTER_DB_*`.
+- Không thêm DB client/connection/query helper MỚI; DB chỉ qua guarded client read-only `db/uatDbClient.ts` (UAT, read-only). Không hardcode connection string — đọc từ env `LIB_MASTER_DB_*`.

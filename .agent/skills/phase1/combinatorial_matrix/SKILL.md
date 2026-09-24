@@ -42,7 +42,7 @@ Kit ưu tiên "theo tỉ lệ", KHÔNG nhân bừa (đồng bộ mục 13 dropdo
 | Ma trận tổ hợp + expected | `<TASK_OUTPUT_DIR>/test-cases/<basename>_matrix.md` (bảng: mỗi hàng 1 bộ → expected) |
 | Ghi chú strategy/cắt giảm | Đầu file matrix + Coverage Gaps của `phase1-summary.md` |
 
-Mỗi hàng ma trận là 1 testcase → export Excel dùng chung script hiện có (`scripts/convert_excel/md_to_xlsx.js`) rồi publish lên Google Sheet qua Drive MCP (xem skill `jira_testcase_publisher`), vào đúng nhóm chức năng.
+Mỗi hàng ma trận là 1 testcase → export Excel dùng chung script hiện có (`scripts/convert_excel/md_to_xlsx.js`) rồi publish lên Google Sheet qua Drive MCP (xem skill `backlog_testcase_publisher`), vào đúng nhóm chức năng.
 
 ## Decision Rules
 

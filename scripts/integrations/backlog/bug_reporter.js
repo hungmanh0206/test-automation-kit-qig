@@ -2,7 +2,7 @@
 /**
  * Create Backlog Sub-bug issues for failed Playwright test cases.
  *
- * Migrated từ Jira (22/09/2026) — API khác hẳn: auth qua `?apiKey=` (không Basic/Bearer), body
+ * Migrated từ hệ bug-tracking cũ (22/09/2026) — API khác hẳn: auth qua `?apiKey=` (không Basic/Bearer), body
  * form-urlencoded (không JSON), issueType/priority/parent là SỐ (phải resolve theo tên), priority CỐ ĐỊNH
  * 3 mức (không có Critical/Lowest), KHÔNG có Sprint/labels tự do — xem comment ở từng hàm đổi.
  *
@@ -23,7 +23,7 @@
  * Nguồn phát hiện (để đo tỉ lệ rò của kit — xem scripts/qa/leak_report.js):
  *   --found-by kit    → đánh dấu `[found-by-kit]`   (máy/automation của kit tự bắt được)
  *   --found-by human  → đánh dấu `[found-by-human]` (người báo: sheet bug, BA, QA thủ công)
- *   (Backlog không có free-text labels như Jira — đánh dấu này nằm trong summary/description, xem
+ *   (Backlog không có free-text labels như Backlog — đánh dấu này nằm trong summary/description, xem
  *   `buildBugSummary`/`buildBugDescription`, không còn là field riêng lọc được qua API.)
  */
 
@@ -85,7 +85,7 @@ const DEV_ASSIGNEE = process.env.BACKLOG_DEV_ASSIGNEE || '';
 const FE_DEV_ASSIGNEE = process.env.BACKLOG_FE_ASSIGNEE || '';
 const BE_DEV_ASSIGNEE = process.env.BACKLOG_BE_ASSIGNEE || '';
 const ISSUE_TYPE = process.env.BACKLOG_BUG_ISSUE_TYPE || 'Sub-bug';
-// Custom field id (SỐ) copy nguyên từ Story sang bug — KHÔNG resolve theo tên "Sprint" như bản Jira cũ:
+// Custom field id (SỐ) copy nguyên từ Story sang bug — KHÔNG resolve theo tên "Sprint" như bản Backlog cũ:
 // Backlog không có khái niệm Sprint (Agile board), field custom mỗi project một kiểu. Để trống = không copy.
 const BACKLOG_SPRINT_FIELD_ID = argString('sprint-field') || process.env.BACKLOG_SPRINT_FIELD_ID || '';
 const BUG_LAYER_OVERRIDE = normalizeBugLayer(argString('layer') || process.env.BACKLOG_BUG_LAYER || '');
@@ -202,7 +202,7 @@ function fail(message) {
 
 /**
  * Backlog auth: KHÔNG dùng header — mọi request thêm `apiKey=BACKLOG_API_KEY` vào query string (đã verify
- * hoạt động qua `GET /api/v2/users/myself`). Khác Jira: không Basic/Bearer, không cần build header đặc biệt.
+ * hoạt động qua `GET /api/v2/users/myself`). Khác Backlog: không Basic/Bearer, không cần build header đặc biệt.
  */
 async function backlogRequest(method, endpoint, options = {}) {
   const url = new URL(`${BACKLOG_BASE_URL}${endpoint}`);
@@ -222,7 +222,7 @@ async function backlogRequest(method, endpoint, options = {}) {
 
   try {
     const isFormData = Boolean(options.formData);
-    // Backlog nhận body form-urlencoded ở create/update issue (KHÔNG phải JSON như Jira) — xem
+    // Backlog nhận body form-urlencoded ở create/update issue (KHÔNG phải JSON như Backlog) — xem
     // developer.nulab.com/docs/backlog/api/2/add-issue/. `options.body` là object phẳng {key: value|value[]}.
     let body;
     let headers = { Accept: 'application/json', ...(options.headers || {}) };
@@ -406,7 +406,7 @@ async function resolveBugAssigneeAccountId(layer, parentIssue, cache, projectId)
 }
 
 /*
- * Backlog KHÔNG có JQL, và KHÔNG có free-text labels như Jira ("labels = tcId AND labels = auto-bug") —
+ * Backlog KHÔNG có JQL, và KHÔNG có free-text labels như Backlog ("labels = tcId AND labels = auto-bug") —
  * đánh dấu tcId ngay trong SUMMARY (xem `buildBugSummary`: `[<layer>][<tcId>] ...`) rồi search bằng
  * `keyword`, lọc lại phía client theo parentIssueId + status còn mở. Đây là full-text match, KHÔNG chính
  * xác tuyệt đối như JQL — có thể sót/thừa nếu 2 case khác nhau trùng phần đầu keyword; review tay khi nghi ngờ.
@@ -420,7 +420,7 @@ async function searchExistingBug(tcId, projectId, parentIssueNumericId) {
           projectId: [projectId],
           parentIssueId: [parentIssueNumericId],
           keyword: tcId,
-          // 1=Open, 2=In Progress — loại 3=Resolved, 4=Closed (tương đương statusCategory != Done của Jira).
+          // 1=Open, 2=In Progress — loại 3=Resolved, 4=Closed (tương đương statusCategory != Done của Backlog).
           statusId: [1, 2],
           count: 20,
         },
@@ -479,7 +479,7 @@ async function updateIssue(issueIdOrKey, { summary, description, priority, paren
   return response.data;
 }
 
-/** Copy Milestone/Category từ Story sang bug con — thay cho fixVersions/Sprint của bản Jira cũ (không có
+/** Copy Milestone/Category từ Story sang bug con — thay cho fixVersions/Sprint của bản Backlog cũ (không có
  * tương đương trực tiếp: Milestone Backlog hướng release giống fixVersions hơn là Sprint). Nếu project cần
  * copy thêm 1 custom field cụ thể (số, không resolve theo tên), set BACKLOG_SPRINT_FIELD_ID. */
 function copyMilestoneAndCategory(body, parentIssue) {
@@ -494,7 +494,7 @@ function copyMilestoneAndCategory(body, parentIssue) {
 }
 
 /** Upload evidence lên Backlog: 2 bước (`POST /space/attachment` rồi gắn `attachmentId[]` vào issue) —
- * khác Jira (1 bước multipart thẳng vào issue). Trả về attachmentId (hoặc null nếu lỗi). */
+ * khác Backlog (1 bước multipart thẳng vào issue). Trả về attachmentId (hoặc null nếu lỗi). */
 async function uploadAttachmentFile(filePath) {
   if (!filePath || !fs.existsSync(filePath)) return null;
   if (!isBugEvidenceAttachment(filePath)) {
@@ -536,7 +536,7 @@ function isBugEvidenceAttachment(filePath) {
 
 // Ai PHÁT HIỆN ra bug — không phải ai LOG. Không đo được thì không biết kit đang rò bao nhiêu.
 // `--found-by kit` = máy/automation của kit phát hiện; `--found-by human` = người báo (sheet bug, BA, QA thủ công).
-// Backlog không có labels tự do như Jira (không còn nhãn `found-by-kit`/`found-by-human` ở field riêng) —
+// Backlog không có labels tự do như Backlog (không còn nhãn `found-by-kit`/`found-by-human` ở field riêng) —
 // giá trị này giờ chỉ nằm trong TEXT mô tả (xem `buildBugDescription`), `leak_report.js` phải đọc lại bằng
 // keyword search thay vì lọc theo label field.
 function foundBySource() {
@@ -549,7 +549,7 @@ function foundBySource() {
 }
 
 /*
- * Backlog description là PLAIN TEXT (hỗ trợ mention `[[...]]`, không phải rich-doc JSON như Jira ADF) —
+ * Backlog description là PLAIN TEXT (hỗ trợ mention `[[...]]`, không phải rich-doc JSON như hệ bug-tracking cũ) —
  * không cần build content-tree, ghép thẳng string với heading dạng `■ <tên mục>` (quy ước Backlog hay dùng
  * cho heading trong text thường vì Backlog description không có markdown heading thật).
  */
@@ -711,7 +711,7 @@ function buildBugSummary(layer, title, actualResult, tcId = '') {
   if (!bugName && !isTcOnlyTitle) bugName = rawTitle;
   if (!bugName) bugName = rawActual || 'Loi phat hien khi execute automation';
   // `[<tcId>]` trong summary là marker cho duplicate-check (searchExistingBug đọc lại qua keyword) — Backlog
-  // không có labels tự do như Jira nên không thể gắn tcId ở field riêng.
+  // không có labels tự do như Backlog nên không thể gắn tcId ở field riêng.
   return `[${layer}][${tcId}] ${bugName}`.slice(0, 255);
 }
 

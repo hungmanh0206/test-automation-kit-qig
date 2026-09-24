@@ -1,19 +1,19 @@
 ---
-name: jira_integration
-description: Fetch/read Backlog và source liên quan khi workflow yêu cầu context từ Backlog/Figma. (Confluence tạm ngoài phạm vi — chờ chuyển sang Google Docs/Sheet.)
+name: backlog_integration
+description: Fetch/read Backlog và source liên quan khi workflow yêu cầu context từ Backlog/Figma. (tài liệu nguồn tạm ngoài phạm vi — chờ chuyển sang Google Docs/Sheet.)
 ---
 
 # Backlog Integration
 
-> Tên thư mục skill (`jira_integration`) giữ nguyên sau khi tổ chức chuyển Jira→Backlog (22/09/2026) — đổi
-> tên thư mục sẽ phá mọi chỗ gọi `Skill(shared:jira_integration)`. Nội dung bên dưới đã cập nhật cho
+> Tên thư mục skill (`backlog_integration`) giữ nguyên sau khi tổ chức chuyển hệ bug-tracking cũ → Backlog (22/09/2026) — đổi
+> tên thư mục sẽ phá mọi chỗ gọi `Skill(shared:backlog_integration)`. Nội dung bên dưới đã cập nhật cho
 > Backlog; script thật nằm ở `scripts/integrations/backlog/`.
 
 ## Purpose
 
 Đọc hoặc fetch context Backlog/Figma phục vụ Phase 1/Phase 2 khi user cung cấp link hoặc workflow yêu cầu.
-Confluence (`fetch_confluence.js`/`publish_confluence_page.js`) vẫn còn trong `scripts/integrations/backlog/`
-nhưng KHÔNG chạy được — biến `CONFLUENCE_*` đã bị xoá khỏi `.env`, chờ quyết chuyển sang Google Docs/Sheet.
+Tài liệu requirement/BA KHÔNG còn fetch bằng script: tài liệu nay soạn trong Obsidian vault, đưa sang
+`<TASK_OUTPUT_DIR>/docs/` dưới dạng Markdown rồi đọc trực tiếp.
 
 ## Responsibilities
 
@@ -56,8 +56,3 @@ nhưng KHÔNG chạy được — biến `CONFLUENCE_*` đã bị xoá khỏi `.
 
 - `scripts/integrations/backlog/backlog_fetcher.js`: fetch issue/project issues/parent-children từ Backlog.
 - `scripts/integrations/backlog/check_connection.js`: kiểm cấu hình + live connection.
-- `scripts/integrations/backlog/fetch_confluence.js`, `publish_confluence_page.js`: NGOÀI PHẠM VI hiện
-  tại (Confluence chưa migrate) — đừng gọi, sẽ lỗi thiếu env.
-- `scripts/lib/confluence/storage_to_markdown.js`: bộ đổi storage sang Markdown dùng chung cho đường fetch
-  Confluence cũ. Giữ bảng, danh sách, heading và khối code. Sửa cách đọc tài liệu thì sửa ở đây, đừng
-  viết lại regex gỡ thẻ trong fetcher (test `confluence-markdown.spec.ts` chặn việc đó).

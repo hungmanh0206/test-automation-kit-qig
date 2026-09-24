@@ -162,7 +162,7 @@ function getTestResultsDir(options = {}) {
  * MỘT nguồn cho "testcase canonical local nằm ở những thư mục nào".
  *
  * `test-cases/` là Excel người viết; `from-sheet/` là bản TẢI VỀ từ Google Sheet (agent tải qua Drive MCP
- * trước khi execute — xem plan migrate AIO→Sheet, 22/09/2026). Trước đó là `from-aio/` (AIO Tests, ngưng
+ * trước khi execute — xem plan migrate sang Sheet, 22/09/2026). Trước đó là `from-sheet/` (Google Sheet, ngưng
  * dùng cùng ngày) — đổi tên thư mục ở ĐÚNG một chỗ này thì mọi consumer (preflight_gate/
  * dimension_coverage/bug_tc_matcher/domain_rules/system_map/learn_task) tự động theo, không phải sửa 7 chỗ.
  * Thêm nguồn mới về sau: sửa DUY NHẤT mảng này.

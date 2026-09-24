@@ -121,7 +121,7 @@ if (require.main === module) {
     const msg = `${e.message || ''}${e.stderr || ''}`;
     if (/Could not read from remote repository|Connection timed out|Could not resolve hostname|port 22/i.test(msg)) {
       console.error('[sync-gitlab] ✗ KHÔNG tới được GitLab (port 22). Nguyên nhân thường gặp: chưa bật VPN.');
-      console.error('[sync-gitlab]   Kiểm nhanh: `ssh -T git@gitlab.sapp.edu.vn` — đúng thì in "Welcome to GitLab".');
+      console.error('[sync-gitlab]   Kiểm nhanh: `ssh -T git@gitlab.example.com` — đúng thì in "Welcome to GitLab".');
       console.error('[sync-gitlab]   Chưa có gì được đẩy; chạy lại đúng lệnh này sau khi có mạng.');
       process.exit(3);
     }

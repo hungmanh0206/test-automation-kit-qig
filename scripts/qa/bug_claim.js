@@ -11,15 +11,15 @@
  * Chẩn đoán là lỗi THỨ TỰ, không phải bất cẩn. Đo trên chính repo này:
  *   · `.agent/workflows/phase2_03_execute_and_auto_heal.md` dòng 25, chỗ tôi phát hiện và nói ra, đòi
  *     đúng HAI điều kiện: rerun đủ vòng, thu evidence.
- *   · `.agent/workflows/phase2_04_report_and_jira_gate.md` dòng 30, chỗ log Jira, mới là bar thật với
+ *   · `.agent/workflows/phase2_04_report_and_backlog_gate.md` dòng 30, chỗ log Backlog, mới là bar thật với
  *     khoảng TÁM điều kiện: oracle độc lập, expected đã xác nhận, phân tầng có chứng minh, bản đồ hệ
  *     thống cho bug thiết kế, cấm lấy app làm expected.
  * Tôi nói ở bước 03 nhưng bar nằm ở bước 04. Nên mọi câu "chắc chưa" đều ép tôi làm sớm phần còn lại,
  * và một trong số đó trượt.
  *
- * LỖI NÀY CHƯA TỪNG ĐƯỢC ĐẾM. Claim bị rút trước khi log thì không lên Jira, nên không vào
+ * LỖI NÀY CHƯA TỪNG ĐƯỢC ĐẾM. Claim bị rút trước khi log thì không lên Backlog, nên không vào
  * `knowledge/bugs`. Store đó có 62 bản ghi với 1 Rejected, trong khi memory ghi ít nhất 2 bug Rejected
- * (SAPP-28776, SAPP-28126). Thứ không đo được thì không sửa được, nên `--report` ở đây đếm cả claim
+ * (CSDL-28776, CSDL-28126). Thứ không đo được thì không sửa được, nên `--report` ở đây đếm cả claim
  * bị rút và phép kiểm nào đã bắt được nó.
  *
  * Dùng:
@@ -188,7 +188,7 @@ function missingClaims(taskOut, claims) {
    * Hai tình huống KHÁC NHAU, và nói gộp thì người đọc sửa nhầm chỗ:
    *   · chưa có claim nào  → viết claim trước khi nói "bug"
    *   · claim ĐÃ RÚT mà case vẫn chấm product_bug → verdict chưa được sửa theo. Rút claim thì phải hạ
-   *     verdict, nếu không thì bug đã rút vẫn đi tiếp tới bước log Jira.
+   *     verdict, nếu không thì bug đã rút vẫn đi tiếp tới bước log Backlog.
    */
   const missing = [];
   let grandfathered = 0;
@@ -196,12 +196,12 @@ function missingClaims(taskOut, claims) {
     if (!cfg.blockingLayers.includes(String(t.failureLayer || ''))) continue;
     /*
      * Hai đời khuôn `testcase-status.json` cùng tồn tại: bộ cũ dùng `id`, bộ mới dùng `tcId`. Đọc một
-     * khoá thì bộ kia ra `undefined` và thông báo vô dụng. Đã dính thật khi chạy trên SAPP-28905.
+     * khoá thì bộ kia ra `undefined` và thông báo vô dụng. Đã dính thật khi chạy trên CSDL-28905.
      */
     const id = t.id || t.tcId || '(không đọc được id)';
     /*
      * BỎ QUA case ĐÃ CÓ BUG KEY. Gate này sinh ra để chặn claim CHƯA kiểm chứng lọt tới người đọc,
-     * không phải để đòi hồi tố cho bug đã log và đã đóng. Case có `bug: SAPP-xxxxx` nghĩa là nó đã đi
+     * không phải để đòi hồi tố cho bug đã log và đã đóng. Case có `bug: dự án trước-xxxxx` nghĩa là nó đã đi
      * qua gate của phase2_04 rồi. Bắt nó viết claim ngược là biến gate thành tiếng ồn trên nợ cũ, và
      * gate hay báo oan thì bị tắt. Vẫn ĐẾM và in ra, để việc bỏ qua không âm thầm.
      */

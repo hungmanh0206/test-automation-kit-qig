@@ -4,7 +4,7 @@ description: Đồng bộ testcase / kết quả execution với Google Sheet �
 
 Task: **$ARGUMENTS**
 
-> AIO Tests đã ngưng dùng (22/09/2026, thay bằng Google Sheet). Đồng bộ giờ đi qua Google Drive MCP —
+> Google Sheet đã ngưng dùng (22/09/2026, thay bằng Google Sheet). Đồng bộ giờ đi qua Google Drive MCP —
 > không phải npm script gọi REST, nên KHÔNG có cặp lệnh dry-run/`:apply` như trước. An toàn nằm ở việc
 > agent luôn REVIEW file local trước khi đẩy đè lên Drive (Drive không giữ version cũ theo mặc định).
 

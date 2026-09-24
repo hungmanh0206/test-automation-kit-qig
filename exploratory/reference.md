@@ -26,7 +26,7 @@ chính thức, KHÔNG tự thêm vào coverage.
 | Cần testcase chính thức cho requirement | Dùng Phase 1, không dùng exploratory. |
 | Cần execute testcase đã review | Dùng Phase 2, không dùng exploratory. |
 | Draft từ exploratory muốn tính vào coverage | Đưa qua `tc_validator` + mục 17 ở Phase 1 trước. |
-| Phát hiện nghi product bug | Handoff về Main Flow Phase 2 triage (không log Jira trực tiếp). |
+| Phát hiện nghi product bug | Handoff về Main Flow Phase 2 triage (không log Backlog trực tiếp). |
 
 ## Luồng chuẩn
 
@@ -76,7 +76,7 @@ Mỗi phát hiện phải ghi **bước tái hiện** rõ ràng, nếu không t�
 - Không tự động trigger khi chạy Phase 1/Phase 2/Re-run.
 - Không tự thêm draft vào coverage — phải qua `tc_validator` + mục 17.
 - Không kết luận PASS/FAIL chính thức trong phiên exploratory.
-- Không log Jira trực tiếp — nghi product bug thì handoff Main Flow Phase 2 triage.
+- Không log Backlog trực tiếp — nghi product bug thì handoff Main Flow Phase 2 triage.
 - Không mutate business data không rollback được; không dựng state bằng DB (chỉ read-only UAT như rule chung).
 - Không ghi secret/PII vào observation/crash/draft.
 - Không block Main Flow nếu thư mục `exploratory/` thiếu file hoặc bị xóa.

@@ -4,7 +4,7 @@
 /*
  * learn_bugs.js — nối mắt xích còn ĐỨT: bug đã log Backlog → knowledge/bugs/ (+ root_causes ref, index).
  *
- * Migrated từ Jira (22/09/2026). Khác Jira:
+ * Migrated từ hệ bug-tracking cũ (22/09/2026). Khác hệ cũ:
  *   - KHÔNG có JQL/labels tự do — khoanh bug bằng `parentIssueId[]=<storyId>` (BẮT BUỘC có --story; JQL
  *     cũ còn fallback "labels in (tcId...)" khi thiếu story, Backlog không filter được kiểu đó nên bỏ
  *     nhánh này — không có story thì dừng, không đoán).
@@ -95,7 +95,7 @@ function tcIdFromText(issue, known) {
 
 /**
  * Bản đồ CHỐT BẰNG TAY: bug key → { tc_id } hoặc { module, coverage_gap }.
- * (Không đổi so với bản Jira — nguồn thứ ba, người chốt, xem knowledge/SCHEMA.md.)
+ * (Không đổi so với bản Backlog — nguồn thứ ba, người chốt, xem knowledge/SCHEMA.md.)
  */
 function loadManualMap() {
   const p = path.join(KNOW, 'bug_tc_map.json');
@@ -135,7 +135,7 @@ function loadManualMap() {
   const manualUsed = []; const manualStale = [];
   const created = []; const synced = []; const skipped = []; const renamedSummary = []; const backfilled = [];
 
-  // NHẬN DẠNG THEO BACKLOG KEY, KHÔNG theo tên file (cùng lý do bản Jira cũ — sửa tiêu đề không được sinh
+  // NHẬN DẠNG THEO BACKLOG KEY, KHÔNG theo tên file (cùng lý do bản Backlog cũ — sửa tiêu đề không được sinh
   // record trùng, xem lịch sử comment ở git blame nếu cần chi tiết).
   const byId = new Map();
   const dupIds = new Map();
@@ -171,10 +171,10 @@ function loadManualMap() {
 
     if (hit) {
       const cur = hit.data;
-      const prevStatus = cur.backlog_status || cur.jira_status;
+      const prevStatus = cur.backlog_status || cur.backlog_status;
       const prevBug = cur.bug;
       let touched = false;
-      if (prevStatus !== backlogStatus) { cur.backlog_status = backlogStatus; delete cur.jira_status; touched = true; synced.push(`${it.issueKey}: ${prevStatus} → ${backlogStatus}`); }
+      if (prevStatus !== backlogStatus) { cur.backlog_status = backlogStatus; delete cur.backlog_status; touched = true; synced.push(`${it.issueKey}: ${prevStatus} → ${backlogStatus}`); }
       if (prevBug !== summary) { cur.bug = summary; touched = true; renamedSummary.push(`${it.issueKey}: tiêu đề đổi trên Backlog → cập nhật tại chỗ (${path.basename(hit.file)})`); }
       if (!cur.tc_id && tcId) {
         cur.tc_id = tcId; touched = true;

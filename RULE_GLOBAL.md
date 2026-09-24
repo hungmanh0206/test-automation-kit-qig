@@ -25,7 +25,7 @@
 > | Lỗi thuộc FE hay BE | [§Phân tầng lỗi FE hay BE](#phân-tầng-lỗi-fe-hay-be--bắt-buộc-kiểm-api-trước-khi-kết-luận) |
 > | Ảnh/video, định dạng, highlight | [§Evidence](#evidence--quy-chuẩn-bắt-buộc) |
 > | Viết comment trên Test Run | [§Comment kết quả](#comment-kết-quả-test-execution--quy-chuẩn-trình-bày) |
-> | Được phép log bug chưa | [§Jira Bug Gate](#jira-bug-gate) |
+> | Được phép log bug chưa | [§Backlog Bug Gate](#backlog-bug-gate) |
 > | DB, capability tự chạy | [§Executable QA capabilities](#executable-qa-capabilities-autonomy--safety) |
 > | Dọn file tạm | [§Cleanup Rules](#cleanup-rules) |
 
@@ -56,7 +56,7 @@
 | 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 435-446 | 614 | npm run rule -- 21 |
 | 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 447-458 | 393 | npm run rule -- 22 |
 | 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 459-492 | 530 | npm run rule -- 23 |
-| 24 | &nbsp;&nbsp;[Jira Bug Gate](#jira-bug-gate) | 493-502 | 144 | npm run rule -- 24 |
+| 24 | &nbsp;&nbsp;[Backlog Bug Gate](#backlog-bug-gate) | 493-502 | 144 | npm run rule -- 24 |
 | 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 503-513 | 382 | npm run rule -- 25 |
 | 26 | [Workflow](#workflow) | 514-527 | 43 | npm run rule -- 26 |
 | 27 | [Cleanup Rules](#cleanup-rules) | 528-553 | 383 | npm run rule -- 27 |
@@ -75,9 +75,9 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 | Scenario | Apply These Rules |
 |---|---|
 | Sinh testcase | Có |
-| Publish testcase Jira | Có |
+| Publish testcase Backlog | Có |
 | Execute automation | Có |
-| Log Jira bug | Có |
+| Log Backlog bug | Có |
 | Rerun bug đã fix | Có |
 | Viết report/output | Có |
 | Dọn file tạm | Có |
@@ -90,10 +90,10 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 | Project output root | `PROJECT_OUTPUT_DIR` (trong task.env) |
 | Task scope | `TASK_KEY` (trong task.env) |
 | Parallel run scope | `RUN_ID` nếu chạy nhiều session cùng `TASK_KEY` |
-| Runtime secrets (TĨNH, dùng chung) | `.env.local`, `.env`, CI env hoặc secret store (base URL + API key Figma/Confluence/Jira/AIO/HubSpot) |
+| Runtime secrets (TĨNH, dùng chung) | `.env.local`, `.env`, CI env hoặc secret store (base URL + API key Figma/Backlog/Google Sheet/HubSpot) |
 | Workflow-specific context | Prompt template hoặc `.agent/config/project_context.md` |
 
-**Tạo profile task (một lần, chỉ 1 lệnh):** khi user yêu cầu "Tạo profile cho `<TASK_KEY>`" → chạy `node scripts/utils/create_profile.js <TASK_KEY> [--project-output outputs/<PROJECT>]` (hoặc `npm run profile:create -- <TASK_KEY>`). Lệnh copy `profiles/task.env.example` → `profiles/<TASK_KEY>/task.env`, prefill `TASK_KEY`+`JIRA_STORY_KEY`, KHÔNG ghi đè nếu đã tồn tại; QA điền credential + link. Profile CHỈ chứa giá trị động: `PROJECT_OUTPUT_DIR, TASK_KEY, JIRA_STORY_KEY, JIRA_STORY_URL, CONFLUENCE_REQUIREMENT_URL, CONFLUENCE_BRD_URL, FIGMA_FILE_URL, GOOGLE_DOCUMENT_ID, GOOGLE_SHEET_URL, LMS_USERNAME/PASSWORD/API_TOKEN, OPS_USERNAME/PASSWORD/API_TOKEN` (+ assignee/HubSpot per-task nếu cần). File task.env KHÔNG commit (gitignore `profiles/**/task.env`).
+**Tạo profile task (một lần, chỉ 1 lệnh):** khi user yêu cầu "Tạo profile cho `<TASK_KEY>`" → chạy `node scripts/utils/create_profile.js <TASK_KEY> [--project-output outputs/<PROJECT>]` (hoặc `npm run profile:create -- <TASK_KEY>`). Lệnh copy `profiles/task.env.example` → `profiles/<TASK_KEY>/task.env`, prefill `TASK_KEY`+`BACKLOG_STORY_KEY`, KHÔNG ghi đè nếu đã tồn tại; QA điền credential + link. Profile CHỈ chứa giá trị động: `PROJECT_OUTPUT_DIR, TASK_KEY, BACKLOG_STORY_KEY, BACKLOG_STORY_URL, REQUIREMENT_DOC, BRD_DOC, FIGMA_FILE_URL, GOOGLE_DOCUMENT_ID, GOOGLE_SHEET_URL, LMS_USERNAME/PASSWORD/API_TOKEN, OPS_USERNAME/PASSWORD/API_TOKEN` (+ assignee/HubSpot per-task nếu cần). File task.env KHÔNG commit (gitignore `profiles/**/task.env`).
 
 ## Outputs
 
@@ -103,13 +103,13 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 | Markdown/report | Tiếng Việt chuẩn có dấu, UTF-8, không lộ secret. |
 | Test results | Nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/`. |
 | Evidence | Chỉ **ảnh/video** làm evidence (xem §"Evidence — Quy chuẩn bắt buộc"); `trace/log` là diagnostic local, KHÔNG phải evidence. Lưu đúng scope task. |
-| Testcase publish (AIO Tests) | Step riêng trong phạm vi Phase 1; chỉ publish từ Excel canonical sau khi QA xác nhận (`npm run aio:publish:apply -- ... --qa-approved`). Excel là source of truth khi gen/publish; **Phase 2 execute mặc định lấy nguồn từ AIO** (`TESTCASE_SOURCE=aio`, kéo về canonical local `from-aio/*.xlsx`), `excel` là opt-out. |
-| Jira bug | Chỉ tạo khi fail đã được xác nhận là product/API bug. |
+| Testcase publish (Google Sheet) | Step riêng trong phạm vi Phase 1; chỉ publish từ Excel canonical sau khi QA xác nhận (publish qua Google Drive MCP). Excel là source of truth khi gen/publish; **Phase 2 execute mặc định lấy nguồn từ Google Sheet** (`TESTCASE_SOURCE=sheet`, kéo về canonical local `from-sheet/*.xlsx`), `excel` là opt-out. |
+| Backlog bug | Chỉ tạo khi fail đã được xác nhận là product/API bug. |
 | Testcase (md/Excel) | Cột "Kết quả mong đợi" đánh số **KHỚP từng bước** (bước 1→KQ 1, 2→2…), xuống dòng `<br>`; **CẤM gộp range** kiểu `1-2.`/`2-3.`; không ghi chung chung ("thành công"/"đúng"). Áp cả khi gen VÀ khi chỉnh sửa TC thủ công. Chi tiết: prompt gen Phase 1 §6. |
 
 ### Giọng văn output
 
-Áp cho **mọi thứ người khác đọc**: testcase, thân bug Jira, comment Jira, report, tài liệu hướng dẫn,
+Áp cho **mọi thứ người khác đọc**: testcase, thân bug Backlog, comment Backlog, report, tài liệu hướng dẫn,
 và cả phần trình bày trong hội thoại. Không áp cho comment trong code.
 
 Luật này không đến từ cảm nhận. Ngày 08/09/2026 đã so 34 bài `docs/course/**` được người viết tay lại
@@ -154,18 +154,18 @@ việc khác, và không làm.
 - Không in API key, password, token, cookie, private key hoặc connection string ra chat, logs, Markdown, testcase output hoặc reports.
 - Không commit `.env`, `.env.local`, service-account JSON hoặc file chứa credential thật.
 - Nếu secret từng bị chia sẻ hoặc commit, phải rotate trong provider console.
-- Không dùng direct DB connection trong workflow chuẩn của kit. Ngoại lệ DUY NHẤT: read-only verify/chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only: chỉ SELECT trong transaction READ ONLY). Chỉ cấu hình credential kho UAT (`LIB_MASTER_DB_*`) — kho UAT/PROD tách biệt, không cấu hình creds thì không truy cập được. Vẫn cấm biến generic `TEST_DB_*`/`TEST_DATABASE_URL`/`DATABASE_URL`/`PG*` và mọi import `pg` ngoài client đó. DB là oracle PHỤ (verify/chẩn đoán): KHÔNG dựng/mutate state, KHÔNG phải evidence Jira, KHÔNG thay oracle từ spec; PII đọc ra phải mask + cấm export file.
+- Không dùng direct DB connection trong workflow chuẩn của kit. Ngoại lệ DUY NHẤT: read-only verify/chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only: chỉ SELECT, chặn bằng lint trong client). Chỉ cấu hình credential kho UAT (`LIB_MASTER_DB_*`) — kho UAT/PROD tách biệt, không cấu hình creds thì không truy cập được. Vẫn cấm biến generic `TEST_DB_*`/`TEST_DATABASE_URL`/`DATABASE_URL`/`PG*` và mọi import `tedious` ngoài client đó. DB là oracle PHỤ (verify/chẩn đoán): KHÔNG dựng/mutate state, KHÔNG phải evidence Backlog, KHÔNG thay oracle từ spec; PII đọc ra phải mask + cấm export file.
 - Không yêu cầu AI đọc toàn bộ source backend để execute testcase. Phase 2 chỉ dùng UI/API public-business contract, artifact Phase 1, credential test, fixture có sẵn, test hook/sandbox nếu team cung cấp.
 
 ### Project And Output
 
-- Project name, URL, domain, Jira key và module name phải lấy từ config/env/prompt.
+- Project name, URL, domain, Backlog key và module name phải lấy từ config/env/prompt.
 - Không hardcode theo project cụ thể trong workflow hoặc script dùng chung.
 - `PROJECT_OUTPUT_DIR` là output root bắt buộc, ví dụ `outputs/<YOUR_PROJECT>`.
 - `TASK_KEY` là scope của task/feature và luôn nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/`.
 - Playwright report, evidence và results nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/**`.
 - Nếu chạy nhiều session cùng một `TASK_KEY`, bắt buộc truyền `RUN_ID` qua env/CLI để output execute nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/runs/<RUN_ID>/`.
-- Khi có `RUN_ID`, execution/rerun/Jira local report nên nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/runs/<RUN_ID>/`.
+- Khi có `RUN_ID`, execution/rerun/Backlog local report nên nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/runs/<RUN_ID>/`.
 - Khi có `RUN_ID`, không cập nhật trực tiếp testcase Markdown/Excel chính trong `test-cases/` trong lúc execute; ghi `Status`, `Actual Result` và `Evidence` vào run-scoped report/status trước. Chỉ merge ngược vào testcase chính khi user chọn run đó làm kết quả canonical.
 - `RUN_ID` chỉ được chứa chữ, số, dấu chấm, gạch dưới hoặc gạch ngang.
 
@@ -181,7 +181,7 @@ việc khác, và không làm.
   - Workflow/phase đang chạy
 - Nếu scope echo không khớp yêu cầu user, phải dừng trước khi ghi file/chạy lệnh.
 - Không sửa `.env` hoặc `.env.local` chung khi có session khác đang chạy.
-- Với command execute/report/Jira, ưu tiên truyền `PROJECT_OUTPUT_DIR`, `TASK_KEY` và `RUN_ID` qua env hoặc CLI args từng lệnh.
+- Với command execute/report/Backlog, ưu tiên truyền `PROJECT_OUTPUT_DIR`, `TASK_KEY` và `RUN_ID` qua env hoặc CLI args từng lệnh.
 - Không chạy song song cùng một `TASK_KEY` nếu không có `RUN_ID`.
 - Không chạy song song các workflow có ghi đè requirement/testcase chính của cùng một `TASK_KEY`, trừ khi user xác nhận chiến lược merge riêng.
 - Không sửa shared config/helper như `playwright.config.js`, `package.json`, runtime helper hoặc common prompt khi story khác đang execute, trừ khi user xác nhận đây là thay đổi chung.
@@ -189,26 +189,26 @@ việc khác, và không làm.
 ### Phase-Separated Story Execution
 
 - Mỗi story không bắt buộc chạy liền một mạch. Luồng chuẩn là:
-  `Requirement -> Generate Testcase -> Excel (source of truth) -> QA confirmation -> Auto Publish Jira -> chờ Dev implement -> Phase 2 -> chờ Dev fix bug nếu có -> Re-run`.
-- Sau bước generate testcase, Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **gen/publish**. Nội dung testcase phải sửa ở Excel rồi re-publish — không sửa trực tiếp trên AIO làm nguồn authoring (`PUT .../detail` ghi đè toàn phần nên bản sửa tay sẽ mất khi re-publish).
-- **Phase 2 execute mặc định lấy nguồn từ AIO Tests** (`TESTCASE_SOURCE=aio`): kéo về canonical local `<TASK_OUTPUT_DIR>/test-cases/from-aio/*.xlsx` bằng `npm run aio:pull:write -- --story <KEY>` rồi execute từ đó (AIO publish TỪ Excel nên nhất quán; cùng bộ cột/định dạng nên parser canonical không phân biệt nguồn). `TESTCASE_SOURCE=excel` (opt-out) đọc `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`. Dù nguồn nào, execute đọc file canonical LOCAL — không gọi AIO/Jira cho từng case.
-- Auto Publish testcase là step riêng trong phạm vi Phase 1, chạy bằng prompt riêng sau khi QA xác nhận Excel/testcase. Không publish thật khi chưa có QA confirmation rõ ràng (script đòi `--qa-approved`; AIO không có API xoá nên phải xem dry-run trước).
-- **Test management tool là AIO Tests** — công cụ DUY NHẤT của kit. Publish/pull/push kết quả/vòng đời case đi qua `scripts/integrations/aio/` (`aio:publish` · `aio:pull:write` · `aio:push-exec` · `aio:deprecate-stale`). Đặc tính đã đo (không có API xoá · `PUT .../detail` ghi đè toàn phần · `tags` không lưu · rate limit trả body RỖNG chứ không 429): `scripts/integrations/aio/README.md`. Gate `gate:policy` CHẶN mọi tài liệu nhắc lại công cụ cũ.
-- Publish testcase lên Jira phải đọc từ Excel canonical. Chạy dry-run trước nếu cần preview; publish thật chỉ khi QA/user approve. Ghi kết quả vào `<TASK_OUTPUT_DIR>/reports/jira-testcase-publish-summary.md`.
+  `Requirement -> Generate Testcase -> Excel (source of truth) -> QA confirmation -> Auto Publish Backlog -> chờ Dev implement -> Phase 2 -> chờ Dev fix bug nếu có -> Re-run`.
+- Sau bước generate testcase, Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **gen/publish**. Nội dung testcase phải sửa ở Excel rồi re-publish — không sửa trực tiếp trên Google Sheet làm nguồn authoring (`PUT .../detail` ghi đè toàn phần nên bản sửa tay sẽ mất khi re-publish).
+- **Phase 2 execute mặc định lấy nguồn từ Google Sheet** (`TESTCASE_SOURCE=sheet`): kéo về canonical local `<TASK_OUTPUT_DIR>/test-cases/from-sheet/*.xlsx` bằng tải bản Sheet mới nhất qua Drive MCP rồi execute từ đó (publish TỪ Excel nên nhất quán; cùng bộ cột/định dạng nên parser canonical không phân biệt nguồn). `TESTCASE_SOURCE=excel` (opt-out) đọc `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`. Dù nguồn nào, execute đọc file canonical LOCAL — không gọi Sheet/Backlog cho từng case.
+- Auto Publish testcase là step riêng trong phạm vi Phase 1, chạy bằng prompt riêng sau khi QA xác nhận Excel/testcase. Không publish thật khi chưa có QA confirmation rõ ràng (script đòi `--qa-approved`; Sheet ghi đè toàn bộ mỗi lần sync nên phải xem dry-run trước).
+- **Test management tool là Google Sheet** — công cụ DUY NHẤT của kit. Publish/pull/push kết quả/vòng đời case đi qua `scripts/integrations/aio/` (`aio:publish` · `aio:pull:write` · `aio:push-exec` · `aio:deprecate-stale`). Đặc tính đã đo (không có API xoá · `PUT .../detail` ghi đè toàn phần · `tags` không lưu · rate limit trả body RỖNG chứ không 429): `scripts/integrations/aio/README.md`. Gate `gate:policy` CHẶN mọi tài liệu nhắc lại công cụ cũ.
+- Publish testcase lên Backlog phải đọc từ Excel canonical. Chạy dry-run trước nếu cần preview; publish thật chỉ khi QA/user approve. Ghi kết quả vào `<TASK_OUTPUT_DIR>/reports/backlog-testcase-publish-summary.md`.
 - **KHÔNG có cột `Severity`/`Mức độ rủi ro` trong bộ testcase** (bỏ 21/08/2026). Severity là thuộc tính của **BUG**, không phải của testcase: chấm nó lúc viết case là đoán trước hậu quả của một lỗi chưa xảy ra, và chính vì thế nó luôn được chấm bằng cảm tính. Bug thật vẫn có Severity — lấy lúc log bug, không lấy từ testcase. Việc duy nhất cột này còn gánh trong kit là **risk band** (quyết định độ sâu mở rộng 5 trục), mà `bandOf()` lấy `max(risk, priority)`; sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột này làm đổi band 0 case**. `Ưu tiên` (`Critical|High|Medium|Low|Lowest`) một mình đủ quyết band. `COL.risk` vẫn giữ trong `model.js` để 17 bộ TC cũ còn cột đó parse không lỗi, và các cross-check ma trận §7b tự bỏ qua khi cột vắng.
-- **Tiêu đề case = NỘI DUNG, tag ở cột `Tag`** — template testcase là **10 cột**: `TC ID | Loại case | Tag | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên`. Khối `[<Loại>][<Chiều>][<Oracle-ref>]` (vd `[Positive][Calc][BR-SAPSYNC-004]`) ghi ở cột `Tag`, **KHÔNG** ghi vào `Trường hợp kiểm thử`. Tiêu đề phải **tự đủ nghĩa** khi không có tag: chở đủ **ba thông tin** — *đối tượng/màn · hành động hoặc điều kiện · kết quả cụ thể đo được* — thường gói trong **2 đoạn** nối ` - ` (đối tượng và hành động hay dính liền: `Tạo Business Partner - Sinh mã KH đúng cú pháp C + CCCD khi khách Cá nhân chưa có BP`). **KHÔNG** đòi đúng 3 đoạn: bản đầu của luật này viết "3 đoạn" trong khi đoạn thứ nhất của ví dụ chính là `Cross-app` — tức cái tiền tố hằng số mà cùng luật đó CẤM. Hai câu tự đá nhau; đếm đoạn không phải thước đo, **đủ ba thông tin** mới là. CẤM **tiền tố hằng số** (đo thật: `Cross-app - ` gắn cho 101/101 case của SAPP-26878 ⇒ không phân biệt được gì, thông tin đó đã nằm ở `Loại case` và tên folder), cấm đoạn kết quả chung chung kiểu "hoạt động đúng", cấm để nghĩa của case phụ thuộc vào tag. Giữ được `[...]` GIỮA câu khi đó là tên trường thật (`Kiểm [FBP] Ngày ghi nhận…`) — chỉ khối ngoặc **liền nhau ở đầu** mới bị coi là tag. Bộ TC cũ **không phải sửa**: `scripts/lib/testcase/model.js` lấy HỢP của cột `Tag` và tiêu đề nên cả hai đời đều đo được, còn `displayTitle()` ở `publish_testcases_aio.js` cắt khối tag đầu chuỗi trước khi đẩy AIO. Máy kiểm: `tests/fe/infra/publish-field-mapping.spec.ts`.
-- **Case sinh mới phải TỰ KHAI `Loại case`** — đúng một trong **9 loại** đã chốt: `Security` · `Accessibility` · `Performance` · `Database` · `API` · `UI` · `E2E` · `Integration` · `Functional`. Định nghĩa, tag đi kèm và bảng **"chọn khi / KHÔNG chọn khi"** của từng loại nằm ở [`.agent/config/case_types.json`](.agent/config/case_types.json) — **nguồn duy nhất**, mọi nơi khác đọc file đó. Xét CHUYÊN BIỆT trước, `Functional` là mặc định cuối; một case mang ĐÚNG MỘT loại, hợp 2 loại nghĩa là case đang gộp 2 mục đích ⇒ tách case. Đây là trục KHÁC `Nhóm chức năng` (nhóm = *"thuộc mảng nghiệp vụ nào"* → thư mục; loại = *"kiểm thử kiểu gì"* → Case Type, dùng để lọc/báo cáo). Bỏ trống thì máy phải ĐOÁN: đo trên 1.399 case đã publish, cách suy từ tên nhóm đẩy **96% về `Functional`**, `Integration` và `Performance` = **0** — lọc theo Case Type trên AIO thành vô dụng.
+- **Tiêu đề case = NỘI DUNG, tag ở cột `Tag`** — template testcase là **10 cột**: `TC ID | Loại case | Tag | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên`. Khối `[<Loại>][<Chiều>][<Oracle-ref>]` (vd `[Positive][Calc][BR-SAPSYNC-004]`) ghi ở cột `Tag`, **KHÔNG** ghi vào `Trường hợp kiểm thử`. Tiêu đề phải **tự đủ nghĩa** khi không có tag: chở đủ **ba thông tin** — *đối tượng/màn · hành động hoặc điều kiện · kết quả cụ thể đo được* — thường gói trong **2 đoạn** nối ` - ` (đối tượng và hành động hay dính liền: `Tạo Business Partner - Sinh mã KH đúng cú pháp C + CCCD khi khách Cá nhân chưa có BP`). **KHÔNG** đòi đúng 3 đoạn: bản đầu của luật này viết "3 đoạn" trong khi đoạn thứ nhất của ví dụ chính là `Cross-app` — tức cái tiền tố hằng số mà cùng luật đó CẤM. Hai câu tự đá nhau; đếm đoạn không phải thước đo, **đủ ba thông tin** mới là. CẤM **tiền tố hằng số** (đo thật: `Cross-app - ` gắn cho 101/101 case của CSDL-26878 ⇒ không phân biệt được gì, thông tin đó đã nằm ở `Loại case` và tên folder), cấm đoạn kết quả chung chung kiểu "hoạt động đúng", cấm để nghĩa của case phụ thuộc vào tag. Giữ được `[...]` GIỮA câu khi đó là tên trường thật (`Kiểm [FBP] Ngày ghi nhận…`) — chỉ khối ngoặc **liền nhau ở đầu** mới bị coi là tag. Bộ TC cũ **không phải sửa**: `scripts/lib/testcase/model.js` lấy HỢP của cột `Tag` và tiêu đề nên cả hai đời đều đo được, còn `displayTitle()` ở `publish qua Drive MCP.js` cắt khối tag đầu chuỗi trước khi đẩy Google Sheet. Máy kiểm: `tests/fe/infra/publish-field-mapping.spec.ts`.
+- **Case sinh mới phải TỰ KHAI `Loại case`** — đúng một trong **9 loại** đã chốt: `Security` · `Accessibility` · `Performance` · `Database` · `API` · `UI` · `E2E` · `Integration` · `Functional`. Định nghĩa, tag đi kèm và bảng **"chọn khi / KHÔNG chọn khi"** của từng loại nằm ở [`.agent/config/case_types.json`](.agent/config/case_types.json) — **nguồn duy nhất**, mọi nơi khác đọc file đó. Xét CHUYÊN BIỆT trước, `Functional` là mặc định cuối; một case mang ĐÚNG MỘT loại, hợp 2 loại nghĩa là case đang gộp 2 mục đích ⇒ tách case. Đây là trục KHÁC `Nhóm chức năng` (nhóm = *"thuộc mảng nghiệp vụ nào"* → thư mục; loại = *"kiểm thử kiểu gì"* → Case Type, dùng để lọc/báo cáo). Bỏ trống thì máy phải ĐOÁN: đo trên 1.399 case đã publish, cách suy từ tên nhóm đẩy **96% về `Functional`**, `Integration` và `Performance` = **0** — lọc theo Case Type trên Google Sheet thành vô dụng.
   - Chặn ở **biên sinh case** (`md_to_xlsx.js`), KHÔNG ở `REQUIRED_COLS`: bộ TC cũ đều 9 cột, siết ở bộ đọc dùng chung thì cả 9 bộ đỏ oan mà không ai sai. Bộ cũ giữ nguyên, chỉ khai khi có dịp sinh lại.
   - Giá trị ngoài 6 loại do `validate.js` chặn ở design gate. Lối thoát `--lenient` vẫn convert được nhưng **phải in cảnh báo** — bỏ qua trong im lặng thì lối thoát thành lối mòn.
-- **Thang `Ưu tiên` là `Critical|High|Medium|Low|Lowest`** (khớp AIO), KHÔNG phải thang Jira. `Highest` vẫn được nhận cho bộ cũ nhưng kèm cảnh báo; khi log bug kit tự map `Critical → Highest` cho Jira. Lý do siết: publisher map theo TÊN, không có khoá `highest` nên trước đây mọi case `Highest` rơi về fallback Medium — **14 case của một bộ bị hạ ưu tiên âm thầm**.
+- **Thang `Ưu tiên` là `Critical|High|Medium|Low|Lowest`** (khớp Google Sheet), KHÔNG phải thang Backlog. `Highest` vẫn được nhận cho bộ cũ nhưng kèm cảnh báo; khi log bug kit tự map `Critical → Highest` cho Backlog. Lý do siết: publisher map theo TÊN, không có khoá `highest` nên trước đây mọi case `Highest` rơi về fallback Medium — **14 case của một bộ bị hạ ưu tiên âm thầm**.
 - Phase 1 có thể tự động hóa gần như toàn bộ phần thiết kế testcase khi input đủ. Phase 2 chỉ execute phần có thể chạy an toàn qua UI/API public hoặc setup capability đã có; case không dựng được state qua API/factory/hook/fixture/sandbox an toàn thì ghi `Manual-only`, `SKIP_SETUP` hoặc `BLOCKED_SETUP` kèm capability còn thiếu — KHÔNG dùng DB để DỰNG state thay thế (DB chỉ được read-only verify trên UAT, xem ngoại lệ ở trên).
 - Mỗi case chưa tự động hoá được phải gắn 1 Blocker Root Cause (`needs_hook`/`needs_account`/`needs_sandbox`/`spec_mismatch`/`manual_inherent`/`external_dependency`), không gộp chung thành "backend state" (xem skill `precondition_setup_planner`). Capability gap (`needs_hook`/`needs_account`/`needs_sandbox`) phải đưa vào `reports/capability-request.md` và được review như Definition of Ready trước khi kickoff Phase 2. Pass rate phải kèm unassisted pass rate (loại các case cần người can thiệp giữa chừng) để không che giấu chi phí human-in-the-loop.
 - Khi bắt đầu mỗi phase mới, agent phải đọc lại artifact canonical của task hiện tại:
   - `task.md`
   - `reports/phase1-summary.md` nếu chạy Phase 2
-  - `reports/execution-summary.md` hoặc Jira bug log nếu chạy Re-run
+  - `reports/execution-summary.md` hoặc Backlog bug log nếu chạy Re-run
 - Không dùng context hội thoại cũ làm source chính nếu artifact local đã có; artifact dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/` là nguồn chuẩn.
-- Không reuse `TASK_KEY`, `RUN_ID`, testcase scope hoặc Jira bug scope từ phase/story khác nếu user chưa nhắc lại rõ.
+- Không reuse `TASK_KEY`, `RUN_ID`, testcase scope hoặc Backlog bug scope từ phase/story khác nếu user chưa nhắc lại rõ.
 - Nếu user không nêu `TASK_KEY` trong yêu cầu hiện tại, agent không được dùng `TASK_KEY` từ `.env`, `.env.local` hoặc context cũ để quyết định scope; phải hỏi lại hoặc dừng.
 - `.env` chỉ là nguồn runtime config sau khi scope đã được user xác nhận, không phải nguồn quyết định story đang chạy.
 - Nếu Phase 2 hoặc Re-run bắt đầu sau thời gian chờ Dev, phải echo lại scope trước khi ghi file/chạy command, dù cùng conversation.
@@ -219,7 +219,7 @@ việc khác, và không làm.
   `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/automation/`
 - Nếu bắt buộc ghi vào `tests/fe/` hoặc `tests/api/`, file spec phải có namespace theo `TASK_KEY`, ví dụ `<TASK_KEY>.spec.js`.
 - Nếu chạy song song cùng một `TASK_KEY`, spec/output thử nghiệm phải thêm `RUN_ID` hoặc nằm trong run-scoped folder.
-- Setup layer (factory/hook/fixture/cleanup/contract) dùng chung ở `tests/support/setup/`. Setup mới của một story tạo trước ở `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/automation/setup/`, reuse tối đa `tests/support/setup/`; chỉ promote phần generic vào shared khi đã ổn định. Setup layer không dựng/mutate state bằng DB; chỉ được read-only verify qua guarded client `tests/support/setup/db/uatPgClient.ts` (UAT, read-only, chỉ SELECT).
+- Setup layer (factory/hook/fixture/cleanup/contract) dùng chung ở `tests/support/setup/`. Setup mới của một story tạo trước ở `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/automation/setup/`, reuse tối đa `tests/support/setup/`; chỉ promote phần generic vào shared khi đã ổn định. Setup layer không dựng/mutate state bằng DB; chỉ được read-only verify qua guarded client `tests/support/setup/db/uatDbClient.ts` (UAT, read-only, chỉ SELECT).
 - Không sửa shared helper/page object/fixture/config nếu có session khác đang execute, trừ khi user xác nhận đây là thay đổi chung.
 - Nếu cần sửa shared helper để fix automation thật, phải ghi rõ trong report: file đã sửa, story bị ảnh hưởng, scope regression cần rerun.
 - Không để spec task-specific mặc định thành shared regression suite nếu chưa qua review/merge.
@@ -247,7 +247,7 @@ việc khác, và không làm.
 
 ### Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)
 
-1. **Đọc tài liệu THẬT KỸ, KHÔNG qua loa.** Mọi tài liệu được cấp (BRD/spec/requirement, Jira, Confluence, Figma, Swagger, doc) phải đọc kỹ TOÀN BỘ phần **trong scope** — mọi mục, **bảng, ghi chú, footnote, comment, phụ lục** liên quan — không lướt tiêu đề rồi đoán (phần ngoài scope được lướt để tiết kiệm token; nhưng trong scope thì không được qua loa). Bóc hết: acceptance criteria, business rule, validation, enum/giá trị, state & transition, edge case, xử lý lỗi, phân quyền/role, biên. **Đối chiếu chéo** các nguồn (Jira ↔ BRD ↔ Figma ↔ Swagger); mâu thuẫn thì **NÊU RA**, không tự chọn bừa. Phân biệt rõ "tài liệu ghi thật" vs "agent suy luận" — phần suy luận/mờ chính là nguyên liệu cho câu hỏi làm rõ.
+1. **Đọc tài liệu THẬT KỸ, KHÔNG qua loa.** Mọi tài liệu được cấp (BRD/spec/requirement, Backlog, tài liệu nguồn, Figma, Swagger, doc) phải đọc kỹ TOÀN BỘ phần **trong scope** — mọi mục, **bảng, ghi chú, footnote, comment, phụ lục** liên quan — không lướt tiêu đề rồi đoán (phần ngoài scope được lướt để tiết kiệm token; nhưng trong scope thì không được qua loa). Bóc hết: acceptance criteria, business rule, validation, enum/giá trị, state & transition, edge case, xử lý lỗi, phân quyền/role, biên. **Đối chiếu chéo** các nguồn (Backlog ↔ BRD ↔ Figma ↔ Swagger); mâu thuẫn thì **NÊU RA**, không tự chọn bừa. Phân biệt rõ "tài liệu ghi thật" vs "agent suy luận" — phần suy luận/mờ chính là nguyên liệu cho câu hỏi làm rõ.
 2. **Chốt hỏi-đáp làm rõ TRƯỚC khi gen testcase (gate cứng).** Sau phân tích, TRƯỚC khi sinh bất kỳ testcase nào: gom **MỌI** điểm mờ/phân vân thành **MỘT** danh sách câu hỏi đánh số (`Q1, Q2…`) trong `<TASK_OUTPUT_DIR>/reports/phase1-clarifications.md`; mỗi câu bám **spec cụ thể** (giá trị/URL/element/điều kiện/enum/oracle) + **assumption mặc định đề xuất** + **phần scope bị chặn** nếu chưa trả lời. Phân loại **Blocking** (Critical/High: acceptance mơ hồ, giá trị/enum/oracle thiếu, rule validation, biên/state chưa định nghĩa, phạm vi in/out) vs **Non-blocking** (Medium/Low: có default hợp lý). Ghi cả hai loại để QA thấy hết điểm mờ.
 3. **Blocking chưa trả lời → KHÔNG gen phần đó.** Ghi `AMBIGUITY_GATE: PENDING` vào `task.md` và **DỪNG**, chờ QA/BA trả lời (hoặc tick chấp nhận assumption). TUYỆT ĐỐI không tự đoán qua điểm Blocking rồi gen. Chỉ khi mọi câu Blocking đã RESOLVED → **phân tích lại + chỉnh** coverage map/scope theo câu trả lời → đặt `AMBIGUITY_GATE: RESOLVED` → mới bắt đầu gen. Câu Blocking không được trả lời → phần scope đó ghi "chờ làm rõ" ở Coverage Gaps, KHÔNG gen case cho nó. Medium/Low không chặn: tự áp assumption (ghi rõ) + Coverage Gaps, vẫn gen.
 
@@ -269,7 +269,7 @@ Bộ testcase có **hai trục**: *module/màn* trả lời "test **ở đâu**"
 2. **KHÔNG mặc định `TODO`/`SKIP` khi CHƯA THỬ.** Trước khi đánh 1 case là chưa chạy: (a) rà và DÙNG HẾT fixture/Deal ID/tài khoản/data đã được cấp trong task — không bỏ sót input đã nhận; (b) case negative/lỗi → **tự tạo input để tái hiện** (vd ID không tồn tại, giá trị biên) thay vì chờ fixture; (c) drive thật UI/API rồi mới kết luận. Chỉ để `TODO`/`BLOCKED` khi **chặn thật**: capability chưa có (payment/sandbox chưa reconcile, account phân quyền), fixture đặc thù chưa được cấp, hoặc cần BA/dev làm rõ scope / fix bug. Khi để lại phải ghi **lý do cụ thể + điều kiện để chạy được** (không ghi chung chung).
 3. **KHÔNG hỏi lắt nhắt.** Việc read-only / verify / tạo fixture trong quyền hạn đã thiết lập → thực thi ngay, không xin xác nhận từng bước ("chạy luôn không?"). Nếu buộc phải hỏi (thiếu input hoặc cần quyết định nghiệp vụ) → **GOM toàn bộ câu hỏi + input cần thiết vào MỘT lần**, không hỏi rải rác.
 4. **Báo cáo gộp, ít vòng.** Chỉ dừng để báo khi đã xong MỘT CỤM lớn hoặc gặp chặn thật; không tường thuật từng thao tác nhỏ. Mỗi lần báo = nhiều kết quả.
-5. Ranh giới không đổi: vẫn tuân thủ **Jira Bug Gate**, **Evidence**, **PII/Security**, **Parallel Story Safety**, **Shared Change Gate** — siết coverage/tốc độ KHÔNG được nới các gate này.
+5. Ranh giới không đổi: vẫn tuân thủ **Backlog Bug Gate**, **Evidence**, **PII/Security**, **Parallel Story Safety**, **Shared Change Gate** — siết coverage/tốc độ KHÔNG được nới các gate này.
 
 ### 5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)
 
@@ -415,7 +415,7 @@ Với testcase `FAIL`, `Actual Result` phải có:
 | Expected result | Xác nhận rule đang kiểm. |
 | Actual UI/API result | Chứng minh behavior thực tế. |
 | Main error message | Hỗ trợ dev debug. |
-| Evidence path | Đảm bảo audit và Jira triage. |
+| Evidence path | Đảm bảo audit và Backlog triage. |
 
 ### Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận
 
@@ -434,7 +434,7 @@ Gán sai tầng khiến ticket đi nhầm người và bị dev bounce lại, m�
 
 ### Evidence — Quy chuẩn bắt buộc
 
-Áp dụng cho MỌI case đã execute (PASS và FAIL) và MỌI step. Vi phạm bất kỳ điểm nào bên dưới = evidence KHÔNG hợp lệ, KHÔNG được đưa vào report/push AIO/Jira.
+Áp dụng cho MỌI case đã execute (PASS và FAIL) và MỌI step. Vi phạm bất kỳ điểm nào bên dưới = evidence KHÔNG hợp lệ, KHÔNG được đưa vào report/push Sheet/Backlog.
 
 1. **Chỉ ảnh hoặc video — cấm file dữ liệu thô.** Evidence hợp lệ chỉ là ảnh (`.png/.jpg/.jpeg/.webp`) hoặc video (`.mp4/.webm`). TUYỆT ĐỐI KHÔNG dùng `.json`, `.md`, `.txt`, `.log`, `.html`, `.csv`, `trace.zip` hay file dữ liệu thô nào làm evidence của case/step — kể cả `order_state.json`, `api_response.json`, execution summary. Cần chứng minh dữ liệu API/DB/state thì **chụp ảnh màn UI** hiển thị dữ liệu đó (hoặc màn có giá trị tương ứng), không đính file dữ liệu.
 2. **Highlight đúng element đang kiểm.** Mỗi ảnh phải khoanh (tham số `highlight` của `evidence_recorder`) đúng phần tử của step đó: nút / field / dòng bảng / nhãn / thông báo / giá trị. Cấm ảnh full-page chung chung không chỉ rõ điểm kiểm.
@@ -446,7 +446,7 @@ Gán sai tầng khiến ticket đi nhầm người và bị dev bounce lại, m�
 
 ### Comment kết quả (Test Execution) — Quy chuẩn trình bày
 
-Field `comment` của mỗi case (trong `testcase-status.json`, đẩy lên run của AIO Tests) là chỗ QA đọc để hiểu kết quả — phải gọn, dễ nhìn, KHÔNG dán debug.
+Field `comment` của mỗi case (trong `testcase-status.json`, đẩy lên run của Google Sheet) là chỗ QA đọc để hiểu kết quả — phải gọn, dễ nhìn, KHÔNG dán debug.
 
 1. **Văn xuôi gọn, không debug.** Comment là 1–2 câu mô tả kết quả quan sát được. CẤM dán dấu vết kỹ thuật: `key=value` (`editable=false`, `disabled=true`, `atGateway=true`, `match=true`), dump state kiểu `A→A` / `tx 2→2` / `paid 6000000→6000000`, mảng regex/selector, `val="…"`, `matched=[…]`. Viết lại thành ý người đọc hiểu.
 2. **Không lặp trạng thái ở đầu comment.** KHÔNG mở đầu bằng `[PASS]`/`[FAIL]`/`[PASSED]`/`[Positive]`/`[Negative]` — status đã có badge riêng trên Test Run. (Kit tự thêm tag cho SKIP/BLOCKED/EXECUTING để phân biệt "TO DO" — đừng tự viết tag đó.)
@@ -490,15 +490,15 @@ Giới hạn cần biết: máy đếm được ba phản chứng nhưng không 
 đếm tỉ lệ claim bị rút và phép kiểm nào bắt được nhiều nhất. Con số đó mới nói được kỷ luật có thật hay
 chỉ là thủ tục.
 
-### Jira Bug Gate
+### Backlog Bug Gate
 
-Jira bug gate khác với Jira testcase publish. Jira testcase publish diễn ra sau Excel/Phase 1 để mirror testcase lên Jira; Jira bug chỉ diễn ra sau Phase 2 khi fail đã được xác nhận là product/API bug.
+Backlog bug gate khác với Backlog testcase publish. Backlog testcase publish diễn ra sau Excel/Phase 1 để mirror testcase lên Backlog; Backlog bug chỉ diễn ra sau Phase 2 khi fail đã được xác nhận là product/API bug.
 
-- Không log Jira nếu case đang `SKIP`.
-- Không log Jira nếu fail do prompt/test/setup/data/env/dependency.
-- Không log Jira nếu chưa rerun đủ để loại trừ flaky issue.
-- Jira evidence chỉ dùng ảnh hoặc video khi log/upload bug.
-- Không upload `.md`, `.txt`, `.log`, `.json`, `trace.zip` hoặc execution summary làm Jira evidence trừ khi user yêu cầu riêng.
+- Không log Backlog nếu case đang `SKIP`.
+- Không log Backlog nếu fail do prompt/test/setup/data/env/dependency.
+- Không log Backlog nếu chưa rerun đủ để loại trừ flaky issue.
+- Backlog evidence chỉ dùng ảnh hoặc video khi log/upload bug.
+- Không upload `.md`, `.txt`, `.log`, `.json`, `trace.zip` hoặc execution summary làm Backlog evidence trừ khi user yêu cầu riêng.
 
 ### Executable QA capabilities (autonomy & safety)
 
@@ -507,7 +507,7 @@ Các năng lực chạy thật trong `scripts/qa/` + `exploratory/` phải khai 
 - **Autonomy Gate**: Suggest-only (learning_recorder, risk_score, git_impact, scope_planner) · threshold-gated (locator healing `LOCATOR_HEAL=1`, perf advisory, risk_gate `--enforce`) · never-auto (exploratory, security_check, load_check — chỉ chạy khi user yêu cầu tường minh).
 - **Non-destructive & non-prod**: `security_check` chỉ GET/read-only + `--confirm-nonprod`; `load_check` non-prod + cap + `--confirm-nonprod`; fuzzing/exploit/brute-force/ZAP là Manual-only opt-in có phê duyệt người. TUYỆT ĐỐI không chạy trên production.
 - **Mask PII/secret** trong mọi report (security/knowledge/dashboard); không ghi credential/PII khách hàng.
-- **Learning data chỉ ghi fact đã qua gate** (bug đã qua Jira gate); band/risk máy chấm luôn cho phép QA override.
+- **Learning data chỉ ghi fact đã qua gate** (bug đã qua Backlog gate); band/risk máy chấm luôn cho phép QA override.
 - **Output Quality Gate (THỰC THI, không phải prose)**: `scripts/qa/output_gate.js` + `scripts/qa/lib/output_rules.js` biến rule chất lượng thành check máy — `push_test_execution.js` tự chạy trước khi push (comment gọn/không debug, mọi step có status + evidence ảnh/video, video cho case phức tạp). Vi phạm → CHẶN; agent tự sửa trong session, không chờ nhắc. `--qa-approved` bỏ qua có chủ đích (log lại). Bug/Test Execution **bắt buộc qua script kit**, không tạo tay MCP/API.
 - **Không thêm dependency nặng**: axe-core (npm) đủ cho a11y; k6 là binary ngoài (Docker/PATH, không vào deps), thiếu → skip sạch.
 
@@ -557,7 +557,7 @@ Không xóa:
 |---|---|
 | `PROJECT_OUTPUT_DIR=outputs/<YOUR_PROJECT>` | Hardcode `outputs/lms-operations-automation` trong template chung. |
 | Evidence path dưới `test-results/artifacts/` | Screenshot tạm ở workspace root. |
-| Bug Jira có steps, expected, actual, evidence | Bug Jira từ case skip hoặc lỗi setup. |
+| Bug Backlog có steps, expected, actual, evidence | Bug Backlog từ case skip hoặc lỗi setup. |
 
 ## References
 

@@ -16,7 +16,7 @@ const m = require('./model');
  * test). Khi user mở rộng 6 → 9 loại, chép tay nghĩa là 5 cơ hội để một chỗ vẫn còn 6 — và chỗ đó sẽ CHẶN
  * theo bảng cũ trong khi tài liệu dạy bảng mới. Một nguồn thì không có "chỗ đó".
  *
- * `legacy` = tên còn tồn tại trên AIO nhưng không thuộc 9 loại đã chốt (hiện: `Unit`): NHẬN kèm cảnh báo để
+ * `legacy` = tên còn tồn tại trên Google Sheet nhưng không thuộc 9 loại đã chốt (hiện: `Unit`): NHẬN kèm cảnh báo để
  * dữ liệu cũ không đỏ, nhưng case sinh mới không được dùng.
  */
 const CASE_TYPES = require(path.join(__dirname, '..', '..', '..', '.agent', 'config', 'case_types.json'));
@@ -44,21 +44,21 @@ const REQUIRED_COLS = [
  */
 const REQUIRED_FIELDS = [['module', 'Module'], ['title', 'Trường hợp kiểm thử'], ['stepsRaw', 'Các bước thực hiện'], ['priority', 'Ưu tiên']];
 
-// GIÁ TRỊ hợp lệ. `Ưu tiên` phải là 1 trong 5 priority CÓ THẬT trên Jira: bug được log lấy Priority TỪ CHÍNH
-// cột này (prompt `08_log_bug_jira.md`), giá trị lạ (`Critical`, `P0`…) ⇒ Jira không set được ⇒ bug rơi về
+// GIÁ TRỊ hợp lệ. `Ưu tiên` phải là 1 trong 5 priority CÓ THẬT trên Backlog: bug được log lấy Priority TỪ CHÍNH
+// cột này (prompt `08_log_bug_backlog.md`), giá trị lạ (`Critical`, `P0`…) ⇒ Backlog không set được ⇒ bug rơi về
 // default, mất luôn tín hiệu ưu tiên. Trước đây prompt §7/§8 có quy định nhưng KHÔNG có gì kiểm.
 /*
- * Thang ƯU TIÊN canonical = thang của AIO: Critical|High|Medium|Low|Lowest.
- * `Highest` là tên của JIRA (và của bộ TC cũ) — vẫn NHẬN để không phá bộ đang chạy, nhưng cảnh báo:
+ * Thang ƯU TIÊN canonical = thang của công cụ cũ: Critical|High|Medium|Low|Lowest.
+ * `Highest` là tên của BACKLOG (và của bộ TC cũ) — vẫn NHẬN để không phá bộ đang chạy, nhưng cảnh báo:
  * publisher map theo TÊN nên trước đây mọi `Highest` rơi về fallback Medium (đo: 14 case của một bộ).
- * Đường log bug tự map `Critical → Highest` khi ghi Jira, nên canonical không cần theo tên Jira.
+ * Đường log bug tự map `Critical → Highest` khi ghi Backlog, nên canonical không cần theo tên Backlog.
  */
 const PRIORITY_OK = /^(critical|high|medium|low|lowest)$/i;
 const PRIORITY_LEGACY = /^highest$/i;
 // SEVERITY (thang mới, 5 mức) = hậu quả NẾU lỗi xảy ra. Khác `Ưu tiên` (thứ tự sửa, đẩy vào field Priority
-// của Jira). Trước đây cột này là "Mức độ rủi ro" 3 mức; thang 3 mức vẫn NHẬN để bộ TC cũ không đỏ, nhưng
+// của Backlog). Trước đây cột này là "Mức độ rủi ro" 3 mức; thang 3 mức vẫn NHẬN để bộ TC cũ không đỏ, nhưng
 // deprecated — cảnh báo 1 lần/file (không phải mỗi dòng, tránh 530 dòng nhiễu).
-// LƯU Ý: Jira hiện CHƯA có field Severity → giá trị này giữ ở testcase/report, KHÔNG đẩy lên Jira.
+// LƯU Ý: Backlog hiện CHƯA có field Severity → giá trị này giữ ở testcase/report, KHÔNG đẩy lên Backlog.
 const SEVERITY_OK = /^(blocker|critical|major|minor|trivial)$/i;
 // Giá trị CHỈ có nghĩa ở cột Severity. `Critical` cố ý KHÔNG nằm đây: nó hợp lệ ở cả hai cột.
 const SEVERITY_ONLY = /^(blocker|major|minor|trivial)$/i;
@@ -91,13 +91,13 @@ function validate(doc) {
     const id = tc.tcId || '(no-id)';
     const p = String(tc.priority || '').trim();
     const r = String(tc.risk || '').trim();
-    if (p && !PRIORITY_OK.test(p) && !PRIORITY_LEGACY.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" không thuộc thang Critical|High|Medium|Low|Lowest. Giá trị lạ bị mọi consumer bỏ qua âm thầm: AIO map priority theo TÊN (rơi về Medium), Jira dùng default.`);
-    if (p && PRIORITY_LEGACY.test(p)) warnings.push(`${id}: \`Ưu tiên\` = "Highest" là tên thang CŨ (Jira) — canonical nay dùng **Critical** (khớp AIO). Vẫn nhận, nhưng nên đổi: publisher chỉ map đúng nhờ alias, còn báo cáo/lọc thì hai tên khác nhau làm số liệu tách đôi.`);
+    if (p && !PRIORITY_OK.test(p) && !PRIORITY_LEGACY.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" không thuộc thang Critical|High|Medium|Low|Lowest. Giá trị lạ bị mọi consumer bỏ qua âm thầm: Google Sheet map priority theo TÊN (rơi về Medium), Backlog dùng default.`);
+    if (p && PRIORITY_LEGACY.test(p)) warnings.push(`${id}: \`Ưu tiên\` = "Highest" là tên thang CŨ (Backlog) — canonical nay dùng **Critical** (khớp Google Sheet). Vẫn nhận, nhưng nên đổi: publisher chỉ map đúng nhờ alias, còn báo cáo/lọc thì hai tên khác nhau làm số liệu tách đôi.`);
     if (r && !RISK_OK.test(r)) problems.push(`${id}: \`Severity\` = "${r}" không thuộc thang Blocker|Critical|Major|Minor|Trivial (§8); thang cũ High|Medium|Low vẫn tạm nhận. Giá trị ngoài cả hai thang bị mọi consumer bỏ qua âm thầm.`);
 
     /*
      * `Loại case` — CHƯA bắt buộc (mọi bộ TC hiện có đều chưa có cột này; đòi ngay là đỏ toàn bộ).
-     * Nhưng ĐÃ KHAI thì phải đúng 1 trong 6 giá trị AIO nhận, không thì consumer bỏ qua âm thầm và ta lại
+     * Nhưng ĐÃ KHAI thì phải đúng 1 trong 6 giá trị Google Sheet nhận, không thì consumer bỏ qua âm thầm và ta lại
      * quay về đúng chỗ cũ: case type vô nghĩa. Thiếu cột ⇒ cảnh báo, publish sẽ suy tạm và nói rõ là suy.
      */
     const ct = String(tc.caseType || '').trim();
@@ -118,7 +118,7 @@ function validate(doc) {
     /*
      * Nguồn tag phải là `tc.dimensions` của model, KHÔNG tự regex lại tiêu đề.
      * Đã dính thật 21/08/2026: chỗ này từng đọc `tc.title.match(/\[...\]/g)`, nên khi tag chuyển sang
-     * cột `Tag` và tiêu đề sạch thì kiểm tra IM LẶNG — 45 cảnh báo tag↔loại của bộ SAPP-26878 tụt về 0
+     * cột `Tag` và tiêu đề sạch thì kiểm tra IM LẶNG — 45 cảnh báo tag↔loại của bộ CSDL-26878 tụt về 0
      * mà không có dòng lỗi nào. `dimensions` là HỢP của cột `Tag` và tiêu đề nên đúng cho cả hai đời bộ TC.
      */
     const mapped = [...new Set((tc.dimensions || [])
@@ -132,7 +132,7 @@ function validate(doc) {
   }
   // 2c) CONSISTENCY — 2 cột không được nói ngược nhau. Cảnh báo (không chặn) vì vẫn có ngoại lệ hợp lý,
   // nhưng phải nêu ra: rủi ro High = tài chính/bảo mật/không rollback được, gán ưu tiên thấp là tự mâu thuẫn
-  // và bug sinh ra từ case đó sẽ lên Jira với Priority thấp.
+  // và bug sinh ra từ case đó sẽ lên Backlog với Priority thấp.
   for (const tc of doc.tests) {
     const id = tc.tcId || '(no-id)';
     const p = String(tc.priority || '').trim();
@@ -168,7 +168,7 @@ function validate(doc) {
     }
     const orphan = [...usedBy.keys()].filter((c) => !declared.has(c));
     if (orphan.length) {
-      problems.push(`${orphan.length} mã tiền điều kiện KHÔNG có trong catalog Setup Strategy: ${orphan.slice(0, 6).map((c) => `[${c}] (vd ${usedBy.get(c)[0]})`).join(', ')}${orphan.length > 6 ? ` …(+${orphan.length - 6})` : ''}. Trên AIO mã chỉ là text trong case — trỏ vào hư không thì Phase 2 không biết dựng gì. Khai vào sheet \`Preconditions\` hoặc sửa mã ở case.`);
+      problems.push(`${orphan.length} mã tiền điều kiện KHÔNG có trong catalog Setup Strategy: ${orphan.slice(0, 6).map((c) => `[${c}] (vd ${usedBy.get(c)[0]})`).join(', ')}${orphan.length > 6 ? ` …(+${orphan.length - 6})` : ''}. Trên Google Sheet mã chỉ là text trong case — trỏ vào hư không thì Phase 2 không biết dựng gì. Khai vào sheet \`Preconditions\` hoặc sửa mã ở case.`);
     }
     const unused = [...declared].filter((c) => !usedBy.has(c));
     if (unused.length) warnings.push(`${unused.length} mã khai trong catalog mà KHÔNG case nào dùng: ${unused.slice(0, 8).join(', ')}${unused.length > 8 ? ' …' : ''} — hoặc thiếu case, hoặc catalog còn rác của lượt trước.`);
@@ -189,7 +189,7 @@ function validate(doc) {
    *
    * Precondition giờ chỉ là một trường của testcase — không còn thực thể riêng, không còn sheet. Nhưng
    * Phase 2 vẫn phải biết DỰNG BẰNG GÌ để chọn api/factory/hook/ui hay bỏ sang manual. Chỗ duy nhất
-   * sống sót round-trip publish→pull (AIO không có field "cách dựng") là CHÍNH text precondition, nên
+   * sống sót round-trip publish→pull (Google Sheet không có field "cách dựng") là CHÍNH text precondition, nên
    * method đi vào tag đầu cell: `[api] Deal đã ở stage X`.
    *
    * CHẶN khi thiếu/lạ tag: không có nó thì Phase 2 quay lại đoán — và đoán sai ở tầng setup thì mọi
@@ -252,7 +252,7 @@ function validate(doc) {
    * 4) CHẤT LƯỢNG TIÊU ĐỀ (set-level) — cảnh báo.
    *
    * Từ 21/08/2026 tag ra cột `Tag`, nên tiêu đề phải TỰ ĐỦ NGHĨA. Hai lỗi dưới đây đo được bằng máy,
-   * và cả hai đều đã xảy ra thật ở bộ SAPP-26878:
+   * và cả hai đều đã xảy ra thật ở bộ CSDL-26878:
    *
    *  (a) TIỀN TỐ HẰNG SỐ — `Cross-app - ` gắn cho 101/101 case. Một trường mà mọi dòng cùng một giá trị
    *      thì không phân biệt được gì; nó chỉ đẩy nội dung thật ra xa. Chỉ kêu khi bộ có ≥5 case và

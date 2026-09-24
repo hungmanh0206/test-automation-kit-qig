@@ -13,7 +13,7 @@ import { gateEnv } from './_gate_env';
  *
  *   - `knowledge/leak_machine_map.json` — chính `README.md` và `scripts/qa/leak_report.js` bảo người
  *     dùng tạo file này. Tạo xong là nó được track.
- *   - `knowledge/bugs/SAPP-99999.md` — luật cũ chỉ chặn `*.json`. Tên file bug là slug tiêu đề defect,
+ *   - `knowledge/bugs/CSDL-99999.md` — luật cũ chỉ chặn `*.json`. Tên file bug là slug tiêu đề defect,
  *     nên riêng ĐƯỜNG DẪN đã mô tả lỗi sản phẩm.
  *   - một store mới bất kỳ, ví dụ `knowledge/store_moi/`.
  *
@@ -21,7 +21,7 @@ import { gateEnv } from './_gate_env';
  *
  * Chuyện này KHÔNG phải giả định. Lịch sử repo từng có 86 file `knowledge/` được commit rồi mới gỡ ở
  * `58a5fe5 chore(security)`. Quét lại 86 file đó: 0 file chứa email, số điện thoại hay secret. Nhưng nội
- * dung là tiêu đề defect nội bộ, module, Jira key và mã testcase.
+ * dung là tiêu đề defect nội bộ, module, Backlog key và mã testcase.
  *
  * Luật đã sửa thành cấm cả thư mục rồi mở lại đúng hai thứ. Test này giữ cho nó không trôi ngược,
  * và có ĐỐI CHỨNG ÂM: nếu ai đó sửa thành "chặn sạch" thì ba test cuối sẽ đỏ.
@@ -60,7 +60,7 @@ function biChan(duongDan: string): boolean {
 const PHAI_CHAN = [
   'knowledge/leak_machine_map.json',
   'knowledge/domain/ghi-chu.md',
-  'knowledge/bugs/SAPP-99999.md',
+  'knowledge/bugs/CSDL-99999.md',
   'knowledge/store_moi/du_lieu.json',
   'knowledge/locators/app.yaml',
   'knowledge/index.json',

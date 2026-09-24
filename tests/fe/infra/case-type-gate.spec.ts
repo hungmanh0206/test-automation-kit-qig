@@ -82,7 +82,7 @@ test.describe('gate Loại case', () => {
   test('`Critical` là mức ưu tiên hợp lệ — thang canonical đứng đầu bằng Critical, không phải Highest', () => {
     const [md, out] = fixture(`${H10}| T1 | Functional | ${TAIL}\n| T2 | API | ${NEG}\n`);
     const r = run([CONVERT, md, out]);
-    expect(r.code, 'Critical bị chặn = thang ưu tiên vẫn kẹt ở chuẩn Jira cũ').toBe(0);
+    expect(r.code, 'Critical bị chặn = thang ưu tiên vẫn kẹt ở chuẩn Backlog cũ').toBe(0);
   });
 
   test('lối thoát --lenient vẫn convert được (cho bộ cũ), nhưng phải KÊU', () => {

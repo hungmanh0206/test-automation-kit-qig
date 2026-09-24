@@ -20,8 +20,13 @@ const path = require('path');
 
 const DB_CONV = '.agent/config/db.conventions.json';
 const DB_CRED_KEYS = ['HOST', 'NAME', 'USERNAME', 'PASSWORD'];
-/** Quyền đủ để ĐỔI dữ liệu. Giữ khớp với `WRITE_PRIVILEGES` ở tests/support/setup/db/types.ts. */
-const WRITE_PRIVILEGES = ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE'];
+/**
+ * Quyền đủ để ĐỔI dữ liệu. Giữ khớp với `WRITE_PRIVILEGES` ở tests/support/setup/db/types.ts.
+ * ALTER/CONTROL có trong danh sách vì T-SQL không có quyền đối tượng tên TRUNCATE — `TRUNCATE TABLE`
+ * chỉ cần ALTER, còn CONTROL bao trùm mọi quyền. Thiếu hai cái này thì user `db_ddladmin` bị kết
+ * luận sai là read-only.
+ */
+const WRITE_PRIVILEGES = ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'ALTER', 'CONTROL'];
 
 /**
  * Task có KHAI dùng §23 không? Hai nguồn khai: manifest chiều, và tag `[DbPersist]` trong testcase .md.
@@ -152,25 +157,71 @@ async function checkDbReadonlyLive(root, { task, clientFactory = null }) {
   if (!fs.existsSync(envPath)) return [`DB verify (live): không thấy profiles/${task}/task.env`];
   const raw = fs.readFileSync(envPath, 'utf8');
   const v = (k) => String(((raw.match(new RegExp(`^LIB_MASTER_DB_RO_${k}=(.*)$`, 'm')) || [])[1] || '')).trim();
-  const cfg = { host: v('HOST'), port: Number(v('PORT') || 5432), database: v('NAME'), user: v('USERNAME'), password: v('PASSWORD') };
+  const cfg = { host: v('HOST'), port: Number(v('PORT') || 1433), database: v('NAME'), user: v('USERNAME'), password: v('PASSWORD') };
   if (!cfg.host || !cfg.user) return ['DB verify (live): thiếu HOST/USERNAME nên không đọc được quyền'];
 
-  let make = clientFactory;
-  if (!make) {
-    let Client;
-    try { ({ Client } = require('pg')); } catch (e) { return ['DB verify (live): không nạp được module pg']; }
-    make = (c) => new Client({ ...c, connectionTimeoutMillis: 6000, statement_timeout: 6000, ssl: false });
+  /*
+   * Quyền THEO BẢNG trên SQL Server. T-SQL KHÔNG có `information_schema.role_table_grants` (bản Postgres cũ
+   * dùng cái đó) — quyền hiệu lực, kể cả kế thừa qua role như `db_owner`, chỉ đọc đúng bằng
+   * `fn_my_permissions(<đối tượng>, 'OBJECT')`. Gộp ngay trong SQL để không kéo về hàng nghìn dòng.
+   */
+  const SQL = `SELECT p.permission_name AS privilege_type, COUNT(*) AS n
+      FROM sys.tables t
+      JOIN sys.schemas s ON s.schema_id = t.schema_id
+      CROSS APPLY fn_my_permissions(QUOTENAME(s.name) + '.' + QUOTENAME(t.name), 'OBJECT') p
+      GROUP BY p.permission_name`;
+
+  if (clientFactory) {
+    // Đường tiêm cho test: factory trả { connect, query, end } tối giản.
+    const client = clientFactory(cfg);
+    try {
+      await client.connect();
+      const r = await client.query(SQL);
+      return readonlyVerdictFromRows(r.rows, cfg.user);
+    } catch (e) {
+      return [`DB verify (live): không kết nối được ${cfg.host}/${cfg.database} (${e.message}). Task khai dùng §23 nên đây là CHẶN — bật VPN rồi chạy lại, hoặc --skip-db-live nếu cố ý bỏ qua phép đo này.`];
+    } finally {
+      try { await client.end(); } catch (e) { /* đã đóng */ }
+    }
   }
-  const client = make(cfg);
-  try {
-    await client.connect();
-    const r = await client.query("SELECT privilege_type, COUNT(*)::int n FROM information_schema.role_table_grants WHERE grantee = current_user AND table_schema = 'public' GROUP BY 1");
-    return readonlyVerdictFromRows(r.rows, cfg.user);
-  } catch (e) {
-    return [`DB verify (live): không kết nối được ${cfg.host}/${cfg.database} (${e.message}). Task khai dùng §23 nên đây là CHẶN — bật VPN rồi chạy lại, hoặc --skip-db-live nếu cố ý bỏ qua phép đo này.`];
-  } finally {
-    try { await client.end(); } catch (e) { /* đã đóng */ }
-  }
+
+  let tedious;
+  try { tedious = require('tedious'); } catch (e) { return ['DB verify (live): không nạp được module tedious']; }
+
+  return new Promise((resolve) => {
+    const conn = new tedious.Connection({
+      server: cfg.host,
+      authentication: { type: 'default', options: { userName: cfg.user, password: cfg.password } },
+      options: {
+        port: cfg.port,
+        database: cfg.database,
+        encrypt: false,
+        trustServerCertificate: true,
+        connectTimeout: 10000,
+        requestTimeout: 20000,
+        rowCollectionOnRequestCompletion: true,
+      },
+    });
+    const done = (out) => { try { conn.close(); } catch (e) { /* đã đóng */ } resolve(out); };
+    conn.on('connect', (err) => {
+      if (err) {
+        return done([`DB verify (live): không kết nối được ${cfg.host}/${cfg.database} (${err.message}). Task khai dùng §23 nên đây là CHẶN — bật VPN rồi chạy lại, hoặc --skip-db-live nếu cố ý bỏ qua phép đo này.`]);
+      }
+      const rows = [];
+      const req = new tedious.Request(SQL, (e) => {
+        if (e) return done([`DB verify (live): đọc quyền thất bại (${e.message}).`]);
+        done(readonlyVerdictFromRows(rows, cfg.user));
+      });
+      req.on('row', (cols) => {
+        const o = {};
+        for (const c of cols) o[c.metadata.colName] = c.value;
+        rows.push(o);
+      });
+      conn.execSql(req);
+    });
+    conn.on('error', (err) => done([`DB verify (live): lỗi kết nối ${cfg.host} (${err.message}).`]));
+    conn.connect();
+  });
 }
 
 module.exports = { detectDbVerifyDeclared, checkDbVerifyStatic, checkDbReadonlyLive, readonlyVerdictFromRows, DB_CONV, WRITE_PRIVILEGES };

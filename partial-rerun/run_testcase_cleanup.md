@@ -1,10 +1,10 @@
 # Run Testcase Cleanup (Google Sheet)
 
-> Tên file giữ nguyên (`run_testcase_cleanup.md`) cho tương thích ngược với các prompt đang trỏ tới. Đích đến trước là AIO Tests (vòng đời `caseStatus`), giờ là **Google Sheet** — mô hình cleanup đã đổi hẳn, không còn khái niệm "deprecate case".
+> Tên file giữ nguyên (`run_testcase_cleanup.md`) cho tương thích ngược với các prompt đang trỏ tới. Đích đến trước là Google Sheet (vòng đời `caseStatus`), giờ là **Google Sheet** — mô hình cleanup đã đổi hẳn, không còn khái niệm "deprecate case".
 
 ## Purpose
 
-Trên AIO Tests trước đây, "cleanup" nghĩa là đổi `caseStatus` case bị bỏ khỏi Excel sang `Deprecated` (không có API xoá). **Trên Google Sheet, việc này không còn cần thiết**: mỗi lần re-publish (`update_file` qua Drive MCP) là ghi đè **toàn bộ workbook** theo đúng Excel canonical hiện tại — case nào không còn trong Excel thì tự động không còn trong Sheet ở lần ghi đè kế tiếp, không cần bước trung gian nào.
+Trên Google Sheet trước đây, "cleanup" nghĩa là đổi `caseStatus` case bị bỏ khỏi Excel sang `Deprecated` (không có API xoá). **Trên Google Sheet, việc này không còn cần thiết**: mỗi lần re-publish (`update_file` qua Drive MCP) là ghi đè **toàn bộ workbook** theo đúng Excel canonical hiện tại — case nào không còn trong Excel thì tự động không còn trong Sheet ở lần ghi đè kế tiếp, không cần bước trung gian nào.
 
 **Vì vậy: sau khi merge testcase đã approve (`partial-rerun/run_requirement_apply_approved.md` Step 2b), chỉ cần re-publish là đủ — không cần chạy prompt này để "dọn" case cũ.**
 

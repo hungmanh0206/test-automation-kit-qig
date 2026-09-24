@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { queryUatReadonly, isUatDbConfigured } from './uatPgClient';
+import { queryUatReadonly, isUatDbConfigured } from './uatDbClient';
 
 /*
  * TÌM ỨNG VIÊN NEO — bước TRƯỚC khi nghĩ đến fixture.
@@ -8,7 +8,7 @@ import { queryUatReadonly, isUatDbConfigured } from './uatPgClient';
  * Nhưng "6 đơn tôi mở" không phải "mọi đơn": DB có hàng nghìn đơn, rất có thể đã có đơn mà cột đó tự phân
  * biệt. Hỏi DB trước thì neo được mà KHÔNG chạm dữ liệu UAT; chỉ cột nào DB cũng không có mới cần fixture.
  *
- * Chạy: INFRA_VERIFY=1 TASK_ENV=profiles/SAPP-24395/task.env … --project=infra-verify
+ * Chạy: INFRA_VERIFY=1 TASK_ENV=profiles/CSDL-24395/task.env … --project=infra-verify
  */
 const PREFIX = 'LIB_MASTER_DB_RO';
 const ORDERS = 'ic_payment_orders';

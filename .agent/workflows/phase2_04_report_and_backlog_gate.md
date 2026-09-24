@@ -1,10 +1,10 @@
-# Phase 2 - Bước 4: Report, Promote Review Và Jira Gate
+# Phase 2 - Bước 4: Report, Promote Review Và Backlog Gate
 
-> Tổng hợp kết quả execute, ghi shared change/promotion status và chỉ log Jira bug khi case fail đủ điều kiện.
+> Tổng hợp kết quả execute, ghi shared change/promotion status và chỉ log Backlog bug khi case fail đủ điều kiện.
 
 ## Mục Đích
 
-Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, không upload evidence sai loại lên Jira và không âm thầm đưa task automation vào regression suite chung.
+Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, không upload evidence sai loại lên Backlog và không âm thầm đưa task automation vào regression suite chung.
 
 ## Workflow
 
@@ -30,7 +30,7 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 4. Với từng fail nghi product bug, kiểm tra gate:
    - **TRA `knowledge/decisions/` TRƯỚC**: `node scripts/qa/decisions.js --check "<triệu chứng>" --module <Module>`.
      Nếu khớp một quyết định `false_positive`/`by_design` ⇒ **KHÔNG log lại** (lần trước dev đã kết luận và
-     Jira đã Rejected — log lại là bounce lần hai). Muốn log thì phải có **bằng chứng MỚI khác lần trước**
+     Backlog đã Rejected — log lại là bounce lần hai). Muốn log thì phải có **bằng chứng MỚI khác lần trước**
      (spec đổi / dev đã fix rồi hồi quy / điều kiện khác) và **ghi rõ điểm khác đó** trong bug. Không khớp
      ≠ được bỏ qua điều tra. Sau khi triage xong, quyết định mới (bug bị Rejected, case PASS-kèm-note,
      chốt cách test) phải ghi lại — skill `decision_recorder`, kiểm `npm run decisions:check`.
@@ -41,7 +41,7 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
      phải chứng minh **đã thao tác đúng đối tượng**: (a) evidence highlight **đúng element** đã tương tác,
      **và** (b) xác minh lại bằng **một đường định vị độc lập** (locator khác/`safe_target.one()`) **hoặc**
      thao tác tay trên UI. Không chứng minh được → `failureLayer: script_error`
-     (`.agent/config/verdict_taxonomy.json`, `loggableAsBug: false`) → **KHÔNG log Jira**, sửa script rồi chạy lại.
+     (`.agent/config/verdict_taxonomy.json`, `loggableAsBug: false`) → **KHÔNG log Backlog**, sửa script rồi chạy lại.
      Dấu hiệu nghi script_error: giá trị đọc được thuộc section khác · bấm xong màn không đổi như mong đợi ·
      lỗi biến mất khi làm tay · code dùng `.first()`/`force:true`/`mouse.click(x,y)`/regex `body.innerText`.
    - Expected result đã xác nhận đúng.
@@ -56,20 +56,20 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
    - Test Execution: `npm run gate:output -- --status <testcase-status.json>` **tự chạy `scripts/qa/output_gate.js`** → CHẶN khi comment run-on/dính debug `key=value`, step thiếu status/evidence, evidence không phải ảnh/video, hoặc case phức tạp thiếu video (thêm `--fix` để tự dọn comment).
    - **Gate CHẶN → TỰ SỬA trong session rồi chạy lại tới khi PASS**; KHÔNG ghi kèm vi phạm, KHÔNG chờ user nhắc. Chỉ `--qa-approved` khi QA có lý do rõ (được log).
    - **Bắt buộc tạo bug/ghi kết quả execute QUA script kit** (`bug_reporter.js` cho bug, `merge_execution_status.js` cho status) — KHÔNG sửa tay Result trên Sheets rồi coi như đã ghi (sửa tay = bỏ qua gate → sai 4 phần/evidence/comment).
-   - 🔀 **Đồng bộ Google Sheet**: `node scripts/convert_excel/merge_execution_status.js <xlsx đã tải> <testcase-status.json> --task <TASK_KEY>` chạy **cùng gate này** trước khi ghi — merge Pass/Fail/Pending vào cột `Result` của file local, rồi agent `update_file` qua Drive MCP đè lên Sheet. Evidence (ảnh/video) vẫn ở local `test-results/artifacts/`, KHÔNG đính lên Sheet (khác AIO trước đây neo evidence từng bước) — xem `scripts/integrations/backlog/README.md` (mục cảnh báo AIO) và plan migrate AIO→Sheet.
+   - 🔀 **Đồng bộ Google Sheet**: `node scripts/convert_excel/merge_execution_status.js <xlsx đã tải> <testcase-status.json> --task <TASK_KEY>` chạy **cùng gate này** trước khi ghi — merge Pass/Fail/Pending vào cột `Result` của file local, rồi agent `update_file` qua Drive MCP đè lên Sheet. Evidence (ảnh/video) vẫn ở local `test-results/artifacts/`, KHÔNG đính lên Sheet (khác Google Sheet trước đây neo evidence từng bước) — xem `scripts/integrations/backlog/README.md` (mục cảnh báo Google Sheet) và plan migrate công cụ cũ→Sheet.
 4a. **Đối soát mở rộng 5 trục:** `TASK_ENV=... npm run expansion:plan -- --audit --enforce` — CHẶN nếu có finding
    ghi PASS/FAIL mà không có `oracle_ref` (nhất quán KHÔNG phải bằng chứng của đúng). `merge_execution_status.js` cũng chặn ở
    `plan_guard`, nhưng chạy ở đây thì biết sớm hơn một bước.
 4a2. **Báo cáo rò (leak):** `TASK_ENV=... npm run leak:report` — bug do người ngoài tìm ra thì phải chỉ được máy nào
    lẽ ra bắt được. Không có báo cáo này thì "lọt bug" mãi là chuyện cảm tính.
-5. Chạy Jira dry-run trước.
-6. Chỉ log Jira thật khi user yêu cầu hoặc prompt hiện tại cho phép.
-7. Jira description chỉ gồm:
+5. Chạy Backlog dry-run trước.
+6. Chỉ log Backlog thật khi user yêu cầu hoặc prompt hiện tại cho phép.
+7. Backlog description chỉ gồm:
    - Tiền điều kiện.
    - Bước.
    - Kết quả hiện tại.
    - Kết quả mong muốn.
-8. Evidence upload lên Jira chỉ là ảnh/video.
+8. Evidence upload lên Backlog chỉ là ảnh/video.
 9. **Thu learning data — BẮT BUỘC sau mọi lần execute** (không phải chỉ khi có bug).
 
    **Mặc định TỰ ĐỘNG**: reporter `scripts/qa/learn_reporter.js` (khai cuối `reporter` trong `playwright.config.js`)
@@ -89,14 +89,14 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 
    `self_review` CHẶN nếu đã execute mà thiếu snapshot/KPI của task (learning loop đứt).
 
-9b. **Sau khi log bug Jira (Bước 4)** — nạp bug vào knowledge để `risk_score` có `bugCount`:
+9b. **Sau khi log bug Backlog (Bước 4)** — nạp bug vào knowledge để `risk_score` có `bugCount`:
 
    ```bash
    TASK_ENV=profiles/<TASK_KEY>/task.env npm run learn:bugs:apply
    ```
 
-   Lấy bug **từ Jira** theo label `auto-bug` + story ⇒ chỉ học bug đã qua gate; idempotent (chạy lại chỉ
-   đồng bộ `jira_status`). `self_review` cảnh báo nếu có case FAILED mà `knowledge/bugs/` chưa có entry.
+   Lấy bug **từ Backlog** theo label `auto-bug` + story ⇒ chỉ học bug đã qua gate; idempotent (chạy lại chỉ
+   đồng bộ `backlog_status`). `self_review` cảnh báo nếu có case FAILED mà `knowledge/bugs/` chưa có entry.
 
 9c. Ghi Knowledge Entry (skill `learning_recorder`, Suggest-only) — **chỉ cho bug đã qua gate ở Bước 4**:
    - Với mỗi bug đã qua gate (đã loại flaky/setup/data/prompt), ghi `knowledge/bugs/<TASK_KEY>__<slug>.json`; nếu đã xác định root cause thì ghi/nối `knowledge/root_causes/<slug>.json` (link 2 chiều).
@@ -116,12 +116,12 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 
 ## Rules
 
-- Không log Jira cho case skip.
-- Không log Jira nếu fail do prompt/test/setup chưa chuẩn.
-- Không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip` hoặc execution summary lên Jira.
-- Không tự comment Jira nếu workflow không yêu cầu comment.
+- Không log Backlog cho case skip.
+- Không log Backlog nếu fail do prompt/test/setup chưa chuẩn.
+- Không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip` hoặc execution summary lên Backlog.
+- Không tự comment Backlog nếu workflow không yêu cầu comment.
 - Không promote task-scoped automation vào `tests/fe/` hoặc `tests/api/` nếu chưa có review/approval rõ.
-- Chỉ ghi Knowledge Entry (`knowledge/bugs/`) cho bug đã qua Jira gate (Bước 4); không ghi setup/flaky/skip vào learning data.
+- Chỉ ghi Knowledge Entry (`knowledge/bugs/`) cho bug đã qua Backlog gate (Bước 4); không ghi setup/flaky/skip vào learning data.
 
 ## Outputs
 
@@ -131,7 +131,7 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 | Capability gap cập nhật | `<TASK_OUTPUT_DIR>/reports/capability-request.md` (nếu Phase 2 phát hiện thêm `needs_hook`/`needs_account`/`needs_sandbox`) |
 | Shared change log | Trong execution summary |
 | Automation promotion status | Trong execution summary |
-| Jira dry-run result | Report liên quan |
-| Jira bug log nếu có | Execution summary hoặc local bug log |
+| Backlog dry-run result | Report liên quan |
+| Backlog bug log nếu có | Execution summary hoặc local bug log |
 | Knowledge entry (bug/root cause) | `knowledge/bugs/`, `knowledge/root_causes/` (chỉ bug đã qua gate) + `knowledge/index.json` |
 | Execution snapshot | `knowledge/historical_execution/<TASK_KEY>__<date>.json` |

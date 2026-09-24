@@ -10,7 +10,7 @@ import { DbGuardError, WRITE_PRIVILEGES, type GrantRow } from './types';
  *    đúng chỗ nguy hiểm. (`SELECT 1 INTO #tmp` của MSSQL cùng vấn đề.)
  *  - Thử ghi vào bảng THẬT thì khi user có quyền, probe đã MUTATE UAT — trái luật "xác nhận trước mỗi lượt
  *    chạm UAT".
- * Đọc catalog thì dứt khoát VÀ định lượng. Đo thật trên `sapp-platform-uat`: user `sapp_platform_uat` có
+ * Đọc catalog thì dứt khoát VÀ định lượng. Đo thật trên `một DB UAT thật`: user `uat_app_user` có
  * INSERT/UPDATE/DELETE/TRUNCATE trên **232 bảng** — con số đó DBA sửa được ngay, khác hẳn "probe ghi được".
  */
 
@@ -74,21 +74,32 @@ export function assertReadOnly(proof: ReadOnlyProof, ctx: { database?: string; u
     + `  Bảng ví dụ: ${proof.sampleTables.join(', ')}${proof.sampleTables.length >= 10 ? ' …' : ''}\n`
     + '  Đây là điều kiện tiên quyết, không phải cảnh báo: guard trong code chỉ bảo vệ khi code chạy đúng,\n'
     + '  còn quyền DB bảo vệ cả khi ai đó gọi trực tiếp bằng psql/DBeaver.\n'
-    + '  Xin DBA cấp role chỉ đọc:\n'
-    + '    CREATE ROLE <ten>_readonly LOGIN PASSWORD \'<...>\';\n'
-    + '    GRANT CONNECT ON DATABASE "<db>" TO <ten>_readonly;\n'
-    + '    GRANT USAGE ON SCHEMA public TO <ten>_readonly;\n'
-    + '    GRANT SELECT ON ALL TABLES IN SCHEMA public TO <ten>_readonly;\n'
-    + '    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO <ten>_readonly;',
+    + '  Xin DBA cấp login chỉ đọc (T-SQL / SQL Server):\n'
+    + '    CREATE LOGIN [<ten>_readonly] WITH PASSWORD = \'<...>\';\n'
+    + `    USE [${ctx.database || '<db>'}];\n`
+    + '    CREATE USER [<ten>_readonly] FOR LOGIN [<ten>_readonly];\n'
+    + '    ALTER ROLE db_datareader ADD MEMBER [<ten>_readonly];\n'
+    + '    -- KHÔNG thêm vào db_datawriter / db_ddladmin / db_owner.\n'
+    + '    DENY INSERT, UPDATE, DELETE, ALTER, CONTROL TO [<ten>_readonly];',
   );
 }
 
 /*
- * LINT CÂU TRUY VẤN — lớp phụ (lớp chính là quyền DB). Giữ nguyên tinh thần `assertReadOnlySql` của
- * `uatPgClient.ts`: chỉ cho câu ĐỌC, chặn stacked query và các hàm đọc/ghi file, admin.
+ * LINT CÂU TRUY VẤN. Bản Postgres gọi đây là lớp PHỤ (lớp chính là quyền DB + transaction READ ONLY).
+ * Sau khi chuyển sang SQL Server (24/09/2026) điều đó KHÔNG còn đúng: T-SQL không có transaction
+ * read-only, và `requireReadonlyUser` đang TẮT — nên đây là lớp chặn CHÍNH. Giữ tinh thần `assertReadOnlySql` của
+ * `uatDbClient.ts`: chỉ cho câu ĐỌC, chặn stacked query và các hàm đọc/ghi file, admin.
  */
 const READ_HEAD = /^\s*(select|with|explain|show|table)\b/i;
-const DANGEROUS_TOKEN = /\b(insert|update|delete|truncate|drop|alter|create|grant|revoke|copy|vacuum|reindex|call|do|merge|replace|load_file|outfile|dumpfile|pg_read_file|pg_ls_dir|lo_import|lo_export|xp_cmdshell|sp_configure|openrowset|bulk\s+insert)\b/i;
+/*
+ * T-SQL không có "transaction READ ONLY" như Postgres — SET TRANSACTION ISOLATION LEVEL chỉ đổi mức khoá,
+ * KHÔNG chặn ghi. Nghĩa là với SQL Server, lint này là lớp chặn CHÍNH, không phải lớp phụ. Nên danh sách
+ * dưới đây phải phủ cả họ thủ tục hệ thống của SQL Server (`xp_*`, `sp_*`), đường ghi file (`openrowset`,
+ * `bulk insert`, `opendatasource`), và `into` của `SELECT … INTO <bảng mới>` (tạo bảng thật).
+ */
+const DANGEROUS_TOKEN = /\b(insert|update|delete|truncate|drop|alter|create|grant|revoke|deny|copy|vacuum|reindex|call|do|merge|replace|backup|restore|shutdown|reconfigure|checkpoint|dbcc|waitfor|load_file|outfile|dumpfile|openrowset|opendatasource|openquery|openxml|bulk\s+insert|xp_[a-z_]+|sp_[a-z_]+|fn_trace_[a-z_]+)\b/i;
+/** `SELECT … INTO <bảng>` tạo bảng mới — READ_HEAD không bắt được vì câu vẫn bắt đầu bằng SELECT. */
+const SELECT_INTO = /\binto\s+(?!@)[\[#a-z_]/i;
 
 export function assertReadOnlyQuery(sql: string): void {
   const raw = String(sql || '');
@@ -98,10 +109,13 @@ export function assertReadOnlyQuery(sql: string): void {
   if (/;\s*\S/.test(s.trim())) throw new DbGuardError('Nhiều statement trong một câu (stacked query) — không cho.');
   const hit = DANGEROUS_TOKEN.exec(s);
   if (hit) throw new DbGuardError(`Câu truy vấn chứa từ khoá ghi/nguy hiểm: "${hit[0]}".`);
+  if (SELECT_INTO.test(s)) {
+    throw new DbGuardError('Câu truy vấn có `SELECT … INTO <bảng>` — tạo bảng thật, không phải câu đọc.');
+  }
 }
 
 /*
- * HOST GUARD — allow-list + deny-pattern. Giữ nguyên hành vi `assertHostGuards` của `uatPgClient.ts`:
+ * HOST GUARD — allow-list + deny-pattern. Giữ nguyên hành vi `assertHostGuards` của `uatDbClient.ts`:
  * bỏ trống thì KHÔNG áp (để không phá cấu hình cũ), nhưng deny-pattern có giá trị thì áp cả host và dbname.
  */
 export function assertHostAllowed(

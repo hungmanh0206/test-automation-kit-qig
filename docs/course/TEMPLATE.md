@@ -51,7 +51,7 @@ có ô nào** để chứa bốn thứ này, nên không ai quên — chỉ là 
 
 Sai:
 
-> Trong bài này chúng ta sẽ tích hợp AIO Tests.
+> Trong bài này chúng ta sẽ tích hợp Google Sheet.
 
 Đúng:
 

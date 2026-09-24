@@ -2,7 +2,7 @@
 # Khai CI/CD Variables lên GitLab từ .env.local qua glab CLI.
 #
 # CHẠY TRÊN MÁY BẠN (không phải trong repo/agent). Yêu cầu:
-#   1) glab đã cài + `glab auth login` (host gitlab.sapp.edu.vn).
+#   1) glab đã cài + `glab auth login` (host gitlab.example.com).
 #   2) Chạy trong thư mục repo (glab tự nhận project từ git remote), hoặc thêm -R <group/project>.
 #
 # AN TOÀN:
@@ -35,7 +35,7 @@ if ! command -v glab >/dev/null 2>&1; then
   echo "ERROR: chưa cài glab. Xem https://gitlab.com/gitlab-org/cli"; exit 1
 fi
 if ! glab auth status >/dev/null 2>&1; then
-  echo "ERROR: chưa đăng nhập glab. Chạy: glab auth login --hostname gitlab.sapp.edu.vn"; exit 1
+  echo "ERROR: chưa đăng nhập glab. Chạy: glab auth login --hostname gitlab.example.com"; exit 1
 fi
 
 # Đọc value của KEY từ danh sách file (ENV_FILES). Không in value.
@@ -85,14 +85,14 @@ echo
 
 # Danh sách này phải PHỦ ĐỦ 3 mục `level: required` của scripts/integrations/backlog/check_connection.js
 # (BACKLOG_BASE_URL/API_KEY/PROJECT_KEY). Thiếu một mục là job `integration-check` đỏ với "thiếu N cấu
-# hình bắt buộc". AIO_API_TOKEN và FIGMA_API_KEY chỉ là `warning` (AIO là app Jira-only, có thể không còn
-# dùng được sau khi bỏ Jira hẳn — xem DOC_ONLY ở tests/fe/infra/env-contract.spec.ts), thêm cho live check
+# hình bắt buộc". GOOGLE_SHEET_CREDENTIALS và FIGMA_API_KEY chỉ là `warning` (Google Sheet là app Backlog-only, có thể không còn
+# dùng được sau khi bỏ Backlog hẳn — xem DOC_ONLY ở tests/fe/infra/env-contract.spec.ts), thêm cho live check
 # đủ service khi có.
-echo "[Backlog / AIO / Figma — cho integration-check]"
+echo "[Backlog / Google Sheet / Figma — cho integration-check]"
 set_one BACKLOG_BASE_URL     0
 set_one BACKLOG_API_KEY      1
 set_one BACKLOG_PROJECT_KEY  0
-set_one AIO_API_TOKEN        1
+set_one GOOGLE_SHEET_CREDENTIALS        1
 set_one FIGMA_API_KEY        1
 
 echo

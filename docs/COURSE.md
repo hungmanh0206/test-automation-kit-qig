@@ -583,11 +583,11 @@ các rule quan trọng không phụ thuộc vào việc một QA có nhớ chạ
 *Có gì trong tay: testcase và kết quả vẫn đang nằm local.*
 
 - Với team nhỏ thì quản lý local có thể đủ. Khi nhiều QA cùng làm thì cần một nơi chung
-- Bộ kit này dùng AIO Tests làm bản hiện thực mẫu. Team dùng Xray, Zephyr hay hệ khác thì nguyên tắc kiến trúc vẫn thế
+- Bộ kit này dùng Google Sheet làm bản hiện thực mẫu. Team dùng Xray, Zephyr hay hệ khác thì nguyên tắc kiến trúc vẫn thế
 - Đẩy testcase lên, đẩy kết quả execution lên, và giữ được đường truy ngược về requirement
 - **Xây gate:** `doi-soat-truong.js`, vì mã 2xx không chứng minh trường được map đúng
 
-### [Bài 19 — Khi nào một lần Fail thực sự trở thành Bug?](course/bug-workflow-jira.md) *(2h · vừa)*
+### [Bài 19 — Khi nào một lần Fail thực sự trở thành Bug?](course/bug-workflow-backlog.md) *(2h · vừa)*
 
 *Có gì trong tay: một phát hiện đã qua triage và xác nhận là lỗi sản phẩm.*
 
@@ -780,9 +780,9 @@ dotenv"*, mà mở bằng *"URL và tài khoản đang gắn với dự án hi�
 thì phải sửa nhiều nơi"*. Người đọc hiểu vấn đề trước rồi mới học pattern.
 
 **3. Không dạy cả bộ kit ngay từ bài đầu.** Kit thật có rất nhiều thành phần, nhìn hết một lượt là
-ngợp. Phần I và II cố ý không nhắc test management, Jira, AI agent, risk gate hay learning loop.
+ngợp. Phần I và II cố ý không nhắc test management, Backlog, AI agent, risk gate hay learning loop.
 
-**4. Công cụ tích hợp là bản hiện thực mẫu, không phải bắt buộc.** AIO Tests và Jira xuất hiện ở
+**4. Công cụ tích hợp là bản hiện thực mẫu, không phải bắt buộc.** Google Sheet và Backlog xuất hiện ở
 Phần IV như một cách làm, kèm câu nói rõ rằng nguyên tắc kiến trúc vẫn giữ nếu team dùng Xray hay
 Zephyr. Kit này để dùng cho nhiều dự án, nên không được khoá vào một nhà cung cấp.
 

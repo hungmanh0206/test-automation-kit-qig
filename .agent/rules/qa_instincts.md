@@ -9,7 +9,7 @@ Mỗi khi thấy tín hiệu "là lạ" — field trống, số 0, "thành công
 Hai phản xạ cốt lõi, lặp lại cho mọi bất thường:
 
 1. **Khoanh vùng tầng lỗi (layer isolation).** Một hiện tượng ở UI có thể bắt nguồn từ bất kỳ tầng nào: UI (render/binding) ↔ API (backend/contract) ↔ dữ liệu ↔ network ↔ cache/state. Phải chỉ ra tầng nào hỏng — vì kết luận và cách báo lỗi hoàn toàn khác nhau (FE bug vs BE bug vs setup vs env vs đúng-không-lỗi).
-2. **Đối chiếu nguồn sự thật (source of truth).** UI chỉ là hiển thị. Nguồn sự thật của dữ liệu là **response API** (+ tài liệu spec cho oracle logic/display), KHÔNG phải cái mắt thấy trên màn hình. Khi API/UI không đủ để khoanh tầng, được dùng thêm **read-only UAT DB** qua guarded client `tests/support/setup/db/uatPgClient.ts` (read-only: chỉ SELECT) làm oracle PHỤ để chẩn đoán (vd "field trống do FE hay BE?", "dữ liệu có persist không?"). Kết quả DB KHÔNG phải evidence Jira và KHÔNG thay oracle từ spec (tránh tautological build==DB cùng nguồn BE); PII đọc ra phải mask.
+2. **Đối chiếu nguồn sự thật (source of truth).** UI chỉ là hiển thị. Nguồn sự thật của dữ liệu là **response API** (+ tài liệu spec cho oracle logic/display), KHÔNG phải cái mắt thấy trên màn hình. Khi API/UI không đủ để khoanh tầng, được dùng thêm **read-only UAT DB** qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only: chỉ SELECT) làm oracle PHỤ để chẩn đoán (vd "field trống do FE hay BE?", "dữ liệu có persist không?"). Kết quả DB KHÔNG phải evidence Backlog và KHÔNG thay oracle từ spec (tránh tautological build==DB cùng nguồn BE); PII đọc ra phải mask.
 
 ## Bộ công cụ điều tra tiêu chuẩn (Playwright/Playwright MCP)
 
@@ -75,12 +75,12 @@ Thấy field/khu vực trống (hoặc `null`, `-`, `N/A`, `0`):
 - **API response là "chân lý" cho data.** API trả đúng mà UI sai → chắc chắn FE; đừng đổ oan backend (và ngược lại).
 - **Chụp bằng chứng NGAY khi thấy.** Network/Console mất khi reload — lưu screenshot response/HAR local trước khi thao tác tiếp.
 - **Reproduce trước khi phán.** Một lần thấy lạ chưa đủ; lặp lại để phân biệt bug ổn định vs flaky (rerun 2-3 lần theo prompt execute).
-- **Nghi ngờ để khoanh vùng, KHÔNG che/ép qua.** Được phép auto-heal nguyên nhân *không phải product bug* (locator/timing/setup/data/auth/mock) rồi rerun. TUYỆT ĐỐI KHÔNG: sửa expected để pass, xóa assertion, mock logic đang test, ép tay cho "xanh", hay dùng DB để DỰNG/sửa state hoặc thay test thật (read-only verify UAT qua guarded client `db/uatPgClient.ts` thì được — nhưng chỉ để chẩn đoán, KHÔNG phải evidence và KHÔNG thay assertion thật). Kết quả điều tra đi vào **báo cáo + phân loại tầng lỗi**, không đi vào việc vá sản phẩm.
+- **Nghi ngờ để khoanh vùng, KHÔNG che/ép qua.** Được phép auto-heal nguyên nhân *không phải product bug* (locator/timing/setup/data/auth/mock) rồi rerun. TUYỆT ĐỐI KHÔNG: sửa expected để pass, xóa assertion, mock logic đang test, ép tay cho "xanh", hay dùng DB để DỰNG/sửa state hoặc thay test thật (read-only verify UAT qua guarded client `db/uatDbClient.ts` thì được — nhưng chỉ để chẩn đoán, KHÔNG phải evidence và KHÔNG thay assertion thật). Kết quả điều tra đi vào **báo cáo + phân loại tầng lỗi**, không đi vào việc vá sản phẩm.
 
 ## Bằng chứng & báo cáo (đồng bộ RULE_GLOBAL)
 
 - Kết luận phải nêu **tầng lỗi** (FE / BE / setup / env / auth / đúng-không-lỗi), không dừng ở mô tả bề mặt.
-- Evidence Jira vẫn CHỈ là ảnh/video: cần chứng minh data BE → render **visual evidence page** hiển thị response đã redact rồi screenshot; KHÔNG đính JSON/HAR/log thô lên Jira (chúng chỉ là diagnostic local). Mask PII khách + redact token/secret.
+- Evidence Backlog vẫn CHỈ là ảnh/video: cần chứng minh data BE → render **visual evidence page** hiển thị response đã redact rồi screenshot; KHÔNG đính JSON/HAR/log thô lên Backlog (chúng chỉ là diagnostic local). Mask PII khách + redact token/secret.
 - `Actual Result` ghi rõ: hiện tượng, request/response quan sát (đã redact), tầng lỗi kết luận, evidence path.
 
 ## Danh mục mở rộng (tra khi gặp tình huống cụ thể)

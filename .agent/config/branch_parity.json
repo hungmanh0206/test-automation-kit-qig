@@ -16,14 +16,14 @@
       ".agent/workflows/phase2_01_prepare_execution.md",
       ".agent/workflows/phase2_02_generate_or_update_automation.md",
       ".agent/workflows/phase2_03_execute_and_auto_heal.md",
-      ".agent/workflows/phase2_04_report_and_jira_gate.md"
+      ".agent/workflows/phase2_04_report_and_backlog_gate.md"
     ],
     "rerun": [
       "prompt_templates/run_phase_re-run_template.md",
       ".agent/workflows/rerun.md",
       ".agent/workflows/rerun_01_map_bug_to_testcase.md",
       ".agent/workflows/rerun_02_rerun_and_verify.md",
-      ".agent/workflows/rerun_03_update_jira_and_report.md"
+      ".agent/workflows/rerun_03_update_backlog_and_report.md"
     ],
     "partial-rerun": [
       "partial-rerun/run_requirement_prepare_review.md",
@@ -72,7 +72,7 @@
       ],
       "waived": {
         "phase1": "Phase 1 dùng design_gate + dim:coverage + risk:gate; self-review là checklist trước FINALIZE của lượt execute.",
-        "rerun": "Rerun đã bị output_gate gác ở đúng cửa ra (comment/Done Jira); thêm self-review vào đây là gác hai lần cùng một thứ.",
+        "rerun": "Rerun đã bị output_gate gác ở đúng cửa ra (comment/Done Backlog); thêm self-review vào đây là gác hai lần cùng một thứ.",
         "partial-rerun": "Human Review 2 pha (APPROVED + APPROVED_REVIEW_FILE) đã là chốt người ở đúng cửa; thêm self-review là gác hai lần."
       },
       "why": "Checklist gộp trước finalize/publish."

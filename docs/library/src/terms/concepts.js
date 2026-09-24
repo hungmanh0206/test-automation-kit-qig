@@ -35,12 +35,12 @@ const TERMS_CONCEPT = [
   detail:'Mục đích là loại hai thứ: chập chờn và lỗi dựng dữ liệu. Ngưỡng min/max nằm ở verdict_taxonomy.json chứ không hardcode rải rác, đổi số thì đổi ở đó.',
   why:'Bug log ra rồi mà hoá ra chỉ là một lần fail ngẫu nhiên thì Dev mất buổi điều tra và trả lại, còn report thì mất uy tín. Hai lần chạy lại là cái giá rẻ để tránh chuyện đó.',
   trap:'Kết quả rerun có thể lật ngược nếu môi trường được deploy giữa chừng. Xác nhận lại sát giờ viết báo cáo, và luôn giữ một case đối chứng.',
-  src:'.agent/config/verdict_taxonomy.json', rel:['c-flaky','s-FAIL','sk-jira_bug_reporter','c-rerun-expiry'] },
+  src:'.agent/config/verdict_taxonomy.json', rel:['c-flaky','s-FAIL','sk-backlog_bug_reporter','c-rerun-expiry'] },
 
 { id:'c-rerun-expiry', t:'Kết quả rerun hết hạn khi có deploy', cat:'concept',
   def:'Kết luận từ lượt chạy lại chỉ đúng với bản build tại thời điểm đó.',
   detail:'Nếu môi trường được deploy giữa lúc đang rerun hoặc giữa lúc viết báo cáo thì kết quả cũ không còn nói lên gì về bản hiện tại.',
-  why:'Đã xảy ra thật: kết quả lật ngược sau khoảng 30 phút vì có deploy chen vào. Comment lên Jira dựa trên kết quả cũ thì Dev đọc xong kiểm lại thấy khác hẳn.',
+  why:'Đã xảy ra thật: kết quả lật ngược sau khoảng 30 phút vì có deploy chen vào. Comment lên Backlog dựa trên kết quả cũ thì Dev đọc xong kiểm lại thấy khác hẳn.',
   how:['Xác nhận lại ngay trước khi comment.','Luôn giữ một case đối chứng đã biết kết quả để phát hiện môi trường vừa đổi.'],
   src:'knowledge/decisions/', rel:['c-rerun','s-infra','f-rerun'] },
 
@@ -68,8 +68,8 @@ const TERMS_CONCEPT = [
 
 { id:'c-mask-pii', t:'Mask PII', cat:'concept',
   def:'Che email, số điện thoại, họ tên và địa chỉ khách trong mọi thứ rời khỏi máy.',
-  detail:'Áp dụng cho ảnh evidence, video, report và nội dung đẩy lên Jira. Với dữ liệu HubSpot thì chặt hơn: tuyệt đối không tạo file chứa email hay số điện thoại khách, chỉ được hiển thị trong phiên chat.',
-  why:'Evidence đính lên Jira là nơi rất nhiều người ngoài team đọc được, và Jira thì lưu vĩnh viễn. Một ảnh còn nguyên thông tin khách là rò rỉ dữ liệu thật, không phải rủi ro lý thuyết.',
+  detail:'Áp dụng cho ảnh evidence, video, report và nội dung đẩy lên Backlog. Với dữ liệu HubSpot thì chặt hơn: tuyệt đối không tạo file chứa email hay số điện thoại khách, chỉ được hiển thị trong phiên chat.',
+  why:'Evidence đính lên Backlog là nơi rất nhiều người ngoài team đọc được, và Backlog thì lưu vĩnh viễn. Một ảnh còn nguyên thông tin khách là rò rỉ dữ liệu thật, không phải rủi ro lý thuyết.',
   trap:'Che bằng cách sửa textContent KHÔNG che được ô nhập liệu. Giá trị vẫn nằm ở input.value và hiện nguyên trên ảnh. Với input phải set .value. Nên đọc lại ảnh trước khi đính kèm.',
   src:'CLAUDE.md', rel:['r-security','c-evidence','c-highlight'] },
 
@@ -135,7 +135,7 @@ const TERMS_CONCEPT = [
   def:'Mọi FAIL bắt buộc kèm tầng lỗi, và phải kiểm API trước khi kết luận tầng.',
   detail:'Quy trình: thấy sai trên màn → mở request tương ứng → xem dữ liệu BE trả về. BE trả đúng mà màn hiện sai thì là FE; BE trả sai thì là BE. Dính cả hai tầng thì giao BE trước, BE xử lý xong chuyển lại FE.',
   why:'Gán sai tầng thì bug đi lòng vòng qua hai đội trước khi tới người sửa được, mất vài ngày cho một lỗi có thể sửa trong một giờ. Prefix [FE]/[BE] ở tiêu đề phải khớp với tầng đã kết luận, và assignee gán theo đúng tầng đó.',
-  src:'RULE_GLOBAL.md', rel:['s-product_bug','s-api_bug','sk-jira_bug_reporter','c-khong-tin-be-mat'] },
+  src:'RULE_GLOBAL.md', rel:['s-product_bug','s-api_bug','sk-backlog_bug_reporter','c-khong-tin-be-mat'] },
 
 { id:'c-tri', t:'Test Reliability Index (TRI)', cat:'concept',
   def:'Tỉ lệ pass sạch. Pass ngay không cần retry, trên tổng số lần chạy của một testcase.',
@@ -157,11 +157,11 @@ const TERMS_CONCEPT = [
   src:'CLAUDE.md', rel:['r-uat','c-never-auto','sk-test_data_generator','c-db-readonly'] },
 
 { id:'c-db-readonly', t:'DB read-only', cat:'concept',
-  def:'Truy cập database UAT chỉ qua uatPgClient.ts và chỉ chạy SELECT.',
+  def:'Truy cập database UAT chỉ qua uatDbClient.ts và chỉ chạy SELECT.',
   detail:'DB dùng để điều tra, không dùng để dựng trạng thái, và không được tính là evidence. DB riêng của từng task được khoá trong task.env bằng allowlist cộng deny để không đụng nhầm DB chung.',
   why:'Ranh giới này giữ hai thứ: dữ liệu UAT không bị sửa ngoài luồng ứng dụng, và kết luận test luôn dựa trên thứ người dùng thật nhìn thấy chứ không phải thứ chỉ có trong bảng.',
   how:['Chỉ dùng DB verify ở 5 chỗ UI/API không phân biệt được: soft-delete vs hard-delete, cascade/bản ghi mồ côi, field không render, ghi trùng, trường dẫn xuất lệch bản ghi gốc.','Viết dạng db_readonly: SELECT … thêm vào case đã có, không đẻ testcase riêng.'],
-  src:'tests/support/setup/db/uatPgClient.ts', rel:['r-uat','f-task-env','c-precondition','c-evidence'] },
+  src:'tests/support/setup/db/uatDbClient.ts', rel:['r-uat','f-task-env','c-precondition','c-evidence'] },
 
 { id:'c-locator-healing', t:'Locator healing', cat:'concept',
   def:'Tự chữa locator THAO TÁC khi hỏng, và tuyệt đối không chữa locator assertion.',
@@ -212,7 +212,7 @@ const TERMS_CONCEPT = [
 
 { id:'c-canonical', t:'Canonical source', cat:'concept',
   def:'Mỗi loại thông tin chỉ có đúng một nguồn thật. Nơi khác chỉ được trỏ về.',
-  detail:'RULE_GLOBAL.md là canonical cho policy. verdict_taxonomy.json là canonical cho trạng thái kết quả và ngưỡng rerun. Excel là canonical khi gen/publish; AIO là nguồn khi execute.',
+  detail:'RULE_GLOBAL.md là canonical cho policy. verdict_taxonomy.json là canonical cho trạng thái kết quả và ngưỡng rerun. Excel là canonical khi gen/publish; Google Sheet là nguồn khi execute.',
   why:'Tài liệu nhiều tầng thì rất dễ trôi: sửa ở một chỗ, ba chỗ khác vẫn nói điều cũ, và người đọc không biết tin chỗ nào. Có canonical thì mâu thuẫn được giải quyết bằng quy tắc chứ không bằng tranh luận.',
   how:['Mỗi phase đọc lại artifact canonical, không dựa hội thoại cũ.'],
   src:'scripts/qa/policy_source_check.js', rel:['f-rule-global','f-verdict-taxonomy','f-excel-canonical','g-policy_source_check'] },

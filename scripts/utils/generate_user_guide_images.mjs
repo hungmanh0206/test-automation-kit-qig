@@ -26,9 +26,9 @@ const C = { info: '#2A6FDB', accent: '#4F46E5', amber: '#F59E0B', success: '#1F8
 const boards = [
   {
     file: 'main-flow.png', number: '1', title: 'QA Workflow', role: 'Team QA',
-    inputs: ['Backlog Story', 'Confluence Requirement', 'Figma Design', 'Swagger/OpenAPI', 'Excel baseline'],
+    inputs: ['Backlog Story', 'tài liệu nguồn Requirement', 'Figma Design', 'Swagger/OpenAPI', 'Excel baseline'],
     steps: [
-      { icon: 'IN', c: C.info, title: '1.1 Requirement intake', body: 'Backlog, Confluence, Figma, Swagger' },
+      { icon: 'IN', c: C.info, title: '1.1 Requirement intake', body: 'Backlog, tài liệu nguồn, Figma, Swagger' },
       { icon: 'AI', c: C.info, title: '1.2 AI generate testcase', body: 'Sinh testcase và test data draft' },
       { icon: 'XL', c: C.success, title: '1.3 Excel (SoT gen/publish)', body: 'QA review trên Excel; Phase 2 execute từ Sheet' },
       { icon: 'OK', gate: true, title: 'GATE: QA CONFIRMATION', body: 'Approve trước khi publish lên Google Sheet' },
@@ -42,7 +42,7 @@ const boards = [
   },
   {
     file: 'qa-environment.png', number: '0', title: 'QA Setup', role: 'Team QA',
-    inputs: ['VS Code', 'AI chat extension', 'Node.js >= 18', 'Playwright runtime', 'Backlog/Confluence/Figma quyền đọc'],
+    inputs: ['VS Code', 'AI chat extension', 'Node.js >= 18', 'Playwright runtime', 'Backlog/tài liệu nguồn/Figma quyền đọc'],
     steps: [
       { icon: 'VS', c: C.info, title: '0.1 Mở đúng workspace root', body: 'Không mở nhầm folder con' },
       { icon: 'AI', c: C.ink, title: '0.2 AI đọc prompt/rule', body: 'Sinh testcase, report, evidence' },
@@ -56,7 +56,7 @@ const boards = [
     file: 'output-structure.png', number: 'A', title: 'Output Map', role: 'Workspace',
     inputs: ['PROJECT_OUTPUT_DIR', 'TASK_KEY', 'RUN_ID khi cần', 'task.md', 'Excel baseline'],
     steps: [
-      { icon: 'RQ', c: C.info, title: 'requirements/', body: 'Backlog, Confluence, Figma, Swagger snapshot' },
+      { icon: 'RQ', c: C.info, title: 'requirements/', body: 'Backlog, tài liệu nguồn, Figma, Swagger snapshot' },
       { icon: 'TC', c: C.success, title: 'test-cases/', body: 'Markdown + Excel (SoT gen/publish) + from-sheet/' },
       { icon: 'RP', c: C.amber, title: 'reports/', body: 'Phase 1, execution, publish summary' },
       { icon: 'EV', c: C.ink, title: 'test-results/', body: 'Screenshot, video, trace, response' },
@@ -67,7 +67,7 @@ const boards = [
   },
   {
     file: 'phase1-quality-gate.png', number: '1', title: 'Phase 1', role: 'Testcase generation',
-    inputs: ['Backlog/Confluence', 'Figma', 'Swagger/OpenAPI', 'Business Rules', 'Existing testcase nếu có'],
+    inputs: ['Backlog/tài liệu nguồn', 'Figma', 'Swagger/OpenAPI', 'Business Rules', 'Existing testcase nếu có'],
     steps: [
       { icon: 'SRC', c: C.info, title: '1.1 AI đọc source', body: 'Requirement, rule, design, API' },
       { icon: 'AMB', gate: true, title: 'GATE: AMBIGUITY', body: 'Mơ hồ Critical/High → hỏi trước, chặn sinh TC' },
@@ -128,7 +128,7 @@ const boards = [
     inputs: ['Story mới', 'Excel đã approve', 'Cần execute', 'Bug/case đã fix', 'Tài liệu nguồn đổi'],
     steps: [
       { icon: 'P1', c: C.info, title: 'S.1 Story mới', body: '/phase1 · run_phase1_template.md' },
-      { icon: 'PUB', c: C.success, title: 'S.2 Excel approved', body: '/publish · phase1/04_auto_publish_jira.md' },
+      { icon: 'PUB', c: C.success, title: 'S.2 Excel approved', body: '/publish · phase1/04_auto_publish_backlog.md' },
       { icon: 'P2', c: C.amber, title: 'S.3 Execute', body: '/phase2 · run_phase2_template.md' },
       { icon: 'RR', c: C.ink, title: 'S.4 Bug/case đã fix', body: '/rerun · run_phase_re-run_template.md' },
       { icon: 'PR', c: C.info, title: 'S.5 Source changed', body: '/partial-rerun · prepare review' },

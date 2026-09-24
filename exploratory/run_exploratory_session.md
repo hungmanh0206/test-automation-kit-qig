@@ -31,7 +31,7 @@ observation + crash log để QA review — KHÔNG tự kết luận PASS/FAIL, 
 8. **Đóng vòng học**: `npm run explore:close -- --areas "<vùng đã dò>" --tours "<tour đã dùng>"` → ghi
    `knowledge/explorations/` để phiên sau KHÔNG dò lại chỗ cũ (và `explore:charter` trừ điểm vùng đó).
    - Draft đáng giá → đưa vào Phase 1 backlog, chạy `tc_validator` + mục 17 để chính thức hoá.
-   - Nghi product bug → chuyển Main Flow Phase 2 bug triage (rerun + evidence + gate), KHÔNG log Jira ở đây.
+   - Nghi product bug → chuyển Main Flow Phase 2 bug triage (rerun + evidence + gate), KHÔNG log Backlog ở đây.
 
 ## Rules
 

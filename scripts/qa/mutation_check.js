@@ -41,16 +41,16 @@ function loadCatalog() {
 
 /**
  * Bộ mutant mặc định — mỗi cái nhắm đúng một lớp bug ĐÃ TỪNG LỌT thật:
- *   zero_out       ← SAPP-28310/28376 (giá trị bị lưu/gửi thành 0)
- *   drop_field     ← SAPP-28404/28442 (field mất khỏi response/payload)
+ *   zero_out       ← CSDL-28310/28376 (giá trị bị lưu/gửi thành 0)
+ *   drop_field     ← CSDL-28404/28442 (field mất khỏi response/payload)
  *   halve_number   ← sai công thức/discount
  *   stringify_num  ← 540000 → "540000.0" (lệch format/kiểu, lớp bug rất hay lọt)
  *   change_status  ← trạng thái sai (paid ↔ pending)
  *   rename_label   ← nhãn lệch ("Phone" vs "Phone number") — đúng ca đang mở với BA
  */
 const DEFAULT_MUTANTS = [
-  { id: 'zero_out', why: 'giá trị tiền bị 0 (lớp SAPP-28310/28376 — thất thu)', op: 'zero_money' },
-  { id: 'drop_field', why: 'field biến mất khỏi response (lớp SAPP-28404/28442)', op: 'drop_first_money' },
+  { id: 'zero_out', why: 'giá trị tiền bị 0 (lớp CSDL-28310/28376 — thất thu)', op: 'zero_money' },
+  { id: 'drop_field', why: 'field biến mất khỏi response (lớp CSDL-28404/28442)', op: 'drop_first_money' },
   { id: 'halve_number', why: 'số bị sai một nửa (sai công thức/ưu đãi)', op: 'halve_money' },
   { id: 'stringify_num', why: 'số thành chuỗi có .0 — lệch kiểu/format', op: 'stringify_money' },
   { id: 'rename_label', why: 'nhãn text bị đổi (lớp "Phone" vs "Phone number")', op: 'rename_text' },

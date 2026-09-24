@@ -65,7 +65,7 @@ test.describe('@infra beVsFe — gán tầng FE/BE phải có bằng chứng API
  *
  * Bug đã xảy ra: `verdict_taxonomy.json` định nghĩa khoá `product_bug`/`api_bug` (gạch dưới), nhưng regex
  * của `hasFailureLayer` chỉ nhận biến thể có DẤU CÁCH ⇒ khai ĐÚNG chuẩn `failureLayer: "product_bug"`
- * lại bị chặn oan — đúng vào 2 tầng duy nhất được phép log Jira. Lỗi này sống sót vì test cũ chỉ thử
+ * lại bị chặn oan — đúng vào 2 tầng duy nhất được phép log Backlog. Lỗi này sống sót vì test cũ chỉ thử
  * vài chuỗi văn xuôi tự nghĩ ra, không bơm toàn bộ khoá canonical qua gate.
  *
  * Luật rút ra (áp cho mọi gate nhận diện bằng regex): thứ gate ĐÒI phải là thứ gate NHẬN.

@@ -18,9 +18,9 @@ Xác nhận fix của Dev bằng execution thật, evidence rõ và không pass 
    - FAIL do setup/automation/data.
    - SKIP/blocker.
 4. Nếu fail do automation/setup/data, sửa root cause hợp lý và rerun targeted.
-5. Không chuyển Jira Done nếu chưa PASS thật.
+5. Không chuyển Backlog Done nếu chưa PASS thật.
 
-6. **GATE MÁY — chạy TRƯỚC khi sang bước 3 (comment/Done Jira), không phải kiểm bằng mắt:**
+6. **GATE MÁY — chạy TRƯỚC khi sang bước 3 (comment/Done Backlog), không phải kiểm bằng mắt:**
    `node scripts/qa/output_gate.js --mode test-execution --status <TASK_OUTPUT_DIR>/test-results/runs/<RUN_ID>/testcase-status.json`
    Vì sao nhánh này CẦN nó nhất: rerun là nhánh **trực tiếp chuyển bug sang Done** — hậu quả cao nhất trong
    cả kit — mà trước 23/08/2026 nó là nhánh DUY NHẤT không có gate máy nào (Phase 2 có `output_gate` tự chạy

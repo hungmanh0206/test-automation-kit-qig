@@ -5,13 +5,14 @@ import path from 'path';
 import { money, instant, text, exact, asMatcher } from '../../support/setup/db/match';
 import { normalizePrivilege } from '../../support/setup/db/types';
 import { proveReadOnlyFromGrants, assertReadOnly, assertReadOnlyQuery, assertHostAllowed, WRITE_PRIVILEGES } from '../../support/setup/db/guard';
+import { assertReadOnlySql } from '../../support/setup/db/uatDbClient';
 import { loadConventions, softDeleteFor, loadConnection } from '../../support/setup/db/config';
 import { DbGuardError, type GrantRow } from '../../support/setup/db/types';
 
 /*
  * @infra — TẦNG KIỂM DỮ LIỆU DB, giai đoạn 1–2 (không cần kết nối).
  *
- * Ba thứ được khoá ở đây, và cả ba đều xuất phát từ SỐ ĐO trên `sapp-platform-uat` (27/08/2026):
+ * Ba thứ được khoá ở đây, và cả ba đều xuất phát từ SỐ ĐO trên `app-platform-uat` (27/08/2026):
  *  ① `proveReadOnly` phải ĐỌC QUYỀN, không thử ghi. `CREATE TEMP TABLE` không chứng minh được gì trên
  *     Postgres (quyền TEMPORARY mặc định cấp cho PUBLIC) ⇒ probe kiểu đó sẽ TỪ CHỐI OAN một role read-only
  *     đúng chuẩn, và người dùng sẽ quay về user full quyền.
@@ -43,11 +44,11 @@ test.describe('@infra db guard — chứng minh read-only bằng ĐỌC QUYỀN'
     expect(proof.writeGrants.TRUNCATE).toBe(232);
 
     let err: Error | null = null;
-    try { assertReadOnly(proof, { user: 'sapp_platform_uat', database: 'sapp-platform-uat' }); } catch (e) { err = e as Error; }
+    try { assertReadOnly(proof, { user: 'uat_app_user', database: 'app-platform-uat' }); } catch (e) { err = e as Error; }
     expect(err, 'phải chặn').toBeTruthy();
     expect(err).toBeInstanceOf(DbGuardError);
     expect(err!.message).toContain('INSERT=232');
-    expect(err!.message, 'phải kèm SQL tạo role, không chỉ nói "hãy dùng read-only user"').toContain('GRANT SELECT ON ALL TABLES');
+    expect(err!.message, 'phải kèm SQL tạo login, không chỉ nói "hãy dùng read-only user"').toContain('ALTER ROLE db_datareader ADD MEMBER');
   });
 
   test('REFERENCES/TRIGGER KHÔNG tính là quyền ghi (không đổi dữ liệu trực tiếp)', () => {
@@ -87,18 +88,32 @@ test.describe('@infra db guard — lint câu truy vấn + host', () => {
     expect(() => assertReadOnlyQuery('SELECT 1;')).not.toThrow();
   });
 
-  test('hàm đọc/ghi file + admin bị chặn', () => {
-    for (const bad of ['SELECT pg_read_file(\'/etc/passwd\')', 'SELECT load_file("/etc/passwd")', 'SELECT 1 INTO OUTFILE \'/tmp/x\'']) {
+  /*
+   * Danh sách đổi theo phương ngữ (24/09/2026): bỏ Postgres nên `pg_read_file`/`lo_export` không còn nghĩa.
+   * Họ nguy hiểm của SQL Server là thủ tục hệ thống `xp_*`/`sp_*`, đường đọc-ghi file (`openrowset`,
+   * `bulk insert`, `opendatasource`) và lệnh quản trị (`dbcc`, `backup`, `shutdown`).
+   */
+  test('hàm đọc/ghi file + admin của SQL Server bị chặn', () => {
+    const bads = [
+      "SELECT * FROM OPENROWSET(BULK 'C:/x.txt', SINGLE_CLOB) AS a",
+      "SELECT * FROM OPENDATASOURCE('SQLOLEDB', 'x')",
+      "SELECT 1 FROM t WHERE x = 1 AND y IN (SELECT 1) AND xp_cmdshell IS NULL",
+      'SELECT load_file("/etc/passwd")',
+      "SELECT 1 INTO OUTFILE '/tmp/x'",
+      'SELECT 1 INTO [dbo].[bang_moi]',
+      "SELECT 1 FROM t WHERE 1=1 DBCC CHECKDB",
+    ];
+    for (const bad of bads) {
       expect(() => assertReadOnlyQuery(bad), bad).toThrow();
     }
   });
 
   test('host: allowlist + deny-pattern (prod)', () => {
-    const cfg = { allowedHosts: ['db-uat.sapp.edu.vn'], denyHostPatterns: ['prod', 'live'] };
-    expect(() => assertHostAllowed({ host: 'db-uat.sapp.edu.vn', database: 'sapp-platform-uat' }, cfg)).not.toThrow();
-    expect(() => assertHostAllowed({ host: 'db-prod.sapp.edu.vn', database: 'x' }, cfg)).toThrow();
+    const cfg = { allowedHosts: ['db-uat.example'], denyHostPatterns: ['prod', 'live'] };
+    expect(() => assertHostAllowed({ host: 'db-uat.example', database: 'app-platform-uat' }, cfg)).not.toThrow();
+    expect(() => assertHostAllowed({ host: 'db-prod.example.com', database: 'x' }, cfg)).toThrow();
     // deny áp cả DBNAME — host đúng allowlist nhưng trỏ db production thì vẫn chặn.
-    expect(() => assertHostAllowed({ host: 'db-uat.sapp.edu.vn', database: 'sapp-platform-prod' }, cfg)).toThrow(/prod/);
+    expect(() => assertHostAllowed({ host: 'db-uat.example', database: 'app-platform-prod' }, cfg)).toThrow(/prod/);
   });
 
   test('bỏ trống guard ⇒ KHÔNG áp (không phá cấu hình cũ)', () => {
@@ -196,7 +211,17 @@ test.describe('@infra config — conventions commit được, creds thì không'
      * thì phải đo lại, không sửa tay. Nhánh "chưa khai ⇒ inconclusive" vẫn được khoá riêng ở test instant().
      */
     expect(conv.timestamps.storedZone, 'đã đo được UTC — xem `timestamps._why` trong conventions').toBe('UTC');
-    expect(conv.safety.requireReadonlyUser).toBe(true);
+    /*
+     * TẮT 24/09/2026 theo quyết định của chủ dự án (login `csdl` là `dbo` trên DB thật). Test khoá vào
+     * trạng thái đó ĐỒNG THỜI bắt buộc phải có `_why_requireReadonlyUser` — tắt một chốt an toàn mà không
+     * ghi lý do thì gate này đỏ. Xin được login chỉ SELECT thì đổi lại `true`.
+     */
+    const rawConv = JSON.parse(fs.readFileSync(path.join(REPO, '.agent/config/db.conventions.json'), 'utf8'));
+    expect(conv.safety.requireReadonlyUser).toBe(false);
+    expect(
+      String(rawConv.safety._why_requireReadonlyUser || '').length,
+      'tắt requireReadonlyUser PHẢI kèm lý do trong `safety._why_requireReadonlyUser`',
+    ).toBeGreaterThan(40);
     expect(conv.safety.denyHostPatterns).toContain('prod');
   });
 
@@ -221,14 +246,14 @@ test.describe('@infra config — conventions commit được, creds thì không'
 
   test('connection đủ env ⇒ đọc đúng, port sai ⇒ chặn', () => {
     const base = {
-      LIB_MASTER_DB_RO_HOST: 'db-uat.sapp.edu.vn',
+      LIB_MASTER_DB_RO_HOST: 'db-uat.example',
       LIB_MASTER_DB_RO_PORT: '5432',
-      LIB_MASTER_DB_RO_NAME: 'sapp-platform-uat',
-      LIB_MASTER_DB_RO_USERNAME: 'sapp_qa_readonly',
+      LIB_MASTER_DB_RO_NAME: 'app-platform-uat',
+      LIB_MASTER_DB_RO_USERNAME: 'qa_readonly',
       LIB_MASTER_DB_RO_PASSWORD: 'x',
     };
     const c = loadConnection('LIB_MASTER_DB_RO', base);
-    expect(c).toMatchObject({ dialect: 'postgres', port: 5432, database: 'sapp-platform-uat' });
+    expect(c).toMatchObject({ dialect: 'mssql', port: 5432, database: 'app-platform-uat' });
     expect(() => loadConnection('LIB_MASTER_DB_RO', { ...base, LIB_MASTER_DB_RO_PORT: 'abc' })).toThrow(/PORT/);
   });
 });
@@ -517,5 +542,100 @@ test.describe('@infra instant() — tín hiệu múi giờ không được mất
     const r = instant('2025-05-08T00:14:55Z', { storedZone: 'UTC' }).compare('2025-05-08 00:39:55.000');
     expect((r as { why: string }).why).toContain('phút');
     expect((r as { why: string }).why).not.toContain('múi giờ');
+  });
+});
+
+/*
+ * @infra — LINT CỦA `uatDbClient.assertReadOnlySql`.
+ *
+ * VÌ SAO KHỐI NÀY TỒN TẠI (thêm 24/09/2026). Bản Postgres có HAI chốt: `BEGIN TRANSACTION READ ONLY` ở
+ * phía server, và lint ở phía client. Chuyển sang SQL Server thì chốt phía server BIẾN MẤT — T-SQL không
+ * có transaction read-only. Cộng thêm quyết định giữ account `dbo` (`requireReadonlyUser=false`), lint này
+ * trở thành **lớp chặn ghi DUY NHẤT trong tiến trình**. Trước đó nó không có một test nào.
+ *
+ * Một guard không có test thì không phải guard, chỉ là ý định.
+ */
+test.describe('@infra assertReadOnlySql — lớp chặn ghi DUY NHẤT sau khi bỏ Postgres', () => {
+  test('câu đọc hợp lệ đi qua', () => {
+    for (const ok of [
+      'SELECT 1',
+      'SELECT TOP (10) [TEN] FROM [TRUONG] WHERE [MA] = @p1',
+      "WITH x AS (SELECT 1 AS a) SELECT a FROM x",
+      'SELECT 1;',
+    ]) {
+      expect(() => assertReadOnlySql(ok), ok).not.toThrow();
+    }
+  });
+
+  test('mọi từ khoá GHI/DDL bị chặn', () => {
+    for (const bad of [
+      "UPDATE TRUONG SET TEN = 'x'",
+      "DELETE FROM TRUONG",
+      "INSERT INTO TRUONG (TEN) VALUES ('x')",
+      'TRUNCATE TABLE TRUONG',
+      'DROP TABLE TRUONG',
+      'ALTER TABLE TRUONG ADD c INT',
+      'CREATE TABLE t (a INT)',
+      'MERGE INTO t USING s ON 1=1 WHEN MATCHED THEN UPDATE SET a = 1',
+      'GRANT SELECT ON t TO x',
+    ]) {
+      expect(() => assertReadOnlySql(bad), bad).toThrow();
+    }
+  });
+
+  test('câu ghi GIẤU SAU một SELECT hợp lệ vẫn bị chặn', () => {
+    /* Đường kinh điển: mở đầu bằng SELECT cho qua readStart, rồi nối câu ghi. */
+    for (const bad of [
+      "SELECT 1; DELETE FROM TRUONG",
+      "SELECT 1; UPDATE TRUONG SET TEN = 'x';",
+      "SELECT 1 /* vô hại */ ; DROP TABLE TRUONG",
+    ]) {
+      expect(() => assertReadOnlySql(bad), bad).toThrow();
+    }
+  });
+
+  test('`SELECT … INTO <bảng>` bị chặn (tạo bảng thật mà vẫn bắt đầu bằng SELECT)', () => {
+    for (const bad of [
+      'SELECT * INTO [dbo].[bang_moi] FROM TRUONG',
+      'SELECT * INTO #tmp FROM TRUONG',
+      'SELECT * INTO bang_moi FROM TRUONG',
+    ]) {
+      expect(() => assertReadOnlySql(bad), bad).toThrow();
+    }
+  });
+
+  test('thủ tục hệ thống / đọc-ghi file / quản trị của SQL Server bị chặn', () => {
+    for (const bad of [
+      "SELECT * FROM OPENROWSET(BULK 'C:/x.txt', SINGLE_CLOB) AS a",
+      "SELECT * FROM OPENDATASOURCE('SQLOLEDB', 'x')",
+      'SELECT 1 FROM t WHERE xp_cmdshell IS NULL',
+      'SELECT 1 FROM t WHERE sp_who IS NULL',
+      'SELECT 1 WAITFOR DELAY \'00:00:10\'',
+      'SELECT 1 DBCC CHECKDB',
+      "SELECT 1 BACKUP DATABASE x TO DISK = 'y'",
+    ]) {
+      expect(() => assertReadOnlySql(bad), bad).toThrow();
+    }
+  });
+
+  /*
+   * Comment bị GỠ trước khi soi — và đó là hành vi ĐÚNG, không phải lỗ hổng:
+   *  - từ khoá nằm TRONG comment thì không được thực thi ⇒ chặn nó là báo oan;
+   *  - từ khoá nằm SAU comment (nhất là sau `--` xuống dòng) thì CÓ thực thi ⇒ phải chặn.
+   * Khoá cả hai chiều để không ai "siết" lint thành hay báo oan, cũng không ai nới thành lọt.
+   */
+  test('comment: không báo oan, nhưng cũng không cho giấu câu thật sau comment', () => {
+    // từ khoá chỉ nằm trong comment ⇒ KHÔNG chặn
+    expect(() => assertReadOnlySql('SELECT 1 /* DELETE */ FROM t')).not.toThrow();
+    expect(() => assertReadOnlySql('SELECT 1 FROM t -- nhớ DROP bảng tạm sau')).not.toThrow();
+    // câu thật nằm sau comment ⇒ CHẶN
+    expect(() => assertReadOnlySql('SELECT 1 -- vô hại\nDELETE FROM t')).toThrow();
+    expect(() => assertReadOnlySql('SELECT 1 /* vô hại */ DROP TABLE t')).toThrow();
+  });
+
+  test('câu rỗng / không bắt đầu bằng câu đọc ⇒ chặn', () => {
+    expect(() => assertReadOnlySql('')).toThrow(/rỗng/);
+    expect(() => assertReadOnlySql('   ')).toThrow(/rỗng/);
+    expect(() => assertReadOnlySql('EXEC sp_help')).toThrow();
   });
 });

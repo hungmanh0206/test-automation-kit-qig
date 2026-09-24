@@ -119,7 +119,7 @@ khi giao diện đổi, cả những test không liên quan tới màn đó cũn
 **Tạo qua API, cũng không qua database.** Ghi thẳng vào database thì nhanh nhất, và sai nhiều nhất.
 Sản phẩm còn có validation, trigger, cache, sự kiện kèm theo. Ghi tắt qua database là dựng một trạng
 thái mà sản phẩm **không bao giờ tự tạo ra được**, rồi test trên trạng thái đó. Bài 8 kể một trường
-hợp cụ thể của chuyện này, và nó dẫn tới một bug không tồn tại được log lên Jira.
+hợp cụ thể của chuyện này, và nó dẫn tới một bug không tồn tại được log lên Backlog.
 
 **Hỏng thì ném lỗi kèm nội dung phản hồi.** Factory trả về `undefined` im lặng thì test đỏ ở dòng
 khác, và bạn mất mười lăm phút tìm ngược. Câu `HTTP 400 — {"loi":"hang không hợp lệ"}` tiết kiệm đúng

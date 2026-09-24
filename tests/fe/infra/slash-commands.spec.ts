@@ -124,7 +124,7 @@ test.describe('@infra slash commands — con trỏ phải trỏ đúng chỗ', (
   });
 
   test('publish phải nhắc REVIEW local TRƯỚC khi ghi đè Sheet thật', () => {
-    // Migrate AIO→Google Sheet (22/09/2026): không còn cặp lệnh dry-run/:apply qua REST — an toàn giờ nằm
+    // Migrate sang Google Sheet (22/09/2026): không còn cặp lệnh dry-run/:apply qua REST — an toàn giờ nằm
     // ở việc agent soi bản merge LOCAL trước khi `update_file` đè lên Drive (Drive không giữ version cũ).
     if (!files.includes('publish.md')) return;
     const b = body('publish.md');
@@ -167,7 +167,7 @@ test.describe('@infra skill ui_debug_agent', () => {
       expect(b, `playbook thiếu tình huống: ${p}`).toContain(p);
     }
     for (const v of ['script_error', 'setup_failure', 'product bug']) expect(b).toContain(v);
-    expect(b, 'phải cấm log Jira từ skill này').toMatch(/KHÔNG log Jira/);
+    expect(b, 'phải cấm log Backlog từ skill này').toMatch(/KHÔNG log Backlog/);
   });
 
   test('3 output bắt buộc đều có mặt', () => {

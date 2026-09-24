@@ -5,17 +5,17 @@
  * ci_scope_check.js — MÁY ĐỨNG SAU LUẬT "CI generic KHÔNG tự chạm UAT".
  *
  * VÌ SAO CÓ FILE NÀY (đo được, không phải giả định): commit `6773d1e` quét 46 spec
- * `tests/mobile-web/SAPP-22827/**` + 8 spec DB vào repo. Job nightly chạy `npx playwright test` TRẦN —
+ * `tests/mobile-web/CSDL-22827/**` + 8 spec DB vào repo. Job nightly chạy `npx playwright test` TRẦN —
  * cả suite — với `OPS_USERNAME`/`OPS_PASSWORD` sẵn trong env job. Nghĩa là từ commit đó, mỗi 01:00 giờ
  * VN CI sẽ drive `student_delete*` · `calendar_destructive` · `calendar_create` trên OPS UAT. Chưa nổ
  * chỉ vì repo chưa khai secret nào — đó là MAY, không phải thiết kế.
  *
  * CLAUDE.md §2 ("UAT non-destructive + xác nhận trước MỖI lượt chạm UAT") và §5 (scope & isolation) đã
  * cấm rõ chuyện này từ lâu. Tôi vẫn vi phạm được, vì KHÔNG có máy nào đứng sau hai luật đó. `.gitignore`
- * không thay được: nó chỉ chặn đúng đường dẫn đã biết, `tests/fe/SAPP-99999/` ngày mai vẫn lọt.
+ * không thay được: nó chỉ chặn đúng đường dẫn đã biết, `tests/fe/CSDL-99999/` ngày mai vẫn lọt.
  *
  * Ba điều gate này kiểm:
- *   1. Spec trong thư mục theo task (`SAPP-<số>`) mà ĐANG ĐƯỢC TRACK ⇒ ĐỎ (nợ đã khai thì cảnh báo).
+ *   1. Spec trong thư mục theo task (`dự án trước-<số>`) mà ĐANG ĐƯỢC TRACK ⇒ ĐỎ (nợ đã khai thì cảnh báo).
  *   2. Spec drive UAT mà nằm trong phạm vi `nightly` ⇒ ĐỎ.
  *   3. File CI phải lấy phạm vi TỪ config này, và KHÔNG được còn `playwright test` trần ⇒ nếu không thì
  *      config chỉ là trang trí, CI vẫn chạy cả suite.
@@ -31,7 +31,7 @@ const { listFiles, worktreeNotice } = require(path.resolve(__dirname, '..', 'uti
 
 const REPO = path.resolve(__dirname, '..', '..');
 const CFG_PATH = path.join(REPO, '.agent', 'config', 'ci_scope.json');
-const TASK_DIR = /(^|\/)[A-Z]{2,}-\d+(\/|$)/;          // tests/fe/SAPP-26523/... · tests/mobile-web/SAPP-22827/...
+const TASK_DIR = /(^|\/)[A-Z]{2,}-\d+(\/|$)/;          // tests/fe/CSDL-26523/... · tests/mobile-web/CSDL-22827/...
 const CI_FILES = ['.github/workflows/ci.yml', '.gitlab-ci.yml'];
 
 const cfg = () => JSON.parse(fs.readFileSync(CFG_PATH, 'utf8'));

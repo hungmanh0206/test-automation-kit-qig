@@ -90,7 +90,7 @@ function main() {
   // VÒNG ĐỜI BUG: bug KHÔNG nặng như nhau mãi mãi. Trước đây đếm mọi bug bằng nhau ⇒ bug đã Done từ
   // nửa năm trước vẫn kéo Likelihood y như bug mới mở → risk model lệch về QUÁ KHỨ, chỉ vùng từng-hỏng
   // luôn High dù đã fix xong, còn vùng vừa hỏng lại không nổi lên.
-  // Trọng số mỗi bug = statusWeight(jira_status) × decay(tuổi). Cả 2 tuỳ chỉnh trong risk_model.json;
+  // Trọng số mỗi bug = statusWeight(backlog_status) × decay(tuổi). Cả 2 tuỳ chỉnh trong risk_model.json;
   // thiếu config → dùng default ở đây (Done 0.4, half-life 180 ngày).
   const lk = model.likelihood || {};
   const statusW = lk.statusWeight || { Open: 1, 'In Progress': 1, Reopened: 1, Done: 0.4, Closed: 0.4, Rejected: 0.1 };
@@ -103,7 +103,7 @@ function main() {
     return ms > 0 ? ms / DAY : 0;
   };
   const bugWeightOf = (b) => {
-    const sw = statusW[String(b.jira_status || 'Open')] != null ? statusW[String(b.jira_status || 'Open')] : 1;
+    const sw = statusW[String(b.backlog_status || 'Open')] != null ? statusW[String(b.backlog_status || 'Open')] : 1;
     const age = ageDays(b);
     const decay = (halfLife > 0 && age != null) ? 0.5 ** (age / halfLife) : 1;
     return sw * decay;
@@ -171,14 +171,14 @@ function main() {
   const L = ['# Risk Register (Risk-Based Testing)', '',
     `> ${register.generatedAt} · Suggest-only — QA chốt/override band. depthPolicy: xem risk_model.json.`,
     '> Cold-start (chưa có bug/historical) → band do **Impact** dẫn; sắc lại khi learning data tích luỹ.',
-    '> Vòng đời bug: Likelihood dùng bug **hiệu dụng** = statusWeight[jira_status] × 0.5^(tuổi/halfLifeDays) — bug đã Done/cũ nhẹ hơn bug mới mở, để risk phản ánh HIỆN TẠI. Tuỳ chỉnh ở risk_model.json §likelihood.',
+    '> Vòng đời bug: Likelihood dùng bug **hiệu dụng** = statusWeight[backlog_status] × 0.5^(tuổi/halfLifeDays) — bug đã Done/cũ nhẹ hơn bug mới mở, để risk phản ánh HIỆN TẠI. Tuỳ chỉnh ở risk_model.json §likelihood.',
     '> Thứ tự execute (High trước): ' + (register.executeOrder.join(' → ') || '(trống)'), '',
     '| Module | Impact | Likelihood | Risk | Band | Cold-start | Drivers (bug thô→hiệu dụng / failRate / src, conf) | QA override |',
     '|---|---|---|---|---|---|---|---|'];
   for (const r of rows) L.push(`| ${r.module} | ${r.impact} | ${r.likelihood} | ${r.risk} | ${r.band} | ${r.cold_start ? 'yes' : ''} | ${r.drivers.bugCount}→${r.drivers.bugEffective}/${r.drivers.failRate}/${r.drivers.impactSource}, c=${r.drivers.confidence} | |`);
   if (unmapped && unmapped.bugCount) {
     L.push('', '## ⚠ Bug chưa map được module (không tính vào bảng trên)', '',
-      `**${unmapped.bugCount} bug** trong \`knowledge/bugs/\` có \`module: "(unmapped)"\` — thiếu label \`<tcId>\` trên Jira nên không tra ra được cột Module của testcase.`,
+      `**${unmapped.bugCount} bug** trong \`knowledge/bugs/\` có \`module: "(unmapped)"\` — thiếu label \`<tcId>\` trên Backlog nên không tra ra được cột Module của testcase.`,
       'Hệ quả: Likelihood của các module THẬT đang thiếu đúng số bug đó (risk bị chấm thấp hơn thực tế).',
       'Sửa tận gốc ở lúc log bug: bug tạo qua `bug_reporter.js` phải có label `<tcId>`; bug lịch sử thì bổ sung label rồi chạy lại `npm run learn:bugs:apply`.');
   }

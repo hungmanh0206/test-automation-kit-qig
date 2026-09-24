@@ -108,7 +108,7 @@ if (statusFile && fs.existsSync(statusFile)) {
       const failed = tests.filter((t) => /^FAIL/i.test(String(t.status || ''))).length;
       const bugsDir = path.join(know, 'bugs');
       const hasBug = fs.existsSync(bugsDir) && fs.readdirSync(bugsDir).some((f) => f.startsWith(`${TASK}__`));
-      if (failed && !hasBug) warnings.push(`${failed} case FAILED nhưng knowledge/bugs chưa có entry của ${TASK} — nếu đã log bug Jira, chạy \`npm run learn:bugs:apply\` để risk_score có bugCount (bỏ qua nếu FAILED là setup/flaky, loại đó KHÔNG ghi vào knowledge).`);
+      if (failed && !hasBug) warnings.push(`${failed} case FAILED nhưng knowledge/bugs chưa có entry của ${TASK} — nếu đã log bug Backlog, chạy \`npm run learn:bugs:apply\` để risk_score có bugCount (bỏ qua nếu FAILED là setup/flaky, loại đó KHÔNG ghi vào knowledge).`);
     } catch (e) { /* đã báo ở check execution output */ }
 
     results.push(engine.toResult('learning data (knowledge/)', { problems, warnings, note: problems.length ? 'learning loop ĐỨT — task chạy xong nhưng không học được gì' : 'đã tích luỹ snapshot + KPI', severity: engine.SEVERITY.P1 }));
@@ -441,7 +441,7 @@ if (statusFile && fs.existsSync(statusFile)) {
     /*
      * (a2) TASK KHÔNG CÓ UI thì check này KHÔNG áp dụng — đọc `dimension_manifest.json`.
      * Trước đây check đòi `ui_catalog.json` cho MỌI bộ, không hề đọc manifest, nên task backend thuần
-     * (vd SAPP-26878: FS ghi rõ "không có màn hình UI người dùng") bị CHẶN ở finalize dù đã khai đúng
+     * (vd CSDL-26878: FS ghi rõ "không có màn hình UI người dùng") bị CHẶN ở finalize dù đã khai đúng
      * `ui_display: n/a` + `display_conformance: n/a` kèm lý do. Gate báo oan thì người ta học cách bỏ qua
      * gate — hỏng còn nặng hơn không có gate.
      *
@@ -677,7 +677,7 @@ if (taskDir) {
 
 /**
  * Đọc file testcase từ MỌI nguồn canonical (`test-cases` + mirror `from-aio`) qua
- * `rc.getTestcaseDirs()`. Vì sao không tự ghép đường dẫn: thêm một nguồn mới (AIO) mà script cũ chỉ quét `base`
+ * `rc.getTestcaseDirs()`. Vì sao không tự ghép đường dẫn: thêm một nguồn mới (Google Sheet) mà script cũ chỉ quét `base`
  * thì nó **đếm thiếu trong im lặng** — gate `testcase dirs` bắt đúng lỗi này trong 2 khối tôi thêm hôm nay.
  */
 function readAllTcFiles(taskOutputDir) {
@@ -698,7 +698,7 @@ console.log(engine.format(agg, { title: `SELF-REVIEW (G9) — lượt 2 trước
  * VÌ SAO CẦN: chữ "CHẶN" ở đây vốn chỉ là dòng đỏ trong báo cáo — script luôn exit 0, còn gate thật ở
  * push (`output_gate`) KHÔNG kiểm mở rộng một chữ nào. Nên đường lọt bug vẫn nguyên: execute bám đúng chữ
  * trong case → không mở trục nào → đẩy kết quả "toàn PASS" → không gì cản. (Đã xảy ra với chính lượt
- * execute SAPP-26523: 3 case, 0/5 trục, mọi gate xanh.)
+ * execute CSDL-26523: 3 case, 0/5 trục, mọi gate xanh.)
  * Đo 19/08/2026 trên 9 task: 7/9 có khối P0, 8/9 có khối "5 trục". Đỏ nhiều — nhưng đó là ảnh chụp NỢ CŨ;
  * với task mới, khối "5 trục" xoá bằng `npm run expansion:plan` (vài giây), còn các khối P0 là phát hiện
  * thật (vd "1/11 case hiển thị chỉ dẫn chứng API, không có dấu vết đọc trên màn").

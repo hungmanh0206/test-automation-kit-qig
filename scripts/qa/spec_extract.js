@@ -4,7 +4,7 @@
  *
  * VÌ SAO CÓ FILE NÀY (đo baseline 19/08/2026): kit lọt nhiều bug lớp "màn thiếu/thừa/lệch một trường" vì
  * `ui_conformance_check.js` chỉ đối chiếu được những màn mà **người** chịu khai tay vào `ui_catalog.json` —
- * task SAPP-24395 có 28 nhóm chức năng nhưng catalog chỉ có **5 màn**, tức 23 nhóm không có gì kiểm. Khai tay
+ * task CSDL-24395 có 28 nhóm chức năng nhưng catalog chỉ có **5 màn**, tức 23 nhóm không có gì kiểm. Khai tay
  * 49 bảng field là việc không ai làm, nên bề mặt cứ rộng ra mà máy kiểm đứng yên.
  *
  * Ý tưởng: FSD ĐÃ có sẵn bảng "Mô tả chi tiết các trường" theo đúng một khuôn (8 cột) — đó là tài sản chưa
@@ -51,7 +51,7 @@ const stripNote = (s) => {
 const CONDITIONAL = /chỉ hiển thị|trong trường hợp|khi user tick|nếu có giá trị|chỉ áp dụng|tuỳ theo|tùy theo/i;
 // Type KHÔNG phải "trường dữ liệu có nhãn" ⇒ loại khỏi tập phải-có. Chỉ gồm hành động thuần: nút/icon/link.
 // Bản đầu tôi loại cả dropdown/combobox/checkbox/tag — đo trên FSD thật thì đó là **78 field**, và chúng nằm
-// đúng nơi bug hay sống (SAPP-28311 "Service Fee không phải Combobox", SAPP-28318 "dropdown thiếu option").
+// đúng nơi bug hay sống (CSDL-28311 "Service Fee không phải Combobox", CSDL-28318 "dropdown thiếu option").
 // Loại chúng là tự bịt mắt mình ở chỗ cần nhìn nhất.
 const CONTROL_TYPE = /^(button|icon|link)\b/i;
 

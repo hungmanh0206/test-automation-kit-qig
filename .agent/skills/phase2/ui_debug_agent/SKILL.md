@@ -152,7 +152,7 @@ Theo `.agent/config/verdict_taxonomy.json`:
 | State chưa dựng (thiếu data, sai precondition) | `setup_failure` |
 | App làm sai so với **oracle độc lập theo spec** | nghi **product bug** |
 
-Nghi product bug ⇒ **chuyển Phase 2 triage**. **KHÔNG log Jira từ skill này.**
+Nghi product bug ⇒ **chuyển Phase 2 triage**. **KHÔNG log Backlog từ skill này.**
 
 ## Constraints
 

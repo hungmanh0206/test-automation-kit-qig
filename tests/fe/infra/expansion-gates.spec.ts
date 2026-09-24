@@ -109,8 +109,8 @@ test.describe('@infra self-review --enforce — chặn thật, không chỉ in b
 // ── 3. Luật mở rộng phải đứng ở CẢ HAI cửa ────────────────────────────────────────────────────────────────
 /*
  * `self-review --enforce` là bước NGƯỜI/agent tự chạy — bỏ qua nó rồi đẩy thẳng kết quả lên TCM thì trước
- * đây không gì cản (lượt execute SAPP-26523: 3 case, 0/5 trục, mọi gate xanh). Nên luật đứng thêm ở
- * `merge_execution_status.js` (thay `push_execution_aio.js` cũ — AIO ngưng dùng 22/09/2026, xem plan) —
+ * đây không gì cản (lượt execute CSDL-26523: 3 case, 0/5 trục, mọi gate xanh). Nên luật đứng thêm ở
+ * `merge_execution_status.js` (thay `push_execution_aio.js` cũ — Google Sheet ngưng dùng 22/09/2026, xem plan) —
  * chỗ có exit code nằm trên đường GHI THẬT (merge kết quả vào Excel/Sheet).
  */
 test.describe('@infra luật mở rộng — chặn ở cả finalize lẫn đường publish', () => {
@@ -244,7 +244,7 @@ test.describe('@infra hồi quy: biến chưa khai + gate báo oan', () => {
 /*
  * Đo trên 1.399 case đã publish: 96% rơi về `Functional`, `Integration` và `Performance` = 0 — vì kit SUY
  * case type từ tên nhóm chức năng. Đó là hai trục khác nhau ("test Ở ĐÂU" vs "LOẠI KIỂM THỬ NÀO"), ép cái
- * này ra cái kia thì sai là tất yếu, và hậu quả là lọc/báo cáo theo Case Type trên AIO vô dụng.
+ * này ra cái kia thì sai là tất yếu, và hậu quả là lọc/báo cáo theo Case Type trên Google Sheet vô dụng.
  */
 test.describe('@infra Loại case — cột người khai, không suy từ nhóm chức năng', () => {
   const model = require(path.join(REPO, 'scripts/lib/testcase'));
@@ -302,7 +302,7 @@ test.describe('@infra Loại case — cột người khai, không suy từ nhóm
  * @infra — CHIỀU §22 (callback ĐẾN từ bên thứ ba). Thêm 23/08/2026 sau khi ĐO giao thức thật của dự án:
  * GraphQL/WebSocket/SSE/gRPC/SOAP = 0 dấu vết trong `knowledge/`+`tests/`, nên KHÔNG thêm (thêm chỉ phình
  * kit). Nhưng callback thanh toán thì có thật, và đã có bug thật do NGƯỜI phát hiện: callback trùng làm
- * `Paid Amount` cộng đôi (SAPP-28236) — nghĩa là máy lẽ ra phải bắt mà không có chiều nào dạy sinh case đó.
+ * `Paid Amount` cộng đôi (CSDL-28236) — nghĩa là máy lẽ ra phải bắt mà không có chiều nào dạy sinh case đó.
  *
  * Bẫy đã dính khi thêm: khai chiều ở `dimension_coverage.js` là KHÔNG đủ. `dimensionsOf` của model chỉ nhận
  * tag nằm trong `DIMENSION_TAGS`, nên case gắn `[Callback]` vẫn đếm 0 — gate im lặng báo "thiếu chiều" trong
@@ -329,7 +329,7 @@ test.describe('@infra §22 inbound callback — 3 mắt xích phải khớp', ()
     const body = fs.readFileSync(p, 'utf8');
     // Checklist, không phải 5 gạch đầu dòng: mỗi ca phải nói rõ dựng thế nào + oracle đo ở đâu.
     expect(body.split('\n').filter((l) => /^\| \d+ \|/.test(l)).length, 'cần ≥8 ca cụ thể').toBeGreaterThanOrEqual(8);
-    for (const must of ['HMAC', 'replay', 'at-least-once', 'SAPP-28236']) expect(body).toContain(must);
+    for (const must of ['HMAC', 'replay', 'at-least-once', 'CSDL-28236']) expect(body).toContain(must);
     // Không được lấy response callback làm oracle (app==app).
     expect(body).toMatch(/tautology|app==app/);
   });

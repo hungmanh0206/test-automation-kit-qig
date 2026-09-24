@@ -36,7 +36,7 @@ Ba việc:
 
 ## Việc 1 — Một cửa vào, không phải mười (25 phút)
 
-Không có MCP, mỗi chỗ tự gọi API: một script gọi Jira, một prompt bảo agent "đọc Confluence", một tệp khác
+Không có MCP, mỗi chỗ tự gọi API: một script gọi Backlog, một prompt bảo agent "đọc tài liệu nguồn", một tệp khác
 gọi Figma. Bốn hệ quả, đều đắt:
 
 | Hệ quả | Cụ thể |
@@ -53,8 +53,8 @@ gọi Figma. Bốn hệ quả, đều đắt:
 
 | Server | Dùng để | Biến môi trường | Quyền | Ai duyệt quyền ghi |
 |---|---|---|---|---|
-| Jira | Đọc yêu cầu, tạo bug | `JIRA_BASE_URL` `JIRA_TOKEN` | đọc + **tạo bug** | QA Lead, 08/09/2026 |
-| Confluence | Đọc tài liệu đặc tả | dùng chung với Jira | **chỉ đọc** | — |
+| Backlog | Đọc yêu cầu, tạo bug | `BACKLOG_BASE_URL` `BACKLOG_API_KEY` | đọc + **tạo bug** | QA Lead, 08/09/2026 |
+| tài liệu nguồn | Đọc tài liệu đặc tả | dùng chung với Backlog | **chỉ đọc** | — |
 | Google Drive/Docs | Đọc tài liệu BA gửi | `GOOGLE_*` | **chỉ đọc** | — |
 | Figma | Đọc thiết kế: chữ hiển thị, token màu | `FIGMA_TOKEN` | **chỉ đọc** | — |
 | Slack | Gửi thông báo kết quả | `SLACK_WEBHOOK` | **chỉ ghi vào 1 kênh** | QA Lead, 08/09/2026 |
@@ -167,7 +167,7 @@ console.log('\n[mcp-quyen] ✓ ĐẠT — mọi quyền ghi đều có người 
 |---|---|---|
 | 1 | bảng như mẫu Việc 1 | **`0`** |
 | 2 | thêm dòng `Notion \| Ghi báo cáo \| \`NOTION_TOKEN\` \| đọc + ghi \| —` | **`1`** — quyền ghi không người duyệt |
-| 3 | đổi quyền dòng Jira thành `đọc + tạo bug + xoá issue` | **`1`** — có quyền xoá |
+| 3 | đổi quyền dòng Backlog thành `đọc + tạo bug + xoá issue` | **`1`** — có quyền xoá |
 | 4 | bảng chỉ toàn dòng **chỉ đọc** | **`0`** |
 
 Lần 4 là đối chứng âm: server chỉ đọc không cần người duyệt, và gate phải cho qua ngay. Bắt duyệt cả dòng
@@ -191,7 +191,7 @@ Ranh giới không nằm ở *"máy làm nổi không"* — nó nằm ở hậu 
 | Sinh báo cáo, dashboard | ✅ | artifact, sinh lại được |
 | Gửi thông báo vào một kênh | ✅ | ồn thì tắt |
 | **Publish testcase lên công cụ dùng chung** | ❌ | công cụ không có API xoá; đẩy nhầm là sống với nó (Bài 18) |
-| **Log bug lên Jira** | ❌ | bug sai làm mất niềm tin của đội dev, và mất rất lâu để lấy lại |
+| **Log bug lên Backlog** | ❌ | bug sai làm mất niềm tin của đội dev, và mất rất lâu để lấy lại |
 | **Đổi trạng thái case sang Deprecated** | ❌ | ảnh hưởng lịch sử chạy của người khác |
 | **Sửa `knowledge/`** ở mức đổi `active` → `invalid` | ❌ | quyết định "kết quả cũ mất giá trị" (Bài 26) |
 
@@ -243,7 +243,7 @@ Dòng đầu là dòng quan trọng nhất: thông báo bị bỏ qua còn tệ 
 
 | Từ | Nghĩa gọn |
 |---|---|
-| **MCP server** | Cầu nối cho agent đọc/ghi một hệ thống ngoài (Jira, Drive, Figma…) qua một giao diện chung |
+| **MCP server** | Cầu nối cho agent đọc/ghi một hệ thống ngoài (Backlog, Drive, Figma…) qua một giao diện chung |
 | **Quyền tối thiểu** | Cấp đúng cái cần, không hơn. Chỉ đọc là mặc định |
 | **Human gate** | Bước bắt buộc có người bấm. Không phải vì máy làm không nổi — vì hậu quả |
 

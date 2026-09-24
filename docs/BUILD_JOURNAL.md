@@ -69,7 +69,7 @@ chỉ còn một tín hiệu là `failRate` — tức Risk-Based Testing đang c
 **Đã dựng.**
 - `learn_task` — biến kết quả execute của một task thành KPI và snapshot theo module.
 - `learn_reporter` — **Playwright reporter**, tự thu sau *mỗi* lần chạy test.
-- `learn_bugs` — nạp bug từ Jira về `knowledge/bugs/`, idempotent.
+- `learn_bugs` — nạp bug từ Backlog về `knowledge/bugs/`, idempotent.
 - `select_tests` dùng dữ liệu học thật: xếp hạng file theo `(fail + 0.5×flaky)/runs`.
 
 **Đo bằng.** Backfill 16 task → **12 KPI run + 9 snapshot**; dashboard từ rỗng lên **9 snapshot / 84 module**;

@@ -61,12 +61,12 @@ if (!fs.existsSync(CLAUDE)) {
   if (rules && rules.VISUAL_EXT) {
     const allowed = new Set(String(rules.VISUAL_EXT.source).replace(/^\\\.\(|\)\$$/g, '').split('|')
       .flatMap((s) => (s === 'jpe?g' ? ['jpg', 'jpeg'] : [s])));
-    // Mỗi đuôi gate CHO QUA phải có mime thật, nếu không uploader gắn `application/octet-stream` ⇒ Jira không
+    // Mỗi đuôi gate CHO QUA phải có mime thật, nếu không uploader gắn `application/octet-stream` ⇒ Backlog không
     // preview ⇒ reviewer phải tải file về mới xem được, tức evidence không còn làm đúng việc của nó.
     // Đây là ràng buộc từng bị vi phạm thật: gate nhận .bmp/.mov/.m4v mà mime map không có.
     if (rules.mimeOf) {
       const noMime = [...allowed].filter((e) => rules.mimeOf(`.${e}`) === 'application/octet-stream');
-      if (noMime.length) problems.push(`VISUAL_EXT cho qua đuôi KHÔNG có mime (${noMime.map((x) => `.${x}`).join(' ')}) → Jira sẽ không preview. Thêm vào MIME_BY_EXT hoặc bỏ khỏi VISUAL_EXT.`);
+      if (noMime.length) problems.push(`VISUAL_EXT cho qua đuôi KHÔNG có mime (${noMime.map((x) => `.${x}`).join(' ')}) → Backlog sẽ không preview. Thêm vào MIME_BY_EXT hoặc bỏ khỏi VISUAL_EXT.`);
     }
     for (const [name, file] of [['CLAUDE.md', CLAUDE], ['core_rules.md', CORE], ['RULE_GLOBAL.md', RULE_GLOBAL]]) {
       if (!fs.existsSync(file)) continue;
@@ -279,7 +279,7 @@ if (fs.existsSync(SKILLS_DIR)) {
   let scripts = {};
   try { scripts = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).scripts || {}; } catch (e) { /* không có package.json */ }
   // `partial-rerun` cũng là ĐIỂM VÀO (agent đọc prompt trong đó để chạy nhánh phụ) — thiếu nó thì lệnh chỉ
-  // được nhắc ở nhánh phụ sẽ bị báo mồ côi oan. Lộ ra khi chuyển Xray → AIO: `jira:testcase-cleanup:dry-run`
+  // được nhắc ở nhánh phụ sẽ bị báo mồ côi oan. Lộ ra khi chuyển Xray → AIO: `backlog:testcase-cleanup:dry-run`
   // chỉ còn nằm ở mục LEGACY của `partial-rerun/run_testcase_cleanup.md`.
   const SEARCH_ROOTS = ['prompt_templates', '.agent', 'scripts', '.github', 'exploratory', 'partial-rerun'];
   const SEARCH_FILES = ['README.md', 'USER_GUIDE.md', 'QUICKSTART.md', 'RULE_GLOBAL.md', 'CLAUDE.md', '.gitlab-ci.yml', 'knowledge/SCHEMA.md', '.env.example'];
@@ -309,7 +309,7 @@ if (fs.existsSync(SKILLS_DIR)) {
 }
 
 /*
- * ── NO-XRAY: kit chỉ còn MỘT công cụ test-management (AIO Tests) ──────────────────────────────
+ * ── NO-LEGACY-TOOLS: kit chỉ còn Backlog (bug) + Google Sheet (testcase/execution) ─────────────
  *
  * VÌ SAO CẤM CẢ CHỮ: bản trước của luật này chỉ chặn "dạy Xray như đường chính" và cho qua dòng có
  * nhãn `legacy`. Nhưng khi Xray đã bị bỏ hẳn (script xoá, biến env xoá, dữ liệu đã di trú và đối
@@ -330,7 +330,18 @@ if (fs.existsSync(SKILLS_DIR)) {
    * công cụ không còn tồn tại suốt 2 tuần. Nên siết thêm NHÃN VIẾT TẮT ở chính source sinh ảnh.
    * `\bXR\b` phân biệt hoa-thường và có biên từ: đo được 0 chỗ trùng trong toàn bộ ROOTS ⇒ không báo oan.
    */
-  const BANNED = [/xray/i, /\bXR\b/];
+  /*
+   * MỞ RỘNG 24/09/2026 — chủ dự án yêu cầu bỏ HOÀN TOÀN Jira, Confluence và AIO Tests.
+   * Trước đó gate chỉ chặn Xray, nên ba công cụ kia rụng dần bằng tay và vẫn còn 910 dòng nhắc tới
+   * chúng ở 146 file. Bằng tay thì lần sau lại mọc lại — nên đưa vào đúng cái máy đã giữ được Xray sạch.
+   *
+   * Thay thế: Jira → Backlog (REST riêng, `scripts/integrations/backlog/`) · AIO Tests → Google Sheet ·
+   * Confluence → KHÔNG có bản thay thế lập trình; tài liệu soạn trong Obsidian vault rồi đưa sang
+   * `<TASK_OUTPUT_DIR>/docs/` dạng Markdown.
+   *
+   * `\bAIO\b` phân biệt hoa-thường + biên từ, để không bắt oan chữ thường trong từ khác.
+   */
+  const BANNED = [/xray/i, /\bXR\b/, /jira/i, /confluence/i, /\bAIO\b/];
   /*
    * HAI FILE ĐƯỢC MIỄN, và chỉ hai: chính LUẬT này và TEST khoá luật. Ở đó cái tên xuất hiện với vai trò
    * "thứ bị cấm", không phải "đường được dạy" — không miễn thì luật tự tố chính nó và không ai chạy nổi.
@@ -363,7 +374,7 @@ if (fs.existsSync(SKILLS_DIR)) {
       /*
        * PHỔ ĐUÔI FILE, đo 04/09/2026 trong các ROOTS này: .ts 138 · .js 125 · .md 104 · .json 18 · .yml 6 ·
        * .mjs 1 — và BỎ SÓT .sh (1) + .html (2). Đúng chỗ đó có một vi phạm thật: script khai CI Variables in
-       * "[Jira / Xray / Confluence]" ra màn hình suốt, mà gate vẫn báo ✓ vì `.sh` không nằm trong bộ lọc.
+       * "[Backlog / Xray / tài liệu nguồn]" ra màn hình suốt, mà gate vẫn báo ✓ vì `.sh` không nằm trong bộ lọc.
        * Thêm luôn `bash|ps1|yaml|sql` để đuôi mới không lại thành lỗ hổng lặng.
        * KHÔNG quét `.env`: đó là file creds (gitignored), không phải bề mặt của kit, và soi vào chỉ tăng
        * nguy cơ secret rơi vào thông báo lỗi.
@@ -375,9 +386,9 @@ if (fs.existsSync(SKILLS_DIR)) {
   for (const f of FILES) { const abs = path.join(rc.REPO_ROOT, f); if (fs.existsSync(abs)) scanFile(abs); }
 
   if (hits.length) {
-    problems.push(`NO-XRAY: ${hits.length} chỗ còn nhắc công cụ đã bỏ (kit đã bỏ hẳn cả Xray lẫn AIO Tests — testcase/execution giờ ở Google Sheet): ${hits.slice(0, 15).join(' · ')}${hits.length > 15 ? ` … (+${hits.length - 15})` : ''}. Xoá hoặc viết lại theo luồng Sheet — đừng để lại đường mòn dẫn tới lệnh/biến không còn tồn tại.`);
+    problems.push(`NO-LEGACY-TOOLS: ${hits.length} chỗ còn nhắc công cụ đã bỏ (Xray · Jira · Confluence · AIO Tests). Thay bằng: bug→Backlog, testcase/execution→Google Sheet, tài liệu→Markdown trong task folder: ${hits.slice(0, 15).join(' · ')}${hits.length > 15 ? ` … (+${hits.length - 15})` : ''}. Xoá hoặc viết lại — đừng để lại đường mòn dẫn tới lệnh/biến không còn tồn tại.`);
   } else {
-    console.log('[policy] ✓ không bề mặt nào của kit còn nhắc công cụ test-management cũ (NO-XRAY sạch).');
+    console.log('[policy] ✓ không bề mặt nào của kit còn nhắc công cụ đã bỏ (NO-LEGACY-TOOLS sạch: Xray · Jira · Confluence · AIO).');
   }
 }
 

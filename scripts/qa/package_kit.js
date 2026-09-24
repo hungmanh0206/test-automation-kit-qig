@@ -8,7 +8,7 @@
  * được lọt, vì hai lý do khác nhau và đều nghiêm trọng:
  *   · SECRET/PII — `.env*`, `profiles/<TASK>/task.env`, `knowledge/**`, `outputs/**` là dữ liệu công ty.
  *   · ORACLE SAI — `.agent/config/db.conventions.json` chứa schema + bản đồ cột↔nhãn ĐO TỪ DB của MỘT dự án
- *     (đo được: `ic_payment_orders`, `db-uat.sapp.edu.vn`, 8 màn nhãn tiếng Việt của OPS). Phát cho dự án
+ *     (đo được: `ic_payment_orders`, `db-uat.example`, 8 màn nhãn tiếng Việt của OPS). Phát cho dự án
  *     khác là đưa họ một bản đồ cột sai mà vẫn "có số từ DB" — đúng cách tạo bug ma thuyết phục nhất. Nên
  *     gói mang `db.conventions.example.json`, không mang bản thật.
  *
@@ -67,7 +67,7 @@ const KEEP_FILES = [
    * Người nhận gõ `npm test` lần đầu thấy 25 đỏ mà không hiểu vì sao.
    *
    * Cả 5 file đã soi: không chứa host, bảng DB, credential hay PII. Chỗ nhắc mã task chỉ là TIỀN LỆ
-   * cho luật (kiểu "bug SAPP-28776 bị Rejected vì đọc thiếu chữ"), giữ lại thì luật mới có căn cứ.
+   * cho luật (kiểu "bug CSDL-28776 bị Rejected vì đọc thiếu chữ"), giữ lại thì luật mới có căn cứ.
    */
   '.agent/config/writing_style.json',
   '.agent/config/env_lanes.json',
@@ -88,11 +88,11 @@ const DENY = [
   /^profiles\/(?!task\.env\.example$)/,
   /^knowledge\/(?!SCHEMA\.md$)(?!.*\.gitkeep$)/,
   /^tests\/api\//, /^tests\/mobile-web\//,
-  /^tests\/fe\/(auth|support|order|transaction|SAPP-)/,
+  /^tests\/fe\/(auth|support|order|transaction|dự án trước-)/,
   /\.spec\.ts-snapshots\//,           // ảnh baseline visual là của dự án, không phải của kit
   /*
    * Spec CHẠY THẬT trên DB/màn của dự án này ⇒ lớp PROJECT, dù nằm trong thư mục GENERIC.
-   * Chúng truy vấn `ic_payment_orders` trên `db-uat.sapp.edu.vn` và assert nhãn UI tiếng Việt của OPS: mang
+   * Chúng truy vấn `ic_payment_orders` trên `db-uat.example` và assert nhãn UI tiếng Việt của OPS: mang
    * sang dự án khác thì KHÔNG THỂ pass, và một spec đỏ-vì-sai-dự-án còn tệ hơn không có spec (người nhận sẽ
    * học cách bỏ qua màu đỏ). Kit vẫn mang ĐỘNG CƠ của tầng DB (`types/match/guard/config/dbVerify/adapters`)
    * + `db.conventions.example.json`; phần NEO là việc mỗi dự án tự đo.

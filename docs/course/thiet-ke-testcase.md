@@ -236,7 +236,7 @@ Hai thứ này độc lập với nhau. Một lỗi hậu quả rất lớn như
 > case** — nó dư thật, chỉ đang che một lỗi khác của thang ưu tiên).
 
 **Một cảnh báo về thang giá trị.** Chọn thang khớp với công cụ bạn sẽ publish lên, không phải thang bạn
-thích. Chuyện thật: bộ case dùng `Highest` (thang Jira) trong khi công cụ test-management map theo **tên** và
+thích. Chuyện thật: bộ case dùng `Highest` (thang Backlog) trong khi công cụ test-management map theo **tên** và
 thang của nó là `Critical`. Nên 14 case bị tụt về `Medium` khi publish, mà không ai biết.
 
 Thêm phép kiểm này vào parser:

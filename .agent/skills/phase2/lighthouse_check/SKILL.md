@@ -56,7 +56,7 @@ Catalog block `lighthouse` (schema đầy đủ ở `scripts/qa/README.md`):
 - **App auth bằng token trong localStorage**: Lighthouse điều hướng lại có thể mất localStorage → trang cần login mà rớt
   auth thì điểm phản ánh trang `/login`. Ưu tiên audit trang public, hoặc app auth bằng cookie/SSO.
 - Read-only (chỉ navigate + audit) nhưng nặng → chỉ chạy non-prod, không nhét vào runner Playwright mặc định.
-- Evidence chỉ ảnh/video: dùng `lighthouse-scores.png` (không đính report `.html/.json` làm evidence Jira).
+- Evidence chỉ ảnh/video: dùng `lighthouse-scores.png` (không đính report `.html/.json` làm evidence Backlog).
 
 ## Anti-Patterns
 

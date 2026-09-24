@@ -49,8 +49,8 @@
     $('#dChip').textContent = c.label;
     $('#dChip').style.background = c.color + '22';
     $('#dChip').style.color = c.color;
-    /* Chip phụ: skill hiện phase, trạng thái hiện loại + ánh xạ AIO hoặc có log Jira không. */
-    var meta = t.phase || [t.kind, t.aio ? 'AIO: ' + t.aio : '', t.log].filter(Boolean).join(' · ');
+    /* Chip phụ: skill hiện phase, trạng thái hiện loại + có log Backlog không. */
+    var meta = t.phase || [t.kind, t.log].filter(Boolean).join(' · ');
     $('#dMeta').hidden = !meta;
     $('#dMeta').textContent = meta || '';
     $('#dTitle').textContent = t.t;
@@ -358,7 +358,7 @@
       out.appendChild(c);
     });
 
-    var xr = $('#tmsList');   // danh sách mô hình TMS (AIO Tests)
+    var xr = $('#tmsList');   // danh sách mô hình TMS (Google Sheet)
     TMS_MODEL.forEach(function (x, i) {
       var r = el('div', 'xrow');
       r.appendChild(el('span', 'xn', String(i + 1)));

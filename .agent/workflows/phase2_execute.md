@@ -1,9 +1,9 @@
 ---
-description: Workflow Phase 2 để generate/update Playwright automation, execute thật, auto-heal và report/Jira khi đủ điều kiện.
+description: Workflow Phase 2 để generate/update Playwright automation, execute thật, auto-heal và report/Backlog khi đủ điều kiện.
 skills:
   - phase2/qa_automation_engineer
   - shared/test_data_generator
-  - shared/jira_bug_reporter
+  - shared/backlog_bug_reporter
 ---
 
 # Workflow Phase 2 - Execute Automation
@@ -12,7 +12,7 @@ skills:
 
 ## Mục Đích
 
-Thực thi testcase đã review bằng Playwright UI/API, giảm skip tối đa, sửa lỗi setup/automation hợp lý, ghi evidence và chỉ log Jira bug khi đủ gate.
+Thực thi testcase đã review bằng Playwright UI/API, giảm skip tối đa, sửa lỗi setup/automation hợp lý, ghi evidence và chỉ log Backlog bug khi đủ gate.
 
 ## Khi Nào Dùng
 
@@ -32,7 +32,7 @@ Thực thi testcase đã review bằng Playwright UI/API, giảm skip tối đa,
 | Phase 1 summary | `<TASK_OUTPUT_DIR>/reports/phase1-summary.md` |
 | Runtime env | `.env.local`, `.env`, CI env hoặc env truyền trực tiếp theo command |
 | App/API URL | Project context hoặc user prompt |
-| Jira bug rule | `prompt_templates/phase2/08_log_bug_jira.md` |
+| Backlog bug rule | `prompt_templates/phase2/08_log_bug_backlog.md` |
 
 ## Outputs
 
@@ -42,7 +42,7 @@ Thực thi testcase đã review bằng Playwright UI/API, giảm skip tối đa,
 | Playwright result | `<TASK_OUTPUT_DIR>/test-results/` |
 | Evidence ảnh/video/trace | `<TASK_OUTPUT_DIR>/test-results/` |
 | Execution summary | `<TASK_OUTPUT_DIR>/reports/execution-summary.md` |
-| Jira bug log | Trong execution summary hoặc report liên quan |
+| Backlog bug log | Trong execution summary hoặc report liên quan |
 
 ## Workflow
 
@@ -51,7 +51,7 @@ Thực thi testcase đã review bằng Playwright UI/API, giảm skip tối đa,
 | 1 | [phase2_01_prepare_execution.md](phase2_01_prepare_execution.md) | Xác nhận TASK_KEY, scope testcase, env và dữ liệu cần chạy. |
 | 2 | [phase2_02_generate_or_update_automation.md](phase2_02_generate_or_update_automation.md) | Sinh/cập nhật Playwright UI/API spec đúng testcase. |
 | 3 | [phase2_03_execute_and_auto_heal.md](phase2_03_execute_and_auto_heal.md) | Execute thật, phân tích fail/skip/flaky và auto-heal root cause. |
-| 4 | [phase2_04_report_and_jira_gate.md](phase2_04_report_and_jira_gate.md) | Ghi execution summary, shared change log, promotion status và log Jira chỉ khi đủ điều kiện. |
+| 4 | [phase2_04_report_and_backlog_gate.md](phase2_04_report_and_backlog_gate.md) | Ghi execution summary, shared change log, promotion status và log Backlog chỉ khi đủ điều kiện. |
 
 ## Rules
 
@@ -60,7 +60,7 @@ Thực thi testcase đã review bằng Playwright UI/API, giảm skip tối đa,
 - Không đổi expected result nếu chưa chứng minh expected cũ sai.
 - Skip chỉ hợp lệ khi có lý do rõ, không thể tránh và đã phân tích cách fix.
 - Với bug phức tạp, nếu ảnh không đủ mô tả behavior thì phải có video evidence.
-- Jira chỉ được log khi case đã rerun đủ để loại flaky/setup/data/prompt issue và có evidence rõ.
+- Backlog chỉ được log khi case đã rerun đủ để loại flaky/setup/data/prompt issue và có evidence rõ.
 - Shared file chỉ được sửa khi qua Shared Change Gate.
 - Task-scoped automation chỉ promote vào core regression khi có review/approval rõ.
 

@@ -1,4 +1,4 @@
-/* NHÓM 4b — khái niệm đi kèm lớp máy mới, và tầng AIO Tests.
+/* NHÓM 4b — khái niệm đi kèm lớp máy mới, và tầng Google Sheet.
    Nguồn: header script trong scripts/qa/, scripts/lib/expansion/, scripts/integrations/aio/README.md. */
 const TERMS_CONCEPT2 = [
 
@@ -61,24 +61,24 @@ const TERMS_CONCEPT2 = [
   src:'knowledge/decisions/', rel:['g-figma_to_ui_contract','c-visual-oracle','c-oracle'] },
 
 { id:'c-one-tms', t:'Luật một-công-cụ (test-management)', cat:'concept',
-  def:'Kit chỉ còn MỘT công cụ test-management là AIO Tests, và gate cấm mọi bề mặt còn nhắc tên công cụ trước đó.',
+  def:'Kit chỉ còn MỘT công cụ test-management là Google Sheet, và gate cấm mọi bề mặt còn nhắc tên công cụ trước đó.',
   detail:'Bản trước của luật này chỉ chặn việc dạy công cụ cũ như đường chính, và tha cho những dòng có nhãn legacy. Bản hiện tại cấm cả cái tên.',
   why:'Vì công cụ cũ đã bị bỏ hẳn. Script xoá, biến môi trường xoá, dữ liệu đã di trú và đối soát đủ 2103/2103 lượt run. Từ lúc đó, mỗi câu còn nhắc nó là một đường mòn dẫn người hoặc agent đi lạc: đi tìm một lệnh không còn tồn tại, một biến môi trường đã bị xoá.',
   how:[
     'Gate nằm trong policy_source_check, quét prompt_templates · .agent · partial-rerun · docs/library/src · scripts · tests và 6 file tài liệu gốc.',
-    'Thấy vi phạm thì xoá hoặc viết lại theo AIO, không để lại ghi chú legacy.',
+    'Thấy vi phạm thì xoá hoặc viết lại theo luồng Google Sheet, không để lại ghi chú legacy.',
     'KHÔNG soi CHANGELOG, outputs/, knowledge/ — đó là lịch sử, xoá đi là mất dấu.'
   ],
   ex:'Chính nguồn của trang này nằm trong phạm vi quét, và gate đã bắt đúng hai chỗ tôi nhắc tên cũ khi đang mô tả về chính luật này, phải viết lại mới qua.',
   trap:'Gate từng bỏ sót đuôi .sh và .html, báo ✓ trong khi vẫn có vi phạm thật. Đúng nguyên tắc: gate phải chạy trên nội dung thật mới tính là nghiệm thu.',
   src:'scripts/qa/policy_source_check.js', rel:['f-aio','g-policy_source_check','c-canonical','c-gate-real-content'] },
 
-{ id:'c-aio-no-delete', t:'AIO không có API xoá', cat:'concept',
-  def:'Dọn dẹp trên AIO Tests nghĩa là chuyển trạng thái Deprecated, không phải xoá.',
+{ id:'c-aio-no-delete', t:'Sheet ghi đè toàn bộ mỗi lần sync', cat:'concept',
+  def:'Dọn dẹp trên Google Sheet nghĩa là chuyển trạng thái Deprecated, không phải xoá.',
   detail:'Case rời khỏi Excel canonical thì chuyển Deprecated. Quay lại thì chuyển Published.',
   why:'Ràng buộc của công cụ, nhưng hoá ra lại đúng hướng: giữ case nghĩa là giữ nguyên lịch sử các lượt chạy đã gắn vào nó. Xoá cho sạch là mất luôn phần lịch sử đó.',
   trap:'Vì không xoá được nên phải dry-run trước mọi lượt publish, đẩy nhầm thì không rút lại được.',
-  src:'scripts/integrations/aio/README.md', rel:['f-aio','g-aio_deprecate_stale','sk-jira_testcase_publisher'] },
+  src:'scripts/integrations/aio/README.md', rel:['f-aio','g-aio_deprecate_stale','sk-backlog_testcase_publisher'] },
 
 /* ── Bốn khái niệm rút ra từ đợt sửa dụng cụ đo tháng 9/2026 ─────────────── */
 
@@ -86,9 +86,9 @@ const TERMS_CONCEPT2 = [
   def:'Máy đo in ra "không có vấn đề" trong khi nó chưa hề nhìn tới phần lớn dữ liệu.',
   detail:'Nguy hiểm hơn không có máy, vì không có máy thì người ta còn đi kiểm tay; có máy báo sạch thì không ai kiểm nữa. Ba dạng đã gặp trong kit này: máy chỉ nhận MỘT khuôn dữ liệu rồi bỏ qua khuôn khác mà vẫn in sạch · câu tóm tắt đọc ra nghĩa mạnh hơn thứ máy thật sự đo · và phép so bằng THỜI GIAN thay vì bằng NỘI DUNG.',
   why:'Bốn lần đo sai trong repo này đều cùng một hình dạng: dụng cụ hỏng, và mọi "phát hiện" của nó là báo oan hoặc bỏ sót. Con số "13 task không có tài liệu lành" hoá ra sai hẳn; số thật là 2.',
-  how:['Mỗi máy mới phải có ĐỐI CHỨNG ÂM: bơm vào một mẫu sai đã biết, máy phải gọi đúng tên nó.','Câu máy in ra phải nói đúng thứ nó đo. "Không có tài liệu Confluence nào" khác hẳn "không đọc được id của tài liệu nào".','Nghi ngờ mọi phép đo trả về 0 vi phạm ngay lượt đầu.'],
-  ex:'docs:health bản đầu chỉ nhận khuôn "Page ID:" nên bỏ sót nguyên một thư mục 16 file, mà vẫn in tín hiệu sạch.',
-  src:'scripts/phase1/docs_health.js', rel:['g-docs_health','c-gate-real-content','g-mutation_check','c-oracle'] },
+  how:['Mỗi máy mới phải có ĐỐI CHỨNG ÂM: bơm vào một mẫu sai đã biết, máy phải gọi đúng tên nó.','Câu máy in ra phải nói đúng thứ nó đo. "Không có tài liệu nguồn nào" khác hẳn "không đọc được id của tài liệu nào".','Nghi ngờ mọi phép đo trả về 0 vi phạm ngay lượt đầu.'],
+  ex:'Một máy soát tài liệu bản đầu chỉ nhận MỘT khuôn id nên bỏ sót nguyên một thư mục 16 file, mà vẫn in tín hiệu sạch.',
+  rel:['c-gate-real-content','g-mutation_check','c-oracle'] },
 
 { id:'c-noi-dung-khong-phai-thoi-gian', t:'So nội dung, đừng so thời gian', cat:'concept',
   def:'Câu hỏi "bản sinh ra có khớp nguồn không" phải trả lời bằng cách dựng lại rồi đối chiếu, không bằng dấu thời gian.',
@@ -106,12 +106,12 @@ const TERMS_CONCEPT2 = [
   ex:'Một gốc lỗi, ba biểu hiện cùng ngày: parser giáo trình đọc ra 0 chặng, bản build lệch theo hệ điều hành, và gate đếm được 0 khối mã trong khi sàn là 78.',
   src:'docs/library/src/course_parse.js', rel:['c-noi-dung-khong-phai-thoi-gian','g-library_drift','c-tin-hieu-sach-gia'] },
 
-{ id:'c-bo-doi-confluence', t:'Bộ đổi tài liệu ăn mất bảng', cat:'concept',
+{ id:'c-bo-doi-tai-lieu', t:'Bộ đổi tài liệu ăn mất bảng', cat:'concept',
   def:'Gỡ thẻ HTML bằng một biểu thức chính quy làm mất sạch bảng và khối mã, mà file vẫn trông bình thường.',
   detail:'Cách làm cũ là replace thẻ bằng dấu cách rồi gộp khoảng trắng. Kết quả: cả trang thành một dòng, không còn dòng bảng nào, và khối CDATA bị ăn trọn khi ruột không có dấu lớn hơn — tức mất luôn AC viết bằng Gherkin trong macro code.',
   why:'Ở tài liệu dự án này thì điều kiện chấp nhận NẰM TRONG BẢNG. File fetch về vẫn có heading, vẫn có chữ, nên không ai nghi ngờ. Đo trên 12 trang thật: giữ được bảng 0/12, dòng Given/When/Then 0/66.',
   how:['Tách bộ đổi ra module dùng chung rồi test nó, thay vì để trong thân script CLI — phần nằm trong thân script không export gì thì không có cách nào phủ test.','Test phải chốt HAI vế: bộ đổi giữ được bảng, VÀ các fetcher thực sự gọi nó. Thiếu vế hai thì ai cũng có thể viết lại một dòng gỡ thẻ mà test vẫn xanh.'],
   ex:'Sau khi sửa: bảng 12/12, Given/When/Then 66/66, không trang nào còn bị gộp một dòng.',
-  src:'scripts/lib/confluence/storage_to_markdown.js', rel:['g-docs_health','g-docs_index','c-tin-hieu-sach-gia','sk-requirements_analyzer'] },
+  rel:['g-docs_index','c-tin-hieu-sach-gia','sk-requirements_analyzer'] },
 
 ];

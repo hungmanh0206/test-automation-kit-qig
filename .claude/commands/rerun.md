@@ -5,7 +5,7 @@ description: Chạy lại các case liên quan tới bug đã fix và cập nh�
 Task / bug: **$ARGUMENTS**
 
 Đọc: `prompt_templates/run_phase_re-run_template.md` → `.agent/workflows/rerun.md`
-(→ `rerun_01_map_bug_to_testcase.md` · `rerun_02_rerun_and_verify.md` · `rerun_03_update_jira_and_report.md`).
+(→ `rerun_01_map_bug_to_testcase.md` · `rerun_02_rerun_and_verify.md` · `rerun_03_update_backlog_and_report.md`).
 
 Gate bắt buộc:
 

@@ -55,7 +55,7 @@ test.describe('@infra knowledge:backup — thứ mất là mất công sức ng�
     expect(files.length).toBe(1);
     const bundle = JSON.parse(fs.readFileSync(path.join(dir, files[0]), 'utf8'));
     expect(bundle.items.length).toBeGreaterThan(0);
-    // bugs/ · metrics/ · historical_execution/ nạp lại được từ Jira/AIO ⇒ CỐ Ý không sao lưu.
+    // bugs/ · metrics/ · historical_execution/ nạp lại được từ Backlog/Google Sheet ⇒ CỐ Ý không sao lưu.
     const reproducible = bundle.items.filter((i: { rel: string }) => /^(bugs|metrics|historical_execution)\//.test(i.rel));
     expect(reproducible, 'store nạp lại được thì không được phình vào bundle').toEqual([]);
 
@@ -67,7 +67,7 @@ test.describe('@infra knowledge:backup — thứ mất là mất công sức ng�
     const dir = tmp('kb-');
     const bundle = path.join(dir, 'b.json');
     fs.writeFileSync(bundle, JSON.stringify({
-      kind: 'sapp-kit-knowledge-backup', version: 1, stores: ['domain'],
+      kind: 'qa-kit-knowledge-backup', version: 1, stores: ['domain'],
       items: [{ rel: 'domain/__khong_bao_gio_ton_tai__.json', content: '{}' }],
     }));
     const r = run(KB, ['--verify', bundle]);
@@ -83,7 +83,7 @@ test.describe('@infra knowledge:backup — thứ mất là mất công sức ng�
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(target, '{"v":"MOI"}');
       fs.writeFileSync(bundle, JSON.stringify({
-        kind: 'sapp-kit-knowledge-backup', version: 1, stores: ['domain'],
+        kind: 'qa-kit-knowledge-backup', version: 1, stores: ['domain'],
         items: [{ rel: 'domain/__selftest_kb__.json', content: '{"v":"CU"}' }],
       }));
       const r = run(KB, ['--restore', bundle]);
@@ -96,9 +96,9 @@ test.describe('@infra knowledge:backup — thứ mất là mất công sức ng�
 });
 
 test.describe('@infra leak:report — không đo được thì phải nói, không được báo "0 rò"', () => {
-  // Migrate Jira→Backlog (22/09/2026): leak_report.js giờ đọc BACKLOG_BASE_URL/BACKLOG_API_KEY. Phải blank
+  // Migrate hệ bug-tracking cũ → Backlog (22/09/2026): leak_report.js giờ đọc BACKLOG_BASE_URL/BACKLOG_API_KEY. Phải blank
   // ĐÚNG các biến này — để lọt biến thật (vd từ .env đã nạp vào process.env của test runner) là test gọi
-  // API Backlog THẬT thay vì đo nhánh "thiếu credential" (đã xảy ra: nhận 404 thật từ /api/v2/issues/SAPP-1).
+  // API Backlog THẬT thay vì đo nhánh "thiếu credential" (đã xảy ra: nhận 404 thật từ /api/v2/issues/CSDL-1).
   const BLANK = { BACKLOG_STORY_KEY: '', TASK_KEY: '', BACKLOG_BASE_URL: '', BACKLOG_URL: '', BACKLOG_API_KEY: '' };
 
   test('thiếu story ⇒ CHẶN (báo cáo rỗng dễ bị đọc thành "không lọt bug nào")', () => {
@@ -108,7 +108,7 @@ test.describe('@infra leak:report — không đo được thì phải nói, khô
   });
 
   test('có story nhưng thiếu credential Backlog ⇒ CHẶN, nói rõ thiếu gì', () => {
-    const r = run(LEAK, ['--story', 'SAPP-1'], BLANK);
+    const r = run(LEAK, ['--story', 'CSDL-1'], BLANK);
     expect(r.code).not.toBe(0);
     expect(r.out).toMatch(/BACKLOG_BASE_URL|BACKLOG_API_KEY/);
   });
@@ -325,7 +325,7 @@ test.describe('@infra metrics/reliability — skip không được kéo TRI', ()
 /*
  * CREDENTIAL TRONG CÂY REPO — `.gitignore` chỉ bảo vệ GIT, không bảo vệ khi zip/copy/upload artifact.
  * Đo 23/08/2026: `scripts/integrations/google_doc/service_account.json` gitignore hoàn hảo nhưng vẫn nằm
- * trên đĩa kèm `private_key`, nên đi theo mọi bản ZIP. Đã chuyển ra `~/.sapp-keys/` và trỏ bằng env
+ * trên đĩa kèm `private_key`, nên đi theo mọi bản ZIP. Đã chuyển ra `~/.qa-keys/` và trỏ bằng env
  * đường dẫn tuyệt đối; `secret:scan` giờ CHẶN nếu có file credential trong cây repo.
  */
 test.describe('@infra secret:scan — credential không được nằm trong cây repo', () => {
