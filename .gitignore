@@ -209,6 +209,13 @@ dist/
 # đường dẫn con bên trong một THƯ MỤC bị ignore sẽ không có tác dụng.
 .claude/*
 !.claude/commands/
+# NGOẠI LỆ 2: .claude/settings.json ĐƯỢC COMMIT — nó đăng ký HOOK, mà hook là forcing function ở tầng
+# harness (chạy tự động, không phụ thuộc agent nhớ gọi). Để nó per-máy thì mỗi teammate phải tự bật, tức
+# lớp chặn mạnh nhất của kit lại là lớp DỄ KHÔNG CÓ NHẤT — đúng lỗi đã xảy ra: hook viết từ round-3 nhưng
+# chưa máy nào đăng ký, trong khi CLAUDE.md vẫn tuyên bố "bị GATE máy-kiểm ... + harness hook".
+# File này CHỈ chứa tên event + đường dẫn script trong repo, KHÔNG có env/secret/đường dẫn cá nhân —
+# thứ đó thuộc .claude/settings.local.json và vẫn bị ignore.
+!.claude/settings.json
 # CLAUDE.md: COMMIT (G3 round-3) — non-negotiables shared, context-resident cho mọi phiên/mọi người.
 # (Personal global instructions vẫn để ở ~/.claude/CLAUDE.md, không nằm repo.)
 
@@ -222,6 +229,13 @@ dist/
 # Tài liệu kế hoạch/đánh giá/hướng dẫn nội bộ (plan/review/guide) — KHÔNG commit (lộ roadmap/điểm review lên public)
 *_KeHoach_va_HuongDan*.docx
 *_KeHoach*.docx
+
+# Tài liệu hướng dẫn sử dụng QEMIS của nhà cung cấp — KHÔNG commit.
+# Ảnh chụp màn hình BÊN TRONG các file .docx này chứa dữ liệu cá nhân THẬT chưa che: hồ sơ nhân sự đầy đủ
+# (họ tên, ngày sinh, CCCD, điện thoại, hộ khẩu) và số định danh cá nhân của học sinh. Nhà cung cấp che
+# không nhất quán. Không có cách che ảnh nhúng trong .docx mà không sửa tài liệu gốc, nên chặn ở Git.
+# Vi phạm CLAUDE.md §1 nếu commit. Bản đã che dùng để tra cứu nằm ở vault Obsidian (_attachments/).
+/tài liệu/
 
 # GitLab Runner system id
 .runner_system_id
