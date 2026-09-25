@@ -36,18 +36,19 @@
 Nhánh GitLab **cố ý bị gỡ 2 file** so với GitHub (khai ở `.agent/config/gitlab_strip.json`, do chủ repo
 yêu cầu): `tests/support/setup/db/db2db3.connect.spec.ts` và `tests/support/setup/db/verify.db2db3.spec.ts`.
 
-Nên sau khi cài xong, con số đúng của mỗi bên khác nhau. Đo ngày 23/09/2026 bằng cách clone sạch cả hai
-rồi chạy thật:
+Nên sau khi cài xong, con số đúng của mỗi bên khác nhau. Đo ngày 25/09/2026 trên cây GitHub. Cột GitLab suy từ `.agent/config/gitlab_strip.json` (2 mục, đều là
+`.spec.ts`), KHÔNG clone lại — riêng dòng `tests/fe/infra` thì hai cây BẰNG NHAU, vì cả 2 file bị strip
+đều nằm ở `tests/support/setup/db/`, ngoài phạm vi thư mục đó:
 
 | | GitHub | GitLab |
 |---|---|---|
-| file được track | 467 | 465 |
-| `npx playwright test tests/fe/infra` | **570 xanh · 2 bỏ qua · 0 đỏ** | **569 xanh · 3 bỏ qua · 0 đỏ** |
-| `npm run ci:scope` đếm | 55 spec | 53 spec |
+| file được track | 470 | 468 |
+| `npx playwright test tests/fe/infra` | **574 xanh · 0 bỏ qua · 0 đỏ** | **574 xanh · 0 bỏ qua · 0 đỏ** |
+| `npm run ci:scope` đếm | 56 spec | 54 spec |
 
 **Số của bạn khác bảng này là có gì đó sai** — đừng bỏ qua. Test bỏ qua đều tự khai lý do khi chạy.
 
-Một ngoại lệ hợp lệ: **tổng luôn là 572**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
+Một ngoại lệ hợp lệ: **tổng luôn là 574**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
 Clone mới thì `knowledge/` rỗng nên 2 test tự bỏ qua. Khôi phục bundle `knowledge:backup` xong thì
 chúng chạy thật, và bạn thấy **611 xanh, 0 bỏ qua** — đó là ĐÚNG, không phải lệch.
 
