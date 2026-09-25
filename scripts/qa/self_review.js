@@ -18,6 +18,7 @@ const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const preflight = require(path.resolve(__dirname, 'preflight_gate'));
 const outputGate = require(path.resolve(__dirname, 'output_gate'));
 const designGate = require(path.resolve(__dirname, 'design_gate'));
+const scopeAnchor = require(path.resolve(__dirname, 'scope_anchor'));
 const engine = require(path.resolve(__dirname, 'lib', 'gate_engine'));
 const testcaseModel = require(path.resolve(__dirname, '..', 'lib', 'testcase')); // parser canonical (check #6c)
 
@@ -51,6 +52,21 @@ if (tcDir && fs.existsSync(tcDir)) {
   results.push(engine.toResult('testcase design + row-quality', { problems, warnings, skipped: !files.length, note: files.length ? `${files.length} file` : 'không có .md', severity: engine.SEVERITY.P0 }));
 } else {
   results.push(engine.toResult('testcase design + row-quality', { skipped: true, note: 'không thấy test-cases/', severity: engine.SEVERITY.P0 }));
+}
+
+// 2b) Neo mẫu số Phase 1 — mọi con số coverage đứng trên mẫu số nào, và mẫu số đó do ai khai.
+// Đặt ngay sau design gate vì cùng lớp "bộ case đã đủ chưa": design gate hỏi TỪNG DÒNG có đạt chuẩn không,
+// gate này hỏi BỘ có đủ không — và câu sau vô nghĩa nếu mẫu số do chính người sinh case tự đặt.
+if (taskDir && fs.existsSync(taskDir)) {
+  const s = scopeAnchor.gateScopeAnchor(taskDir);
+  results.push(engine.toResult('neo mẫu số (scope inventory + manifest)', {
+    problems: s.problems,
+    warnings: s.warnings,
+    note: s.stats.invCount == null ? 'chưa có danh mục phạm vi' : `${s.stats.invCount} mục phạm vi · ${s.stats.tcCount} case`,
+    severity: engine.SEVERITY.P0,
+  }));
+} else {
+  results.push(engine.toResult('neo mẫu số (scope inventory + manifest)', { skipped: true, note: 'không xác định được task dir', severity: engine.SEVERITY.P0 }));
 }
 
 // 3) Execution output (comment/evidence/tầng-lỗi/attestation).
