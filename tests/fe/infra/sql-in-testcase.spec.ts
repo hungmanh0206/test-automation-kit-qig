@@ -58,9 +58,15 @@ test.describe('@infra SQL kèm testcase — chặn câu GHI và PII, không ch�
     expect(r.out).toMatch(/UPDATE/);
   });
 
+  /*
+   * Fixture dùng `example.invalid` (RFC 2606, chắc chắn không tồn tại) chứ không phải một domain thật.
+   * Lý do: chuỗi trông-như-email trong repo sẽ bị CHÍNH các phép quét PII của kit và gitleaks báo lại ở
+   * mọi lượt sau, rồi ai đó phải mở ra xác minh là fixture — tốn công lặp lại mà không thêm an toàn nào.
+   * Regex của luật không quan tâm domain nên phép kiểm vẫn chứng minh đúng thứ cần chứng minh.
+   */
   test('CHẶN: email thật trong câu SQL', () => {
     const r = runGate([row('BAD_TC_002', '[Positive][DbPersist]',
-      "1. Chạy: SELECT id FROM customers WHERE email = 'nguyenvana@gmail.com'",
+      "1. Chạy: SELECT id FROM customers WHERE email = 'qa-fixture@example.invalid'",
       '1. Trả về đúng 1 dòng')]);
     expect(r.code, 'PII khách trong testcase phải bị chặn').toBe(1);
     expect(r.out).toMatch(/email thật trong câu SQL/);
