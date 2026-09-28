@@ -31,29 +31,29 @@
     },
     "RULE_GLOBAL.md": {
       "slash": 0,
-      "longSent": 0.5,
-      "sym": 6.9,
-      "emDash": 5.8,
+      "longSent": 0.3,
+      "sym": 6.6,
+      "emDash": 5.6,
       "vague": 1.9,
-      "meanSent": 17.5,
+      "meanSent": 17.3,
       "emojiCount": 1
     },
     "prompt_templates/phase1/01_setup_engine_fetch_docs.md": {
-      "slash": 6.5,
-      "longSent": 4.3,
-      "sym": 6.5,
-      "emDash": 9.7,
-      "vague": 4.3,
-      "meanSent": 15.7,
+      "slash": 4.2,
+      "longSent": 1.1,
+      "sym": 0,
+      "emDash": 6.4,
+      "vague": 4.2,
+      "meanSent": 13.9,
       "emojiCount": 0
     },
     "prompt_templates/phase1/02b_output_format.md": {
-      "slash": 17,
-      "longSent": 2.3,
-      "sym": 4.5,
-      "emDash": 8,
-      "vague": 1.7,
-      "meanSent": 15.6,
+      "slash": 11.5,
+      "longSent": 0,
+      "sym": 3.3,
+      "emDash": 5.5,
+      "vague": 1.6,
+      "meanSent": 14.8,
       "emojiCount": 0
     },
     "prompt_templates/phase1/02_gen_testcases.md": {
@@ -201,12 +201,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/14_be_conformance.md": {
-      "slash": 17.1,
-      "longSent": 6.2,
-      "sym": 10.9,
-      "emDash": 14,
+      "slash": 12.2,
+      "longSent": 1.5,
+      "sym": 7.6,
+      "emDash": 4.6,
       "vague": 0,
-      "meanSent": 25.8,
+      "meanSent": 19.2,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/15_security.md": {
@@ -363,12 +363,12 @@
       "emojiCount": 0
     },
     ".agent/workflows/phase1_01_prepare_context.md": {
-      "slash": 11.3,
-      "longSent": 9.4,
-      "sym": 5.6,
-      "emDash": 7.5,
+      "slash": 7.1,
+      "longSent": 0,
+      "sym": 1.8,
+      "emDash": 7.1,
       "vague": 0,
-      "meanSent": 21.3,
+      "meanSent": 17,
       "emojiCount": 0
     },
     ".agent/workflows/phase1_02_generate_testcases.md": {
@@ -417,12 +417,12 @@
       "emojiCount": 0
     },
     ".agent/workflows/phase2_02_generate_or_update_automation.md": {
-      "slash": 10.8,
-      "longSent": 6.8,
-      "sym": 35.1,
-      "emDash": 8.1,
+      "slash": 10.7,
+      "longSent": 0,
+      "sym": 16,
+      "emDash": 5.3,
       "vague": 2.7,
-      "meanSent": 14.2,
+      "meanSent": 12.7,
       "emojiCount": 0
     },
     ".agent/workflows/phase2_03_execute_and_auto_heal.md": {

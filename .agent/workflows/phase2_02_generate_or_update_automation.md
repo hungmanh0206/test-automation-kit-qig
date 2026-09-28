@@ -12,7 +12,9 @@ Chạy pass này cho toàn bộ selected TC trước khi sinh/cập nhật spec.
 
 1. Đọc selected TC từ nguồn canonical local (`from-sheet/*.xlsx`), sau đó đọc `### Precondition Execution Matrix` (và catalog `## Setup Strategy` trong Markdown khi cần chi tiết).
 2. Map `Setup Method` của từng TC: `api`/`factory`/`test_hook`/`pre_existing`/`ui`/`manual`.
-3. Reuse setup layer dùng chung `tests/support/setup/` (factories/hooks/fixtures/cleanup/contracts); phần đặc thù story tạo task-scoped ở `<TASK_OUTPUT_DIR>/automation/setup/` (namespace `RUN_ID` khi song song); không sửa shared khi story khác đang chạy; không thêm DB client/DB query mới (chỉ dùng guarded client `db/uatDbClient.ts` cho read-only verify UAT).
+3. Reuse setup layer dùng chung `tests/support/setup/`, gồm factories, hooks, fixtures, cleanup và contracts.
+   Phần đặc thù story thì tạo task-scoped ở `<TASK_OUTPUT_DIR>/automation/setup/`, namespace theo `RUN_ID` khi chạy song song.
+   Không sửa shared khi story khác đang chạy. Không thêm DB client hay DB query mới: chỉ dùng guarded client `db/uatDbClient.ts` cho read-only verify UAT.
 4. Verify precondition theo `Setup Verification` trước khi chạy assertion chính.
 5. Setup/verify fail → `setup_failure` (sửa setup, không phải product bug, không log Backlog). `Needs hook` thiếu hook → BLOCKED + đề xuất hook; `Manual-only` → SKIP hợp lệ.
 6. Cleanup theo `Cleanup/Rollback` scope `RUN_ID` sau khi chạy.
@@ -41,22 +43,24 @@ Chạy pass này cho toàn bộ selected TC trước khi sinh/cập nhật spec.
 
 7. **GATE CHẤT LƯỢNG CODE — chạy TRƯỚC khi execute, không phải sau khi vỡ:**
    `npm run lint:locator` (soi mới) → `npm run lint:locator:enforce` (CHẶN nếu phát sinh P0 mới so với baseline).
-   Phase 1 có `design_gate` chặn testcase kém; khâu sinh CODE trước đây KHÔNG có gate tương đương, nên code
-   brittle chỉ lộ ra lúc chạy — và lúc đó nó lộ ra dưới dạng "FAIL" trông như bug sản phẩm.
-   Gate bắt: click theo toạ độ · `force: true` · regex trên `body.innerText` · `querySelectorAll('*')` ·
-   `.first()`/`.nth()` ở cấp trang · hard-wait ≥5s · **XPath** · **assertion yếu** (`toBeTruthy()` trên giá
-   trị đọc từ app — pass với BẤT KỲ chuỗi khác rỗng, kể cả giá trị sai).
+   Phase 1 có `design_gate` chặn testcase kém. Khâu sinh CODE trước đây KHÔNG có gate tương đương, nên code
+   brittle chỉ lộ ra lúc chạy, và lúc đó nó lộ ra dưới dạng "FAIL" trông như bug sản phẩm.
+
+   Gate bắt: click theo toạ độ, `force: true`, regex trên `body.innerText`, `querySelectorAll('*')`,
+   `.first()` hay `.nth()` ở cấp trang, hard-wait ≥5s, **XPath**, và **assertion yếu**. Assertion yếu là
+   `toBeTruthy()` trên giá trị đọc từ app: nó pass với BẤT KỲ chuỗi khác rỗng, kể cả giá trị sai.
    Bỏ qua phải CÓ LÝ DO: `// locator-lint-disable-next-line <lý do>` ngay trên dòng.
    Runtime làm đúng: `scripts/utils/ui/safe_target.js` (`one`/`section`/`clickVerified`/`readValue`).
 
 8. **Case Create/Update/Delete ⇒ kiểm CẢ bản ghi dưới DB (chiều §23, tag `[DbPersist]`):**
    `tests/support/setup/db/dbVerify.ts` — `expectRow` · `expectSoftDeleted` · `expectAbsent` · `expectCount` ·
-   `snapshot`+`expectNoChange`. So sánh bằng matcher theo NGHĨA (`money`/`instant`/`text`), KHÔNG so thô:
-   cùng khái niệm tiền mà bảng đơn lưu `final_price` kiểu `bigint` còn bảng giao dịch lưu `amount` kiểu
-   `varchar` ⇒ so thô đỏ hàng loạt dù DB lưu đúng.
-   Vì sao bắt buộc: response API thường ECHO lại request và FE format lại giá trị, nên 7 lớp lỗi (đổi kiểu
-   số · lệch múi giờ · cắt `varchar(n)` · xoá mềm hỏng · bảng liên quan không đổi · double-submit · rollback
-   sai) đều "UI thấy đúng". Riêng *xoá mềm* và *bảng liên quan* gần như không phát hiện được qua UI.
+   `snapshot` cùng `expectNoChange`. So sánh bằng matcher theo NGHĨA (`money`, `instant`, `text`), KHÔNG so
+   thô. Cùng khái niệm tiền mà bảng đơn lưu `final_price` kiểu `bigint` còn bảng giao dịch lưu `amount` kiểu
+   `varchar`, nên so thô sẽ đỏ hàng loạt dù DB lưu đúng.
+
+   Vì sao bắt buộc: response API thường ECHO lại request, và FE format lại giá trị. Nên 7 lớp lỗi sau đều
+   "UI thấy đúng": đổi kiểu số, lệch múi giờ, cắt `varchar(n)`, xoá mềm hỏng, bảng liên quan không đổi,
+   double-submit, rollback sai. Riêng *xoá mềm* và *bảng liên quan* gần như không phát hiện được qua UI.
    BỐN ràng buộc (chi tiết ở `prompt_templates/phase1/dimensions/23_db_persistence.md`):
    - DB là oracle **PHỤ** — nguồn sự thật vẫn là FSD/`BR-*`. Lấy số từ DB rồi bảo "UI phải giống DB" là tautology.
      Giá trị chính là KHOANH TẦNG: UI đúng + DB sai ⇒ BE lưu sai; UI sai + DB đúng ⇒ FE render sai.

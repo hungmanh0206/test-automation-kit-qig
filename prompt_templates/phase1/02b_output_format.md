@@ -116,11 +116,13 @@ Sau khi lưu file Markdown testcase:
    ```bash
    node scripts/convert_excel/md_to_xlsx.js <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-cases/exam_crud_test_cases.md <PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-cases/exam_crud_test_cases.xlsx
    ```
-3. File Excel phải có sheet `Theo dõi tiến độ` (dashboard tự tính theo nhóm chức năng), sheet `Hướng dẫn`, và 1 sheet riêng cho mỗi nhóm chức năng (tên sheet = Mã CN, layout theo `TC_TEMPLATE 1`: ID_TC/Module/Test Case Name/Preconditions/Test Data/Test Steps/Expected Result/Test Type/Priority/Test Level/Actor-Role/Result/Note/Test Objective/Technique/REQ ID, cộng 2 cột cuối `Loại case`/`Tag` giữ nguyên từ Markdown để không mất dữ liệu đã qua gate) — converter `md_to_xlsx.js` tự dựng đủ, không cần thao tác tay.
+3. File Excel phải có sheet `Theo dõi tiến độ` là dashboard tự tính theo nhóm chức năng, sheet `Hướng dẫn`, và 1 sheet riêng cho mỗi nhóm chức năng.
+   Tên sheet lấy theo Mã CN. Layout theo `TC_TEMPLATE 1`: ID_TC, Module, Test Case Name, Preconditions, Test Data, Test Steps, Expected Result, Test Type, Priority, Test Level, Actor-Role, Result, Note, Test Objective, Technique, REQ ID. Cộng thêm 2 cột cuối `Loại case` và `Tag`, giữ nguyên từ Markdown để không mất dữ liệu đã qua gate.
+   Converter `md_to_xlsx.js` tự dựng đủ, không cần thao tác tay.
 4. Nếu có nhiều file Markdown testcase, export từng file có bảng `TC ID` sang một file `.xlsx` tương ứng.
 5. Sau khi export, kiểm tra file `.xlsx` tồn tại và cập nhật đường dẫn Excel vào `task.md` hoặc summary output.
 6. Nếu thiếu dependency `exceljs`, báo rõ blocker; không bỏ qua bước Excel và không coi Phase 1 hoàn tất.
-7. Sau khi export Excel, coi file Excel là source of truth **khi gen/publish**. Đây cũng là nội dung sẽ upload lên Google Sheet (agent tự làm qua Drive MCP — xem bước Auto Publish bên dưới); Phase 2 execute luôn tải bản Sheet mới nhất về trước khi chạy.
+7. Sau khi export Excel, coi file Excel là source of truth **khi gen và khi publish**. Đây cũng là nội dung sẽ upload lên Google Sheet, agent tự làm qua Drive MCP, xem bước Auto Publish bên dưới. Phase 2 execute luôn tải bản Sheet mới nhất về trước khi chạy.
 8. Không upload lên Google Sheet trong prompt sinh testcase. Ghi trạng thái `Google Sheet publish: Pending QA confirmation`; Auto Publish là step riêng trong phạm vi Phase 1 và chỉ chạy bằng `prompt_templates/phase1/04_auto_publish_backlog.md` (tên file giữ nguyên, nội dung đã đổi sang Google Sheet) sau khi QA xác nhận Excel.
 9. Sau khi export Excel, tạo/cập nhật `reports/phase1-summary.md` theo format Phase 1 Summary Report ở trên.
 10. Cập nhật `task.md` với đường dẫn Markdown testcase, Excel testcase, trạng thái chờ QA xác nhận publish Backlog và Phase 1 summary report.
@@ -139,8 +141,15 @@ Sau khi lưu file Markdown testcase:
 8. Chỉ điểm mờ **Medium/Low** mới được tự áp assumption (ghi rõ assumption + Coverage Gap) rồi tiếp tục; **KHÔNG** áp cho Critical/High (những thứ đó phải chờ trả lời)
 9. Không tạo testcase quá ngắn để tăng số lượng. Chất lượng chi tiết và khả năng execute ở Phase 2 quan trọng hơn số lượng thuần túy
 10. Không được để trống endpoint/method/status ở API testcase
-10b. **Oracle hiển thị phải từ tài liệu**: expected cho tên cột/label/format/thứ tự/empty-state trích verbatim từ FS/Figma, KHÔNG suy từ build (chống tautological). Mỗi màn có bảng/field phải có dimension Conformance ([`dimensions/12_display.md`](dimensions/12_display.md)): tên cột exact, format từng field, số cột + thứ tự, field bắt buộc
-10c. **Không chỉ UI/field — phải phủ logic/dữ liệu/bảo mật/hiệu năng** (mục 13–16 ở [`dimensions/`](dimensions/), nếu applicable): kết quả tính toán bằng **giá trị cụ thể** + biên làm tròn và so khớp/delta dữ liệu (mục 13); phân biệt `null`/rỗng/thiếu/`0` và mapping BE→UI cho field trống nghi ngờ (mục 14); IDOR/privilege/injection/mass-assignment/data-exposure (mục 15); SLA/large-dataset/concurrent khi có ngưỡng (mục 16). Dimension không áp dụng → `N/A + lý do` ở Coverage Gaps, KHÔNG bỏ im lặng. Expected của logic/data là **oracle độc lập tự tính**, KHÔNG lấy từ build
+10b. **Oracle hiển thị phải từ tài liệu.** Expected cho tên cột, label, format, thứ tự và empty-state phải trích verbatim từ FS hoặc Figma, KHÔNG suy từ build, để chống tautology.
+     Mỗi màn có bảng hay field phải có dimension Conformance ([`dimensions/12_display.md`](dimensions/12_display.md)): tên cột exact, format từng field, số cột và thứ tự, field bắt buộc
+10c. **Không chỉ UI và field: phải phủ cả logic, dữ liệu, bảo mật, hiệu năng** (mục 13 đến 16 ở [`dimensions/`](dimensions/), nếu applicable):
+     - Mục 13: kết quả tính toán bằng **giá trị cụ thể**, kèm biên làm tròn, và so khớp hoặc delta dữ liệu.
+     - Mục 14: phân biệt `null`, rỗng, thiếu key và `0`, cùng mapping BE sang UI cho field trống đáng nghi.
+     - Mục 15: IDOR, privilege, injection, mass-assignment, data-exposure.
+     - Mục 16: SLA, large-dataset, concurrent khi có ngưỡng.
+
+     Dimension không áp dụng thì ghi `N/A` kèm lý do ở Coverage Gaps, KHÔNG bỏ im lặng. Expected của logic và data là **oracle độc lập tự tính**, KHÔNG lấy từ build
 11. Không được để steps/expected thành một câu dài; phải xuống dòng hoặc đánh số rõ ràng trong cell
 12. Khi chạy trong repo này, phải xuất thêm file Excel `.xlsx` từ testcase Markdown trước khi kết thúc Phase 1
 13. Mỗi testcase phải có nhóm chức năng rõ ràng trong cột `Module`; Excel export phải thể hiện được nhóm đó để lọc/review
@@ -148,4 +157,5 @@ Sau khi lưu file Markdown testcase:
 15. Không coi Phase 1 hoàn tất nếu testcase/report/task log dùng tiếng Việt không dấu hoặc bị lỗi encoding/mojibake
 16. Không coi Phase 1 hoàn tất nếu còn cell `Tiền điều kiện` thiếu tag `[<method>]`, hoặc `Setup Source` chung chung không đủ để Phase 2 setup/manual rõ
 17. `Setup Source` cho strategy `api` phải dựa trên Swagger đã fetch ở `requirements/swagger/`; nếu không có cách setup thì đánh dấu `Needs hook` hoặc `Manual-only` thay vì bịa endpoint
-18. Sau khi Excel tạo thành công, KHÔNG publish trong prompt này; ghi `Pending QA confirmation`. Auto Publish testcase chạy bằng prompt riêng sau khi QA xác nhận. Excel là source of truth khi gen/publish; Phase 2 execute LUÔN tải bản Google Sheet mới nhất về (`test-cases/from-sheet/*.xlsx`, qua Drive MCP) trước khi chạy — không còn khái niệm nguồn `excel` local opt-out như trước, vì Sheet giờ chính là nơi lưu Excel canonical.
+18. Sau khi Excel tạo thành công, KHÔNG publish trong prompt này. Ghi `Pending QA confirmation`. Auto Publish testcase chạy bằng prompt riêng sau khi QA xác nhận.
+    Excel là source of truth khi gen và khi publish. Phase 2 execute LUÔN tải bản Google Sheet mới nhất về `test-cases/from-sheet/*.xlsx` qua Drive MCP trước khi chạy. Không còn khái niệm nguồn `excel` local opt-out như trước, vì Sheet giờ chính là nơi lưu Excel canonical.

@@ -8,7 +8,11 @@ Bạn là QA Engineer thiết lập AI Core Engine để phân tích tài liệu
 # Nhiệm vụ
 Kết nối nguồn tài liệu, tiếp nhận requirement và chuẩn bị context cho việc sinh testcases.
 
-> **ĐỌC THẬT KỸ, KHÔNG QUA LOA.** Mọi tài liệu phải đọc TOÀN BỘ (mọi mục, bảng, ghi chú, footnote, comment, phụ lục), bóc hết acceptance criteria / business rule / validation / enum / state & transition / edge / xử lý lỗi / phân quyền / biên; đối chiếu chéo các nguồn và **nêu mâu thuẫn**. Đọc lướt → phân tích lệch → câu hỏi làm rõ sai/thiếu → testcase kém. (Canonical: `RULE_GLOBAL.md` §"Analysis & Ambiguity Gate".)
+> **ĐỌC THẬT KỸ, KHÔNG QUA LOA.** Mọi tài liệu phải đọc TOÀN BỘ: mọi mục, bảng, ghi chú, footnote, comment, phụ lục.
+> Bóc hết acceptance criteria, business rule, validation, enum, state và transition, edge, xử lý lỗi, phân quyền, biên.
+> Đối chiếu chéo các nguồn và **nêu mâu thuẫn**.
+> Đọc lướt dẫn tới phân tích lệch, rồi câu hỏi làm rõ sai hoặc thiếu, rồi testcase kém.
+> Canonical: `RULE_GLOBAL.md` §"Analysis & Ambiguity Gate".
 
 # Đầu vào
 - Project: [YOUR_PROJECT_NAME]
@@ -30,10 +34,13 @@ Kết nối nguồn tài liệu, tiếp nhận requirement và chuẩn bị cont
 
 # TRƯỚC KHI ĐỌC: đo tài liệu — `npm run docs:budget`
 
-**Chạy trước, đọc sau.** Tài liệu ở dự án này lớn hơn cảm giác rất nhiều, và "to" chỉ hiện ra khi đã đọc xong thì đã muộn. Đo thật trên một task: **54 tài liệu · ~38.600k token nếu đọc hết** — trong đó một file Figma JSON **37.500k** (nặng gấp ~3.180× toàn bộ prompt gen) và FSD tồn tại cả bản `.json` 504k lẫn `.md` 108k.
+**Chạy trước, đọc sau.** Tài liệu ở dự án này lớn hơn cảm giác rất nhiều, và "to" chỉ hiện ra khi đã đọc xong thì đã muộn.
+
+Đo thật trên một task: **54 tài liệu, khoảng 38.600k token nếu đọc hết**. Trong đó một file Figma JSON chiếm **37.500k**, nặng gấp khoảng 3.180 lần toàn bộ prompt gen. FSD thì tồn tại cả bản `.json` 504k lẫn bản `.md` 108k.
 
 Lệnh in ra 3 thứ:
-1. **Ngưỡng việc-nên-làm** cho từng file: `<8k` đọc trực tiếp · `8–25k` chỉ đọc mục cần · `>25k` **giao subagent** trích rồi chỉ nhận phần đã trích (thêm `--contract` để lấy hợp đồng trích xuất dán cho subagent: trả JSON theo `knowledge/SCHEMA.md`, mọi rule phải có `source` tới đúng tab/mục, chỗ tài liệu không trả lời được thì cho vào `open_questions` — **cấm suy diễn lấp chỗ trống**).
+1. **Ngưỡng việc-nên-làm** cho từng file: `<8k` thì đọc trực tiếp, `8–25k` thì chỉ đọc mục cần, `>25k` thì **giao subagent** trích rồi chỉ nhận phần đã trích.
+   Thêm `--contract` để lấy hợp đồng trích xuất dán cho subagent. Hợp đồng đó yêu cầu: trả JSON theo `knowledge/SCHEMA.md`, mọi rule phải có `source` tới đúng tab hoặc mục, và chỗ tài liệu không trả lời được thì cho vào `open_questions`. **Cấm suy diễn lấp chỗ trống.**
 2. **Tài liệu có NHIỀU BẢN** — cùng nội dung khác định dạng (`.json` vs `.md`) hoặc nhiều lần export. Chỉ đọc bản nên đọc; đo thật tiết kiệm ~670k token mà không mất chữ nào.
 > **Google Doc là nguồn spec: đọc bằng `npm run gdoc:read -- --doc-id <ID> --out <file.md>`**, đừng copy tay.
 > Hai bẫy đã trả giá thật, script này đã vá cả hai — copy tay thì mất cả hai:
@@ -41,8 +48,9 @@ Lệnh in ra 3 thứ:
 >   345KB toàn tài liệu). Script log ra số tab đọc được — đọc log đó, đừng bỏ qua.
 > - **Spec bổ sung của BA nằm ở nội dung TÔ MÀU / suggested**, không phải văn xuôi thường; phải đọc
 >   `textRun.backgroundColor` mới thấy. Bỏ qua là bỏ nguyên nhóm yêu cầu mới nhất.
-> `scripts/integrations/google_sheet/` (đọc Sheet qua REST/service-account) là **LEGACY, không dùng ở bước này**: testcase canonical nay là Excel trong
-> `<TASK_OUTPUT_DIR>/test-cases/`, publish lên Google Sheet qua Drive MCP (khác cơ chế — xem skill `backlog_testcase_publisher`). Dòng này chỉ nói về việc ĐỌC spec từ Google Sheet của stakeholder, không phải publish testcase.
+> `scripts/integrations/google_sheet/`, tức đọc Sheet qua REST và service-account, là **LEGACY và không dùng ở bước này**.
+> Testcase canonical nay là Excel trong `<TASK_OUTPUT_DIR>/test-cases/`, publish lên Google Sheet qua Drive MCP. Đó là cơ chế khác, xem skill `backlog_testcase_publisher`.
+> Dòng này chỉ nói về việc ĐỌC spec từ Google Sheet của stakeholder, không phải publish testcase.
 
 3. **⚠⚠ Bản cũ NHỎ HƠN HẲN bản mới** = bản **thiếu nội dung**, không phải "bản khác ngày". Đọc nó là đọc thiếu spec. *(Đã xảy ra thật: export Google Doc trước khi vá `includeTabsContent` chỉ lấy 1/15 tab — 6,6k thay vì 108k.)*
 

@@ -232,7 +232,9 @@ việc khác, và không làm.
 - Nếu là thay đổi chung, phải có xác nhận rõ của user hoặc ghi blocker chờ xác nhận.
 - Khi đã sửa shared file, execution summary phải ghi: file đã sửa, lý do, story có thể bị ảnh hưởng, scope regression đã chạy hoặc chưa chạy.
 
-- **Gate mới mà CHẶN theo quy ước MỚI thì quy ước đó phải vào file này (canonical) trong CÙNG thay đổi.** Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule**. Ai chỉ đọc `CLAUDE.md → core_rules` sẽ không bao giờ biết luật đó. Đã xảy ra thật với `dim:coverage --enforce`, `output_gate` và `domain:trace-back`. Cả ba chặn hoặc cảnh báo theo quy ước **tag chiều**, trong khi từ "chiều" xuất hiện **0 lần** ở `RULE_GLOBAL.md`, `core_rules.md`, README, USER_GUIDE và QUICKSTART suốt 3 ngày.
+- **Gate mới mà CHẶN theo quy ước MỚI thì quy ước đó phải vào file này (canonical) trong CÙNG thay đổi.** Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule**. Ai chỉ đọc `CLAUDE.md → core_rules` sẽ không bao giờ biết luật đó.
+
+  Đã xảy ra thật với `dim:coverage --enforce`, `output_gate` và `domain:trace-back`. Cả ba chặn hoặc cảnh báo theo quy ước **tag chiều**, trong khi từ "chiều" xuất hiện **0 lần** ở `RULE_GLOBAL.md`, `core_rules.md`, README, USER_GUIDE và QUICKSTART suốt 3 ngày.
   - Đây là luật cho NGƯỜI, cố ý **không** làm thành máy kiểm. Bản máy ("mọi npm script gate phải được canonical nhắc TÊN") đo ra **19/24 script sẽ báo oan**. Ví dụ `secret:scan` chặn theo §Security: quy tắc *có* nhưng tên lệnh *không*, và như vậy mới đúng. Biến canonical thành danh mục lệnh còn tệ hơn.
   - Kiểm bằng mắt khi review: gate mới chặn cái gì → cái đó có nằm ở §nào trong file này không?
 
@@ -540,7 +542,7 @@ Field `comment` của mỗi case (trong `testcase-status.json`, đẩy lên run 
 
 Luật này sinh ra từ một lỗi lặp lại, chủ repo chỉ ra ngày 16/09/2026. Ở Phase 2 tôi báo "phát hiện
 bug, có log không", bạn hỏi lại "chắc chưa", tôi kiểm lại rồi rút lời. Phát hiện kỹ thuật sai ngay từ
-đầu, và câu hỏi của người dùng đang làm việc mà gate lẽ ra phải làm.
+đầu. Câu hỏi của người dùng đang làm việc mà gate lẽ ra phải làm.
 
 Gốc là lỗi thứ tự, không phải bất cẩn. Bar để khẳng định một bug nằm ở bước `phase2_04` với khoảng tám
 điều kiện. Nhưng lời nói ra ở bước `phase2_03`, nơi chỉ đòi hai điều kiện là rerun đủ vòng và thu
@@ -588,7 +590,9 @@ Các năng lực chạy thật trong `scripts/qa/` + `exploratory/` phải khai 
 - **Non-destructive & non-prod**: `security_check` chỉ GET/read-only + `--confirm-nonprod`; `load_check` non-prod + cap + `--confirm-nonprod`; fuzzing/exploit/brute-force/ZAP là Manual-only opt-in có phê duyệt người. TUYỆT ĐỐI không chạy trên production.
 - **Mask PII/secret** trong mọi report (security/knowledge/dashboard); không ghi credential/PII khách hàng.
 - **Learning data chỉ ghi fact đã qua gate** (bug đã qua Backlog gate); band risk máy chấm luôn cho phép QA override.
-- **Output Quality Gate (THỰC THI, không phải prose)**: `scripts/qa/output_gate.js` + `scripts/qa/lib/output_rules.js` biến rule chất lượng thành check máy — `push_test_execution.js` tự chạy trước khi push (comment gọn, không debug, mọi step có status + evidence ảnh hoặc video, video cho case phức tạp). Vi phạm → CHẶN; agent tự sửa trong session, không chờ nhắc. `--qa-approved` bỏ qua có chủ đích (log lại). Bug/Test Execution **bắt buộc qua script kit**, không tạo tay MCP/API.
+- **Output Quality Gate là THỰC THI, không phải prose.** `scripts/qa/output_gate.js` cùng `scripts/qa/lib/output_rules.js` biến rule chất lượng thành check máy. `push_test_execution.js` tự chạy nó trước khi push: comment phải gọn và không debug, mọi step có status kèm evidence ảnh hoặc video, case phức tạp phải có video.
+
+  Vi phạm thì CHẶN, và agent tự sửa trong session chứ không chờ nhắc. `--qa-approved` bỏ qua có chủ đích và được log lại. Bug cùng Test Execution **bắt buộc qua script kit**, không tạo tay bằng MCP hay API.
 - **Không thêm dependency nặng**: axe-core (npm) đủ cho a11y; k6 là binary ngoài (Docker/PATH, không vào deps), thiếu → skip sạch.
 
 ## Workflow
@@ -609,7 +613,9 @@ Clean temporary files
 
 Trước khi kết thúc task, scan workspace root và subfolder cấp 1 để dọn file tạm và file debug rõ ràng. Không xóa deliverable hoặc dữ liệu người dùng chưa được phép xóa.
 
-**Dump ad-hoc KHÔNG ghi vào repo root.** Mọi dump chẩn đoán (swagger/OpenAPI, response API, id tạm, snapshot) phải ghi vào **thư mục scratchpad của session** (hoặc `<TASK_OUTPUT_DIR>/` nếu là artifact cần giữ) — ghi ra root repo là rác lọt lưới, và các dump này thường chứa **email/SĐT/PII trong giá trị mẫu** → chỉ cần một lần `git add .` là commit lộ PII (đã xảy ra thật: nhiều file `scratch_*` dump API/swagger sót ở root repo sau một task, chưa được gitignore).
+**Dump ad-hoc KHÔNG ghi vào repo root.** Mọi dump chẩn đoán, gồm swagger hay OpenAPI, response API, id tạm, snapshot, phải ghi vào **thư mục scratchpad của session**. Artifact cần giữ thì ghi vào `<TASK_OUTPUT_DIR>/`.
+
+Ghi ra root repo là rác lọt lưới. Các dump này thường chứa **email, SĐT và PII trong giá trị mẫu**, nên chỉ cần một lần `git add .` là commit lộ PII. Đã xảy ra thật: nhiều file `scratch_*` dump API và swagger sót ở root repo sau một task, chưa được gitignore.
 
 | Pattern | Meaning |
 |---|---|
