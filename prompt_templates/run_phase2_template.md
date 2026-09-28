@@ -23,7 +23,9 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 
 ## Gate bắt buộc chạy trong Phase 2
 
-Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase2_*`** mà file điểm-vào này không trỏ tới ⇒ ai theo đúng `run_phase2` thì **không bao giờ chạy self-review, và không bao giờ thu learning data** — đó chính là lý do `knowledge/` bị cũ. Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
+Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase2_*`**, mà file điểm-vào này lại không trỏ tới. Ai theo đúng `run_phase2` thì **không bao giờ chạy self-review, và không bao giờ thu learning data**. Đó chính là lý do `knowledge/` bị cũ.
+
+Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
 
 | Khi nào | Lệnh | Nó chặn/sinh ra gì |
 |---|---|---|
@@ -44,8 +46,8 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase2_*`*
 
 > 🗣️ **BẮT BUỘC — kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Sinh ra `learning-summary.md` rồi im lặng
 > là chưa xong: user phải đi mở file mới biết. Cuối lượt chạy, nói thẳng **ba phần**:
-> 1. **Đã học gì** — record mới/cập nhật trong `knowledge/**` (bug · domain rule · bản đồ hệ thống · decision ·
->    setup recipe · quirk env · kỹ thuật UI), **kèm cả memory vừa lưu/sửa và lý do lưu**.
+> 1. **Đã học gì.** Record mới hoặc cập nhật trong `knowledge/**`: bug, domain rule, bản đồ hệ thống,
+>    decision, setup recipe, quirk env, kỹ thuật UI. Kèm cả **memory vừa lưu hoặc sửa, và lý do lưu**.
 > 2. **Đã sửa gì** — thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
 > 3. **Còn thiếu gì** — lỗ hổng **đo được**: bug thiếu `tc_id` (bị `risk_score` loại khỏi bảng) · rule có
 >    `covered_by` rỗng · bug chưa có `root_cause_ref` · store còn rỗng · câu hỏi đang chờ BA.

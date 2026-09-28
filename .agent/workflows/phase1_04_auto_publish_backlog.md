@@ -46,7 +46,7 @@
 - Không publish thật nếu thiếu QA confirmation.
 - Không sửa nội dung testcase trực tiếp trên Sheet (UI Google Sheets); authoring ở Excel rồi re-publish (`update_file`) — ghi đè toàn phần nên bản sửa tay trên Sheet sẽ mất.
 - Sheet không có folder/tag/Cycle/Run/custom field như công cụ test-management cũ — đổi mô hình dữ liệu, không phải đổi tên; đừng đi tìm các khái niệm đó rồi kết luận "thiếu". Nhóm chức năng thể hiện bằng sheet riêng trong cùng workbook.
-- Nếu Excel bỏ bớt TC sau publish, không cần xử lý cleanup riêng (khác công cụ cũ) — lần `update_file` kế tiếp tự động phản ánh đúng Excel hiện tại (case bị xoá khỏi Excel thì cũng biến mất khỏi Sheet).
+- Nếu Excel bỏ bớt TC sau publish thì không cần xử lý cleanup riêng, khác công cụ cũ. Lần `update_file` kế tiếp tự phản ánh đúng Excel hiện tại: case bị xoá khỏi Excel cũng biến mất khỏi Sheet.
 - Không log bug Backlog trong step này; bug logging thuộc Phase 2.
 - Nếu publish lỗi một phần, giữ Excel canonical và ghi rõ lỗi trong report local.
 - Việc publish chỉ làm được khi agent đang chạy trong phiên chat (MCP không gọi được từ CI headless) — đánh đổi có chủ ý.

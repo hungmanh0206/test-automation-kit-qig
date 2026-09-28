@@ -55,4 +55,4 @@
 - PII đọc ra phải mask, cấm ghi ra file.
 - Nếu DB UAT cũng không expose được → `Automation Readiness = Needs hook`/`Manual-only`, KHÔNG bịa expected.
 
-**Cảnh báo ngược — đừng để DB ru ngủ:** *DB đúng KHÔNG có nghĩa sản phẩm đúng.* Bản ghi chuẩn mà UI hiển thị sai thì người dùng vẫn chịu thiệt, và một assert DB xanh rất dễ khiến bỏ qua bug FE. Vì vậy dòng `db_readonly` là **bổ sung** cho assert trên UI, không bao giờ thay thế.
+**Cảnh báo ngược, đừng để DB ru ngủ:** *DB đúng KHÔNG có nghĩa sản phẩm đúng.* Bản ghi chuẩn mà UI hiển thị sai thì người dùng vẫn chịu thiệt. Một assert DB xanh rất dễ khiến bỏ qua bug FE. Vì vậy dòng `db_readonly` là **bổ sung** cho assert trên UI, không bao giờ thay thế.

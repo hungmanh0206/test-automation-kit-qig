@@ -22,12 +22,18 @@ Xác nhận fix của Dev bằng execution thật, evidence rõ và không pass 
 
 6. **GATE MÁY — chạy TRƯỚC khi sang bước 3 (comment/Done Backlog), không phải kiểm bằng mắt:**
    `node scripts/qa/output_gate.js --mode test-execution --status <TASK_OUTPUT_DIR>/test-results/runs/<RUN_ID>/testcase-status.json`
-   Vì sao nhánh này CẦN nó nhất: rerun là nhánh **trực tiếp chuyển bug sang Done** — hậu quả cao nhất trong
-   cả kit — mà trước 23/08/2026 nó là nhánh DUY NHẤT không có gate máy nào (Phase 2 có `output_gate` tự chạy
-   trong `push_test_execution`, Phase 1 có `design_gate`). Gate bắt đúng thứ dễ trượt lúc "dev đã fix rồi,
-   đóng bug cho xong": evidence không phải ảnh/video · step thiếu status · comment dính debug · case phức
-   tạp mà chỉ có ảnh tĩnh · FAIL không phân tầng · **FAIL tầng product/api chưa khai `reruns` ≥ ngưỡng
-   taxonomy** (`verdict_taxonomy.rerun.min`).
+   Vì sao nhánh này CẦN nó nhất: rerun là nhánh **trực tiếp chuyển bug sang Done**, tức hậu quả cao nhất
+   trong cả kit. Vậy mà trước 23/08/2026 nó là nhánh DUY NHẤT không có gate máy nào, trong khi Phase 2 có
+   `output_gate` tự chạy trong `push_test_execution` còn Phase 1 có `design_gate`.
+
+   Gate bắt đúng những thứ dễ trượt lúc "dev đã fix rồi, đóng bug cho xong":
+
+   - evidence không phải ảnh hoặc video
+   - step thiếu status
+   - comment dính debug
+   - case phức tạp mà chỉ có ảnh tĩnh
+   - FAIL không phân tầng
+   - **FAIL tầng product hoặc api chưa khai `reruns` đạt ngưỡng taxonomy** (`verdict_taxonomy.rerun.min`)
    Gate CHẶN ⇒ tự sửa trong session rồi chạy lại tới PASS, KHÔNG chờ user nhắc.
 
 7. **Mở rộng quanh vùng vừa fix (BẮT BUỘC với bug band High/Medium):**

@@ -31,20 +31,20 @@
     },
     "RULE_GLOBAL.md": {
       "slash": 0,
-      "longSent": 0.3,
+      "longSent": 0.1,
       "sym": 6.6,
       "emDash": 5.6,
       "vague": 1.9,
-      "meanSent": 17.3,
+      "meanSent": 17.2,
       "emojiCount": 1
     },
     "prompt_templates/phase1/01_setup_engine_fetch_docs.md": {
-      "slash": 4.2,
-      "longSent": 1.1,
+      "slash": 4.3,
+      "longSent": 0,
       "sym": 0,
-      "emDash": 6.4,
-      "vague": 4.2,
-      "meanSent": 13.9,
+      "emDash": 5.3,
+      "vague": 4.3,
+      "meanSent": 13.4,
       "emojiCount": 0
     },
     "prompt_templates/phase1/02b_output_format.md": {
@@ -75,12 +75,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/04_auto_publish_backlog.md": {
-      "slash": 5.9,
-      "longSent": 11.8,
+      "slash": 0,
+      "longSent": 0,
       "sym": 0,
-      "emDash": 17.6,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 24.3,
+      "meanSent": 16.5,
       "emojiCount": 0
     },
     "prompt_templates/phase1/05_manual_quick.md": {
@@ -120,12 +120,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/05_api.md": {
-      "slash": 19.1,
-      "longSent": 2.7,
-      "sym": 13.7,
-      "emDash": 5.5,
+      "slash": 13.3,
+      "longSent": 0,
+      "sym": 13.3,
+      "emDash": 5.3,
       "vague": 0,
-      "meanSent": 19.3,
+      "meanSent": 15,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/06_e2e.md": {
@@ -165,12 +165,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/10_guard.md": {
-      "slash": 20.8,
-      "longSent": 10.4,
-      "sym": 10.4,
-      "emDash": 10.4,
+      "slash": 19.8,
+      "longSent": 0,
+      "sym": 0,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 24,
+      "meanSent": 14.4,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/11_design.md": {
@@ -193,47 +193,47 @@
     },
     "prompt_templates/phase1/dimensions/13_business_logic.md": {
       "slash": 12.8,
-      "longSent": 0.9,
+      "longSent": 0,
       "sym": 2.6,
-      "emDash": 4.3,
+      "emDash": 3.4,
       "vague": 1.7,
-      "meanSent": 18.9,
+      "meanSent": 18.6,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/14_be_conformance.md": {
       "slash": 12.2,
-      "longSent": 1.5,
+      "longSent": 0,
       "sym": 7.6,
       "emDash": 4.6,
       "vague": 0,
-      "meanSent": 19.2,
+      "meanSent": 18.2,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/15_security.md": {
-      "slash": 20.2,
-      "longSent": 4.5,
-      "sym": 33.6,
-      "emDash": 2.2,
-      "vague": 2.2,
-      "meanSent": 22.3,
+      "slash": 10.1,
+      "longSent": 0,
+      "sym": 18.3,
+      "emDash": 2,
+      "vague": 2,
+      "meanSent": 19,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/16_perf.md": {
-      "slash": 17.2,
-      "longSent": 2.9,
-      "sym": 20.1,
-      "emDash": 17.2,
-      "vague": 2.9,
-      "meanSent": 21.8,
+      "slash": 16.4,
+      "longSent": 0,
+      "sym": 13.7,
+      "emDash": 11,
+      "vague": 2.7,
+      "meanSent": 19.2,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/17_change_impact.md": {
-      "slash": 23.9,
-      "longSent": 5.3,
-      "sym": 21.3,
-      "emDash": 21.3,
+      "slash": 23.4,
+      "longSent": 0,
+      "sym": 13,
+      "emDash": 15.6,
       "vague": 0,
-      "meanSent": 18.8,
+      "meanSent": 16.7,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/19_ordering.md": {
@@ -247,29 +247,29 @@
     },
     "prompt_templates/phase1/dimensions/20_bug_history.md": {
       "slash": 3.3,
-      "longSent": 6.5,
-      "sym": 16.3,
-      "emDash": 6.5,
+      "longSent": 0,
+      "sym": 13,
+      "emDash": 3.3,
       "vague": 3.3,
-      "meanSent": 20.4,
+      "meanSent": 15.3,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/21_accessibility.md": {
       "slash": 7.3,
-      "longSent": 4.9,
-      "sym": 7.3,
-      "emDash": 7.3,
+      "longSent": 0,
+      "sym": 2.4,
+      "emDash": 4.9,
       "vague": 2.4,
-      "meanSent": 20.4,
+      "meanSent": 15.8,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/22_inbound_callback.md": {
-      "slash": 7.1,
-      "longSent": 2.4,
-      "sym": 16.5,
-      "emDash": 11.8,
+      "slash": 7,
+      "longSent": 0,
+      "sym": 14,
+      "emDash": 9.3,
       "vague": 0,
-      "meanSent": 19.3,
+      "meanSent": 17.9,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/23_db_persistence.md": {
@@ -284,19 +284,19 @@
     "prompt_templates/phase2/04_execute_fe_playwright.md": {
       "slash": 14.5,
       "longSent": 0,
-      "sym": 11.9,
+      "sym": 12,
       "emDash": 10.5,
       "vague": 2.3,
-      "meanSent": 15.9,
+      "meanSent": 15.7,
       "emojiCount": 5
     },
     "prompt_templates/phase2/05_execute_api_playwright.md": {
-      "slash": 13.1,
+      "slash": 13.2,
       "longSent": 0,
-      "sym": 9.3,
-      "emDash": 12,
+      "sym": 9.4,
+      "emDash": 12.2,
       "vague": 2.8,
-      "meanSent": 15.7,
+      "meanSent": 15.4,
       "emojiCount": 5
     },
     "prompt_templates/phase2/06_triage_review.md": {
@@ -327,30 +327,30 @@
       "emojiCount": 1
     },
     "prompt_templates/run_phase1_template.md": {
-      "slash": 2.8,
+      "slash": 2.9,
       "longSent": 0,
-      "sym": 2.8,
-      "emDash": 11.3,
+      "sym": 2.9,
+      "emDash": 11.5,
       "vague": 0,
-      "meanSent": 16.1,
+      "meanSent": 15.9,
       "emojiCount": 0
     },
     "prompt_templates/run_phase2_template.md": {
-      "slash": 4.9,
-      "longSent": 4.9,
-      "sym": 27,
-      "emDash": 24.6,
+      "slash": 0,
+      "longSent": 0,
+      "sym": 10.1,
+      "emDash": 20.1,
       "vague": 0,
-      "meanSent": 20.4,
+      "meanSent": 17.3,
       "emojiCount": 0
     },
     "prompt_templates/run_phase_re-run_template.md": {
-      "slash": 20.3,
-      "longSent": 0.8,
+      "slash": 18.6,
+      "longSent": 0,
       "sym": 3.4,
-      "emDash": 6.8,
+      "emDash": 5.9,
       "vague": 1.7,
-      "meanSent": 15,
+      "meanSent": 14.6,
       "emojiCount": 1
     },
     ".agent/workflows/phase1_00_scope_planning.md": {
@@ -382,20 +382,20 @@
     },
     ".agent/workflows/phase1_03_validate_export_report.md": {
       "slash": 5.3,
-      "longSent": 1.8,
-      "sym": 16,
-      "emDash": 7.1,
+      "longSent": 0,
+      "sym": 14.1,
+      "emDash": 7,
       "vague": 1.8,
-      "meanSent": 14.8,
+      "meanSent": 14.2,
       "emojiCount": 0
     },
     ".agent/workflows/phase1_04_auto_publish_backlog.md": {
       "slash": 11.1,
-      "longSent": 2.2,
+      "longSent": 0,
       "sym": 11.1,
-      "emDash": 11.1,
+      "emDash": 8.9,
       "vague": 0,
-      "meanSent": 15.6,
+      "meanSent": 15,
       "emojiCount": 0
     },
     ".agent/workflows/phase1_generate_tc.md": {
@@ -435,12 +435,12 @@
       "emojiCount": 0
     },
     ".agent/workflows/phase2_04_report_and_backlog_gate.md": {
-      "slash": 9.7,
-      "longSent": 0.7,
-      "sym": 9.7,
-      "emDash": 13.4,
+      "slash": 8.9,
+      "longSent": 0,
+      "sym": 8.9,
+      "emDash": 12.6,
       "vague": 0.7,
-      "meanSent": 16.6,
+      "meanSent": 16.3,
       "emojiCount": 1
     },
     ".agent/workflows/phase2_execute.md": {
@@ -471,21 +471,21 @@
       "emojiCount": 0
     },
     ".agent/workflows/rerun_02_rerun_and_verify.md": {
-      "slash": 11.7,
-      "longSent": 5.9,
-      "sym": 20.5,
-      "emDash": 11.7,
+      "slash": 5.8,
+      "longSent": 2.9,
+      "sym": 2.9,
+      "emDash": 5.8,
       "vague": 0,
-      "meanSent": 17.1,
+      "meanSent": 14.3,
       "emojiCount": 0
     },
     ".agent/workflows/rerun_03_update_backlog_and_report.md": {
       "slash": 7.3,
-      "longSent": 3.6,
+      "longSent": 0,
       "sym": 10.9,
-      "emDash": 10.9,
+      "emDash": 7.3,
       "vague": 0,
-      "meanSent": 13.8,
+      "meanSent": 13,
       "emojiCount": 0
     },
     "docs/course/accessibility.md": {
@@ -548,7 +548,7 @@
       "sym": 0.9,
       "emDash": 0,
       "vague": 1.3,
-      "meanSent": 13.5,
+      "meanSent": 13.4,
       "emojiCount": 0
     },
     "docs/course/bo-nho-du-an.md": {

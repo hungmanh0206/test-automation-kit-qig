@@ -15,7 +15,16 @@ Mỗi endpoint liên quan trong Swagger phải có testcase cho các nhóm sau n
 - Forbidden role không đủ quyền.
 - Response schema/business values quan trọng.
 - **HTTP-level contract**: gọi endpoint bằng **method không cho phép** (kỳ vọng `405`, KHÔNG phải `404`/`500`); `Content-Type` sai hoặc thiếu (kỳ vọng `415`); body vượt giới hạn (`413`/chặn có kiểm soát, KHÔNG `500`). Lỗi kiểu này hay bị bỏ vì test chỉ đi "đường đẹp".
-- **Boundary của payload/query** (biên ở tầng API, khác §3 vốn viết cho field UI): chuỗi đúng max vs max+1; số âm / `0`; mảng rỗng `[]` vs thiếu key; `page=0`, `page=-1`, `page` vượt tổng số trang; `page_size` vượt max cho phép; ngày sai định dạng/không tồn tại. Mỗi biên **1 TC riêng**, không gộp.
+- **Boundary của payload và query.** Đây là biên ở tầng API, khác §3 vốn viết cho field UI. Các biên cần phủ:
+
+  - chuỗi đúng max với max+1
+  - số âm và `0`
+  - mảng rỗng `[]` với thiếu key
+  - `page=0`, `page=-1`, `page` vượt tổng số trang
+  - `page_size` vượt max cho phép
+  - ngày sai định dạng hoặc không tồn tại
+
+  Mỗi biên **1 TC riêng**, không gộp.
 - **Idempotency / double-submit**: gửi **lặp cùng payload** (POST tạo, approve, cancel, upload)
   ⚠ Đây là idempotency phía **mình GỬI**. Khi hệ thống **NHẬN** callback bên thứ ba (VNPay/VietQR/HubSpot/SAP) thì dùng **§22** [`22_inbound_callback.md`](22_inbound_callback.md): ở đó mình không kiểm soát số lần/thứ tự gửi, và đã có bug thật (Paid Amount cộng đôi, CSDL-28236). → KHÔNG tạo bản ghi/giao dịch trùng; retry sau timeout → không nhân đôi side-effect. Bắc cầu §8 (Resilience) nhưng phải có **ở cấp endpoint**.
 - **Contract / backward-compat** (khi endpoint đã có consumer): field mới phải **optional**; KHÔNG đổi kiểu/bỏ field cũ mà không kiểm; enum thêm giá trị mới không làm vỡ consumer. Bắc cầu §17 (Change Impact) — ở đây là case cấp endpoint.

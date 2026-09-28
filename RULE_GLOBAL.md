@@ -232,7 +232,8 @@ việc khác, và không làm.
 - Nếu là thay đổi chung, phải có xác nhận rõ của user hoặc ghi blocker chờ xác nhận.
 - Khi đã sửa shared file, execution summary phải ghi: file đã sửa, lý do, story có thể bị ảnh hưởng, scope regression đã chạy hoặc chưa chạy.
 
-- **Gate mới mà CHẶN theo quy ước MỚI thì quy ước đó phải vào file này (canonical) trong CÙNG thay đổi.** Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule**. Ai chỉ đọc `CLAUDE.md → core_rules` sẽ không bao giờ biết luật đó.
+- **Gate mới mà CHẶN theo quy ước MỚI thì quy ước đó phải vào file này (canonical) trong CÙNG thay đổi.**
+  Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule**. Ai chỉ đọc `CLAUDE.md` rồi `core_rules` sẽ không biết luật đó.
 
   Đã xảy ra thật với `dim:coverage --enforce`, `output_gate` và `domain:trace-back`. Cả ba chặn hoặc cảnh báo theo quy ước **tag chiều**, trong khi từ "chiều" xuất hiện **0 lần** ở `RULE_GLOBAL.md`, `core_rules.md`, README, USER_GUIDE và QUICKSTART suốt 3 ngày.
   - Đây là luật cho NGƯỜI, cố ý **không** làm thành máy kiểm. Bản máy ("mọi npm script gate phải được canonical nhắc TÊN") đo ra **19/24 script sẽ báo oan**. Ví dụ `secret:scan` chặn theo §Security: quy tắc *có* nhưng tên lệnh *không*, và như vậy mới đúng. Biến canonical thành danh mục lệnh còn tệ hơn.
@@ -541,7 +542,7 @@ Field `comment` của mỗi case (trong `testcase-status.json`, đẩy lên run 
 ### Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói
 
 Luật này sinh ra từ một lỗi lặp lại, chủ repo chỉ ra ngày 16/09/2026. Ở Phase 2 tôi báo "phát hiện
-bug, có log không", bạn hỏi lại "chắc chưa", tôi kiểm lại rồi rút lời. Phát hiện kỹ thuật sai ngay từ
+bug, có log không". Bạn hỏi lại "chắc chưa", tôi kiểm lại rồi rút lời. Phát hiện kỹ thuật sai ngay từ
 đầu. Câu hỏi của người dùng đang làm việc mà gate lẽ ra phải làm.
 
 Gốc là lỗi thứ tự, không phải bất cẩn. Bar để khẳng định một bug nằm ở bước `phase2_04` với khoảng tám

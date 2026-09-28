@@ -1,15 +1,21 @@
 # Chiều coverage: Accessibility (A11y) Coverage
 
-> Tag bắt buộc trong tiêu đề case: **`[A11y]`** · Mở khi: **scope có màn UI thao tác được (form, bảng, modal, menu)**
+> Tag bắt buộc trong tiêu đề case: **`[A11y]`**.
+> Mở khi **scope có màn UI thao tác được**, tức form, bảng, modal hay menu.
+>
 > Thêm 20/08/2026. Đo trước khi thêm: kit CÓ `scripts/qa/accessibility_check.js` chạy được, nhưng chỉ **2/22**
-> file prompt sinh case nhắc tới a11y ⇒ máy có mà không ai bảo dùng.
+> file prompt sinh case nhắc tới a11y. Máy có mà không ai bảo dùng.
 
 ## 21. Accessibility Coverage
 
-Đây **không phải** chiều "cho đủ chuẩn". Phần lớn lỗi a11y hay gặp cũng chính là **bug FE thật** mà người dùng
-sáng mắt vẫn gặp: thiếu `label` thì đọc màn hình không biết ô nào là ô nào — nhưng cũng làm **automation bắt
-sai element**; focus order lộn xộn thì thao tác bàn phím sai ô; contrast thấp thì chữ trên nền vàng không đọc
-được trên máy chiếu. Nên chiều này bắt lỗi **có thật**, không phải formality.
+Đây **không phải** chiều "cho đủ chuẩn". Phần lớn lỗi a11y hay gặp cũng chính là **bug FE thật** mà người
+dùng sáng mắt vẫn gặp:
+
+- Thiếu `label` thì trình đọc màn hình không biết ô nào là ô nào, và **automation cũng bắt sai element**.
+- Focus order lộn xộn thì thao tác bàn phím vào sai ô.
+- Contrast thấp thì chữ trên nền vàng không đọc được trên máy chiếu.
+
+Nên chiều này bắt lỗi **có thật**, không phải formality.
 
 ### Bước 1 — Chạy máy trước, đọc kết quả rồi mới viết case
 

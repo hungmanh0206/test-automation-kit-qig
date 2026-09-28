@@ -1,16 +1,18 @@
 # Prompt Phase 1 - Auto Publish Testcase (Google Sheet)
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule non-negotiables ở `CLAUDE.md`, đã auto-load. Digest ở `.agent/rules/core_rules.md`.
+> Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần**, vì mỗi gạch đầu dòng của digest đã ghi sẵn `§`. Đừng nạp cả file.
 >
-> Tên file (`04_auto_publish_backlog.md`) giữ nguyên sau khi Google Sheet ngưng dùng (22/09/2026, thay bằng Google
-> Sheet) để không phá mọi chỗ trỏ tới file này; nội dung bên dưới đã cập nhật cho Sheet.
+> Tên file `04_auto_publish_backlog.md` giữ nguyên sau khi công cụ cũ ngưng dùng (22/09/2026, thay bằng
+> Google Sheet), để không phá mọi chỗ trỏ tới file này. Nội dung bên dưới đã cập nhật cho Sheet.
 
 Dùng prompt này như một step riêng trong phạm vi Phase 1, chỉ sau khi Phase 1 đã sinh testcase, export Excel và QA đã xác nhận Excel/testcase đủ điều kiện publish. Không dùng prompt này để log bug Backlog.
 
-> **Công cụ lưu testcase: Google Sheet** (thay Google Sheet — app Backlog Marketplace, không tương thích Backlog).
-> Khác biệt lớn nhất so với công cụ cũ: **không có folder/tag/custom-field riêng** — Sheet CHÍNH LÀ file Excel
-> canonical (dashboard + 1 sheet/nhóm chức năng, xem `scripts/convert_excel/md_to_xlsx.js`), nên "publish"
-> chỉ là UPLOAD FILE, không phải map từng field sang một schema khác.
+> **Công cụ lưu testcase là Google Sheet**, thay cho app Backlog Marketplace vốn không tương thích Backlog.
+>
+> Khác biệt lớn nhất so với công cụ cũ: **không có folder, tag hay custom-field riêng**. Sheet CHÍNH LÀ file
+> Excel canonical, gồm dashboard và 1 sheet cho mỗi nhóm chức năng, xem `scripts/convert_excel/md_to_xlsx.js`.
+> Nên "publish" chỉ là UPLOAD FILE, không phải map từng field sang một schema khác.
 
 ```text
 Chạy step Phase 1 - Auto Publish testcase lên Google Sheet.

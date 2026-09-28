@@ -85,8 +85,9 @@ Dùng prompt này khi cần chạy lại testcase fail trước đó hoặc veri
 | 6 | Raw requirement/design/API chỉ đọc khi cần xác nhận expected result của bug/case đang rerun; không kiểm tra source change trong rerun |
 
 > 🗣️ **BẮT BUỘC — kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Cuối lượt rerun nói thẳng **ba phần**:
-> 1. **Đã học gì** — record mới/cập nhật trong `knowledge/**` (đặc biệt `decisions/` khi rerun cho ra kết luận
->    "không phải bug", và `root_causes/` khi đã xác định được gốc), **kèm cả memory vừa lưu/sửa và lý do lưu**.
+> 1. **Đã học gì.** Record mới hoặc cập nhật trong `knowledge/**`. Đặc biệt là `decisions/` khi rerun cho ra
+>    kết luận "không phải bug", và `root_causes/` khi đã xác định được gốc.
+>    Kèm cả **memory vừa lưu hoặc sửa, và lý do lưu**.
 > 2. **Đã sửa gì** — thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
 > 3. **Còn thiếu gì** — lỗ hổng **đo được**: bug rerun vẫn FAIL và vì sao · bug thiếu `tc_id` (bị `risk_score`
 >    loại khỏi bảng) · bug chưa có `root_cause_ref` · case còn `BLOCKED_SETUP` và thiếu capability nào.

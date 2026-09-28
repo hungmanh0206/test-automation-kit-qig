@@ -41,7 +41,8 @@ Kết nối nguồn tài liệu, tiếp nhận requirement và chuẩn bị cont
 Lệnh in ra 3 thứ:
 1. **Ngưỡng việc-nên-làm** cho từng file: `<8k` thì đọc trực tiếp, `8–25k` thì chỉ đọc mục cần, `>25k` thì **giao subagent** trích rồi chỉ nhận phần đã trích.
    Thêm `--contract` để lấy hợp đồng trích xuất dán cho subagent. Hợp đồng đó yêu cầu: trả JSON theo `knowledge/SCHEMA.md`, mọi rule phải có `source` tới đúng tab hoặc mục, và chỗ tài liệu không trả lời được thì cho vào `open_questions`. **Cấm suy diễn lấp chỗ trống.**
-2. **Tài liệu có NHIỀU BẢN** — cùng nội dung khác định dạng (`.json` vs `.md`) hoặc nhiều lần export. Chỉ đọc bản nên đọc; đo thật tiết kiệm ~670k token mà không mất chữ nào.
+2. **Tài liệu có NHIỀU BẢN**: cùng nội dung nhưng khác định dạng (`.json` với `.md`), hoặc export nhiều lần.
+   Chỉ đọc bản nên đọc. Đo thật thì tiết kiệm khoảng 670k token mà không mất chữ nào.
 > **Google Doc là nguồn spec: đọc bằng `npm run gdoc:read -- --doc-id <ID> --out <file.md>`**, đừng copy tay.
 > Hai bẫy đã trả giá thật, script này đã vá cả hai — copy tay thì mất cả hai:
 > - **Nhiều TAB bị cắt IM LẶNG**: thiếu `includeTabsContent` thì API chỉ trả tab đầu (đo thật: 18.5KB so với

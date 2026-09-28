@@ -363,13 +363,16 @@ Chỉ dùng 5 giá trị: `Critical`, `High`, `Medium`, `Low`, `Lowest`. KHÔNG 
 
 Không còn cột `Severity` trong bộ testcase (bỏ 21/08/2026) — nên **không** còn bước "chấm Severity trước rồi dịch ra Priority". Chấm `Ưu tiên` trực tiếp bằng bảng 5 mức ở §7, tự hỏi: *case này fail thì hậu quả tới đâu, và có đường vòng không?*
 
-> **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase. Chấm lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc.
+> **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase.
+> Chấm nó lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc.
 >
 > Bug thật vẫn có Severity: chấm lúc log bug, cây quyết định nằm ở [`phase2/08_log_bug_backlog.md`](../phase2/08_log_bug_backlog.md).
 >
-> Việc duy nhất cột đó còn gánh trong kit là **risk band**, tức mở rộng 5 trục hay 1 trục. `bandOf()` lấy `max(risk, priority)`.
+> Việc duy nhất cột đó còn gánh trong kit là **risk band**, tức mở rộng 5 trục hay 1 trục.
+> `bandOf()` lấy `max(risk, priority)`.
 >
-> Sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột làm đổi band 0 case**. Vậy `Ưu tiên` một mình đủ quyết định độ sâu. Đừng điền lại cột này "cho chắc": thêm cột lạ sẽ bị gate chặn.
+> Sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột làm đổi band 0 case**.
+> Vậy `Ưu tiên` một mình đủ quyết định độ sâu. Đừng điền lại cột này "cho chắc": thêm cột lạ sẽ bị gate chặn.
 
 ## 9. Cách dựng tiền điều kiện — BẮT BUỘC (tag `[<method>]` trong chính cell)
 

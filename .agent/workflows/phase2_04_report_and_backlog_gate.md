@@ -62,7 +62,8 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 4b. **Gate chất lượng output — THỰC THI, tự chạy (không phải kiểm bằng mắt).**
    - Test Execution: `npm run gate:output -- --status <testcase-status.json>` **tự chạy `scripts/qa/output_gate.js`** → CHẶN khi comment run-on/dính debug `key=value`, step thiếu status/evidence, evidence không phải ảnh/video, hoặc case phức tạp thiếu video (thêm `--fix` để tự dọn comment).
    - **Gate CHẶN → TỰ SỬA trong session rồi chạy lại tới khi PASS**; KHÔNG ghi kèm vi phạm, KHÔNG chờ user nhắc. Chỉ `--qa-approved` khi QA có lý do rõ (được log).
-   - **Bắt buộc tạo bug/ghi kết quả execute QUA script kit** (`bug_reporter.js` cho bug, `merge_execution_status.js` cho status) — KHÔNG sửa tay Result trên Sheets rồi coi như đã ghi (sửa tay = bỏ qua gate → sai 4 phần/evidence/comment).
+   - **Bắt buộc tạo bug và ghi kết quả execute QUA script kit**: `bug_reporter.js` cho bug, `merge_execution_status.js` cho status.
+     KHÔNG sửa tay cột Result trên Sheets rồi coi như đã ghi. Sửa tay là bỏ qua gate, dẫn tới sai 4 phần, sai evidence, sai comment.
    - 🔀 **Đồng bộ Google Sheet**: `node scripts/convert_excel/merge_execution_status.js <xlsx đã tải> <testcase-status.json> --task <TASK_KEY>` chạy **cùng gate này** trước khi ghi — merge Pass/Fail/Pending vào cột `Result` của file local, rồi agent `update_file` qua Drive MCP đè lên Sheet. Evidence (ảnh/video) vẫn ở local `test-results/artifacts/`, KHÔNG đính lên Sheet (khác Google Sheet trước đây neo evidence từng bước) — xem `scripts/integrations/backlog/README.md` (mục cảnh báo Google Sheet) và plan migrate công cụ cũ→Sheet.
 4a. **Đối soát mở rộng 5 trục:** `TASK_ENV=... npm run expansion:plan -- --audit --enforce` — CHẶN nếu có finding
    ghi PASS/FAIL mà không có `oracle_ref` (nhất quán KHÔNG phải bằng chứng của đúng). `merge_execution_status.js` cũng chặn ở

@@ -14,7 +14,7 @@ Tách riêng khỏi API contract ở mục 5, vốn thiên về status và schem
 - **Null vs empty vs missing vs 0**: phân biệt rõ `null` / chuỗi `""` / mảng `[]` / thiếu hẳn key / `0`. TC xác định BE PHẢI trả trạng thái nào theo spec (vd "chưa có công" → field vắng hay `null` hay `0`?), vì UI render mỗi trạng thái mỗi khác.
 - **BE → UI mapping (field trống nghi ngờ)**: mỗi field UI hiển thị trống/`-`/`N/A` phải có TC đối chiếu response — BE có trả giá trị không? BE trả có mà UI trống = **FE bug**; BE trả rỗng trái spec = **BE bug**; cả hai đều là product bug, KHÔNG bỏ qua.
 - **SAI NGUỒN dù CÓ giá trị.** Đây là điểm mù đắt nhất và là mục bắt buộc. Field hiển thị đầy đủ, không trống, không lỗi, nhưng lấy từ **đối tượng hoặc property SAI**.
-  Ví dụ: lấy từ Deal trong khi spec nói lấy từ Contact; đọc nhầm property "học phí nộp thực tế" cho một loại đơn không dùng field đó; tài khoản nhận hiển thị khác tài khoản đã cấu hình.
+  Ví dụ: lấy từ Deal trong khi spec nói lấy từ Contact. Hoặc đọc nhầm property "học phí nộp thực tế" cho một loại đơn không dùng field đó. Hoặc tài khoản nhận hiển thị khác tài khoản đã cấu hình.
   Oracle kiểu "có dữ liệu", "populate" hay "hiển thị đúng" **KHÔNG BAO GIỜ** bắt được lớp này, vì field nhầm nguồn vẫn populate. Vì vậy:
   - `Kết quả mong đợi` phải khai **HAI ĐẦU**: `<field UI>` = `<nguồn cụ thể>` (object + property), vd `Customer Email = Contact.email của deal đang chọn`, KHÔNG viết "hiển thị đúng email".
   - Chọn **giá trị phân biệt được nguồn**: cố ý dùng data mà Contact và Deal khác nhau. Nếu 2 nguồn trùng giá trị thì case đó **không chứng minh được gì**, phải đổi data hoặc ghi Coverage Gap.

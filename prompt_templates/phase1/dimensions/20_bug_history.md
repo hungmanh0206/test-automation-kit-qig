@@ -1,8 +1,10 @@
 # Chiều coverage: Error Guessing từ BUG LỊCH SỬ
 
-> Tag bắt buộc trong tiêu đề case: **`[BugHistory]`** · Mở khi: **`knowledge/bugs/` có entry cùng module với scope**
-> Thêm 20/08/2026. Đo trước khi thêm: kho có **58 bug thật** nhưng KHÔNG prompt sinh case nào biến nó thành
-> checklist — nó chỉ được dùng để **nâng risk** ở `phase1_00_scope_planning.md`.
+> Tag bắt buộc trong tiêu đề case: **`[BugHistory]`**.
+> Mở khi **`knowledge/bugs/` có entry cùng module với scope**.
+>
+> Thêm 20/08/2026. Đo trước khi thêm: kho có **58 bug thật**, nhưng KHÔNG prompt sinh case nào biến nó thành
+> checklist. Nó chỉ được dùng để **nâng risk** ở `phase1_00_scope_planning.md`.
 
 ## 20. Error Guessing từ bug lịch sử
 
@@ -39,8 +41,8 @@ Bug cũ là **ví dụ**, không phải case. Từ mỗi bug hãy hỏi *"lớp 
 - Bug về **field biến mất khỏi response** → lớp *mất field*; kiểm các field cùng nhóm trên cùng endpoint.
 
 ### Bước 4 — Ưu tiên theo tần suất
-Module xuất hiện nhiều lần trong `knowledge/bugs/` là vùng **đã chứng minh là dễ vỡ**; ưu tiên sinh case ở đó
-trước, và cân nhắc nâng `Mức độ rủi ro` của các case liên quan (ảnh hưởng band mở rộng ở Phase 2).
+Module xuất hiện nhiều lần trong `knowledge/bugs/` là vùng **đã chứng minh là dễ vỡ**. Ưu tiên sinh case ở
+đó trước. Cân nhắc nâng `Mức độ rủi ro` của các case liên quan, vì nó ảnh hưởng band mở rộng ở Phase 2.
 
 > ⚠️ Bug mang `backlog_status` là *Rejected* / *false positive* thì **KHÔNG** sinh case canh — canh một thứ không
 > phải lỗi là tự tạo case sai. Ghi vào Coverage Gaps để lần sau khỏi soi lại.

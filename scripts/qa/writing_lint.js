@@ -102,8 +102,13 @@ function prose(text) {
      * phép đo này. Vài file có `longSent` nhích lên tối đa 0,1 chỉ vì dấu `-` không còn bị đếm là một
      * từ — chính xác hơn, và vẫn cách mốc 4 rất xa. Ngưỡng cũ vẫn là chặn trên hợp lệ vì phép đo mới
      * chỉ làm số của bộ mẫu giảm hoặc giữ nguyên.
+     *
+     * Khuôn nhận thêm tiền tố `>` vì gạch đầu dòng NẰM TRONG blockquote (`> - item`) vẫn là một item —
+     * cùng họ với bảng trong blockquote ở trên. Không có nó thì cả một danh sách blockquote bị dán thành
+     * MỘT câu. Sửa vì đúng-sai, không phải để số đẹp: đo 28/09/2026 chỉ giảm 5 xuống 4 câu quá 35 từ,
+     * và 0/44 file `docs/course` tệ đi.
      */
-    .replace(/^[ \t]*(?:[-*+]|\d+\.)[ \t]+/gm, '\n\n');
+    .replace(/^[ \t]*(?:>[ \t]*)*(?:[-*+]|\d+\.)[ \t]+/gm, '\n\n');
 }
 
 /** `/` giữa hai từ CHỮ THƯỜNG. Xem ghi chú "LỌC ĐỂ KHỎI BÁO OAN" ở đầu file. */

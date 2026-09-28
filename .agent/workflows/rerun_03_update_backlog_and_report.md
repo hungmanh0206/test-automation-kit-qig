@@ -21,7 +21,7 @@ Giữ Backlog và local report đồng bộ với kết quả re-run thật, có
 3. **Sau khi bug sang Done — tìm lỗi CÙNG LỚP (thời điểm vàng):**
    `TASK_ENV=... npm run bugs:checklist` cho module của bug vừa đóng.
    Vì sao đúng lúc này: root cause vừa được xác định và còn nóng, nên câu "lỗi cùng lớp này còn chỗ nào
-   dính?" trả lời được ngay — chờ sang sprint sau thì mất ngữ cảnh. Bug lặp lại là bug rẻ nhất để bắt.
+   dính?" trả lời được ngay. Chờ sang sprint sau thì mất ngữ cảnh. Bug lặp lại là bug rẻ nhất để bắt.
    Có chỗ nghi ⇒ ghi vào rerun report (mục "Cùng lớp — cần kiểm"), không tự mở bug mới ở bước rerun.
 
 4. Nếu còn bug mở trong scope:

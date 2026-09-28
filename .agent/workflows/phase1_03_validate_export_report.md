@@ -27,7 +27,11 @@
    ```powershell
    node scripts/convert_excel/md_to_xlsx.js <testcase.md> <testcase.xlsx>
    ```
-   - **Design gate (G5) + gate gen-testcase TỰ CHẠY khi convert**: (a) design_gate CHẶN nếu thiếu cột canonical / rỗng ô lõi; (b) gen-testcase CHẶN (không tạo xlsx) nếu "Kết quả mong đợi" không khớp số bước / gộp range `1-2.` / ghi trơ "thành công"/"đúng" / oracle rỗng; `;`-nhồi-ý + tautology chỉ cảnh báo. **Gate CHẶN → tự sửa Markdown rồi convert lại tới khi PASS, không chờ user nhắc.** Kiểm trước: `npm run design:gate -- --dir <test-cases/> --with-rows`.
+   - **Design gate (G5) và gate gen-testcase TỰ CHẠY khi convert.**
+     (a) `design_gate` CHẶN nếu thiếu cột canonical hoặc rỗng ô lõi.
+     (b) Gate gen-testcase CHẶN, tức không tạo xlsx, nếu "Kết quả mong đợi" không khớp số bước, gộp range `1-2.`, ghi trơ "thành công" hay "đúng", hoặc oracle rỗng. Riêng `;`-nhồi-ý và tautology thì chỉ cảnh báo.
+     **Gate CHẶN thì tự sửa Markdown rồi convert lại tới khi PASS, không chờ user nhắc.**
+     Kiểm trước bằng `npm run design:gate -- --dir <test-cases/> --with-rows`.
 5. Ghi trạng thái `Backlog testcase publish: Pending QA confirmation` trong `task.md`.
    - Không publish Backlog trong bước này.
    - Step publish riêng là [phase1_04_auto_publish_backlog.md](phase1_04_auto_publish_backlog.md), chỉ chạy sau khi QA xác nhận Excel.

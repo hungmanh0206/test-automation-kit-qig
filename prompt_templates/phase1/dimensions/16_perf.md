@@ -17,4 +17,8 @@ Kit thiên functional; nhóm này CHỈ sinh khi có ngưỡng/tải trong scope
 - **Payload/limit**: input/list ở kích thước tối đa cho phép không hỏng response; vượt max → chặn có kiểm soát, không `500`.
 - **Symptom N+1/slow**: thao tác trên list lớn không phình thời gian phi tuyến nếu quan sát được.
 
-**Load thật (nhiều VU — Loại B: load/stress/soak)** dùng tool tải chuyên: **opt-in qua `scripts/qa/load_check.js` (skill `load_check`, wrapper k6)** — k6 là binary NGOÀI (không phải npm dep; thiếu → skip sạch), **never-auto, chỉ non-prod, cap khiêm tốn**, KHÔNG nhét vào runner Playwright. k6 hợp kit hơn JMeter; **Katalon KHÔNG phải load tool**. (Loại A single-user: timing/vitals/render/resource → `perf_check.js`.) Ngưỡng lấy từ NFR khai trong k6 `thresholds`.
+**Load thật, tức nhiều VU (Loại B: load, stress, soak)** thì dùng tool tải chuyên, opt-in qua `scripts/qa/load_check.js` với skill `load_check`, vốn là wrapper của k6.
+
+k6 là binary NGOÀI, không phải npm dep, thiếu thì skip sạch. Nó **never-auto, chỉ chạy non-prod, cap khiêm tốn**, và KHÔNG nhét vào runner Playwright. k6 hợp kit hơn JMeter, còn **Katalon KHÔNG phải load tool**.
+
+Loại A single-user gồm timing, vitals, render, resource thì dùng `perf_check.js`. Ngưỡng lấy từ NFR, khai trong k6 `thresholds`.
