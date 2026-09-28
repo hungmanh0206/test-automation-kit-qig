@@ -31,7 +31,7 @@
     },
     "RULE_GLOBAL.md": {
       "slash": 0,
-      "longSent": 0.1,
+      "longSent": 0,
       "sym": 6.6,
       "emDash": 5.6,
       "vague": 1.9,
@@ -58,11 +58,11 @@
     },
     "prompt_templates/phase1/02_gen_testcases.md": {
       "slash": 7.5,
-      "longSent": 0.4,
+      "longSent": 0,
       "sym": 11.1,
       "emDash": 6.1,
       "vague": 3.3,
-      "meanSent": 16.4,
+      "meanSent": 16.2,
       "emojiCount": 11
     },
     "prompt_templates/phase1/03_gen_test_data.md": {
@@ -472,11 +472,11 @@
     },
     ".agent/workflows/rerun_02_rerun_and_verify.md": {
       "slash": 5.8,
-      "longSent": 2.9,
+      "longSent": 0,
       "sym": 2.9,
-      "emDash": 5.8,
+      "emDash": 2.9,
       "vague": 0,
-      "meanSent": 14.3,
+      "meanSent": 13.3,
       "emojiCount": 0
     },
     ".agent/workflows/rerun_03_update_backlog_and_report.md": {

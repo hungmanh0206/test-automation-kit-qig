@@ -232,7 +232,7 @@ việc khác, và không làm.
 - Nếu là thay đổi chung, phải có xác nhận rõ của user hoặc ghi blocker chờ xác nhận.
 - Khi đã sửa shared file, execution summary phải ghi: file đã sửa, lý do, story có thể bị ảnh hưởng, scope regression đã chạy hoặc chưa chạy.
 
-- **Gate mới mà CHẶN theo quy ước MỚI thì quy ước đó phải vào file này (canonical) trong CÙNG thay đổi.**
+- **Gate mới CHẶN theo quy ước MỚI thì quy ước đó phải vào file canonical này, trong CÙNG thay đổi.**
   Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule**. Ai chỉ đọc `CLAUDE.md` rồi `core_rules` sẽ không biết luật đó.
 
   Đã xảy ra thật với `dim:coverage --enforce`, `output_gate` và `domain:trace-back`. Cả ba chặn hoặc cảnh báo theo quy ước **tag chiều**, trong khi từ "chiều" xuất hiện **0 lần** ở `RULE_GLOBAL.md`, `core_rules.md`, README, USER_GUIDE và QUICKSTART suốt 3 ngày.

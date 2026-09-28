@@ -324,7 +324,8 @@ Quy tắc cho từng loại dữ liệu:
 - Với E2E, nêu rõ side-effect ở hệ thống khác: app/site liên quan, integration, notification hoặc data count nếu nằm trong scope.
 - Expected không được chỉ ghi "thành công", "báo lỗi", "hiển thị đúng".
 
-✅ ĐÚNG. Mỗi bước là MỘT KHỐI: dòng đánh số kèm các ý con của nó, ngăn bằng `<br>`. Ví dụ dưới có **2 bước** nên cột kết quả có đúng **2 dòng đánh số**, và 3 dòng con thuộc về bước 2:
+✅ ĐÚNG. Mỗi bước là MỘT KHỐI: dòng đánh số kèm các ý con của nó, ngăn bằng `<br>`.
+Ví dụ dưới có **2 bước** nên cột kết quả có đúng **2 dòng đánh số**. Ba dòng con thuộc về bước 2.
 ```
 1. Trường "Allow split via VNPay?" là Checkbox (không phải dropdown), Optional<br>2. Sau khi tick, hiển thị:<br>- Section "Set up payment via VNPay"<br>- Nút "Add installment" enabled<br>- Ràng buộc: tổng các đợt phải bằng số tiền order
 ```
@@ -366,7 +367,7 @@ Không còn cột `Severity` trong bộ testcase (bỏ 21/08/2026) — nên **kh
 > **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase.
 > Chấm nó lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc.
 >
-> Bug thật vẫn có Severity: chấm lúc log bug, cây quyết định nằm ở [`phase2/08_log_bug_backlog.md`](../phase2/08_log_bug_backlog.md).
+> Bug thật vẫn có Severity. Chấm nó lúc log bug; cây quyết định nằm ở [`phase2/08_log_bug_backlog.md`](../phase2/08_log_bug_backlog.md).
 >
 > Việc duy nhất cột đó còn gánh trong kit là **risk band**, tức mở rộng 5 trục hay 1 trục.
 > `bandOf()` lấy `max(risk, priority)`.

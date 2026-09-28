@@ -20,7 +20,7 @@ Xác nhận fix của Dev bằng execution thật, evidence rõ và không pass 
 4. Nếu fail do automation/setup/data, sửa root cause hợp lý và rerun targeted.
 5. Không chuyển Backlog Done nếu chưa PASS thật.
 
-6. **GATE MÁY — chạy TRƯỚC khi sang bước 3 (comment/Done Backlog), không phải kiểm bằng mắt:**
+6. **GATE MÁY.** Chạy TRƯỚC khi sang bước 3, tức bước comment và chuyển Done trên Backlog. Không kiểm bằng mắt.
    `node scripts/qa/output_gate.js --mode test-execution --status <TASK_OUTPUT_DIR>/test-results/runs/<RUN_ID>/testcase-status.json`
    Vì sao nhánh này CẦN nó nhất: rerun là nhánh **trực tiếp chuyển bug sang Done**, tức hậu quả cao nhất
    trong cả kit. Vậy mà trước 23/08/2026 nó là nhánh DUY NHẤT không có gate máy nào, trong khi Phase 2 có
