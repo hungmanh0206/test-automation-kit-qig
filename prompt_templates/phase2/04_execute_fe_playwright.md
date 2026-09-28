@@ -10,9 +10,9 @@
 > - Báo cáo gộp, ít vòng.
 
 > 🛑 **CHECKLIST 6 KHỐI — xác nhận TRƯỚC KHI execute** (forcing function; `output_gate` sẽ **CHẶN** nếu output vi phạm — đọc & làm, đừng lướt):
-> 1. **Nguồn & scope** — `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (tải mới nhất từ Google Sheet qua Drive MCP) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
-> 2. **Oracle độc lập** — mỗi case có "Kết quả mong đợi" cụ thể (giá trị/URL/element theo spec). Oracle rỗng hoặc app==app (tautology) → DỪNG, lấy giá trị spec. *(gate: oracle-rỗng = CHẶN · tautology = cảnh báo)*
-> 3. **Batch & drive thật** — gom NHIỀU case/ÍT script chạy song song; dùng hết fixture/deal/account; case negative tự tạo input. KHÔNG TODO/SKIP khi chưa thử.
+> 1. **Nguồn & scope.** `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (tải mới nhất từ Google Sheet qua Drive MCP) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
+> 2. **Oracle độc lập.** Mỗi case có "Kết quả mong đợi" cụ thể (giá trị/URL/element theo spec). Oracle rỗng hoặc app==app (tautology) → DỪNG, lấy giá trị spec. *(gate: oracle-rỗng = CHẶN · tautology = cảnh báo)*
+> 3. **Batch & drive thật.** Gom NHIỀU case/ÍT script chạy song song; dùng hết fixture/deal/account; case negative tự tạo input. KHÔNG TODO/SKIP khi chưa thử.
 > 4. **Phân tầng kết quả** — mỗi case → PASS/FAIL/SKIP/BLOCKED_SETUP/SKIP_SETUP. FAIL phải PHÂN TẦNG: product bug vs `setup_failure` vs infra/flaky. "Không phán được" KHÔNG thành PASS. *(gate: FAIL thiếu tầng-lỗi = CHẶN)*
 > 5. **Loại flaky** — FAIL rerun 2–3 lần loại flaky/setup TRƯỚC khi kết luận product bug / log Backlog.
 > 6. **Evidence** — mọi case (PASS+FAIL)+step có ảnh/video đúng màn, highlight, mask PII; case phức tạp có video. CẤM `.json/.md/.log`. *(gate: thiếu evidence/step-status = CHẶN)*
@@ -185,10 +185,13 @@ negative phải khai trước `sig.expect4xx(/\/api\/x/, 'lý do')`, không khai
 bug KHÔNG liên quan tới case đang chạy (UI xanh mà API phụ 500) — thứ không case nào assert.
 
 **ĐIỀU KIỆN SỐNG CÒN — không có oracle thì KHÔNG kết luận.** Mở rộng mà không có nguồn thì agent sẽ mặc định
-"app đang hiện thế là đúng" ⇒ tautology nhân theo số trục. Ba loại kết luận: `EXPANSION_FINDING` (app tự mâu
-thuẫn — không cần oracle ngoài, log bug được, **không phải verdict của case gốc**) · `PASS`/`FAIL` (**chỉ khi**
-có `oracle_ref` trỏ `BR-`/`SM-`/`PM-`/`SS-`/`DM-`/`UI-`) · `OBSERVATION` (không neo ⇒ **nhất quán ≠ đúng**, kèm
-câu hỏi mở). Máy tự hạ cấp PASS→OBSERVATION khi thiếu neo và `self_review` **CHẶN** nếu file finding có PASS
+"app đang hiện thế là đúng" ⇒ tautology nhân theo số trục. Ba loại kết luận:
+
+- `EXPANSION_FINDING`: app tự mâu thuẫn. Không cần oracle ngoài, log bug được, nhưng **không phải verdict của
+  case gốc**.
+- `PASS` hoặc `FAIL`: **chỉ khi** có `oracle_ref` trỏ `BR-`, `SM-`, `PM-`, `SS-`, `DM-` hoặc `UI-`.
+- `OBSERVATION`: không neo, nên **nhất quán không có nghĩa là đúng**. Ghi kèm câu hỏi mở.
+ Máy tự hạ cấp PASS→OBSERVATION khi thiếu neo và `self_review` **CHẶN** nếu file finding có PASS
 không neo. Độ sâu theo **risk band** — xem chi phí trước khi chạy: `npm run expansion:plan`.
 
 **Chiều ngược, bắt buộc:** chạy `npm run spec:gap` — build CÓ mà tài liệu KHÔNG NHẮC. Section chưa được khai
@@ -199,8 +202,8 @@ liệu thiếu?), phải ghi vào `reports/`, không để phát hiện tan theo
 đứt: `form 1.000.000 → payload 1000000 → API 0` ⇒ lỗi tầng **BE**, không phải "hệ thống lưu sai". Payload là bằng
 chứng khách quan; thiếu nó thì FE/BE đẩy qua đẩy lại và bug bị bounce.
 
-**Đo thiếu điểm KHÔNG phải đạt.** Cả 5 máy đều phân biệt "khớp" với "chưa kiểm được" (dưới 2 bề mặt đọc được ·
-chuỗi khuyết điểm · ô ma trận trống · section chưa khai). Trạng thái *chưa kiểm được* phải được **nói ra** trong
+**Đo thiếu điểm KHÔNG phải đạt.** Cả 5 máy đều phân biệt "khớp" với "chưa kiểm được": dưới 2 bề mặt đọc được,
+chuỗi khuyết điểm, ô ma trận trống, section chưa khai. Trạng thái *chưa kiểm được* phải được **nói ra** trong
 báo cáo; im lặng ở đó là cách lọt bug rẻ nhất.
 
 # ĐÓNG VÒNG: bug do người ngoài báo là LỖI CỦA MÁY (bắt buộc)
@@ -218,11 +221,11 @@ Máy đo chính việc này: `TASK_ENV=… npm run leak:report` (bug theo **ngu�
 Log bug mới thì truyền `--found-by kit|human` — nhãn `auto-bug` chỉ chứng minh ai LOG, không phải ai TÌM.
 
 ## Kỷ luật
-- **Case mapping/đồng bộ: kết luận PHẢI ghi GIÁ TRỊ HAI ĐẦU và so bằng.** ⚙️ `output_gate` **CHẶN** kết luận chỉ ở mức "có dữ liệu" (`populate`, `map đủ field`, `hiển thị đúng`) và **cảnh báo** khi chỉ liệt kê giá trị một phía rồi kết luận `sync_status = SUCCESS`. Lý do không phải hình thức: field lấy nhầm nguồn/nhầm property **vẫn populate**, và trạng thái "đồng bộ thành công" **không** chứng minh bên nhận nhận đúng số. Viết: `OPS Net 4.250.000 = Deal amount 4.250.000` — không viết "đồng bộ đúng".
+- **Case mapping/đồng bộ: kết luận PHẢI ghi GIÁ TRỊ HAI ĐẦU và so bằng.** ⚙️ `output_gate` **CHẶN** kết luận chỉ ở mức "có dữ liệu", tức `populate`, `map đủ field`, `hiển thị đúng`. Gate cũng **cảnh báo** khi chỉ liệt kê giá trị một phía rồi kết luận `sync_status = SUCCESS`. Lý do không phải hình thức: field lấy nhầm nguồn/nhầm property **vẫn populate**, và trạng thái "đồng bộ thành công" **không** chứng minh bên nhận nhận đúng số. Viết: `OPS Net 4.250.000 = Deal amount 4.250.000` — không viết "đồng bộ đúng".
 - **Case hiển thị/UI phải execute QUA UI.** Chạy API cho case màn hình thì lỗi mapping phía FE **không thể** lộ ra — không phải xui, mà là bất khả theo định nghĩa. Muốn nhanh thì dùng API để **dựng data**, còn phần verify của case đó phải đọc trên màn.
 - **Chạy `ui_conformance_check` với `ui_catalog.json` cho mọi màn trong scope** — đây là thứ duy nhất bắt "thiếu trường / thừa cột / hai màn lệch nhãn"; test theo bước không thấy vì thiếu field vẫn chạy xanh.
-- **Quan sát bất thường phải có NƠI ĐẾN.** Thấy điều lạ mà case vẫn PASS thì ghi chú suông sẽ bốc hơi — đã xảy ra thật: một ghi chú "nghi thiếu cấu hình X" bị bỏ lại, sau đó chính chỗ đó là bug do người khác tìm ra. ⚙️ `output_gate` CHẶN case PASS có từ nghi vấn (`nghi`, `có vẻ`, `chưa rõ`, `cần xác nhận`…) mà không trỏ tới **bug Backlog (kèm key)** / **câu hỏi cho BA-Dev** / **quyết định `DEC-*` trong knowledge**.
-- **Chặn kỹ thuật (fixture wall) KHÔNG được tan vào SKIP.** Thử vài lượt không dựng được data rồi đi tiếp = cả vùng đó không ai kiểm mà báo cáo vẫn xanh (đã mất nguyên một họ màn hình vì lý do này). Phải liệt kê thành mục **"Vùng chưa kiểm"** trong report cuối: vùng nào, chặn vì cái gì, cần gì để mở — hoặc ghi `knowledge/decisions/` type `test_approach` kèm `expires_at`. ⚙️ `self-review` CHẶN nếu có case SKIP/BLOCKED mà không có khai báo này.
+- **Quan sát bất thường phải có NƠI ĐẾN.** Thấy điều lạ mà case vẫn PASS thì ghi chú suông sẽ bốc hơi. Đã xảy ra thật: một ghi chú "nghi thiếu cấu hình X" bị bỏ lại, sau đó chính chỗ đó là bug do người khác tìm ra. ⚙️ `output_gate` CHẶN case PASS có từ nghi vấn (`nghi`, `có vẻ`, `chưa rõ`, `cần xác nhận`…) mà không trỏ tới **bug Backlog (kèm key)** / **câu hỏi cho BA-Dev** / **quyết định `DEC-*` trong knowledge**.
+- **Chặn kỹ thuật (fixture wall) KHÔNG được tan vào SKIP.** Thử vài lượt không dựng được data rồi đi tiếp thì cả vùng đó không ai kiểm mà báo cáo vẫn xanh. Đã mất nguyên một họ màn hình vì lý do này. Phải liệt kê thành mục **"Vùng chưa kiểm"** trong report cuối: vùng nào, chặn vì cái gì, cần gì để mở — hoặc ghi `knowledge/decisions/` type `test_approach` kèm `expires_at`. ⚙️ `self-review` CHẶN nếu có case SKIP/BLOCKED mà không có khai báo này.
 - KHÔNG kết luận PASS/FAIL cho case có giá trị đáng ngờ nếu CHƯA đối chiếu response.
 - Response chỉ để **chẩn đoán/phân loại**; **evidence Backlog vẫn phải là ẢNH màn UI** hiển thị giá trị đó. Cần chứng minh data BE → render **visual evidence page** hiển thị response đã redact rồi screenshot, KHÔNG đính file JSON thô (theo Evidence rule bên dưới).
 
@@ -231,7 +234,7 @@ Log bug mới thì truyền `--found-by kit|human` — nhãn `auto-bug` chỉ ch
 Gen chỉ ghi 1 giá trị mẫu trong testcase (tránh nổ số case). Khi execute thì **phải check hết tất cả giá trị**, KHÔNG dừng ở giá trị mẫu:
 - **Kiểm kê option (vét hết, rẻ)**: đọc TOÀN BỘ option 1 lần, verify đủ số lượng + đúng label/thứ tự/default so spec/tài liệu (KHÔNG lấy oracle từ build).
 - **Hành vi lọc — mặc định vét hết bằng data-driven loop**: lặp qua **từng option**, chọn → verify kết quả lọc đúng **tập con của chính option đó** (không thừa/thiếu). Đây là default, không rút về 1 giá trị.
-  - Ngoại lệ rút gọn: danh sách option **không giới hạn / rất lớn** (async search, hàng nghìn giá trị) → chạy đại diện mỗi lớp + biên và **ghi rõ lý do rút gọn** trong Actual (không im lặng).
+  - Ngoại lệ rút gọn: danh sách option **không giới hạn hoặc rất lớn**, ví dụ async search hay hàng nghìn giá trị. Khi đó chạy đại diện mỗi lớp cộng biên, và **ghi rõ lý do rút gọn** trong Actual. Không im lặng.
   - Option **khác lớp hành vi** (mỗi lựa chọn ra kết quả/nhánh/field/quyền khác) → verify expected riêng cho từng option, không gộp chung 1 assertion.
 - Luôn kèm: default selection, **empty/no-match**, reset filter, và **giao điều kiện** khi filter kết hợp.
 - Ghi rõ trong Actual **đã cover bao nhiêu / loại option nào** (vét hết N, hay rút gọn + lý do), để không đọc nhầm "1 giá trị = đã phủ".
@@ -240,10 +243,10 @@ Gen chỉ ghi 1 giá trị mẫu trong testcase (tránh nổ số case). Khi exe
 Đây là yêu cầu chung, áp cho mọi case đã chạy (không chỉ case FAIL). Tuân thủ đầy đủ mục **Evidence — Quy chuẩn bắt buộc** trong `RULE_GLOBAL.md`. Vi phạm bất kỳ điểm nào = evidence KHÔNG hợp lệ, KHÔNG push:
 - **Mọi case có kết quả PASS hoặc FAIL đều phải có evidence cụ thể** (ảnh/video). Case `TODO`/chưa chạy thì KHÔNG cần.
 - **CHỈ ảnh (`.png/.jpg/.jpeg/.webp`) hoặc video (`.mp4/.webm`) mới là evidence hợp lệ** — cho CẢ case PASS lẫn step. TUYỆT ĐỐI KHÔNG dùng `.json`, `.md`, `.txt`, `.log`, `.html`, `.csv`, `trace.zip` làm evidence của case/step (kể cả `order_state.json`, `api_response.json`, dump state). Cần chứng minh dữ liệu API/DB/state → **chụp ảnh màn UI hiển thị giá trị đó**, KHÔNG đính file dữ liệu thô.
-- **Mọi step đều phải: (a) đánh dấu trạng thái PASS/FAIL riêng, (b) có 1 ảnh evidence của chính step đó**, và ảnh phải **highlight vào đúng element/vùng đang kiểm** (khoanh viền/tô đậm element được assert), không chỉ chụp cả trang chung chung.
+- **Mỗi step phải có trạng thái PASS hoặc FAIL riêng, và 1 ảnh evidence của chính step đó.** Ảnh phải **highlight đúng element hay vùng đang kiểm**: khoanh viền hoặc tô đậm element được assert. Không chỉ chụp cả trang chung chung.
 - **PII khách hàng phải mask.** Màn có Email/SĐT/họ tên/địa chỉ/mã định danh khách (kể cả trong `<input>`) → dùng `mask` của helper che trước khi chụp; vẫn giữ highlight ở element cần kiểm. Artifact KHÔNG được để lộ PII khách (đồng bộ rule bảo mật).
-- **Video cho case phức tạp.** Case nhiều bước / tương tác động — thanh toán qua cổng ngoài, trạng thái async, luồng qua nhiều màn, iframe/popup, drag & drop / upload — PHẢI quay video (đặt `PW_VIDEO=on`/`retain-on-failure` hoặc `context({recordVideo})`) đính kèm cùng ảnh step, không chỉ chờ đến khi FAIL. Case đơn giản (1 màn) thì ảnh highlight là đủ.
-- **Verify đúng màn trước khi chấp nhận.** Sau khi chụp, PHẢI kiểm ảnh đúng màn/kết quả của case: KHÔNG phải trang lỗi (404/500/blank/timeout/"can't find that page"), KHÔNG phải màn sai bước, KHÔNG phải loading dở, KHÔNG phải cổng/màn của bước khác. Sai màn → sửa selector/điều hướng và chụp lại; không push evidence sai. (Với data động: xác nhận order/link còn sống trước khi drive — link chết trả 404.)
+- **Video cho case phức tạp.** Case nhiều bước hoặc tương tác động thì PHẢI quay video, đính kèm cùng ảnh step chứ không chờ đến khi FAIL. Cụ thể là thanh toán qua cổng ngoài, trạng thái async, luồng qua nhiều màn, iframe, popup, drag & drop, upload. Bật bằng `PW_VIDEO=on`, `retain-on-failure` hoặc `context({recordVideo})`. Case đơn giản (1 màn) thì ảnh highlight là đủ.
+- **Verify đúng màn trước khi chấp nhận.** Sau khi chụp, PHẢI kiểm ảnh đúng màn và đúng kết quả của case. KHÔNG phải trang lỗi (404, 500, blank, timeout, "can't find that page"), KHÔNG phải màn sai bước, KHÔNG phải loading dở, KHÔNG phải cổng hay màn của bước khác. Sai màn → sửa selector/điều hướng và chụp lại; không push evidence sai. (Với data động: xác nhận order/link còn sống trước khi drive — link chết trả 404.)
 - **Mỗi case dùng evidence của chính nó** — không mượn ảnh case khác, không placeholder. Không re-drive được (order đã tiêu, link chết) thì dùng đúng ảnh gốc thật của chính case đó và ghi rõ lý do.
 - Dùng helper chuẩn **`scripts/utils/evidence_recorder.js`** để tự động: highlight element → screenshot vào `test-results/artifacts/<TC_ID>/step-NN-<status>.png` → ghi `steps[]` (status + evidence từng bước) + evidence cấp case vào `test-results/testcase-status.json`. (API: `new EvidenceRecorder({taskKey, projectOutputDir, runId})` → `rec.case(tcId)` → `await c.step(page, tên, {highlight, assert|status, mask})` → `await c.finish()` → `rec.write()`.)
 - Evidence cấp case đính từ `evidence[]`; evidence **từng bước** đính từ `steps[].evidence` (hoặc `failedStep` + `failedStepEvidence` cho case FAIL). Gate `output_gate.gateTestExecution` chạy TRƯỚC khi push và gộp cả hai chỗ khi đếm — case đã execute mà không có ảnh/video nào thì bị CHẶN ngay ở đó, không cần cờ riêng.
@@ -337,8 +340,8 @@ Trace policy:
 - Không dùng `waitForTimeout()` làm wait chính; chỉ dùng ngắn để ổn định evidence visual page nếu cần (§Wait Strategy của `playwright_fe.md`).
 - Sau mỗi TC, cập nhật testcase output với `Status` và `Actual Result`.
 - `Actual Result` của FAIL phải rõ: failed step, expected result, actual UI/API observed, main error, evidence path.
-- Khi ghi `testcase-status.json`, **case FAILED phải kèm step nào fail + evidence của bước đó**: điền `steps[]` (bước lỗi `FAILED` + `evidence`; bước chưa chạy `TODO`) hoặc shortcut `failedStep` + `failedStepEvidence` (schema ở `run_phase2_template.md`) — để Test Execution hiện đúng bước lỗi thay vì chỉ FAIL tổng.
-- **`comment` phải gọn, dễ đọc** (QA đọc trực tiếp trên Test Run): 1–2 câu kết quả, KHÔNG dán debug (`key=value`, `tx 2→2`, `match=true`, `val="…"`, regex), KHÔNG prefix `[PASS]/[Positive]/[Negative]`, caveat xuống dòng `Lưu ý:`, số/tiền dạng người đọc, KHÔNG placeholder `Xem xxx.json`. Chi tiết: mục **Comment kết quả (Test Execution) — Quy chuẩn trình bày** trong `RULE_GLOBAL.md`.
+- Khi ghi `testcase-status.json`, **case FAILED phải kèm step nào fail và evidence của bước đó**. Điền `steps[]`, trong đó bước lỗi là `FAILED` kèm `evidence` còn bước chưa chạy là `TODO`. Hoặc dùng shortcut `failedStep` và `failedStepEvidence`, schema ở `run_phase2_template.md`. Nhờ vậy Test Execution hiện đúng bước lỗi thay vì chỉ FAIL tổng.
+- **`comment` phải gọn, dễ đọc**, vì QA đọc trực tiếp trên Test Run. Viết 1 đến 2 câu kết quả. KHÔNG dán debug (`key=value`, `tx 2→2`, `match=true`, `val="…"`, regex). KHÔNG prefix `[PASS]`, `[Positive]`, `[Negative]`. Caveat thì xuống dòng `Lưu ý:`. Số và tiền viết dạng người đọc. KHÔNG dùng placeholder `Xem xxx.json`. Chi tiết: mục **Comment kết quả (Test Execution) — Quy chuẩn trình bày** trong `RULE_GLOBAL.md`.
 
 # Đầu ra
 - Playwright spec/page objects nếu cần.

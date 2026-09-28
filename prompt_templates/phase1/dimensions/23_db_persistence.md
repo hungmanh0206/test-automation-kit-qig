@@ -1,7 +1,8 @@
 # §23 — DB Persistence Coverage (bản ghi dưới DB sau khi UI đổi dữ liệu)
 
-> Tag bắt buộc trong tiêu đề case: **`[DbPersist]`** · Loại case: **Database**
-> Mở khi: case có **Create / Update / Delete** dữ liệu (kể cả xoá mềm, kể cả thao tác chỉ đổi 1 field).
+> Tag bắt buộc trong tiêu đề case: **`[DbPersist]`**. Loại case: **Database**.
+>
+> Mở khi case có **Create**, **Update** hoặc **Delete** dữ liệu. Kể cả xoá mềm, kể cả thao tác chỉ đổi 1 field.
 
 ## Vì sao chiều này tồn tại
 
@@ -56,10 +57,10 @@ giống DB" là **tautology** — cấm. Giá trị lớn nhất của kiểm so
 - `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. **8 màn** đã neo: `SERVICE_FEE` (8 cột) ·
   `CORE` (4) · `CORE_LIST` (5) · `SERVICE_FEE_LIST` (4) · `ADD_ON_LIST` (5) · `CORE_HUBSPOT` (1) ·
   `SERVICE_FEE_HUBSPOT` (1) · `CORE_EDIT` (1).
-  Khoá theo màn vì CÙNG một cột có nhãn khác nhau: `original_price` là **"Gross Amount"** ở CORE nhưng
-  **"Gross Price"** ở SERVICE_FEE; `final_price` **chưa neo** ở tab Overview của CORE mà **đã neo**
-  ("Net Amount") ở màn danh sách; `sync_status` chỉ có ở **tab Hubspot Information**, không có ở Overview —
-  kết luận "cột này không hiển thị" khi mới xem một tab là kết luận thiếu.
+  Khoá theo màn vì CÙNG một cột có nhãn khác nhau. `original_price` là **"Gross Amount"** ở CORE nhưng
+  **"Gross Price"** ở SERVICE_FEE. `final_price` **chưa neo** ở tab Overview của CORE mà **đã neo**
+  ("Net Amount") ở màn danh sách. `sync_status` chỉ có ở **tab Hubspot Information**, không có ở Overview.
+  Nên kết luận "cột này không hiển thị" khi mới xem một tab là kết luận thiếu.
 - `fieldMap.valueMaps` — **giá trị enum DB → nhãn tiếng Việt**, khoá `"<bảng>.<cột>"`. Đã neo
   `status` (6/6 enum — đủ), `sync_status` (2/2 — đủ), `service_fee_type` (6 enum — **đủ cho màn Service Fee**;
   3 enum `DANG_KY_CBE`/`MUA_TAI_KHOAN_CERT`/`MUA_TAI_KHOAN_BECKER` chỉ tồn tại ở đơn **ADD_ON** nên phải neo
@@ -75,10 +76,11 @@ Tra bản đồ **phải đi qua helper** `uiLabelOfColumn(conv, screen, column)
 `uiLabelOfValue(conv, 'bảng.cột', enum)` trong `config.ts` — hai hàm này **NÉM** khi cột/enum chưa neo hoặc
 khi bạn hỏi nhãn của màn khác. Đọc `conv.fieldMap` trực tiếp là bỏ mất lớp chặn đó.
 
-Cột trong `unanchored` (hiện **4 mục**, mỗi mục ghi rõ **cần fixture gì**) thì **KHÔNG được dùng để phán** —
-đoán sai cột thì kết luận vẫn ra, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường. Cần thêm cột
-thì neo trước bằng fixture phân biệt: nhãn chỉ được neo khi giá trị của nó **phân biệt** được với mọi cột
-cùng loại trên **toàn bộ** hàng đo (xem `fieldMap._how_to_reanchor`), đừng suy từ tên cột.
+Cột trong `unanchored` thì **KHÔNG được dùng để phán**. Hiện có **4 mục**, mỗi mục ghi rõ **cần fixture gì**.
+Đoán sai cột thì kết luận vẫn ra, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường.
+
+Cần thêm cột thì neo trước bằng fixture phân biệt. Nhãn chỉ được neo khi giá trị của nó **phân biệt** được với
+mọi cột cùng loại trên **toàn bộ** hàng đo, xem `fieldMap._how_to_reanchor`. Đừng suy từ tên cột.
 
 **③ Chỉ verify bản ghi do CHÍNH lượt test tạo** (lọc theo `id`/`RUN_ID`). UAT dùng chung: assert lên dữ liệu
 người khác là nguồn flaky và là đường ra kết luận sai. `snapshot`/`expectNoChange` **bắt buộc khai `columns`**
@@ -121,28 +123,33 @@ Hai bẫy khi viết truy vấn tìm ứng viên:
   toàn có thể hiện con số đó dưới nhãn khác. Đúng cách: lấy mọi cặp (nhãn → giá trị) trên màn, chuẩn hoá số,
   rồi hỏi "giá trị này khớp cột DB nào" — và chỉ neo khi khớp **đúng một** cột.
 
-**Form giữ giá trị ở `input.value`, KHÔNG ở `textContent`** — và OPS còn dùng **ant-select** (là `div`,
-không phải `<select>`) nên `input.value` của nó **rỗng**, còn radio/checkbox thì `value` là hằng số của từng ô
-(đọc `value` là ra giá trị của ô **chưa chọn**). Bản đọc form đầu tiên báo `select=0` ở **mọi** form OPS — đó
+**Form giữ giá trị ở `input.value`, KHÔNG ở `textContent`.** OPS còn dùng **ant-select**, vốn là `div` chứ
+không phải `<select>`, nên `input.value` của nó **rỗng**. Radio và checkbox thì `value` là hằng số của từng ô,
+nên đọc `value` là ra giá trị của ô **chưa chọn**. Bản đọc form đầu tiên báo `select=0` ở **mọi** form OPS — đó
 là **instrument mù**, không phải "form không có field". Phải đọc `.ant-select-selection-item` và trạng thái
 `checked`; đọc xong mới được kết luận "cột này không hiển thị".
 
-**Cột enum không hiện dạng chuỗi** (vd `payment_method`) thì đối chiếu theo giá trị vô dụng — phải **so hai
-nhóm** đơn cùng màn khác nhau đúng ở cột đó, và chỉ nhận nhãn nào *(a)* có ở mọi đơn của cả hai nhóm, *(b)*
-không đổi trong từng nhóm, *(c)* khác nhau giữa hai nhóm. **Mỗi nhóm phải ≥3 đơn của KHÁCH KHÁC NHAU**: lượt
-đo đầu chỉ dùng 2+2 đơn ra **4 nhãn "phân biệt được"** (kể cả `Status = "Split bill"` vs `"None"`, nghe rất
-thuyết phục) — tất cả **biến mất** khi thay cặp gần-bản-sao (cùng khách, cùng số tiền) bằng đơn của khách khác.
+**Cột enum không hiện dạng chuỗi** (vd `payment_method`) thì đối chiếu theo giá trị là vô dụng. Phải **so hai
+nhóm** đơn cùng màn, khác nhau đúng ở cột đó. Chỉ nhận nhãn nào thoả cả ba: *(a)* có ở mọi đơn của cả hai nhóm,
+*(b)* không đổi trong từng nhóm, *(c)* khác nhau giữa hai nhóm.
 
-**Cột không phải field nhập thì phải TRUY NGUỒN, đừng đọc thêm màn.** `payment_method` không có ở 6 loại màn
-(Overview · List · List Transaction · Hubspot · form sửa · form tạo cả 3 loại đơn). Hai giả thuyết bị bác bằng
-số đo: DB **không có** cột/bảng nào tên split/installment, và giá trị **không tương quan** với số đợt thanh
-toán (68 đơn INSTALLMENT có 0 giao dịch; đơn ONETIME có tới 5). Manh mối thật nằm ở **schema**: bảng có cột
-song sinh `forced_payment_method` và `payment_page_url` ⇒ giá trị do người học chọn ở **trang thanh toán**,
-OPS chỉ có thể *ép*. Đọc thêm màn OPS nữa là vô ích — đọc `information_schema` rẻ hơn và trả lời đúng câu hỏi.
+**Mỗi nhóm phải có ≥3 đơn của KHÁCH KHÁC NHAU.** Lượt đo đầu chỉ dùng 2+2 đơn, ra **4 nhãn "phân biệt được"**,
+kể cả `Status = "Split bill"` so với `"None"` nghe rất thuyết phục. Tất cả **biến mất** khi thay cặp
+gần-bản-sao, tức cùng khách cùng số tiền, bằng đơn của khách khác.
 
-Kết quả có giá trị nhất của vòng 3 lại là một câu **phủ định**: `deposit` có đơn phân biệt (1.000.000 và
-1.500.000) mà **con số đó không xuất hiện ở bất kỳ nhãn nào** trên tab Overview ⇒ lý do treo đổi từ *"trùng giá
-trị"* sang *"màn này không hiển thị"* — hai việc phải làm hoàn toàn khác nhau.
+**Cột không phải field nhập thì phải TRUY NGUỒN, đừng đọc thêm màn.** `payment_method` không có ở 6 loại màn:
+Overview, List, List Transaction, Hubspot, form sửa, và form tạo cả 3 loại đơn.
+
+Hai giả thuyết bị bác bằng số đo. DB **không có** cột hay bảng nào tên split hoặc installment. Và giá trị
+**không tương quan** với số đợt thanh toán: 68 đơn INSTALLMENT có 0 giao dịch, trong khi đơn ONETIME có tới 5.
+
+Manh mối thật nằm ở **schema**. Bảng có cột song sinh `forced_payment_method` và `payment_page_url`, nghĩa là
+giá trị do người học chọn ở **trang thanh toán**, OPS chỉ có thể *ép*. Đọc thêm màn OPS nữa là vô ích. Đọc
+`information_schema` rẻ hơn và trả lời đúng câu hỏi.
+
+Kết quả có giá trị nhất của vòng 3 lại là một câu **phủ định**. `deposit` có đơn phân biệt, 1.000.000 và
+1.500.000, mà **con số đó không xuất hiện ở bất kỳ nhãn nào** trên tab Overview. Lý do treo vì thế đổi từ
+*"trùng giá trị"* sang *"màn này không hiển thị"*. Hai việc phải làm hoàn toàn khác nhau.
 
 ## Hai giới hạn ĐÃ ĐO trên DỰ ÁN THAM CHIẾU (đừng hứa thứ máy không làm được)
 
@@ -153,14 +160,16 @@ trị"* sang *"màn này không hiển thị"* — hai việc phải làm hoàn 
 - **Không có audit hành động người dùng.** Bảng đơn và bảng giao dịch KHÔNG có cột nào ghi người sửa;
   bảng log webhook chỉ là log. ⇒ Ca #5 chỉ kiểm `updated_at`,
   `expectAudit()` sẽ **từ chối** thay vì trả kết quả rỗng.
-- **39/39 cột thời gian là `timestamp WITHOUT time zone`** — dữ liệu không mang offset.
-  `conventions.timestamps.storedZone = "UTC"`, xác định 27/08/2026 bằng phép đo READ-ONLY: bản ghi mới nhất
-  của 4 bảng độc lập đều nằm ~30 phút TRƯỚC giờ UTC thực tế (nếu app ghi +07 thì chúng phải ở tương lai
-  ~6.5h). Chưa khai `storedZone` thì `instant()` trả **`inconclusive`** — đó là câu trả lời đúng, không phải
-  lỗi. Và vì DB lưu tới **mili giây** còn spec thường ghi tới giây, dùng `instant(v, { toleranceMs: 1000 })`
-  cho đúng mức spec quy định; thiếu dung sai thì lệch 825ms cũng thành FAIL.
+- **39/39 cột thời gian là `timestamp WITHOUT time zone`**, nên dữ liệu không mang offset.
+  `conventions.timestamps.storedZone = "UTC"`, xác định 27/08/2026 bằng phép đo READ-ONLY. Bản ghi mới nhất
+  của 4 bảng độc lập đều nằm khoảng 30 phút TRƯỚC giờ UTC thực tế; nếu app ghi +07 thì chúng phải ở tương lai
+  khoảng 6,5 giờ. Chưa khai `storedZone` thì `instant()` trả **`inconclusive`**, và đó là câu trả lời đúng chứ
+  không phải lỗi.
+
+  DB lưu tới **mili giây** còn spec thường ghi tới giây, nên dùng `instant(v, { toleranceMs: 1000 })` cho đúng
+  mức spec quy định. Thiếu dung sai thì lệch 825ms cũng thành FAIL.
 
 ## Liên quan
 
-§5 API (idempotency phía gửi) · §8 Resilience · §9 Side-effect (webhook đi ra) · §14 BE Response Conformance
-(so **response**, còn §23 so **bản ghi**) · §22 Inbound Callback (callback ghi tiền ⇒ nên có cả §23).
+§5 API (idempotency phía gửi), §8 Resilience, §9 Side-effect (webhook đi ra), §14 BE Response Conformance
+(so **response**, còn §23 so **bản ghi**), §22 Inbound Callback (callback ghi tiền thì nên có cả §23).

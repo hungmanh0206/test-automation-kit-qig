@@ -273,21 +273,21 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/23_db_persistence.md": {
-      "slash": 4.6,
-      "longSent": 7.8,
-      "sym": 27.4,
-      "emDash": 17.6,
+      "slash": 2.6,
+      "longSent": 0,
+      "sym": 18.9,
+      "emDash": 11.7,
       "vague": 0,
-      "meanSent": 23.2,
+      "meanSent": 17.3,
       "emojiCount": 6
     },
     "prompt_templates/phase2/04_execute_fe_playwright.md": {
-      "slash": 15.8,
-      "longSent": 2.3,
-      "sym": 13.5,
-      "emDash": 12.2,
+      "slash": 14.5,
+      "longSent": 0,
+      "sym": 11.9,
+      "emDash": 10.5,
       "vague": 2.3,
-      "meanSent": 17,
+      "meanSent": 15.9,
       "emojiCount": 5
     },
     "prompt_templates/phase2/05_execute_api_playwright.md": {
