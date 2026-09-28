@@ -995,6 +995,12 @@ Command là **con trỏ mỏng** — nó chỉ trỏ tới workflow/prompt thậ
 Muốn biết chi tiết một luồng thì vẫn đọc prompt/workflow ở Mục 9.1. Và kit có 110 npm script: việc lẻ thì
 gọi trực tiếp `npm run <script>` nhanh hơn, command chỉ bọc **điểm vào của một luồng**.
 
+> ⚠️ **Phần sau tên command phải đúng bằng `<TASK_KEY>`, không thêm chữ nào.** Mỗi command đổ thẳng
+> `$ARGUMENTS` vào npm script (`--task $ARGUMENTS`), nên `/phase2 CSDL-1234 chạy thuần local` sẽ làm
+> preflight nhận task key là cả câu đó rồi chặn.
+> **Cần truyền thêm tham số** (`TESTCASE_SOURCE`, `PUSH_EXECUTION`, `QA confirmation Status`, bug key,
+> đường dẫn review…) thì dùng prompt mẫu ở **Mục 9.2** thay cho slash command.
+
 ### 9.1 Prompt chính
 
 | Prompt | Dùng khi nào |
@@ -1010,15 +1016,11 @@ gọi trực tiếp `npm run <script>` nhanh hơn, command chỉ bọc **điểm
 
 ### 9.2 Prompt mẫu
 
+> **Khi nào dùng mục này thay cho slash command (Mục 9.0):** khi lượt chạy cần **tham số ngoài**
+> `<TASK_KEY>` — `$ARGUMENTS` của command đi thẳng vào `--task` nên không chở được gì thêm.
+> Chạy trơn, không tham số (Phase 1, preflight, gates) thì gõ `/phase1 <TASK_KEY>` là đủ, ngắn hơn.
+>
 > Mỗi prompt dưới đây áp dụng cho một `<TASK_KEY>`. Nếu dùng profile (khuyến nghị, xem Mục 8), thêm 1 dòng vào prompt: `Dùng TASK_ENV=profiles/<TASK_KEY>/task.env cho mọi command.` Nếu chỉ chạy 1 task bằng `.env` chung thì không cần dòng đó. Giá trị tĩnh (Figma/tài liệu nguồn/Backlog key + base URL) luôn ở `.env` chung.
-
-Phase 1:
-
-```text
-Đọc và chạy file prompt_templates/run_phase1_template.md.
-Chỉ chạy Phase 1 để sinh testcase.
-Task key là <TASK_KEY>.
-```
 
 Phase 1 - Auto Publish testcase (Google Sheet):
 
