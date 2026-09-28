@@ -42,7 +42,7 @@ Nên sau khi cài xong, con số đúng của mỗi bên khác nhau. Đo ngày 2
 
 | | GitHub | GitLab |
 |---|---|---|
-| file được track | 470 | 468 |
+| file được track | 471 | 469 |
 | `npx playwright test tests/fe/infra` | **574 xanh · 0 bỏ qua · 0 đỏ** | **574 xanh · 0 bỏ qua · 0 đỏ** |
 | `npm run ci:scope` đếm | 56 spec | 54 spec |
 

@@ -91,7 +91,19 @@ function prose(text) {
     .replace(/^[ \t]*>?[ \t>]*\|.*$/gm, ' ')
     .replace(/^#+ .*$/gm, ' ')
     .replace(/\bhttps?:\S+/g, ' ')
-    .replace(/\S*\/\S*\/\S*/g, ' ');
+    .replace(/\S*\/\S*\/\S*/g, ' ')
+    /*
+     * MỖI GẠCH ĐẦU DÒNG LÀ MỘT ĐƠN VỊ. Phép tách câu chỉ biết `.!?…` và dòng trống, nên một danh sách
+     * 5 gạch đầu dòng không có dòng trống xen giữa bị dán thành MỘT "câu" 60 từ. Đó là lỗi đo, không
+     * phải câu dài: mỗi item là một phát biểu riêng.
+     * Đo 28/09/2026 trên 48 file đang vượt mốc: câu quá 35 từ giảm 220 xuống 184, tức 36 chỗ trước đây
+     * là danh sách bị dán chứ không phải câu dài thật.
+     * Đã kiểm ngược trên 44 file `docs/course` (bộ mẫu suy ra ngưỡng): KHÔNG file nào vượt mốc vì đổi
+     * phép đo này. Vài file có `longSent` nhích lên tối đa 0,1 chỉ vì dấu `-` không còn bị đếm là một
+     * từ — chính xác hơn, và vẫn cách mốc 4 rất xa. Ngưỡng cũ vẫn là chặn trên hợp lệ vì phép đo mới
+     * chỉ làm số của bộ mẫu giảm hoặc giữ nguyên.
+     */
+    .replace(/^[ \t]*(?:[-*+]|\d+\.)[ \t]+/gm, '\n\n');
 }
 
 /** `/` giữa hai từ CHỮ THƯỜNG. Xem ghi chú "LỌC ĐỂ KHỎI BÁO OAN" ở đầu file. */
