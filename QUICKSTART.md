@@ -147,7 +147,7 @@ Mỗi luồng có một slash command trong `.claude/commands/`. Gõ trong Claud
 /publish <TASK_KEY>         # đẩy Google Sheet qua Drive MCP (review trước khi ghi đè)
 ```
 
-Command chỉ là **con trỏ** tới workflow/prompt thật + danh sách gate; nội dung luồng vẫn ở
+Command chỉ là **con trỏ** tới workflow và prompt thật + danh sách gate; nội dung luồng vẫn ở
 `prompt_templates/` và `.agent/workflows/`. Ba điểm dừng bắt buộc mà command nào cũng nhắc:
 
 - **Ambiguity Gate** ở Phase 1 — còn mơ hồ thì hỏi trước, không đoán rồi sinh testcase.
@@ -206,7 +206,7 @@ Publish không phải npm script — là thao tác agent làm trực tiếp qua 
 
 Re-publish sau khi sửa Excel là lặp lại đúng 4 bước trên (bước 3 sẽ luôn là `update_file` vì Sheet đã tồn tại) — không cần dedup theo key riêng, ghi đè toàn workbook tự nhiên phản ánh đúng Excel hiện tại.
 
-Nhóm chức năng thành **sheet riêng** trong workbook (1 sheet/nhóm, dựng từ `md_to_xlsx.js`); TC ID nằm ở cột `ID_TC`. Sheet không phải issue tracker nên **không có** Test Set, requirement issue-link, Precondition issue riêng, assignee hay label — tiền điều kiện nằm trong cột `Tiền điều kiện` của chính sheet. Chi tiết mô hình: [.agent/skills/shared/backlog_testcase_publisher/SKILL.md](.agent/skills/shared/backlog_testcase_publisher/SKILL.md).
+Nhóm chức năng thành **sheet riêng** trong workbook (1 sheet cho mỗi nhóm, dựng từ `md_to_xlsx.js`); TC ID nằm ở cột `ID_TC`. Sheet không phải issue tracker nên **không có** Test Set, requirement issue-link, Precondition issue riêng, assignee hay label — tiền điều kiện nằm trong cột `Tiền điều kiện` của chính sheet. Chi tiết mô hình: [.agent/skills/shared/backlog_testcase_publisher/SKILL.md](.agent/skills/shared/backlog_testcase_publisher/SKILL.md).
 
 ## Partial Rerun - Cleanup testcase
 
@@ -253,7 +253,7 @@ Nguồn testcase: tải Google Sheet mới nhất qua Drive MCP về test-cases/
 
 ## Run Task-Scoped Playwright
 
-Ưu tiên các command này khi chạy test cho một story/task cụ thể để tránh dùng nhầm `TASK_KEY` từ `.env` cũ:
+Ưu tiên các command này khi chạy test cho một story hoặc task cụ thể để tránh dùng nhầm `TASK_KEY` từ `.env` cũ:
 
 ```text
 npm run test:task -- --project-output <PROJECT_OUTPUT_DIR> --task <TASK_KEY>
@@ -290,7 +290,7 @@ Chỉ Re-run bug/case liên quan, không đồng bộ tài liệu mới trong b�
 
 ## QA Checks (executable — chạy thật, so ngưỡng/contract)
 
-Tái dùng login/catalog; kết quả ghi `<TASK_OUTPUT_DIR>/reports/` và lên dashboard. Chi tiết + catalog schema: `scripts/qa/README.md`.
+Tái dùng login và catalog; kết quả ghi `<TASK_OUTPUT_DIR>/reports/` và lên dashboard. Chi tiết + catalog schema: `scripts/qa/README.md`.
 
 | Việc | Lệnh | Autonomy / an toàn |
 |---|---|---|

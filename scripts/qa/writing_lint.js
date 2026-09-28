@@ -72,9 +72,23 @@ function profileOf(file) {
  */
 function prose(text) {
   return text
+    /*
+     * CHUẨN HOÁ XUỐNG DÒNG TRƯỚC MỌI THỨ. Repo dùng CRLF, mà phép tách đoạn bên dưới là `\n\n+`, và
+     * `\r\n\r\n` KHÔNG khớp nó. Hậu quả: mọi ngắt đoạn thành vô hình. Heading bị thay bằng dấu cách,
+     * dòng in đậm đóng vai tiêu đề, dòng metadata đầu bài — tất cả dán vào đoạn sau thành một "câu"
+     * khổng lồ, nên `meanSent` và `longSent` phồng lên ở MỌI file CRLF.
+     * Đo 28/09/2026: chỉ thêm một dòng này thì 10 file hết CHẶN, và cả 10 đều nằm trong `docs/course`
+     * — tức là chính bộ mẫu 34 bài mà mốc được suy ra từ đó. Máy đang đánh trượt thước của chính nó.
+     */
+    .replace(/\r\n?/g, '\n')
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/`[^`\n]*`/g, ' ')
-    .replace(/^\s*\|.*$/gm, ' ')
+    /*
+     * Bảng nằm TRONG blockquote (`> | cột | cột |`) vẫn là bảng. Khuôn cũ `^\s*\|` không bắt vì có `>`
+     * đứng trước, nên mọi ô của bảng đó bị đếm như văn xuôi và dính thành một "câu" rất dài.
+     * Ảnh hưởng nhỏ nhưng có thật: riêng RULE_GLOBAL.md, meanSent 23,5 xuống 22,9.
+     */
+    .replace(/^[ \t]*>?[ \t>]*\|.*$/gm, ' ')
     .replace(/^#+ .*$/gm, ' ')
     .replace(/\bhttps?:\S+/g, ' ')
     .replace(/\S*\/\S*\/\S*/g, ' ');

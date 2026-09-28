@@ -1,6 +1,6 @@
 # Hướng dẫn sử dụng Test Automation Kit cho Team QA
 
-> Tài liệu hướng dẫn Team QA sử dụng Test Automation Kit trong Visual Studio Code để sinh testcase, execute automation, review coverage/risk, log bug Backlog và re-run sau khi Dev fix.
+> Tài liệu hướng dẫn Team QA sử dụng Test Automation Kit trong Visual Studio Code để sinh testcase, execute automation, review coverage và risk, log bug Backlog và re-run sau khi Dev fix.
 
 ## Mục lục
 
@@ -21,7 +21,7 @@
 
 ### 1.1 Test Automation Kit dùng để làm gì?
 
-Test Automation Kit hỗ trợ QA làm việc theo từng story/task:
+Test Automation Kit hỗ trợ QA làm việc theo từng story hoặc task:
 
 ```text
 Requirement
@@ -255,7 +255,7 @@ npx -y -p @hubspot/cli hs mcp setup --client codex
 
 ### 3.4 Đồng bộ kit bằng GitLab/GitHub
 
-Nếu kit được quản lý trên GitLab/GitHub, QA cần biết pull/push cơ bản.
+Nếu kit được quản lý trên GitLab/GitHub, QA cần biết pull và push cơ bản.
 
 Trước khi bắt đầu làm việc:
 
@@ -325,9 +325,9 @@ Nhóm config thường gặp:
 
 Khi chạy song song nhiều task, chỉ để **giá trị tĩnh** (Figma/tài liệu nguồn/Backlog API key + base URL, `OPS_*`) ở `.env` chung; `GOOGLE_SHEET_URL` là giá trị động, để trong `profiles/<TASK_KEY>/task.env`.
 
-Không cấu hình DB credential/connection string generic (`TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*`) và **không dựng state bằng DB**. Ngoại lệ DUY NHẤT: read-only verify/chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatDbClient.ts` (biến `LIB_MASTER_DB_*`, read-only: chỉ SELECT, chặn bằng lint trong client) — dùng để khoanh tầng lỗi (vd "field trống do FE hay BE?") khi API/UI không đủ. Kho UAT/PROD tách biệt: chỉ cấu hình creds kho UAT, không cấu hình thì không truy cập. Ghi DB thẳng bỏ qua business logic nên DB chỉ để chẩn đoán, KHÔNG dựng state, KHÔNG phải evidence Backlog; PII đọc ra phải mask + không export file. Case cần **dựng** trạng thái backend sâu vẫn bị chặn vì **thiếu capability an toàn (test hook/API/sandbox)** và đánh dấu `Needs hook`/`Manual-only` (xem `tests/support/setup/hooks/README.md`).
+Không cấu hình DB credential và connection string generic (`TEST_DB_*`, `TEST_DATABASE_URL`, `DATABASE_URL`, `PG*`) và **không dựng state bằng DB**. Ngoại lệ DUY NHẤT: read-only verify/chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatDbClient.ts` (biến `LIB_MASTER_DB_*`, read-only: chỉ SELECT, chặn bằng lint trong client) — dùng để khoanh tầng lỗi (vd "field trống do FE hay BE?") khi API/UI không đủ. Kho UAT/PROD tách biệt: chỉ cấu hình creds kho UAT, không cấu hình thì không truy cập. Ghi DB thẳng bỏ qua business logic nên DB chỉ để chẩn đoán, KHÔNG dựng state, KHÔNG phải evidence Backlog; PII đọc ra phải mask + không export file. Case cần **dựng** trạng thái backend sâu vẫn bị chặn vì **thiếu capability an toàn (test hook/API/sandbox)** và đánh dấu `Needs hook`/`Manual-only` (xem `tests/support/setup/hooks/README.md`).
 
-Không copy token/password vào Markdown, report, testcase, chat hoặc Backlog description.
+Không copy token và password vào Markdown, report, testcase, chat hoặc Backlog description.
 
 ### 3.7 Thông tin bắt buộc trước mỗi lần chạy
 
@@ -346,7 +346,7 @@ Mỗi lần yêu cầu AI chạy workflow, luôn nêu rõ:
 | App/API URL | URL môi trường test liên quan tới story/task hiện tại. |
 | Scope bổ sung | User story, TC ID, bug key, endpoint hoặc màn hình nếu có. |
 
-Mỗi story/task có thể có Backlog, tài liệu nguồn, Figma và Swagger khác nhau. Không dùng lại link của story trước nếu user chưa xác nhận đó vẫn là source đúng cho story/task hiện tại.
+Mỗi story hoặc task có thể có Backlog, tài liệu nguồn, Figma và Swagger khác nhau. Không dùng lại link của story trước nếu user chưa xác nhận đó vẫn là source đúng cho story/task hiện tại.
 
 AI Agent phải echo lại trước khi ghi file hoặc chạy command:
 
@@ -546,7 +546,7 @@ Bắt buộc thêm (để Phase 2 không phải đoán tiền điều kiện):
 - `### Precondition Execution Matrix` trong `phase1-summary.md`: 1 dòng/TC để biết case nào automatable (`Ready`), cần hook (`Needs hook`), hay blocked (`Manual-only`).
 - Chi tiết schema: skill `precondition_setup_planner` và `prompt_templates/phase1/02_gen_testcases.md`.
 
-**Bắt buộc thêm — CHIỀU coverage (từ 14/08/2026):** bộ testcase có **hai trục**. *Module* trả lời "test **ở đâu**"; *chiều* trả lời "hỏi **loại câu hỏi nào**" (validate field · định dạng hiển thị · công thức tiền · BE trả gì · guard/quyền · bảo mật · hiệu năng · ảnh hưởng lan). Phủ kín module mà **trống hẳn một chiều** thì bộ vẫn *trông* đầy đủ — đo trên một bộ 530 case thật: **E2E 0 case**, **change-impact 0–1**, case hiển thị **≈12%** dù mục đó là BẮT BUỘC.
+**Bắt buộc thêm — CHIỀU coverage (từ 14/08/2026):** bộ testcase có **hai trục**. *Module* trả lời "test **ở đâu**"; *chiều* trả lời "hỏi **loại câu hỏi nào**" (validate field · định dạng hiển thị · công thức tiền · BE trả gì · guard và quyền · bảo mật · hiệu năng · ảnh hưởng lan). Phủ kín module mà **trống hẳn một chiều** thì bộ vẫn *trông* đầy đủ — đo trên một bộ 530 case thật: **E2E 0 case**, **change-impact 0–1**, case hiển thị **≈12%** dù mục đó là BẮT BUỘC.
 
 Ba việc phải làm, theo thứ tự:
 
@@ -591,7 +591,7 @@ Quality gate:
 | Google Sheet publish | Chỉ chạy sau QA confirmation; nếu chưa approve thì trạng thái phải là `Pending QA confirmation`. |
 | Setup Readiness | Mỗi precondition có tag `[<method>]` đủ để setup qua UI/API/fixture/hook an toàn; `test_hook` = cần Dev mở hook, `manual` = không tự động hoá được (phải nêu lý do) |
 
-> **Ép bằng máy (forcing functions round-3):** `npm run preflight` (config/input đủ) · `npm run design:gate -- --dir test-cases/ --with-rows` (đủ cột / không rỗng ô lõi / oracle) · gate gen-testcase TỰ CHẠY khi convert · `npm run self-review -- --task <TASK_KEY>` (checklist gộp trước finalize). Chi tiết `scripts/qa/README.md`.
+> **Ép bằng máy (forcing functions round-3):** `npm run preflight` (config và input đủ) · `npm run design:gate -- --dir test-cases/ --with-rows` (đủ cột / không rỗng ô lõi / oracle) · gate gen-testcase TỰ CHẠY khi convert · `npm run self-review -- --task <TASK_KEY>` (checklist gộp trước finalize). Chi tiết `scripts/qa/README.md`.
 
 Final Decision hợp lệ:
 
@@ -666,11 +666,11 @@ Output bắt buộc:
 
 Agent `mcp__claude_ai_Google_Drive__download_file_content` file Sheet theo `GOOGLE_SHEET_URL` trong `profiles/<TASK_KEY>/task.env`, ghi `test-cases/from-sheet/<TASK_KEY>_from_sheet.xlsx`.
 
-> **Sheet luôn được tải MỚI trước mỗi lượt execute** — không còn khái niệm mirror cũ/staleness như công cụ TMS trước đây, vì mỗi lần đều tải lại bản hiện tại.
+> **Sheet luôn được tải MỚI trước mỗi lượt execute** — không còn khái niệm mirror cũ hay staleness như công cụ TMS trước đây, vì mỗi lần đều tải lại bản hiện tại.
 
 Cần Phase 1 đã publish testcase lên Google Sheet (`GOOGLE_SHEET_URL` có trong profile). Nếu chưa publish → publish trước, hoặc tạm `TESTCASE_SOURCE=excel`. Nếu report cảnh báo TC thiếu steps thì DỪNG và báo user.
 
-Trước khi generate/execute, Phase 2 chạy **Precondition Resolution Pass**: đọc **tag `[<method>]`** ở đầu mỗi cell `Tiền điều kiện` → setup/verify/cleanup qua setup layer `tests/support/setup/` (api/factory/test_hook/ui/pre_existing) hoặc bỏ sang `manual`; chi tiết dựng theo task ở `### Setup Readiness` của `phase1-summary.md`, recipe tái dùng ở `knowledge/setup_recipes/`. Fail ở tầng này là `setup_failure`, KHÔNG phải product bug.
+Trước khi generate hoặc execute, Phase 2 chạy **Precondition Resolution Pass**: đọc **tag `[<method>]`** ở đầu mỗi cell `Tiền điều kiện` → setup/verify/cleanup qua setup layer `tests/support/setup/` (api/factory/test_hook/ui/pre_existing) hoặc bỏ sang `manual`; chi tiết dựng theo task ở `### Setup Readiness` của `phase1-summary.md`, recipe tái dùng ở `knowledge/setup_recipes/`. Fail ở tầng này là `setup_failure`, KHÔNG phải product bug.
 
 Nguyên tắc Phase 2:
 
@@ -687,7 +687,7 @@ Nguyên tắc Phase 2:
 
 ### 5.5.0 Mô hình Google Sheet (traceability) — team tham chiếu
 
-Một task chạy trọn bộ testcase cùng lúc. Testcase management giờ là **Google Sheet qua Drive MCP** — mô hình **phẳng**: Excel canonical → upload nguyên file → Sheet có 1 tab/nhóm chức năng. Không còn Test Set, Test Plan, Precondition issue, folder, Cycle hay Run như công cụ TMS trước đây (lịch sử: kit từng dùng Google Sheet, migrate sang Sheet để không phụ thuộc app Backlog Marketplace).
+Một task chạy trọn bộ testcase cùng lúc. Testcase management giờ là **Google Sheet qua Drive MCP** — mô hình **phẳng**: Excel canonical → upload nguyên file → Sheet có 1 tab cho mỗi nhóm chức năng. Không còn Test Set, Test Plan, Precondition issue, folder, Cycle hay Run như công cụ TMS trước đây (lịch sử: kit từng dùng Google Sheet, migrate sang Sheet để không phụ thuộc app Backlog Marketplace).
 
 ![Mô hình Google Sheet — traceability](docs/user-guide-images/sheet-traceability.png)
 
@@ -701,11 +701,11 @@ Một task chạy trọn bộ testcase cùng lúc. Testcase management giờ là
 
 - **Excel là canonical, Sheet chỉ phản chiếu** — sửa thẳng trên Sheet sẽ mất ở lần ghi đè kế tiếp.
 - **Không cần lifecycle Deprecated**: case rời khỏi Excel thì tự động không còn trên Sheet ở lần `update_file` kế tiếp — không có bước "cleanup" riêng như công cụ cũ.
-- **Publish chỉ làm được trong phiên chat** (Drive MCP không gọi được từ script CLI/CI headless) — đổi lại không còn quản lý token/rate-limit của TMS riêng. Chi tiết mô hình: [`.agent/skills/shared/backlog_testcase_publisher/SKILL.md`](.agent/skills/shared/backlog_testcase_publisher/SKILL.md).
+- **Publish chỉ làm được trong phiên chat** (Drive MCP không gọi được từ script CLI/CI headless) — đổi lại không còn quản lý token và rate-limit của TMS riêng. Chi tiết mô hình: [`.agent/skills/shared/backlog_testcase_publisher/SKILL.md`](.agent/skills/shared/backlog_testcase_publisher/SKILL.md).
 
 ### 5.5.1 Đầu sprint — không phải tạo gì
 
-Sheet không có Test Plan/sprint folder, nên **không có bước "QA tạo Test Plan đầu sprint"**. Muốn ghi chú theo sprint thì thêm cột/tab riêng trong chính workbook nếu team cần, không phải cấu trúc bắt buộc của kit.
+Sheet không có Test Plan/sprint folder, nên **không có bước "QA tạo Test Plan đầu sprint"**. Muốn ghi chú theo sprint thì thêm cột hoặc tab riêng trong chính workbook nếu team cần, không phải cấu trúc bắt buộc của kit.
 
 Case cũng không có assignee (Sheet không phải issue tracker) — muốn ghi người chạy thì để trong `comment` của test-result.
 
@@ -782,7 +782,7 @@ Task key là <TASK_KEY>.
 Re-run bug/case fail: <BUG_KEY hoặc TC_ID>.
 ```
 
-Re-run chỉ xử lý bug/case fail đã có. Không dùng Re-run để cập nhật testcase theo tài liệu mới.
+Re-run chỉ xử lý bug hoặc case fail đã có. Không dùng Re-run để cập nhật testcase theo tài liệu mới.
 
 Re-run cũng theo `TESTCASE_SOURCE` (mặc định tải TC từ Google Sheet về local trước khi chạy). Sau re-run, kết quả được đồng bộ lên Sheet tự động (không cần QA duyệt lại).
 
@@ -901,7 +901,7 @@ Cần xem:
 
 ## 8. Chạy song song nhiều story
 
-Kit hỗ trợ chạy song song nhiều story/task ở các conversation khác nhau bằng cơ chế **run profile + `TASK_ENV`**: mỗi task một file profile riêng, mỗi lệnh tự khai profile của mình nên không đè lên nhau.
+Kit hỗ trợ chạy song song nhiều story hoặc task ở các conversation khác nhau bằng cơ chế **run profile + `TASK_ENV`**: mỗi task một file profile riêng, mỗi lệnh tự khai profile của mình nên không đè lên nhau.
 
 ### 8.1 Mô hình: 1 task = 1 conversation = 1 profile
 
@@ -991,8 +991,8 @@ Từ 04/09/2026 mỗi luồng có một **slash command** làm điểm vào. Gõ
 | `/gates <TASK_KEY>` | Bó gate trước khi finalize | Còn dòng CHẶN thì sửa nội dung, **không nới ngưỡng** |
 | `/publish <TASK_KEY>` | Đẩy Google Sheet | Review nội dung local trước, `update_file`/`create_file` qua Drive MCP sau |
 
-Command là **con trỏ mỏng** — nó chỉ trỏ tới workflow/prompt thật và liệt kê gate, **không** chứa luật.
-Muốn biết chi tiết một luồng thì vẫn đọc prompt/workflow ở Mục 9.1. Và kit có 110 npm script: việc lẻ thì
+Command là **con trỏ mỏng** — nó chỉ trỏ tới workflow và prompt thật và liệt kê gate, **không** chứa luật.
+Muốn biết chi tiết một luồng thì vẫn đọc prompt và workflow ở Mục 9.1. Và kit có 110 npm script: việc lẻ thì
 gọi trực tiếp `npm run <script>` nhanh hơn, command chỉ bọc **điểm vào của một luồng**.
 
 > ⚠️ **Phần sau tên command phải đúng bằng `<TASK_KEY>`, không thêm chữ nào.** Mỗi command đổ thẳng
@@ -1076,7 +1076,7 @@ QA confirmation Status = APPROVED.
 
 ### 9.3 Command thường dùng
 
-Bảng command canonical nằm ở [README.md](README.md) mục **Common Commands** (install, `npm test`, `test:task*`, Backlog bug reporter...). Chi tiết mô hình publish/execute Google Sheet ở [.agent/skills/shared/backlog_testcase_publisher/SKILL.md](.agent/skills/shared/backlog_testcase_publisher/SKILL.md).
+Bảng command canonical nằm ở [README.md](README.md) mục **Common Commands** (install, `npm test`, `test:task*`, Backlog bug reporter...). Chi tiết mô hình publish rồi execute Google Sheet ở [.agent/skills/shared/backlog_testcase_publisher/SKILL.md](.agent/skills/shared/backlog_testcase_publisher/SKILL.md).
 
 Tra luật mà **không** phải đọc cả `RULE_GLOBAL.md` (465 dòng ~ 12.800 token):
 
@@ -1205,7 +1205,7 @@ Chi tiết ở Mục 8.
 
 ## 12. Năng lực nâng cao (Non-functional · Learning · Nhánh phụ)
 
-Ngoài Main Flow (Phase 1 → 2 → Re-run), kit có nhóm năng lực **chạy được, tách biệt, opt-in** — tất cả tái dùng hạ tầng sẵn có (login/catalog/report) và tuân **Autonomy Gate** (Suggest-only / threshold-gated / never-auto). Đây KHÔNG phải bước bắt buộc của Main Flow; Exploratory và load/security là nhánh phụ, chạy khi cần.
+Ngoài Main Flow (Phase 1 → 2 → Re-run), kit có nhóm năng lực **chạy được, tách biệt, opt-in** — tất cả tái dùng hạ tầng sẵn có (login/catalog/report) và tuân **Autonomy Gate** (Suggest-only / threshold-gated / never-auto). Đây KHÔNG phải bước bắt buộc của Main Flow; Exploratory và load và security là nhánh phụ, chạy khi cần.
 
 ![Sơ đồ năng lực nâng cao](docs/user-guide-images/advanced-capabilities.png)
 
@@ -1222,16 +1222,16 @@ Ngoài Main Flow (Phase 1 → 2 → Re-run), kit có nhóm năng lực **chạy 
 
 `self_review` **chặn** nếu execute xong mà chưa có snapshot/KPI, và **cảnh báo** khi có case FAILED mà `knowledge/bugs/` chưa có entry.
 
-**3 store dưới đây máy KHÔNG tự thu được** (chỉ người/agent ghi) nên `self_review` có check riêng — record sai schema/PII thì **chặn**, còn store rỗng chỉ nhắc **khi có tín hiệu**: clarifications đã RESOLVED mà `domain/` rỗng · bộ TC có case phân quyền/trạng thái mà `system/` rỗng · bug Rejected chưa lưu lý do · quyết định quá `expires_at`. Không có tín hiệu thì không nhắc, để cảnh báo khỏi thành tiếng ồn.
+**3 store dưới đây máy KHÔNG tự thu được** (chỉ người hoặc agent ghi) nên `self_review` có check riêng — record sai schema/PII thì **chặn**, còn store rỗng chỉ nhắc **khi có tín hiệu**: clarifications đã RESOLVED mà `domain/` rỗng · bộ TC có case phân quyền/trạng thái mà `system/` rỗng · bug Rejected chưa lưu lý do · quyết định quá `expires_at`. Không có tín hiệu thì không nhắc, để cảnh báo khỏi thành tiếng ồn.
 
-- **Knowledge Base** (`knowledge/`): bộ nhớ học dùng lại xuyên task — chỉ ghi **fact đã qua gate** (bug phải qua Backlog Bug Gate), không PII/secret, JSON thuần tra theo module/tag (live khởi tạo rỗng; `knowledge/examples/` là mẫu).
+- **Knowledge Base** (`knowledge/`): bộ nhớ học dùng lại xuyên task — chỉ ghi **fact đã qua gate** (bug phải qua Backlog Bug Gate), không PII/secret, JSON thuần tra theo module và tag (live khởi tạo rỗng; `knowledge/examples/` là mẫu).
 - **Hai nửa của oracle** (ghi tay, có người chốt — không phải máy thu tự động):
   - `knowledge/domain/` — **giá trị đúng là gì** (business rule đã xác nhận, có `source` + `examples {input,expected}`). Skill `domain_recorder`, kiểm `npm run domain:check`.
   - `knowledge/system/` — **hệ thống được phép làm gì**: `state_machine` (chuyển state hợp pháp) · `permission_matrix` (role × action) · `shared_surface` (API/component dùng chung ≥2 module). Skill `system_mapper`, kiểm `npm run system:check`.
   - `knowledge/decisions/` — **vì sao đã kết luận như thế**: bug bị Rejected/by-design, case PASS-kèm-note vì vướng env, QA override risk band, cách test đã chốt sau khi thử thất bại. Skill `decision_recorder`, kiểm `npm run decisions:check`. **Bắt buộc tra trước khi log bug**: `node scripts/qa/decisions.js --check "<triệu chứng>" --module <Module>` — khớp `false_positive`/`by_design` thì KHÔNG log lại (log lại là bị dev bounce lần hai); muốn log phải có bằng chứng MỚI khác lần trước. `decisions:check` nêu tên bug `Rejected` chưa có lý do lưu lại (đó chính là bug sẽ bị log lại) + quyết định tạm thời đã quá `expires_at`. `npm run risk` nhắc lại QA override đã lưu ở cuối register (vẫn không tự đổi band).
   Bản đồ `system/` **sinh ra nghĩa vụ test**: cặp state không khai = phải có case chứng minh bị chặn; ô ngoài `allow` = phải 403. `system:check` liệt kê nghĩa vụ còn trống (`‼` = xuất phát từ state terminal / ô DENY — nhóm sinh bug doanh thu & phân quyền). Nhờ đó câu "API cho huỷ đơn đã thanh toán — bug hay đúng thiết kế?" trả lời được bằng **trích dẫn** (`SM-ORDER-001`) thay vì phỏng đoán. Sửa API dùng chung: `node scripts/qa/system_map.js --impact "<surface>"` → danh sách module phải regression.
 - **Risk Scorer** (`npm run risk`): chấm `Risk = Likelihood × Impact` mỗi module từ `knowledge/` + `.agent/config/risk_model.json` → `reports/risk-register.{md,json}`. **Likelihood = bug hiệu dụng (từ `knowledge/bugs/`) + failRate (từ `historical_execution/`)** — thiếu bước 12.1 ở trên thì Likelihood mãi bằng 0 và band chỉ do Impact dẫn (cold-start). **Bug hiệu dụng** = `statusWeight[status] × 0.5^(tuổi/halfLifeDays)`: bug đã `Done` và bug cũ nhẹ hơn bug mới mở, để risk phản ánh HIỆN TẠI chứ không phải quá khứ (register in `bug thô→hiệu dụng`, vd `3→1`; tắt bằng `halfLifeDays: 0`). QA **override band** nếu không đồng ý. `npm run risk:gate` (cảnh báo) / `risk:gate:enforce` (chặn CI khi module High thiếu độ sâu).
-- **Test selection theo risk** (`npm run select:tests`): xếp hạng file hay fail/flaky từ `tc-history`; `--include-risky <N>` kéo thêm file rủi ro dù diff không đụng, `--risk-first` chạy chúng trước, cảnh báo test đang **quarantine**.
+- **Test selection theo risk** (`npm run select:tests`): xếp hạng file hay fail hoặc flaky từ `tc-history`; `--include-risky <N>` kéo thêm file rủi ro dù diff không đụng, `--risk-first` chạy chúng trước, cảnh báo test đang **quarantine**.
 - **Git Impact Analyzer**: đọc git diff → bề mặt dùng chung, làm input cho Change Impact (mục 17 gen testcase).
 
 ### 12.2 Human checkpoint — Ambiguity Gate
@@ -1248,7 +1248,7 @@ Phase 1 **chặn sinh testcase** khi requirement mơ hồ mức Critical/High: x
 | Mobile-web | `npm run test:mobile-web` | device emulation thật (iPhone 13 / Pixel 7) |
 | **Cross-browser** (Firefox/WebKit) | `CROSS_BROWSER=1 npx playwright test --project=firefox-desktop --project=webkit-desktop` | **làn riêng** (project = nhân bản suite): PR chỉ chromium, cross-browser chạy nightly/manual. CI: job `cross-browser` (manual). WebKit ≠ Safari thật (thiếu ITP/HLS/Apple Pay) |
 
-Ngưỡng perf/load lấy từ **NFR/SLA** (không bịa số). Perf Loại A = single-user; Load Loại B = tải nhiều VU (k6, KHÔNG dùng Playwright).
+Ngưỡng perf và load lấy từ **NFR/SLA** (không bịa số). Perf Loại A = single-user; Load Loại B = tải nhiều VU (k6, KHÔNG dùng Playwright).
 
 ### 12.4 Nhánh phụ & tiện ích
 - **Exploratory** (`exploratory/run_exploratory_session.md`): dò rủi ro ngoài testcase đã review; **never-auto**, ngoài Main Flow; draft phải qua `tc_validator` mới tính coverage.
@@ -1256,6 +1256,6 @@ Ngưỡng perf/load lấy từ **NFR/SLA** (không bịa số). Perf Loại A = 
 - **Combinatorial/Pairwise** (`prompt_templates/phase1/06_cross_module.md`): ma trận tổ hợp nhiều biến — mặc định Pairwise + constraints (chống nổ case).
 - **Dashboard** (`npm run dashboard`): tổng hợp coverage/risk/flaky/non-functional theo **dự án trước Academy Design System** → `reports/dashboard.html`.
 - **Token Broker** (`tests/fe/support/auth/tokenBroker.ts`): giữ 1 phiên SPA đã login sống rồi lấy **token tươi** mỗi lần gọi API (401/403 → tự refresh → retry). ⇒ **không phải mở DevTools copy token giữa chừng**, `task.env` chỉ cần user/password. Áp cho mọi SPA gửi `Authorization: Bearer` (token lưu ở localStorage hay do IdP cấp đều được).
-- **`ensureExpanded`** (`scripts/utils/ui/ensure_expanded.js`): mở panel/accordion trên DOM "nhiều icon giống nhau" — thử ứng viên rồi **nghiệm thu bằng sentinel**, tự Escape khi click nhầm modal/dropdown, idempotent. Dùng thay cho click toạ độ chevron (nguồn flaky kinh điển).
+- **`ensureExpanded`** (`scripts/utils/ui/ensure_expanded.js`): mở panel hoặc accordion trên DOM "nhiều icon giống nhau" — thử ứng viên rồi **nghiệm thu bằng sentinel**, tự Escape khi click nhầm modal/dropdown, idempotent. Dùng thay cho click toạ độ chevron (nguồn flaky kinh điển).
 
 > Locator Healing (Phase 2, threshold-gated, opt-in `LOCATOR_HEAL=1`): chỉ heal locator ACTION khi confidence cao, KHÔNG heal locator assertion (chống false PASS).

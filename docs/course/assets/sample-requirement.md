@@ -1,7 +1,7 @@
 # [MẪU THỰC HÀNH] FSD — Màn "Lớp › Học viên" · Hệ thống vận hành nội bộ
 
-> **Đây là tài liệu GIẢ LẬP dùng cho tài liệu này.** Nó được viết *cố ý* giống tài liệu thật ở dự án:
-> có chỗ rõ, có chỗ mơ hồ, có chỗ mâu thuẫn, và có ghi chú quan trọng nằm ở cuối.
+> **Đây là tài liệu GIẢ LẬP dùng cho tài liệu này.** Nó được viết *cố ý* giống tài liệu thật ở dự án.
+> Có chỗ rõ, có chỗ mơ hồ, có chỗ mâu thuẫn. Và có ghi chú quan trọng nằm ở cuối.
 >
 > Dùng ở **Bài 15** (giao việc sinh testcase cho agent) và ở bài về prompt.
 > Không có dữ liệu thật, không có tên học viên thật.
@@ -13,7 +13,7 @@
 Màn `Lớp › Học viên` cho phép nhân viên vận hành xem danh sách học viên trong một lớp, **cắt hạn** lớp cũ
 khi học viên đăng ký học lại, và **gia hạn** thêm ngày truy cập cho học viên có lý do chính đáng.
 
-Ngoài phạm vi: tạo lớp mới · nhập học viên mới · điểm danh · thu học phí.
+Ngoài phạm vi: tạo lớp mới, nhập học viên mới, điểm danh, thu học phí.
 
 ## 2. Bố cục màn
 
@@ -63,12 +63,12 @@ Trong số các lớp được dùng làm mốc, lấy lớp có **ngày bắt �
 ## 4. Luồng chính
 
 1. Nhân viên mở màn `Lớp › Học viên`.
-2. Chọn lớp → Khối A tự điền, Khối B tải danh sách học viên.
-3. Chọn học viên ở Khối C rồi bấm `Xem hạn mới` → bốn ô của Khối C được điền, **chưa ghi gì**.
-4. Bấm `Áp dụng hạn mới` → thời hạn của học viên ở lớp cũ được cập nhật, `Loại` chuyển sang `Học lại`,
+2. Chọn lớp. Khối A tự điền, Khối B tải danh sách học viên.
+3. Chọn học viên ở Khối C rồi bấm `Xem hạn mới`. Bốn ô của Khối C được điền, **chưa ghi gì**.
+4. Bấm `Áp dụng hạn mới`. Thời hạn của học viên ở lớp cũ được cập nhật, `Loại` chuyển sang `Học lại`,
    và Khối B tải lại.
-5. Để gia hạn: mở menu `⋮` của một hàng → `Gia hạn` → nhập số ngày và lý do → bấm `Lưu`, hiện thông báo
-   `Đã cập nhật thời hạn` và bảng tải lại.
+5. Để gia hạn: mở menu `⋮` của một hàng, chọn `Gia hạn`, nhập số ngày và lý do, rồi bấm `Lưu`.
+   Hệ thống hiện thông báo `Đã cập nhật thời hạn` và bảng tải lại.
 
 ## 5. Luồng lỗi
 
@@ -99,14 +99,15 @@ Trong số các lớp được dùng làm mốc, lấy lớp có **ngày bắt �
 
 ## Ghi chú của BA
 
-> ⚠️ **Ghi chú 1.** Học viên đã học quá `50%` tiến độ lớp cũ thì việc gia hạn cần trưởng bộ phận duyệt
-> ngay ở bước `Lưu`, không chờ bước duyệt riêng. *(Bổ sung sau buổi họp ngày 12 — chưa cập nhật vào mục 4.)*
+> ⚠️ **Ghi chú 1.** Học viên đã học quá `50%` tiến độ lớp cũ thì việc gia hạn cần trưởng bộ phận duyệt.
+> Duyệt ngay ở bước `Lưu`, không chờ bước duyệt riêng.
+> *(Bổ sung sau buổi họp ngày 12, chưa cập nhật vào mục 4.)*
 
 > ⚠️ **Ghi chú 2.** Số ngày gia hạn ở mục 2 ghi tối đa `180`, nhưng quy định mới nhất phòng vận hành gửi
 > ghi tối đa `365`. **Chưa chốt.**
 
-> ⚠️ **Ghi chú 3.** Có trường hợp học viên xin học lại nhưng **chưa được xếp vào lớp mới nào** — tài liệu
-> chưa nói lúc đó Khối C hiển thị gì và thời hạn lớp cũ được xử lý thế nào.
+> ⚠️ **Ghi chú 3.** Có trường hợp học viên xin học lại nhưng **chưa được xếp vào lớp mới nào**.
+> Tài liệu chưa nói lúc đó Khối C hiển thị gì. Cũng chưa nói thời hạn lớp cũ được xử lý thế nào.
 
 ---
 
@@ -128,8 +129,12 @@ Trong số các lớp được dùng làm mốc, lấy lớp có **ngày bắt �
 | 10 | **Chữ hiển thị chính xác** | Mục 5 | Sáu thông báo lỗi có chữ cụ thể ⇒ kiểm đúng từng chữ, không kiểm "có thông báo là được" |
 
 **Cách dùng với prompt.** Chạy hai prompt trên cùng tài liệu này. Prompt sơ sài (*"đọc file này và
-viết testcase"*) thường bỏ hết ba ghi chú và không hỏi gì. Prompt có ràng buộc — buộc liệt kê chỗ mơ hồ
-trước khi sinh case — thường bắt được ít nhất mâu thuẫn ở Ghi chú 2.
+viết testcase"*) thường bỏ hết ba ghi chú và không hỏi gì. Prompt có ràng buộc, tức buộc liệt kê chỗ mơ hồ
+trước khi sinh case, thường bắt được ít nhất mâu thuẫn ở Ghi chú 2.
 
-**Cách dùng ở Bài 15.** Bộ testcase đạt yêu cầu phải: dừng lại hỏi về 3 ghi chú thay vì đoán · có case
-biên cho cả hai đầu · có case cho nhánh chặn hạn âm · có case phân quyền cho cả 4 vai trò.
+**Cách dùng ở Bài 15.** Bộ testcase đạt yêu cầu phải làm đủ bốn việc:
+
+- Dừng lại hỏi về 3 ghi chú thay vì đoán.
+- Có case biên cho cả hai đầu.
+- Có case cho nhánh chặn hạn âm.
+- Có case phân quyền cho cả 4 vai trò.

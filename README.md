@@ -4,7 +4,7 @@
 
 ## Overview
 
-Test Automation Kit hỗ trợ quy trình kiểm thử end-to-end cho nhiều project: thu thập requirement, sinh testcase chi tiết, export Excel (source of truth khi gen/publish), publish testcase lên Google Sheet qua Drive MCP, chạy Playwright/API từ testcase canonical local (Phase 2 luôn tải bản Sheet mới nhất), tổng hợp report, triage lỗi và log Backlog bug khi đủ điều kiện.
+Test Automation Kit hỗ trợ quy trình kiểm thử end-to-end cho nhiều project. Các bước: thu thập requirement, sinh testcase chi tiết, export Excel (nguồn chuẩn khi gen và khi publish), publish testcase lên Google Sheet qua Drive MCP, chạy Playwright hoặc API từ testcase canonical local, tổng hợp report, triage lỗi, và log Backlog bug khi đủ điều kiện. Phase 2 luôn tải bản Sheet mới nhất trước khi chạy.
 
 Tài liệu này là landing page của toàn bộ kit. Team QA nên đọc cùng [USER_GUIDE.md](USER_GUIDE.md) và [QUICKSTART.md](QUICKSTART.md) trước khi chạy Phase 1 hoặc Phase 2.
 
@@ -195,10 +195,10 @@ flowchart TD
     Tab --> Result
 ```
 
-- **Excel là canonical, Sheet chỉ là bản đồng bộ hiển thị** — mọi sửa nội dung case làm ở Excel rồi re-publish (ghi đè); sửa thẳng trên Sheet sẽ mất ở lần ghi đè kế tiếp.
-- **Không folder/tag/Cycle/Run/custom field** như công cụ cũ — nhóm chức năng thể hiện bằng **sheet-tab riêng** trong cùng workbook, dựng từ `md_to_xlsx.js`.
-- **Kết quả execute** ghi vào cột `Result` của đúng dòng (khớp `tcId`) qua `scripts/convert_excel/merge_execution_status.js`, rồi agent `update_file` đẩy lên Drive — không đụng ô khác (Test Type/Priority/ghi chú QA đã sửa tay).
-- **Publish chỉ làm được trong phiên chat** (Drive MCP không gọi được từ script CLI/CI headless) — đánh đổi có chủ ý, đổi lại loại bỏ hẳn nhu cầu quản lý token/rate-limit của công cụ TMS trước đây. Chi tiết mô hình + lịch sử migrate: [`.agent/skills/shared/backlog_testcase_publisher/SKILL.md`](.agent/skills/shared/backlog_testcase_publisher/SKILL.md).
+- **Excel là canonical, Sheet chỉ là bản đồng bộ hiển thị.** Mọi sửa nội dung case làm ở Excel rồi re-publish (ghi đè). Sửa thẳng trên Sheet sẽ mất ở lần ghi đè kế tiếp.
+- **Không có folder, tag, Cycle, Run hay custom field** như công cụ cũ. Nhóm chức năng thể hiện bằng **sheet-tab riêng** trong cùng workbook, dựng từ `md_to_xlsx.js`.
+- **Kết quả execute** ghi vào cột `Result` của đúng dòng (khớp `tcId`) qua `scripts/convert_excel/merge_execution_status.js`, rồi agent `update_file` đẩy lên Drive. Các ô khác không bị đụng, gồm `Test Type`, `Priority` và ghi chú QA đã sửa tay.
+- **Publish chỉ làm được trong phiên chat**, vì Drive MCP không gọi được từ script CLI hay CI headless. Đây là đánh đổi có chủ ý. Đổi lại, kit bỏ hẳn việc quản lý token và rate-limit của công cụ TMS trước đây. Chi tiết mô hình và lịch sử migrate: [`.agent/skills/shared/backlog_testcase_publisher/SKILL.md`](.agent/skills/shared/backlog_testcase_publisher/SKILL.md).
 
 ## Common Commands
 
@@ -342,30 +342,34 @@ Mọi artifact của task phải nằm dưới:
 
 ## Best Practices
 
-- ✅ Dùng `PROJECT_OUTPUT_DIR=outputs/<YOUR_PROJECT>` và `TASK_KEY=<TASK_KEY>` cho mọi output.
-- ✅ Echo `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `TASK_OUTPUT_DIR` trước khi ghi file hoặc chạy command.
-- ✅ Dùng `RUN_ID` khi chạy song song nhiều session cùng một `TASK_KEY`.
-- ✅ Với Phase 2 song song nhiều story, ưu tiên automation story-specific dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/automation/`.
-- ✅ Khi chạy Playwright cho task cụ thể, ưu tiên `npm run test:task* -- --project-output ... --task ...` thay vì gọi `npm test` trực tiếp.
-- ✅ Chạy từng story theo phase rời nhau: Phase 1, chờ Dev implement, Phase 2, chờ Dev fix nếu có, rồi Re-run.
-- ✅ Sau QA confirmation trong Phase 1, publish testcase lên Google Sheet qua Drive MCP từ Excel canonical; Phase 2 execute luôn tải bản Sheet mới nhất về canonical local, `excel` local là opt-out khi chưa publish.
-- ✅ Chạy Auto Publish testcase bằng prompt riêng `prompt_templates/phase1/04_auto_publish_backlog.md` sau khi QA xác nhận Excel.
-- ✅ Nhóm chức năng lấy từ cột `Nhóm chức năng` (fallback `Module`) và thành sheet riêng trong workbook; không có Test Set để bật.
-- ✅ Khi testcase đã publish nhưng Excel bỏ bớt TC sau partial rerun, re-publish (ghi đè Sheet) là đủ — không cần lifecycle riêng; chỉ dùng prompt `partial-rerun/run_testcase_cleanup.md` nếu cần unlink Test↔Story/Task trên Backlog.
-- ✅ Giữ testcase đủ precondition, test data, steps, expected result và assertion intent.
-- ✅ Review coverage bằng requirement/risk gate, không chỉ dựa vào số lượng testcase.
-- ✅ Capture screenshot hoặc video không trắng cho bug phức tạp.
-- ✅ Dùng dry-run trước khi tạo Backlog bug thật.
-- ⚠️ Không commit `.env`, `.env.local`, token, password, cookie, private key hoặc service-account JSON.
-- ⚠️ Không hardcode URL, credential, project key, module name hoặc output path theo task cụ thể.
-- ⚠️ Không sửa `.env`/`.env.local` chung khi có session khác đang chạy; truyền env theo command.
-- ⚠️ Không sửa shared helper/config/spec core khi story khác đang execute nếu chưa có xác nhận đây là thay đổi chung.
-- ❌ Không skip testcase chỉ để tăng pass rate.
-- ❌ Không sửa expected result nếu chưa có requirement/API/design xác nhận.
+### Nên
+
+- Dùng `PROJECT_OUTPUT_DIR=outputs/<YOUR_PROJECT>` và `TASK_KEY=<TASK_KEY>` cho mọi output.
+- Echo `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `TASK_OUTPUT_DIR` trước khi ghi file hoặc chạy command.
+- Dùng `RUN_ID` khi chạy song song nhiều session cùng một `TASK_KEY`.
+- Với Phase 2 song song nhiều story, ưu tiên automation story-specific dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/automation/`.
+- Khi chạy Playwright cho task cụ thể, ưu tiên `npm run test:task* -- --project-output ... --task ...` thay vì gọi `npm test` trực tiếp.
+- Chạy từng story theo phase rời nhau: Phase 1, chờ Dev implement, Phase 2, chờ Dev fix nếu có, rồi Re-run.
+- Sau QA confirmation trong Phase 1, publish testcase lên Google Sheet qua Drive MCP từ Excel canonical. Phase 2 execute luôn tải bản Sheet mới nhất về canonical local. Dùng `excel` local là đường opt-out khi chưa publish.
+- Chạy Auto Publish testcase bằng prompt riêng `prompt_templates/phase1/04_auto_publish_backlog.md` sau khi QA xác nhận Excel.
+- Nhóm chức năng lấy từ cột `Nhóm chức năng` (fallback `Module`) và thành sheet riêng trong workbook; không có Test Set để bật.
+- Khi testcase đã publish nhưng Excel bỏ bớt TC sau partial rerun, re-publish (ghi đè Sheet) là đủ. Không cần lifecycle riêng. Chỉ dùng prompt `partial-rerun/run_testcase_cleanup.md` nếu cần unlink Test với Story hoặc Task trên Backlog.
+- Giữ testcase đủ precondition, test data, steps, expected result và assertion intent.
+- Review coverage bằng gate requirement và gate risk, không chỉ dựa vào số lượng testcase.
+- Capture screenshot hoặc video không trắng cho bug phức tạp.
+- Dùng dry-run trước khi tạo Backlog bug thật.
+### Không nên
+
+- Không commit `.env`, `.env.local`, token, password, cookie, private key hoặc service-account JSON.
+- Không hardcode URL, credential, project key, module name hoặc output path theo task cụ thể.
+- Không sửa `.env`/`.env.local` chung khi có session khác đang chạy; truyền env theo command.
+- Không sửa shared helper/config/spec core khi story khác đang execute nếu chưa có xác nhận đây là thay đổi chung.
+- Không skip testcase chỉ để tăng pass rate.
+- Không sửa expected result nếu chưa có requirement/API/design xác nhận.
 
 ## Why It Matters
 
-Kit này được thiết kế để AI Agent và QA cùng đọc được cùng một nguồn sự thật. Cấu trúc output nhất quán giúp giảm token khi rerun, giảm lỗi setup, tăng khả năng audit và giúp QA Lead review coverage/risk nhanh hơn.
+Kit này được thiết kế để AI Agent và QA cùng đọc được cùng một nguồn sự thật. Cấu trúc output nhất quán giúp giảm token khi rerun, giảm lỗi setup, và tăng khả năng audit. QA Lead cũng review coverage cùng risk nhanh hơn.
 
 ## References
 

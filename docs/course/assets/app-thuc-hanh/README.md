@@ -9,8 +9,8 @@ Một trung tâm luyện thi mở lớp theo khoá. Học viên học không k�
 đó hệ thống phải **cắt hạn truy cập lớp cũ** lại cho khớp lớp mới. Người vận hành làm việc đó ở màn
 **Lớp › Học viên**, và cũng ở đó họ **gia hạn** thêm ngày cho học viên có lý do chính đáng.
 
-Chọn đúng nghiệp vụ này là cố ý: quy tắc nghe rất gọn khi đọc — *cắt hạn lớp cũ về sát ngày lớp mới khai
-giảng* — nhưng lúc kiểm thì lộ ra bốn nhánh, một cái biên, và một chỗ **rất dễ lấy sai mốc**. Đó là hình
+Chọn đúng nghiệp vụ này là cố ý. Quy tắc nghe rất gọn khi đọc: *cắt hạn lớp cũ về sát ngày lớp mới khai
+giảng*. Nhưng lúc kiểm thì lộ ra bốn nhánh, một cái biên, và một chỗ **rất dễ lấy sai mốc**. Đó là hình
 dạng của phần lớn việc thật.
 
 ## Chạy nó
@@ -29,7 +29,7 @@ Dừng: Ctrl + C
 ```
 
 Mở `http://localhost:4010` trên trình duyệt. Bạn thấy ba khối: chọn **lớp**, bảng **học viên trong lớp**,
-và khối **đồng bộ học lại** — chọn học viên, bấm **Xem hạn mới** để tính trước, rồi **Áp dụng hạn mới**.
+và khối **đồng bộ học lại**: chọn học viên, bấm **Xem hạn mới** để tính trước, rồi **Áp dụng hạn mới**.
 Menu `⋮` ở cuối mỗi hàng có *Gia hạn* và *Lịch sử*.
 
 Dừng server: bấm `Ctrl + C` ở cửa sổ terminal đang chạy nó.
@@ -44,7 +44,7 @@ Dừng server: bấm `Ctrl + C` ở cửa sổ terminal đang chạy nó.
 
 ## Vì sao app lại có bug cài sẵn
 
-Vì nếu bạn thực hành trên một app **đúng hoàn toàn**, thì bộ kiểm của bạn sẽ luôn xanh — và bạn không có
+Vì nếu bạn thực hành trên một app **đúng hoàn toàn**, thì bộ kiểm của bạn sẽ luôn xanh, và bạn không có
 cách nào biết nó xanh vì app đúng, hay xanh vì bộ kiểm của bạn không phát hiện được gì. Hai thứ đó cho
 **cùng một dấu hiệu**.
 
@@ -56,7 +56,7 @@ App này biết trước là có **đúng 3 bug**. Nên:
 
 ## Ba bug đó là gì?
 
-**Đừng đọc đáp án.** Hãy tự tìm — đó chính là bài thực hành.
+**Đừng đọc đáp án.** Hãy tự tìm. Đó chính là bài thực hành.
 
 - Bug **1** tìm được ở Bài 7 (viết được kết quả mong đợi độc lập với app).
 - Bug **2** tìm được ở Bài 8 hoặc Bài 12 (nhìn kỹ màn hình, cộng thử các số đang hiện).
@@ -70,4 +70,4 @@ nhất của tài liệu.
 [`spec.md`](spec.md) — đặc tả. Mỗi luật có một mã (`BR-01`, `UI-04`…).
 
 Khi bạn nói "chỗ này sai", bạn phải chỉ được **mã luật** nó vi phạm. Không chỉ được thì bạn chưa chứng minh
-được gì cả — bạn chỉ đang thấy lạ. Tài liệu sẽ nhắc lại điều này rất nhiều lần.
+được gì cả, bạn chỉ đang thấy lạ. Tài liệu sẽ nhắc lại điều này rất nhiều lần.

@@ -146,7 +146,7 @@ việc khác, và không làm.
 
 - Giao tiếp, phân tích, report và delivery note mặc định dùng tiếng Việt chuẩn có dấu.
 - Tên biến, hàm, class và file nên dùng tiếng Anh.
-- Technical terms, endpoint, method, enum/status và code identifier có thể giữ nguyên tiếng Anh.
+- Technical terms, endpoint, method, enum, status và code identifier có thể giữ nguyên tiếng Anh.
 - Comment trong code chỉ thêm khi giúp hiểu logic không hiển nhiên.
 
 ### Security
@@ -154,19 +154,19 @@ việc khác, và không làm.
 - Không in API key, password, token, cookie, private key hoặc connection string ra chat, logs, Markdown, testcase output hoặc reports.
 - Không commit `.env`, `.env.local`, service-account JSON hoặc file chứa credential thật.
 - Nếu secret từng bị chia sẻ hoặc commit, phải rotate trong provider console.
-- Không dùng direct DB connection trong workflow chuẩn của kit. Ngoại lệ DUY NHẤT: read-only verify/chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only: chỉ SELECT, chặn bằng lint trong client). Chỉ cấu hình credential kho UAT (`LIB_MASTER_DB_*`) — kho UAT/PROD tách biệt, không cấu hình creds thì không truy cập được. Vẫn cấm biến generic `TEST_DB_*`/`TEST_DATABASE_URL`/`DATABASE_URL`/`PG*` và mọi import `tedious` ngoài client đó. DB là oracle PHỤ (verify/chẩn đoán): KHÔNG dựng/mutate state, KHÔNG phải evidence Backlog, KHÔNG thay oracle từ spec; PII đọc ra phải mask + cấm export file.
-- Không yêu cầu AI đọc toàn bộ source backend để execute testcase. Phase 2 chỉ dùng UI/API public-business contract, artifact Phase 1, credential test, fixture có sẵn, test hook/sandbox nếu team cung cấp.
+- Không dùng direct DB connection trong workflow chuẩn của kit. Ngoại lệ DUY NHẤT: read-only verify và chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only: chỉ SELECT, chặn bằng lint trong client). Chỉ cấu hình credential kho UAT (`LIB_MASTER_DB_*`) — kho UAT/PROD tách biệt, không cấu hình creds thì không truy cập được. Vẫn cấm biến generic `TEST_DB_*`/`TEST_DATABASE_URL`/`DATABASE_URL`/`PG*` và mọi import `tedious` ngoài client đó. DB là oracle PHỤ (verify và chẩn đoán): KHÔNG dựng hay mutate state, KHÔNG phải evidence Backlog, KHÔNG thay oracle từ spec; PII đọc ra phải mask + cấm export file.
+- Không yêu cầu AI đọc toàn bộ source backend để execute testcase. Phase 2 chỉ dùng UI/API public-business contract, artifact Phase 1, credential test, fixture có sẵn, test hook và sandbox nếu team cung cấp.
 
 ### Project And Output
 
 - Project name, URL, domain, Backlog key và module name phải lấy từ config/env/prompt.
 - Không hardcode theo project cụ thể trong workflow hoặc script dùng chung.
 - `PROJECT_OUTPUT_DIR` là output root bắt buộc, ví dụ `outputs/<YOUR_PROJECT>`.
-- `TASK_KEY` là scope của task/feature và luôn nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/`.
+- `TASK_KEY` là scope của task hoặc feature và luôn nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/`.
 - Playwright report, evidence và results nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/**`.
 - Nếu chạy nhiều session cùng một `TASK_KEY`, bắt buộc truyền `RUN_ID` qua env/CLI để output execute nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/runs/<RUN_ID>/`.
 - Khi có `RUN_ID`, execution/rerun/Backlog local report nên nằm dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/reports/runs/<RUN_ID>/`.
-- Khi có `RUN_ID`, không cập nhật trực tiếp testcase Markdown/Excel chính trong `test-cases/` trong lúc execute; ghi `Status`, `Actual Result` và `Evidence` vào run-scoped report/status trước. Chỉ merge ngược vào testcase chính khi user chọn run đó làm kết quả canonical.
+- Khi có `RUN_ID`, không cập nhật trực tiếp testcase Markdown/Excel chính trong `test-cases/` trong lúc execute; ghi `Status`, `Actual Result` và `Evidence` vào run-scoped report và status trước. Chỉ merge ngược vào testcase chính khi user chọn run đó làm kết quả canonical.
 - `RUN_ID` chỉ được chứa chữ, số, dấu chấm, gạch dưới hoặc gạch ngang.
 
 ### Parallel Story Safety
@@ -179,25 +179,25 @@ việc khác, và không làm.
   - `TASK_OUTPUT_DIR`
   - `RUN_ID` nếu có
   - Workflow/phase đang chạy
-- Nếu scope echo không khớp yêu cầu user, phải dừng trước khi ghi file/chạy lệnh.
+- Nếu scope echo không khớp yêu cầu user, phải dừng trước khi ghi file hay chạy lệnh.
 - Không sửa `.env` hoặc `.env.local` chung khi có session khác đang chạy.
 - Với command execute/report/Backlog, ưu tiên truyền `PROJECT_OUTPUT_DIR`, `TASK_KEY` và `RUN_ID` qua env hoặc CLI args từng lệnh.
 - Không chạy song song cùng một `TASK_KEY` nếu không có `RUN_ID`.
-- Không chạy song song các workflow có ghi đè requirement/testcase chính của cùng một `TASK_KEY`, trừ khi user xác nhận chiến lược merge riêng.
-- Không sửa shared config/helper như `playwright.config.js`, `package.json`, runtime helper hoặc common prompt khi story khác đang execute, trừ khi user xác nhận đây là thay đổi chung.
+- Không chạy song song các workflow có ghi đè requirement và testcase chính của cùng một `TASK_KEY`, trừ khi user xác nhận chiến lược merge riêng.
+- Không sửa shared config và helper như `playwright.config.js`, `package.json`, runtime helper hoặc common prompt khi story khác đang execute, trừ khi user xác nhận đây là thay đổi chung.
 
 ### Phase-Separated Story Execution
 
 - Mỗi story không bắt buộc chạy liền một mạch. Luồng chuẩn là:
   `Requirement -> Generate Testcase -> Excel (source of truth) -> QA confirmation -> Auto Publish Backlog -> chờ Dev implement -> Phase 2 -> chờ Dev fix bug nếu có -> Re-run`.
-- Sau bước generate testcase, Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **gen/publish**. Nội dung testcase phải sửa ở Excel rồi re-publish — không sửa trực tiếp trên Google Sheet làm nguồn authoring (`PUT .../detail` ghi đè toàn phần nên bản sửa tay sẽ mất khi re-publish).
-- **Phase 2 execute mặc định lấy nguồn từ Google Sheet** (`TESTCASE_SOURCE=sheet`): kéo về canonical local `<TASK_OUTPUT_DIR>/test-cases/from-sheet/*.xlsx` bằng tải bản Sheet mới nhất qua Drive MCP rồi execute từ đó (publish TỪ Excel nên nhất quán; cùng bộ cột/định dạng nên parser canonical không phân biệt nguồn). `TESTCASE_SOURCE=excel` (opt-out) đọc `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`. Dù nguồn nào, execute đọc file canonical LOCAL — không gọi Sheet/Backlog cho từng case.
+- Sau bước generate testcase, Excel trong `<TASK_OUTPUT_DIR>/test-cases/` là source of truth khi **gen và publish**. Nội dung testcase phải sửa ở Excel rồi re-publish — không sửa trực tiếp trên Google Sheet làm nguồn authoring (`PUT .../detail` ghi đè toàn phần nên bản sửa tay sẽ mất khi re-publish).
+- **Phase 2 execute mặc định lấy nguồn từ Google Sheet** (`TESTCASE_SOURCE=sheet`): kéo về canonical local `<TASK_OUTPUT_DIR>/test-cases/from-sheet/*.xlsx` bằng tải bản Sheet mới nhất qua Drive MCP rồi execute từ đó (publish TỪ Excel nên nhất quán; cùng bộ cột và định dạng nên parser canonical không phân biệt nguồn). `TESTCASE_SOURCE=excel` (opt-out) đọc `<TASK_OUTPUT_DIR>/test-cases/*.xlsx`. Dù nguồn nào, execute đọc file canonical LOCAL — không gọi Sheet/Backlog cho từng case.
 - Auto Publish testcase là step riêng trong phạm vi Phase 1, chạy bằng prompt riêng sau khi QA xác nhận Excel/testcase. Không publish thật khi chưa có QA confirmation rõ ràng (script đòi `--qa-approved`; Sheet ghi đè toàn bộ mỗi lần sync nên phải xem dry-run trước).
-- **Test management tool là Google Sheet** — công cụ DUY NHẤT của kit. Publish/pull/push kết quả/vòng đời case đi qua `scripts/integrations/aio/` (`aio:publish` · `aio:pull:write` · `aio:push-exec` · `aio:deprecate-stale`). Đặc tính đã đo (không có API xoá · `PUT .../detail` ghi đè toàn phần · `tags` không lưu · rate limit trả body RỖNG chứ không 429): `scripts/integrations/aio/README.md`. Gate `gate:policy` CHẶN mọi tài liệu nhắc lại công cụ cũ.
+- **Test management tool là Google Sheet** — công cụ DUY NHẤT của kit. Publish, pull và push kết quả cùng vòng đời case đi qua `scripts/integrations/aio/` (`aio:publish` · `aio:pull:write` · `aio:push-exec` · `aio:deprecate-stale`). Đặc tính đã đo (không có API xoá · `PUT .../detail` ghi đè toàn phần · `tags` không lưu · rate limit trả body RỖNG chứ không 429): `scripts/integrations/aio/README.md`. Gate `gate:policy` CHẶN mọi tài liệu nhắc lại công cụ cũ.
 - Publish testcase lên Backlog phải đọc từ Excel canonical. Chạy dry-run trước nếu cần preview; publish thật chỉ khi QA/user approve. Ghi kết quả vào `<TASK_OUTPUT_DIR>/reports/backlog-testcase-publish-summary.md`.
 - **KHÔNG có cột `Severity`/`Mức độ rủi ro` trong bộ testcase** (bỏ 21/08/2026). Severity là thuộc tính của **BUG**, không phải của testcase: chấm nó lúc viết case là đoán trước hậu quả của một lỗi chưa xảy ra, và chính vì thế nó luôn được chấm bằng cảm tính. Bug thật vẫn có Severity — lấy lúc log bug, không lấy từ testcase. Việc duy nhất cột này còn gánh trong kit là **risk band** (quyết định độ sâu mở rộng 5 trục), mà `bandOf()` lấy `max(risk, priority)`; sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột này làm đổi band 0 case**. `Ưu tiên` (`Critical|High|Medium|Low|Lowest`) một mình đủ quyết band. `COL.risk` vẫn giữ trong `model.js` để 17 bộ TC cũ còn cột đó parse không lỗi, và các cross-check ma trận §7b tự bỏ qua khi cột vắng.
-- **Tiêu đề case = NỘI DUNG, tag ở cột `Tag`** — template testcase là **10 cột**: `TC ID | Loại case | Tag | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên`. Khối `[<Loại>][<Chiều>][<Oracle-ref>]` (vd `[Positive][Calc][BR-SAPSYNC-004]`) ghi ở cột `Tag`, **KHÔNG** ghi vào `Trường hợp kiểm thử`. Tiêu đề phải **tự đủ nghĩa** khi không có tag: chở đủ **ba thông tin** — *đối tượng/màn · hành động hoặc điều kiện · kết quả cụ thể đo được* — thường gói trong **2 đoạn** nối ` - ` (đối tượng và hành động hay dính liền: `Tạo Business Partner - Sinh mã KH đúng cú pháp C + CCCD khi khách Cá nhân chưa có BP`). **KHÔNG** đòi đúng 3 đoạn: bản đầu của luật này viết "3 đoạn" trong khi đoạn thứ nhất của ví dụ chính là `Cross-app` — tức cái tiền tố hằng số mà cùng luật đó CẤM. Hai câu tự đá nhau; đếm đoạn không phải thước đo, **đủ ba thông tin** mới là. CẤM **tiền tố hằng số** (đo thật: `Cross-app - ` gắn cho 101/101 case của CSDL-26878 ⇒ không phân biệt được gì, thông tin đó đã nằm ở `Loại case` và tên folder), cấm đoạn kết quả chung chung kiểu "hoạt động đúng", cấm để nghĩa của case phụ thuộc vào tag. Giữ được `[...]` GIỮA câu khi đó là tên trường thật (`Kiểm [FBP] Ngày ghi nhận…`) — chỉ khối ngoặc **liền nhau ở đầu** mới bị coi là tag. Bộ TC cũ **không phải sửa**: `scripts/lib/testcase/model.js` lấy HỢP của cột `Tag` và tiêu đề nên cả hai đời đều đo được, còn `displayTitle()` ở `publish qua Drive MCP.js` cắt khối tag đầu chuỗi trước khi đẩy Google Sheet. Máy kiểm: `tests/fe/infra/publish-field-mapping.spec.ts`.
-- **Case sinh mới phải TỰ KHAI `Loại case`** — đúng một trong **9 loại** đã chốt: `Security` · `Accessibility` · `Performance` · `Database` · `API` · `UI` · `E2E` · `Integration` · `Functional`. Định nghĩa, tag đi kèm và bảng **"chọn khi / KHÔNG chọn khi"** của từng loại nằm ở [`.agent/config/case_types.json`](.agent/config/case_types.json) — **nguồn duy nhất**, mọi nơi khác đọc file đó. Xét CHUYÊN BIỆT trước, `Functional` là mặc định cuối; một case mang ĐÚNG MỘT loại, hợp 2 loại nghĩa là case đang gộp 2 mục đích ⇒ tách case. Đây là trục KHÁC `Nhóm chức năng` (nhóm = *"thuộc mảng nghiệp vụ nào"* → thư mục; loại = *"kiểm thử kiểu gì"* → Case Type, dùng để lọc/báo cáo). Bỏ trống thì máy phải ĐOÁN: đo trên 1.399 case đã publish, cách suy từ tên nhóm đẩy **96% về `Functional`**, `Integration` và `Performance` = **0** — lọc theo Case Type trên Google Sheet thành vô dụng.
+- **Tiêu đề case = NỘI DUNG, tag ở cột `Tag`** — template testcase là **10 cột**: `TC ID | Loại case | Tag | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên`. Khối `[<Loại>][<Chiều>][<Oracle-ref>]` (vd `[Positive][Calc][BR-SAPSYNC-004]`) ghi ở cột `Tag`, **KHÔNG** ghi vào `Trường hợp kiểm thử`. Tiêu đề phải **tự đủ nghĩa** khi không có tag: chở đủ **ba thông tin** — *đối tượng hoặc màn · hành động hoặc điều kiện · kết quả cụ thể đo được* — thường gói trong **2 đoạn** nối ` - ` (đối tượng và hành động hay dính liền: `Tạo Business Partner - Sinh mã KH đúng cú pháp C + CCCD khi khách Cá nhân chưa có BP`). **KHÔNG** đòi đúng 3 đoạn: bản đầu của luật này viết "3 đoạn" trong khi đoạn thứ nhất của ví dụ chính là `Cross-app` — tức cái tiền tố hằng số mà cùng luật đó CẤM. Hai câu tự đá nhau; đếm đoạn không phải thước đo, **đủ ba thông tin** mới là. CẤM **tiền tố hằng số** (đo thật: `Cross-app - ` gắn cho 101/101 case của CSDL-26878 ⇒ không phân biệt được gì, thông tin đó đã nằm ở `Loại case` và tên folder), cấm đoạn kết quả chung chung kiểu "hoạt động đúng", cấm để nghĩa của case phụ thuộc vào tag. Giữ được `[...]` GIỮA câu khi đó là tên trường thật (`Kiểm [FBP] Ngày ghi nhận…`) — chỉ khối ngoặc **liền nhau ở đầu** mới bị coi là tag. Bộ TC cũ **không phải sửa**: `scripts/lib/testcase/model.js` lấy HỢP của cột `Tag` và tiêu đề nên cả hai đời đều đo được, còn `displayTitle()` ở `publish qua Drive MCP.js` cắt khối tag đầu chuỗi trước khi đẩy Google Sheet. Máy kiểm: `tests/fe/infra/publish-field-mapping.spec.ts`.
+- **Case sinh mới phải TỰ KHAI `Loại case`** — đúng một trong **9 loại** đã chốt: `Security` · `Accessibility` · `Performance` · `Database` · `API` · `UI` · `E2E` · `Integration` · `Functional`. Định nghĩa, tag đi kèm và bảng **"chọn khi / KHÔNG chọn khi"** của từng loại nằm ở [`.agent/config/case_types.json`](.agent/config/case_types.json) — **nguồn duy nhất**, mọi nơi khác đọc file đó. Xét CHUYÊN BIỆT trước, `Functional` là mặc định cuối; một case mang ĐÚNG MỘT loại, hợp 2 loại nghĩa là case đang gộp 2 mục đích ⇒ tách case. Đây là trục KHÁC `Nhóm chức năng` (nhóm = *"thuộc mảng nghiệp vụ nào"* → thư mục; loại = *"kiểm thử kiểu gì"* → Case Type, dùng để lọc và báo cáo). Bỏ trống thì máy phải ĐOÁN: đo trên 1.399 case đã publish, cách suy từ tên nhóm đẩy **96% về `Functional`**, `Integration` và `Performance` = **0** — lọc theo Case Type trên Google Sheet thành vô dụng.
   - Chặn ở **biên sinh case** (`md_to_xlsx.js`), KHÔNG ở `REQUIRED_COLS`: bộ TC cũ đều 9 cột, siết ở bộ đọc dùng chung thì cả 9 bộ đỏ oan mà không ai sai. Bộ cũ giữ nguyên, chỉ khai khi có dịp sinh lại.
   - Giá trị ngoài 6 loại do `validate.js` chặn ở design gate. Lối thoát `--lenient` vẫn convert được nhưng **phải in cảnh báo** — bỏ qua trong im lặng thì lối thoát thành lối mòn.
 - **Thang `Ưu tiên` là `Critical|High|Medium|Low|Lowest`** (khớp Google Sheet), KHÔNG phải thang Backlog. `Highest` vẫn được nhận cho bộ cũ nhưng kèm cảnh báo; khi log bug kit tự map `Critical → Highest` cho Backlog. Lý do siết: publisher map theo TÊN, không có khoá `highest` nên trước đây mọi case `Highest` rơi về fallback Medium — **14 case của một bộ bị hạ ưu tiên âm thầm**.
@@ -208,31 +208,31 @@ việc khác, và không làm.
   - `reports/phase1-summary.md` nếu chạy Phase 2
   - `reports/execution-summary.md` hoặc Backlog bug log nếu chạy Re-run
 - Không dùng context hội thoại cũ làm source chính nếu artifact local đã có; artifact dưới `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/` là nguồn chuẩn.
-- Không reuse `TASK_KEY`, `RUN_ID`, testcase scope hoặc Backlog bug scope từ phase/story khác nếu user chưa nhắc lại rõ.
+- Không reuse `TASK_KEY`, `RUN_ID`, testcase scope hoặc Backlog bug scope từ phase hoặc story khác nếu user chưa nhắc lại rõ.
 - Nếu user không nêu `TASK_KEY` trong yêu cầu hiện tại, agent không được dùng `TASK_KEY` từ `.env`, `.env.local` hoặc context cũ để quyết định scope; phải hỏi lại hoặc dừng.
 - `.env` chỉ là nguồn runtime config sau khi scope đã được user xác nhận, không phải nguồn quyết định story đang chạy.
-- Nếu Phase 2 hoặc Re-run bắt đầu sau thời gian chờ Dev, phải echo lại scope trước khi ghi file/chạy command, dù cùng conversation.
+- Nếu Phase 2 hoặc Re-run bắt đầu sau thời gian chờ Dev, phải echo lại scope trước khi ghi file hay chạy command, dù cùng conversation.
 
 ### Task-Scoped Automation Code
 
 - Khi nhiều story có thể chạy song song, automation mới sinh cho một story phải ưu tiên nằm trong phạm vi task:
   `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/automation/`
 - Nếu bắt buộc ghi vào `tests/fe/` hoặc `tests/api/`, file spec phải có namespace theo `TASK_KEY`, ví dụ `<TASK_KEY>.spec.js`.
-- Nếu chạy song song cùng một `TASK_KEY`, spec/output thử nghiệm phải thêm `RUN_ID` hoặc nằm trong run-scoped folder.
-- Setup layer (factory/hook/fixture/cleanup/contract) dùng chung ở `tests/support/setup/`. Setup mới của một story tạo trước ở `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/automation/setup/`, reuse tối đa `tests/support/setup/`; chỉ promote phần generic vào shared khi đã ổn định. Setup layer không dựng/mutate state bằng DB; chỉ được read-only verify qua guarded client `tests/support/setup/db/uatDbClient.ts` (UAT, read-only, chỉ SELECT).
-- Không sửa shared helper/page object/fixture/config nếu có session khác đang execute, trừ khi user xác nhận đây là thay đổi chung.
+- Nếu chạy song song cùng một `TASK_KEY`, spec và output thử nghiệm phải thêm `RUN_ID` hoặc nằm trong run-scoped folder.
+- Setup layer (factory/hook/fixture/cleanup/contract) dùng chung ở `tests/support/setup/`. Setup mới của một story tạo trước ở `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/automation/setup/`, reuse tối đa `tests/support/setup/`; chỉ promote phần generic vào shared khi đã ổn định. Setup layer không dựng hay mutate state bằng DB; chỉ được read-only verify qua guarded client `tests/support/setup/db/uatDbClient.ts` (UAT, read-only, chỉ SELECT).
+- Không sửa shared helper, page object, fixture, config nếu có session khác đang execute, trừ khi user xác nhận đây là thay đổi chung.
 - Nếu cần sửa shared helper để fix automation thật, phải ghi rõ trong report: file đã sửa, story bị ảnh hưởng, scope regression cần rerun.
 - Không để spec task-specific mặc định thành shared regression suite nếu chưa qua review/merge.
 
 ### Shared Change Gate
 
-- Shared files gồm `tests/fe/**`, `tests/api/**`, `tests/support/**`, `playwright.config.js`, `package.json`, runtime helper, fixture/page object/helper dùng chung và prompt/rule chung.
+- Shared files gồm `tests/fe/**`, `tests/api/**`, `tests/support/**`, `playwright.config.js`, `package.json`, runtime helper, fixture, page object, helper dùng chung và prompt cùng rule chung.
 - Trước khi sửa shared file, agent phải xác định đây là thay đổi task-specific hay thay đổi chung.
 - Nếu là thay đổi task-specific, ưu tiên chuyển sang `<TASK_OUTPUT_DIR>/automation/` thay vì sửa shared file.
 - Nếu là thay đổi chung, phải có xác nhận rõ của user hoặc ghi blocker chờ xác nhận.
 - Khi đã sửa shared file, execution summary phải ghi: file đã sửa, lý do, story có thể bị ảnh hưởng, scope regression đã chạy hoặc chưa chạy.
 
-- **Gate mới mà CHẶN theo một quy ước MỚI ⇒ quy ước đó phải được viết vào file này (canonical) trong CÙNG thay đổi.** Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule** — và ai chỉ đọc `CLAUDE.md → core_rules` sẽ không bao giờ biết luật đó. Đã xảy ra thật: `dim:coverage --enforce`, `output_gate` (bằng chứng theo tag) và `domain:trace-back` chặn/cảnh báo theo quy ước **tag chiều**, trong khi từ "chiều" xuất hiện **0 lần** ở `RULE_GLOBAL.md`, `core_rules.md`, README, USER_GUIDE, QUICKSTART suốt 3 ngày.
+- **Gate mới mà CHẶN theo một quy ước MỚI ⇒ quy ước đó phải được viết vào file này (canonical) trong CÙNG thay đổi.** Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule** — và ai chỉ đọc `CLAUDE.md → core_rules` sẽ không bao giờ biết luật đó. Đã xảy ra thật: `dim:coverage --enforce`, `output_gate` (bằng chứng theo tag) và `domain:trace-back` chặn hoặc cảnh báo theo quy ước **tag chiều**, trong khi từ "chiều" xuất hiện **0 lần** ở `RULE_GLOBAL.md`, `core_rules.md`, README, USER_GUIDE, QUICKSTART suốt 3 ngày.
   - Đây là luật cho NGƯỜI, cố ý **không** làm thành máy kiểm: bản máy ("mọi npm script gate phải được canonical nhắc TÊN") đo ra **19/24 script sẽ báo oan** — `secret:scan` chặn theo §Security, quy tắc *có* nhưng tên lệnh *không*, và như vậy mới đúng. Biến canonical thành danh mục lệnh còn tệ hơn.
   - Kiểm bằng mắt khi review: gate mới chặn cái gì → cái đó có nằm ở §nào trong file này không?
 
@@ -241,23 +241,23 @@ việc khác, và không làm.
 - Task-scoped automation không tự động trở thành regression suite chung.
 - Sau khi Phase 2 PASS ổn định, có thể đề xuất promote automation vào `tests/fe/` hoặc `tests/api/`.
 - Setup helper task-scoped ở `<TASK_OUTPUT_DIR>/automation/setup/` chỉ promote vào `tests/support/setup/` khi đã generic (không gắn một task) và có review/approval.
-- Promote chỉ thực hiện khi đã có review/approval rõ.
+- Promote chỉ thực hiện khi đã có review và approval rõ.
 - Khi promote, file core phải namespace theo `TASK_KEY` và không làm mất task-scoped artifact gốc.
 - Nếu chưa approve promote, giữ automation trong `<TASK_OUTPUT_DIR>/automation/` và report là task-scoped only.
 
 ### Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)
 
-1. **Đọc tài liệu THẬT KỸ, KHÔNG qua loa.** Mọi tài liệu được cấp (BRD/spec/requirement, Backlog, tài liệu nguồn, Figma, Swagger, doc) phải đọc kỹ TOÀN BỘ phần **trong scope** — mọi mục, **bảng, ghi chú, footnote, comment, phụ lục** liên quan — không lướt tiêu đề rồi đoán (phần ngoài scope được lướt để tiết kiệm token; nhưng trong scope thì không được qua loa). Bóc hết: acceptance criteria, business rule, validation, enum/giá trị, state & transition, edge case, xử lý lỗi, phân quyền/role, biên. **Đối chiếu chéo** các nguồn (Backlog ↔ BRD ↔ Figma ↔ Swagger); mâu thuẫn thì **NÊU RA**, không tự chọn bừa. Phân biệt rõ "tài liệu ghi thật" vs "agent suy luận" — phần suy luận/mờ chính là nguyên liệu cho câu hỏi làm rõ.
-2. **Chốt hỏi-đáp làm rõ TRƯỚC khi gen testcase (gate cứng).** Sau phân tích, TRƯỚC khi sinh bất kỳ testcase nào: gom **MỌI** điểm mờ/phân vân thành **MỘT** danh sách câu hỏi đánh số (`Q1, Q2…`) trong `<TASK_OUTPUT_DIR>/reports/phase1-clarifications.md`; mỗi câu bám **spec cụ thể** (giá trị/URL/element/điều kiện/enum/oracle) + **assumption mặc định đề xuất** + **phần scope bị chặn** nếu chưa trả lời. Phân loại **Blocking** (Critical/High: acceptance mơ hồ, giá trị/enum/oracle thiếu, rule validation, biên/state chưa định nghĩa, phạm vi in/out) vs **Non-blocking** (Medium/Low: có default hợp lý). Ghi cả hai loại để QA thấy hết điểm mờ.
-3. **Blocking chưa trả lời → KHÔNG gen phần đó.** Ghi `AMBIGUITY_GATE: PENDING` vào `task.md` và **DỪNG**, chờ QA/BA trả lời (hoặc tick chấp nhận assumption). TUYỆT ĐỐI không tự đoán qua điểm Blocking rồi gen. Chỉ khi mọi câu Blocking đã RESOLVED → **phân tích lại + chỉnh** coverage map/scope theo câu trả lời → đặt `AMBIGUITY_GATE: RESOLVED` → mới bắt đầu gen. Câu Blocking không được trả lời → phần scope đó ghi "chờ làm rõ" ở Coverage Gaps, KHÔNG gen case cho nó. Medium/Low không chặn: tự áp assumption (ghi rõ) + Coverage Gaps, vẫn gen.
+1. **Đọc tài liệu THẬT KỸ, KHÔNG qua loa.** Mọi tài liệu được cấp (BRD/spec/requirement, Backlog, tài liệu nguồn, Figma, Swagger, doc) phải đọc kỹ TOÀN BỘ phần **trong scope** — mọi mục, **bảng, ghi chú, footnote, comment, phụ lục** liên quan — không lướt tiêu đề rồi đoán (phần ngoài scope được lướt để tiết kiệm token; nhưng trong scope thì không được qua loa). Bóc hết: acceptance criteria, business rule, validation, enum và giá trị, state & transition, edge case, xử lý lỗi, phân quyền và role, biên. **Đối chiếu chéo** các nguồn (Backlog ↔ BRD ↔ Figma ↔ Swagger); mâu thuẫn thì **NÊU RA**, không tự chọn bừa. Phân biệt rõ "tài liệu ghi thật" vs "agent suy luận" — phần suy luận và chỗ mờ chính là nguyên liệu cho câu hỏi làm rõ.
+2. **Chốt hỏi-đáp làm rõ TRƯỚC khi gen testcase (gate cứng).** Sau phân tích, TRƯỚC khi sinh bất kỳ testcase nào: gom **MỌI** điểm mờ hoặc phân vân thành **MỘT** danh sách câu hỏi đánh số (`Q1, Q2…`) trong `<TASK_OUTPUT_DIR>/reports/phase1-clarifications.md`; mỗi câu bám **spec cụ thể** (giá trị/URL/element/điều kiện/enum/oracle) + **assumption mặc định đề xuất** + **phần scope bị chặn** nếu chưa trả lời. Phân loại **Blocking** (Critical/High: acceptance mơ hồ, giá trị/enum/oracle thiếu, rule validation, biên và state chưa định nghĩa, phạm vi in và out) vs **Non-blocking** (Medium/Low: có default hợp lý). Ghi cả hai loại để QA thấy hết điểm mờ.
+3. **Blocking chưa trả lời → KHÔNG gen phần đó.** Ghi `AMBIGUITY_GATE: PENDING` vào `task.md` và **DỪNG**, chờ QA/BA trả lời (hoặc tick chấp nhận assumption). TUYỆT ĐỐI không tự đoán qua điểm Blocking rồi gen. Chỉ khi mọi câu Blocking đã RESOLVED → **phân tích lại + chỉnh** coverage map và scope theo câu trả lời → đặt `AMBIGUITY_GATE: RESOLVED` → mới bắt đầu gen. Câu Blocking không được trả lời → phần scope đó ghi "chờ làm rõ" ở Coverage Gaps, KHÔNG gen case cho nó. Medium/Low không chặn: tự áp assumption (ghi rõ) + Coverage Gaps, vẫn gen.
 
 ### Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)
 
-Bộ testcase có **hai trục**: *module/màn* trả lời "test **ở đâu**", *chiều* trả lời "hỏi **loại câu hỏi nào**" (validate field · hiển thị · công thức · BE conformance · guard · bảo mật · hiệu năng · change-impact…). Phủ kín trục thứ nhất mà trống một ô trục thứ hai thì bộ **vẫn trông đầy đủ** — và đó là đường mà bug thật đã lọt (đo trên một bộ 530 case: §6 E2E **0 case**, §17 change-impact **0–1**, case hiển thị **≈12%** dù mục đó là BẮT BUỘC).
+Bộ testcase có **hai trục**: *module hoặc màn* trả lời "test **ở đâu**", *chiều* trả lời "hỏi **loại câu hỏi nào**" (validate field · hiển thị · công thức · BE conformance · guard · bảo mật · hiệu năng · change-impact…). Phủ kín trục thứ nhất mà trống một ô trục thứ hai thì bộ **vẫn trông đầy đủ** — và đó là đường mà bug thật đã lọt (đo trên một bộ 530 case: §6 E2E **0 case**, §17 change-impact **0–1**, case hiển thị **≈12%** dù mục đó là BẮT BUỘC).
 
 1. **Khai phạm vi chiều TRƯỚC khi gen.** `<TASK_OUTPUT_DIR>/requirements/dimension_manifest.json`: mỗi chiều là `"required"` hoặc `"n/a"`, và **`n/a` PHẢI có lý do** trong `na_reasons`. Khai `n/a` cho chiều mà artifact chứng minh là có (vd có `requirements/figma/**` mà khai `design: n/a`) ⇒ **CHẶN**.
 2. **Mỗi case gắn TAG CHIỀU trong tiêu đề**, cạnh tag loại: `[Positive][Display] …`. Không thêm cột — tag nằm trong cột `Trường hợp kiểm thử`. Bảng chiều→tag ở `prompt_templates/phase1/02_gen_testcases.md` §0b; nội dung từng chiều ở `prompt_templates/phase1/dimensions/`.
-3. **Gắn tag rồi thì `Kết quả mong đợi` phải mang BẰNG CHỨNG của chiều đó** — `[Calc]` cần giá trị số tự tính · `[Display]` cần chuỗi trích nguyên văn/mẫu định dạng/danh sách cột · `[Guard]` cần mã 4xx hoặc "bị chặn" **kèm** "dữ liệu không đổi" · `[BEData]` cần tên property hoặc phân biệt `null`/rỗng/`0` · `[Resilience]` cần "lần hai/trùng" **kèm số** · `[Perf]` cần ngưỡng có đơn vị. Tag chứng minh **có mặt**, bằng chứng mới chứng minh **đủ sâu** (§0b-bis).
+3. **Gắn tag rồi thì `Kết quả mong đợi` phải mang BẰNG CHỨNG của chiều đó** — `[Calc]` cần giá trị số tự tính · `[Display]` cần chuỗi trích nguyên văn, mẫu định dạng, danh sách cột · `[Guard]` cần mã 4xx hoặc "bị chặn" **kèm** "dữ liệu không đổi" · `[BEData]` cần tên property hoặc phân biệt `null`/rỗng/`0` · `[Resilience]` cần "lần hai hoặc trùng" **kèm số** · `[Perf]` cần ngưỡng có đơn vị. Tag chứng minh **có mặt**, bằng chứng mới chứng minh **đủ sâu** (§0b-bis).
 4. **Case có oracle nghiệp vụ phải trỏ về rule**: `[Positive][Calc][BR-RECIPBANK-001] …`. `npm run domain:trace-back` cảnh báo case thiếu ref, bắt ref trỏ id không tồn tại, và `--apply` tự append `covered_by` cho rule.
 5. **Máy kiểm:** `npm run dim:coverage` (`-- --enforce` để chặn) · `npm run domain:trace-back` · `output_gate --mode gen-testcase` (bằng chứng theo tag). Bộ **chưa có tag** thì `dim:coverage` **tự từ chối chặn** thay vì báo oan — nhưng đó là trạng thái *chưa được gác*, không phải *đã đạt*.
 
@@ -266,10 +266,10 @@ Bộ testcase có **hai trục**: *module/màn* trả lời "test **ở đâu**"
 Áp dụng khi execute (Phase 2, Re-run, Partial Rerun). Mục tiêu: **tối đa coverage mỗi lượt, tối thiểu gián đoạn**. Vi phạm = execute lắt nhắt, đứt đoạn, phải làm lại.
 
 1. **Batch tối đa mỗi lượt — KHÔNG lắt nhắt.** Trước khi chạy, liệt kê TẤT CẢ case khả thi của đợt rồi gom vào ÍT script toàn diện phủ NHIỀU case; case độc lập chạy song song. CẤM kiểu "mỗi case một script / một vòng rồi dừng-báo". Một lượt phải verify được nhiều case, không phải 1–2 cái.
-2. **KHÔNG mặc định `TODO`/`SKIP` khi CHƯA THỬ.** Trước khi đánh 1 case là chưa chạy: (a) rà và DÙNG HẾT fixture/Deal ID/tài khoản/data đã được cấp trong task — không bỏ sót input đã nhận; (b) case negative/lỗi → **tự tạo input để tái hiện** (vd ID không tồn tại, giá trị biên) thay vì chờ fixture; (c) drive thật UI/API rồi mới kết luận. Chỉ để `TODO`/`BLOCKED` khi **chặn thật**: capability chưa có (payment/sandbox chưa reconcile, account phân quyền), fixture đặc thù chưa được cấp, hoặc cần BA/dev làm rõ scope / fix bug. Khi để lại phải ghi **lý do cụ thể + điều kiện để chạy được** (không ghi chung chung).
+2. **KHÔNG mặc định `TODO`/`SKIP` khi CHƯA THỬ.** Trước khi đánh 1 case là chưa chạy: (a) rà và DÙNG HẾT fixture, Deal ID, tài khoản, data đã được cấp trong task — không bỏ sót input đã nhận; (b) case negative và lỗi → **tự tạo input để tái hiện** (vd ID không tồn tại, giá trị biên) thay vì chờ fixture; (c) drive thật UI/API rồi mới kết luận. Chỉ để `TODO`/`BLOCKED` khi **chặn thật**: capability chưa có (payment sandbox chưa reconcile, account phân quyền), fixture đặc thù chưa được cấp, hoặc cần BA/dev làm rõ scope / fix bug. Khi để lại phải ghi **lý do cụ thể + điều kiện để chạy được** (không ghi chung chung).
 3. **KHÔNG hỏi lắt nhắt.** Việc read-only / verify / tạo fixture trong quyền hạn đã thiết lập → thực thi ngay, không xin xác nhận từng bước ("chạy luôn không?"). Nếu buộc phải hỏi (thiếu input hoặc cần quyết định nghiệp vụ) → **GOM toàn bộ câu hỏi + input cần thiết vào MỘT lần**, không hỏi rải rác.
 4. **Báo cáo gộp, ít vòng.** Chỉ dừng để báo khi đã xong MỘT CỤM lớn hoặc gặp chặn thật; không tường thuật từng thao tác nhỏ. Mỗi lần báo = nhiều kết quả.
-5. Ranh giới không đổi: vẫn tuân thủ **Backlog Bug Gate**, **Evidence**, **PII/Security**, **Parallel Story Safety**, **Shared Change Gate** — siết coverage/tốc độ KHÔNG được nới các gate này.
+5. Ranh giới không đổi: vẫn tuân thủ **Backlog Bug Gate**, **Evidence**, **PII/Security**, **Parallel Story Safety**, **Shared Change Gate** — siết coverage hay tốc độ KHÔNG được nới các gate này.
 
 ### 5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)
 
@@ -278,7 +278,7 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
 
 1. **Mỗi case đã execute phải được mở rộng theo 5 trục**, mỗi trục có máy: ① field cùng khối (`spec:extract` →
    `ui_conformance_check`) · ② cùng giá trị khác nơi hiển thị (`xsurf:diff`) · ③ chuỗi lưu trữ
-   `form→payload→API→UI` (`probe:persist`) · ④ nhánh/biến thể và ⑤ trạng thái kế cận (`fixture:matrix`).
+   `form→payload→API→UI` (`probe:persist`) · ④ nhánh và biến thể và ⑤ trạng thái kế cận (`fixture:matrix`).
 2. **BẮT BUỘC lập kế hoạch TRƯỚC — máy chặn.** Task có case band **high** đã execute mà chưa có
    `reports/expansion-plan.md` thì `self-review` **CHẶN**. Chạy `npm run expansion:plan` (chỉ đọc Excel, vài
    giây, không mở browser): nó in ra "task này ~N lượt tải · ~M phút · ~K MB" để QA **chốt phạm vi**. Không mở
@@ -289,7 +289,7 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
 3. **Báo cáo trục có mà `proven=0` là CHẶN** — artefact rỗng nghĩa không phải là đã soi. Chỉ áp cho 4 báo cáo
    trục; `expansion-findings`/`mutation-check`/`ui-contract-draft` nằm ngoài vì với chúng `proven=0` nghĩa là
    "đã soi mà không thấy gì" — một kết quả hợp lệ.
-4. **Chiều ngược là bắt buộc:** `spec:gap` — section/field build CÓ mà tài liệu KHÔNG NHẮC. Section chưa được khai
+4. **Chiều ngược là bắt buộc:** `spec:gap` — section hoặc field build CÓ mà tài liệu KHÔNG NHẮC. Section chưa được khai
    nghĩa là **chưa ai soi**, KHÔNG phải "đã kiểm và không sao"; mỗi dòng là câu hỏi cho BA, phải ghi vào `reports/`.
 5. **"Chưa kiểm được" phải được nói ra, không được im lặng thành đạt.** Dưới 2 bề mặt đọc được · chuỗi khuyết điểm
    đo · ô ma trận trống · section chưa khai — tất cả là trạng thái *chưa kiểm*, phải xuất hiện trong báo cáo.
@@ -304,7 +304,7 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
    / bề mặt khác, kit phải biết **cái đúng là gì**. Không có nguồn thì mặc định "app đang hiện thế là đúng" ⇒
    tautology **nhân theo số trục**, tạo ra PASS giả nhìn rất thuyết phục. Ba loại kết luận, không có loại thứ tư:
    - `EXPANSION_FINDING` — app **tự mâu thuẫn với chính nó** (lệch giữa 2 bề mặt · mắt đứt trong chuỗi lưu trữ ·
-     field thừa/thiếu so tài liệu). Không cần oracle ngoài, vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một
+     field thừa hoặc thiếu so tài liệu). Không cần oracle ngoài, vì hai nơi cùng nguồn mà khác nhau thì chắc chắn một
      nơi sai. Log bug được, **KHÔNG phải verdict của case gốc** (cố ý không map sang status run của TMS — trộn vào là pass-rate mất nghĩa).
    - `PASS`/`FAIL` — **chỉ khi** có `oracle_ref` hợp lệ (`BR-`/`SM-`/`PM-`/`SS-`/`DM-`/`UI-`) và `expected` lấy từ đó.
    - `OBSERVATION` — không có neo. **Nhất quán ≠ đúng**: 4 điểm khớp nhau vẫn có thể sai cả 4 (ca thật: USD không
@@ -328,7 +328,7 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
    (`attachEnvSignals(page)`), đã cắm vào `ui_conformance_check` + `cross_surface_diff`; script execute của task
    phải cắm tương tự. Kỷ luật: `pageerror` là **zero-tolerance** (có exception là finding, dù case PASS); 4xx do
    case negative CỐ Ý gây ra thì phải **khai trước** bằng `expect4xx(rx, why)` — không khai thì bị tính là tín hiệu
-   lạ; console.error của tracking/cert môi trường chỉ là **ghi chú**, không phải deviation.
+   lạ; console.error của tracking và cert môi trường chỉ là **ghi chú**, không phải deviation.
 10. **CHỨNG MINH bộ kiểm bắt được bug, đừng giả định (`mutation:check`).** Mọi máy khác *cố bắt thêm bug*; máy này
     **đo năng lực phát hiện**: cố ý tiêm lỗi ở tầng `page.route()` (**không chạm dữ liệu UAT**) rồi xem bộ kiểm có
     đỏ không. Mutant **sống sót = vùng mù CÓ BẰNG CHỨNG**, không phải phỏng đoán. Đo lần đầu 19/08 trên
@@ -339,7 +339,7 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     dạng **chuỗi** làm 4/5 mutant vô hiệu ở lượt đầu, "0%" khi đó là harness hỏng chứ không phải phát hiện;
     (b) nếu mutation chặn cả request của app LẪN request xác minh của máy kiểm thì hai bên cùng bị bóp ⇒ không bao
     giờ lệch (tautology ở tầng harness) — phải bỏ route SAU khi app load rồi mới đọc nguồn sạch. Chạy **định kỳ**
-    (nightly/mỗi release), không phải mỗi PR.
+    (nightly hoặc mỗi release), không phải mỗi PR.
 11. **NHÂN NHƯỢNG phải để lại dấu — `PASS_WITH_DEVIATION`.** Rủi ro đặc thù của agent: gặp trở ngại thì có xu hướng
     **làm cho nó chạy** (chờ thêm · retry · đổi locator · refresh · đi đường khác), và mỗi lần như vậy là **một bug
     tiềm năng bị lấp** — nút bị overlay che (bug thật) biến thành "chờ thêm 3s rồi bấm được" (case xanh). Kit đã gác
@@ -357,7 +357,7 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
 13. **ĐỦ ASSERTION — mỗi điều kiện trong "Kết quả mong đợi" phải có một verification + bằng chứng.** Một expected
     như *"tổng 540.000đ, đúng format có dấu phân cách, số dư giảm tương ứng"* chứa **3** assertion; execute kiểm 1
     rồi ghi PASS thì 2 cái còn lại lọt êm — đây là cơ chế lọt **cơ học** phổ biến nhất. Đo trên một bộ 530 case
-    thật: trung bình **2.30** dòng expected/case · **31%** case có ≥3 assertion · **9%** nhồi nhiều điều kiện trong
+    thật: trung bình **2.30** dòng expected mỗi case · **31%** case có ≥3 assertion · **9%** nhồi nhiều điều kiện trong
     MỘT dòng · và **68%** case ghi **ít verification hơn số assertion** (135 case lệch ≥2). Luật: Phase 1 tách
     assertion **nguyên tử** (mỗi điều kiện 1 dòng, cấm nhồi "A, và B, đồng thời C"); Phase 2 mỗi dòng expected phải
     có bằng chứng tương ứng. `self_review` **cảnh báo** theo tỉ lệ này khi bản ghi chỉ có `steps[]` (*proxy*).
@@ -371,11 +371,11 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
 14. **FE: assert HÌNH HỌC, không chỉ `toBeVisible()`.** Gốc rễ là **bất đối xứng oracle**: backend có contract máy
     đọc được (Swagger) nên assertion là `total = 540000`; frontend chỉ có Figma (hình ảnh) nên assertion thoái hoá
     thành `toBeVisible()`/`toContainText()`. Mà `toBeVisible()` vẫn **PASS** khi element bị **đè lên** · nằm ngoài
-    viewport · cao 0–2px · **chữ trùng màu nền** · bị **truncate**. Bug FE sống ở **hình học/thị giác**, kit lại
+    viewport · cao 0–2px · **chữ trùng màu nền** · bị **truncate**. Bug FE sống ở **hình học và thị giác**, kit lại
     assert **cấu trúc DOM** — khoảng cách đó chính là chỗ bug FE lọt. Máy: `scripts/utils/ui/geometry.js`
     (`inspectGeometry` · `inspectLongText`). Các phép này là **bất biến tự thân** (không cần Figma vẫn khẳng định
     được là sai) nên KHÔNG rơi vào tautology. Kèm: **text dài tiếng Việt** — tiếng Việt dài hơn tiếng Anh ~20–30%
-    và có dấu (dòng cao hơn) nên layout thiết kế cho text ngắn sẽ vỡ; dùng `LONG_VI` (tên/địa chỉ/khoá học/ghi chú)
+    và có dấu (dòng cao hơn) nên layout thiết kế cho text ngắn sẽ vỡ; dùng `LONG_VI` (tên, địa chỉ, khoá học, ghi chú)
     cho ít nhất các màn có nhập tên–địa chỉ. Đây là ổ bug mà testcase gen từ tài liệu gần như **không bao giờ** nghĩ tới.
 15. **ORACLE FE phải là contract có id, không phải "hình trong Figma".** Biến design thành
     `knowledge/system/UI-*.json` (`type: ui_contract`) rồi dùng id đó làm `oracle_ref` — đó là cách duy nhất để FE
@@ -392,14 +392,14 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     phủ 20 hình dạng mà **không thêm case nào**. Bắt buộc seed bằng `RUN_ID`: cùng `RUN_ID` ⇒ cùng data — random
     thuần làm bug "biến mất khi chạy lại", phá nguyên tắc rerun 2–3 lần và biến **bug thật thành flaky**. Ghi
     `plan()` vào Actual để người sau tái hiện đúng lượt đó. Kèm điều kiện đi cùng: xoay data thì phải siết
-    **teardown/janitor** — môi trường UAT dùng chung, xoay mà không dọn là đổi bug-lọt lấy **rác dữ liệu**.
+    **teardown và janitor** — môi trường UAT dùng chung, xoay mà không dọn là đổi bug-lọt lấy **rác dữ liệu**.
 17. **VISUAL REGRESSION — bộ chụp RIÊNG, tất định; và nói rõ nó KHÔNG bắt được gì.** Ảnh evidence (~1000/ task) **không dùng làm baseline được**: full-page · dữ liệu động · mask PII bằng cách **sửa DOM** ⇒ mỗi lần chạy một ảnh khác, diff luôn ≠ 0 nên đội sẽ học cách bỏ qua. Lane riêng: `tests/fe/visual/` + `scripts/utils/ui/visual.js` (`freeze()` triệt animation/transition/caret/lazy-load · `captureOptions()` mặc định **không** full-page, `maxDiffPixelRatio 0.01`, `mask` vùng động khai ở **lớp task** `requirements/visual_targets.json`). **Giới hạn phải nói trước**: oracle là "bản build đã được chấp nhận lần trước" ⇒ bắt **regression**, KHÔNG bắt cái sai từ đầu — nên nó **bổ trợ**, không thay contract FE `UI-*` và không thay assert hình học. Lượt chạy đầu chỉ **tạo baseline** = **CHƯA kiểm gì**, phải soi ảnh trước khi nhận. Không có `visual_targets.json` ⇒ lane **skip kèm lý do**, tuyệt đối không tính là PASS. **KHÔNG commit baseline**: ảnh chứa dữ liệu khách và baseline gắn OS/browser (`-win32`) nên commit từ máy Windows thì CI Linux vẫn phải chụp lại.
 18. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
 ### Execute Results
 
-Sau mỗi testcase đã execute, cập nhật testcase/report với:
+Sau mỗi testcase đã execute, cập nhật testcase và report với:
 
 | Field | Requirement |
 |---|---|
@@ -434,27 +434,27 @@ Gán sai tầng khiến ticket đi nhầm người và bị dev bounce lại, m�
 
 ### Evidence — Quy chuẩn bắt buộc
 
-Áp dụng cho MỌI case đã execute (PASS và FAIL) và MỌI step. Vi phạm bất kỳ điểm nào bên dưới = evidence KHÔNG hợp lệ, KHÔNG được đưa vào report/push Sheet/Backlog.
+Áp dụng cho MỌI case đã execute (PASS và FAIL) và MỌI step. Vi phạm bất kỳ điểm nào bên dưới = evidence KHÔNG hợp lệ, KHÔNG được đưa vào report hay push Sheet/Backlog.
 
-1. **Chỉ ảnh hoặc video — cấm file dữ liệu thô.** Evidence hợp lệ chỉ là ảnh (`.png/.jpg/.jpeg/.webp`) hoặc video (`.mp4/.webm`). TUYỆT ĐỐI KHÔNG dùng `.json`, `.md`, `.txt`, `.log`, `.html`, `.csv`, `trace.zip` hay file dữ liệu thô nào làm evidence của case/step — kể cả `order_state.json`, `api_response.json`, execution summary. Cần chứng minh dữ liệu API/DB/state thì **chụp ảnh màn UI** hiển thị dữ liệu đó (hoặc màn có giá trị tương ứng), không đính file dữ liệu.
+1. **Chỉ ảnh hoặc video — cấm file dữ liệu thô.** Evidence hợp lệ chỉ là ảnh (`.png/.jpg/.jpeg/.webp`) hoặc video (`.mp4/.webm`). TUYỆT ĐỐI KHÔNG dùng `.json`, `.md`, `.txt`, `.log`, `.html`, `.csv`, `trace.zip` hay file dữ liệu thô nào làm evidence của case hoặc step — kể cả `order_state.json`, `api_response.json`, execution summary. Cần chứng minh dữ liệu API/DB/state thì **chụp ảnh màn UI** hiển thị dữ liệu đó (hoặc màn có giá trị tương ứng), không đính file dữ liệu.
 2. **Highlight đúng element đang kiểm.** Mỗi ảnh phải khoanh (tham số `highlight` của `evidence_recorder`) đúng phần tử của step đó: nút / field / dòng bảng / nhãn / thông báo / giá trị. Cấm ảnh full-page chung chung không chỉ rõ điểm kiểm.
-3. **Mask PII khách hàng.** Che (mask) mọi dữ liệu nhạy cảm của khách trong ảnh/video: email, số điện thoại, họ tên, địa chỉ, mã định danh cá nhân — kể cả khi nằm trong `<input>`. Dùng tham số `mask` của `evidence_recorder`. Đồng bộ rule bảo mật: artifact KHÔNG được để lộ email/SĐT/PII khách. (Dữ liệu của hệ thống/công ty như STK công ty, hotline không bắt buộc che.)
-4. **Video cho case phức tạp.** Case nhiều bước hoặc tương tác động — thanh toán qua cổng ngoài, trạng thái cập nhật bất đồng bộ, luồng qua nhiều màn, iframe/popup, drag & drop / upload — PHẢI quay video (giống evidence khi log bug) đính kèm cùng ảnh step, để tái hiện được hành vi. Case đơn giản (1 màn, kiểm hiển thị) thì ảnh highlight là đủ.
-5. **Verify đúng màn trước khi chấp nhận.** Sau khi chụp, PHẢI mở ảnh/kiểm nội dung để chắc chắn evidence đúng màn/kết quả của case: KHÔNG phải trang lỗi (404/500/blank/timeout/"can't find that page"), KHÔNG phải màn sai bước, KHÔNG phải trạng thái loading dở, KHÔNG phải cổng/màn của bước khác. Sai màn → sửa selector/điều hướng và chụp lại; không push evidence sai.
-6. **Mỗi case dùng evidence của chính nó.** Không mượn/tham chiếu ảnh của case khác, không dùng placeholder. Nếu không re-drive được (order đã tiêu, link chết…) thì dùng đúng ảnh gốc thật của chính case đó và ghi rõ lý do không re-capture — không thay bằng ảnh không đúng nội dung.
+3. **Mask PII khách hàng.** Che (mask) mọi dữ liệu nhạy cảm của khách trong ảnh hoặc video: email, số điện thoại, họ tên, địa chỉ, mã định danh cá nhân — kể cả khi nằm trong `<input>`. Dùng tham số `mask` của `evidence_recorder`. Đồng bộ rule bảo mật: artifact KHÔNG được để lộ email/SĐT/PII khách. (Dữ liệu của hệ thống/công ty như STK công ty, hotline không bắt buộc che.)
+4. **Video cho case phức tạp.** Case nhiều bước hoặc tương tác động — thanh toán qua cổng ngoài, trạng thái cập nhật bất đồng bộ, luồng qua nhiều màn, iframe hoặc popup, drag & drop / upload — PHẢI quay video (giống evidence khi log bug) đính kèm cùng ảnh step, để tái hiện được hành vi. Case đơn giản (1 màn, kiểm hiển thị) thì ảnh highlight là đủ.
+5. **Verify đúng màn trước khi chấp nhận.** Sau khi chụp, PHẢI mở ảnh và kiểm nội dung để chắc chắn evidence đúng màn và kết quả của case: KHÔNG phải trang lỗi (404/500/blank/timeout/"can't find that page"), KHÔNG phải màn sai bước, KHÔNG phải trạng thái loading dở, KHÔNG phải cổng hoặc màn của bước khác. Sai màn → sửa selector và điều hướng rồi chụp lại; không push evidence sai.
+6. **Mỗi case dùng evidence của chính nó.** Không mượn hay tham chiếu ảnh của case khác, không dùng placeholder. Nếu không re-drive được (order đã tiêu, link chết…) thì dùng đúng ảnh gốc thật của chính case đó và ghi rõ lý do không re-capture — không thay bằng ảnh không đúng nội dung.
 7. **Lưu đúng nơi + gắn đủ.** Ảnh/video dưới `test-results/artifacts/<TC_ID>/`; đường dẫn ghi vào `Evidence` của case và của TỪNG step (mỗi step: status PASS/FAIL riêng + ảnh riêng).
 
 ### Comment kết quả (Test Execution) — Quy chuẩn trình bày
 
 Field `comment` của mỗi case (trong `testcase-status.json`, đẩy lên run của Google Sheet) là chỗ QA đọc để hiểu kết quả — phải gọn, dễ nhìn, KHÔNG dán debug.
 
-1. **Văn xuôi gọn, không debug.** Comment là 1–2 câu mô tả kết quả quan sát được. CẤM dán dấu vết kỹ thuật: `key=value` (`editable=false`, `disabled=true`, `atGateway=true`, `match=true`), dump state kiểu `A→A` / `tx 2→2` / `paid 6000000→6000000`, mảng regex/selector, `val="…"`, `matched=[…]`. Viết lại thành ý người đọc hiểu.
+1. **Văn xuôi gọn, không debug.** Comment là 1–2 câu mô tả kết quả quan sát được. CẤM dán dấu vết kỹ thuật: `key=value` (`editable=false`, `disabled=true`, `atGateway=true`, `match=true`), dump state kiểu `A→A` / `tx 2→2` / `paid 6000000→6000000`, mảng regex và selector, `val="…"`, `matched=[…]`. Viết lại thành ý người đọc hiểu.
 2. **Không lặp trạng thái ở đầu comment.** KHÔNG mở đầu bằng `[PASS]`/`[FAIL]`/`[PASSED]`/`[Positive]`/`[Negative]` — status đã có badge riêng trên Test Run. (Kit tự thêm tag cho SKIP/BLOCKED/EXECUTING để phân biệt "TO DO" — đừng tự viết tag đó.)
 3. **Caveat tách dòng riêng.** Điều cần QA xác nhận thêm / giới hạn / phụ thuộc Dev → xuống dòng mới, mở đầu bằng `Lưu ý:` (đừng nhồi vào cùng câu kết quả).
 4. **Nhiều ý → gạch đầu dòng.** Nếu case kiểm nhiều điểm, mỗi điểm một dòng `- …` thay vì câu chạy dài một mạch.
 5. **Số/tiền ở dạng người đọc.** Viết `6.000.000đ`, `23tr`, ngày `2026-07-13` — không để số thô `6000000`, không để timestamp máy.
-6. **Không placeholder / con trỏ file.** CẤM comment kiểu `Xem xxx_results.json`, `TODO`, `(auto)` — phải là nội dung thật của kết quả. Không nhét ID thô (order/deal) trừ khi cần cho truy vết, và nếu cần thì rút gọn.
-7. **Case FAILED:** comment nêu rõ **kỳ vọng vs thực tế** ở bước lỗi (ngắn gọn), chi tiết bước/evidence để ở `steps[]`/`failedStep` (không nhồi hết vào comment).
+6. **Không placeholder / con trỏ file.** CẤM comment kiểu `Xem xxx_results.json`, `TODO`, `(auto)` — phải là nội dung thật của kết quả. Không nhét ID thô (order hoặc deal) trừ khi cần cho truy vết, và nếu cần thì rút gọn.
+7. **Case FAILED:** comment nêu rõ **kỳ vọng vs thực tế** ở bước lỗi (ngắn gọn), chi tiết bước và evidence để ở `steps[]`/`failedStep` (không nhồi hết vào comment).
 
 ### Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói
 
@@ -497,7 +497,7 @@ Backlog bug gate khác với Backlog testcase publish. Backlog testcase publish 
 - Không log Backlog nếu case đang `SKIP`.
 - Không log Backlog nếu fail do prompt/test/setup/data/env/dependency.
 - Không log Backlog nếu chưa rerun đủ để loại trừ flaky issue.
-- Backlog evidence chỉ dùng ảnh hoặc video khi log/upload bug.
+- Backlog evidence chỉ dùng ảnh hoặc video khi log hoặc upload bug.
 - Không upload `.md`, `.txt`, `.log`, `.json`, `trace.zip` hoặc execution summary làm Backlog evidence trừ khi user yêu cầu riêng.
 
 ### Executable QA capabilities (autonomy & safety)
@@ -507,8 +507,8 @@ Các năng lực chạy thật trong `scripts/qa/` + `exploratory/` phải khai 
 - **Autonomy Gate**: Suggest-only (learning_recorder, risk_score, git_impact, scope_planner) · threshold-gated (locator healing `LOCATOR_HEAL=1`, perf advisory, risk_gate `--enforce`) · never-auto (exploratory, security_check, load_check — chỉ chạy khi user yêu cầu tường minh).
 - **Non-destructive & non-prod**: `security_check` chỉ GET/read-only + `--confirm-nonprod`; `load_check` non-prod + cap + `--confirm-nonprod`; fuzzing/exploit/brute-force/ZAP là Manual-only opt-in có phê duyệt người. TUYỆT ĐỐI không chạy trên production.
 - **Mask PII/secret** trong mọi report (security/knowledge/dashboard); không ghi credential/PII khách hàng.
-- **Learning data chỉ ghi fact đã qua gate** (bug đã qua Backlog gate); band/risk máy chấm luôn cho phép QA override.
-- **Output Quality Gate (THỰC THI, không phải prose)**: `scripts/qa/output_gate.js` + `scripts/qa/lib/output_rules.js` biến rule chất lượng thành check máy — `push_test_execution.js` tự chạy trước khi push (comment gọn/không debug, mọi step có status + evidence ảnh/video, video cho case phức tạp). Vi phạm → CHẶN; agent tự sửa trong session, không chờ nhắc. `--qa-approved` bỏ qua có chủ đích (log lại). Bug/Test Execution **bắt buộc qua script kit**, không tạo tay MCP/API.
+- **Learning data chỉ ghi fact đã qua gate** (bug đã qua Backlog gate); band risk máy chấm luôn cho phép QA override.
+- **Output Quality Gate (THỰC THI, không phải prose)**: `scripts/qa/output_gate.js` + `scripts/qa/lib/output_rules.js` biến rule chất lượng thành check máy — `push_test_execution.js` tự chạy trước khi push (comment gọn, không debug, mọi step có status + evidence ảnh hoặc video, video cho case phức tạp). Vi phạm → CHẶN; agent tự sửa trong session, không chờ nhắc. `--qa-approved` bỏ qua có chủ đích (log lại). Bug/Test Execution **bắt buộc qua script kit**, không tạo tay MCP/API.
 - **Không thêm dependency nặng**: axe-core (npm) đủ cho a11y; k6 là binary ngoài (Docker/PATH, không vào deps), thiếu → skip sạch.
 
 ## Workflow
@@ -527,7 +527,7 @@ Clean temporary files
 
 ## Cleanup Rules
 
-Trước khi kết thúc task, scan workspace root và subfolder cấp 1 để dọn file tạm/debug rõ ràng. Không xóa deliverable hoặc dữ liệu người dùng chưa được phép xóa.
+Trước khi kết thúc task, scan workspace root và subfolder cấp 1 để dọn file tạm và file debug rõ ràng. Không xóa deliverable hoặc dữ liệu người dùng chưa được phép xóa.
 
 **Dump ad-hoc KHÔNG ghi vào repo root.** Mọi dump chẩn đoán (swagger/OpenAPI, response API, id tạm, snapshot) phải ghi vào **thư mục scratchpad của session** (hoặc `<TASK_OUTPUT_DIR>/` nếu là artifact cần giữ) — ghi ra root repo là rác lọt lưới, và các dump này thường chứa **email/SĐT/PII trong giá trị mẫu** → chỉ cần một lần `git add .` là commit lộ PII (đã xảy ra thật: nhiều file `scratch_*` dump API/swagger sót ở root repo sau một task, chưa được gitignore).
 

@@ -7,12 +7,15 @@
 
 ## Vì sao có file này
 
-Đo ngày 08/09/2026 trên 43 bài: **43 bài** thiếu khối mở bài bằng vấn đề · **38 bài** định nghĩa
-thuật ngữ trước khi người đọc chạm vào nó · **43 bài** không có chỉ báo độ chín · **7 bài** có mục
-"Bài sau" chỉ liệt kê nội dung mà không nêu lý do đi tiếp.
+Đo ngày 08/09/2026 trên 43 bài. Bốn con số:
 
-Bốn con số đó không phải lỗi của người viết từng bài. Chúng là lỗ trong template: template cũ **không
-có ô nào** để chứa bốn thứ này, nên không ai quên — chỉ là không có chỗ đặt.
+- **43 bài** thiếu khối mở bài bằng vấn đề.
+- **38 bài** định nghĩa thuật ngữ trước khi người đọc chạm vào nó.
+- **43 bài** không có chỉ báo độ chín.
+- **7 bài** có mục "Bài sau" chỉ liệt kê nội dung mà không nêu lý do đi tiếp.
+
+Đó không phải lỗi của người viết từng bài. Chúng là lỗ trong template. Template cũ **không có ô nào**
+để chứa bốn thứ này, nên không ai quên. Chỉ là không có chỗ đặt.
 
 ## Thứ tự các khối, và vì sao đúng thứ tự đó
 
@@ -108,8 +111,8 @@ Sai:
 > Bài 13 soi vào cột dễ trông-như-đúng nhất của bảng testcase: Kết quả mong đợi. Cụ thể là câu hỏi
 > con số trong đó lấy từ đâu ra.
 
-Luật: **vấn đề cuối bài N phải tạo ra lý do cho bài N+1.** Nếu bài sau chỉ là "chủ đề tiếp theo" thì
-hai bài đó chưa nối vào nhau, và người đọc sẽ cảm thấy mình đang học một danh sách chủ đề.
+Luật: **vấn đề cuối bài N phải tạo ra lý do cho bài N+1.** Bài sau mà chỉ là "chủ đề tiếp theo" thì
+hai bài chưa nối vào nhau. Người đọc sẽ thấy mình đang học một danh sách chủ đề.
 
 ## Những gì template KHÔNG quy định
 

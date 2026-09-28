@@ -9,9 +9,11 @@ Còn nếu bạn đã làm hết Phần 3 (hoặc đang bí thật), đọc ti�
 
 ## BUG-1 — Lấy sai lớp làm mốc cắt hạn
 
-**Tầng lỗi:** backend (logic nghiệp vụ)
-**Vi phạm:** `BR-02`
-**Ở đâu:** [`server.js`](server.js), hàm `tinhHan`
+| | |
+|---|---|
+| **Tầng lỗi** | backend (logic nghiệp vụ) |
+| **Vi phạm** | `BR-02` |
+| **Ở đâu** | [`server.js`](server.js), hàm `tinhHan` |
 
 ```js
 // Đang là: sắp mọi lớp mới theo ngày bắt đầu rồi lấy lớp sớm nhất
@@ -33,20 +35,22 @@ const ungVien = dsLopMoi.filter((l) => l.loai === 'LESSON')
 Học viên mất quyền vào lớp cũ **sớm hơn hai tháng** so với thứ spec cho phép.
 
 **Vì sao nó dễ lọt:** chỉ sai khi học viên có **lớp đi kèm bắt đầu sớm hơn lớp chính**. Học viên chỉ được
-xếp vào một lớp chính — như `HV03` — thì hai công thức cho **cùng** một kết quả, nên nếu bạn chỉ test một
-ca "bình thường" thì không bao giờ thấy. Đây là lý do Bài 8 bắt bạn phủ **loại lớp × thứ tự ngày bắt đầu**,
+xếp vào một lớp chính, như `HV03`, thì hai công thức cho **cùng** một kết quả. Chỉ test một ca
+"bình thường" thì không bao giờ thấy. Đây là lý do Bài 8 bắt bạn phủ **loại lớp × thứ tự ngày bắt đầu**,
 không phải chỉ một ca happy path.
 
-**Bài học:** một bug nằm ở chỗ **chọn dữ liệu nào để tính** chỉ hiện ra khi bộ dữ liệu của bạn có **nhiều
+**Bài học:** bug nằm ở chỗ **chọn dữ liệu nào để tính** chỉ hiện ra khi bộ dữ liệu có **nhiều
 ứng viên** cho chỗ chọn đó. Một ứng viên thì mọi cách chọn đều ra cùng kết quả.
 
 ---
 
 ## BUG-2 — Ngày hết hạn trên màn không khớp thời hạn trên màn
 
-**Tầng lỗi:** frontend (hiển thị)
-**Vi phạm:** `UI-04`
-**Ở đâu:** [`app.js`](app.js), hàm `veBangHocVien`
+| | |
+|---|---|
+| **Tầng lỗi** | frontend (hiển thị) |
+| **Vi phạm** | `UI-04` |
+| **Ở đâu** | [`app.js`](app.js), hàm `veBangHocVien` |
 
 ```js
 // Đang là: cộng số ngày gia hạn vào thời hạn của LỚP
@@ -63,7 +67,7 @@ const hetHan = congNgay(g.ketThuc, g.giaHan);
 | 1 | Nguyễn Văn A | Học lại | 01/03/2026 - **30/06/2026** | — | **31/07/2026** |
 
 Cộng thử các số đang hiện: thời hạn kết thúc **30/06**, gia hạn **0 ngày**, vậy ngày hết hạn phải là
-**30/06**. Nhưng màn hiện **31/07** — muộn hơn một tháng.
+**30/06**. Nhưng màn hiện **31/07**, muộn hơn một tháng.
 
 Gia hạn thêm 30 ngày thì lệch càng rõ: cột Thời hạn vẫn kết thúc 30/06, cột Gia hạn hiện 30, nên ngày hết
 hạn phải là **30/07/2026**. Màn hiện **30/08/2026**.
@@ -73,9 +77,9 @@ hạn phải là **30/07/2026**. Màn hiện **30/08/2026**.
 **học viên trong lớp**.
 
 **Vì sao nó dễ lọt:** với học viên **Thường** thì hạn của ghi danh **bằng** hạn của lớp, nên hai công thức
-cho cùng kết quả và màn hình trông hoàn toàn đúng. Bug chỉ hiện ra ở học viên đã bị cắt hạn hoặc gia hạn —
-tức là đúng những người mà cả tính năng này tồn tại để phục vụ. Và nếu kết quả mong đợi của bạn chỉ nói
-"Ngày hết hạn = 31/07/2026" thì test **xanh**, vì đó chính là con số đang hiện.
+cho cùng kết quả. Màn hình trông hoàn toàn đúng. Bug chỉ hiện ra ở học viên đã bị cắt hạn hoặc gia hạn,
+tức là đúng những người mà cả tính năng này tồn tại để phục vụ. Và kết quả mong đợi mà chỉ nói
+"Ngày hết hạn = 31/07/2026" thì test **xanh**. Đó chính là con số đang hiện.
 
 **Bài học:** kiểm từng trường một không đủ. Có loại bug chỉ sống ở **quan hệ** giữa các số đang hiện cùng
 lúc trên một màn.
@@ -84,9 +88,11 @@ lúc trên một màn.
 
 ## BUG-3 — Chốt trạng thái không có ở backend
 
-**Tầng lỗi:** backend (thiếu chốt bảo vệ trạng thái)
-**Vi phạm:** `BR-10` và `BR-11`
-**Ở đâu:** [`server.js`](server.js), nhánh `PATCH /api/ghi-danh/:id` và `DELETE /api/ghi-danh/:id`
+| | |
+|---|---|
+| **Tầng lỗi** | backend (thiếu chốt bảo vệ trạng thái) |
+| **Vi phạm** | `BR-10` và `BR-11` |
+| **Ở đâu** | [`server.js`](server.js), nhánh `PATCH /api/ghi-danh/:id` và `DELETE /api/ghi-danh/:id` |
 
 ```js
 // PATCH đang là: đổi gì cũng được
@@ -131,13 +137,13 @@ curl -s -X DELETE http://localhost:4010/api/ghi-danh/GD001
 
 **Vì sao nó dễ lọt:** giao diện **không có** lựa chọn nào để làm hai việc trên. Menu `⋮` của mỗi hàng chỉ
 có *Gia hạn* và *Lịch sử*. Nên nếu bạn chỉ test qua giao diện, bạn sẽ thấy "không làm được" và ghi PASS.
-Nhưng **không có nút không phải là thực thi luật** — nó chỉ là không mời người dùng làm. Bất cứ ai gọi được
+Nhưng **không có nút không phải là thực thi luật**. Nó chỉ là không mời người dùng làm. Bất cứ ai gọi được
 API đều đi xuyên qua. Và ở hệ thống thật, đường đi xuyên đó là luồng đồng bộ từ hệ thống khác, không phải
 người ngồi gõ curl.
 
 **Bài học:** giao diện có thể **che** một backend không có chốt bảo vệ. Luật kiểu "không được làm X" phải
 được kiểm ở **tầng backend**, không phải ở tầng nút bấm. Đây là lý do quy tắc của tài liệu là **test cả
-giao diện lẫn API** — mỗi tầng bắt được loại bug mà tầng kia không bắt được.
+giao diện lẫn API**. Mỗi tầng bắt được loại bug mà tầng kia không bắt được.
 
 ---
 
@@ -151,5 +157,5 @@ Ba bug này không phải chọn ngẫu nhiên. Mỗi cái đại diện cho m�
 | BUG-2 | kiểm từng trường, không kiểm **quan hệ giữa các trường đang hiện cùng lúc** | Bài 7 — kết quả mong đợi · Bài 12 — bằng chứng |
 | BUG-3 | chỉ test **một tầng** (giao diện) | Bài 18 — test cả giao diện lẫn API |
 
-Nếu bộ kiểm của bạn bắt được cả ba, nó đã vượt qua ba điểm mù phổ biến nhất. Nếu chưa — quay lại đúng bài
+Nếu bộ kiểm của bạn bắt được cả ba, nó đã vượt qua ba điểm mù phổ biến nhất. Nếu chưa, quay lại đúng bài
 ở cột cuối.

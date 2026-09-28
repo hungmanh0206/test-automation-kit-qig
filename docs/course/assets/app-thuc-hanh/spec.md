@@ -1,17 +1,17 @@
 # Đặc tả — Vận hành lớp học
 
-> Đây là **spec**: bản mô tả app *phải* làm gì. Cả tài liệu sẽ neo mọi kết luận đúng/sai vào file này.
+> Đây là **spec**: bản mô tả app *phải* làm gì. Cả tài liệu sẽ neo mọi kết luận đúng hay sai vào file này.
 >
 > Mỗi luật có một **mã** (`BR-xx`, `UI-xx`). Khi bạn nói "chỗ này sai", bạn phải chỉ được mã luật nó vi
-> phạm. Không chỉ được mã nào thì bạn chưa chứng minh được gì — bạn chỉ đang thấy lạ.
+> phạm. Không chỉ được mã nào thì bạn chưa chứng minh được gì, bạn chỉ đang thấy lạ.
 
 ## 1. Bối cảnh
 
-Một trung tâm luyện thi mở lớp theo khoá. Mỗi lớp có thời hạn: học viên vào học được từ ngày bắt đầu tới
-ngày kết thúc, sau đó mất quyền truy cập.
+Một trung tâm luyện thi mở lớp theo khoá. Mỗi lớp có thời hạn. Học viên vào học được từ ngày bắt đầu
+tới ngày kết thúc, sau đó mất quyền truy cập.
 
-Học viên học không kịp thì **đăng ký học lại** ở khoá sau. Lúc đó hệ thống phải **cắt hạn lớp cũ** lại cho
-khớp với lớp mới — không để hai lớp cùng mở, cũng không cắt sớm hơn cần thiết.
+Học viên học không kịp thì **đăng ký học lại** ở khoá sau. Lúc đó hệ thống phải **cắt hạn lớp cũ** lại
+cho khớp với lớp mới. Không để hai lớp cùng mở, cũng không cắt sớm hơn cần thiết.
 
 Người vận hành làm việc này ở màn **Lớp › Học viên**.
 
@@ -29,7 +29,7 @@ Người vận hành làm việc này ở màn **Lớp › Học viên**.
 | `ACCA02` | ACCA F2 — khoá Thu | Lớp chính | 01/09/2026 | 31/12/2026 |
 
 **Foundation** và **Revision** là lớp đi kèm: cùng môn, học trước hoặc học ôn, nhưng **không phải lớp
-chính**. Sự phân biệt này quan trọng — `BR-02` dựa vào đúng nó.
+chính**. Sự phân biệt này quan trọng vì `BR-02` dựa vào đúng nó.
 
 ### Học viên
 
@@ -60,7 +60,7 @@ chính**. Sự phân biệt này quan trọng — `BR-02` dựa vào đúng nó.
 
 > **`BR-02` nói mốc lấy theo _Lớp chính_**, không phải theo lớp bắt đầu sớm nhất. Đọc kỹ dòng này.
 
-Mọi ngày ở đây tính **ở mức ngày** — không giờ, không múi giờ.
+Mọi ngày ở đây tính **ở mức ngày**: không giờ, không múi giờ.
 
 ## 4. Luật gia hạn
 
@@ -90,8 +90,8 @@ Mọi ngày ở đây tính **ở mức ngày** — không giờ, không múi gi
 | **UI-03** | Số ngày gia hạn bằng 0 thì hiện dấu **`—`** thay cho số `0` |
 | **UI-04** | **Các số đang hiện trên màn phải khớp nhau**: **Ngày hết hạn** đang hiện phải bằng đúng **ngày cuối của cột Thời hạn** đang hiện, cộng **Gia hạn (ngày)** đang hiện |
 
-> **`UI-04` là một luật về _màn hình_, không phải về tính toán.** Backend tính đúng mà màn hình hiện các số
-> không khớp nhau thì vẫn là vi phạm — vì người dùng nhìn màn hình, không nhìn backend.
+> **`UI-04` là một luật về _màn hình_, không phải về tính toán.** Backend tính đúng mà màn hình hiện các
+> số không khớp nhau thì vẫn là vi phạm. Người dùng nhìn màn hình, không nhìn backend.
 
 ## 7. Bề mặt API
 
