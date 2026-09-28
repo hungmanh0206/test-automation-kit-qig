@@ -155,6 +155,12 @@ việc khác, và không làm.
 - Không commit `.env`, `.env.local`, service-account JSON hoặc file chứa credential thật.
 - Nếu secret từng bị chia sẻ hoặc commit, phải rotate trong provider console.
 - Không dùng direct DB connection trong workflow chuẩn của kit. Ngoại lệ DUY NHẤT: read-only verify và chẩn đoán trên **UAT DB** qua guarded client `tests/support/setup/db/uatDbClient.ts` (read-only: chỉ SELECT, chặn bằng lint trong client). Chỉ cấu hình credential kho UAT (`LIB_MASTER_DB_*`) — kho UAT/PROD tách biệt, không cấu hình creds thì không truy cập được. Vẫn cấm biến generic `TEST_DB_*`/`TEST_DATABASE_URL`/`DATABASE_URL`/`PG*` và mọi import `tedious` ngoài client đó. DB là oracle PHỤ (verify và chẩn đoán): KHÔNG dựng hay mutate state, KHÔNG phải evidence Backlog, KHÔNG thay oracle từ spec; PII đọc ra phải mask + cấm export file.
+
+- **SQL KÈM TESTCASE — dự án nặng CSDL thì viết sẵn câu truy vấn để QA chạy tay được.** Đặt câu `SELECT` ở "Các bước thực hiện", giá trị hoặc số dòng kỳ vọng ở "Kết quả mong đợi". Ba luật do máy gác (`npm run gate:gen-testcase`):
+  ① **chỉ `SELECT`** — câu `UPDATE`/`DELETE`/`INSERT`/`TRUNCATE`… ở thế lệnh-để-chạy là **CHẶN**, vì người copy đi chạy là mutate UAT;
+  ② **không literal PII** — email hay số điện thoại thật trong câu SQL là **CHẶN**, dùng tham số (`:email`) hoặc lọc theo id của chính lượt test;
+  ③ case mang `[DbPersist]` mà không có `SELECT` nào thì **cảnh báo**.
+  TRÍCH DẪN hành vi của proc (vd nêu `DELETE FROM …` để nói proc đó xoá cứng) **không** bị chặn — gate phân biệt bằng marker chạy đứng trước. Chi tiết và ví dụ: `prompt_templates/phase1/dimensions/23_db_persistence.md` mục *KÈM CÂU SQL*.
 - Không yêu cầu AI đọc toàn bộ source backend để execute testcase. Phase 2 chỉ dùng UI/API public-business contract, artifact Phase 1, credential test, fixture có sẵn, test hook và sandbox nếu team cung cấp.
 
 ### Project And Output

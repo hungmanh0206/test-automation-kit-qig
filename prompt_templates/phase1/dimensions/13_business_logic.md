@@ -36,7 +36,9 @@
 
 ### 13b. Bền vững dữ liệu sau mutation — oracle PHỤ ở TẦNG BẢN GHI (chỉ 5 tình huống dưới)
 
-**KHÔNG tạo TC riêng cho việc "kiểm DB".** Đây là **một dòng verification thêm vào chính case create, edit hay delete đã có**. Viết vào cột verification dạng `db_readonly: SELECT … FROM … WHERE …`, kèm kết quả mong đợi cụ thể là số dòng hoặc giá trị cột. Rải khắp nơi thì test dính chặt schema, đổi tên cột là gãy hàng loạt.
+**KHÔNG tạo TC riêng cho việc "kiểm DB".** Đây là **một dòng verification thêm vào chính case create, edit hay delete đã có**. Viết câu `SELECT` vào "Các bước thực hiện" và kết quả cụ thể (số dòng hoặc giá trị cột) vào "Kết quả mong đợi". Rải khắp nơi thì test dính chặt schema, đổi tên cột là gãy hàng loạt.
+
+Cách viết SQL kèm testcase, kèm 3 luật máy gác (chỉ `SELECT`, không literal PII, có `[DbPersist]` thì phải có `SELECT`): [`23_db_persistence.md`](23_db_persistence.md) mục *KÈM CÂU SQL để QA chạy tay được*.
 
 **Vì sao cần dù đã đọc lại bằng UI/API:** đọc lại bằng `GET`/màn list là **cùng một stack vừa ghi tự nói là đã ghi**. Với CRUD phẳng thì thế đã đủ. Nhưng 5 tình huống sau thì UI/API **không thể** phân biệt được, phải xuống tầng bản ghi:
 

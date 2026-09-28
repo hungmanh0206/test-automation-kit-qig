@@ -305,6 +305,14 @@ function gateTestcaseRow(row, { strictSemicolon = false } = {}) {
   if (vague.length) problems.push(`${id}: "Kết quả mong đợi" chung chung: "${vague.join('", "')}" — mô tả cụ thể (text/URL/element)`);
   // LỚP 1: case đã tự khai chiều thì expected phải mang bằng chứng tối thiểu của chiều đó (xem output_rules).
   for (const m of rules.lintTagDepth(row)) warnings.push(`${id}: ${m}`);
+  /*
+   * SQL kèm testcase (dự án nặng CSDL): CHẶN câu ghi và PII. Xem chú thích ở `output_rules.lintSqlCell`.
+   * Soi CẢ hai ô vì truy vấn hay nằm ở "Các bước" còn giá trị mong đợi nằm ở ô kia — người viết đặt SQL
+   * ở đâu cũng phải bị gác như nhau.
+   */
+  for (const m of rules.lintSqlCell(row.steps, '"Các bước"')) problems.push(`${id}: ${m}`);
+  for (const m of rules.lintSqlCell(row.expected, '"Kết quả mong đợi"')) problems.push(`${id}: ${m}`);
+  for (const m of rules.lintDbPersistHasQuery(row)) warnings.push(`${id}: ${m}`);
   const semi = String(row.expected).split(/<br\s*\/?>|\r?\n/).filter((l) => l.includes(';')).length;
   if (semi) (strictSemicolon ? problems : warnings).push(`${id}: "Kết quả mong đợi" nhồi ý bằng ";" (${semi} dòng) — nên tách mỗi ý 1 dòng "- "`);
   return { problems, warnings };

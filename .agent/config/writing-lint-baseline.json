@@ -31,11 +31,11 @@
     },
     "RULE_GLOBAL.md": {
       "slash": 0,
-      "longSent": 0,
-      "sym": 6.6,
-      "emDash": 5.6,
+      "longSent": 0.3,
+      "sym": 6.5,
+      "emDash": 6,
       "vague": 1.9,
-      "meanSent": 17.2,
+      "meanSent": 17.4,
       "emojiCount": 1
     },
     "prompt_templates/phase1/01_setup_engine_fetch_docs.md": {
@@ -192,12 +192,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/13_business_logic.md": {
-      "slash": 12.8,
+      "slash": 12.5,
       "longSent": 0,
-      "sym": 2.6,
-      "emDash": 3.4,
+      "sym": 2.5,
+      "emDash": 3.3,
       "vague": 1.7,
-      "meanSent": 18.6,
+      "meanSent": 18.8,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/14_be_conformance.md": {
@@ -273,12 +273,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/23_db_persistence.md": {
-      "slash": 2,
+      "slash": 1.7,
       "longSent": 0,
-      "sym": 18.9,
-      "emDash": 9.8,
+      "sym": 16,
+      "emDash": 8.3,
       "vague": 0,
-      "meanSent": 16.9,
+      "meanSent": 16.7,
       "emojiCount": 6
     },
     "prompt_templates/phase2/04_execute_fe_playwright.md": {

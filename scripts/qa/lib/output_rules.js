@@ -456,7 +456,85 @@ function lintTagDepth(row) {
   return out;
 }
 
+/*
+ * SQL TRONG TESTCASE — dự án nặng CSDL thì testcase kèm câu truy vấn để QA chạy tay được.
+ *
+ * VÌ SAO PHẢI GÁC, không chỉ dặn: đặt SQL sẵn trong ô để người ta COPY đi chạy là mở đúng hai đường
+ * lách hai luật nặng nhất của kit.
+ *   ① Một câu `UPDATE`/`DELETE` lọt vào ô → QA copy chạy là MUTATE UAT (CLAUDE.md §2 cấm).
+ *      Không ai cố ý; chỉ cần dán nhầm câu vừa thử trong DBeaver là đủ.
+ *   ② `WHERE email = 'a@b.com'` → PII của khách nằm trong testcase, rồi lên Google Sheet (CLAUDE.md §1 cấm).
+ * Hai thứ đó không thể nhận ra bằng mắt khi bộ có vài trăm case, nên phải là CHẶN của máy.
+ *
+ * Quy ước đã có từ trước (§13b): `db_readonly: SELECT … FROM … WHERE …`. Đo thật thì nó CHƯA TỪNG
+ * được dùng — 0/1901 testcase. Luật dưới đây không phát minh quy ước mới, nó chỉ làm quy ước cũ có răng.
+ */
+const SQL_START = /(^|[\s`>|])(select|with|insert|update|delete|drop|truncate|alter|create|merge|exec|execute|call|grant|revoke)\s/gi;
+const SQL_WRITE = new Set(['insert', 'update', 'delete', 'drop', 'truncate', 'alter', 'create', 'merge', 'exec', 'execute', 'call', 'grant', 'revoke']);
+/*
+ * Chỉ coi là "có SQL" khi thấy từ khoá ĐI KÈM mệnh đề SQL thật (`FROM`/`INTO`/`SET`/`TABLE`/`JOIN`),
+ * nếu không thì câu tiếng Việt "Cập nhật đơn hàng" hay "Xoá dòng" sẽ bị bắt oan — mà một gate báo oan
+ * thì bị tắt trong một ngày.
+ */
+const SQL_CLAUSE = /\b(from|into|set\s|table\s|join\s)\b/i;
+/*
+ * CHỈ CHẶN SQL Ở THẾ LỆNH-ĐỂ-CHẠY. Bản đầu của luật này chặn mọi từ khoá ghi, và ngay lần chạy đầu trên
+ * dữ liệu thật nó BÁO OAN một case tốt: `CSDL_HS_TC_062` trích `DELETE FROM HOC_SINH` để NÓI RA rằng proc
+ * `DeleteHocSinh` là xoá cứng, 61 bảng tham chiếu `ID_HOC_SINH`, 0 trigger dọn. Đó là phát hiện có giá trị
+ * nhất của case, không phải lệnh mời QA chạy.
+ * Phân biệt bằng NGỮ CẢNH ĐỨNG TRƯỚC: có marker chạy (`db_readonly:`, `SQL:`, `Chạy:`…) hoặc SQL mở đầu
+ * một bước đánh số thì mới là lệnh. Trích dẫn trong ngoặc đơn, sau "proc", "là", "thực chất" thì không.
+ * Luật báo trên văn bản TỐT thì sửa luật, không sửa văn.
+ */
+const SQL_RUN_MARK = /(db_readonly|db\s*readonly|sql|query|truy vấn|truy van|chạy lệnh|chay lenh|chạy|chay|thực thi|thuc thi)\s*:?\s*$/i;
+const STEP_HEAD = /^\s*(?:\d+\s*[.)]\s*)?$/;
+/** Email và SĐT VN dạng literal trong chuỗi nháy — thứ tuyệt đối không được nằm trong testcase. */
+const PII_EMAIL = /['"][\w.+-]+@[\w-]+\.[\w.]{2,}['"]/;
+const PII_PHONE = /['"](?:\+?84|0)(?:3|5|7|8|9)\d{8}['"]/;
+
+/**
+ * Soi SQL trong một ô testcase. Trả về danh sách lỗi CHẶN (rỗng nghĩa là đạt).
+ * Cố ý KHÔNG parse SQL: chỉ cần biết câu đó có từ khoá GHI hay không, và có literal PII hay không.
+ */
+function lintSqlCell(text, where) {
+  const s = String(text || '');
+  if (!s.trim()) return [];
+  const out = [];
+  const kws = [];      // mọi từ khoá SQL thấy trong ô
+  const runWrites = [];  // chỉ những từ khoá GHI đang ở thế lệnh-để-chạy
+  let m;
+  SQL_START.lastIndex = 0;
+  while ((m = SQL_START.exec(s)) !== null) {
+    const kw = m[2].toLowerCase();
+    kws.push(kw);
+    if (!SQL_WRITE.has(kw)) continue;
+    // Ngữ cảnh ngay trước từ khoá, đã bỏ ký tự trang trí (`, *, ", ') để marker vẫn nhận ra.
+    const before = s.slice(0, m.index + m[1].length).replace(/[`*"'>|\s]*$/, '');
+    const lineHead = before.split(/<br\s*\/?>|\r?\n/).pop();
+    if (SQL_RUN_MARK.test(before) || STEP_HEAD.test(lineHead)) runWrites.push(kw);
+  }
+  if (!kws.length) return out;
+  if (!SQL_CLAUSE.test(s)) return out;                       // chỉ là từ tiếng Anh lẻ, không phải câu SQL
+  const writes = [...new Set(runWrites)];
+  if (writes.length) {
+    out.push(`${where} có câu SQL GHI ở thế lệnh-để-chạy (\`${writes.join('`, `').toUpperCase()}\`) — DB trên UAT là READ-ONLY, chỉ được \`SELECT\`. Dựng state phải qua UI, API, factory hoặc hook (RULE_GLOBAL §UAT non-destructive). Nếu chỉ TRÍCH DẪN hành vi của proc thì bỏ marker chạy đứng trước`);
+  }
+  if (PII_EMAIL.test(s)) out.push(`${where} có email thật trong câu SQL — thay bằng tham số (\`:email\`) hoặc mô tả, KHÔNG ghi PII khách vào testcase (CLAUDE.md §1)`);
+  if (PII_PHONE.test(s)) out.push(`${where} có số điện thoại thật trong câu SQL — thay bằng tham số, KHÔNG ghi PII khách vào testcase (CLAUDE.md §1)`);
+  return out;
+}
+
+/** Case tự khai `[DbPersist]` mà không có `SELECT` nào để QA chạy tay → cảnh báo. */
+function lintDbPersistHasQuery(row) {
+  const dims = Array.isArray(row.dimensions) ? row.dimensions : [];
+  if (!dims.includes('dbpersist')) return [];
+  const blob = `${row.steps || ''}\n${row.expected || ''}`;
+  if (/\bselect\b[\s\S]*\bfrom\b/i.test(blob)) return [];
+  return ['mang tag `[DbPersist]` nhưng không có câu `SELECT` nào để QA chạy tay — thêm truy vấn đọc bản ghi vào "Các bước thực hiện"'];
+}
+
 module.exports = {
+  lintSqlCell, lintDbPersistHasQuery,
   lintTagDepth, TAG_EVIDENCE,
   isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly, lintBugRealism, lintBugProvenance,
   lintBeVsFeLayer,

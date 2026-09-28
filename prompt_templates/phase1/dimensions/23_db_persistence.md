@@ -41,6 +41,39 @@ So sánh phải dùng matcher theo NGHĨA: `money()` · `instant()` · `text()` 
 | 6 | **Negative (quan trọng nhất)**: thao tác FAIL ⇒ DB **không đổi gì** | `snapshot` → thao tác → `expectNoChange` |
 | 7 | Double-submit không tạo 2 bản ghi | `expectCount(..., 1)` |
 
+## KÈM CÂU SQL để QA chạy tay được
+
+Mỗi case mang `[DbPersist]` phải có **câu `SELECT` viết sẵn trong cột "Các bước thực hiện"**, chạy tay được
+ngay mà không cần đọc code. Giá trị hoặc số dòng kỳ vọng ghi ở "Kết quả mong đợi".
+
+Vì sao bắt buộc: `dbVerify.ts` chỉ dùng được khi có automation. Nhưng QA còn chạy tay lúc triage, lúc
+rerun, lúc dev hỏi "có đúng DB lưu sai không". Không có câu truy vấn sẵn thì mỗi lần lại tự mò schema, và
+người không quen DB thì bỏ luôn bước kiểm tầng bản ghi. Đo thật: quy ước `db_readonly:` có từ trước nhưng
+**0/1901 testcase** từng dùng.
+
+```text
+| Các bước thực hiện | Kết quả mong đợi |
+| 1. Tạo đơn trên UI, ghi lại mã đơn
+  2. Chạy: SELECT final_price, deleted_at FROM orders WHERE id = :orderId
+| 1. Đơn hiện trong danh sách
+  2. final_price = 540000 (không phải 540000.0), deleted_at IS NULL |
+```
+
+Bốn luật, **ba luật đầu do máy gác** (`npm run gate:gen-testcase`):
+
+1. **CHỈ `SELECT`.** Câu `UPDATE`, `DELETE`, `INSERT`, `TRUNCATE`… ở thế lệnh-để-chạy là **CHẶN**. DB trên
+   UAT là read-only; dựng state phải qua UI, API, factory hoặc hook.
+2. **KHÔNG literal PII.** `WHERE email = 'a@b.com'` hay số điện thoại thật là **CHẶN**. Dùng tham số
+   (`:email`) hoặc lọc theo id của chính lượt test.
+3. **Có `[DbPersist]` thì phải có `SELECT`**, nếu không thì cảnh báo.
+4. **Lọc theo bản ghi của chính lượt test** (`:orderId`, `RUN_ID`), đừng quét cả bảng. UAT dùng chung, đọc
+   dữ liệu người khác là đường ra kết luận sai.
+
+> **Trích dẫn thì khác lệnh.** Viết `proc \`DeleteHocSinh\` là XOÁ CỨNG (\`DELETE FROM HOC_SINH\`)` để NÓI RA
+> hành vi của hệ thống là **phát hiện có giá trị**, không phải mời QA chạy. Gate phân biệt bằng ngữ cảnh
+> đứng trước: có marker chạy (`Chạy:`, `SQL:`, `db_readonly:`) hoặc SQL mở đầu một bước đánh số thì mới tính
+> là lệnh. Bản đầu của luật này không phân biệt và đã báo oan đúng một case như vậy.
+
 ## Bốn ràng buộc — vi phạm là tự tạo bug ma
 
 **① DB là oracle PHỤ.** Nguồn sự thật vẫn là FSD/`knowledge/domain/BR-*`. Lấy số từ DB rồi bảo "UI phải
