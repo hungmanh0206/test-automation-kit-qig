@@ -57,12 +57,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/02_gen_testcases.md": {
-      "slash": 9.5,
-      "longSent": 4.4,
-      "sym": 13.3,
-      "emDash": 9.7,
+      "slash": 9.1,
+      "longSent": 1.7,
+      "sym": 12,
+      "emDash": 7,
       "vague": 3.4,
-      "meanSent": 18.6,
+      "meanSent": 17.1,
       "emojiCount": 11
     },
     "prompt_templates/phase1/03_gen_test_data.md": {
@@ -282,12 +282,12 @@
       "emojiCount": 6
     },
     "prompt_templates/phase2/04_execute_fe_playwright.md": {
-      "slash": 17.1,
-      "longSent": 4.1,
-      "sym": 13.6,
-      "emDash": 13.6,
+      "slash": 15.8,
+      "longSent": 2.3,
+      "sym": 13.5,
+      "emDash": 12.2,
       "vague": 2.3,
-      "meanSent": 18,
+      "meanSent": 17,
       "emojiCount": 5
     },
     "prompt_templates/phase2/05_execute_api_playwright.md": {

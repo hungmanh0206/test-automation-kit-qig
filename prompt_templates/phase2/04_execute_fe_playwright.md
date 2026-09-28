@@ -2,7 +2,12 @@
 
 > Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
 
-> ⚡ **Kỷ luật execute (RULE_GLOBAL §"Execution Discipline"):** batch NHIỀU case/1 lượt (ÍT script toàn diện, chạy song song — không "mỗi case 1 vòng"); KHÔNG mặc định TODO/SKIP khi chưa thử (dùng hết fixture/deal/account đã cấp, case negative tự tạo input); KHÔNG hỏi lắt nhắt (gom câu hỏi 1 lần); báo cáo gộp, ít vòng.
+> ⚡ **Kỷ luật execute (RULE_GLOBAL §"Execution Discipline"):**
+>
+> - Batch NHIỀU case trong 1 lượt: ÍT script toàn diện, chạy song song, không "mỗi case 1 vòng".
+> - KHÔNG mặc định TODO hay SKIP khi chưa thử. Dùng hết fixture, deal, account đã cấp; case negative thì tự tạo input.
+> - KHÔNG hỏi lắt nhắt: gom câu hỏi 1 lần.
+> - Báo cáo gộp, ít vòng.
 
 > 🛑 **CHECKLIST 6 KHỐI — xác nhận TRƯỚC KHI execute** (forcing function; `output_gate` sẽ **CHẶN** nếu output vi phạm — đọc & làm, đừng lướt):
 > 1. **Nguồn & scope** — `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (tải mới nhất từ Google Sheet qua Drive MCP) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
@@ -31,12 +36,12 @@ Framework:
 - Testcase output: cập nhật `Status` = PASS/FAIL/SKIP và `Actual Result` sau execution.
 
 Input:
-- Test Cases: nguồn canonical local `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-sheet/*.xlsx` — agent tải bản MỚI NHẤT về từ Google Sheet qua Drive MCP ở Bước 0 TRƯỚC mỗi lượt execute (không còn khái niệm mirror cũ/mới như công cụ cũ; luôn tải lại). Execute đọc file local — không gọi Drive/Backlog cho từng case.
+- Test Cases: nguồn canonical local `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-sheet/*.xlsx`. Agent tải bản MỚI NHẤT về từ Google Sheet qua Drive MCP ở Bước 0, TRƯỚC mỗi lượt execute. Không còn khái niệm mirror cũ hay mới như công cụ trước: luôn tải lại. Execute đọc file local — không gọi Drive/Backlog cho từng case.
 - URL: [URL staging]
 - Credentials: lấy từ env variables, không hardcode credential.
   - **Login helper dùng chung**: mỗi app 1 helper ở `tests/fe/support/<app>Login.ts` (+ `support/auth/` cho reuse-session). Login ĐÚNG 1 LẦN/worker rồi cache/reuse — nhiều hệ thống khoá theo SỐ LẦN đăng nhập (throttle/lockout).
   - **SPA phát hiện automation** (login redirect loop / trang trắng, form không render): launch kèm `--disable-blink-features=AutomationControlled` (đã set global ở `playwright.config.js`) + `addInitScript` override `navigator.webdriver`. Áp cho app dùng IdP/OIDC (Keycloak, Auth0, Okta…).
-  - **Access token hết hạn giữa lượt chạy không làm gián đoạn**: giữ `page` đã login SỐNG + dùng **Token Broker** (`tests/fe/support/auth/tokenBroker.ts`: `readSpaToken`/`brokerRequest`) khi cần gọi API bằng token tươi — KHÔNG dán token thủ công, chỉ user/pass trong `task.env`.
+  - **Access token hết hạn giữa lượt chạy không làm gián đoạn**: giữ `page` đã login SỐNG, và dùng **Token Broker** (`tests/fe/support/auth/tokenBroker.ts`, hàm `readSpaToken` và `brokerRequest`) khi cần gọi API bằng token tươi. KHÔNG dán token thủ công; chỉ để user và pass trong `task.env`.
 - Project Context: `.agent/config/project_context.md`
 - Env Template: `.env.example`
 - Project Output: `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/`
@@ -44,9 +49,9 @@ Input:
   Khi có `RUN_ID`, không sửa testcase Markdown/Excel chính trong lúc execute; ghi status/actual/evidence vào run-scoped report/status.
 
 # Precondition Resolution Pass (bắt buộc, chạy TRƯỚC khi generate/execute)
-> 📚 **TRA KHO HỌC TRƯỚC KHI TỰ MÒ** (rẻ hơn mò lại nhiều lần, và đây là chỗ 80% thời gian bị tiêu):
+> 📚 **TRA KHO HỌC TRƯỚC KHI TỰ MÒ.** Rẻ hơn mò lại nhiều lần, và đây là chỗ 80% thời gian bị tiêu.
 > - **`knowledge/setup_recipes/`** — đã có ai dựng state này chưa? Đọc `steps` (ĐÚNG THỨ TỰ) + `pitfalls` (thứ chỉ biết sau khi vấp) + `verification`. Dựng xong mà chưa verify thì coi như chưa có state.
-> - **`knowledge/environment/`** — trước khi kết luận "app lỗi": token TTL, login throttle/lockout, headless trắng, quirk toolchain (Backlog/Google Sheet) đều nằm ở đây. Fail vì mấy thứ này là `setup_failure`/`infra`, KHÔNG phải product bug.
+> - **`knowledge/environment/`** — đọc trước khi kết luận "app lỗi". Token TTL, login throttle và lockout, headless trắng, quirk toolchain đều nằm ở đây. Fail vì mấy thứ này là `setup_failure` hoặc `infra`, KHÔNG phải product bug.
 > - **`knowledge/locators/`** — element khó (menu ⋮, popup, cổng thanh toán): đọc `symptom` xem có khớp triệu chứng đang gặp không, rồi làm theo `technique`. Fail ngắt quãng thường là SAI KỸ THUẬT THAO TÁC, không phải flaky vô cớ.
 > - **`knowledge/system/`** type `data_model` — `test_implication` cho biết mô hình dữ liệu bắt test phải làm khác đi thế nào (vd sau mutation phải resolve theo TÊN, không dùng lại id).
 >
@@ -100,7 +105,7 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 
 Automation dễ **false PASS/false FAIL** khi chỉ tin DOM đã render. Với MỌI giá trị hiển thị đáng ngờ, phải soi xuống tầng dữ liệu TRƯỚC khi kết luận — không đoán.
 
-**Phải NHẠY BÉN khi execute**: áp đầy đủ phản xạ điều tra trong **`.agent/rules/qa_instincts.md`** (khoanh tầng lỗi FE/BE/setup/env/auth, đối chiếu source of truth = API response, signal catalog Nhóm 1–4) cho MỌI tín hiệu là lạ — field trống, số 0, "thành công" nhưng không đổi, count=0, data cũ, 200-mà-body-lỗi, latency cao... KHÔNG kết luận PASS/FAIL trước khi khoanh được tầng lỗi. Đây là bắt buộc, không phải tùy chọn.
+**Phải NHẠY BÉN khi execute.** Áp đầy đủ phản xạ điều tra trong **`.agent/rules/qa_instincts.md`**. Khoanh tầng lỗi FE, BE, setup, env hay auth. Đối chiếu source of truth là API response. Dùng signal catalog Nhóm 1 đến 4. Áp cho MỌI tín hiệu là lạ: field trống, số 0, "thành công" nhưng không đổi, count=0, data cũ, 200 mà body lỗi, latency cao. KHÔNG kết luận PASS hay FAIL trước khi khoanh được tầng lỗi. Đây là bắt buộc, không phải tùy chọn.
 
 ## Khi nào phải nghi ngờ (trigger)
 Bất kỳ field/ô/cột nào: **trống**, `-`, `N/A`, `0`, `--:--`, `undefined`/`null`/`[object Object]`, sai format, số/tổng trông lạ, danh sách rỗng, badge/trạng thái không khớp, ảnh/label không lên. "Trống" CÓ THỂ đúng (spec cho phép) HOẶC sai (BE không trả / FE không render) — BẮT BUỘC kiểm, KHÔNG mặc định đúng.
@@ -112,7 +117,7 @@ Bất kỳ field/ô/cột nào: **trống**, `-`, `N/A`, `0`, `--:--`, `undefine
    - BE **CÓ** trả giá trị nhưng UI trống/sai → **FE render/mapping bug** (product bug → log).
    - BE trả `null`/`""`/`[]`/thiếu key/`0` **trái spec** → **BE/data bug** (product bug → log).
    - BE trả rỗng và **spec cho phép rỗng** → **PASS đúng** (không phải bug), nhưng phải ghi rõ "đã xác nhận bằng response".
-4. **Chốt Actual bằng cả 2 tầng**: ghi giá trị UI quan sát + giá trị response tương ứng (redact token, mask PII) để phân loại đúng FE-bug vs BE-bug vs đúng-rỗng, không kết luận chỉ dựa DOM.
+4. **Chốt Actual bằng cả 2 tầng.** Ghi giá trị UI quan sát kèm giá trị response tương ứng, có redact token và mask PII. Nhờ vậy mới phân loại đúng FE-bug, BE-bug hay đúng-rỗng. Không kết luận chỉ dựa DOM.
 
 ## Responsive (khi requirement/design có đề cập)
 Chạy lại màn ở nhiều viewport (mobile 375 / tablet 768 / desktop ≥1440): kiểm reflow, ẩn-hiện đúng, không overflow ngang, không mất nội dung/nút, không đè chồng — qua `boundingBox()` / `getComputedStyle` + screenshot mỗi breakpoint. Kiểm **hiện diện & không tràn**, KHÔNG so toạ độ tuyệt đối.
@@ -157,9 +162,10 @@ bug-lọt lấy rác dữ liệu.
 
 **ASSERT HÌNH HỌC, KHÔNG CHỈ `toBeVisible()`.** `toBeVisible()` vẫn PASS khi element bị **đè lên** · nằm ngoài
 viewport · cao 2px · **chữ trắng trên nền trắng** · bị **truncate**. Dùng `inspectGeometry(page, sel)`
-(`scripts/utils/ui/geometry.js`) cho các control/giá trị quan trọng của case. Và với màn có nhập tên/địa chỉ/tên
-khoá học: chạy thêm một lượt bằng **text dài tiếng Việt** (`LONG_VI`) — tiếng Việt dài hơn ~20–30% và có dấu nên
-layout thiết kế cho text ngắn hay vỡ; đây là ổ bug testcase gen từ tài liệu gần như không bao giờ nghĩ tới.
+(`scripts/utils/ui/geometry.js`) cho các control/giá trị quan trọng của case. Với màn có nhập tên, địa chỉ hay tên
+khoá học thì chạy thêm một lượt bằng **text dài tiếng Việt** (`LONG_VI`). Tiếng Việt dài hơn khoảng 20% đến 30%
+và có dấu, nên layout thiết kế cho text ngắn hay vỡ. Đây là ổ bug mà testcase gen từ tài liệu gần như không bao
+giờ nghĩ tới.
 
 **MỌI LỆCH KHỎI KỊCH BẢN PHẢI GHI SỔ.** Khi bị chặn, xu hướng tự nhiên là *làm cho nó chạy* — chờ thêm, retry,
 đổi locator, refresh, đi đường khác. Mỗi lần như vậy có thể đang **lấp một bug**. Ghi bằng
@@ -168,9 +174,9 @@ verdict **`PASS_WITH_DEVIATION`** + liệt kê deviation trong Actual. Và: FAIL
 (race · cache · đổi ngày 00:00 …) thì là **`SUSPECT_REAL_BUG`**, KHÔNG được dán nhãn flaky rồi bỏ qua.
 
 **Đừng giả định bộ kiểm bắt được bug — CHỨNG MINH.** `npm run mutation:check` tiêm lỗi qua `page.route()`
-(không chạm dữ liệu UAT) rồi xem máy kiểm có đỏ. Đo lần đầu: `ui_conformance_check` **0/4** vì nó kiểm *kiểm kê
-field*, KHÔNG kiểm *giá trị* — nên kiểm kê field xanh **không** đủ để kết luận màn đúng; phải chạy thêm phép so
-giá trị (trục ②/③). Mutant sống sót = vùng mù có bằng chứng, ghi vào `reports/` để lượt sau bịt.
+(không chạm dữ liệu UAT) rồi xem máy kiểm có đỏ. Đo lần đầu: `ui_conformance_check` **0/4**, vì nó kiểm *kiểm kê
+field* chứ KHÔNG kiểm *giá trị*. Nên kiểm kê field xanh **không** đủ để kết luận màn đúng. Phải chạy thêm phép
+so giá trị, tức trục ② và ③. Mutant sống sót = vùng mù có bằng chứng, ghi vào `reports/` để lượt sau bịt.
 
 **TÍN HIỆU MÔI TRƯỜNG — assert, đừng chỉ dùng khi đã fail.** Trang/API đã mở rồi nên nghe thêm **không tốn**
 lượt tải nào: `const sig = attachEnvSignals(page)` (`scripts/utils/runtime/env_signals.js`) → cuối case đọc

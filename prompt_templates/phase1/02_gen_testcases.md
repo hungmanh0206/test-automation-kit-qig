@@ -14,7 +14,7 @@ Mục tiêu là coverage cao nhất có thể trong scope đã cung cấp, bao g
 
 > **Gate cứng. TUYỆT ĐỐI KHÔNG viết testcase nào trước khi hoàn tất bước này.** Canonical: `RULE_GLOBAL.md` §"Analysis & Ambiguity Gate"; workflow: `.agent/workflows/phase1_01_prepare_context.md`.
 
-1. **Đọc tài liệu THẬT KỸ, KHÔNG qua loa** — toàn bộ phần **trong scope** của requirement/BRD/Figma/Swagger/Backlog: mọi mục, **bảng, ghi chú, footnote, comment, phụ lục** liên quan (phần ngoài scope thì lướt — không mâu thuẫn với mục "Tiết kiệm token" bên dưới). Bóc hết acceptance criteria, business rule, validation, enum/giá trị, state & transition, edge, xử lý lỗi, phân quyền, biên. **Đối chiếu chéo** các nguồn; mâu thuẫn thì nêu ra, không tự chọn bừa. Phân biệt "tài liệu ghi thật" vs "tôi suy luận".
+1. **Đọc tài liệu THẬT KỸ, KHÔNG qua loa.** Đọc toàn bộ phần **trong scope** của requirement, BRD, Figma, Swagger, Backlog: mọi mục, kèm **bảng, ghi chú, footnote, comment, phụ lục** liên quan. Phần ngoài scope thì lướt, nên không mâu thuẫn với mục "Tiết kiệm token" bên dưới. Bóc hết acceptance criteria, business rule, validation, enum/giá trị, state & transition, edge, xử lý lỗi, phân quyền, biên. **Đối chiếu chéo** các nguồn; mâu thuẫn thì nêu ra, không tự chọn bừa. Phân biệt "tài liệu ghi thật" vs "tôi suy luận".
 2. **Gom MỌI điểm mờ/phân vân thành MỘT danh sách câu hỏi** `Q1, Q2…` ghi `<TASK_OUTPUT_DIR>/reports/phase1-clarifications.md` — mỗi câu bám **spec cụ thể** (giá trị/URL/element/điều kiện/enum/oracle), kèm **assumption mặc định đề xuất** + **scope bị chặn** nếu chưa trả lời. Phân loại **Blocking** (Critical/High) vs **Non-blocking** (Medium/Low, có default). Ghi cả hai loại để QA thấy hết điểm mờ.
 3. Còn câu **Blocking** → ghi `AMBIGUITY_GATE: PENDING` vào `task.md`, **DỪNG** chờ QA/BA trả lời (hoặc tick chấp nhận assumption). **KHÔNG tự đoán qua Blocking rồi gen.**
 4. Mọi Blocking đã RESOLVED → **phân tích lại + chỉnh** coverage map/scope theo câu trả lời → đặt `AMBIGUITY_GATE: RESOLVED` → mới bắt đầu gen. Câu Blocking không được trả lời → phần scope đó ghi "chờ làm rõ" ở Coverage Gaps, **KHÔNG gen** case cho nó.
@@ -61,8 +61,8 @@ Chỉ nhận đúng 9 giá trị trên (đúng chính tả, đúng hoa/thường
 Một case mang **đúng một** loại. Thấy hợp 2 loại nghĩa là case đang gộp 2 mục đích — **tách case**, đừng chọn bừa; case gộp cũng làm `Kết quả mong đợi` không khớp số bước và bị gate chặn ở chỗ khác.
 
 > **Vì sao có cột này:** trước đây kit **suy** loại từ tên nhóm chức năng. Đo trên 1.399 case đã publish:
-> **96% rơi về `Functional`**, `Integration` và `Performance` = **0** ⇒ lọc theo Case Type vô dụng,
-> và người đọc báo cáo dễ kết luận nhầm rằng bộ test không có mảng tích hợp. Ép trục "ở đâu" ra trục
+> **96% rơi về `Functional`**, còn `Integration` và `Performance` bằng **0**. Lọc theo Case Type thành vô dụng.
+> Người đọc báo cáo cũng dễ kết luận nhầm rằng bộ test không có mảng tích hợp. Ép trục "ở đâu" ra trục
 > "loại nào" thì sai là tất yếu — nên nay là cột **người khai**, không suy. `md_to_xlsx.js` cũng đã bỏ
 > fallback ngầm: giá trị không khớp 9 loại đã chốt thì **DỪNG**, không xuất với nhãn `Functional`.
 
@@ -118,7 +118,7 @@ Tag ghi ở **cột `Tag`**, KHÔNG ghi vào tiêu đề. Mỗi case: `[<Loại>
 | §9 Side-effect/Notification | `[SideEffect]` | §10 Cross-layer guard | `[Guard]` |
 | §11 Design compliance (Figma) | `[Design]` | | |
 
-**Vì sao bắt buộc:** `npm run dim:coverage -- --enforce` đếm case **theo tag** rồi chặn nếu thiếu chiều mà `requirements/dimension_manifest.json` khai là `required`. Không có tag thì gate rơi về chế độ GỢI Ý (suy từ văn bản) và **tự từ chối chặn** — vì đo trên bộ 530 case thật, suy diễn vừa thiếu recall (§5 đếm 0 dù có 17 case nhắc "api") vừa kém precision (§12 nhận cả case điều hướng, do "hiển thị" là động từ chuẩn của MỌI expected tiếng Việt). Tag là đường duy nhất để chiều coverage được **máy** gác, thay vì phụ thuộc việc bạn có đọc §3–§17 hay không.
+**Vì sao bắt buộc:** `npm run dim:coverage -- --enforce` đếm case **theo tag** rồi chặn nếu thiếu chiều mà `requirements/dimension_manifest.json` khai là `required`. Không có tag thì gate rơi về chế độ GỢI Ý, tức suy từ văn bản, và **tự từ chối chặn**. Lý do: đo trên bộ 530 case thật, suy diễn vừa thiếu recall vừa kém precision. Thiếu recall: §5 đếm 0 dù có 17 case nhắc "api". Kém precision: §12 nhận cả case điều hướng, vì "hiển thị" là động từ chuẩn của MỌI expected tiếng Việt. Tag là đường duy nhất để chiều coverage được **máy** gác, thay vì phụ thuộc việc bạn có đọc §3–§17 hay không.
 
 Case phủ nhiều chiều thì ghi nhiều tag (`[Negative][Validation][Security]`). Chiều không áp dụng cho task thì khai `"n/a"` **kèm lý do** trong `dimension_manifest.json` — bỏ chiều mà không nói vì sao sẽ bị cảnh báo.
 
@@ -138,7 +138,7 @@ Tag đã ra cột riêng, nên tiêu đề không còn chỗ dựa: đọc một
 ✓ Cập nhật Business Partner - Định danh CCCD đổi thì tạo BP MỚI, không update BP cũ
 ```
 
-> **Bản đầu của mục này đòi "đúng 3 đoạn" — sai, và sai theo kiểu tự mâu thuẫn** (sửa 24/08/2026): đoạn thứ nhất trong ví dụ cũ chính là `Cross-app`, tức cái **tiền tố hằng số** mà bảng ngay dưới đây CẤM. Bỏ tiền tố đi thì bộ 101 case còn 2 đoạn và lập tức "vi phạm" luật, dù tiêu đề tốt hơn trước. Không có gate nào ép số đoạn (chỉ ép: không tiền tố hằng số, không tag trong tiêu đề) — nên đây là luật-bằng-chữ, và chữ thì phải đúng.
+> **Bản đầu của mục này đòi "đúng 3 đoạn". Sai, và sai theo kiểu tự mâu thuẫn** (sửa 24/08/2026). Đoạn thứ nhất trong ví dụ cũ chính là `Cross-app`, tức cái **tiền tố hằng số** mà bảng ngay dưới đây CẤM. Bỏ tiền tố đi thì bộ 101 case còn 2 đoạn và lập tức "vi phạm" luật, dù tiêu đề tốt hơn trước. Không có gate nào ép số đoạn (chỉ ép: không tiền tố hằng số, không tag trong tiêu đề) — nên đây là luật-bằng-chữ, và chữ thì phải đúng.
 
 **Bốn lỗi bị chặn — mỗi lỗi đều từng xảy ra thật:**
 
@@ -167,9 +167,9 @@ Tag chứng minh case **có mặt** ở chiều đó; nó **không** chứng min
 `[Perf]` | **ngưỡng có đơn vị** (`ms`/`s`/`p95`) | không phán được đạt/không đạt |
 `[Validation]` | **thông báo lỗi trích nguyên văn** hoặc **giá trị biên** | — |
 
-Chiều khác (`[UI]` `[API]` `[E2E]` `[Export]` `[SideEffect]` `[Design]` `[Impact]`) **cố ý không khai luật** — chưa phát biểu được "bằng chứng tối thiểu" một cách chính xác thì thà không gác, còn hơn gác bằng luật mơ hồ rồi báo oan.
+Chiều khác (`[UI]` `[API]` `[E2E]` `[Export]` `[SideEffect]` `[Design]` `[Impact]`) **cố ý không khai luật**. Chưa phát biểu được "bằng chứng tối thiểu" một cách chính xác thì thà không gác. Gác bằng luật mơ hồ rồi báo oan còn tệ hơn.
 
-**Vì sao có mục này:** `OPS_PAY_TC_175` liệt kê form Add Transaction **có** field Recipient Bank Account nhưng không phát biểu ràng buộc nào ⇒ case **XANH** trong khi bug `CSDL-28420` (modal cho chọn pháp nhân khác order ⇒ HubSpot ghi sai pháp nhân) vẫn sống. Tag `[Display]` một mình không cứu được ca đó; **bằng chứng tối thiểu** thì cứu được.
+**Vì sao có mục này:** `OPS_PAY_TC_175` liệt kê form Add Transaction **có** field Recipient Bank Account nhưng không phát biểu ràng buộc nào, nên case **XANH** trong khi bug `CSDL-28420` vẫn sống. Bug đó là modal cho chọn pháp nhân khác order, làm HubSpot ghi sai pháp nhân. Tag `[Display]` một mình không cứu được ca đó; **bằng chứng tối thiểu** thì cứu được.
 
 > Hiện là **CẢNH BÁO**, chưa chặn. Sẽ bật `--strict` sau khi đo trên bộ gen mới đầu tiên (<10% case thiếu). Đo trên bộ 530 hiện tại: **0 cảnh báo** — vì bộ đó chưa có tag chiều nào, nên luật này không báo oan lấy một ca.
 
@@ -184,9 +184,9 @@ Case mang tag `[Calc]` `[BEData]` `[Display]` `[Security]` `[Guard]` là case c�
 
 Nhận `BR-` (`knowledge/domain/`) và `SM-`/`PM-`/`SS-`/`DM-` (`knowledge/system/`). **Không thêm cột** — tag nằm trong chính cột `Trường hợp kiểm thử`.
 
-**Máy kiểm:** `npm run domain:trace-back` — (a) case mang tag cần-oracle mà **không trỏ id** nào → cảnh báo *"expected lấy từ đâu?"*; (b) trỏ id **không tồn tại** trong knowledge → *"oracle ma"*; (c) `-- --apply` **tự append `covered_by`** cho rule, hết phụ thuộc người nhớ điền.
+**Máy kiểm:** `npm run domain:trace-back`, ba nhánh. (a) Case mang tag cần-oracle mà **không trỏ id** nào thì cảnh báo *"expected lấy từ đâu?"*. (b) Trỏ id **không tồn tại** trong knowledge thì báo *"oracle ma"*. (c) `-- --apply` **tự append `covered_by`** cho rule, hết phụ thuộc người nhớ điền.
 
-**Vì sao bắt buộc:** đo 14/08/2026 trên bộ 530 case thật — **0/530** case nhắc bất kỳ id rule nào, dù §12 đã yêu cầu "ghi id rule vào Kết quả mong đợi/Assumptions" từ trước. Trong đó **47 case có expected mang giá trị số/tiền/%** (chắc chắn có oracle nghiệp vụ) và **0 case** trỏ rule. Chiều `rule → TC` đã có máy kiểm (`--trace`); chiều `TC → rule` thì trước đây **không gì kiểm**, nên một case có expected do agent tự suy sẽ đi qua im lặng — đúng lớp lỗi "quên/đọc lướt" mà cả kit đang chống ở chỗ khác.
+**Vì sao bắt buộc:** đo 14/08/2026 trên bộ 530 case thật — **0/530** case nhắc bất kỳ id rule nào, dù §12 đã yêu cầu "ghi id rule vào Kết quả mong đợi/Assumptions" từ trước. Trong đó **47 case có expected mang giá trị số/tiền/%** (chắc chắn có oracle nghiệp vụ) và **0 case** trỏ rule. Chiều `rule → TC` đã có máy kiểm (`--trace`). Chiều `TC → rule` thì trước đây **không gì kiểm**, nên một case có expected do agent tự suy sẽ đi qua im lặng. Đúng lớp lỗi quên và đọc lướt mà cả kit đang chống ở chỗ khác.
 
 > Chưa gắn tag thì `domain:trace-back` **nói rõ là chưa gác được** chứ không báo "OK" — im lặng ở đó chính là lỗi nó sinh ra để chống.
 
@@ -251,7 +251,7 @@ Liệt kê đầy đủ, cụ thể:
 - Không để trống hoặc ghi chung chung "Hệ thống hoạt động bình thường"
 - Mỗi cell `Tiền điều kiện` phải mở đầu bằng **tag cách dựng** `[<method>]`, method ∈ `api` | `factory` | `test_hook` | `ui` | `pre_existing` | `manual`; nhiều precondition thì tách bằng `<br>`, mỗi mảnh một tag.
   Định dạng: `[<method>] <mô tả trạng thái cụ thể>` — vd `[api] Order đã ở trạng thái TO_PURCHASE`, `[pre_existing] Lớp CFA1-01 có ≥2 activity`, `[manual] Thẻ NCB sandbox đã bật OTP`.
-  **Vì sao tag nằm TRONG cell chứ không ở bảng riêng**: precondition giờ chỉ là một TRƯỜNG của testcase (không còn thực thể/issue riêng), và Google Sheet — nơi Phase 2 tải testcase về — cũng chỉ là bản phản chiếu của Excel, KHÔNG có field nào riêng chứa "cách dựng". Thứ gì phải sống sót round-trip publish→download thì phải nằm trong chính text precondition.
+  **Vì sao tag nằm TRONG cell chứ không ở bảng riêng**: precondition giờ chỉ là một TRƯỜNG của testcase, không còn là thực thể hay issue riêng. Google Sheet, nơi Phase 2 tải testcase về, cũng chỉ là bản phản chiếu của Excel và KHÔNG có field riêng chứa "cách dựng". Thứ gì phải sống sót round-trip publish→download thì phải nằm trong chính text precondition.
   Cùng một trạng thái thì phải cùng một method và **mô tả giống hệt** (đây là thứ thay cho dedup của mã cũ; `design:gate` cảnh báo khi một trạng thái có 2 cách dựng).
   KHÔNG có method `db`: dựng state bằng DB bị cấm (RULE_GLOBAL §UAT non-destructive + DB read-only).
 
@@ -313,10 +313,10 @@ Quy tắc cho từng loại dữ liệu:
 - **Mỗi bước một dòng kết quả riêng**, đánh số KHỚP với cột `Các bước thực hiện` (bước 1 → kết quả 1, bước 2 → kết quả 2...). KHÔNG gộp nhiều bước vào một mục (cấm kiểu `1-2.`, `1-3.`). Bước chọn/nhập/navigate cũng phải có kết quả tương ứng (ghi phản hồi tức thời có thật: field nhận giá trị, tùy chọn được chọn, trang điều hướng đúng...), KHÔNG bịa assertion ngoài tài liệu.
 - **Mỗi ý một dòng**: nếu một bước có nhiều điểm cần kiểm chứng thì tách mỗi ý thành một dòng con `- <ý>`. TUYỆT ĐỐI không nhồi nhiều ý vào một dòng bằng dấu `;`.
 - **Xuống dòng bằng `<br>`**: mọi dòng (kết quả từng bước và các ý con) ngăn cách bằng `<br>` để Excel hiển thị nhiều dòng, không viết liền một dòng dài.
-- **HỢP ĐỒNG bước ↔ kết quả (đây là chỗ từng làm mất 44% nội dung khi publish):** khối kết quả của bước N = **dòng đánh số N + MỌI dòng con `- …` đứng sau nó** cho tới dòng đánh số kế tiếp. Khối đó là **một đơn vị**: khi publish lên TMS nó đi trọn vào `expectedResult` của đúng bước N.
+- **HỢP ĐỒNG bước ↔ kết quả.** Đây là chỗ từng làm mất 44% nội dung khi publish. Khối kết quả của bước N gồm **dòng đánh số N + MỌI dòng con `- …` đứng sau nó**, cho tới dòng đánh số kế tiếp. Khối đó là **một đơn vị**: khi publish lên TMS nó đi trọn vào `expectedResult` của đúng bước N.
   - Vì thế ràng buộc đúng là **số dòng ĐÁNH SỐ của cột kết quả = số bước**; số dòng con thì tuỳ ý. KHÔNG phải "số dòng bằng số bước".
   - Consumer **KHÔNG được** ghép `steps[i] ↔ expected[i]` theo chỉ số phẳng: mảng sau `splitNumbered` có dòng con mang `n = null`, ghép kiểu đó vừa lệch bước vừa cắt mất phần dôi. Dùng `groupNumbered()` của `scripts/lib/testcase`.
-  - Đo thật trên bộ CSDL-26878 (101 case) trước khi vá: **300/682 dòng kết quả (44,0%) bị vứt ở 83/101 case**, và bước sau nhận nhầm kết quả của bước trước — ví dụ bước "mở hóa đơn bộ B" lại mang con số của bộ A.
+  - Đo thật trên bộ CSDL-26878 (101 case) trước khi vá: **300/682 dòng kết quả (44,0%) bị vứt ở 83/101 case**. Bước sau còn nhận nhầm kết quả của bước trước: bước "mở hóa đơn bộ B" lại mang con số của bộ A.
 - Mô tả CHÍNH XÁC: text nào hiển thị, URL chuyển đến đâu, element nào thay đổi
 - Bao gồm cả response HTTP nếu là API test
 - Với UI, nêu rõ field state: enabled/disabled/readonly/visible/hidden, selected value, validation message, toast, row count, pagination, modal state.
@@ -324,7 +324,7 @@ Quy tắc cho từng loại dữ liệu:
 - Với E2E, nêu rõ side-effect ở hệ thống khác: app/site liên quan, integration, notification hoặc data count nếu nằm trong scope.
 - Expected không được chỉ ghi "thành công", "báo lỗi", "hiển thị đúng".
 
-✅ ĐÚNG (mỗi bước MỘT KHỐI: dòng đánh số + các ý con của nó, ngăn bằng `<br>`) — ví dụ dưới có **2 bước** nên cột kết quả có đúng **2 dòng đánh số**, 3 dòng con thuộc về bước 2:
+✅ ĐÚNG. Mỗi bước là MỘT KHỐI: dòng đánh số kèm các ý con của nó, ngăn bằng `<br>`. Ví dụ dưới có **2 bước** nên cột kết quả có đúng **2 dòng đánh số**, và 3 dòng con thuộc về bước 2:
 ```
 1. Trường "Allow split via VNPay?" là Checkbox (không phải dropdown), Optional<br>2. Sau khi tick, hiển thị:<br>- Section "Set up payment via VNPay"<br>- Nút "Add installment" enabled<br>- Ràng buộc: tổng các đợt phải bằng số tiền order
 ```
@@ -363,9 +363,9 @@ Chỉ dùng 5 giá trị: `Critical`, `High`, `Medium`, `Low`, `Lowest`. KHÔNG 
 
 Không còn cột `Severity` trong bộ testcase (bỏ 21/08/2026) — nên **không** còn bước "chấm Severity trước rồi dịch ra Priority". Chấm `Ưu tiên` trực tiếp bằng bảng 5 mức ở §7, tự hỏi: *case này fail thì hậu quả tới đâu, và có đường vòng không?*
 
-> **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase — chấm lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc. Bug thật vẫn có Severity: chấm lúc log bug, cây quyết định nằm ở [`phase2/08_log_bug_backlog.md`](../phase2/08_log_bug_backlog.md).
+> **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase. Chấm lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc. Bug thật vẫn có Severity: chấm lúc log bug, cây quyết định nằm ở [`phase2/08_log_bug_backlog.md`](../phase2/08_log_bug_backlog.md).
 >
-> Việc duy nhất cột đó còn gánh trong kit là **risk band** (mở rộng 5 trục hay 1 trục). `bandOf()` lấy `max(risk, priority)`; sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột làm đổi band 0 case** ⇒ `Ưu tiên` một mình đủ quyết định độ sâu. Đừng điền lại cột này "cho chắc": thêm cột lạ sẽ bị gate chặn.
+> Việc duy nhất cột đó còn gánh trong kit là **risk band**, tức mở rộng 5 trục hay 1 trục. `bandOf()` lấy `max(risk, priority)`. Sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột làm đổi band 0 case**. Vậy `Ưu tiên` một mình đủ quyết định độ sâu. Đừng điền lại cột này "cho chắc": thêm cột lạ sẽ bị gate chặn.
 
 ## 9. Cách dựng tiền điều kiện — BẮT BUỘC (tag `[<method>]` trong chính cell)
 
@@ -449,7 +449,7 @@ Khai `n/a` cho một chiều mà thực tế nó áp dụng = **bỏ chiều có
 | §10 Guard | `knowledge/system/` có `state_machine` |
 | §15 Security | `knowledge/system/` có `permission_matrix` |
 
-Đây là **sự thật kiểm được**, không phải suy diễn: có Figma trong scope thì chiều design áp dụng, hết bàn. Chiều ngược lại KHÔNG đúng — artifact vắng **không** chứng minh chiều đó không áp dụng (có thể chỉ là chưa ai kéo tài liệu về), nên gate im lặng ở ca đó và trách nhiệm vẫn là của bạn.
+Đây là **sự thật kiểm được**, không phải suy diễn: có Figma trong scope thì chiều design áp dụng, hết bàn. Chiều ngược lại KHÔNG đúng. Artifact vắng **không** chứng minh chiều đó không áp dụng, vì có thể chỉ là chưa ai kéo tài liệu về. Nên gate im lặng ở ca đó, và trách nhiệm vẫn là của bạn.
 
 | § | Chiều | Tag | Mở khi | File |
 |---|---|---|---|---|
