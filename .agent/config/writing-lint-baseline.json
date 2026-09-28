@@ -84,12 +84,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/05_manual_quick.md": {
-      "slash": 2.9,
+      "slash": 2.8,
       "longSent": 0,
-      "sym": 14.4,
-      "emDash": 17.3,
+      "sym": 11.2,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 15.1,
+      "meanSent": 12.8,
       "emojiCount": 0
     },
     "prompt_templates/phase1/06_cross_module.md": {
@@ -102,21 +102,21 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/03_field_validation.md": {
-      "slash": 15.2,
+      "slash": 15.4,
       "longSent": 0,
-      "sym": 15.2,
-      "emDash": 15.2,
+      "sym": 15.4,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 22,
+      "meanSent": 16.3,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/04_ui.md": {
-      "slash": 24.9,
+      "slash": 7.9,
       "longSent": 0,
-      "sym": 16.6,
-      "emDash": 20.7,
+      "sym": 15.7,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 17.2,
+      "meanSent": 12.7,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/05_api.md": {
@@ -156,12 +156,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/09_side_effect.md": {
-      "slash": 21.9,
+      "slash": 22.1,
       "longSent": 0,
-      "sym": 7.3,
-      "emDash": 14.6,
+      "sym": 7.4,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 17.1,
+      "meanSent": 15.1,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/10_guard.md": {
@@ -183,12 +183,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/12_display.md": {
-      "slash": 6.3,
+      "slash": 4.5,
       "longSent": 0,
-      "sym": 9.9,
-      "emDash": 11.8,
+      "sym": 9,
+      "emDash": 9,
       "vague": 0.9,
-      "meanSent": 19.4,
+      "meanSent": 18.1,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/13_business_logic.md": {
@@ -228,12 +228,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/17_change_impact.md": {
-      "slash": 23.4,
+      "slash": 20.1,
       "longSent": 0,
-      "sym": 13,
-      "emDash": 15.6,
+      "sym": 7.5,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 16.7,
+      "meanSent": 15.9,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/19_ordering.md": {
@@ -273,12 +273,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/23_db_persistence.md": {
-      "slash": 2.6,
+      "slash": 2,
       "longSent": 0,
       "sym": 18.9,
-      "emDash": 11.7,
+      "emDash": 9.8,
       "vague": 0,
-      "meanSent": 17.3,
+      "meanSent": 16.9,
       "emojiCount": 6
     },
     "prompt_templates/phase2/04_execute_fe_playwright.md": {
@@ -294,27 +294,27 @@
       "slash": 13.2,
       "longSent": 0,
       "sym": 9.4,
-      "emDash": 12.2,
+      "emDash": 10.1,
       "vague": 2.8,
-      "meanSent": 15.4,
+      "meanSent": 15.3,
       "emojiCount": 5
     },
     "prompt_templates/phase2/06_triage_review.md": {
-      "slash": 15.6,
+      "slash": 14.7,
       "longSent": 0,
       "sym": 0,
-      "emDash": 15.6,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 16,
+      "meanSent": 13.6,
       "emojiCount": 0
     },
     "prompt_templates/phase2/07_triage_flaky.md": {
       "slash": 0,
       "longSent": 0,
       "sym": 0,
-      "emDash": 17.5,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 19,
+      "meanSent": 15.3,
       "emojiCount": 0
     },
     "prompt_templates/phase2/08_log_bug_backlog.md": {
@@ -330,18 +330,18 @@
       "slash": 2.9,
       "longSent": 0,
       "sym": 2.9,
-      "emDash": 11.5,
+      "emDash": 0,
       "vague": 0,
-      "meanSent": 15.9,
+      "meanSent": 15.2,
       "emojiCount": 0
     },
     "prompt_templates/run_phase2_template.md": {
       "slash": 0,
       "longSent": 0,
-      "sym": 10.1,
-      "emDash": 20.1,
+      "sym": 0,
+      "emDash": 2.5,
       "vague": 0,
-      "meanSent": 17.3,
+      "meanSent": 17.2,
       "emojiCount": 0
     },
     "prompt_templates/run_phase_re-run_template.md": {
@@ -354,12 +354,12 @@
       "emojiCount": 1
     },
     ".agent/workflows/phase1_00_scope_planning.md": {
-      "slash": 14.7,
+      "slash": 14.8,
       "longSent": 0,
-      "sym": 17.2,
-      "emDash": 12.3,
+      "sym": 12.3,
+      "emDash": 0,
       "vague": 4.9,
-      "meanSent": 16.3,
+      "meanSent": 15,
       "emojiCount": 0
     },
     ".agent/workflows/phase1_01_prepare_context.md": {
@@ -408,12 +408,12 @@
       "emojiCount": 0
     },
     ".agent/workflows/phase2_01_prepare_execution.md": {
-      "slash": 13.7,
+      "slash": 11.2,
       "longSent": 0,
-      "sym": 4.6,
-      "emDash": 20.6,
+      "sym": 4.5,
+      "emDash": 2.2,
       "vague": 0,
-      "meanSent": 19,
+      "meanSent": 16.5,
       "emojiCount": 0
     },
     ".agent/workflows/phase2_02_generate_or_update_automation.md": {
@@ -438,9 +438,9 @@
       "slash": 8.9,
       "longSent": 0,
       "sym": 8.9,
-      "emDash": 12.6,
+      "emDash": 8.9,
       "vague": 0.7,
-      "meanSent": 16.3,
+      "meanSent": 15.9,
       "emojiCount": 1
     },
     ".agent/workflows/phase2_execute.md": {

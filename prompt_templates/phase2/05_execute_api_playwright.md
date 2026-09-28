@@ -1,6 +1,7 @@
 # Prompt Phase 2 - Thực thi Playwright API
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule non-negotiables ở `CLAUDE.md`, đã auto-load. Digest ở `.agent/rules/core_rules.md`.
+> Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần**, vì mỗi gạch đầu dòng của digest đã ghi sẵn `§`. Đừng nạp cả file.
 
 > ⚡ **Kỷ luật execute (RULE_GLOBAL §"Execution Discipline"):**
 >
@@ -10,11 +11,11 @@
 > - Báo cáo gộp, ít vòng.
 
 > 🛑 **CHECKLIST 6 KHỐI — xác nhận TRƯỚC KHI execute** (forcing function; `output_gate` sẽ **CHẶN** nếu output vi phạm — đọc & làm, đừng lướt):
-> 1. **Nguồn & scope** — `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (tải mới nhất từ Google Sheet qua Drive MCP) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
-> 2. **Oracle độc lập** — mỗi case có "Kết quả mong đợi" cụ thể (status code/field/giá trị theo API contract). Oracle rỗng hoặc app==app (tautology) → DỪNG, lấy giá trị spec. *(gate: oracle-rỗng = CHẶN · tautology = cảnh báo)*
-> 3. **Batch & drive thật** — gom NHIỀU case/ÍT script chạy song song; dùng hết fixture/deal/account; case negative tự tạo input (payload lỗi, ID không tồn tại). KHÔNG TODO/SKIP khi chưa thử.
-> 4. **Phân tầng kết quả** — mỗi case → PASS/FAIL/SKIP/BLOCKED_SETUP/SKIP_SETUP. FAIL phải PHÂN TẦNG: product/API bug vs `setup_failure` vs infra/flaky. "Không phán được" KHÔNG thành PASS. *(gate: FAIL thiếu tầng-lỗi = CHẶN)*
-> 5. **Loại flaky** — FAIL rerun 2–3 lần loại flaky/setup TRƯỚC khi kết luận product/API bug / log Backlog.
+> 1. **Nguồn & scope.** `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (tải mới nhất từ Google Sheet qua Drive MCP) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
+> 2. **Oracle độc lập.** Mỗi case có "Kết quả mong đợi" cụ thể (status code/field/giá trị theo API contract). Oracle rỗng hoặc app==app (tautology) → DỪNG, lấy giá trị spec. *(gate: oracle-rỗng = CHẶN · tautology = cảnh báo)*
+> 3. **Batch & drive thật.** Gom NHIỀU case/ÍT script chạy song song; dùng hết fixture/deal/account; case negative tự tạo input (payload lỗi, ID không tồn tại). KHÔNG TODO/SKIP khi chưa thử.
+> 4. **Phân tầng kết quả.** Mỗi case → PASS/FAIL/SKIP/BLOCKED_SETUP/SKIP_SETUP. FAIL phải PHÂN TẦNG: product/API bug vs `setup_failure` vs infra/flaky. "Không phán được" KHÔNG thành PASS. *(gate: FAIL thiếu tầng-lỗi = CHẶN)*
+> 5. **Loại flaky.** FAIL rerun 2–3 lần loại flaky/setup TRƯỚC khi kết luận product/API bug / log Backlog.
 > 6. **Evidence** — mọi case (PASS+FAIL)+step có ảnh/video đúng màn (response/assertion hiển thị), highlight, mask PII; case phức tạp có video. CẤM `.json/.md/.log`. *(gate: thiếu evidence/step-status = CHẶN)*
 
 > 📋 **Attestation (G6) — sau execute, ghi vào `testcase-status.json`:** field `attestation` = `{ "oracleSource": "<sheet|spec|api-contract>", "executed": <số case đã chạy>, "allEvidenceAttached": true, "failuresClassified": true, "rerunDone": true }`. Gate ĐỐI CHIẾU tự-khai với sự thật (executed thật, evidence, tầng-lỗi) — lệch = cảnh báo. Khai ĐÚNG, đừng tick suông.

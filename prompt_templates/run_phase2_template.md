@@ -1,12 +1,12 @@
 # Prompt chạy Phase 2 - Thực thi automation
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule non-negotiables ở `CLAUDE.md`, đã auto-load. Digest ở `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
 
 Dùng prompt này sau khi output testcase của Phase 1 đã được review. Đây là template dùng chung, phải thay các placeholder trước khi chạy.
 
 ## Bản đồ prompt Phase 2 — file này là ĐIỂM VÀO DUY NHẤT
 
-Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Không nạp sẵn cả 5 file** — mở đúng executor đang dùng (chạy UI thì không cần nạp prompt API và ngược lại).
+Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Không nạp sẵn cả 5 file.** Mở đúng executor đang dùng: chạy UI thì không cần nạp prompt API, và ngược lại.
 
 | Prompt | Bắt buộc? | Mở khi nào |
 |---|---|---|
@@ -17,9 +17,9 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 | [`phase1/dimensions/*.md`](phase1/dimensions/) | **mở đúng chiều đang assert** | **Bước 3–5, khi viết assertion** — 15 chương định nghĩa **assert cái gì mới đủ** cho từng chiều coverage. Phase 2 dùng nhiều nhất: [`12_display`](phase1/dimensions/12_display.md) (tên cột exact · format · số cột + thứ tự · field bắt buộc · **field dẫn xuất phải KHOÁ theo nguồn**) · [`14_be_conformance`](phase1/dimensions/14_be_conformance.md) (phân biệt `null`/rỗng/thiếu key/`0`, mapping BE→UI) · [`15_security`](phase1/dimensions/15_security.md) (IDOR/mass-assignment/injection) · [`10_guard`](phase1/dimensions/10_guard.md) (403/409, chuyển trạng thái bất hợp pháp) · [`08_resilience`](phase1/dimensions/08_resilience.md) (đồng thời, callback trùng, idempotency) · [`16_perf`](phase1/dimensions/16_perf.md). Nằm dưới `phase1/` vì **chủ sở hữu** là prompt gen, nhưng nội dung là **oracle dùng cho cả hai phase** |
 | [`phase2/08_log_bug_backlog.md`](phase2/08_log_bug_backlog.md) | **BẮT BUỘC** khi log bug | **Bước cuối** — chỉ mở sau khi FAIL đã qua rerun và xác nhận là product/API bug |
 
-> Trước đây file này **không trỏ tới hai prompt execute** ở trên, nên ai chỉ đọc `run_phase2` là execute mà thiếu toàn bộ kỷ luật FE/API (47KB). Đó là lý do có bảng này — xem `CHANGELOG` 2026-08-13.
+> Trước đây file này **không trỏ tới hai prompt execute** ở trên, nên ai chỉ đọc `run_phase2` là execute mà thiếu toàn bộ kỷ luật FE/API (47KB). Đó là lý do có bảng này. Xem `CHANGELOG` 2026-08-13.
 
-**Chi tiết từng bước** (định dạng execution summary, Shared Change Log, Automation Promotion Status, checklist Backlog gate): [`.agent/workflows/phase2_execute.md`](../.agent/workflows/phase2_execute.md) — file tổng quan, bên trong liệt kê đủ 4 step `phase2_01…04`. Mở khi cần đúng khuôn mẫu output của một bước; thứ tự bước và lệnh gate thì lấy ở ngay file này.
+**Chi tiết từng bước** (định dạng execution summary, Shared Change Log, Automation Promotion Status, checklist Backlog gate): [`.agent/workflows/phase2_execute.md`](../.agent/workflows/phase2_execute.md). Đó là file tổng quan, bên trong liệt kê đủ 4 step `phase2_01` đến `phase2_04`. Mở khi cần đúng khuôn mẫu output của một bước; thứ tự bước và lệnh gate thì lấy ở ngay file này.
 
 ## Gate bắt buộc chạy trong Phase 2
 
@@ -44,15 +44,15 @@ Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
 | **Cuối task — BÁO CÁO ĐÃ HỌC GÌ** | `npm run learn:report -- --task <TASK_KEY> --write` | Sinh `reports/learning-summary.md`: **đã học** (record thuộc task, gom theo store) + **CHƯA học** (bug không map được module nên bị risk_score loại · rule chưa TC nào dùng · bug chưa có root cause · store còn rỗng). Không có bước này thì không ai biết vòng học có chạy hay bỏ sót gì. |
 | **Cuối task/sprint — sau khi ghi record mới** | `KNOWLEDGE_BACKUP_DIR=<dir NGOÀI repo> npm run knowledge:backup` (rồi `-- --verify <bundle>`) | Sao lưu phần knowledge **KHÔNG nạp lại được** (`domain/ system/ decisions/ setup_recipes/ environment/ locators/ explorations/`). `knowledge/**` bị gitignore nên không remote nào giữ hộ — mất máy là mất công sức xác nhận của BA/dev qua nhiều tháng. `bugs/`+`historical_execution/`+`metrics/` cố ý KHÔNG sao lưu (nạp lại được từ Backlog/Google Sheet). `self-review` cảnh báo khi bundle cũ ≥7 ngày |
 
-> 🗣️ **BẮT BUỘC — kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Sinh ra `learning-summary.md` rồi im lặng
+> 🗣️ **BẮT BUỘC: kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Sinh ra `learning-summary.md` rồi im lặng
 > là chưa xong: user phải đi mở file mới biết. Cuối lượt chạy, nói thẳng **ba phần**:
 > 1. **Đã học gì.** Record mới hoặc cập nhật trong `knowledge/**`: bug, domain rule, bản đồ hệ thống,
 >    decision, setup recipe, quirk env, kỹ thuật UI. Kèm cả **memory vừa lưu hoặc sửa, và lý do lưu**.
-> 2. **Đã sửa gì** — thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
-> 3. **Còn thiếu gì** — lỗ hổng **đo được**: bug thiếu `tc_id` (bị `risk_score` loại khỏi bảng) · rule có
->    `covered_by` rỗng · bug chưa có `root_cause_ref` · store còn rỗng · câu hỏi đang chờ BA.
+> 2. **Đã sửa gì.** Thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
+> 3. **Còn thiếu gì.** Nêu lỗ hổng **đo được**: bug thiếu `tc_id` nên bị `risk_score` loại khỏi bảng, rule
+>    có `covered_by` rỗng, bug chưa có `root_cause_ref`, store còn rỗng, câu hỏi đang chờ BA.
 >
-> Nêu cả phần "còn thiếu" dù nó làm báo cáo trông kém đẹp — **đó mới là phần user dùng để quyết việc tiếp theo**.
+> Nêu cả phần "còn thiếu" dù nó làm báo cáo trông kém đẹp. **Đó mới là phần user dùng để quyết việc tiếp theo.**
 > File chỉ là chỗ LƯU, không phải cách THÔNG BÁO.
 
 ## Prompt mẫu để chạy

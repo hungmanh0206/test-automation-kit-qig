@@ -1,14 +1,15 @@
 # Chiều coverage: Display/Field Conformance Coverage
 
-> Tag bắt buộc trong tiêu đề case: **`[Display]`** · Mở khi: **mọi màn có bảng/danh sách/field — BẮT BUỘC nếu scope có UI**
+> Tag bắt buộc trong tiêu đề case: **`[Display]`**.
+> Mở khi **mọi màn có bảng, danh sách hay field**. BẮT BUỘC nếu scope có UI.
 > Tách khỏi [`02_gen_testcases.md`](../02_gen_testcases.md) 14/08/2026. Nội dung giữ NGUYÊN VĂN.
-> Chiều khác tham chiếu trong bài thì mở file tương ứng ở cùng thư mục — danh sách đủ ở bảng điều hướng của `02`.
+> Chiều khác tham chiếu trong bài thì mở file tương ứng ở cùng thư mục. Danh sách đủ ở bảng điều hướng của `02`.
 
 ## 12. Display/Field Conformance Coverage (đối chiếu tài liệu) — BẮT BUỘC cho mọi màn có bảng/danh sách/field
 
 Đây là dimension **TÁCH RIÊNG** khỏi chức năng (mục 4) và design-token (mục 11). Nó kiểm **hình thức hiển thị đúng như đặc tả**, để KHÔNG lọt lỗi nhỏ về tên cột, format, thứ tự, thiếu field. Đây cũng là nơi thường bị miss nhất khi test bằng automation.
 
-**Nguyên tắc nguồn-sự-thật (QUAN TRỌNG NHẤT — chống oracle tautological):**
+**Nguyên tắc nguồn-sự-thật, QUAN TRỌNG NHẤT, để chống oracle tautological:**
 - Giá trị `Kết quả mong đợi` của MỌI case hiển thị phải **TRÍCH NGUYÊN VĂN từ FS/Figma/tài liệu**, TUYỆT ĐỐI KHÔNG lấy từ giao diện build đang chạy. Recon build chỉ để biết *cách locate element*, KHÔNG để lấy *giá trị đúng*. Nếu expected suy từ build → testcase thành "build == build" → vĩnh viễn không bắt được sai lệch so với spec.
 - Mỗi bảng "Name / Data type / Description" (hoặc bảng field/cột) trong FS là **checklist bắt buộc**: sinh case cho từng dòng, không bỏ sót field nào.
 - **Tra `knowledge/domain/` TRƯỚC khi đi tìm lại tài liệu**: business rule đã được BA/Dev xác nhận ở task trước được lưu ở đó (kèm `source` + `examples {input, expected}` cụ thể). Dùng làm oracle và **ghi `id` rule** (vd `BR-PAYMENT-004`) vào `Kết quả mong đợi` hoặc `Assumptions` để truy nguyên. TC nào lấy rule làm oracle thì thêm TC ID vào `covered_by` của rule (skill `domain_recorder`) — nhờ đó BA đổi rule là biết ngay TC nào phải cập nhật. Rule **mới được xác nhận trong task này** cũng phải ghi vào `knowledge/domain/`. Kiểm: `npm run domain:check`.

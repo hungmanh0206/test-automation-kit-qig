@@ -1,12 +1,13 @@
 # Prompt chạy Phase 1 - Sinh testcase
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule non-negotiables ở `CLAUDE.md`, đã auto-load. Digest ở `.agent/rules/core_rules.md`.
+> Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần**, vì mỗi gạch đầu dòng của digest đã ghi sẵn `§`. Đừng nạp cả file.
 
 Dùng prompt này để collect context và sinh/cập nhật testcase. Đây là template dùng chung, phải thay các placeholder trước khi chạy. Không execute automation trong Phase 1.
 
 ## Bản đồ prompt Phase 1 — file này là ĐIỂM VÀO DUY NHẤT
 
-Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Không nạp sẵn cả 7 file** — mở đúng cái đang cần, đúng lúc cần (riêng `02_gen_testcases.md` đã 77KB, dù đã tách 3,7k phần định dạng output sang `02b`).
+Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Không nạp sẵn cả 7 file.** Mở đúng cái đang cần, đúng lúc cần (riêng `02_gen_testcases.md` đã 77KB, dù đã tách 3,7k phần định dạng output sang `02b`).
 
 | Prompt | Bắt buộc? | Mở khi nào |
 |---|---|---|
@@ -52,12 +53,12 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`*
 > 1. **Đã học gì.** Record mới hoặc cập nhật trong `knowledge/**`, đặc biệt `domain/` và `system/` sinh từ
 >    câu trả lời BA. Mỗi câu Blocking đã RESOLVED phải để lại record, và `self_review` kiểm từng câu.
 >    Kèm cả **memory vừa lưu hoặc sửa, và lý do lưu**.
-> 2. **Đã sửa gì** — thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
+> 2. **Đã sửa gì.** Thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
 > 3. **Còn thiếu gì.** Nêu lỗ hổng **đo được**: câu hỏi BA còn `PENDING` kèm phần scope bị chặn theo, rule
 >    có `covered_by` rỗng, requirement chưa có TC nào (xem `traceability-matrix.md`), màn chưa khai trong
 >    `ui_catalog.json`.
 >
-> Nêu cả phần "còn thiếu" dù nó làm báo cáo trông kém đẹp — **đó mới là phần user dùng để quyết việc tiếp theo**.
+> Nêu cả phần "còn thiếu" dù nó làm báo cáo trông kém đẹp. **Đó mới là phần user dùng để quyết việc tiếp theo.**
 > File chỉ là chỗ LƯU, không phải cách THÔNG BÁO.
 
 ## Prompt mẫu để chạy

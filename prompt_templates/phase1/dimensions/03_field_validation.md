@@ -2,7 +2,7 @@
 
 > Tag bắt buộc trong tiêu đề case: **`[Validation]`** · Mở khi: **scope có form/field nhập liệu (gần như luôn có)**
 > Tách khỏi [`02_gen_testcases.md`](../02_gen_testcases.md) 14/08/2026. Nội dung giữ NGUYÊN VĂN.
-> Chiều khác tham chiếu trong bài thì mở file tương ứng ở cùng thư mục — danh sách đủ ở bảng điều hướng của `02`.
+> Chiều khác tham chiếu trong bài thì mở file tương ứng ở cùng thư mục. Danh sách đủ ở bảng điều hướng của `02`.
 
 ## 3. Field-Level Validation (QUAN TRỌNG)
 Mỗi input field phải có TC validation riêng:

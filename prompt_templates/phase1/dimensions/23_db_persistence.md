@@ -8,7 +8,7 @@
 
 UI và API **không** đủ để nói bản ghi đã được lưu đúng. Response của API thường **echo lại request**, không
 phản ánh hàng đã ghi; còn FE thì format lại giá trị trước khi hiển thị. Bảy lớp lỗi dưới đây **UI xem như
-đúng** — chỉ đọc bản ghi mới thấy:
+đúng**. Chỉ đọc bản ghi mới thấy:
 
 | Lỗi | UI thấy gì |
 |---|---|
@@ -44,7 +44,7 @@ So sánh phải dùng matcher theo NGHĨA: `money()` · `instant()` · `text()` 
 ## Bốn ràng buộc — vi phạm là tự tạo bug ma
 
 **① DB là oracle PHỤ.** Nguồn sự thật vẫn là FSD/`knowledge/domain/BR-*`. Lấy số từ DB rồi bảo "UI phải
-giống DB" là **tautology** — cấm. Giá trị lớn nhất của kiểm song song là **khoanh tầng**:
+giống DB" là **tautology**, nên cấm. Giá trị lớn nhất của kiểm song song là **khoanh tầng**:
 
 | UI | DB | Kết luận | `failureLayer` |
 |---|---|---|---|
@@ -65,7 +65,7 @@ giống DB" là **tautology** — cấm. Giá trị lớn nhất của kiểm so
   `status` (6/6 enum — đủ), `sync_status` (2/2 — đủ), `service_fee_type` (6 enum — **đủ cho màn Service Fee**;
   3 enum `DANG_KY_CBE`/`MUA_TAI_KHOAN_CERT`/`MUA_TAI_KHOAN_BECKER` chỉ tồn tại ở đơn **ADD_ON** nên phải neo
   ở màn add-on). Luật neo: **hàm** (1 enum → 1 nhãn) **và đơn ánh** (2 enum không dùng chung nhãn). Khối
-  `_coverage` **bắt buộc** nói rõ đủ/thiếu — bẫy đã dính: neo từ 50 hàng đầu rồi tưởng xong, trong khi DB có
+  `_coverage` **bắt buộc** nói rõ đủ hay thiếu. Bẫy đã dính: neo từ 50 hàng đầu rồi tưởng xong, trong khi DB có
   9 enum mà 50 hàng chỉ thấy 6.
 - `notDisplayed` — cột **không phải field**: `order_type` quyết định route/màn, khoá màn trong `byScreen`
   chính là giá trị của nó. Để chung với `unanchored` thì cứ tưởng còn việc phải làm.

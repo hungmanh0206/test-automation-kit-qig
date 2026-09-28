@@ -35,10 +35,10 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 4. Với từng fail nghi product bug, kiểm tra gate:
    - **TRA `knowledge/decisions/` TRƯỚC**: `node scripts/qa/decisions.js --check "<triệu chứng>" --module <Module>`.
      Nếu khớp một quyết định `false_positive`/`by_design` ⇒ **KHÔNG log lại** (lần trước dev đã kết luận và
-     Backlog đã Rejected — log lại là bounce lần hai). Muốn log thì phải có **bằng chứng MỚI khác lần trước**
+     Backlog đã Rejected, log lại là bounce lần hai). Muốn log thì phải có **bằng chứng MỚI khác lần trước**
      (spec đổi / dev đã fix rồi hồi quy / điều kiện khác) và **ghi rõ điểm khác đó** trong bug. Không khớp
      ≠ được bỏ qua điều tra. Sau khi triage xong, quyết định mới (bug bị Rejected, case PASS-kèm-note,
-     chốt cách test) phải ghi lại — skill `decision_recorder`, kiểm `npm run decisions:check`.
+     chốt cách test) phải ghi lại bằng skill `decision_recorder`, kiểm bằng `npm run decisions:check`.
    - Đã execute thật.
    - Đã rerun đủ để loại flaky/setup/data/prompt issue.
    - **ĐÃ LOẠI `script_error` — bắt buộc, đây là nguồn log-bug-sai số 1.** Rerun **KHÔNG** cứu được lỗi
@@ -57,15 +57,15 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
      đang nghi sai, nên lấy app làm expected là tautology.
      Chưa có bản đồ thì **hỏi BA hoặc Dev xác nhận trước**, ghi vào `knowledge/system/` bằng skill
      `system_mapper` rồi mới log. Hoặc log kèm ghi rõ "chờ BA xác nhận thiết kế".
-     Ngược lại, hành vi nằm trong `transitions`/`allow` mà mình tưởng sai thì **không phải bug** — là mình hiểu sai spec.
+     Ngược lại, hành vi nằm trong `transitions`/`allow` mà mình tưởng sai thì **không phải bug**. Là mình hiểu sai spec.
    - Actual result có evidence rõ.
-4b. **Gate chất lượng output — THỰC THI, tự chạy (không phải kiểm bằng mắt).**
+4b. **Gate chất lượng output là THỰC THI và tự chạy, không phải kiểm bằng mắt.**
    - Test Execution: `npm run gate:output -- --status <testcase-status.json>` **tự chạy `scripts/qa/output_gate.js`** → CHẶN khi comment run-on/dính debug `key=value`, step thiếu status/evidence, evidence không phải ảnh/video, hoặc case phức tạp thiếu video (thêm `--fix` để tự dọn comment).
    - **Gate CHẶN → TỰ SỬA trong session rồi chạy lại tới khi PASS**; KHÔNG ghi kèm vi phạm, KHÔNG chờ user nhắc. Chỉ `--qa-approved` khi QA có lý do rõ (được log).
    - **Bắt buộc tạo bug và ghi kết quả execute QUA script kit**: `bug_reporter.js` cho bug, `merge_execution_status.js` cho status.
      KHÔNG sửa tay cột Result trên Sheets rồi coi như đã ghi. Sửa tay là bỏ qua gate, dẫn tới sai 4 phần, sai evidence, sai comment.
    - 🔀 **Đồng bộ Google Sheet**: `node scripts/convert_excel/merge_execution_status.js <xlsx đã tải> <testcase-status.json> --task <TASK_KEY>` chạy **cùng gate này** trước khi ghi — merge Pass/Fail/Pending vào cột `Result` của file local, rồi agent `update_file` qua Drive MCP đè lên Sheet. Evidence (ảnh/video) vẫn ở local `test-results/artifacts/`, KHÔNG đính lên Sheet (khác Google Sheet trước đây neo evidence từng bước) — xem `scripts/integrations/backlog/README.md` (mục cảnh báo Google Sheet) và plan migrate công cụ cũ→Sheet.
-4a. **Đối soát mở rộng 5 trục:** `TASK_ENV=... npm run expansion:plan -- --audit --enforce` — CHẶN nếu có finding
+4a. **Đối soát mở rộng 5 trục:** `TASK_ENV=... npm run expansion:plan -- --audit --enforce`. Lệnh này CHẶN nếu có finding
    ghi PASS/FAIL mà không có `oracle_ref` (nhất quán KHÔNG phải bằng chứng của đúng). `merge_execution_status.js` cũng chặn ở
    `plan_guard`, nhưng chạy ở đây thì biết sớm hơn một bước.
 4a2. **Báo cáo rò (leak):** `TASK_ENV=... npm run leak:report` — bug do người ngoài tìm ra thì phải chỉ được máy nào

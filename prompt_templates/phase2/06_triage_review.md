@@ -1,6 +1,7 @@
 # Prompt Phase 2 - Phân tích và rà soát kết quả
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule non-negotiables ở `CLAUDE.md`, đã auto-load. Digest ở `.agent/rules/core_rules.md`.
+> Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần**, vì mỗi gạch đầu dòng của digest đã ghi sẵn `§`. Đừng nạp cả file.
 
 Dùng prompt này khi cần review nhanh automation code sau khi generate/heal trong Phase 2. Không dùng như một bước bắt buộc nếu suite đã pass ổn và không có thay đổi shared layer.
 
