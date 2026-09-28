@@ -19,7 +19,9 @@ Chỉ cần đọc file này; nó chỉ ra mở file nào ở bước nào. **Kh
 | [`phase1/05_manual_quick.md`](phase1/05_manual_quick.md) | nhánh thay thế | Requirement đã RÕ và chỉ cần bộ TC **chạy tay** nhanh — KHÔNG nhắm automation. Requirement còn mơ hồ hoặc cần TC cho automation thì **đừng** dùng nhánh này |
 | [`phase1/06_cross_module.md`](phase1/06_cross_module.md) | khi cần | Scope chạm nhiều module/hệ thống, cần ma trận tổ hợp (skill `combinatorial_matrix` cũng gọi file này) |
 
-**Chi tiết từng bước** (khuôn mẫu output, Coverage Map, Precondition Execution Matrix, capability-request): [`.agent/workflows/phase1_generate_tc.md`](../.agent/workflows/phase1_generate_tc.md) — file tổng quan, bên trong liệt kê đủ step `phase1_01…04`; riêng [`phase1_00_scope_planning.md`](../.agent/workflows/phase1_00_scope_planning.md) dùng khi cần khoanh scope + chấm risk trước. Thứ tự bước và lệnh gate thì lấy ở ngay file này.
+**Chi tiết từng bước** nằm ở [`.agent/workflows/phase1_generate_tc.md`](../.agent/workflows/phase1_generate_tc.md), gồm khuôn mẫu output, Coverage Map, Precondition Execution Matrix và capability-request. Đó là file tổng quan, bên trong liệt kê đủ step `phase1_01` đến `phase1_04`.
+
+Riêng [`phase1_00_scope_planning.md`](../.agent/workflows/phase1_00_scope_planning.md) dùng khi cần khoanh scope và chấm risk trước. Thứ tự bước cùng lệnh gate thì lấy ở ngay file này.
 
 ## Gate bắt buộc chạy trong Phase 1
 
@@ -46,13 +48,13 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`*
 | Khi bộ case có chiều **hiển thị/UI** | `TASK_ENV=... npm run ui:conformance` | Đối chiếu **field thật trên build** với danh mục màn (`ui_catalog.json`) — lộ field bịa, field thiếu, nhãn lệch. Đây là thứ duy nhất kiểm "case hiển thị có khớp màn thật" trước khi ai đó execute |
 | **Cuối phase — BÁO CÁO ĐÃ HỌC GÌ** | `npm run learn:report -- --task <TASK_KEY> --write` | Sinh `reports/learning-summary.md` (đã học + CHƯA học). Phase 1 học ít record hơn Phase 2 nhưng **đúng loại quý nhất**: câu trả lời của BA sau Ambiguity Gate là business truth vừa được xác nhận |
 
-> 🗣️ **BẮT BUỘC — kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Cuối phase nói thẳng **ba phần**:
-> 1. **Đã học gì** — record mới/cập nhật trong `knowledge/**`, đặc biệt `domain/` + `system/` sinh từ câu trả
->    lời BA (mỗi câu Blocking đã RESOLVED phải để lại record — `self_review` kiểm từng câu), **kèm cả memory
->    vừa lưu/sửa và lý do lưu**.
+> 🗣️ **BẮT BUỘC: kể lại NGAY TRONG HỘI THOẠI, đừng chỉ ghi file.** Cuối phase nói thẳng **ba phần**:
+> 1. **Đã học gì.** Record mới hoặc cập nhật trong `knowledge/**`, đặc biệt `domain/` và `system/` sinh từ
+>    câu trả lời BA. Mỗi câu Blocking đã RESOLVED phải để lại record, và `self_review` kiểm từng câu.
+>    Kèm cả **memory vừa lưu hoặc sửa, và lý do lưu**.
 > 2. **Đã sửa gì** — thay đổi thật, có số đo. Không "đã cải thiện", "đã tối ưu".
-> 3. **Còn thiếu gì** — lỗ hổng **đo được**: câu hỏi BA còn `PENDING` (và phần scope bị chặn theo) · rule có
->    `covered_by` rỗng · requirement chưa có TC nào (xem `traceability-matrix.md`) · màn chưa khai trong
+> 3. **Còn thiếu gì.** Nêu lỗ hổng **đo được**: câu hỏi BA còn `PENDING` kèm phần scope bị chặn theo, rule
+>    có `covered_by` rỗng, requirement chưa có TC nào (xem `traceability-matrix.md`), màn chưa khai trong
 >    `ui_catalog.json`.
 >
 > Nêu cả phần "còn thiếu" dù nó làm báo cáo trông kém đẹp — **đó mới là phần user dùng để quyết việc tiếp theo**.

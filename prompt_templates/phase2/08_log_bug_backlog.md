@@ -1,9 +1,10 @@
 # Prompt Phase 2 - Ghi bug Backlog
 
-> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
+> Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule non-negotiables ở `CLAUDE.md`, đã auto-load. Digest ở `.agent/rules/core_rules.md`.
+> Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần**, vì mỗi gạch đầu dòng của digest đã ghi sẵn `§`. Đừng nạp cả file.
 >
-> Tên file (`08_log_bug_backlog.md`) giữ nguyên sau khi tổ chức chuyển hệ bug-tracking cũ → Backlog (22/09/2026) để không phá
-> mọi chỗ trỏ tới file này; nội dung bên dưới đã cập nhật cho Backlog.
+> Tên file `08_log_bug_backlog.md` giữ nguyên sau khi tổ chức chuyển hệ bug-tracking cũ sang Backlog
+> (22/09/2026), để không phá mọi chỗ trỏ tới file này. Nội dung bên dưới đã cập nhật cho Backlog.
 
 Dùng prompt này như một bước con của Phase 2, chỉ chạy sau khi đã execute testcase, auto-heal và sinh local execution summary PASS/FAIL/SKIP. Không chạy prompt này như một phase độc lập.
 
@@ -254,9 +255,9 @@ Output bắt buộc:
 
 ## Severity của bug — chấm bằng CÂY QUYẾT ĐỊNH
 
-Severity = **hậu quả THỰC TẾ của lỗi vừa tìm được**. Khác `Priority` (= thứ tự sửa). Hai trục tách nhau là bình thường:
-lỗi cosmetic ở màn thanh toán trước ngày demo = `Trivial` + ưu tiên `High`; mất dữ liệu ở module sprint này
-không ai dùng = `Blocker` + ưu tiên `Medium`.
+Severity là **hậu quả THỰC TẾ của lỗi vừa tìm được**, khác `Priority` vốn là thứ tự sửa. Hai trục tách nhau
+là bình thường. Lỗi cosmetic ở màn thanh toán trước ngày demo là `Trivial` nhưng ưu tiên `High`. Mất dữ liệu
+ở module sprint này không ai dùng là `Blocker` nhưng ưu tiên `Medium`.
 
 **Chấm bằng CÂY QUYẾT ĐỊNH — đi từ trên xuống, dừng ở câu ĐÚNG đầu tiên. Không chấm theo cảm giác.**
 
@@ -287,10 +288,11 @@ không ai dùng = `Blocker` + ưu tiên `Medium`.
 | Section thiếu trường `Net Price` | Minor | thiếu thông tin hiển thị, không sai dữ liệu |
 | Lệch spacing giữa checkbox và các box còn lại | Trivial | thuần thẩm mỹ |
 
-> ⚠️ **Chỗ này CHƯA có máy kiểm.** Câu "có máy kiểm ⇒ CHẶN" ở bản cũ là của cột `Severity` trong bộ
-> testcase — cột đó đã bỏ, nên gate đó không còn áp vào đây. Severity của bug hiện chỉ do người chấm, dùng
-> đúng thang `Blocker|Critical|Major|Minor|Trivial` và **không** ghi giá trị này vào `Priority`.
-> ⚠️ **Backlog hiện CHƯA có field Severity** → giá trị này chỉ sống trong testcase + report, **KHÔNG** đẩy lên Backlog. `Priority` của bug vẫn lấy từ cột §7 (map xuống 3 mức Backlog: High/Normal/Low).
+> ⚠️ **Chỗ này CHƯA có máy kiểm.** Câu "có máy kiểm nên CHẶN" ở bản cũ là của cột `Severity` trong bộ
+> testcase. Cột đó đã bỏ, nên gate đó không còn áp vào đây.
+> Severity của bug hiện chỉ do người chấm. Dùng đúng thang `Blocker|Critical|Major|Minor|Trivial`, và
+> **không** ghi giá trị này vào `Priority`.
+> ⚠️ **Backlog hiện CHƯA có field Severity.** Giá trị này chỉ sống trong testcase và report, **KHÔNG** đẩy lên Backlog. `Priority` của bug vẫn lấy từ cột §7, map xuống 3 mức của Backlog là High, Normal, Low.
 
 > **Chuyển về đây 21/08/2026** từ `phase1/02_gen_testcases.md` §8. Trước đó Severity là một cột của bộ
 > testcase — sai chỗ: lúc viết case thì lỗi chưa xảy ra, chấm hậu quả là đoán. Chấm ở đây, khi đã có lỗi thật.

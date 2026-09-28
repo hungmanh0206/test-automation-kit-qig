@@ -237,12 +237,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/19_ordering.md": {
-      "slash": 3.7,
-      "longSent": 7.4,
-      "sym": 20.4,
-      "emDash": 11.2,
-      "vague": 1.9,
-      "meanSent": 22.4,
+      "slash": 0,
+      "longSent": 0,
+      "sym": 16.6,
+      "emDash": 7.4,
+      "vague": 1.8,
+      "meanSent": 17.5,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/20_bug_history.md": {
@@ -318,21 +318,21 @@
       "emojiCount": 0
     },
     "prompt_templates/phase2/08_log_bug_backlog.md": {
-      "slash": 7.4,
-      "longSent": 5.6,
-      "sym": 16.7,
-      "emDash": 13,
+      "slash": 7.3,
+      "longSent": 0,
+      "sym": 11,
+      "emDash": 9.2,
       "vague": 0,
-      "meanSent": 17.9,
+      "meanSent": 15.6,
       "emojiCount": 1
     },
     "prompt_templates/run_phase1_template.md": {
-      "slash": 8.6,
-      "longSent": 8.6,
-      "sym": 11.4,
-      "emDash": 25.7,
+      "slash": 2.8,
+      "longSent": 0,
+      "sym": 2.8,
+      "emDash": 11.3,
       "vague": 0,
-      "meanSent": 19.4,
+      "meanSent": 16.1,
       "emojiCount": 0
     },
     "prompt_templates/run_phase2_template.md": {
@@ -435,12 +435,12 @@
       "emojiCount": 0
     },
     ".agent/workflows/phase2_04_report_and_backlog_gate.md": {
-      "slash": 10.6,
-      "longSent": 3,
-      "sym": 14.4,
-      "emDash": 15.9,
-      "vague": 0.8,
-      "meanSent": 17.6,
+      "slash": 9.7,
+      "longSent": 0.7,
+      "sym": 9.7,
+      "emDash": 13.4,
+      "vague": 0.7,
+      "meanSent": 16.6,
       "emojiCount": 1
     },
     ".agent/workflows/phase2_execute.md": {

@@ -1,12 +1,15 @@
 # Chiều coverage: Ordering / Sequence Coverage
 
-> Tag bắt buộc trong tiêu đề case: **`[Ordering]`** · Mở khi: **luồng có ≥2 bước mà người dùng có thể làm SAI THỨ TỰ, quay lui, hoặc làm xen kẽ**
-> Thêm 20/08/2026 sau khi đo: toàn kit chỉ **1 file** nhắc "thứ tự thao tác" — yếu nhất trong nhóm thời gian/môi trường.
+> Tag bắt buộc trong tiêu đề case: **`[Ordering]`**.
+> Mở khi **luồng có ≥2 bước mà người dùng có thể làm SAI THỨ TỰ, quay lui, hoặc làm xen kẽ**.
+>
+> Thêm 20/08/2026 sau khi đo: toàn kit chỉ **1 file** nhắc "thứ tự thao tác". Đây là chiều yếu nhất trong
+> nhóm thời gian và môi trường.
 
 ## 19. Ordering / Sequence Coverage
 
 Kit vốn mạnh ở **"làm gì"** (field nào, giá trị nào, trạng thái nào) nhưng yếu ở **"làm theo thứ tự nào"**.
-Bug loại này không lộ ra khi chạy đúng kịch bản một mạch — nó chỉ lộ khi người thật bấm lộn xộn: điền B trước
+Bug loại này không lộ ra khi chạy đúng kịch bản một mạch. Nó chỉ lộ khi người thật bấm lộn xộn: điền B trước
 A, quay lại sửa bước trước, mở hai tab làm xen kẽ, bấm Back rồi Submit lại.
 
 Khác các chiều đã có:
@@ -15,9 +18,11 @@ Khác các chiều đã có:
 - **§13 Business Logic** lo *kết quả tính đúng* — ở đây lo *kết quả có phụ thuộc thứ tự nhập hay không*.
 
 ### Bước 1 — Liệt kê các bước có RÀNG BUỘC thứ tự
-Với mỗi form/luồng nhiều bước, ghi ra cặp `(A phải trước B)` và **vì sao**. Ví dụ thật trong repo này:
-Add Transaction phải chọn **Transaction Type → Payment Type → Payment Method** vì dropdown sau phụ thuộc
-dropdown trước; và ở màn Add Lesson, **Learning Method + ngày + giờ phải có TRƯỚC** thì ô Teacher mới bật.
+Với mỗi form hay luồng nhiều bước, ghi ra cặp `(A phải trước B)` và **vì sao**. Hai ví dụ thật trong repo này:
+
+- Add Transaction phải chọn **Transaction Type → Payment Type → Payment Method**, vì dropdown sau phụ thuộc
+  dropdown trước.
+- Màn Add Lesson cần **Learning Method, ngày và giờ có TRƯỚC** thì ô Teacher mới bật.
 
 Không có ràng buộc nào ⇒ ghi `N/A: các bước độc lập` vào Coverage Gaps, **đừng sinh case bừa**.
 
@@ -28,8 +33,8 @@ Mỗi dạng dưới đây là một câu hỏi phải có case trả lời (ch�
    KHÔNG được cho qua rồi hỏng ở bước cuối.
 2. **Quay lui rồi sửa.** Hoàn tất tới bước N, quay lại đổi bước 1 → giá trị phụ thuộc phải **reset hoặc
    tính lại**, không được giữ giá trị cũ đã hết hiệu lực. *(Chính là lớp bug `VNPAY_TC_49`.)*
-3. **Bỏ dở giữa chừng rồi quay lại.** Rời màn / F5 / Back giữa luồng → state phải sạch hoặc khôi phục đúng,
-   không được nửa vời (đã trừ số dư mà chưa tạo bản ghi).
+3. **Bỏ dở giữa chừng rồi quay lại.** Rời màn, F5 hay Back giữa luồng thì state phải sạch hoặc khôi phục
+   đúng. Không được nửa vời, kiểu đã trừ số dư mà chưa tạo bản ghi.
 4. **Xen kẽ hai bối cảnh.** Mở 2 tab cùng luồng, thao tác đan xen → tab sau không được ghi đè kết quả tab trước
    một cách âm thầm.
 5. **Thứ tự có làm đổi kết quả không.** Nhập cùng bộ dữ liệu theo 2 thứ tự khác nhau → kết quả cuối phải

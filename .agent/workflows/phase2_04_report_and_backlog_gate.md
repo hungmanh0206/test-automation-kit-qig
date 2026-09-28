@@ -8,7 +8,12 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 
 ## Workflow
 
-0. **SELF-REVIEW (G9 — lượt 2 TRƯỚC finalize, advisory):** `npm run self-review -- --task <TASK_KEY>` → checklist GỘP (preflight + design + row-quality + execution output/attestation) trong 1 báo cáo. Còn CHẶN thì SỬA trước; **đừng viết report / log bug khi self-review còn đỏ**. Ở BƯỚC FINALIZE dùng bản CÓ RĂNG: `npm run self-review:enforce -- --task <TASK_KEY>` → **exit 1** khi còn CHẶN. Vì sao cần: bản advisory luôn exit 0, còn `output_gate` ở publish KHÔNG kiểm mở rộng 5 trục một chữ nào ⇒ execute bám đúng chữ trong case rồi đẩy "toàn PASS" thì không gì cản (đã xảy ra thật). Khối "5 trục" xoá bằng `npm run expansion:plan` — vài giây, chỉ đọc Excel.
+0. **SELF-REVIEW (G9), lượt 2 TRƯỚC finalize, bản advisory.** Chạy `npm run self-review -- --task <TASK_KEY>` để có checklist GỘP trong 1 báo cáo: preflight, design, row-quality, execution output và attestation.
+   Còn CHẶN thì SỬA trước. **Đừng viết report hay log bug khi self-review còn đỏ.**
+
+   Ở BƯỚC FINALIZE thì dùng bản CÓ RĂNG: `npm run self-review:enforce -- --task <TASK_KEY>`, nó **exit 1** khi còn CHẶN.
+
+   Vì sao cần bản có răng: bản advisory luôn exit 0, còn `output_gate` ở publish KHÔNG kiểm mở rộng 5 trục một chữ nào. Nên execute bám đúng chữ trong case rồi đẩy "toàn PASS" thì không gì cản, và điều đó đã xảy ra thật. Khối "5 trục" xoá bằng `npm run expansion:plan`, chạy vài giây và chỉ đọc Excel.
 1. Ghi execution summary:
    - Tổng case.
    - PASS/FAIL/SKIP.
@@ -38,18 +43,20 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
    - Đã rerun đủ để loại flaky/setup/data/prompt issue.
    - **ĐÃ LOẠI `script_error` — bắt buộc, đây là nguồn log-bug-sai số 1.** Rerun **KHÔNG** cứu được lỗi
      bắt sai element: sai locator thì fail **lặp lại ổn định**, trông y hệt product bug. Trước khi log,
-     phải chứng minh **đã thao tác đúng đối tượng**: (a) evidence highlight **đúng element** đã tương tác,
-     **và** (b) xác minh lại bằng **một đường định vị độc lập** (locator khác/`safe_target.one()`) **hoặc**
-     thao tác tay trên UI. Không chứng minh được → `failureLayer: script_error`
-     (`.agent/config/verdict_taxonomy.json`, `loggableAsBug: false`) → **KHÔNG log Backlog**, sửa script rồi chạy lại.
+     phải chứng minh **đã thao tác đúng đối tượng**, bằng cả hai thứ sau. (a) Evidence highlight **đúng
+     element** đã tương tác. (b) Xác minh lại bằng **một đường định vị độc lập**, tức locator khác hoặc
+     `safe_target.one()`, hoặc thao tác tay trên UI.
+     Không chứng minh được thì ghi `failureLayer: script_error`
+     (`.agent/config/verdict_taxonomy.json`, `loggableAsBug: false`), **KHÔNG log Backlog**, sửa script rồi chạy lại.
      Dấu hiệu nghi script_error: giá trị đọc được thuộc section khác · bấm xong màn không đổi như mong đợi ·
      lỗi biến mất khi làm tay · code dùng `.first()`/`force:true`/`mouse.click(x,y)`/regex `body.innerText`.
    - Expected result đã xác nhận đúng.
    - **Bug dạng "hệ thống CHO PHÉP làm X" phải trích bản đồ `knowledge/system/`** (`SM-*` state machine /
      `PM-*` ma trận quyền) làm nguồn expected. Loại bug này (huỷ đơn đã thanh toán, xoá giao dịch đã xác nhận,
-     role thấp gọi được API role cao) **không thể** chứng minh bằng cách bấm app — app cho làm chính là cái
-     đang nghi sai, lấy app làm expected là tautology. Chưa có bản đồ ⇒ **hỏi BA/Dev xác nhận trước**, ghi
-     `knowledge/system/` (skill `system_mapper`) rồi mới log; hoặc log kèm ghi rõ "chờ BA xác nhận thiết kế".
+     role thấp gọi được API role cao) **không thể** chứng minh bằng cách bấm app. App cho làm chính là cái
+     đang nghi sai, nên lấy app làm expected là tautology.
+     Chưa có bản đồ thì **hỏi BA hoặc Dev xác nhận trước**, ghi vào `knowledge/system/` bằng skill
+     `system_mapper` rồi mới log. Hoặc log kèm ghi rõ "chờ BA xác nhận thiết kế".
      Ngược lại, hành vi nằm trong `transitions`/`allow` mà mình tưởng sai thì **không phải bug** — là mình hiểu sai spec.
    - Actual result có evidence rõ.
 4b. **Gate chất lượng output — THỰC THI, tự chạy (không phải kiểm bằng mắt).**
