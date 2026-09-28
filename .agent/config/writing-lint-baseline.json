@@ -30,12 +30,12 @@
       "emojiCount": 9
     },
     "RULE_GLOBAL.md": {
-      "slash": 0.3,
-      "longSent": 2.4,
-      "sym": 9.8,
-      "emDash": 7.6,
-      "vague": 2,
-      "meanSent": 18.9,
+      "slash": 0,
+      "longSent": 0.5,
+      "sym": 6.9,
+      "emDash": 5.8,
+      "vague": 1.9,
+      "meanSent": 17.5,
       "emojiCount": 1
     },
     "prompt_templates/phase1/01_setup_engine_fetch_docs.md": {

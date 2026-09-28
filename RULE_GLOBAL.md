@@ -232,7 +232,7 @@ việc khác, và không làm.
 - Nếu là thay đổi chung, phải có xác nhận rõ của user hoặc ghi blocker chờ xác nhận.
 - Khi đã sửa shared file, execution summary phải ghi: file đã sửa, lý do, story có thể bị ảnh hưởng, scope regression đã chạy hoặc chưa chạy.
 
-- **Gate mới mà CHẶN theo quy ước MỚI thì quy ước đó phải vào file này (canonical) trong CÙNG thay đổi.** Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule**, và ai chỉ đọc `CLAUDE.md → core_rules` sẽ không bao giờ biết luật đó. Đã xảy ra thật: `dim:coverage --enforce`, `output_gate` và `domain:trace-back` chặn hoặc cảnh báo theo quy ước **tag chiều**. Trong khi đó từ "chiều" xuất hiện **0 lần** ở `RULE_GLOBAL.md`, `core_rules.md`, README, USER_GUIDE và QUICKSTART suốt 3 ngày.
+- **Gate mới mà CHẶN theo quy ước MỚI thì quy ước đó phải vào file này (canonical) trong CÙNG thay đổi.** Nếu không, người dùng bị chặn bởi một luật **không tồn tại trong nguồn rule**. Ai chỉ đọc `CLAUDE.md → core_rules` sẽ không bao giờ biết luật đó. Đã xảy ra thật với `dim:coverage --enforce`, `output_gate` và `domain:trace-back`. Cả ba chặn hoặc cảnh báo theo quy ước **tag chiều**, trong khi từ "chiều" xuất hiện **0 lần** ở `RULE_GLOBAL.md`, `core_rules.md`, README, USER_GUIDE và QUICKSTART suốt 3 ngày.
   - Đây là luật cho NGƯỜI, cố ý **không** làm thành máy kiểm. Bản máy ("mọi npm script gate phải được canonical nhắc TÊN") đo ra **19/24 script sẽ báo oan**. Ví dụ `secret:scan` chặn theo §Security: quy tắc *có* nhưng tên lệnh *không*, và như vậy mới đúng. Biến canonical thành danh mục lệnh còn tệ hơn.
   - Kiểm bằng mắt khi review: gate mới chặn cái gì → cái đó có nằm ở §nào trong file này không?
 
@@ -392,49 +392,88 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     Retry 3 lần có 1 lần xanh là bị dán nhãn flaky rồi bỏ qua. Phải nêu cơ chế cụ thể (animation chưa xong, race
     giữa 2 request, cache CDN, đổi ngày lúc 00:00) **và cách chứng minh**. Không nêu được thì giữ
     `SUSPECT_REAL_BUG`, vẫn loggable. Metric phải theo dõi: **% flaky đã xác định được nguyên nhân** — tỷ lệ thấp nghĩa là đang chôn bug.
-13. **ĐỦ ASSERTION: mỗi điều kiện trong "Kết quả mong đợi" phải có một verification kèm bằng chứng.** Một
-    expected như *"tổng 540.000đ, đúng format có dấu phân cách, số dư giảm tương ứng"* chứa **3** assertion.
+13. **ĐỦ ASSERTION.** Mỗi điều kiện trong "Kết quả mong đợi" phải có một verification kèm bằng chứng.
+    Ví dụ expected *"tổng 540.000đ, đúng format có dấu phân cách, số dư giảm tương ứng"* chứa **3** assertion.
     Execute kiểm 1 rồi ghi PASS thì 2 cái còn lại lọt êm. Đây là cơ chế lọt **cơ học** phổ biến nhất.
 
-    Đo trên một bộ 530 case thật: trung bình **2.30** dòng expected mỗi case, **31%** case có ≥3 assertion,
-    **9%** nhồi nhiều điều kiện trong MỘT dòng, và **68%** case ghi **ít verification hơn số assertion**
-    (135 case lệch ≥2).
+
+    Đo trên một bộ 530 case thật:
+
+    - trung bình **2.30** dòng expected mỗi case
+    - **31%** case có ≥3 assertion
+    - **9%** nhồi nhiều điều kiện trong MỘT dòng
+    - **68%** case ghi **ít verification hơn số assertion**, trong đó 135 case lệch ≥2
+
 
     Luật: Phase 1 tách assertion **nguyên tử**, mỗi điều kiện 1 dòng, cấm nhồi "A, và B, đồng thời C".
     Phase 2 thì mỗi dòng expected phải có bằng chứng tương ứng. `self_review` **cảnh báo** theo tỉ lệ này khi bản ghi chỉ có `steps[]` (*proxy*).
     **Muốn CHẶN thì phải có dữ liệu đúng chiều**: khai `assertions: [{text, verified, evidence, note?}]` trong bản
     ghi execution (`scripts/lib/testcase/assertions.js` · `deriveAssertions(tc)` sinh khung từ chính expected).
-    Khi field đó CÓ, gate **chặn** thật: `verified=true` mà thiếu `evidence` ⇒ chặn · chưa `verified` mà không nêu
-    lý do ⇒ chặn. Bản ghi cũ không có field này thì **không bị phạt** (chỉ báo tỉ lệ áp dụng). Đo trên bộ 530:
-    **1217 assertion nguyên tử**, trong đó **191 dòng (16%) còn nhồi nhiều điều kiện** — `deriveAssertions` chỉ
-    **đánh dấu** `compound`, KHÔNG tự tách theo dấu phẩy (tự tách sẽ cắt sai đúng những câu có số như "1.234.567đ,
-    đúng định dạng").
-14. **FE: assert HÌNH HỌC, không chỉ `toBeVisible()`.** Gốc rễ là **bất đối xứng oracle**: backend có contract máy
-    đọc được (Swagger) nên assertion là `total = 540000`; frontend chỉ có Figma (hình ảnh) nên assertion thoái hoá
-    thành `toBeVisible()`/`toContainText()`. Mà `toBeVisible()` vẫn **PASS** khi element bị **đè lên** · nằm ngoài
-    viewport · cao 0–2px · **chữ trùng màu nền** · bị **truncate**. Bug FE sống ở **hình học và thị giác**, kit lại
-    assert **cấu trúc DOM** — khoảng cách đó chính là chỗ bug FE lọt. Máy: `scripts/utils/ui/geometry.js`
-    (`inspectGeometry` · `inspectLongText`). Các phép này là **bất biến tự thân** (không cần Figma vẫn khẳng định
-    được là sai) nên KHÔNG rơi vào tautology. Kèm: **text dài tiếng Việt** — tiếng Việt dài hơn tiếng Anh ~20–30%
-    và có dấu (dòng cao hơn) nên layout thiết kế cho text ngắn sẽ vỡ; dùng `LONG_VI` (tên, địa chỉ, khoá học, ghi chú)
-    cho ít nhất các màn có nhập tên–địa chỉ. Đây là ổ bug mà testcase gen từ tài liệu gần như **không bao giờ** nghĩ tới.
+    Khi field đó CÓ, gate **chặn** thật. `verified=true` mà thiếu `evidence` thì chặn. Chưa `verified` mà không
+    nêu lý do cũng chặn. Bản ghi cũ không có field này thì **không bị phạt**, chỉ báo tỉ lệ áp dụng.
+
+    Đo trên bộ 530: **1217 assertion nguyên tử**, trong đó **191 dòng (16%) còn nhồi nhiều điều kiện**.
+    `deriveAssertions` chỉ **đánh dấu** `compound`, KHÔNG tự tách theo dấu phẩy. Tự tách sẽ cắt sai đúng những
+    câu có số như "1.234.567đ, đúng định dạng".
+14. **FE: assert HÌNH HỌC, không chỉ `toBeVisible()`.** Gốc rễ là **bất đối xứng oracle**. Backend có contract
+    máy đọc được (Swagger) nên assertion là `total = 540000`. Frontend chỉ có Figma, tức hình ảnh, nên assertion
+    thoái hoá thành `toBeVisible()` hoặc `toContainText()`.
+
+    Mà `toBeVisible()` vẫn **PASS** khi element bị **đè lên**, nằm ngoài viewport, cao 0 đến 2px, **chữ trùng màu
+    nền**, hoặc bị **truncate**. Bug FE sống ở **hình học và thị giác** còn kit lại assert **cấu trúc DOM**.
+    Khoảng cách đó chính là chỗ bug FE lọt.
+
+    Máy: `scripts/utils/ui/geometry.js`, gồm `inspectGeometry` và `inspectLongText`. Các phép này là **bất biến
+    tự thân**, tức không cần Figma vẫn khẳng định được là sai, nên KHÔNG rơi vào tautology.
+
+    Kèm theo là **text dài tiếng Việt**. Tiếng Việt dài hơn tiếng Anh khoảng 20% đến 30% và có dấu nên dòng cao
+    hơn, khiến layout thiết kế cho text ngắn bị vỡ. Dùng `LONG_VI` (tên, địa chỉ, khoá học, ghi chú) cho ít nhất
+    các màn có nhập tên và địa chỉ. Đây là ổ bug mà testcase gen từ tài liệu gần như **không bao giờ** nghĩ tới.
 15. **ORACLE FE phải là contract có id, không phải "hình trong Figma".** Biến design thành
-    `knowledge/system/UI-*.json` (`type: ui_contract`) rồi dùng id đó làm `oracle_ref` — đó là cách duy nhất để FE
-    có nguồn NGOÀI app; không có nó thì mọi phép kiểm FE là so app với chính nó. Máy: `npm run ui:contract`.
-    **Kỷ luật bắt buộc (đo được, không phải cẩn thận quá):** canvas Figma là **bảng mockup nhiều màn cạnh nhau**,
-    chú thích/số callout cũng in đậm ⇒ trích thô ra tiêu đề kiểu *"Drag & Drop your file here"* và khối **trộn nhãn
-    của 2 màn**. Nên máy **chỉ thu hẹp** (173 node TEXT → 7 khối ứng viên) và xuất **bản nháp**; `--write` chỉ chấp
-    nhận `--sections` do NGƯỜI curate, kèm `--confirmed-by`/`--confirmed-at`. Ghi thẳng bản trích thô = tạo **oracle
-    GIẢ**, tệ hơn không có oracle vì mọi so sánh sau đó sai **một cách tự tin**. Contract phải có `aliases` (tên
-    design ≠ tên build) và `extraction` (ghi rõ máy trích hay người gõ) để người sau biết mức tin cậy.
-16. **BIẾN THIÊN DATA theo `RUN_ID` — xoay nhưng phải TÁI LẬP.** Dùng đúng một bộ data mỗi lượt thì độ phủ **đóng
-    băng**: 20 lượt vẫn chỉ chạm 1 hình dạng, trong khi bug nằm ở hình dạng khác (0 · số âm · biên · chuỗi dài có
-    dấu · ngày 29/31). Xoay vòng trong **cùng lớp tương đương** (`scripts/lib/expansion/variation.js`) thì 20 lượt
-    phủ 20 hình dạng mà **không thêm case nào**. Bắt buộc seed bằng `RUN_ID`: cùng `RUN_ID` ⇒ cùng data — random
-    thuần làm bug "biến mất khi chạy lại", phá nguyên tắc rerun 2–3 lần và biến **bug thật thành flaky**. Ghi
-    `plan()` vào Actual để người sau tái hiện đúng lượt đó. Kèm điều kiện đi cùng: xoay data thì phải siết
-    **teardown và janitor** — môi trường UAT dùng chung, xoay mà không dọn là đổi bug-lọt lấy **rác dữ liệu**.
-17. **VISUAL REGRESSION — bộ chụp RIÊNG, tất định; và nói rõ nó KHÔNG bắt được gì.** Ảnh evidence (~1000/ task) **không dùng làm baseline được**: full-page · dữ liệu động · mask PII bằng cách **sửa DOM** ⇒ mỗi lần chạy một ảnh khác, diff luôn ≠ 0 nên đội sẽ học cách bỏ qua. Lane riêng: `tests/fe/visual/` + `scripts/utils/ui/visual.js` (`freeze()` triệt animation/transition/caret/lazy-load · `captureOptions()` mặc định **không** full-page, `maxDiffPixelRatio 0.01`, `mask` vùng động khai ở **lớp task** `requirements/visual_targets.json`). **Giới hạn phải nói trước**: oracle là "bản build đã được chấp nhận lần trước" ⇒ bắt **regression**, KHÔNG bắt cái sai từ đầu — nên nó **bổ trợ**, không thay contract FE `UI-*` và không thay assert hình học. Lượt chạy đầu chỉ **tạo baseline** = **CHƯA kiểm gì**, phải soi ảnh trước khi nhận. Không có `visual_targets.json` ⇒ lane **skip kèm lý do**, tuyệt đối không tính là PASS. **KHÔNG commit baseline**: ảnh chứa dữ liệu khách và baseline gắn OS/browser (`-win32`) nên commit từ máy Windows thì CI Linux vẫn phải chụp lại.
+    `knowledge/system/UI-*.json` (`type: ui_contract`) rồi dùng id đó làm `oracle_ref`. Đó là cách duy nhất để FE
+    có nguồn NGOÀI app. Không có nó thì mọi phép kiểm FE là so app với chính nó. Máy: `npm run ui:contract`.
+
+    **Kỷ luật bắt buộc, đo được chứ không phải cẩn thận quá:** canvas Figma là **bảng mockup nhiều màn cạnh
+    nhau**, và chú thích cùng số callout cũng in đậm. Trích thô sẽ ra tiêu đề kiểu *"Drag & Drop your file here"*
+    và khối **trộn nhãn của 2 màn**.
+
+    Nên máy **chỉ thu hẹp**, từ 173 node TEXT xuống 7 khối ứng viên, rồi xuất **bản nháp**. `--write` chỉ chấp
+    nhận `--sections` do NGƯỜI curate, kèm `--confirmed-by` và `--confirmed-at`. Ghi thẳng bản trích thô là tạo
+    **oracle GIẢ**, tệ hơn không có oracle, vì mọi so sánh sau đó sai **một cách tự tin**.
+
+    Contract phải có `aliases`, vì tên design thường khác tên build, và có `extraction` ghi rõ máy trích hay
+    người gõ, để người sau biết mức tin cậy.
+16. **BIẾN THIÊN DATA theo `RUN_ID`: xoay nhưng phải TÁI LẬP.** Dùng đúng một bộ data mỗi lượt thì độ phủ
+    **đóng băng**. 20 lượt vẫn chỉ chạm 1 hình dạng, trong khi bug nằm ở hình dạng khác: 0, số âm, biên, chuỗi
+    dài có dấu, ngày 29 hoặc 31.
+
+    Xoay vòng trong **cùng lớp tương đương** (`scripts/lib/expansion/variation.js`) thì 20 lượt phủ 20 hình dạng
+    mà **không thêm case nào**.
+
+    Bắt buộc seed bằng `RUN_ID`, để cùng `RUN_ID` thì cùng data. Random thuần làm bug "biến mất khi chạy lại",
+    phá nguyên tắc rerun 2 đến 3 lần, và biến **bug thật thành flaky**. Ghi `plan()` vào Actual để người sau tái
+    hiện đúng lượt đó.
+
+    Kèm một điều kiện đi cùng: xoay data thì phải siết **teardown và janitor**. Môi trường UAT dùng chung, xoay
+    mà không dọn là đổi bug-lọt lấy **rác dữ liệu**.
+17. **VISUAL REGRESSION: bộ chụp RIÊNG, tất định, và phải nói rõ nó KHÔNG bắt được gì.**
+    Ảnh evidence, khoảng 1000 tấm mỗi task, **không dùng làm baseline được**. Chúng là full-page, có dữ liệu
+    động, và mask PII bằng cách **sửa DOM**. Mỗi lần chạy ra một ảnh khác nên diff luôn khác 0, rồi đội sẽ học
+    cách bỏ qua.
+
+    Lane riêng: `tests/fe/visual/` cùng `scripts/utils/ui/visual.js`. `freeze()` triệt animation, transition,
+    caret và lazy-load. `captureOptions()` mặc định **không** full-page, `maxDiffPixelRatio 0.01`, và `mask`
+    vùng động khai ở **lớp task** `requirements/visual_targets.json`.
+
+    **Giới hạn phải nói trước:** oracle ở đây là "bản build đã được chấp nhận lần trước". Nó bắt
+    **regression**, KHÔNG bắt cái sai từ đầu. Nên nó **bổ trợ**, không thay contract FE `UI-*` và không thay
+    assert hình học.
+
+    Lượt chạy đầu chỉ **tạo baseline**, nghĩa là **CHƯA kiểm gì**, phải soi ảnh trước khi nhận. Không có
+    `visual_targets.json` thì lane **skip kèm lý do**, tuyệt đối không tính là PASS.
+
+    **KHÔNG commit baseline.** Ảnh chứa dữ liệu khách, và baseline gắn OS cùng browser (`-win32`), nên commit
+    từ máy Windows thì CI Linux vẫn phải chụp lại.
 18. **Log bug phải khai nguồn phát hiện** `--found-by kit|human`: nhãn `auto-bug` chỉ chứng minh ai LOG, không phải
    ai TÌM — không phân biệt được thì tỉ lệ rò không đo được.
 
@@ -469,7 +508,7 @@ Khi log bug, **CẤM gán tầng lỗi chỉ bằng quan sát giao diện**. Nh�
 | 3. Kết luận tầng | BE trả **sai/thiếu** → **BE** (`api_bug`). Response **đã đúng và đủ** mà UI hiện sai → **FE**. UI gửi payload thiếu dù người dùng nhập đủ → **FE**. BE nhận payload hợp lệ mà xử lý sai → **BE**. |
 | 4. Khi chưa bắt được API | **Không gán tầng** — ghi rõ *chưa xác định tầng*, tuyệt đối không đoán. |
 
-Evidence cho bug **so sánh hai nơi** (vd Ops vs Checkout, form vs payload, order vs HubSpot) phải là **ảnh GHÉP cả hai trong cùng một hình**, khoanh vùng từng bên và ghi rõ giá trị mỗi bên — không đính hai ảnh rời hoặc chỉ một phía.
+Evidence cho bug **so sánh hai nơi** phải là **ảnh GHÉP cả hai trong cùng một hình**, khoanh vùng từng bên và ghi rõ giá trị mỗi bên. Ví dụ Ops với Checkout, form với payload, order với HubSpot. Không đính hai ảnh rời, cũng không chỉ một phía.
 
 Gán sai tầng khiến ticket đi nhầm người và bị dev bounce lại, mất trọn một vòng lặp. Chi tiết máy-đọc: `.agent/config/verdict_taxonomy.json` mục `beVsFe`.
 
@@ -479,9 +518,9 @@ Gán sai tầng khiến ticket đi nhầm người và bị dev bounce lại, m�
 
 1. **Chỉ ảnh hoặc video — cấm file dữ liệu thô.** Evidence hợp lệ chỉ là ảnh (`.png/.jpg/.jpeg/.webp`) hoặc video (`.mp4/.webm`). TUYỆT ĐỐI KHÔNG dùng `.json`, `.md`, `.txt`, `.log`, `.html`, `.csv`, `trace.zip` hay file dữ liệu thô nào làm evidence của case hoặc step — kể cả `order_state.json`, `api_response.json`, execution summary. Cần chứng minh dữ liệu API/DB/state thì **chụp ảnh màn UI** hiển thị dữ liệu đó (hoặc màn có giá trị tương ứng), không đính file dữ liệu.
 2. **Highlight đúng element đang kiểm.** Mỗi ảnh phải khoanh (tham số `highlight` của `evidence_recorder`) đúng phần tử của step đó: nút / field / dòng bảng / nhãn / thông báo / giá trị. Cấm ảnh full-page chung chung không chỉ rõ điểm kiểm.
-3. **Mask PII khách hàng.** Che (mask) mọi dữ liệu nhạy cảm của khách trong ảnh hoặc video: email, số điện thoại, họ tên, địa chỉ, mã định danh cá nhân — kể cả khi nằm trong `<input>`. Dùng tham số `mask` của `evidence_recorder`. Đồng bộ rule bảo mật: artifact KHÔNG được để lộ email/SĐT/PII khách. (Dữ liệu của hệ thống/công ty như STK công ty, hotline không bắt buộc che.)
-4. **Video cho case phức tạp.** Case nhiều bước hoặc tương tác động — thanh toán qua cổng ngoài, trạng thái cập nhật bất đồng bộ, luồng qua nhiều màn, iframe hoặc popup, drag & drop / upload — PHẢI quay video (giống evidence khi log bug) đính kèm cùng ảnh step, để tái hiện được hành vi. Case đơn giản (1 màn, kiểm hiển thị) thì ảnh highlight là đủ.
-5. **Verify đúng màn trước khi chấp nhận.** Sau khi chụp, PHẢI mở ảnh và kiểm nội dung để chắc chắn evidence đúng màn và kết quả của case: KHÔNG phải trang lỗi (404/500/blank/timeout/"can't find that page"), KHÔNG phải màn sai bước, KHÔNG phải trạng thái loading dở, KHÔNG phải cổng hoặc màn của bước khác. Sai màn → sửa selector và điều hướng rồi chụp lại; không push evidence sai.
+3. **Mask PII khách hàng.** Che mọi dữ liệu nhạy cảm của khách trong ảnh hoặc video: email, số điện thoại, họ tên, địa chỉ, mã định danh cá nhân. Kể cả khi nằm trong `<input>`. Dùng tham số `mask` của `evidence_recorder`. Đồng bộ rule bảo mật: artifact KHÔNG được để lộ email, SĐT hay PII khách. Dữ liệu của hệ thống và công ty, như STK công ty hay hotline, không bắt buộc che.
+4. **Video cho case phức tạp.** Case nhiều bước hoặc tương tác động PHẢI quay video, giống evidence khi log bug, đính kèm cùng ảnh step để tái hiện được hành vi. Cụ thể: thanh toán qua cổng ngoài, trạng thái cập nhật bất đồng bộ, luồng qua nhiều màn, iframe hoặc popup, drag & drop, upload. Case đơn giản một màn chỉ kiểm hiển thị thì ảnh highlight là đủ.
+5. **Verify đúng màn trước khi chấp nhận.** Sau khi chụp, PHẢI mở ảnh và kiểm nội dung để chắc chắn evidence đúng màn và đúng kết quả của case. KHÔNG phải trang lỗi (404, 500, blank, timeout, "can't find that page"). KHÔNG phải màn sai bước, không phải trạng thái loading dở, không phải cổng hay màn của bước khác. Sai màn thì sửa selector và điều hướng rồi chụp lại. Không push evidence sai.
 6. **Mỗi case dùng evidence của chính nó.** Không mượn hay tham chiếu ảnh của case khác, không dùng placeholder. Nếu không re-drive được (order đã tiêu, link chết…) thì dùng đúng ảnh gốc thật của chính case đó và ghi rõ lý do không re-capture — không thay bằng ảnh không đúng nội dung.
 7. **Lưu đúng nơi + gắn đủ.** Ảnh/video dưới `test-results/artifacts/<TC_ID>/`; đường dẫn ghi vào `Evidence` của case và của TỪNG step (mỗi step: status PASS/FAIL riêng + ảnh riêng).
 
