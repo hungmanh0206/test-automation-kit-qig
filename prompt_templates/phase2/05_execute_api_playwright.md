@@ -2,7 +2,12 @@
 
 > Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule: non-negotiables ở `CLAUDE.md` (đã auto-load). Digest: `.agent/rules/core_rules.md`. Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần** (mỗi gạch đầu dòng của digest có ghi `§`) — đừng nạp cả file.
 
-> ⚡ **Kỷ luật execute (RULE_GLOBAL §"Execution Discipline"):** batch NHIỀU case/1 lượt (ÍT script toàn diện, chạy song song — không "mỗi case 1 vòng"); KHÔNG mặc định TODO/SKIP khi chưa thử (dùng hết fixture/deal/account đã cấp, case negative tự tạo input); KHÔNG hỏi lắt nhắt (gom câu hỏi 1 lần); báo cáo gộp, ít vòng.
+> ⚡ **Kỷ luật execute (RULE_GLOBAL §"Execution Discipline"):**
+>
+> - Batch NHIỀU case trong 1 lượt: ÍT script toàn diện, chạy song song, không "mỗi case 1 vòng".
+> - KHÔNG mặc định TODO hay SKIP khi chưa thử. Dùng hết fixture, deal, account đã cấp; case negative thì tự tạo input.
+> - KHÔNG hỏi lắt nhắt: gom câu hỏi 1 lần.
+> - Báo cáo gộp, ít vòng.
 
 > 🛑 **CHECKLIST 6 KHỐI — xác nhận TRƯỚC KHI execute** (forcing function; `output_gate` sẽ **CHẶN** nếu output vi phạm — đọc & làm, đừng lướt):
 > 1. **Nguồn & scope** — `TASK_KEY`+`PROJECT_OUTPUT_DIR` có; đọc testcase canonical LOCAL (tải mới nhất từ Google Sheet qua Drive MCP) + `.agent/config/project_context.md` + catalog Setup Strategy. KHÔNG dựa hội thoại cũ.
@@ -26,7 +31,9 @@ Thực thi BE API testcases bằng Playwright request context, không mở brows
 - Swagger URL: [SWAGGER_URL_OR_ENV_KEY]
 - Base URL: [BASE_URL_OR_ENV_KEY]
 - Auth: lấy động từ API login hoặc env, không hardcode token.
-  - **App KHÔNG có login API sạch** (SPA tự refresh token trong trình duyệt): dùng **Token Broker** (`tests/fe/support/auth/tokenBroker.ts`) — giữ 1 phiên SPA đã login sống (helper login của app) rồi gọi `brokerRequest(page, method, url, {data})`; token lấy TƯƠI từ chính request SPA gửi, 401/403 tự reload→refresh→retry. **KHÔNG dán `*_API_TOKEN` thủ công / KHÔNG mở DevTools copy lại giữa chừng** — chỉ cần user/password trong `task.env`, execute không đứt khi access token hết hạn giữa lượt chạy.
+  - **App KHÔNG có login API sạch**, vì SPA tự refresh token trong trình duyệt. Dùng **Token Broker** (`tests/fe/support/auth/tokenBroker.ts`): giữ 1 phiên SPA đã login sống bằng helper login của app, rồi gọi `brokerRequest(page, method, url, {data})`. Token lấy TƯƠI từ chính request SPA gửi, và 401 hoặc 403 sẽ tự reload, refresh, retry.
+
+    **KHÔNG dán `*_API_TOKEN` thủ công, KHÔNG mở DevTools copy lại giữa chừng.** Chỉ cần user và password trong `task.env`. Execute không đứt khi access token hết hạn giữa lượt chạy.
 - Project Context: `.agent/config/project_context.md`
 - Env Template: `.env.example`
 - Project Output: `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/`
@@ -37,9 +44,9 @@ Thực thi BE API testcases bằng Playwright request context, không mở brows
 - Testcases: nguồn canonical local `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-sheet/*.xlsx` — agent tải bản MỚI NHẤT về từ Google Sheet qua Drive MCP ở Bước 0 TRƯỚC mỗi lượt execute. Execute đọc file local — không gọi Drive/Backlog cho từng case.
 
 # Precondition Resolution Pass (bắt buộc, chạy TRƯỚC khi generate/execute)
-> 📚 **TRA KHO HỌC TRƯỚC KHI TỰ MÒ** (rẻ hơn mò lại nhiều lần, và đây là chỗ 80% thời gian bị tiêu):
+> 📚 **TRA KHO HỌC TRƯỚC KHI TỰ MÒ.** Rẻ hơn mò lại nhiều lần, và đây là chỗ 80% thời gian bị tiêu.
 > - **`knowledge/setup_recipes/`** — đã có ai dựng state này chưa? Đọc `steps` (ĐÚNG THỨ TỰ) + `pitfalls` (thứ chỉ biết sau khi vấp) + `verification`. Dựng xong mà chưa verify thì coi như chưa có state.
-> - **`knowledge/environment/`** — trước khi kết luận "app lỗi": token TTL, login throttle/lockout, headless trắng, quirk toolchain (Backlog/Google Sheet) đều nằm ở đây. Fail vì mấy thứ này là `setup_failure`/`infra`, KHÔNG phải product bug.
+> - **`knowledge/environment/`** — đọc trước khi kết luận "app lỗi". Token TTL, login throttle và lockout, headless trắng, quirk toolchain đều nằm ở đây. Fail vì mấy thứ này là `setup_failure` hoặc `infra`, KHÔNG phải product bug.
 > - **`knowledge/locators/`** — element khó (menu ⋮, popup, cổng thanh toán): đọc `symptom` xem có khớp triệu chứng đang gặp không, rồi làm theo `technique`. Fail ngắt quãng thường là SAI KỸ THUẬT THAO TÁC, không phải flaky vô cớ.
 > - **`knowledge/system/`** type `data_model` — `test_implication` cho biết mô hình dữ liệu bắt test phải làm khác đi thế nào (vd sau mutation phải resolve theo TÊN, không dùng lại id).
 >
@@ -99,8 +106,9 @@ những lớp bug mà API là nơi CHỨNG MINH được:
 - **Trục 4/5 — nhánh & trạng thái.** Cùng endpoint với loại đơn/tiền tệ khác, và với bản ghi ở trạng thái kế cận
   (đã hủy / hoàn / thanh toán một phần) thì còn đúng? `npm run fixture:matrix -- --discover` cho biết môi trường
   đang CÓ dữ liệu ở ô nào — đừng bỏ case vì "không có data" khi chưa dò.
-- **Guard theo trạng thái:** gọi thẳng API cho hành động mà UI đã chặn (sửa đơn đã thanh toán, xoá giao dịch đã
-  xác nhận) — đây là chỗ API test làm được mà UI test không làm được, và phải kèm bằng chứng **dữ liệu không đổi**.
+- **Guard theo trạng thái:** gọi thẳng API cho hành động mà UI đã chặn, ví dụ sửa đơn đã thanh toán hay xoá
+  giao dịch đã xác nhận. Đây là chỗ API test làm được mà UI test không làm được. Phải kèm bằng chứng
+  **dữ liệu không đổi**.
 
 **MỌI LỆCH KHỎI KỊCH BẢN PHẢI GHI SỔ.** Khi bị chặn, xu hướng tự nhiên là *làm cho nó chạy* — chờ thêm, retry,
 đổi locator, refresh, đi đường khác. Mỗi lần như vậy có thể đang **lấp một bug**. Ghi bằng
@@ -120,10 +128,13 @@ negative phải khai trước `sig.expect4xx(/\/api\/x/, 'lý do')`, không khai
 bug KHÔNG liên quan tới case đang chạy (UI xanh mà API phụ 500) — thứ không case nào assert.
 
 **ĐIỀU KIỆN SỐNG CÒN — không có oracle thì KHÔNG kết luận.** Mở rộng mà không có nguồn thì agent sẽ mặc định
-"app đang hiện thế là đúng" ⇒ tautology nhân theo số trục. Ba loại kết luận: `EXPANSION_FINDING` (app tự mâu
-thuẫn — không cần oracle ngoài, log bug được, **không phải verdict của case gốc**) · `PASS`/`FAIL` (**chỉ khi**
-có `oracle_ref` trỏ `BR-`/`SM-`/`PM-`/`SS-`/`DM-`/`UI-`) · `OBSERVATION` (không neo ⇒ **nhất quán ≠ đúng**, kèm
-câu hỏi mở). Máy tự hạ cấp PASS→OBSERVATION khi thiếu neo và `self_review` **CHẶN** nếu file finding có PASS
+"app đang hiện thế là đúng" ⇒ tautology nhân theo số trục. Ba loại kết luận:
+
+- `EXPANSION_FINDING`: app tự mâu thuẫn. Không cần oracle ngoài, log bug được, nhưng **không phải verdict của
+  case gốc**.
+- `PASS` hoặc `FAIL`: **chỉ khi** có `oracle_ref` trỏ `BR-`, `SM-`, `PM-`, `SS-`, `DM-` hoặc `UI-`.
+- `OBSERVATION`: không neo, nên **nhất quán không có nghĩa là đúng**. Ghi kèm câu hỏi mở.
+ Máy tự hạ cấp PASS→OBSERVATION khi thiếu neo và `self_review` **CHẶN** nếu file finding có PASS
 không neo. Độ sâu theo **risk band** — xem chi phí trước khi chạy: `npm run expansion:plan`.
 
 **Đóng vòng:** bug do người ngoài tìm ra là **lỗi của máy** — phải chỉ ra máy lẽ ra bắt được
@@ -157,7 +168,13 @@ Status `200` + schema đúng KHÔNG đủ để PASS. Bug logic/dữ liệu BE l
 
 # Quy tắc kỹ thuật API
 
-> **Playbook bắt buộc đọc**: **`.agent/rules/playwright_api.md`**. Nó chứa những phần mục này KHÔNG nhắc lại và cũng là chỗ hay bị bỏ: **§Assertions** (luôn assert status; assert field/schema/business rule; negative phải assert đúng error code theo spec; mutation phải verify side-effect), **§Anti-Patterns** (chỉ assert `res.ok()` cho API business-critical, đổi expected status để pass, bỏ assertion body quan trọng, mock API chính khi cần kiểm contract thật) và **guardrail DB read-only**. Mâu thuẫn thì theo file đó.
+> **Playbook bắt buộc đọc: `.agent/rules/playwright_api.md`.** Nó chứa những phần mục này KHÔNG nhắc lại, và cũng là chỗ hay bị bỏ:
+>
+> - **§Assertions.** Luôn assert status. Assert field, schema và business rule. Negative phải assert đúng error code theo spec. Mutation phải verify side-effect.
+> - **§Anti-Patterns.** Chỉ assert `res.ok()` cho API business-critical, đổi expected status để pass, bỏ assertion body quan trọng, mock API chính khi cần kiểm contract thật.
+> - **Guardrail DB read-only.**
+>
+> Mâu thuẫn thì theo file đó.
 
 - Dùng request context, không dùng page/browser.
 - Token lấy động qua API login hoặc env; không hardcode.
@@ -168,7 +185,7 @@ Status `200` + schema đúng KHÔNG đủ để PASS. Bug logic/dữ liệu BE l
 - Validate contract schema bằng zod hoặc `expect().toMatchObject`.
 - Sau mỗi TC, bắt buộc cập nhật testcase output với `Status`, `Actual Result`, `Evidence`.
 - `Actual Result` của case FAIL phải rõ: endpoint/method, request data chính, expected status/body, actual status/body, assertion error và log/evidence path.
-- Khi ghi `testcase-status.json`, **case FAILED phải kèm step nào fail + evidence của bước đó**: điền `steps[]` (bước lỗi `FAILED` + `evidence`; bước chưa chạy `TODO`) hoặc shortcut `failedStep` + `failedStepEvidence` (schema ở `run_phase2_template.md`) — để Test Execution hiện đúng bước lỗi thay vì chỉ FAIL tổng.
+- Khi ghi `testcase-status.json`, **case FAILED phải kèm step nào fail và evidence của bước đó**. Điền `steps[]`, trong đó bước lỗi là `FAILED` kèm `evidence` còn bước chưa chạy là `TODO`. Hoặc dùng shortcut `failedStep` và `failedStepEvidence`, schema ở `run_phase2_template.md`. Nhờ vậy Test Execution hiện đúng bước lỗi thay vì chỉ FAIL tổng.
 - API evidence không được chứa bearer token, password, cookie, API key hoặc secret khác; phải redact trước khi ghi file/report/Backlog.
 - Nếu testcase API là một phần của luồng phức tạp, nhiều bước hoặc cross-site, lưu thêm video/screenshot từ browser flow liên quan nếu có.
 - Backlog attachment chỉ được là ảnh/video. Không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md` hoặc execution summary lên Backlog.

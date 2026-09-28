@@ -57,12 +57,12 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/02_gen_testcases.md": {
-      "slash": 9.1,
-      "longSent": 1.7,
-      "sym": 12,
-      "emDash": 7,
-      "vague": 3.4,
-      "meanSent": 17.1,
+      "slash": 7.5,
+      "longSent": 0.4,
+      "sym": 11.1,
+      "emDash": 6.1,
+      "vague": 3.3,
+      "meanSent": 16.4,
       "emojiCount": 11
     },
     "prompt_templates/phase1/03_gen_test_data.md": {
@@ -183,21 +183,21 @@
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/12_display.md": {
-      "slash": 11.2,
-      "longSent": 6.5,
-      "sym": 12.1,
-      "emDash": 14.9,
+      "slash": 6.3,
+      "longSent": 0,
+      "sym": 9.9,
+      "emDash": 11.8,
       "vague": 0.9,
-      "meanSent": 24.4,
+      "meanSent": 19.4,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/13_business_logic.md": {
-      "slash": 23.6,
-      "longSent": 8.2,
-      "sym": 9.1,
-      "emDash": 9.1,
-      "vague": 1.8,
-      "meanSent": 25,
+      "slash": 12.8,
+      "longSent": 0.9,
+      "sym": 2.6,
+      "emDash": 4.3,
+      "vague": 1.7,
+      "meanSent": 18.9,
       "emojiCount": 0
     },
     "prompt_templates/phase1/dimensions/14_be_conformance.md": {
@@ -291,12 +291,12 @@
       "emojiCount": 5
     },
     "prompt_templates/phase2/05_execute_api_playwright.md": {
-      "slash": 14,
-      "longSent": 2.4,
-      "sym": 11.2,
-      "emDash": 14.3,
+      "slash": 13.1,
+      "longSent": 0,
+      "sym": 9.3,
+      "emDash": 12,
       "vague": 2.8,
-      "meanSent": 17.5,
+      "meanSent": 15.7,
       "emojiCount": 5
     },
     "prompt_templates/phase2/06_triage_review.md": {

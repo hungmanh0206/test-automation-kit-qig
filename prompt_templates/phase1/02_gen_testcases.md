@@ -363,9 +363,13 @@ Chỉ dùng 5 giá trị: `Critical`, `High`, `Medium`, `Low`, `Lowest`. KHÔNG 
 
 Không còn cột `Severity` trong bộ testcase (bỏ 21/08/2026) — nên **không** còn bước "chấm Severity trước rồi dịch ra Priority". Chấm `Ưu tiên` trực tiếp bằng bảng 5 mức ở §7, tự hỏi: *case này fail thì hậu quả tới đâu, và có đường vòng không?*
 
-> **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase. Chấm lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc. Bug thật vẫn có Severity: chấm lúc log bug, cây quyết định nằm ở [`phase2/08_log_bug_backlog.md`](../phase2/08_log_bug_backlog.md).
+> **Vì sao bỏ:** Severity là thuộc tính của **BUG**, không phải của testcase. Chấm lúc viết case là đoán trước hậu quả của một lỗi **chưa xảy ra**, nên thực tế luôn bị điền máy móc.
 >
-> Việc duy nhất cột đó còn gánh trong kit là **risk band**, tức mở rộng 5 trục hay 1 trục. `bandOf()` lấy `max(risk, priority)`. Sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột làm đổi band 0 case**. Vậy `Ưu tiên` một mình đủ quyết định độ sâu. Đừng điền lại cột này "cho chắc": thêm cột lạ sẽ bị gate chặn.
+> Bug thật vẫn có Severity: chấm lúc log bug, cây quyết định nằm ở [`phase2/08_log_bug_backlog.md`](../phase2/08_log_bug_backlog.md).
+>
+> Việc duy nhất cột đó còn gánh trong kit là **risk band**, tức mở rộng 5 trục hay 1 trục. `bandOf()` lấy `max(risk, priority)`.
+>
+> Sau khi vá `PRIO_RANK` thiếu khoá `critical`, đo trên **1977 case toàn repo: bỏ cột làm đổi band 0 case**. Vậy `Ưu tiên` một mình đủ quyết định độ sâu. Đừng điền lại cột này "cho chắc": thêm cột lạ sẽ bị gate chặn.
 
 ## 9. Cách dựng tiền điều kiện — BẮT BUỘC (tag `[<method>]` trong chính cell)
 
@@ -485,11 +489,17 @@ Tự rà và ghi vào `reports/phase1-summary.md` (Coverage Gaps) nếu thiếu:
 - [ ] Mỗi computed field (deadline/approver/naming/mapping) có TC kiểm derivation + 1 biên.
 - [ ] Nếu có Figma: mỗi component chính có TC design compliance (màu/font/radius/spacing/kích thước/alignment) đối chiếu token thiết kế.
 - [ ] Nếu scope có mobile web: có TC mobile-web behavior (touch target ≥44px, cử chỉ tap/swipe, hamburger/bottom-sheet, orientation, offline/slow-3G) trên thiết bị thật; không áp dụng → `N/A + lý do` (mục 4).
-- [ ] Mỗi màn có bảng/field: đã có case đối chiếu **tên cột (exact)**, **format từng field**, **số cột + thứ tự + đủ tên**, **field bắt buộc**, **empty-state/label/placeholder** — và mọi expected hiển thị được **trích từ tài liệu, KHÔNG từ build** (mục 12).
-- [ ] Mỗi giá trị được TÍNH/tổng/đếm/sort có TC verify bằng **con số cụ thể tự tính** + 1 biên làm tròn; mỗi dữ liệu hiển thị ≥2 nơi có TC so khớp; mỗi mutation có TC so **delta** trước/sau (mục 13).
-- [ ] Mỗi field trống/`-`/`N/A`/`0` nghi ngờ có TC đối chiếu response BE (phân biệt `null`/`""`/`[]`/thiếu key/`0`), FK resolve đúng tên, pagination `total` khớp — không lấy oracle từ build (mục 14).
-- [ ] Mỗi endpoint có id resource có TC IDOR; mỗi chức năng theo role có TC privilege bypass BE; input nhạy cảm có TC injection/XSS stored; body create/update có TC mass-assignment; response không lộ field nhạy cảm (mục 15).
-- [ ] Mỗi endpoint có TC **HTTP-level** (method sai → `405`, content-type sai → `415`, body quá lớn → chặn không `500`); **biên payload/query** (max vs max+1, số âm/`0`, `[]` vs thiếu key, `page=0/-1/vượt`, `page_size` vượt max) tách TC riêng; endpoint **mutation** có TC **idempotency/double-submit**; endpoint đã có consumer có TC **backward-compat** (field mới optional, không đổi kiểu/bỏ field cũ); endpoint nhạy cảm có TC **rate-limit/concurrency** — không áp dụng nhóm nào thì ghi `N/A + lý do` (mục 5).
+- [ ] Mỗi màn có bảng hay field: đã có case đối chiếu **tên cột (exact)**, **format từng field**, **số cột cùng thứ tự và đủ tên**, **field bắt buộc**, **empty-state, label, placeholder**. Mọi expected hiển thị phải **trích từ tài liệu, KHÔNG từ build** (mục 12).
+- [ ] Mỗi giá trị được tính, tổng, đếm hay sort có TC verify bằng **con số cụ thể tự tính**, kèm 1 biên làm tròn. Mỗi dữ liệu hiển thị ở ≥2 nơi có TC so khớp. Mỗi mutation có TC so **delta** trước và sau (mục 13).
+- [ ] Mỗi field trống, `-`, `N/A` hay `0` đáng nghi có TC đối chiếu response BE, phân biệt được `null`, `""`, `[]`, thiếu key và `0`. FK resolve đúng tên, pagination `total` khớp. Không lấy oracle từ build (mục 14).
+- [ ] Mỗi endpoint có id resource thì có TC IDOR. Mỗi chức năng theo role có TC privilege bypass ở BE. Input nhạy cảm có TC injection và XSS stored. Body create hay update có TC mass-assignment. Response không lộ field nhạy cảm (mục 15).
+- [ ] Mỗi endpoint có đủ các nhóm TC sau, nhóm nào không áp dụng thì ghi `N/A` kèm lý do (mục 5):
+
+  - **HTTP-level**: method sai trả `405`, content-type sai trả `415`, body quá lớn bị chặn chứ không `500`.
+  - **Biên payload và query**, tách TC riêng: max với max+1, số âm và `0`, `[]` với thiếu key, `page=0`, `page=-1`, page vượt, `page_size` vượt max.
+  - **Idempotency và double-submit** cho endpoint mutation.
+  - **Backward-compat** cho endpoint đã có consumer: field mới phải optional, không đổi kiểu và không bỏ field cũ.
+  - **Rate-limit và concurrency** cho endpoint nhạy cảm.
 - [ ] Nếu có ngưỡng SLA/tải trong scope: có TC đo response time so ngưỡng, large dataset, concurrent — kèm nguồn ngưỡng; không có ngưỡng thì `N/A + lý do` (mục 16).
 - [ ] Nếu story đụng bề mặt dùng chung (data/endpoint/component/rule/status/permission/job): mỗi feature khác bị ảnh hưởng có ≥1 regression smoke + backward-compat; feature nghi ảnh hưởng mà không tự xác minh được đã flag `QA confirm`. Thay đổi cô lập → ghi `N/A: no shared surface` (mục 17).
 
@@ -530,8 +540,9 @@ Sau bảng, thêm:
 
 > **Phase 1 Summary Report** và **Export Excel** đã tách sang [`02b_output_format.md`](02b_output_format.md).
 >
-> Vì sao tách: hai mục đó là hướng dẫn **định dạng output ở cuối lượt**, KHÔNG phải luật về nội dung case —
-> nên không cần nằm trong context suốt lúc đang sinh case. Đo: **−3,7k token** cho mọi lượt gen (24,6k → 20,9k).
+> Vì sao tách: hai mục đó là hướng dẫn **định dạng output ở cuối lượt**, KHÔNG phải luật về nội dung case.
+> Nên chúng không cần nằm trong context suốt lúc đang sinh case. Đo được **−3,7k token** cho mọi lượt gen,
+> từ 24,6k xuống 20,9k.
 >
 > ⚠️ **BẮT BUỘC mở `02b_output_format.md`** khi tới bước viết Summary Report / export Excel. Đây là hai mục
 > có gate đứng sau (`design_gate` chạy trong `md_to_xlsx`; `self_review` đọc Summary Report) nên bỏ qua là bị chặn.
