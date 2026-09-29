@@ -128,7 +128,7 @@ const TERMS_SKILL = [
   detail:'Tạo hoặc cập nhật case trên Google Sheet, nhóm chức năng bằng folder 2 cấp, TC ID ở automationKey (Google Sheet không lưu tags). Dedup theo automationKey nên chạy lại là UPDATE, không tạo trùng.',
   why:'Testcase phải nằm trên Google Sheet thì cả team mới nhìn thấy và Phase 2 mới kéo về execute được. Cleanup đi kèm (Deprecate) là để repo testcase không phình ra vì case đã bỏ.',
   how:['Luôn dry-run trước.','Bộ testcase lớn thì tạo sẵn issue Test Execution rồi push theo batch để tránh lỗi 413.'],
-  cmd:'npm run aio:publish:apply -- --file <x.xlsx> --story <STORY> --qa-approved',
+  cmd:'node scripts/convert_excel/md_to_xlsx.js <testcase.md> <testcase.xlsx>  ·  upload qua Drive MCP — sau khi QA duyệt Excel',
   src:'.agent/skills/shared/backlog_testcase_publisher/SKILL.md', rel:['f-excel-canonical','f-case-folder','f-test-execution','c-canonical'] },
 
 { id:'sk-learning_recorder', t:'learning_recorder', cat:'skill', phase:'Dùng chung',

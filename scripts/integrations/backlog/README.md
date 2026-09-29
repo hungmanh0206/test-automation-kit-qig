@@ -1,8 +1,7 @@
 # Backlog And Figma Integration Scripts
 
-> Script Node.js dùng chung để **fetch requirement** (Backlog/Figma), **log bug Backlog**. Test-management
-> (testcase/execution) KHÔNG ở đây — nó thuộc `scripts/integrations/aio/` (Google Sheet là app Backlog
-> Marketplace, không tương thích Backlog — xem cảnh báo ở cuối file).
+> Script Node.js dùng chung để **fetch requirement** (Backlog/Figma) và **log bug Backlog**. Testcase và
+> execution KHÔNG ở đây: chúng đi qua Google Sheet bằng Drive MCP, không có script tích hợp riêng.
 >
 > Migrated từ hệ bug-tracking cũ → Backlog ngày 22/09/2026 — thư mục đã đổi tên theo công cụ mới, nhưng README này vẫn ở
 > cùng vị trí tương đối trong repo. Tài liệu requirement/BA không fetch bằng script nữa — soạn trong Obsidian vault rồi
@@ -88,15 +87,13 @@ Các script trong thư mục này hỗ trợ Phase 1 fetch requirement từ Back
 
 ## Google Sheet — cảnh báo tương thích
 
-Google Sheet là app trên Backlog Marketplace, xác thực qua hệ Backlog. Sau khi tổ chức chuyển hẳn sang Backlog,
-`scripts/integrations/aio/*` vẫn còn gọi API Backlog (`/rest/api/3/issue/{key}`) để resolve numeric id — chưa
-migrate, và CHƯA RÕ Google Sheet còn dùng được không nếu Backlog bị bỏ hẳn. Đây là vấn đề kiến trúc riêng, chưa
-quyết — không giả định `npm run aio:*` chạy được cho tới khi xác nhận lại.
+Tầng test-management cũ đã được gỡ khỏi kit: thư mục script của nó không còn, và không lệnh `npm run` nào của
+nó còn trong `package.json`. Testcase lên Sheet và kết quả execution về lại đều đi qua Drive MCP — thao tác do
+người bấm, không có script tự ghi. Gặp tài liệu cũ nhắc lệnh của công cụ đó thì đấy là vết còn sót, đừng chạy.
 
 ## References
 
 | Document | Purpose |
 |---|---|
-| [`../aio/README.md`](../aio/README.md) | Test-management: publish/pull testcase, đẩy kết quả execute, vòng đời case. |
 | `prompt_templates/phase2/08_log_bug_backlog.md` | Backlog bug logging rules. |
 | `RULE_GLOBAL.md` | Global security and output rules. |

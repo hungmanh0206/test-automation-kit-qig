@@ -3,43 +3,43 @@
 const TERMS_STATUS = [
 
 /* ── Trạng thái case (khớp cột Status của testcase canonical) ── */
-{ id:'s-PASS', t:'PASS', cat:'status', kind:'Trạng thái case', aio:'Passed',
+{ id:'s-PASS', t:'PASS', cat:'status', kind:'Trạng thái case', sheet:'Pass',
   def:'Đã chạy thật, kết quả đúng kỳ vọng theo oracle độc lập.',
   detail:'executed = true · không log bug · lên Google Sheet là Passed. Vẫn bắt buộc có evidence, không được miễn vì "pass thì có gì mà chụp".',
   why:'Evidence của case PASS là thứ trả lời được câu hỏi sáu tuần sau: lúc test màn hình trông thế nào. Không có nó thì mọi PASS đều là lời khai không kiểm chứng được.',
   src:'.agent/config/verdict_taxonomy.json', rel:['c-oracle','r-evidence'] },
 
-{ id:'s-FAIL', t:'FAIL', cat:'status', kind:'Trạng thái case', aio:'Failed',
+{ id:'s-FAIL', t:'FAIL', cat:'status', kind:'Trạng thái case', sheet:'Fail',
   def:'Đã chạy thật, kết quả sai kỳ vọng — BẮT BUỘC kèm tầng lỗi.',
   detail:'executed = true · có thể log bug · lên Google Sheet là Failed. Trước khi log phải rerun 2–3 lần để loại chập chờn và lỗi do setup.',
   why:'FAIL không kèm tầng lỗi thì không hành động được. Không biết giao cho ai, không biết có phải bug hay không. Ràng buộc này biến "test đỏ" thành một kết luận có địa chỉ.',
   src:'.agent/config/verdict_taxonomy.json', rel:['c-failure-layer','c-rerun','sk-backlog_bug_reporter'] },
 
-{ id:'s-SKIP', t:'SKIP', cat:'status', kind:'Trạng thái case', aio:'Not Run',
+{ id:'s-SKIP', t:'SKIP', cat:'status', kind:'Trạng thái case', sheet:'Pending',
   def:'Không chạy, phải kèm lý do và đánh giá khả năng khắc phục.',
   detail:'executed = false · không log bug · lên Google Sheet là Not Run.',
   why:'SKIP không lý do là chỗ trốn phổ biến nhất: case khó thì đánh SKIP rồi coi như xong, và không ai biết phần đó chưa từng được kiểm.',
   src:'.agent/config/verdict_taxonomy.json', rel:['s-TODO','c-readiness','r-verify'] },
 
-{ id:'s-BLOCKED_SETUP', t:'BLOCKED_SETUP', cat:'status', kind:'Trạng thái case', aio:'Blocked',
+{ id:'s-BLOCKED_SETUP', t:'BLOCKED_SETUP', cat:'status', kind:'Trạng thái case', sheet:'Pending',
   def:'Readiness là "Needs hook" nhưng capability cần thiết chưa có.',
   detail:'executed = false · không log bug · lên Google Sheet là Blocked (giữ đúng bản chất, không bị ép thành "chưa chạy"). Phải nêu cụ thể thiếu cái gì: hook nào, mock nào, sandbox nào.',
   why:'Tách riêng khỏi SKIP vì nó là một yêu cầu gửi tới Dev, không phải một lời từ chối. Ghi rõ thiếu capability gì thì có đường xử lý. Ghi chung chung thì nằm im mãi.',
   src:'.agent/config/verdict_taxonomy.json', rel:['c-readiness','s-setup_failure','sk-precondition_setup_planner'] },
 
-{ id:'s-SKIP_SETUP', t:'SKIP_SETUP', cat:'status', kind:'Trạng thái case', aio:'Not Run',
+{ id:'s-SKIP_SETUP', t:'SKIP_SETUP', cat:'status', kind:'Trạng thái case', sheet:'Pending',
   def:'Readiness là "Manual-only", tiền điều kiện không tự dựng được.',
   detail:'executed = false · không log bug · lên Google Sheet là Not Run.',
   why:'Khác BLOCKED_SETUP ở chỗ đây không phải chờ ai làm gì cả: bản chất case này phải làm tay. Phân biệt được thì kế hoạch test biết phần nào cần người.',
   src:'.agent/config/verdict_taxonomy.json', rel:['c-readiness','s-BLOCKED_SETUP'] },
 
-{ id:'s-TODO', t:'TODO', cat:'status', kind:'Trạng thái case', aio:'Not Run',
+{ id:'s-TODO', t:'TODO', cat:'status', kind:'Trạng thái case', sheet:'Pending',
   def:'Chưa thực thi, đây là trạng thái mặc định trên Google Sheet (Not Run).',
   detail:'KHÔNG được dùng khi thực ra đã chạy được.',
   why:'Dùng sai TODO là cách phổ biến để giấu case chưa làm: trên Google Sheet nó trông y hệt case chưa tới lượt, nên không ai hỏi tới.',
   src:'.agent/config/verdict_taxonomy.json', rel:['s-SKIP','r-verify'] },
 
-{ id:'s-PASS_WITH_DEVIATION', t:'PASS_WITH_DEVIATION', cat:'status', kind:'Trạng thái case', aio:'Passed',
+{ id:'s-PASS_WITH_DEVIATION', t:'PASS_WITH_DEVIATION', cat:'status', kind:'Trạng thái case', sheet:'Pass',
   def:'Case PASS nhưng CHỈ pass sau khi lệch khỏi kịch bản đã viết.',
   detail:'Lệch nghĩa là: thêm wait, thêm retry, đổi locator, refresh, hoặc đi đường khác. executed = true · không log bug · lên Google Sheet là Passed.',
   why:'Đây là rủi ro ĐẶC THÙ CỦA AGENT: gặp trở ngại thì có xu hướng LÀM CHO NÓ CHẠY, và mỗi lần như vậy là một bug tiềm năng bị lấp. Deviation là TÍN HIỆU, không phải tiện lợi.',
@@ -47,7 +47,7 @@ const TERMS_STATUS = [
   ex:'Phải thêm wait 3 giây mới thấy element → có thể app đang chậm thật, không phải test viết thiếu wait.',
   src:'.agent/config/verdict_taxonomy.json', rel:['s-PASS','r-nocheat','c-locator-healing','c-flaky'] },
 
-{ id:'s-SUSPECT_REAL_BUG', t:'SUSPECT_REAL_BUG', cat:'status', kind:'Trạng thái case', aio:'Failed', log:'Log Backlog',
+{ id:'s-SUSPECT_REAL_BUG', t:'SUSPECT_REAL_BUG', cat:'status', kind:'Trạng thái case', sheet:'Fail', log:'Log Backlog',
   def:'FAIL không ổn định (ví dụ 1/5 lần) mà CHƯA giải thích được CƠ CHẾ.',
   detail:'executed = true · log được Backlog · lên Google Sheet là Failed. Chỉ được đổi sang tầng lỗi flaky khi nêu được cơ chế cụ thể và cách chứng minh. Không nêu được thì giữ nguyên trạng thái này.',
   why:'Cơ chế triage flaky có thể đang CHÔN bug thật. Race condition, cache, và lệch timezone lúc chuyển ngày đều trông y hệt flaky. Retry 3 lần có 1 lần xanh là bị dán nhãn flaky rồi bỏ qua. Trạng thái này chặn đúng đường tắt đó.',

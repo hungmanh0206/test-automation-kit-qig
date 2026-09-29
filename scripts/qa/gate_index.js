@@ -118,7 +118,7 @@ function build() {
    * TẬP MÁY = mọi file trong `scripts/qa/` CỘNG mọi file mà một npm script trỏ vào, ở bất kỳ đâu.
    *
    * Bản đầu chỉ đọc `scripts/qa/` nên bảng này bỏ sót 16 file với 26 npm script, trong đó có
-   * bước verify riêng (CHẶN) và `aio:publish:apply` (cổng người). Một danh mục tự nhận "liệt kê mọi
+   * bước verify riêng (CHẶN) và một cổng người duyệt. Một danh mục tự nhận "liệt kê mọi
    * máy" mà thiếu đúng nhóm cổng chặn thì tệ hơn không có danh mục: người đọc tra không thấy rồi kết
    * luận là không có máy nào canh.
    *

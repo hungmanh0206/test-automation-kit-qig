@@ -341,7 +341,17 @@ if (fs.existsSync(SKILLS_DIR)) {
    *
    * `\bAIO\b` phân biệt hoa-thường + biên từ, để không bắt oan chữ thường trong từ khác.
    */
-  const BANNED = [/xray/i, /\bXR\b/, /jira/i, /confluence/i, /\bAIO\b/];
+  /*
+   * SIẾT 29/09/2026 — `\bAIO\b` phân biệt hoa-thường nên nó MÙ với dạng thường. Đo được: gate báo
+   * "NO-LEGACY-TOOLS sạch" trong khi 38 chỗ ở `docs/library/src/**` vẫn dạy `npm run aio:publish`,
+   * `aio:verify-fields`, `aio:deprecate-stale` — lệnh không còn trong `package.json`, trỏ vào thư mục
+   * `scripts/integrations/aio/` đã xoá. Đúng loại lỗ hổng của badge `XR` ở trên, chỉ khác kiểu chữ.
+   *
+   * `\baio:` bắt DẠNG LỆNH, không bắt tên công cụ trong câu kể lịch sử. Cố ý: comment kiểu "thay cho
+   * push_execution_aio.js cũ" là lý do một file tồn tại, xoá đi thì mất căn cứ. Còn `aio:<gì đó>` thì
+   * luôn là một đường đi được dạy, mà đường đó không còn.
+   */
+  const BANNED = [/xray/i, /\bXR\b/, /jira/i, /confluence/i, /\bAIO\b/, /\baio:/];
   /*
    * HAI FILE ĐƯỢC MIỄN, và chỉ hai: chính LUẬT này và TEST khoá luật. Ở đó cái tên xuất hiện với vai trò
    * "thứ bị cấm", không phải "đường được dạy" — không miễn thì luật tự tố chính nó và không ai chạy nổi.

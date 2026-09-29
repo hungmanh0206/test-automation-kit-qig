@@ -226,7 +226,7 @@ test.describe('@infra hồi quy: biến chưa khai + gate báo oan', () => {
     expect(outside.includes('${published}'), 'còn dùng `published` ngoài phạm vi callback').toBe(false);
   });
 
-  test('không có mirror from-aio thì KHÔNG được kết luận "chưa publish"', () => {
+  test('không có mirror from-sheet thì KHÔNG được kết luận "chưa publish"', () => {
     const src = fs.readFileSync(path.join(REPO, 'scripts/qa/traceability_matrix.js'), 'utf8');
     expect(src, 'phải phân biệt "chưa kéo mirror" với "chưa publish"').toMatch(/knowPublish/);
   });

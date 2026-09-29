@@ -692,7 +692,7 @@ if (taskDir) {
 }
 
 /**
- * Đọc file testcase từ MỌI nguồn canonical (`test-cases` + mirror `from-aio`) qua
+ * Đọc file testcase từ MỌI nguồn canonical (`test-cases` + mirror `from-sheet`) qua
  * `rc.getTestcaseDirs()`. Vì sao không tự ghép đường dẫn: thêm một nguồn mới (Google Sheet) mà script cũ chỉ quét `base`
  * thì nó **đếm thiếu trong im lặng** — gate `testcase dirs` bắt đúng lỗi này trong 2 khối tôi thêm hôm nay.
  */

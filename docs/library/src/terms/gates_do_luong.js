@@ -3,7 +3,7 @@
    và bảng trả lời preflight:lanes.
 
    Vì sao gom một nhóm: đây đều là máy đã có trong danh mục GATES.md nhưng CHƯA có mục trong thư viện.
-   Rà ngày 18/09/2026: 80 máy trong danh mục, 68 có mục, 12 không. Thiếu mục nghĩa là người đọc tra
+   Rà ngày 29/09/2026: 76 máy trong danh mục. Thiếu mục nghĩa là người đọc tra
    không ra, và một máy tra không ra thì coi như không có.
    Nguồn: header của chính từng script + .agent/config/GATES.md. */
 const TERMS_GATE5 = [
@@ -61,13 +61,6 @@ const TERMS_GATE5 = [
   src:'scripts/qa/dashboard_generate.js', rel:['f-knowledge','g-learn_report','f-results-json'] },
 
 /* ── Cửa vào / ra dữ liệu ────────────────────────────────────────────────── */
-
-{ id:'g-aio_pull', t:'aio:pull', cat:'gate',
-  def:'Kéo testcase TỪ Google Sheet về Excel canonical local, để Phase 2 execute đúng bản đã qua review.',
-  detail:'Ghi ra thư mục RIÊNG test-cases/from-aio/, không đụng Excel người viết ở test-cases/. Cột, tên sheet và định dạng "1. … 2. …" giữ nguyên để parser canonical đọc được mà không cần biết nguồn nào.',
-  why:'Phase 2 mặc định KHÔNG đọc Excel người viết, mà đọc bản kéo về từ test-management — nơi testcase đã qua review và sửa. Thiếu bản kéo về thì đặt TEST_MANAGEMENT_TOOL=aio xong Phase 2 vẫn đang chạy trên bản nháp.',
-  cmd:'npm run aio:pull   ·   npm run aio:pull:write',
-  src:'scripts/integrations/aio/pull_testcases_aio.js', rel:['f-aio','f-excel-canonical','g-aio_verify_fields'] },
 
 { id:'g-gdoc_read', t:'gdoc:read', cat:'gate',
   def:'Đọc nội dung Google Docs làm nguồn requirement.',

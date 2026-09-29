@@ -24,7 +24,7 @@ const FLOW_STEPS = [
   { n:'3', k:'publish', title:'Publish lên Google Sheet', who:'QA',
     goal:'Đưa testcase từ Excel canonical lên Google Sheet để cả team thấy và để Phase 2 kéo về.',
     out:['Case trên Google Sheet + folder theo nhóm chức năng','publish summary'],
-    cmd:'npm run aio:publish:apply -- --file <x.xlsx> --story <KEY> --qa-approved',
+    cmd:'node scripts/convert_excel/md_to_xlsx.js <testcase.md> <testcase.xlsx>  ·  upload qua Drive MCP',
     gate:'Dry-run trước — Sheet ghi đè toàn bộ mỗi lần sync. Publish thật chỉ sau khi QA xác nhận Excel.' },
 
   { n:'4', k:'wait', title:'Chờ Dev implement', who:'Dev',
@@ -41,7 +41,7 @@ const FLOW_STEPS = [
   { n:'5b', k:'push', title:'Đẩy kết quả lên Google Sheet', who:'QA',
     goal:'Tạo cycle, gắn trạng thái và evidence theo từng bước của case.',
     out:['sheet kết quả execution','evidence neo đúng bước'],
-    cmd:'npm run aio:push-exec:apply -- --task <TASK_KEY> --folder "<Tên sprint>"',
+    cmd:'npm run merge:execution-status -- --task <TASK_KEY>',
     gate:'Chạy HAI gate trước khi ghi: chất lượng output, và kế hoạch mở rộng 5 trục. Task có case band high đã execute mà chưa có reports/expansion-plan.md thì CHẶN — gỡ bằng npm run expansion:plan.' },
 
   { n:'6', k:'triage', title:'Triage fail/skip', who:'QA',
@@ -100,10 +100,10 @@ const TROUBLES = [
   { p:'Fail không rõ nguyên nhân', c:'Chưa phân loại product / setup / data / automation.', f:'Rerun đúng case đó và đọc artifact liên quan.' },
   { p:'Backlog bug thiếu thông tin', c:'Chưa có expected, actual hoặc evidence đủ rõ.', f:'Bổ sung đủ 4 phần mô tả và đính ảnh/video.' },
   { p:'Re-run vẫn fail', c:'Bug chưa được fix thật, hoặc setup vẫn lỗi.', f:'Giữ bug mở, ghi actual mới kèm evidence mới.' },
-  { p:'aio:push-exec bị chặn: thiếu reports/expansion-plan.md', c:'Task có case band high đã execute nhưng chưa quyết định mở rộng 5 trục. Gate đứng ở ĐƯỜNG PUBLISH chứ không chỉ ở self-review, vì bỏ qua self-review rồi đẩy thẳng thì trước đây không gì cản.', f:'Chạy npm run expansion:plan (vài giây, chỉ đọc Excel). Cố ý bỏ qua thì thêm --qa-approved và nêu lý do.', hot:1 },
-  { p:'Publish lên Sheet trả 2xx mà trường vẫn sai', c:'2xx chỉ chứng minh request được nhận, KHÔNG chứng minh mapping đúng — đã có lượt đổ nhầm cột mà log trông hoàn toàn bình thường.', f:'Chạy npm run aio:verify-fields sau MỖI lượt publish. Ở CI không có token thì dùng --structure-only.', hot:1 },
+  { p:'Ghi kết quả execution bị chặn: thiếu reports/expansion-plan.md', c:'Task có case band high đã execute nhưng chưa quyết định mở rộng 5 trục. Gate đứng ở ĐƯỜNG PUBLISH chứ không chỉ ở self-review, vì bỏ qua self-review rồi đẩy thẳng thì trước đây không gì cản.', f:'Chạy npm run expansion:plan (vài giây, chỉ đọc Excel). Cố ý bỏ qua thì thêm --qa-approved và nêu lý do.', hot:1 },
+  { p:'Publish lên Sheet trả 2xx mà trường vẫn sai', c:'2xx chỉ chứng minh request được nhận, KHÔNG chứng minh mapping đúng — đã có lượt đổ nhầm cột mà log trông hoàn toàn bình thường.', f:'Sau MỖI lượt publish, mở Sheet và đối soát lại từng trường với Excel canonical — ít nhất là bộ cột và vài dòng đầu mỗi nhóm.', hot:1 },
   { p:'Ưu tiên bị tụt về Medium sau khi publish', c:'Giá trị "Highest" là thang cũ của Backlog; công cụ cũ map theo TÊN nên rơi về fallback. Đo được 14 case của một bộ bị tụt mà không ai biết.', f:'Dùng thang canonical của kit: Critical | High | Medium | Low | Lowest.' },
-  { p:'Case cũ vẫn còn sau khi bỏ TC khỏi Excel', c:'Chưa chạy cleanup, hoặc chưa được QA duyệt.', f:'Chạy npm run aio:deprecate-stale xem trước rồi :apply — case chuyển Deprecated, không xoá (Sheet ghi đè toàn bộ mỗi lần sync).' },
+  { p:'Case cũ vẫn còn sau khi bỏ TC khỏi Excel', c:'Chưa chạy cleanup, hoặc chưa được QA duyệt.', f:'Đối chiếu Excel canonical với Sheet rồi đánh dấu Deprecated bằng tay — không xoá dòng, xoá là mất luôn lịch sử run. Xem trước rồi :apply — case chuyển Deprecated, không xoá (Sheet ghi đè toàn bộ mỗi lần sync).' },
   { p:'Tài liệu nguồn thay đổi', c:'Dùng nhầm Re-run.', f:'Chạy Partial Rerun Prepare Review, không phải Re-run.' },
   { p:'gate:policy chặn: còn nhắc công cụ test-management cũ', c:'Kit chỉ còn Google Sheet — script đã xoá, biến môi trường đã xoá, dữ liệu đã di trú đủ 2103/2103 lượt run. Mỗi câu còn nhắc công cụ trước đó là một đường mòn dẫn đi tìm lệnh không còn tồn tại.', f:'Xoá hoặc viết lại theo luồng Google Sheet. Đừng để lại ghi chú "legacy" — luật này cấm cả cái tên.' },
   { p:'gates:index:check chặn: bảng lệch source', c:'Thêm/sửa một máy trong scripts/qa/ mà chưa sinh lại danh mục gate.', f:'Chạy npm run gates:index. Nếu bảng báo sai mức (CHẶN/SINH/BÁO CÁO) thì soi lại — 4 "phát hiện" đầu tiên khi mới dựng bảng đều là lỗi của BẢNG, không của kit.' },
@@ -168,7 +168,7 @@ const TREE = [
 /* ── README: output của một task ── */
 const OUTPUT_DIRS = [
   ['requirements/','Backlog, tài liệu nguồn, Figma, Swagger hoặc tài liệu đầu vào đã fetch. Chứa cả ui_catalog.json và dimension_manifest.json.'],
-  ['test-cases/','Testcase Markdown, Excel canonical và snapshot ngữ cảnh. Có from-aio/ khi Phase 2 kéo về.'],
+  ['test-cases/','Testcase Markdown, Excel canonical và snapshot ngữ cảnh. Có from-sheet/ khi Phase 2 kéo bản Sheet về.'],
   ['test-results/','Playwright JSON, HTML report, screenshot, video, trace.'],
   ['reports/','phase1-summary · execution-summary · publish summary · bug log · rerun report.'],
   ['change/','Artifact của nhánh Requirement Change Management nếu có gọi.'],
@@ -222,7 +222,7 @@ const CMD_GROUPS = [
     ['npm run quality:decision -- --task <TASK_KEY>','GO / GO_WITH_RISK / NEEDS_REVIEW / NO_GO / BLOCKED']
   ]},
   { g:'Mở rộng 5 trục & chống lọt bug', items:[
-    ['npm run expansion:plan','Quyết TRƯỚC: case nào mở trục nào, tốn bao nhiêu — gỡ chặn cho aio:push-exec'],
+    ['npm run expansion:plan','Quyết TRƯỚC: case nào mở trục nào, tốn bao nhiêu — gỡ chặn cho bước ghi kết quả execution'],
     ['npm run expansion:audit','Đo độ phủ 5 trục trên mọi task đã execute'],
     ['npm run xsurf:diff','Trục 2 — cùng giá trị, khác nơi hiển thị (trục rò nhiều nhất)'],
     ['npm run probe:persist','Trục 3 — form → payload → API → UI'],
@@ -243,17 +243,13 @@ const CMD_GROUPS = [
   ]},
   { g:'Backlog & Google Sheet', items:[
     ['npm run integration:check','Kiểm kết nối Backlog'],
-    ['npm run aio:publish -- --file <x.xlsx> --story <KEY>','Xem trước khi publish testcase (mặc định dry-run)'],
-    ['npm run aio:publish:apply -- … --qa-approved','Publish thật sau khi QA duyệt'],
-    ['npm run aio:verify-fields -- --file <x.xlsx>','BẮT BUỘC sau publish — 2xx không chứng minh mapping đúng'],
-    ['npm run aio:verify  ·  npm run aio:verify:enforce','Đối soát độ tươi mirror trước khi execute'],
+    ['node scripts/convert_excel/md_to_xlsx.js <md> <xlsx>','Dựng Excel canonical từ testcase Markdown'],
+    ['(Drive MCP)','Upload Excel lên Google Sheet sau khi QA duyệt · tải bản mới nhất về canonical local'],
     ['npm run backlog:bug-report:dry-run -- …','Xem trước bug sẽ tạo'],
-    ['npm run aio:push-exec -- --task <KEY> --folder "<Sprint>"','Đẩy kết quả execute thành cycle (dry-run → :apply)'],
-    ['(Drive MCP)','Tải bản Google Sheet mới nhất về canonical local'],
-    ['npm run aio:deprecate-stale -- --story <KEY> --file <x.xlsx>','Cleanup: case rời Excel → Deprecated']
+    ['npm run merge:execution-status -- --task <KEY>','Ghép kết quả execute vào bộ canonical']
   ]},
   { g:'Kit: tự kiểm toán & phát hành', items:[
-    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 80 máy, 56 CHẶN; :check chặn khi bảng lệch source'],
+    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 76 máy, 52 CHẶN; :check chặn khi bảng lệch source'],
     ['npm run rule -- <mục>  ·  npm run rule:toc','Tra RULE_GLOBAL theo mục (287 token) thay vì đọc cả file (12,8k)'],
     ['npm run version:check','Chặn phát hành thiếu số phiên bản; kiểm khớp tag'],
     ['npm run package:kit','Đóng gói dist/ CHỈ lớp GENERIC — không để lọt secret hay oracle của dự án khác'],

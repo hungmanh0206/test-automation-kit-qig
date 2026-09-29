@@ -83,7 +83,8 @@ async function main() {
     if (miss.length) { console.error(`ERROR: --only không thấy trong status: ${miss.join(', ')}`); process.exit(2); }
   }
 
-  // Cùng luật `aio: null` cũ: EXPANSION_FINDING/OBSERVATION không phải verdict của case gốc — không ghi.
+  // Cùng luật cũ (`sheet: null` trong verdict_taxonomy): EXPANSION_FINDING/OBSERVATION không phải verdict
+  // của case gốc — không ghi.
   const nonVerdict = tests.filter((t) => sheetValueOf(t.status) === null);
   if (nonVerdict.length) {
     tests = tests.filter((t) => sheetValueOf(t.status) !== null);

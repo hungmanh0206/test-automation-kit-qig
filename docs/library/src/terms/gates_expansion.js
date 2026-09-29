@@ -118,30 +118,6 @@ const TERMS_GATE2 = [
   detail:'Tự tìm file theo danh sách track của git thay vì đọc một danh sách viết tay.',
   why:'Trước đây cả hai CI hardcode đúng ba đường dẫn, trong đó có một file thuộc knowledge/. Khi knowledge/ bị bỏ track vì là dữ liệu công ty, job static ĐỎ ở mọi lần push vì không tìm thấy file, đỏ không liên quan gì tới nội dung được push. Danh sách viết tay là thứ chắc chắn sẽ mục.',
   cmd:'npm run json:check',
-  src:'scripts/qa/json_check.js', rel:['g-preflight_gate','f-knowledge','g-audit_ci'] },
-
-/* ── Tầng Google Sheet ── */
-{ id:'g-aio_verify_fields', t:'aio:verify-fields', cat:'gate',
-  def:'Đối soát từng trường giữa nguồn và Google Sheet sau mỗi lượt publish.',
-  detail:'Hai mức: ① đối soát cấu trúc. Chạy được ở CI không cần token; ② đối soát cả giá trị.',
-  why:'Trả về 2xx chỉ chứng minh request được nhận, KHÔNG chứng minh mapping đúng. Đã có lượt publish thành công mà trường bị đổ nhầm cột, nhìn log thì hoàn toàn bình thường.',
-  cmd:'npm run aio:verify-fields -- --file <x.xlsx>   ·   --structure-only',
-  trap:'Đây là bước BẮT BUỘC sau mỗi lượt publish, không phải tuỳ chọn.',
-  src:'scripts/integrations/aio/verify_fields_aio.js', rel:['f-aio','sk-backlog_testcase_publisher','f-excel-canonical'] },
-
-{ id:'g-aio_verify', t:'aio:verify', cat:'gate',
-  def:'Đối soát ĐỘ TƯƠI của bản sao testcase trước khi execute.',
-  detail:'So updatedDate của từng case bằng một lệnh list duy nhất. Bản enforce cho exit 1 khi lệch, dùng ở preflight và CI.',
-  why:'Google Sheet là nguồn sự thật khi execute. Chạy trên bản mirror cũ nghĩa là đang chấm theo expected đã bị sửa, kết quả trông hợp lệ nhưng vô nghĩa.',
-  cmd:'npm run aio:verify   ·   npm run aio:verify:enforce',
-  src:'scripts/integrations/aio/verify_mirror.js', rel:['f-aio','c-canonical','g-preflight_gate','f-phase2'] },
-
-{ id:'g-aio_deprecate_stale', t:'aio:deprecate-stale', cat:'gate',
-  def:'Vòng đời case: rời khỏi Excel thì chuyển Deprecated, quay lại thì Published.',
-  detail:'Đối chiếu Excel canonical với công cụ cũ rồi đổi trạng thái case tương ứng. Mặc định chỉ xem trước, phải thêm :apply mới ghi thật.',
-  why:'Sheet ghi đè toàn bộ mỗi lần sync. Nên dọn dẹp ở đây có nghĩa là đánh dấu Deprecated chứ không phải xoá, và điều đó lại tốt hơn: giữ nguyên lịch sử các lượt chạy đã gắn vào case đó.',
-  cmd:'npm run aio:deprecate-stale -- --story <KEY> --file <x.xlsx>   ·   :apply',
-  trap:'Đừng tìm cách xoá cho sạch, mất case là mất luôn lịch sử run của nó.',
-  src:'scripts/integrations/aio/deprecate_stale_aio.js', rel:['f-aio','f-partial-rerun','f-excel-canonical'] }
+  src:'scripts/qa/json_check.js', rel:['g-preflight_gate','f-knowledge','g-audit_ci'] }
 
 ];

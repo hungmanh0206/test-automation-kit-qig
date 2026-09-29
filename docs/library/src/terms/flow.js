@@ -64,28 +64,28 @@ const TERMS_FLOW = [
   why:'Severity là thuộc tính của BUG chứ không phải của testcase. Chấm nó lúc viết case là đoán trước hậu quả của một lỗi chưa xảy ra. Việc duy nhất nó còn gánh là risk band, mà band lấy giá trị nặng hơn giữa hai cột. Sau khi vá thang ưu tiên bị thiếu mức "critical", đo trên 1977 case toàn repo thì bỏ hẳn cột này làm đổi band ĐÚNG 0 case. Tức nó dư thật, chỉ đang che một lỗi khác.',
   how:['Bộ TC cũ còn cột này vẫn parse được bình thường.','Điền giá trị Severity (Blocker/Major/Minor/Trivial) vào cột Ưu tiên thì bị CHẶN.'],
   trap:'Trước đây mọi giá trị "Highest" rơi về fallback Medium khi publish vì công cụ cũ map theo TÊN — đo được 14 case của một bộ bị tụt ưu tiên mà không ai biết.',
-  src:'scripts/lib/testcase/validate.js', rel:['f-excel-canonical','c-rbt','g-expansion_plan','f-aio'] },
+  src:'scripts/lib/testcase/validate.js', rel:['f-excel-canonical','c-rbt','g-expansion_plan','f-sheet'] },
 
-{ id:'f-aio', t:'Google Sheet', cat:'flow',
+{ id:'f-sheet', t:'Google Sheet', cat:'flow',
   def:'Công cụ test-management DUY NHẤT của kit. Lưu test là thực thể riêng của app, không phải Backlog issue.',
   detail:'Ba đường đi: Excel canonical → publish qua Drive MCP → dòng trong Google Sheet · kết quả Phase 2 → merge_execution_status → Cycle + Run + evidence theo từng bước · dòng trong Google Sheet → pull_testcases_aio → test-cases/from-sheet/*.xlsx làm nguồn execute. Model canonical dùng chung ở scripts/lib/testcase, chỉ khác tầng gọi API.',
   why:'Vì test không phải Backlog issue nên phải có tầng tích hợp riêng, không dùng lại được đường Backlog. Đổi lại, evidence gắn được vào TỪNG BƯỚC của case chứ không chỉ vào cả case.',
   how:[
-    'Env cần: GOOGLE_SHEET_CREDENTIALS (bắt buộc), GOOGLE_SHEET_ID, AIO_BASE_URL, AIO_THROTTLE_MS.',
-    'Mọi lệnh mặc định là xem trước. Phải thêm :apply mới ghi thật.',
-    'Sau mỗi lượt publish BẮT BUỘC chạy aio:verify-fields.'
+    'Env cần: GOOGLE_SHEET_URL trong profiles/<TASK_KEY>/task.env. Đọc và ghi Sheet đi qua Drive MCP.',
+    'Publish là thao tác NGƯỜI bấm: upload Excel canonical lên Drive sau khi QA duyệt, không có lệnh tự ghi.',
+    'Sau mỗi lượt publish BẮT BUỘC mở Sheet đối soát lại từng trường — 2xx không chứng minh mapping đúng.'
   ],
   trap:'Sheet ghi đè toàn bộ mỗi lần sync. Publish nhầm thì không rút lại được, chỉ chuyển Deprecated. Nên dry-run là bắt buộc chứ không phải cẩn thận thừa.',
-  src:'scripts/integrations/aio/README.md', rel:['c-aio-no-delete','g-aio_verify_fields','g-aio_verify','f-case-folder','f-test-execution'] },
+  src:'scripts/integrations/google_sheet/', rel:['c-sheet-ghi-de','f-case-folder','f-test-execution'] },
 
 { id:'f-case-folder', t:'Folder case (Google Sheet)', cat:'flow',
   def:'Cây thư mục tổ chức case trên Google Sheet theo nhóm chức năng.',
   detail:'Mỗi nhóm chức năng là một subfolder, khai bằng --folder-root khi publish.',
   why:'Bộ case vài trăm dòng mà để phẳng thì không ai tìm được, và cũng không nhìn ra nhóm nào đang mỏng. Chia theo chức năng là cách rẻ nhất để cả hai việc đó làm được bằng mắt.',
   how:['Mỗi nhóm chức năng một subfolder.','Case change-impact và regression xếp vào nhóm chức năng liên quan, không tách nhóm riêng.'],
-  trap:'aio:publish chỉ dựng được cây 2 cấp. Cây sâu 3 cấp thì phải vá tại chỗ sau khi publish.',
-  cmd:'npm run aio:publish:apply -- --file <x.xlsx> --story <KEY> --folder-root "<A/B>"',
-  src:'scripts/integrations/aio/README.md', rel:['f-aio','sk-backlog_testcase_publisher','c-traceability','f-excel-canonical'] },
+  trap:'Lượt publish chỉ dựng được cây 2 cấp. Cây sâu 3 cấp thì phải vá tại chỗ sau khi publish.',
+  cmd:'node scripts/convert_excel/md_to_xlsx.js <testcase.md> <testcase.xlsx>  ·  upload qua Drive MCP',
+  src:'scripts/integrations/google_sheet/', rel:['f-sheet','sk-backlog_testcase_publisher','c-traceability','f-excel-canonical'] },
 
 { id:'f-test-execution', t:'Cycle + Run (Google Sheet)', cat:'flow',
   def:'Cycle ghi lại một lượt chạy. Mỗi Run trong đó là kết quả của một case, kèm evidence theo từng bước.',
@@ -96,14 +96,14 @@ const TERMS_FLOW = [
     'Đường dẫn evidence ghi đầy đủ tính từ gốc repo.'
   ],
   trap:'Lệnh này chạy HAI gate trước khi ghi: chất lượng output, và kế hoạch mở rộng 5 trục. Task có case band high đã execute mà chưa có reports/expansion-plan.md thì bị CHẶN — gỡ bằng npm run expansion:plan hoặc --qa-approved nếu cố ý.',
-  cmd:'npm run aio:push-exec:apply -- --task <TASK_KEY> --folder "<Tên sprint>"',
-  src:'scripts/integrations/aio/push_execution_aio.js', rel:['f-aio','g-output_gate','c-evidence','g-expansion_plan','c-expansion-5truc'] },
+  cmd:'npm run merge:execution-status -- --task <TASK_KEY>',
+  src:'scripts/convert_excel/merge_execution_status.js', rel:['f-sheet','g-output_gate','c-evidence','g-expansion_plan','c-expansion-5truc'] },
 
 { id:'f-test-plan', t:'Thư mục cycle theo sprint', cat:'flow',
   def:'Gom các cycle của cùng một sprint vào một thư mục để nhìn được bức tranh cả sprint.',
   detail:'Khai bằng --folder khi đẩy kết quả.',
   why:'Cycle trả lời "lượt chạy hôm nay thế nào"; thư mục sprint trả lời "cả sprint này chất lượng ra sao". Hai câu hỏi khác nhau nên cần hai lớp.',
-  src:'scripts/integrations/aio/README.md', rel:['f-test-execution','f-aio'] },
+  src:'scripts/integrations/google_sheet/', rel:['f-test-execution','f-sheet'] },
 
 { id:'f-knowledge', t:'knowledge/', cat:'flow',
   def:'Bộ nhớ dài hạn của kit. Thứ khiến nó khá lên theo thời gian thay vì bắt đầu lại mỗi task.',

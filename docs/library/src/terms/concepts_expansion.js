@@ -71,14 +71,14 @@ const TERMS_CONCEPT2 = [
   ],
   ex:'Chính nguồn của trang này nằm trong phạm vi quét, và gate đã bắt đúng hai chỗ tôi nhắc tên cũ khi đang mô tả về chính luật này, phải viết lại mới qua.',
   trap:'Gate từng bỏ sót đuôi .sh và .html, báo ✓ trong khi vẫn có vi phạm thật. Đúng nguyên tắc: gate phải chạy trên nội dung thật mới tính là nghiệm thu.',
-  src:'scripts/qa/policy_source_check.js', rel:['f-aio','g-policy_source_check','c-canonical','c-gate-real-content'] },
+  src:'scripts/qa/policy_source_check.js', rel:['f-sheet','g-policy_source_check','c-canonical','c-gate-real-content'] },
 
-{ id:'c-aio-no-delete', t:'Sheet ghi đè toàn bộ mỗi lần sync', cat:'concept',
+{ id:'c-sheet-ghi-de', t:'Sheet ghi đè toàn bộ mỗi lần sync', cat:'concept',
   def:'Dọn dẹp trên Google Sheet nghĩa là chuyển trạng thái Deprecated, không phải xoá.',
   detail:'Case rời khỏi Excel canonical thì chuyển Deprecated. Quay lại thì chuyển Published.',
   why:'Ràng buộc của công cụ, nhưng hoá ra lại đúng hướng: giữ case nghĩa là giữ nguyên lịch sử các lượt chạy đã gắn vào nó. Xoá cho sạch là mất luôn phần lịch sử đó.',
   trap:'Vì không xoá được nên phải dry-run trước mọi lượt publish, đẩy nhầm thì không rút lại được.',
-  src:'scripts/integrations/aio/README.md', rel:['f-aio','g-aio_deprecate_stale','sk-backlog_testcase_publisher'] },
+  src:'.agent/skills/shared/backlog_testcase_publisher/SKILL.md', rel:['f-sheet','sk-backlog_testcase_publisher'] },
 
 /* ── Bốn khái niệm rút ra từ đợt sửa dụng cụ đo tháng 9/2026 ─────────────── */
 
@@ -88,7 +88,7 @@ const TERMS_CONCEPT2 = [
   why:'Bốn lần đo sai trong repo này đều cùng một hình dạng: dụng cụ hỏng, và mọi "phát hiện" của nó là báo oan hoặc bỏ sót. Con số "13 task không có tài liệu lành" hoá ra sai hẳn; số thật là 2.',
   how:['Mỗi máy mới phải có ĐỐI CHỨNG ÂM: bơm vào một mẫu sai đã biết, máy phải gọi đúng tên nó.','Câu máy in ra phải nói đúng thứ nó đo. "Không có tài liệu nguồn nào" khác hẳn "không đọc được id của tài liệu nào".','Nghi ngờ mọi phép đo trả về 0 vi phạm ngay lượt đầu.'],
   ex:'Một máy soát tài liệu bản đầu chỉ nhận MỘT khuôn id nên bỏ sót nguyên một thư mục 16 file, mà vẫn in tín hiệu sạch.',
-  rel:['c-gate-real-content','g-mutation_check','c-oracle'] },
+  src:'scripts/qa/mutation_check.js', rel:['c-gate-real-content','g-mutation_check','c-oracle'] },
 
 { id:'c-noi-dung-khong-phai-thoi-gian', t:'So nội dung, đừng so thời gian', cat:'concept',
   def:'Câu hỏi "bản sinh ra có khớp nguồn không" phải trả lời bằng cách dựng lại rồi đối chiếu, không bằng dấu thời gian.',
@@ -112,6 +112,6 @@ const TERMS_CONCEPT2 = [
   why:'Ở tài liệu dự án này thì điều kiện chấp nhận NẰM TRONG BẢNG. File fetch về vẫn có heading, vẫn có chữ, nên không ai nghi ngờ. Đo trên 12 trang thật: giữ được bảng 0/12, dòng Given/When/Then 0/66.',
   how:['Tách bộ đổi ra module dùng chung rồi test nó, thay vì để trong thân script CLI — phần nằm trong thân script không export gì thì không có cách nào phủ test.','Test phải chốt HAI vế: bộ đổi giữ được bảng, VÀ các fetcher thực sự gọi nó. Thiếu vế hai thì ai cũng có thể viết lại một dòng gỡ thẻ mà test vẫn xanh.'],
   ex:'Sau khi sửa: bảng 12/12, Given/When/Then 66/66, không trang nào còn bị gộp một dòng.',
-  rel:['g-docs_index','c-tin-hieu-sach-gia','sk-requirements_analyzer'] },
+  src:'scripts/integrations/google_doc/utils.js', rel:['g-docs_index','c-tin-hieu-sach-gia','sk-requirements_analyzer'] },
 
 ];
