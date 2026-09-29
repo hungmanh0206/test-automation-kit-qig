@@ -133,15 +133,6 @@
         "status": "Status",
         "service_fee_type": "Service Fee Type"
       },
-      "CORE_HUBSPOT": {
-        "_route": "/operations/sales/orders/<id>/detail/overview → bấm tab \"Hubspot Information\"",
-        "_method": "Doc read-only tab Hubspot Information. sync_status KHONG nam o tab Overview — ket luan \"cot nay khong hien thi\" khi moi xem 1 tab la ket luan thieu.",
-        "sync_status": "Synchronized status"
-      },
-      "SERVICE_FEE_HUBSPOT": {
-        "_route": "/operations/sales/service-fee-orders/<id>/detail/overview → tab \"Hubspot Information\"",
-        "sync_status": "Synchronized status"
-      },
       "ADD_ON_LIST": {
         "_route": "/operations/sales/add-on-orders?page_index=1&page_size=250",
         "_method": "Noi 133/133 hang. \"Gross Amount\" khop original_price toan bo hang va KHONG khop cot tien nao khac. \"Net Amount\" khop DONG THOI final_price va automatic_price o ca 133 hang ⇒ KHONG phan biet duoc, khong neo (khac man CORE_LIST, o do Net Amount neo duoc).",
@@ -160,7 +151,7 @@
     },
     "unanchored": {
       "custom_price": "Cot DUY NHAT that su can FIXTURE: quet TOAN BO DB (132 ban ghi non-null) khong co don nao custom_price khac moi cot tien khac ⇒ khong the neo bang du lieu san co. Can don dat gia custom khac ca automatic_price va final_price.",
-      "fixed_discount": "DO 2 don (fixed_discount = 10 va 15) tren 3 man: tab Overview, tab Hubspot Information, va form /edit (form SF chi co 12 o nhap, 4 co gia tri, khong o nao mang 10/15). Chuoi \"10%\" duy nhat tim thay lai nam trong TEN LIEN HE test (\"IT M4-10%\"). Chi 3 ban ghi trong toan DB, gia tri 5/10/15 — qua nho de la VND nen kha nang cao la PHAN TRAM, nhung chua thay hien nen chua xac dinh duoc kieu (khai o khoi rates.unitUnknown).",
+      "fixed_discount": "DO 2 don (fixed_discount = 10 va 15) tren 3 man: tab Overview, tab dong bo ngoai, va form /edit (form SF chi co 12 o nhap, 4 co gia tri, khong o nao mang 10/15). Chuoi \"10%\" duy nhat tim thay lai nam trong TEN LIEN HE test (\"IT M4-10%\"). Chi 3 ban ghi trong toan DB, gia tri 5/10/15 — qua nho de la VND nen kha nang cao la PHAN TRAM, nhung chua thay hien nen chua xac dinh duoc kieu (khai o khoi rates.unitUnknown).",
       "payment_method": "SUA KET LUAN (29/08, sau khi doc FSD): cot nay TEN SAI so voi nghia. FSD phan biet HAI field: \"Payment Type\" (Hinh thuc thanh toan = Tra thang / Tra gop) va \"Payment Method\" (Phuong thuc thanh toan = Chuyen khoan / VNPay). Enum cua ic_payment_orders.payment_method la ONETIME/INSTALLMENT ⇒ no mang nghia PAYMENT TYPE, khong phai Payment Method. Truoc do toi tim tren UI theo dung TEN COT nen ra 0 nhan phan biet o 6 loai man — do la loi tim, khong phai \"khong hien thi\". Nguon gia tri: FSD 3.2.1.1 buoc 3 — dropdown \"Lua chon thanh toan\" o luong CHECKOUT (khop voi cot payment_page_url + cot song sinh forced_payment_method). Da do: KHONG the neo qua grid giao dich — tx co cot RIENG payment_type (ONETIME 420 / INSTALLMENT 22) va payment_method (BANK_TRANSFER 555 / CASH 55 / VNPAY 39 / SWIPE_POS 17); doi chieu 402 cap don-giao dich thi 387 khop nhung 15 LECH (5 don ONETIME co tx INSTALLMENT, 10 don INSTALLMENT co tx ONETIME) ⇒ grid tx khong phai noi hien gia tri cua DON. Man con phai doc: trang checkout.",
       "full_name": "DO tren 1005 ban ghi DB (cot full_name TOAN NULL) va tren man Overview cua 6 don (nhan \"Full name\" CO hien, gia tri lay tu first_name/last_name). Day la VI DU MANH NHAT cho luat \"dung suy tu ten cot\": ten nhan trung khop ten cot ma neo vao la sai hoan toan. Chi neo duoc neu app bat dau ghi cot nay."
     },
@@ -187,10 +178,6 @@
         "MUA_TAI_KHOAN_BECKER": "Mua tài khoản Becker",
         "DANG_KY_CBE": "Đăng ký CBE"
       },
-      "ic_payment_orders.sync_status": {
-        "SYNC_SUCCESS": "Thành công",
-        "SYNC_FAIL": "Thất bại"
-      },
       "_coverage": "DAY DU hay chua, noi ro tung cot: status = 6/6 enum cua DB (DAY DU, do doc lap tren CA BA man danh sach, ket qua trung nhau). sync_status = 2/2 enum non-null (DAY DU). service_fee_type = 9/9 enum non-null (DAY DU sau vong 4): 6 enum doc o man Service Fee (249 hang) + 3 enum chi ton tai o don ADD_ON doc o man Add-on (133 hang). Vi sao phai doc 3 man: trang dau 50 hang cua MOT man chi thay 6/9 enum — ban do THIEU ma trong nhu du, do la ly do khoi nay bat buoc phai co.",
       "_deviations": {
         "_why": "Lech GIUA MAN da DO duoc — giu rieng, KHONG tron vao ban do nhan. Ban do nhan la thu app LE RA phai hien; lech la PHAT HIEN. Tron vao nhau thi phep kiem sau nay lay chinh cai sai lam chuan roi assert theo no.",
@@ -204,7 +191,8 @@
     },
     "_method_enum_by_groups": "Neo cot ENUM khong hien dang chuoi: lay HAI NHOM don CUNG MAN khac nhau dung o cot do, roi tim nhan nao (a) co o MOI don ca hai nhom, (b) gia tri KHONG DOI trong tung nhom, (c) gia tri KHAC nhau giua hai nhom. Thieu (b) thi moi nhan hien so tien deu lot; thieu (a) thi khac biet do thu khac cung lot. VA moi nhom phai >= 3 don CUA CAC KHACH KHAC NHAU: hai don gan-ban-sao (cung khach, cung so tien) lam moi phep so nhom ra ket qua GIA. Cai dat: tests/support/setup/db/fieldmap.anchor.spec.ts, test \"SO HAI NHOM\".",
     "_instrument_note": "INSTRUMENT MU tung lam suyt ket luan sai: bo doc form ban dau bao \"select=0\" o MOI form OPS. OPS dung ant-select (div, khong phai <select>) nen input.value RONG, va radio/checkbox thi `value` la hang so cua tung o (doc value la ra gia tri o CHUA CHON). Phai doc .ant-select-selection-item + trang thai checked. Mot form nghiep vu OPS co 0 dropdown la dau hieu SUA CONG CU, khong phai ket luan \"form khong co field\".",
-    "_oracle_source": "FSD cua task: outputs/<project>/tasks/CSDL-24395/docs/fsd.txt (+ docs/spec_sheet.xlsx, requirements/figma/). Luat: chu hien thi neo vao FIGMA, con MIEN GIA TRI (enum nao hop le o man nao) neo vao FSD. Ba muc `_deviations` duoi day da doi chieu voi FSD ngay 29/08 — doc oracle TRUOC khi ket luan, dung ket luan roi moi tim oracle."
+    "_oracle_source": "FSD cua task: outputs/<project>/tasks/CSDL-24395/docs/fsd.txt (+ docs/spec_sheet.xlsx, requirements/figma/). Luat: chu hien thi neo vao FIGMA, con MIEN GIA TRI (enum nao hop le o man nao) neo vao FSD. Ba muc `_deviations` duoi day da doi chieu voi FSD ngay 29/08 — doc oracle TRUOC khi ket luan, dung ket luan roi moi tim oracle.",
+    "_canh_bao_du_an": "fieldMap.byScreen duoi day neo theo mot du an CU (man SERVICE_FEE/CORE/ADD_ON). Du an khac PHAI neo lai truoc khi dung §23, neu khong moi ket luan doc ra deu sai ten cot. Xem prompt_templates/phase1/dimensions/23_db_persistence.md muc \"Neo them cot\"."
   },
   "rates": {
     "_why": "TACH KHOI khoi \"money\". DO bien do gia tri: service_fee_rate n=39 distinct=3 min=0 max=20; fixed_discount n=3 distinct=3 min=5 max=15. Bien do 0..20 khong the la tien VND. Goi money() len chung thi thong diep sai (\"lech 5 dong\" cho mot ti le) va so sanh sai ngu nghia.",

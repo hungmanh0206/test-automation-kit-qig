@@ -90,7 +90,7 @@ Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ �
 - Other docs/files: [OTHER_DOCS hoặc N/A]
 
 Run profile (chạy song song an toàn):
-- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, tài khoản OPS/LMS theo task, `GOOGLE_SHEET_URL`); giá trị TĨNH (Figma/tài liệu nguồn/Backlog/HubSpot key + base URL) giữ ở .env chung.
+- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, tài khoản OPS/LMS theo task, `GOOGLE_SHEET_URL`); giá trị TĨNH (Figma/tài liệu nguồn/Backlog key + base URL) giữ ở .env chung.
 - Truyền TASK_ENV=profiles/[TASK_KEY]/task.env cho MỌI command; không đọc TASK_KEY từ .env chung, không sửa .env/.env.local chung.
 - Chi tiết: QUICKSTART.md (mục Parallel Story Safety).
 

@@ -149,7 +149,7 @@ không sống theo dòng testcase. Mỗi lần execute một case, mở rộng t
 | # | Trục | Câu hỏi phải hỏi | Máy |
 |---|---|---|---|
 | 1 | **Field cùng khối** | Khối này còn field nào khác? Có field nào **thiếu/thừa** so với tài liệu? | `npm run spec:extract` sinh catalog → `ui_conformance_check` |
-| 2 | **Cùng giá trị, khác nơi hiển thị** | Giá trị này còn xuất hiện ở đâu (list · detail · tab HubSpot · checkout · API)? Có khớp? | `npm run xsurf:diff` |
+| 2 | **Cùng giá trị, khác nơi hiển thị** | Giá trị này còn xuất hiện ở đâu (list · detail · tab đồng bộ · checkout · API)? Có khớp? | `npm run xsurf:diff` |
 | 3 | **Chuỗi lưu trữ** | Giá trị nhập vào có **sống sót** qua `form → payload → đọc lại → UI`? | `npm run probe:persist` |
 | 4 | **Nhánh/biến thể** | Cùng màn này với loại đơn/gói/tiền tệ KHÁC thì sao? | `npm run fixture:matrix` |
 | 5 | **Trạng thái kế cận** | Sau khi hủy / hoàn / deal lost / thanh toán một phần thì màn này còn đúng? | `npm run fixture:matrix` |

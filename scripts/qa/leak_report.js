@@ -56,7 +56,7 @@ const AXES = [
     key: 'surface',
     ten: 'Cùng giá trị, khác nơi hiển thị',
     may: 'cross_surface_diff — npm run xsurf:diff',
-    rx: /hai màn|2 màn|màn (?:khác|còn lại)|trong khi (?:màn|tab)|checkout .*(?:khác|sai)|tab hubspot|đồng bộ sang hubspot|list .*detail|mâu thuẫn nhau/i,
+    rx: /hai màn|2 màn|màn (?:khác|còn lại)|trong khi (?:màn|tab)|checkout .*(?:khác|sai)|tab đồng bộ|đồng bộ sang hệ ngoài|list .*detail|mâu thuẫn nhau/i,
   },
   {
     id: 3,

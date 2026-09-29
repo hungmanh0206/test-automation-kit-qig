@@ -264,7 +264,7 @@ function validate(doc) {
   /*
    * CHỈ áp cho bộ đã theo format mới (có cột `Tag`) — đúng tiền lệ lúc thêm `Loại case`: luật mới không
    * được làm đỏ/ồn những bộ có TRƯỚC luật. Đo thật 21/08/2026: bật cho tất cả thì 8 bộ cũ kêu ngay
-   * (`OPS - ` 95/95 · `Mobile - ` 96/96 · `LMS-Pro Staging - ` 34/36 …). Chúng đúng là cùng một lỗi,
+   * (`OPS - ` 95/95 · `Mobile - ` 96/96 · `Staging - ` 34/36 …). Chúng đúng là cùng một lỗi,
    * nhưng nag bộ đã publish mà không ai sinh lại chỉ dạy người đọc bỏ qua cảnh báo. Bộ nào sinh lại
    * theo prompt mới sẽ có cột `Tag` và tự vào tầm ngắm.
    */

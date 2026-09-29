@@ -58,7 +58,7 @@ const run = (root: string) => {
 const CFG = (over: Record<string, unknown> = {}) => JSON.stringify({
   nightly: ['tests/fe/infra'],
   uatImports: ['opsLogin', 'lmsLogin', 'support/auth/'],
-  uatEnvPrefixes: ['OPS_', 'LMS_', 'HUBSPOT_'],
+  uatEnvPrefixes: ['OPS_', 'LMS_'],
   taskSpecDebt: [],
   allowedTaskSpecDirs: [],
   ...over,

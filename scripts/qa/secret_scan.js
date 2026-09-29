@@ -20,7 +20,7 @@ const SKIP = /(\.example($|\.)|example\.env|\.md$|\.png$|\.jpg$|\.jpeg$|\.webp$|
 /*
  * `&lt;...&gt;` là CHÍNH `<...>` sau khi HTML-escape. Thiếu vế đó thì cùng một dòng placeholder bị bỏ qua
  * trong file `.md` nhưng lại bị báo trong file `.html`. Đo 19/09/2026 khi quét 4.925 blob lịch sử: đúng 2
- * phát hiện, cả hai là `HUBSPOT_ACCESS_TOKEN=&lt;TEST_PRIVATE_APP_ACCESS_TOKEN&gt;` trong HTML xuất ra.
+ * phát hiện, cả hai là `CRM_ACCESS_TOKEN=&lt;TEST_PRIVATE_APP_ACCESS_TOKEN&gt;` trong HTML xuất ra.
  */
 const PLACEHOLDER = /your[-_]?|<[^>]+>|&lt;[^&\s]+&gt;|xxx+|placeholder|example|changeme|process\.env|\$\{?[A-Z_]/i;
 const BINARY = /\x00/;

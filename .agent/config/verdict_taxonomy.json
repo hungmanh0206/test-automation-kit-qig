@@ -109,7 +109,7 @@
     "principle": "CẤM gán tầng FE/BE chỉ bằng quan sát giao diện. Phải đối chiếu dữ liệu API trước khi kết luận.",
     "howTo": [
       "Bắt response của chính API mà màn đang xem gọi (page.on(response) hoặc DevTools Network), không đoán tên endpoint.",
-      "So giá trị trong response với nguồn spec (Ops/HubSpot/FSD).",
+      "So giá trị trong response với nguồn spec (FSD/BR/tài liệu nghiệp vụ).",
       "BE trả SAI hoặc THIẾU dữ liệu → tầng BE (api_bug). Response đã đúng và đủ mà UI hiển thị sai → tầng FE.",
       "UI gửi payload thiếu/sai dù người dùng đã nhập đủ → FE. BE nhận payload hợp lệ mà xử lý sai → BE.",
       "Chưa bắt được API thì KHÔNG gán tầng — ghi rõ chưa xác định, không đoán."

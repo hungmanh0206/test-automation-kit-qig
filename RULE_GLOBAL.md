@@ -90,10 +90,10 @@ Tài liệu này định nghĩa các rule chung áp dụng cho mọi workflow, p
 | Project output root | `PROJECT_OUTPUT_DIR` (trong task.env) |
 | Task scope | `TASK_KEY` (trong task.env) |
 | Parallel run scope | `RUN_ID` nếu chạy nhiều session cùng `TASK_KEY` |
-| Runtime secrets (TĨNH, dùng chung) | `.env.local`, `.env`, CI env hoặc secret store (base URL + API key Figma/Backlog/Google Sheet/HubSpot) |
+| Runtime secrets (TĨNH, dùng chung) | `.env.local`, `.env`, CI env hoặc secret store (base URL + API key Figma/Backlog/Google Sheet) |
 | Workflow-specific context | Prompt template hoặc `.agent/config/project_context.md` |
 
-**Tạo profile task (một lần, chỉ 1 lệnh):** khi user yêu cầu "Tạo profile cho `<TASK_KEY>`" → chạy `node scripts/utils/create_profile.js <TASK_KEY> [--project-output outputs/<PROJECT>]` (hoặc `npm run profile:create -- <TASK_KEY>`). Lệnh copy `profiles/task.env.example` → `profiles/<TASK_KEY>/task.env`, prefill `TASK_KEY`+`BACKLOG_STORY_KEY`, KHÔNG ghi đè nếu đã tồn tại; QA điền credential + link. Profile CHỈ chứa giá trị động: `PROJECT_OUTPUT_DIR, TASK_KEY, BACKLOG_STORY_KEY, BACKLOG_STORY_URL, REQUIREMENT_DOC, BRD_DOC, FIGMA_FILE_URL, GOOGLE_DOCUMENT_ID, GOOGLE_SHEET_URL, LMS_USERNAME/PASSWORD/API_TOKEN, OPS_USERNAME/PASSWORD/API_TOKEN` (+ assignee/HubSpot per-task nếu cần). File task.env KHÔNG commit (gitignore `profiles/**/task.env`).
+**Tạo profile task (một lần, chỉ 1 lệnh):** khi user yêu cầu "Tạo profile cho `<TASK_KEY>`" → chạy `node scripts/utils/create_profile.js <TASK_KEY> [--project-output outputs/<PROJECT>]` (hoặc `npm run profile:create -- <TASK_KEY>`). Lệnh copy `profiles/task.env.example` → `profiles/<TASK_KEY>/task.env`, prefill `TASK_KEY`+`BACKLOG_STORY_KEY`, KHÔNG ghi đè nếu đã tồn tại; QA điền credential + link. Profile CHỈ chứa giá trị động: `PROJECT_OUTPUT_DIR, TASK_KEY, BACKLOG_STORY_KEY, BACKLOG_STORY_URL, REQUIREMENT_DOC, BRD_DOC, FIGMA_FILE_URL, GOOGLE_DOCUMENT_ID, GOOGLE_SHEET_URL, LMS_USERNAME/PASSWORD/API_TOKEN, OPS_USERNAME/PASSWORD/API_TOKEN` (+ assignee per-task nếu cần). File task.env KHÔNG commit (gitignore `profiles/**/task.env`).
 
 ## Outputs
 
@@ -513,11 +513,11 @@ Khi log bug, **CẤM gán tầng lỗi chỉ bằng quan sát giao diện**. Nh�
 | Bước | Yêu cầu |
 |---|---|
 | 1. Bắt API thật | Bắt response của **chính API mà màn đang xem gọi** (`page.on('response', ...)` trong Playwright, hoặc tab Network của DevTools). **Không đoán** tên endpoint. |
-| 2. Đối chiếu | So giá trị trong response với nguồn spec (màn nguồn, HubSpot, FSD). |
+| 2. Đối chiếu | So giá trị trong response với nguồn spec (màn nguồn, FSD, BR). |
 | 3. Kết luận tầng | BE trả **sai/thiếu** → **BE** (`api_bug`). Response **đã đúng và đủ** mà UI hiện sai → **FE**. UI gửi payload thiếu dù người dùng nhập đủ → **FE**. BE nhận payload hợp lệ mà xử lý sai → **BE**. |
 | 4. Khi chưa bắt được API | **Không gán tầng** — ghi rõ *chưa xác định tầng*, tuyệt đối không đoán. |
 
-Evidence cho bug **so sánh hai nơi** phải là **ảnh GHÉP cả hai trong cùng một hình**, khoanh vùng từng bên và ghi rõ giá trị mỗi bên. Ví dụ Ops với Checkout, form với payload, order với HubSpot. Không đính hai ảnh rời, cũng không chỉ một phía.
+Evidence cho bug **so sánh hai nơi** phải là **ảnh GHÉP cả hai trong cùng một hình**, khoanh vùng từng bên và ghi rõ giá trị mỗi bên. Ví dụ màn quản trị với màn người dùng, form với payload, đơn với hệ ngoài. Không đính hai ảnh rời, cũng không chỉ một phía.
 
 Gán sai tầng khiến ticket đi nhầm người và bị dev bounce lại, mất trọn một vòng lặp. Chi tiết máy-đọc: `.agent/config/verdict_taxonomy.json` mục `beVsFe`.
 

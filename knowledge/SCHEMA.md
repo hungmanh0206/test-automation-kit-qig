@@ -364,7 +364,7 @@ trước đây kit KHÔNG có chỗ chứa. `Setup Strategy` chỉ sống trong 
   "verification": "Khối Customer Info hiện đúng contact VÀ loại phí là Chuyển nhượng",
   "cleanup": "Xoá theo tiền tố `IT test`",
   "source": "…", "confirmed_by": "QA", "confirmed_at": "2026-08-14", "version": 1, "status": "active",
-  "tags": ["fixture", "hubspot"]
+  "tags": ["fixture", "crm"]
 }
 ```
 
@@ -435,7 +435,7 @@ Loại thứ tư của `system/`. Không phải "giá trị đúng" (`domain/`),
 Kiểm 3 store `setup_recipes`/`environment`/`locators`: `npm run howto:check` (`-- --enforce` để chặn) ·
 ghi index: `npm run howto:index`. `system/` (gồm `data_model`): `npm run system:check` · `system:index`.
 
-> **Quirk của TOOLCHAIN** (Backlog/Google Sheet/HubSpot API) dùng chung `environment/`, chỉ khác `scope` — vd
+> **Quirk của TOOLCHAIN** (Backlog/Google Sheet/API ngoài) dùng chung `environment/`, chỉ khác `scope` — vd
 > `"scope": "Toolchain — Backlog API"`. Không tạo store riêng: schema `fact/impact/workaround/detection`
 > vừa khít, và tách ra chỉ làm loãng.
 >

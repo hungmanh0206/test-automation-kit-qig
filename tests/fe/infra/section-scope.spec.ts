@@ -37,7 +37,7 @@ const HTML_ROWS = `<div class="wrap">
 
 /** Layout 2 — khối CON lồng trong khối CHA: cha w700, con w600, các con nằm PHẲNG cạnh nhau. */
 const HTML_NESTED = `<div class="outer">
-  <span style="font-weight:700;font-size:16px">Data Synchronized from Hubspot</span>
+  <span style="font-weight:700;font-size:16px">Data Synchronized from Partner</span>
   <span style="font-weight:600;font-size:16px">Deal Information</span>
   <div class="row"><span>Deal ID</span><span>1</span></div>
   <div class="row"><span>Full name</span><span>x</span></div>
@@ -72,7 +72,7 @@ test.describe('@infra định vị section (ui_conformance_check.stampSection)',
 
   test('khối CHA vẫn được phép chứa các khối con (cấp thấp hơn không phải biên)', async ({ page }) => {
     await page.setContent(HTML_NESTED);
-    const st = await stampSection(page, 'Data Synchronized from Hubspot', 'm3', '.outer');
+    const st = await stampSection(page, 'Data Synchronized from Partner', 'm3', '.outer');
     expect(st.ok).toBe(true);
     // Cha bọc cả 2 khối con ⇒ tập nhãn phải gồm cả hai.
     const sel = st.via === 'sibling-range' ? '[data-uicheck-row="m3"]' : '[data-uicheck="m3"] .row';
@@ -89,7 +89,7 @@ test.describe('@infra định vị section (ui_conformance_check.stampSection)',
     expect(byName['Deal Information'].labels).toEqual(['Deal ID', 'Full name', 'Email']);
     expect(byName['Transfer Information'].labels).toEqual(['Converted Course Packages', 'Convertible Amount']);
     expect(byName['Deal Information'].rank, 'con phải thấp cấp hơn cha')
-      .toBeLessThan(byName['Data Synchronized from Hubspot'].rank);
+      .toBeLessThan(byName['Data Synchronized from Partner'].rank);
   });
 });
 
@@ -106,7 +106,7 @@ test.describe('@infra spec_extract --suggest-aliases', () => {
 
 | **#** | **Field** | **Label** | **Required** | **Data type** | **Input** | **Validation** | **Description** |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| **TAB 2: HUBSPOT INFORMATION** |  |  |  |  |  |  |  |
+| **TAB 2: SYNC INFORMATION** |  |  |  |  |  |  |  |
 | **Thông tin trên Deal** |  |  |  |  |  |  |  |
 | 1 | deal_id | Deal ID | M | Number | x |  | d |
 | 2 | full_name | Full name | ◎ | Text | x |  | d |
@@ -114,11 +114,11 @@ test.describe('@infra spec_extract --suggest-aliases', () => {
 `);
     const bindings = path.join(dir, 'b.json');
     fs.writeFileSync(bindings, JSON.stringify({
-      screens: { 'f11:4.4.1#tab_2_hubspot_information': { name: 'X Hub', url: '/x' } },
+      screens: { 'f11:4.4.1#tab_2_sync_information': { name: 'X Sync', url: '/x' } },
     }));
     const surface = path.join(dir, 'surface.json');
     fs.writeFileSync(surface, JSON.stringify({
-      'X Hub': [
+      'X Sync': [
         { heading: 'Deal Information', rank: 60016, labels: ['Deal ID', 'Full name', 'Email'] },
         { heading: 'Khối lạ', rank: 70016, labels: ['Aaa', 'Bbb', 'Ccc'] },
       ],

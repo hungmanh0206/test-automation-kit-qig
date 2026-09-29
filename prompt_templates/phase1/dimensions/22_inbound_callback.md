@@ -1,7 +1,7 @@
 # §22 — Inbound Callback / Webhook Coverage (phía **NHẬN**)
 
 > Tag bắt buộc trong tiêu đề case: **`[Callback]`**.
-> Mở khi **hệ thống NHẬN request từ bên thứ ba**: cổng thanh toán VNPay hay VietQR, HubSpot, SAP, nhà cung
+> Mở khi **hệ thống NHẬN request từ bên thứ ba**: cổng thanh toán VNPay hay VietQR, CRM, SAP, nhà cung
 > cấp SMS hoặc mail. Kể cả khi request đó chỉ "báo kết quả".
 
 ## Vì sao chiều này tồn tại (đo được, không phải phòng xa)

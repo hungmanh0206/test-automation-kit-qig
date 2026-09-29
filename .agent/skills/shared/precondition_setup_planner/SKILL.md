@@ -101,7 +101,7 @@ capability cụ thể.
 |---|---|---|---|
 | `needs_hook` | Thiếu test hook backend để dựng/verify state | Dev/BE | Có |
 | `needs_account` | Thiếu account/role/quyền để chạy flow | DevOps/QA-Lead | Có |
-| `needs_sandbox` | Thiếu sandbox cho dependency ngoài (VNPay/Zoom/HubSpot…) | DevOps/BE | Có |
+| `needs_sandbox` | Thiếu sandbox cho dependency ngoài (VNPay/Zoom/CRM…) | DevOps/BE | Có |
 | `spec_mismatch` | Build khác spec/testcase (flow đã đổi, không dựng được theo spec cũ) | BA/Dev align + nhánh Partial Rerun | Không (không phải capability) |
 | `manual_inherent` | Bản chất manual (file thật rất lớn, thao tác vật lý, tương tác ngoài tầm automation) | QA chạy tay | Không |
 | `external_dependency` | Dependency thật ngoài scope/chưa sẵn sàng | Ghi blocker | Tùy |

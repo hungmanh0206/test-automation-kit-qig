@@ -26,7 +26,7 @@ const FSD_A = `# (Untitled)
 
 | **#** | **Field** | **Label** | **Required** | **Data type** | **Input** | **Validation** | **Description** |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| **TAB 2: HUBSPOT INFORMATION** |  |  |  |  |  |  |  |
+| **TAB 2: SYNC INFORMATION** |  |  |  |  |  |  |  |
 | **Customer Info** [tham khảo](https://docs.google.com/x) |  |  |  |  |  |  |  |
 | 1 | deal_id | Deal ID | M | Number | User nhập |  | ID deal |
 | 2 | full_name | Full Name | ◎ | Text | Đồng bộ từ Deal |  | Tên học viên |
@@ -48,7 +48,7 @@ const FSD_B = `# (Untitled)
 
 | **#** | **Field** | **Label** | **Required** | **Data type** | **Input** | **Validation** | **Description** |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| **TAB 2: HUBSPOT INFORMATION** |  |  |  |  |  |  |  |
+| **TAB 2: SYNC INFORMATION** |  |  |  |  |  |  |  |
 | **Thông tin Deal trừ** |  |  |  |  |  |  |  |
 | 1 | deal_tru | Deal trừ | ◎ | Text | Đồng bộ |  | Deal bị trừ |
 | 2 | so_tien_tru | Số tiền trừ | ◎ | Number | Đồng bộ |  | Số tiền |
@@ -75,7 +75,7 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
     expect(cn, 'phải trích được section Customer Info').toBeTruthy();
     // "##### *4.4.1.1.5.2. …*" — dấu * làm rụng số mục ở bản đầu.
     expect(cn.specRef).toContain('4.4.1.1.5.2');
-    expect(cn.tab).toBe('TAB 2: HUBSPOT INFORMATION');
+    expect(cn.tab).toBe('TAB 2: SYNC INFORMATION');
   });
 
   test('tên section bị dính markdown link thì lấy phần tên, không lấy URL', () => {
@@ -132,7 +132,7 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
     const b = path.join(dir, 'b.json');
     const cat = path.join(dir, 'cat.json');
     fs.writeFileSync(b, JSON.stringify({
-      screens: { 'f11:4.4.1.1.5#tab_2_hubspot_information': { name: 'CN Hub', url: '/x' } },
+      screens: { 'f11:4.4.1.1.5#tab_2_sync_information': { name: 'CN Sync', url: '/x' } },
     }));
     run(dir, ['--bindings', b, '--catalog', cat]);
     const c = JSON.parse(fs.readFileSync(cat, 'utf8'));
@@ -154,7 +154,7 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
     const b = path.join(dir, 'b2.json');
     const cat = path.join(dir, 'cat2.json');
     fs.writeFileSync(b, JSON.stringify({
-      screens: { 'f11:4.4.1.1.5#tab_2_hubspot_information': { name: 'CN Hub', url: '/x' } },
+      screens: { 'f11:4.4.1.1.5#tab_2_sync_information': { name: 'CN Sync', url: '/x' } },
     }));
     run(dir, ['--bindings', b, '--catalog', cat]);
     const c = JSON.parse(fs.readFileSync(cat, 'utf8'));
@@ -168,7 +168,7 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
     const cat = path.join(dir, 'cat3.json');
     fs.writeFileSync(b, JSON.stringify({
       sectionAliases: { 'Thông tin Deal trừ': 'Deduction Deal Info' },
-      screens: { 'f11:4.4.1.1.5#tab_2_hubspot_information': { name: 'CN Hub', url: '/x' } },
+      screens: { 'f11:4.4.1.1.5#tab_2_sync_information': { name: 'CN Sync', url: '/x' } },
     }));
     run(dir, ['--bindings', b, '--catalog', cat]);
     const s0 = JSON.parse(fs.readFileSync(cat, 'utf8')).screens[0];

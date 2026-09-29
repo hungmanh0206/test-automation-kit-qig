@@ -124,7 +124,7 @@ test.describe('@infra exploratory — charter chọn theo dữ liệu', () => {
 
   test('tour đề xuất theo DẤU HIỆU của vùng, không rải đều', () => {
     expect(charter.suggestTours({ module: 'Payment', caseCount: 10 })).toContain('Money/number');
-    expect(charter.suggestTours({ module: 'Đồng bộ HubSpot', caseCount: 10 })).toContain('T — Time');
+    expect(charter.suggestTours({ module: 'Đồng bộ hệ ngoài', caseCount: 10 })).toContain('T — Time');
     expect(charter.suggestTours({ module: 'Phân quyền', caseCount: 10 })).toContain('Permission/URL bypass');
     expect(charter.suggestTours({ module: 'Gì đó lạ', caseCount: 0 })).toContain('Ngược chiều (reverse)');
   });

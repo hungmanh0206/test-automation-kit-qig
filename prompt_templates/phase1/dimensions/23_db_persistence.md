@@ -87,12 +87,11 @@ giống DB" là **tautology**, nên cấm. Giá trị lớn nhất của kiểm 
 
 **② Chỉ dùng cột ĐÃ NEO, và neo theo ĐÚNG MÀN.** `db.conventions.json → fieldMap` có **hai bản đồ**:
 
-- `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. **8 màn** đã neo: `SERVICE_FEE` (8 cột) ·
-  `CORE` (4) · `CORE_LIST` (5) · `SERVICE_FEE_LIST` (4) · `ADD_ON_LIST` (5) · `CORE_HUBSPOT` (1) ·
-  `SERVICE_FEE_HUBSPOT` (1) · `CORE_EDIT` (1).
+- `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. **6 màn** đã neo: `SERVICE_FEE` (8 cột) ·
+  `CORE` (4) · `CORE_LIST` (5) · `SERVICE_FEE_LIST` (4) · `ADD_ON_LIST` (5) · `CORE_EDIT` (1).
   Khoá theo màn vì CÙNG một cột có nhãn khác nhau. `original_price` là **"Gross Amount"** ở CORE nhưng
   **"Gross Price"** ở SERVICE_FEE. `final_price` **chưa neo** ở tab Overview của CORE mà **đã neo**
-  ("Net Amount") ở màn danh sách. `sync_status` chỉ có ở **tab Hubspot Information**, không có ở Overview.
+  ("Net Amount") ở màn danh sách. Có cột chỉ hiện ở **một tab phụ**, không có ở Overview.
   Nên kết luận "cột này không hiển thị" khi mới xem một tab là kết luận thiếu.
 - `fieldMap.valueMaps` — **giá trị enum DB → nhãn tiếng Việt**, khoá `"<bảng>.<cột>"`. Đã neo
   `status` (6/6 enum — đủ), `sync_status` (2/2 — đủ), `service_fee_type` (6 enum — **đủ cho màn Service Fee**;
@@ -171,7 +170,7 @@ kể cả `Status = "Split bill"` so với `"None"` nghe rất thuyết phục. 
 gần-bản-sao, tức cùng khách cùng số tiền, bằng đơn của khách khác.
 
 **Cột không phải field nhập thì phải TRUY NGUỒN, đừng đọc thêm màn.** `payment_method` không có ở 6 loại màn:
-Overview, List, List Transaction, Hubspot, form sửa, và form tạo cả 3 loại đơn.
+Overview, List, List Transaction, tab đồng bộ, form sửa, và form tạo cả 3 loại đơn.
 
 Hai giả thuyết bị bác bằng số đo. DB **không có** cột hay bảng nào tên split hoặc installment. Và giá trị
 **không tương quan** với số đợt thanh toán: 68 đơn INSTALLMENT có 0 giao dịch, trong khi đơn ONETIME có tới 5.

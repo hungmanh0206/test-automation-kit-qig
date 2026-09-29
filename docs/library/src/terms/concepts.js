@@ -68,7 +68,7 @@ const TERMS_CONCEPT = [
 
 { id:'c-mask-pii', t:'Mask PII', cat:'concept',
   def:'Che email, số điện thoại, họ tên và địa chỉ khách trong mọi thứ rời khỏi máy.',
-  detail:'Áp dụng cho ảnh evidence, video, report và nội dung đẩy lên Backlog. Với dữ liệu HubSpot thì chặt hơn: tuyệt đối không tạo file chứa email hay số điện thoại khách, chỉ được hiển thị trong phiên chat.',
+  detail:'Áp dụng cho ảnh evidence, video, report và nội dung đẩy lên Backlog. Với email/SĐT khách thì chặt hơn: tuyệt đối không tạo file chứa chúng, dù nguồn là CRM, DB hay bản export sẵn — chỉ được hiển thị trong phiên chat.',
   why:'Evidence đính lên Backlog là nơi rất nhiều người ngoài team đọc được, và Backlog thì lưu vĩnh viễn. Một ảnh còn nguyên thông tin khách là rò rỉ dữ liệu thật, không phải rủi ro lý thuyết.',
   trap:'Che bằng cách sửa textContent KHÔNG che được ô nhập liệu. Giá trị vẫn nằm ở input.value và hiện nguyên trên ảnh. Với input phải set .value. Nên đọc lại ảnh trước khi đính kèm.',
   src:'CLAUDE.md', rel:['r-security','c-evidence','c-highlight'] },

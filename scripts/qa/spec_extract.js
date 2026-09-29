@@ -195,7 +195,7 @@ function toCatalog(screens, bindings) {
     const keep = s.fields.filter((f) => !f.conditional && !f.dynamic && !f.control);
     const dropped = s.fields.length - keep.length;
     if (keep.length < 2) continue;                            // 1 nhãn thì không còn là "kiểm kê tập hợp"
-    // FSD có hàng lặp thật (khối "ĐỒNG BỘ TỪ HUBSPOT" của Chuyển nhượng ghi `Phone` hai lần, một Number một
+    // FSD có hàng lặp thật (khối "ĐỒNG BỘ TỪ HỆ NGOÀI" của Chuyển nhượng ghi `Phone` hai lần, một Number một
     // Text). Nhãn trùng làm phép so tập hoá vô nghĩa ⇒ gộp, và ĐẾM lại để còn báo được cho BA.
     const labels = [];
     const dupes = [];
@@ -203,8 +203,8 @@ function toCatalog(screens, bindings) {
       if (labels.some((l) => l.toLowerCase() === f.label.toLowerCase())) dupes.push(f.label);
       else labels.push(f.label);
     }
-    // TÊN KHỐI TRONG TÀI LIỆU ≠ TÊN TRÊN BUILD. Đo thật 19/08: FSD ghi "THÔNG TIN ĐỒNG BỘ TỪ HUBSPOT" /
-    // "Thông tin Deal trừ", còn OPS render "Data Synchronized from Hubspot" / "Deal Information" —
+    // TÊN KHỐI TRONG TÀI LIỆU ≠ TÊN TRÊN BUILD. Đo thật 19/08: FSD ghi "THÔNG TIN ĐỒNG BỘ TỪ HỆ NGOÀI" /
+    // "Thông tin Deal trừ", còn OPS render "Data Synchronized from Partner" / "Deal Information" —
     // khớp theo tên tài liệu thì KHÔNG BAO GIỜ định vị được, và mọi section đó ra `no-container`. Bản đồ tên là
     // dữ liệu quan sát được của TASK ⇒ khai ở bindings (`sectionAliases`), không suy diễn trong script.
     const specName = s.section || s.tab || gk;
@@ -254,7 +254,7 @@ function toCatalog(screens, bindings) {
     // "DỮ LIỆU ĐỒNG BỘ THEO GIAO DỊCH" của chính màn bị tố là section lạ. Báo oan kiểu này giết uy tín gate.
     // Khối DÙNG CHUNG (mọi loại đơn đều có) không phải dấu hiệu của một loại đơn ⇒ không được đưa vào
     // forbidden. Đo phổ tên section trên FSD thật: dùng-chung xuất hiện ở 5–37 màn (CÁC NÚT CHỨC NĂNG 37,
-    // Customer Info 15, ĐỒNG BỘ TỪ HUBSPOT 5) còn tên đặc trưng chỉ 1–2 màn (Course Conversion Info 2,
+    // Customer Info 15, ĐỒNG BỘ TỪ HỆ NGOÀI 5) còn tên đặc trưng chỉ 1–2 màn (Course Conversion Info 2,
     // Transfer Source Package Info 2, "Thông tin Deal trừ" 1). Ngưỡng ≥3 nằm giữa hai cụm.
     const spread = new Map();
     for (const x of screens) { if (!x.section) continue; if (!spread.has(x.section)) spread.set(x.section, new Set()); spread.get(x.section).add(x.key); }

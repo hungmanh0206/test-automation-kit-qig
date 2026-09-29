@@ -169,7 +169,7 @@ Tag chứng minh case **có mặt** ở chiều đó; nó **không** chứng min
 
 Chiều khác (`[UI]` `[API]` `[E2E]` `[Export]` `[SideEffect]` `[Design]` `[Impact]`) **cố ý không khai luật**. Chưa phát biểu được "bằng chứng tối thiểu" một cách chính xác thì thà không gác. Gác bằng luật mơ hồ rồi báo oan còn tệ hơn.
 
-**Vì sao có mục này:** `OPS_PAY_TC_175` liệt kê form Add Transaction **có** field Recipient Bank Account nhưng không phát biểu ràng buộc nào, nên case **XANH** trong khi bug `CSDL-28420` vẫn sống. Bug đó là modal cho chọn pháp nhân khác order, làm HubSpot ghi sai pháp nhân. Tag `[Display]` một mình không cứu được ca đó; **bằng chứng tối thiểu** thì cứu được.
+**Vì sao có mục này:** `OPS_PAY_TC_175` liệt kê form Add Transaction **có** field Recipient Bank Account nhưng không phát biểu ràng buộc nào, nên case **XANH** trong khi bug `CSDL-28420` vẫn sống. Bug đó là modal cho chọn pháp nhân khác order, làm CRM ghi sai pháp nhân. Tag `[Display]` một mình không cứu được ca đó; **bằng chứng tối thiểu** thì cứu được.
 
 > Hiện là **CẢNH BÁO**, chưa chặn. Sẽ bật `--strict` sau khi đo trên bộ gen mới đầu tiên (<10% case thiếu). Đo trên bộ 530 hiện tại: **0 cảnh báo** — vì bộ đó chưa có tag chiều nào, nên luật này không báo oan lấy một ca.
 
@@ -479,7 +479,7 @@ Khai `n/a` cho một chiều mà thực tế nó áp dụng = **bỏ chiều có
 | §19 | Ordering / Sequence Coverage | `[Ordering]` | luồng có ≥2 bước mà người dùng có thể làm SAI THỨ TỰ / quay lui / xen kẽ | [`19_ordering.md`](dimensions/19_ordering.md) |
 | §20 | Error Guessing từ BUG LỊCH SỬ | `[BugHistory]` | `knowledge/bugs/` có entry cùng module với scope (`npm run bugs:checklist`) | [`20_bug_history.md`](dimensions/20_bug_history.md) |
 | §21 | Accessibility (A11y) Coverage | `[A11y]` | scope có màn UI thao tác được: form/bảng/modal/menu | [`21_accessibility.md`](dimensions/21_accessibility.md) |
-| §22 | Inbound Callback / Webhook (phía NHẬN) | `[Callback]` | hệ thống NHẬN request từ bên thứ ba (VNPay/VietQR, HubSpot, SAP, SMS) — kể cả khi chỉ là "báo kết quả" | [`22_inbound_callback.md`](dimensions/22_inbound_callback.md) |
+| §22 | Inbound Callback / Webhook (phía NHẬN) | `[Callback]` | hệ thống NHẬN request từ bên thứ ba (VNPay/VietQR, CRM, SAP, SMS) — kể cả khi chỉ là "báo kết quả" | [`22_inbound_callback.md`](dimensions/22_inbound_callback.md) |
 | §23 | DB Persistence (bản ghi sau CRUD) | `[DbPersist]` | case có Create/Update/Delete dữ liệu — kể cả xoá mềm, kể cả đổi 1 field | [`23_db_persistence.md`](dimensions/23_db_persistence.md) |
 
 ## 18. Self-check vét cạn biên (BẮT BUỘC trước khi kết thúc)

@@ -253,9 +253,9 @@ const looksTautology = (text) => TAUTOLOGY_HINT.test(String(text || ''));
 // populate nên vẫn PASS. Case mapping chỉ có giá trị khi đối chiếu ĐƯỢC HAI ĐẦU: giá trị hiển thị vs giá trị
 // nguồn. Ở đây chỉ kiểm dấu vết của phép đối chiếu đó trong kết luận — rẻ, nhưng chặn đúng loại PASS rỗng.
 const MAPPING_CASE = new RegExp([
-  'đồng bộ', 'dong bo', '\\bsync\\b', 'hubspot', '\\bdeal\\b',
+  'đồng bộ', 'dong bo', '\\bsync\\b', '\\bdeal\\b',
   'mapping', 'map (sang|về|vào|từ)', 'ghi nhận (doanh thu|giá trị|số tiền)',
-  'lấy (từ|theo) (contact|deal|api|hubspot|property)', 'hiển thị theo (dữ liệu|api|deal|contact)',
+  'lấy (từ|theo) (contact|deal|api|property)', 'hiển thị theo (dữ liệu|api|deal|contact)',
 ].join('|'), 'i');
 const isMappingCase = (text) => MAPPING_CASE.test(String(text || ''));
 
@@ -282,7 +282,7 @@ function hasComparedPair(text) {
  */
 function lintMappingOracle({ title = '', expected = '', comment = '' } = {}) {
   // Nhận diện trên cả comment: file testcase-status.json KHÔNG mang tiêu đề case, nên khi gate chạy chỉ có
-  // kết luận để dựa vào. Comment của case mapping gần như luôn nhắc "đồng bộ"/"sync"/"HubSpot".
+  // kết luận để dựa vào. Comment của case mapping gần như luôn nhắc "đồng bộ"/"sync"/"mapping".
   if (!isMappingCase(`${title} ${expected} ${comment}`)) return null;
   if (hasComparedPair(comment)) return null;
   // Case negative/lỗi: oracle là MÃ LỖI cụ thể (400 + exceptions.x) — đó đã là oracle kiểm được, không đòi cặp giá trị.

@@ -4,7 +4,7 @@
 
 **Vấn đề**
 
-Test của bạn đang dùng một học viên có sẵn trên môi trường, và một deal có sẵn bên HubSpot.
+Test của bạn đang dùng một học viên có sẵn trên môi trường, và một deal có sẵn bên hệ CRM.
 
 Sáng nay nó đỏ. Bạn không sửa dòng nào từ hôm qua.
 

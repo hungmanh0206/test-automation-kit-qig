@@ -189,7 +189,7 @@ async function stampSection(page, headingText, mark, containerSelector) {
     const leaves = [...document.querySelectorAll('*')].filter((el) => !el.children.length);
     // CẤP của một tiêu đề = (độ đậm, cỡ chữ). Một section KẾT THÚC ở nơi tiêu đề CÙNG CẤP HOẶC CAO HƠN tiếp
     // theo bắt đầu — đó là luật duy nhất phân biệt được khối con lồng trong khối. Đo thật trên OPS tab Hub Info:
-    // "Data Synchronized from Hubspot" = w700/16px bọc hai khối con "Deal Information"/"Transfer Information" =
+    // "Data Synchronized from Partner" = w700/16px bọc hai khối con "Deal Information"/"Transfer Information" =
     // w600/16px. Không có luật này thì khối con hút hết field của cả tab (lượt 19/08: 6 field "thừa" oan).
     const rankOf = (el) => {
       const st = getComputedStyle(el);
@@ -211,7 +211,7 @@ async function stampSection(page, headingText, mark, containerSelector) {
     if (csel) {
       const box = head.closest(csel);
       // Selector của app chỉ bọc khối CẤP NGOÀI. Khối con lồng bên trong (đo thật: "Deal Information" nằm
-      // trong "Data Synchronized from Hubspot") không có wrapper riêng ⇒ closest() leo lên khối cha và kiểm kê
+      // trong "Data Synchronized from Partner") không có wrapper riêng ⇒ closest() leo lên khối cha và kiểm kê
       // ăn luôn field của cả tab: lượt chạy 19/08 sinh 6 field "thừa" oan. Chốt chặn: chỉ nhận box khi tiêu đề
       // đang tìm ĐÚNG LÀ tiêu đề đầu tiên của box; không thì rơi về heuristic hẹp hơn ở dưới.
       if (box && !hasCompetingHeading(box, head)) { box.setAttribute('data-uicheck', m); return { ok: true, rows: -1, via: 'selector' }; }

@@ -215,7 +215,7 @@ test.describe('@infra hợp đồng env — bản mẫu là tài liệu ĐƯỢC
     expect(fs.existsSync(f), 'thiếu profiles/task.env.example — gói phát hành không nói được task.env cần gì').toBe(true);
     // Nhóm bắt buộc: DB read-only (tầng §23 đọc theo prefix LIB_MASTER_DB_RO_). OPS_USERNAME/PASSWORD đã
     // BỎ khỏi yêu cầu (kit không còn tích hợp OPS — xem BACKLOG_* thay Backlog, không còn LMS/OPS/công cụ cũ/
-    // tài liệu nguồn/HubSpot/Feature trong .env/task.env kể từ khi tổ chức chuyển hẳn sang Backlog).
+    // tài liệu nguồn/CRM/Feature trong .env/task.env kể từ khi tổ chức chuyển hẳn sang Backlog).
     const body = fs.readFileSync(f, 'utf8');
     expect(body, 'task.env.example phải nhắc prefix LIB_MASTER_DB_RO_ — tầng §23 đọc creds DB theo prefix đó, và preflight CHẶN khi thiếu')
       .toMatch(/LIB_MASTER_DB_RO_/);

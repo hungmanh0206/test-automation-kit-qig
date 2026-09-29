@@ -4,7 +4,7 @@
  *
  * VÌ SAO CÓ FILE NÀY: đây là trục RÒ NHIỀU NHẤT — đo trên CSDL-24395 có **21/69 bug** thuộc lớp này, và không
  * phép kiểm nào của kit chạm tới, vì mỗi màn xét riêng đều "đúng":
- *   - CSDL-28521: tab Hubspot Information hiện D.O.B thô `2001-05-20`, tab Overview hiện `20/05/2001`.
+ *   - CSDL-28521: tab đồng bộ ngoài hiện D.O.B thô `2001-05-20`, tab Overview hiện `20/05/2001`.
  *   - CSDL-28405: Extension Course Package khác nhau giữa màn Create/Edit và màn Order Detail.
  *   - CSDL-28446: màn Checkout rút gọn + sai chính tả tên khoá học so với Ops.
  * Chỉ khi ĐẶT CẠNH NHAU thì lệch mới hiện ra. Và phải tách hai lớp: **khác GIÁ TRỊ** (nghiêm trọng: lấy sai
@@ -21,7 +21,7 @@
  *   "name": "Service Fee của order X",
  *   "surfaces": [
  *     { "screen": "Order Detail / Overview", "url": "/…/detail/overview", "label": "Service Fee" },
- *     { "screen": "Hub Info",  "url": "/…/detail/hubspot-information", "label": "Service fee" },
+ *     { "screen": "Sync Info", "url": "/…/detail/sync-information", "label": "Service fee" },
  *     { "screen": "Order List", "url": "/…?page_index=1", "column": "Service Fee",
  *       "rowMatch": { "column": "Deal ID", "value": "64095623819" } },
  *     { "screen": "API", "api": "/api/v1/service-fee-orders/<id>", "jsonPath": "data.service_fee" }

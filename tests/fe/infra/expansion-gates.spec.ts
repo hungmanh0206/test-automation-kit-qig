@@ -254,7 +254,7 @@ test.describe('@infra Loại case — cột người khai, không suy từ nhóm
   test('parser đọc được cột Loại case (và các tên gọi tương đương)', () => {
     const head = '| TC ID | Loại case | Module | Trường hợp kiểm thử | Tiền điều kiện | Dữ liệu Test | Các bước thực hiện | Kết quả mong đợi | Ưu tiên | Mức độ rủi ro |';
     const sep = '|---|---|---|---|---|---|---|---|---|---|';
-    const row = '| T1 | Integration | M | [Positive] Đồng bộ HubSpot | - | - | 1. Mở | 1. OK | High | Major |';
+    const row = '| T1 | Integration | M | [Positive] Đồng bộ hệ ngoài | - | - | 1. Mở | 1. OK | High | Major |';
     const doc = model.parseMarkdown([head, sep, row].join('\n'));
     expect(doc.tests[0].caseType).toBe('Integration');
   });

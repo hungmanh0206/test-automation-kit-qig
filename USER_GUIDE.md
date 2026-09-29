@@ -138,7 +138,7 @@ Yêu cầu với AI chat extension:
 
 ### 3.3 Cấu hình MCP server
 
-MCP server giúp AI Agent kết nối trực tiếp với tài liệu nguồn, Figma, HubSpot test account, Google Drive hoặc Playwright. Nếu team không dùng MCP, QA vẫn có thể chạy kit bằng link, file export hoặc script integration hiện có (Backlog dùng REST trực tiếp qua `scripts/integrations/backlog/`, không cần MCP); tuy nhiên MCP giúp AI đọc source nhanh và ổn định hơn.
+MCP server giúp AI Agent kết nối trực tiếp với tài liệu nguồn, Figma, Google Drive hoặc Playwright. Nếu team không dùng MCP, QA vẫn có thể chạy kit bằng link, file export hoặc script integration hiện có (Backlog dùng REST trực tiếp qua `scripts/integrations/backlog/`, không cần MCP); tuy nhiên MCP giúp AI đọc source nhanh và ổn định hơn.
 
 File template MCP của kit:
 
@@ -152,63 +152,10 @@ Các MCP server thường dùng:
 |---|---|---|
 | — | Không còn MCP server cho tài liệu/bug tracking. Backlog dùng REST riêng; requirement/tài liệu BA đọc từ file Markdown trong task folder (đưa sang từ Obsidian vault). | — |
 | `figma` | Đọc Figma design. | Scope có UI/design cần đối chiếu field, flow, validation. |
-| `hubspot` | Đọc dữ liệu CRM HubSpot test. | Scope cần kiểm tra contact, company, deal, owner, pipeline hoặc metadata CRM. |
 | Google Drive (connector có sẵn) | Publish/tải testcase Google Sheet, đọc Google Doc. | Mọi lượt Auto Publish testcase (Phase 1) và execute (Phase 2) — không cần khai trong `mcp_config.md`, đã kết nối sẵn. |
 | `playwright` | Inspect browser qua MCP. | Cần hỗ trợ đọc UI runtime, locator hoặc debug interaction. |
 
-#### 3.3.1 Cấu hình HubSpot hiện tại
-
-Kit hiện chỉ dùng HubSpot test account cho MCP/automation. Không dùng HubSpot production account trong luồng QA thường ngày.
-
-Block env cần có:
-
-```env
-HUBSPOT_ENV=test
-HUBSPOT_BASE_URL=https://api.hubapi.com
-HUBSPOT_UI_DOMAIN=app.hubspot.com
-HUBSPOT_PORTAL_ID=<TEST_PORTAL_ID>
-HUBSPOT_ACCESS_TOKEN=<TEST_PRIVATE_APP_ACCESS_TOKEN>
-HUBSPOT_MCP_PACKAGE=@hubspot/mcp-server@0.4.0
-```
-
-Ý nghĩa từng biến:
-
-| Biến | Ý nghĩa |
-|---|---|
-| `HUBSPOT_ENV` | Luôn để `test` trong kit. |
-| `HUBSPOT_BASE_URL` | API base URL của HubSpot, dùng `https://api.hubapi.com`. |
-| `HUBSPOT_UI_DOMAIN` | Domain web UI của HubSpot, dùng `app.hubspot.com`. |
-| `HUBSPOT_PORTAL_ID` | Portal/account ID của HubSpot test account. |
-| `HUBSPOT_ACCESS_TOKEN` | Private App access token của HubSpot test account. |
-| `HUBSPOT_MCP_PACKAGE` | Package MCP hiện dùng: `@hubspot/mcp-server@0.4.0`. |
-
-#### 3.3.2 Auth HubSpot CLI
-
-HubSpot MCP hiện cần HubSpot CLI config. Nếu gặp lỗi `Config file not found, run hs account auth to configure your account`, chạy auth bằng HubSpot CLI.
-
-```powershell
-npx -y -p @hubspot/cli hs account auth --account <TEST_PORTAL_ID> --name "<TEST_ACCOUNT_NAME>" --default
-```
-
-Sau khi auth xong, file config local được tạo tại:
-
-```text
-C:\Users\<USER>\.hscli\config.yml
-```
-
-Kiểm tra account đã auth:
-
-```powershell
-npx -y -p @hubspot/cli hs account list
-```
-
-Đọc thử 1 contact bằng HubSpot CLI:
-
-```powershell
-npx -y -p @hubspot/cli hs api "/crm/v3/objects/contacts?limit=1" --account <TEST_PORTAL_ID> --json
-```
-
-#### 3.3.3 Setup MCP local
+#### 3.3.1 Setup MCP local
 
 Các bước cấu hình MCP:
 
@@ -216,41 +163,26 @@ Các bước cấu hình MCP:
 |---:|---|
 | 1 | Mở `.agent/config/mcp_config.md` và copy block JSON template. |
 | 2 | Dán JSON vào MCP settings local của VS Code/AI extension đang dùng. |
-| 3 | Đảm bảo `HUBSPOT_ACCESS_TOKEN` nằm trong `.env`, `.env.local` hoặc MCP settings local; không ghi token vào Markdown dùng chung. |
-| 4 | Chạy `hs account auth` nếu máy chưa có `C:\Users\<USER>\.hscli\config.yml`. |
-| 5 | Reload VS Code hoặc restart AI chat extension để MCP server được load lại. |
-| 6 | Yêu cầu AI kiểm tra MCP HubSpot bằng cách đọc thử 1 contact với `limit=1`, không in token ra output. |
+| 3 | Đảm bảo mọi API key/token nằm trong `.env`, `.env.local` hoặc MCP settings local; không ghi token vào Markdown dùng chung. |
+| 4 | Reload VS Code hoặc restart AI chat extension để MCP server được load lại. |
+| 5 | Yêu cầu AI gọi thử 1 lệnh đọc nhẹ nhất của server vừa bật, không in token ra output. |
 
-Nếu dùng HubSpot CLI setup MCP theo client:
-
-```powershell
-npx -y -p @hubspot/cli hs mcp setup --client vscode
-```
-
-Với Codex:
-
-```powershell
-npx -y -p @hubspot/cli hs mcp setup --client codex
-```
-
-#### 3.3.4 Nguyên tắc bảo mật
+#### 3.3.2 Nguyên tắc bảo mật
 
 | Rule | Lý do |
 |---|---|
-| Chỉ dùng HubSpot test account cho kit. | Tránh đọc/ghi nhầm dữ liệu production. |
+| Chỉ trỏ MCP vào môi trường test. | Tránh đọc/ghi nhầm dữ liệu production. |
 | Không commit MCP settings chứa secret. | Tránh lộ token/API key. |
 | Không paste token vào chat hoặc report. | Tránh lộ secret trong log. |
 | Không sửa `.agent/config/mcp_config.md` bằng token thật. | File này là template dùng chung. |
 | Token bị lộ phải rotate ngay. | Token cũ không còn an toàn. |
 
-#### 3.3.5 Lỗi thường gặp
+#### 3.3.3 Lỗi thường gặp
 
 | Lỗi | Nguyên nhân hay gặp | Cách xử lý |
 |---|---|---|
-| `Config file not found` | Chưa auth HubSpot CLI. | Chạy `npx -y -p @hubspot/cli hs account auth --account <TEST_PORTAL_ID> --default`. |
 | MCP server không start | Node.js thiếu, package không tải được hoặc command sai theo OS. | Kiểm tra `node -v`, `npm -v`, reload VS Code và xem MCP log của extension. |
 | Không đọc được Figma | `FIGMA_API_KEY` thiếu quyền hoặc link/node sai. | Kiểm tra quyền file Figma và token. |
-| Không đọc được HubSpot | Token thiếu scope, CLI auth sai account hoặc MCP chưa reload. | Kiểm tra `HUBSPOT_*`, `hs account list`, scope Private App và MCP server log. |
 | AI vẫn không thấy MCP | Chưa reload IDE hoặc MCP settings đặt sai scope. | Reload VS Code, mở lại workspace root và kiểm tra MCP server list trong extension. |
 
 ### 3.4 Đồng bộ kit bằng GitLab/GitHub
@@ -918,7 +850,7 @@ Nguyên tắc vàng: không conversation nào sửa `.env`/`.env.local` chung. M
 
 | Nhóm | Ví dụ | Nơi đặt |
 |---|---|---|
-| Tĩnh (giống mọi task) | `FIGMA_API_KEY`, `DOC_URL`/`DOC_API_TOKEN`, `BACKLOG_BASE_URL`/`BACKLOG_API_KEY`/`BACKLOG_PROJECT_KEY`, `HUBSPOT_ACCESS_TOKEN`, `OPS_BASE_URL`/`OPS_LOGIN_URL`/`OPS_USERNAME`/`OPS_PASSWORD` — để ở `.env` chung. |
+| Tĩnh (giống mọi task) | `FIGMA_API_KEY`, `DOC_URL`/`DOC_API_TOKEN`, `BACKLOG_BASE_URL`/`BACKLOG_API_KEY`/`BACKLOG_PROJECT_KEY`, `OPS_BASE_URL`/`OPS_LOGIN_URL`/`OPS_USERNAME`/`OPS_PASSWORD` — để ở `.env` chung. |
 | Động (theo task) | `PROJECT_OUTPUT_DIR`, `TASK_KEY`, `RUN_ID`, `BACKLOG_STORY_URL`/`BACKLOG_EPIC_URL`/`BACKLOG_STORY_KEY`, `REQUIREMENT_DOC`/`BRD_DOC`, `FIGMA_FILE_URL`, `GOOGLE_DOCUMENT_ID`/`GOOGLE_SHEET_URL` | `profiles/<TASK_KEY>/task.env` |
 
 Profile chỉ cần chứa key động; key tĩnh thiếu trong profile sẽ tự lấy từ `.env` chung (`scripts/utils/runtime_config.js` nạp profile ưu tiên hơn `.env`/`.env.local`). Tạo profile nhanh: `npm run profile:create -- <TASK_KEY>` (sinh `profiles/<TASK_KEY>/task.env` từ template, không ghi đè).

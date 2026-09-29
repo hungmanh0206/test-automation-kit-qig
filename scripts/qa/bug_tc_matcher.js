@@ -90,7 +90,7 @@ const tests = loadCanonical();
 if (!tests.length) { console.error('[bug-tc] không đọc được testcase canonical ở test-cases/*.md → không có gì để ghép.'); process.exit(2); }
 
 // idf: từ xuất hiện ở ÍT TC thì mang nhiều thông tin hơn. Không có bước này thì các từ như "amount",
-// "hubspot" (có ở hàng trăm TC) lấn hết những từ thật sự phân biệt như "clone" hay "cccd".
+// "đồng bộ" (có ở hàng trăm TC) lấn hết những từ thật sự phân biệt như "clone" hay "cccd".
 const df = new Map();
 const docs = tests.map((t) => {
   const bag = terms(`${t.module} ${t.title} ${t.stepsRaw} ${t.expectedRaw} ${t.data}`);

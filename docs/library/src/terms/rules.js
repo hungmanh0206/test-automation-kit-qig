@@ -9,7 +9,7 @@ const TERMS_RULE = [
     'Creds để trong profiles/<TASK>/task.env, file này không commit.',
     'Trước khi push: npm run secret:scan (quét file đã track, tự chặn nếu thấy secret thật).',
     'Che PII trên ảnh bằng cách sửa giá trị element rồi mới chụp.',
-    'Dữ liệu HubSpot: chỉ được hiển thị trong phiên chat, tuyệt đối không xuất ra file.'
+    'Email/SĐT khách từ CRM hay DB: chỉ hiển thị trong phiên chat, tuyệt đối không xuất ra file.'
   ],
   ex:'Chụp màn danh sách đơn hàng: trước khi screenshot, set lại text các ô email thành "***@***" và số điện thoại thành "09**-***-***", rồi mới chụp.',
   trap:'Che bằng cách sửa textContent KHÔNG che được ô nhập liệu. Giá trị vẫn nằm ở input.value và hiện nguyên trên ảnh. Với input phải set .value.',
