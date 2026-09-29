@@ -14,18 +14,18 @@ const fig = require(path.resolve(__dirname, '../../../scripts/qa/figma_to_ui_con
 test.describe('@infra figma → ui_contract: lọc rác canvas', () => {
   test('số callout và chữ quá ngắn KHÔNG phải nhãn', () => {
     for (const t of ['1', '12', '345', 'x', 'ab']) expect(fig.isCallout(t), `"${t}"`).toBe(true);
-    for (const t of ['Deal ID', 'Gross Amount', 'Số CCCD/Hộ chiếu']) expect(fig.isCallout(t), `"${t}"`).toBe(false);
+    for (const t of ['Mã hồ sơ', 'Tổng tiền', 'Số CCCD/Hộ chiếu']) expect(fig.isCallout(t), `"${t}"`).toBe(false);
   });
 
   test('chú thích dài / tên file KHÔNG phải nhãn UI', () => {
     expect(fig.isAnnotation('Dung lượng tối đa mỗi file là 500MB. Tối đa 10 file mỗi lần Upload')).toBe(true);
     expect(fig.isAnnotation('File supported: .jpg, .jpeg, .png')).toBe(true);
     expect(fig.isAnnotation('Ảnh chứng minh.png')).toBe(true);
-    expect(fig.isAnnotation('Total Amount Due'), 'nhãn thật không được bị loại').toBe(false);
+    expect(fig.isAnnotation('Còn phải trả'), 'nhãn thật không được bị loại').toBe(false);
   });
 
   test('tiêu đề phải NGẮN, không kết thúc bằng dấu câu, không chứa số dài', () => {
-    expect(fig.looksLikeHeading('Order Amount')).toBe(true);
+    expect(fig.looksLikeHeading('Amount Block')).toBe(true);
     expect(fig.looksLikeHeading('Customer Info')).toBe(true);
     expect(fig.looksLikeHeading('Tệp đính kèm:'), 'kết thúc bằng ":" là nhãn field, không phải tiêu đề khối').toBe(false);
     expect(fig.looksLikeHeading('Frame 1321316443'), 'tên frame kỹ thuật').toBe(false);
@@ -33,18 +33,18 @@ test.describe('@infra figma → ui_contract: lọc rác canvas', () => {
 
   test('groupSections: bỏ khối chỉ có 1 nhãn, gộp trùng, và không nhận callout làm nhãn', () => {
     const texts = [
-      { text: 'Order Amount', rank: 70016, x: 0, y: 0 },
-      { text: 'Gross Amount', rank: 0, x: 0, y: 10 },
+      { text: 'Amount Block', rank: 70016, x: 0, y: 0 },
+      { text: 'Tổng tiền', rank: 0, x: 0, y: 10 },
       { text: '1', rank: 0, x: 0, y: 12 },                    // callout
-      { text: 'Net Amount', rank: 0, x: 0, y: 20 },
-      { text: 'Gross Amount', rank: 0, x: 0, y: 30 },         // trùng
+      { text: 'Thành tiền', rank: 0, x: 0, y: 20 },
+      { text: 'Tổng tiền', rank: 0, x: 0, y: 30 },         // trùng
       { text: 'Chỉ một nhãn', rank: 70016, x: 0, y: 40 },
       { text: 'Duy nhất', rank: 0, x: 0, y: 50 },
     ];
     const secs = fig.groupSections(texts);
     expect(secs).toHaveLength(1);
-    expect(secs[0].heading).toBe('Order Amount');
-    expect(secs[0].labels).toEqual(['Gross Amount', 'Net Amount']);
+    expect(secs[0].heading).toBe('Amount Block');
+    expect(secs[0].labels).toEqual(['Tổng tiền', 'Thành tiền']);
   });
 
   test('rankOf: chỉ chữ ĐẬM và ĐỦ LỚN mới là tiêu đề', () => {

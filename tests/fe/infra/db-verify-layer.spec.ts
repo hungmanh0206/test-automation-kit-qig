@@ -59,7 +59,7 @@ const CONV_FIXTURE = {
     byScreen: {
       CHI_TIET: { _route: '/don-hang/<id>/chi-tiet', gia_goc: 'Giá gốc', trang_thai: 'Trạng thái' },
       DANH_SACH: { _route: '/don-hang?page=1', id: 'Mã đơn hàng', gia_goc: 'Giá niêm yết', thanh_tien: 'Thành tiền' },
-      SUA: { _route: '/don-hang/<id>/sua', tien_coc: 'Tiền đã trả' },
+      SUA: { _route: '/don-hang/<id>/sua', tien_coc: 'Tiền đã trả', ty_le_phi: 'Tỉ lệ phí' },
     },
     unanchored: {
       gia_tuy_chon: 'ĐO toàn bộ 132 bản ghi non-null trên màn chi tiết: không bản ghi nào có gia_tuy_chon khác mọi cột tiền khác ⇒ chưa phân biệt được, cần fixture đặt giá riêng.',
@@ -335,10 +335,9 @@ test.describe('@infra asMatcher — giá trị trần vẫn dùng được', () 
 
 test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG được dùng để phán', () => {
   /*
-   * Vòng 2 (27/08/2026) bác giả định "một bản đồ cho cả DB": màn Service Fee và màn Core hiển thị CÙNG một
-   * cột dưới HAI nhãn khác nhau — `original_price` là "Gross Amount" ở CORE nhưng "Gross Price" ở
-   * SERVICE_FEE. Nếu neo toàn cục thì giao rỗng; nếu bỏ luật giao thì neo SAI MÀN rồi phán chắc chắn trên
-   * cột sai. Nên bản đồ BẮT BUỘC có khoá là màn.
+   * Một phép đo thật (27/08/2026) đã bác giả định "một bản đồ cho cả DB": hai màn hiển thị CÙNG một cột
+   * dưới HAI nhãn khác nhau. Neo toàn cục thì giao rỗng; bỏ luật giao thì neo SAI MÀN rồi phán chắc chắn
+   * trên cột sai. Nên bản đồ BẮT BUỘC có khoá là màn.
    */
   const fieldMap = () => {
     // Dùng KIỂU THẬT từ config.ts, không khai lại inline: khai lại là bản sao trôi khỏi bản gốc lúc nào không hay.
@@ -369,18 +368,23 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
   });
 
   test('mỗi cột tiền phải được QUYẾT: neo ở ít nhất 1 màn HOẶC khai unanchored', () => {
-    const conv = loadConventions(REPO);
-    const fm = fieldMap();
-    const anchoredCols = new Set(Object.values(fm.byScreen).flatMap((c) => Object.keys(c)).filter((k) => !k.startsWith('_')));
-    const unanchored = new Set(Object.keys(fm.unanchored).map((k) => k.split('@')[0]));
-    for (const col of (conv.money?.entities || {})[fm.entity] || []) {
-      expect(anchoredCols.has(col) || unanchored.has(col), `cột tiền "${col}" chưa được quyết`).toBe(true);
+    /*
+     * Chạy trên CẢ HAI: fixture chứng minh luật có răng, file thật bắt lỗi nếu ai khai cột tiền rồi bỏ lửng.
+     * Cột tiền không được quyết là cột lặng lẽ rơi khỏi mọi phép kiểm — nhìn bảng thì tưởng đã phủ hết.
+     */
+    for (const conv of [convFixture(), loadConventions(REPO)]) {
+      const fm = conv.fieldMap!;
+      const anchoredCols = new Set(Object.values(fm.byScreen).flatMap((c) => Object.keys(c)).filter((k) => !k.startsWith('_')));
+      const treated = new Set([...Object.keys(fm.unanchored || {})].map((k) => k.split('@')[0]));
+      for (const col of (conv.money?.entities || {})[fm.entity as string] || []) {
+        expect(anchoredCols.has(col) || treated.has(col), `cột tiền "${col}" chưa được quyết`).toBe(true);
+      }
     }
   });
 
   test('cột TỈ LỆ phải ra khỏi danh sách tiền (money() lên tỉ lệ là sai nghĩa)', () => {
     /*
-     * ĐO 28/08: service_fee_rate max=20 (distinct 3), fixed_discount 5/10/15 (3 bản ghi) — biên độ 0..20
+     * ĐO 28/08 trên hai cột tỉ lệ: một cột max 20 (3 giá trị phân biệt), cột kia 5/10/15 — biên độ 0..20
      * không thể là VND. Để chúng trong `money` thì `money()` vẫn "chạy" nhưng thông điệp thành "lệch 5 đồng"
      * cho một tỉ lệ, và gate độ-phủ-cột-tiền đếm sai. Cột nào chưa biết đơn vị phải khai `unitUnknown`.
      */
@@ -403,28 +407,29 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
   });
 
   test('mỗi cột TỈ LỆ cũng phải được QUYẾT (neo / treo / không-hiển-thị)', () => {
-    const conv = loadConventions(REPO);
-    const fm = conv.fieldMap!;
-    const anchored = new Set(Object.values(fm.byScreen).flatMap((c) => Object.keys(c)).filter((k) => !k.startsWith('_')));
-    const decided = new Set([...Object.keys(fm.unanchored), ...Object.keys(fm.notDisplayed || {})].map((k) => k.split('@')[0]));
-    for (const col of conv.rates?.entities?.ic_payment_orders || []) {
-      expect(anchored.has(col) || decided.has(col), `cột tỉ lệ "${col}" chưa được quyết`).toBe(true);
+    for (const conv of [convFixture(), loadConventions(REPO)]) {
+      const fm = conv.fieldMap!;
+      const anchored = new Set(Object.values(fm.byScreen).flatMap((c) => Object.keys(c)).filter((k) => !k.startsWith('_')));
+      const decided = new Set([...Object.keys(fm.unanchored || {}), ...Object.keys(fm.notDisplayed || {})].map((k) => k.split('@')[0]));
+      for (const col of Object.values(conv.rates?.entities || {}).flat()) {
+        expect(anchored.has(col) || decided.has(col), `cột tỉ lệ "${col}" chưa được quyết`).toBe(true);
+      }
     }
   });
 
   test('notDisplayed phải rời khỏi unanchored (không đếm hai lần thành việc-phải-làm)', () => {
-    const fm = fieldMap();
+    for (const fm of [convFixture().fieldMap!, fieldMap()]) {
     for (const col of Object.keys(fm.notDisplayed || {})) {
       if (col.startsWith('_')) continue;
       expect(fm.unanchored[col], `"${col}" vừa notDisplayed vừa unanchored`).toBeUndefined();
       expect(String((fm.notDisplayed || {})[col]).length, `"${col}" phải nói rõ vì sao không hiển thị`).toBeGreaterThan(25);
-    }
+    } }
   });
 
   test('valueMaps phải khai ĐỘ PHỦ enum (đủ hay thiếu, thiếu cái nào)', () => {
     /*
-     * Bẫy đã dính: neo status/service_fee_type từ 50 hàng đầu rồi tưởng xong. DB có 9 service_fee_type mà
-     * 50 hàng chỉ thấy 6 — bản đồ THIẾU mà trông như đủ. Nên bắt buộc khai `_coverage` nói rõ đủ/thiếu.
+     * Bẫy đã dính: neo enum từ 50 hàng đầu rồi tưởng xong. Cột đó có 9 enum mà 50 hàng chỉ thấy 6 —
+     * bản đồ THIẾU mà trông như đủ. Nên bắt buộc khai `_coverage` nói rõ đủ hay thiếu.
      */
     const needsCoverage = (maps: Record<string, unknown>) => {
       const keys = Object.keys(maps).filter((k) => !k.startsWith('_'));
@@ -444,10 +449,15 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
      * màn/tab nào, ứng viên nào đã bị bác bỏ. Luật này giữ chuẩn đó — lý do treo mà không có số thì lần sau
      * không ai biết đã đo tới đâu, và sẽ đo lại từ đầu.
      */
-    const un = fieldMap().unanchored;
+    const un = { ...convFixture().fieldMap!.unanchored, ...fieldMap().unanchored };
     for (const [col, why] of Object.entries(un)) {
       const w = String(why);
-      expect(/d/.test(w), `"${col}": lý do treo không có con số nào (bao nhiêu đơn? bao nhiêu bản ghi?)`).toBe(true);
+      /*
+       * `\d` chứ không phải `d`. Bản trước viết `/d/` nên nó kiểm "có chữ cái d" chứ không phải "có chữ số"
+       * — mọi lý do treo bằng tiếng Việt có chữ `d` đều lọt, kể cả khi không nêu số nào. Luật vẫn xanh suốt
+       * vì văn bản cũ tình cờ có chữ d. Đây đúng loại lỗi mà luật này sinh ra để chặn, nằm ngay trong luật.
+       */
+      expect(/\d/.test(w), `"${col}": lý do treo không có con số nào (bao nhiêu đơn? bao nhiêu bản ghi?)`).toBe(true);
       expect(/DO |ĐO |Quet|Quét|quet|man |màn |tab /.test(w), `"${col}": lý do treo phải nói ĐO ở đâu`).toBe(true);
     }
   });
@@ -463,7 +473,7 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
   });
 
   test('mỗi cột unanchored phải nói RÕ vì sao (để biết cần fixture gì)', () => {
-    for (const [col, why] of Object.entries(fieldMap().unanchored)) {
+    for (const [col, why] of Object.entries({ ...convFixture().fieldMap!.unanchored, ...fieldMap().unanchored })) {
       expect(String(why).trim().length, `"${col}" thiếu lý do`).toBeGreaterThan(25);
     }
   });
@@ -508,7 +518,7 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
      * ghi CHUYEN_DOI → "CHUYEN_DOI" vào bản đồ thì phép đo sau này lấy chính cái sai làm chuẩn rồi assert
      * theo nó — bug biến thành "hành vi mong đợi". Lệch phải nằm ở `_deviations`, không nằm trong bản đồ.
      */
-    const maps = fieldMap().valueMaps || {};
+    const maps = { ...(convFixture().fieldMap!.valueMaps || {}), ...(fieldMap().valueMaps || {}) };
     for (const [key, m] of Object.entries(maps)) {
       if (key.startsWith('_')) continue;
       for (const [en, label] of Object.entries(m as Record<string, string>)) {
@@ -520,7 +530,7 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
   });
 
   test('_deviations: khoá phải trỏ vào màn CÓ THẬT và nói rõ lệch gì', () => {
-    const fm = fieldMap();
+    const fm = convFixture().fieldMap!;
     const dev = (fm.valueMaps || {})._deviations as Record<string, string> | undefined;
     if (!dev) return;                                   // chưa có lệch nào là chuyện bình thường
     for (const [key, why] of Object.entries(dev)) {

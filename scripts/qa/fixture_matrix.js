@@ -18,7 +18,7 @@
  * config = {
  *   "axes": { "branch": ["Bảo lưu", …], "state": ["Chờ thanh toán", …] },
  *   "discover": { "api": "/api/v1/service-fee-orders?page_index={page}&page_size=50", "listPath": "data.orders",
- *                 "branchField": "type_of_service_fee", "stateField": "status", "pages": 6,
+ *                 "branchField": "<cot_nhanh>", "stateField": "status", "pages": 6,
  *                 "branchMap": { "CHUYEN_DOI": "Chuyển đổi" }, "stateMap": { "PURCHASED": "Đã thanh toán" } },
  *   "fixtures": [{ "branch": "…", "state": "…", "id": "…", "how": "recipe:<id>", "verified": "2026-08-19" }],
  *   "na": [{ "branch": "…", "state": "…", "reason": "…" }]

@@ -192,7 +192,7 @@ export function uiLabelOfColumn(conv: DbConventions, screen: string, column: str
   );
 }
 
-/** Nhãn UI ứng với một giá trị enum trong DB, ví dụ `('ic_payment_orders.status', 'PURCHASED')`. */
+/** Nhãn UI ứng với một giá trị enum trong DB, ví dụ `('don_hang.trang_thai', 'DA_DUYET')`. */
 export function uiLabelOfValue(conv: DbConventions, entityColumn: string, dbValue: string): string {
   const maps = conv.fieldMap?.valueMaps;
   if (!maps || !maps[entityColumn]) {

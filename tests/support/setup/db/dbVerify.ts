@@ -166,8 +166,8 @@ export async function expectNoChange(entity: string, where: Where, before: Row |
 }
 
 /**
- * Bảng này KHÔNG có audit hành động người dùng (đo 27/08/2026: `ic_payment_orders` và
- * `ic_payment_transaction_orders` không có cột nào ghi người sửa; `ic_payment_webhook_logs` là log webhook).
+ * Chỉ chạy khi `audit.supported` = true trong quy ước. Đã gặp DB không có bảng audit hành động người dùng:
+ * hai bảng lõi không có cột nào ghi người sửa, còn bảng log webhook là log của bên thứ ba gọi vào.
  * Nên hàm này TỪ CHỐI thay vì trả kết quả rỗng — hứa kiểm audit khi không có cột audit là hứa suông.
  */
 export async function expectAudit(): Promise<never> {

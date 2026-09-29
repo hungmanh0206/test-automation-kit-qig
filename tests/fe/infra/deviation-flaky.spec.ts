@@ -33,7 +33,7 @@ test.describe('@infra sổ nhân nhượng — deviation là TÍN HIỆU, không
   });
 
   test('KHÔNG báo oan khi từ khoá là NỘI DUNG của chính case', () => {
-    const cases = [{ tcId: 'T4', status: 'PASSED', comment: 'Retry sau sync fail: sửa Deal ID rồi đồng bộ lại — recover thành công' }];
+    const cases = [{ tcId: 'T4', status: 'PASSED', comment: 'Retry sau sync fail: sửa Mã hồ sơ rồi đồng bộ lại — recover thành công' }];
     expect(dev.auditExecution(cases, {}), 'không đối chiếu kịch bản thì báo oan').toHaveLength(1);
     const withScript = { T4: { title: 'Retry đồng bộ sau khi fail', stepsRaw: '1. Nhập Deal sai 2. Retry với Deal đúng' } };
     expect(dev.auditExecution(cases, withScript), 'case VỀ retry thì retry không phải nhân nhượng').toHaveLength(0);

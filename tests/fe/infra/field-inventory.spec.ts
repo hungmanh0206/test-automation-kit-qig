@@ -17,19 +17,19 @@ const FIXTURE = `file://${path.resolve(__dirname, '../fixtures/field-inventory.h
 const typesOf = (dev: any[]) => dev.map((d) => d.type);
 
 test.describe('field inventory — bắt thiếu/thừa/lệch mà test theo bước bỏ sót', () => {
-  test('THIẾU field trong section → fields.missing (đúng lớp bug "thiếu Net Price")', async ({ page }) => {
+  test('THIẾU field trong section → fields.missing (đúng lớp bug "thiếu Giá sau giảm")', async ({ page }) => {
     await page.goto(FIXTURE);
     const dev = await checkScreen(page, '', {
       name: 'Add-on Product Info',
       fields: [{
         name: 'Add-on Product Info',
         containerSelector: '#addon-info',
-        expectedFields: ['Add-on Product', 'Version', 'Gross Price', 'Custom Discount', 'Net Price'],
+        expectedFields: ['Add-on Product', 'Version', 'Giá gốc', 'Custom Discount', 'Giá sau giảm'],
       }],
     });
     expect(typesOf(dev)).toContain('fields.missing');
     const miss = dev.find((d: any) => d.type === 'fields.missing');
-    expect(miss.expected).toEqual(['Net Price']);
+    expect(miss.expected).toEqual(['Giá sau giảm']);
   });
 
   test('THỪA cột trong bảng → columns.count + columns.title/order (đúng lớp bug "thừa cột Tuition Payment Office")', async ({ page }) => {
@@ -94,8 +94,8 @@ test.describe('field inventory — bắt thiếu/thừa/lệch mà test theo bư
         <div class="row"><div>Email:</div><div>a@b.com</div></div>
         <div class="row"><div>Số CCCD/ Hộ chiếu:</div><div>001299110011</div></div>
       </div></div>
-      <div class="card"><div class="hd"><span>Order Amount</span></div>
-      <div class="box"><div class="row"><div>Gross Amount:</div><div>0đ</div></div></div></div>`);
+      <div class="card"><div class="hd"><span>Amount Block</span></div>
+      <div class="box"><div class="row"><div>Tổng tiền:</div><div>0đ</div></div></div></div>`);
     const dev = await checkScreen(page, '', {
       name: 'Detail',
       fields: [{
@@ -104,7 +104,7 @@ test.describe('field inventory — bắt thiếu/thừa/lệch mà test theo bư
         expectedFields: ['Full name', 'Email', 'Số CCCD/Hộ chiếu', 'Phone'],
       }],
     });
-    // Chỉ THIẾU đúng 'Phone'. Nếu neo section sai (bắt sang card 'Order Amount') hoặc không đọc được nhãn
+    // Chỉ THIẾU đúng 'Phone'. Nếu neo section sai (bắt sang card 'Amount Block') hoặc không đọc được nhãn
     // thì test này đỏ ngay — đó là ý nghĩa của nó.
     const miss = dev.find((d: any) => d.type === 'fields.missing');
     expect(miss.expected).toEqual(['Phone']);
@@ -117,7 +117,7 @@ test.describe('field inventory — bắt thiếu/thừa/lệch mà test theo bư
   });
 
   test('headingText không có trên màn → fields.no-container, không âm thầm bỏ qua section', async ({ page }) => {
-    await page.setContent('<div class="card"><span>Order Amount</span></div>');
+    await page.setContent('<div class="card"><span>Amount Block</span></div>');
     const dev = await checkScreen(page, '', {
       name: 'Detail',
       fields: [{ name: 'Customer Info', headingText: 'Customer Info', expectedFields: ['Email'] }],

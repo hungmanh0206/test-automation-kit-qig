@@ -28,11 +28,11 @@ const FSD_A = `# (Untitled)
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | **TAB 2: SYNC INFORMATION** |  |  |  |  |  |  |  |
 | **Customer Info** [tham khảo](https://docs.google.com/x) |  |  |  |  |  |  |  |
-| 1 | deal_id | Deal ID | M | Number | User nhập |  | ID deal |
-| 2 | full_name | Full Name | ◎ | Text | Đồng bộ từ Deal |  | Tên học viên |
-| 3 | phone_number | Phone | ◎ | Text | Đồng bộ từ Deal |  | SĐT |
-| 4 | phone_number | Phone | ◎ | Number | Đồng bộ từ Deal |  | SĐT (dòng lặp của tài liệu) |
-| 5 | deal_id_fee_lost | Deal ID Đã Thanh Toán Phí | ◎ | Number | Đồng bộ từ Deal Hệ thống chỉ hiển thị trong trường hợp trường này có giá trị |  | Deal lost |
+| 1 | ma_ho_so | Mã hồ sơ | M | Number | User nhập |  | Mã hồ sơ |
+| 2 | full_name | Full Name | ◎ | Text | Đồng bộ từ hệ ngoài |  | Tên học viên |
+| 3 | phone_number | Phone | ◎ | Text | Đồng bộ từ hệ ngoài |  | SĐT |
+| 4 | phone_number | Phone | ◎ | Number | Đồng bộ từ hệ ngoài |  | SĐT (dòng lặp của tài liệu) |
+| 5 | ma_ho_so_phi | Mã hồ sơ đã thanh toán phí | ◎ | Number | Đồng bộ từ hệ ngoài Hệ thống chỉ hiển thị trong trường hợp trường này có giá trị |  | Deal lost |
 | 6 |  | Đồng bộ lại | - | Button |  |  | Nút đồng bộ |
 | 7 | phi_dich_vu_lan_# | Phí dịch vụ lần # | ◎ | Number | Theo từng giao dịch |  | Số tiền từng lần |
 `;
@@ -88,7 +88,7 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
     const { screens } = run(dir);
     const f = screens.find((s) => s.section === 'Customer Info').fields;
     const by = (label: string) => f.find((x: any) => x.label === label);
-    expect(by('Deal ID Đã Thanh Toán Phí').conditional, '"chỉ hiển thị trong trường hợp…" = có điều kiện').toBe(true);
+    expect(by('Mã hồ sơ đã thanh toán phí').conditional, '"chỉ hiển thị trong trường hợp…" = có điều kiện').toBe(true);
     expect(by('Phí dịch vụ lần #').dynamic, 'nhãn có # = lặp theo giao dịch').toBe(true);
     expect(by('Đồng bộ lại').control, 'Data type Button = control, không đọc bằng nhãn').toBe(true);
     // Field thường KHÔNG được gắn nhãn nào trong ba loại trên.
@@ -137,8 +137,8 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
     run(dir, ['--bindings', b, '--catalog', cat]);
     const c = JSON.parse(fs.readFileSync(cat, 'utf8'));
     const sec = c.screens[0].fields.find((f: any) => f.headingText === 'Customer Info');
-    expect(sec.optionalFields, 'field điều kiện phải được miễn trừ ĐÍCH DANH').toContain('Deal ID Đã Thanh Toán Phí');
-    expect(sec.expectedFields).not.toContain('Deal ID Đã Thanh Toán Phí');
+    expect(sec.optionalFields, 'field điều kiện phải được miễn trừ ĐÍCH DANH').toContain('Mã hồ sơ đã thanh toán phí');
+    expect(sec.expectedFields).not.toContain('Mã hồ sơ đã thanh toán phí');
     expect(sec.expectedFields).not.toContain('Đồng bộ lại');           // control
     // Nhãn lặp trong tài liệu phải gộp và được nêu ra để hỏi BA.
     expect(sec.expectedFields.filter((x: string) => x === 'Phone')).toHaveLength(1);
@@ -149,7 +149,7 @@ test.describe('@infra spec_extract — trích bảng field FSD', () => {
 
   test('section của MÀN KHÁC: chưa có alias thì KHÔNG được coi là đã kiểm', () => {
     // Đo thật 19/08: FSD viết tên khối bằng tiếng Việt, OPS render tiếng Anh ("Thông tin trên Deal" →
-    // "Deal Information"). Tìm theo tên tài liệu thì không bao giờ ra ⇒ không có alias thì phải NÓI RÕ là chưa
+    // "Thông tin hồ sơ"). Tìm theo tên tài liệu thì không bao giờ ra ⇒ không có alias thì phải NÓI RÕ là chưa
     // kiểm được, chứ không được xếp vào danh sách đã-gác.
     const b = path.join(dir, 'b2.json');
     const cat = path.join(dir, 'cat2.json');

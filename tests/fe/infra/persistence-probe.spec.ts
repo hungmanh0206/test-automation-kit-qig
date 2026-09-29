@@ -23,9 +23,9 @@ test.describe('@infra persistence_probe — backtest trên bug đã biết', () 
     expect(r.breaks.map((b: any) => b.link)).not.toContain('form→payload');
   });
 
-  test('CSDL-28376: form tính Net Amount đúng nhưng payload gửi 0 → đứt form→payload (tầng FE)', () => {
+  test('CSDL-28376: form tính Thành tiền đúng nhưng payload gửi 0 → đứt form→payload (tầng FE)', () => {
     const r = probe.evaluate({
-      name: 'Net Amount (add-on included in Course Payment)',
+      name: 'Thành tiền (add-on included in Course Payment)',
       points: { form: '2.500.000', payload: 0, api: 0, ui: '0đ' },
     });
     expect(r.breaks).toHaveLength(1);

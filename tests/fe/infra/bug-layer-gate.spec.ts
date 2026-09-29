@@ -16,21 +16,21 @@ const BASE = { steps: '1. Mở màn Order detail', expectedResult: 'Phải khớ
 
 test.describe('@infra beVsFe — gán tầng FE/BE phải có bằng chứng API', () => {
   test('gán tầng mà KHÔNG có dấu vết API → 1 cảnh báo (không phải problem)', () => {
-    const out = rules.lintBeVsFeLayer({ ...BASE, summary: '[BE] Order detail hiển thị sai Net Amount', description: 'Màn hiện 0đ' });
+    const out = rules.lintBeVsFeLayer({ ...BASE, summary: '[BE] Order detail hiển thị sai Thành tiền', description: 'Màn hiện 0đ' });
     expect(out).toHaveLength(1);
     expect(out[0].level).toBe('warning');       // KHÔNG được là 'problem': chặn ngay là đỏ oan 72% bug
   });
 
   test('có method + path thật → im lặng', () => {
     const out = rules.lintBeVsFeLayer({
-      summary: '[FE] Order detail hiển thị sai Net Amount',
+      summary: '[FE] Order detail hiển thị sai Thành tiền',
       description: 'GET /api/v1/product-orders/abc trả net_amount=5400000 nhưng màn hiện 0đ',
     });
     expect(out).toEqual([]);
   });
 
   test('KHÔNG gán tầng → không cảnh báo (đừng kêu oan bug chưa kết luận tầng)', () => {
-    const out = rules.lintBeVsFeLayer({ summary: 'Order detail hiển thị sai Net Amount', description: 'Màn hiện 0đ' });
+    const out = rules.lintBeVsFeLayer({ summary: 'Order detail hiển thị sai Thành tiền', description: 'Màn hiện 0đ' });
     expect(out).toEqual([]);
   });
 
@@ -38,7 +38,7 @@ test.describe('@infra beVsFe — gán tầng FE/BE phải có bằng chứng API
     // Bug thật của phiên bản đầu: STATUS_CODE dùng `[45]\d\d` trần nên "5.400.000đ" khớp cụm `400`
     // (đứng sau dấu chấm nên vẫn thoả \b) ⇒ bug chỉ nói về số tiền bị coi là "đã bắt API" và lọt cảnh báo.
     const out = rules.lintBeVsFeLayer({
-      summary: '[BE] Order detail hiển thị sai Net Amount',
+      summary: '[BE] Order detail hiển thị sai Thành tiền',
       description: 'Màn hiện 0đ trong khi hợp đồng ghi 5.400.000đ, chênh 1.200.000đ',
     });
     expect(out).toHaveLength(1);

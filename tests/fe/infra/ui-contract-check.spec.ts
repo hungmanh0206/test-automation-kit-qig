@@ -19,9 +19,9 @@ const ID = 'UI-TEST-999';
 const contractPath = path.join(CONTRACT_DIR, `${ID}.json`);
 
 const HTML = `<div class="sec">
-  <div class="hd"><span style="font-weight:700;font-size:16px">Order Amount</span></div>
-  <div class="row"><span>Gross Amount</span><span>1.000.000đ</span></div>
-  <div class="row"><span>Net Amount</span><span>900.000đ</span></div>
+  <div class="hd"><span style="font-weight:700;font-size:16px">Amount Block</span></div>
+  <div class="row"><span>Tổng tiền</span><span>1.000.000đ</span></div>
+  <div class="row"><span>Thành tiền</span><span>900.000đ</span></div>
 </div>`;
 
 function writeContract(sections: any[], aliases: any = {}) {
@@ -37,29 +37,29 @@ test.afterAll(() => { try { fs.unlinkSync(contractPath); } catch (e) { /* đã x
 
 test.describe('@infra ui_contract → đối chiếu build', () => {
   test('build thiếu nhãn mà design có ⇒ báo contract.label-missing kèm oracle_ref', async ({ page }) => {
-    writeContract([{ heading: 'Order Amount', labels: ['Gross Amount', 'Net Amount', 'Total Amount Due'] }]);
+    writeContract([{ heading: 'Amount Block', labels: ['Tổng tiền', 'Thành tiền', 'Còn phải trả'] }]);
     await page.setContent(HTML);
     const dev = await checkScreen(page, '', { name: 'T', uiContract: ID, sectionContainerSelector: '.sec' });
     const miss = dev.find((d: any) => d.type === 'contract.label-missing');
-    expect(miss, 'phải phát hiện build thiếu "Total Amount Due" so với design').toBeTruthy();
-    expect(miss.expected).toEqual(['Total Amount Due']);
+    expect(miss, 'phải phát hiện build thiếu "Còn phải trả" so với design').toBeTruthy();
+    expect(miss.expected).toEqual(['Còn phải trả']);
     expect(miss.oracle_ref, 'deviation FE phải mang NEO để được phép PASS/FAIL').toBe(ID);
   });
 
   test('build đủ nhãn ⇒ KHÔNG báo gì (chống báo oan)', async ({ page }) => {
-    writeContract([{ heading: 'Order Amount', labels: ['Gross Amount', 'Net Amount'] }]);
+    writeContract([{ heading: 'Amount Block', labels: ['Tổng tiền', 'Thành tiền'] }]);
     await page.setContent(HTML);
     const dev = await checkScreen(page, '', { name: 'T', uiContract: ID, sectionContainerSelector: '.sec' });
     expect(dev.filter((d: any) => String(d.type).startsWith('contract.'))).toEqual([]);
   });
 
   test('tên design ≠ tên build: có alias thì khớp, không alias thì báo KHÔNG ĐỊNH VỊ ĐƯỢC', async ({ page }) => {
-    writeContract([{ heading: 'Khối số tiền', labels: ['Gross Amount', 'Net Amount'] }]);
+    writeContract([{ heading: 'Khối số tiền', labels: ['Tổng tiền', 'Thành tiền'] }]);
     await page.setContent(HTML);
     let dev = await checkScreen(page, '', { name: 'T', uiContract: ID, sectionContainerSelector: '.sec' });
     expect(dev.find((d: any) => d.type === 'contract.no-container'), 'không alias ⇒ phải nói rõ chưa đối chiếu được').toBeTruthy();
 
-    writeContract([{ heading: 'Khối số tiền', labels: ['Gross Amount', 'Net Amount'] }], { 'Khối số tiền': 'Order Amount' });
+    writeContract([{ heading: 'Khối số tiền', labels: ['Tổng tiền', 'Thành tiền'] }], { 'Khối số tiền': 'Amount Block' });
     dev = await checkScreen(page, '', { name: 'T', uiContract: ID, sectionContainerSelector: '.sec' });
     expect(dev.filter((d: any) => String(d.type).startsWith('contract.')), 'có alias ⇒ khớp và im lặng').toEqual([]);
   });

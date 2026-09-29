@@ -8,8 +8,8 @@
  *  1. DB là oracle PHỤ. Nguồn sự thật là `knowledge/domain/BR-*`; lấy giá trị từ DB rồi so với chính DB là
  *     tautology. Giá trị lớn nhất của kiểm song song là KHOANH TẦNG lỗi (UI đúng + DB sai = bug persist).
  *  2. So sánh phải THEO NGHĨA của field, không so thô. Đo trên `một DB UAT thật` 27/08/2026:
- *     `ic_payment_orders.final_price` là `bigint`, còn `ic_payment_transaction_orders.amount` là
- *     `character varying` — CÙNG khái niệm tiền, HAI kiểu. So thô thì `540000 !== '540000'` ⇒ báo oan ngay
+ *     cột thành tiền của bảng đơn là số nguyên, còn cột số tiền của bảng giao dịch là
+ *     chuỗi — CÙNG khái niệm tiền, HAI kiểu. So thô thì `540000 !== '540000'` ⇒ báo oan ngay
  *     ngày đầu, rồi sẽ có người bọc `String()` cho hết đỏ và mất luôn khả năng bắt "số bị đổi kiểu".
  *  3. Không phán được thì nói KHÔNG PHÁN ĐƯỢC. Cả 39/39 cột thời gian của DB này là `timestamp WITHOUT
  *     time zone` ⇒ không có offset trong dữ liệu. Nếu chưa khai app ghi theo múi nào thì so mốc thời gian

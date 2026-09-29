@@ -33,7 +33,7 @@ test.describe('@smoke Auth reuse + Evidence highlight (infra)', () => {
     expect(sessionCache.isFresh(key, 25), 'session đã được cache').toBeTruthy();
 
     // #3 evidence highlight + settle + capture (dùng chính EvidenceRecorder path).
-    const rec = new EvidenceRecorder({ taskKey: 'CSDL-26523', projectOutputDir: process.env.PROJECT_OUTPUT_DIR || 'outputs/lms-operations-automation', repoRoot: process.cwd(), log: false });
+    const rec = new EvidenceRecorder({ taskKey: process.env.TASK_KEY || 'AUTH_EV_SMOKE', projectOutputDir: process.env.PROJECT_OUTPUT_DIR || 'outputs/kit-smoke', repoRoot: process.cwd(), log: false });
     const c = rec.case('AUTH_EV_SMOKE_TC_001');
     const st = await c.step(p1, 'Chụp có highlight (verify capture)', { highlight: p1.locator('body'), status: 'PASSED' });
     expect(st, 'step capture PASSED').toBe('PASSED');

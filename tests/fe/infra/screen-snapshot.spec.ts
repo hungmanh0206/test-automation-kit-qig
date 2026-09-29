@@ -16,16 +16,16 @@ test.describe('screen_snapshot — thứ có trên màn mà tài liệu không n
   test('snapshot đọc được nhãn, cặp nhãn→giá trị và bảng', async ({ page }) => {
     await page.goto(FIXTURE);
     const snap = await snapshotScreen(page, { scopeSelector: '#addon-info' });
-    expect(snap.labels).toContain('Gross Price');
+    expect(snap.labels).toContain('Giá gốc');
     expect(snap.pairs.find((p: any) => p.label === 'Add-on Product')?.value).toBe('Becker CMA Part 1');
-    expect(snap.labels).not.toContain('Net Price');   // fixture cố tình thiếu
+    expect(snap.labels).not.toContain('Giá sau giảm');   // fixture cố tình thiếu
   });
 
   test('diff vs tài liệu: nêu ĐÚNG field thiếu và field lạ — không cần ai để ý', async ({ page }) => {
     await page.goto(FIXTURE);
     const snap = await snapshotScreen(page, { scopeSelector: '#addon-info' });
-    const d = diffWithDoc(snap, { expectedFields: ['Add-on Product', 'Version', 'Gross Price', 'Net Price'] });
-    expect(d.missingFields).toEqual(['Net Price']);
+    const d = diffWithDoc(snap, { expectedFields: ['Add-on Product', 'Version', 'Giá gốc', 'Giá sau giảm'] });
+    expect(d.missingFields).toEqual(['Giá sau giảm']);
     expect(d.extraFields).toContain('Custom Discount');   // có trên màn, tài liệu (ở ví dụ này) không khai
   });
 
@@ -53,16 +53,16 @@ test.describe('screen_snapshot — thứ có trên màn mà tài liệu không n
     // Màn Order detail của OPS render bằng div: đo thật thì `labels` = 0 ⇒ snapshot MÙ hoàn toàn.
     // Nhánh labelsLoose phải cứu được ca này, và diffWithDoc phải tự dùng nó khi `labels` rỗng.
     await page.setContent(`<div id="ov">
-      <div><div>Gross Amount</div><div>5.400.000đ</div></div>
-      <div><div>Net Price</div><div>5.400.000đ</div></div>
+      <div><div>Tổng tiền</div><div>5.400.000đ</div></div>
+      <div><div>Giá sau giảm</div><div>5.400.000đ</div></div>
       <div><div>Test Subject</div><div>MA1</div></div>
     </div>`);
     const snap = await snapshotScreen(page, { scopeSelector: '#ov' });
     expect(snap.labels).toHaveLength(0);                       // đúng: không có <label>/<th> nào
-    expect(snap.labelsLoose).toContain('Net Price');           // nhánh div cứu được
+    expect(snap.labelsLoose).toContain('Giá sau giảm');           // nhánh div cứu được
     expect(snap.pairsLoose.find((p: any) => p.label === 'Test Subject')?.value).toBe('MA1');
 
-    const d = diffWithDoc(snap, { expectedFields: ['Gross Amount', 'Net Price', 'Test Subject', 'Monetary Unit'] });
+    const d = diffWithDoc(snap, { expectedFields: ['Tổng tiền', 'Giá sau giảm', 'Test Subject', 'Monetary Unit'] });
     expect(d.missingFields).toEqual(['Monetary Unit']);        // chỉ thiếu đúng 1 field, KHÔNG báo thiếu hết
   });
 
@@ -114,11 +114,11 @@ test.describe('screen_snapshot — instrument không được MÙ', () => {
     const byLabel = (l: string) => form.controls.find((c: any) => c.label === l)?.value;
     expect(byLabel('Full name'), 'họ tên phải bị che (không có mẫu nhận biết được)').toBe('<masked>');
     expect(byLabel('Email')).toBe('<masked>');
-    expect(byLabel('Deal ID'), 'Deal ID là KHOÁ NGHIỆP VỤ — che nó là mất thứ cần đọc').toBe('64333601619');
+    expect(byLabel('Mã hồ sơ'), 'Mã hồ sơ là KHOÁ NGHIỆP VỤ — che nó là mất thứ cần đọc').toBe('64333601619');
 
     const grid = await snapshotScreen(page, { scopeSelector: '#cust' });
     const row = grid.tables[0].rows[0];
-    expect(row[0], 'cột Deal ID không phải PII').toBe('64333601619');
+    expect(row[0], 'cột Mã hồ sơ không phải PII').toBe('64333601619');
     expect(row[2], 'cột Email phải bị che').toBe('<masked>');
     expect(row[3], 'cột Phone phải bị che').toBe('<masked>');
     expect(row[4], 'cột tiền giữ nguyên').toBe('60 000 000');

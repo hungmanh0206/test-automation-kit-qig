@@ -22,7 +22,7 @@ const { stampSection, surfaceOf } = require(CHECKER);
 const HTML_ROWS = `<div class="wrap">
   <div class="sec"><div class="hd"><span style="font-weight:700;font-size:16px">Customer Info</span></div>
     <div class="body">
-      <div class="row"><span>Deal ID</span><span>123</span></div>
+      <div class="row"><span>Mã hồ sơ</span><span>123</span></div>
       <div class="row"><span>Full name</span><span>IT test</span></div>
       <div class="row"><span>Email</span><span>a@b.c</span></div>
     </div>
@@ -38,8 +38,8 @@ const HTML_ROWS = `<div class="wrap">
 /** Layout 2 — khối CON lồng trong khối CHA: cha w700, con w600, các con nằm PHẲNG cạnh nhau. */
 const HTML_NESTED = `<div class="outer">
   <span style="font-weight:700;font-size:16px">Data Synchronized from Partner</span>
-  <span style="font-weight:600;font-size:16px">Deal Information</span>
-  <div class="row"><span>Deal ID</span><span>1</span></div>
+  <span style="font-weight:600;font-size:16px">Thông tin hồ sơ</span>
+  <div class="row"><span>Mã hồ sơ</span><span>1</span></div>
   <div class="row"><span>Full name</span><span>x</span></div>
   <div class="row"><span>Email</span><span>y</span></div>
   <span style="font-weight:600;font-size:16px">Transfer Information</span>
@@ -54,19 +54,19 @@ test.describe('@infra định vị section (ui_conformance_check.stampSection)',
     expect(st.ok).toBe(true);
     const labels = await page.$eval('[data-uicheck="m1"]', (el) => [...el.querySelectorAll('.row')]
       .map((r) => (r.children[0] as HTMLElement).textContent));
-    expect(labels).toEqual(['Deal ID', 'Full name', 'Email']);
+    expect(labels).toEqual(['Mã hồ sơ', 'Full name', 'Email']);
     expect(labels, 'không được hút field của Service Info').not.toContain('Recipient Bank Account');
   });
 
   test('KHỐI CON lồng trong khối: chỉ lấy tới tiêu đề CÙNG CẤP kế tiếp', async ({ page }) => {
     await page.setContent(HTML_NESTED);
     // `.outer` là container mà app khai — nhưng nó bọc CẢ HAI khối con ⇒ phải bị từ chối.
-    const st = await stampSection(page, 'Deal Information', 'm2', '.outer');
+    const st = await stampSection(page, 'Thông tin hồ sơ', 'm2', '.outer');
     expect(st.ok).toBe(true);
     expect(st.via, 'layout phẳng ⇒ phải dùng dải anh em, không dùng container của app').toBe('sibling-range');
     const labels = await page.$$eval('[data-uicheck-row="m2"]', (els) => els
       .map((r) => (r.children[0] as HTMLElement).textContent));
-    expect(labels).toEqual(['Deal ID', 'Full name', 'Email']);
+    expect(labels).toEqual(['Mã hồ sơ', 'Full name', 'Email']);
     expect(labels, 'field của Transfer Information KHÔNG được lọt vào').not.toContain('Convertible Amount');
   });
 
@@ -77,7 +77,7 @@ test.describe('@infra định vị section (ui_conformance_check.stampSection)',
     // Cha bọc cả 2 khối con ⇒ tập nhãn phải gồm cả hai.
     const sel = st.via === 'sibling-range' ? '[data-uicheck-row="m3"]' : '[data-uicheck="m3"] .row';
     const labels = await page.$$eval(sel, (els) => els.map((r) => (r.children[0] as HTMLElement).textContent));
-    expect(labels).toContain('Deal ID');
+    expect(labels).toContain('Mã hồ sơ');
     expect(labels).toContain('Convertible Amount');
   });
 
@@ -85,10 +85,10 @@ test.describe('@infra định vị section (ui_conformance_check.stampSection)',
     await page.setContent(HTML_NESTED);
     const secs = await surfaceOf(page);
     const byName = Object.fromEntries(secs.map((s: any) => [s.heading, s]));
-    expect(Object.keys(byName)).toContain('Deal Information');
-    expect(byName['Deal Information'].labels).toEqual(['Deal ID', 'Full name', 'Email']);
+    expect(Object.keys(byName)).toContain('Thông tin hồ sơ');
+    expect(byName['Thông tin hồ sơ'].labels).toEqual(['Mã hồ sơ', 'Full name', 'Email']);
     expect(byName['Transfer Information'].labels).toEqual(['Converted Course Packages', 'Convertible Amount']);
-    expect(byName['Deal Information'].rank, 'con phải thấp cấp hơn cha')
+    expect(byName['Thông tin hồ sơ'].rank, 'con phải thấp cấp hơn cha')
       .toBeLessThan(byName['Data Synchronized from Partner'].rank);
   });
 });
@@ -108,7 +108,7 @@ test.describe('@infra spec_extract --suggest-aliases', () => {
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | **TAB 2: SYNC INFORMATION** |  |  |  |  |  |  |  |
 | **Thông tin trên Deal** |  |  |  |  |  |  |  |
-| 1 | deal_id | Deal ID | M | Number | x |  | d |
+| 1 | ma_ho_so | Mã hồ sơ | M | Number | x |  | d |
 | 2 | full_name | Full name | ◎ | Text | x |  | d |
 | 3 | email | Email | ◎ | Text | x |  | d |
 `);
@@ -119,7 +119,7 @@ test.describe('@infra spec_extract --suggest-aliases', () => {
     const surface = path.join(dir, 'surface.json');
     fs.writeFileSync(surface, JSON.stringify({
       'X Sync': [
-        { heading: 'Deal Information', rank: 60016, labels: ['Deal ID', 'Full name', 'Email'] },
+        { heading: 'Thông tin hồ sơ', rank: 60016, labels: ['Mã hồ sơ', 'Full name', 'Email'] },
         { heading: 'Khối lạ', rank: 70016, labels: ['Aaa', 'Bbb', 'Ccc'] },
       ],
     }));
@@ -127,7 +127,7 @@ test.describe('@infra spec_extract --suggest-aliases', () => {
       path.resolve(__dirname, '../../../scripts/qa/spec_extract.js'),
       '--docs', dir, '--bindings', bindings, '--suggest-aliases', surface,
     ], { encoding: 'utf8', env: gateEnv() });
-    expect(out, 'phải đề xuất đúng cặp theo trùng nhãn').toContain('"Thông tin trên Deal" → "Deal Information"');
+    expect(out, 'phải đề xuất đúng cặp theo trùng nhãn').toContain('"Thông tin trên Deal" → "Thông tin hồ sơ"');
     expect(out, 'khối build không khớp tài liệu phải được nêu cho chiều ngược').toContain('Khối lạ');
     // Không được tự ghi vào bindings — người chốt.
     expect(JSON.parse(fs.readFileSync(bindings, 'utf8')).sectionAliases).toBeUndefined();

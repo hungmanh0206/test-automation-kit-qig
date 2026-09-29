@@ -7,9 +7,9 @@ import type { Matcher, MatchResult } from './types';
  * nhiều biểu diễn (`pg` trả `numeric`/`bigint` thành string, `mssql` trả number, Mongo trả Decimal128), nên
  * so thô sẽ đỏ hàng loạt dù DB lưu hoàn toàn đúng.
  *
- * Đo trên `một DB UAT thật` (27/08/2026) — hai bảng lõi lưu tiền KHÁC KIỂU nhau:
- *   ic_payment_orders.final_price              bigint
- *   ic_payment_transaction_orders.amount       character varying   ← số tiền lưu dạng CHUỖI
+ * Đo trên một DB UAT thật (27/08/2026) — hai bảng lõi lưu tiền KHÁC KIỂU nhau:
+ *   bảng đơn, cột thành tiền          số nguyên
+ *   bảng giao dịch, cột số tiền       chuỗi   ← cùng khái niệm tiền, lưu dạng CHUỖI
  * và 39/39 cột thời gian là `timestamp WITHOUT time zone` (không có offset trong dữ liệu).
  */
 
@@ -146,7 +146,7 @@ export function instant(expectedIso: string, opts: { storedZone?: string; tolera
 
       /*
        * THÔNG ĐIỆP PHẢI ĐÚNG ĐỘ LỚN. Bản đầu tôi làm tròn ra phút rồi kiểm `% 60 === 0` ⇒ lệch 825ms cũng
-       * ra "lệch 0 giờ — dấu hiệu sai quy đổi múi giờ". Đo thật trên `ic_payment_orders.created_at`
+       * ra "lệch 0 giờ — dấu hiệu sai quy đổi múi giờ". Đo thật trên cột `created_at` của bảng đơn
        * (`2025-05-08 00:14:55.825`): expected ghi tới giây là đủ để nổ, và người đọc sẽ đi tìm bug timezone
        * KHÔNG tồn tại. Lệch dưới 1 phút thì nói bằng ms/giây và gợi ý `toleranceMs`, không nói múi giờ.
        */

@@ -1,16 +1,16 @@
 <!doctype html><meta charset="utf-8">
 <!-- Fixture cho tests/fe/infra/field-inventory.spec.ts.
      Mô phỏng ĐÚNG 2 lớp bug từng lọt qua automation ở một task thật:
-       - section thông tin sản phẩm THIẾU một trường (Net Price) — vẫn render đẹp, không lỗi
+       - section thông tin sản phẩm THIẾU một trường (Giá sau giảm) — vẫn render đẹp, không lỗi
        - bảng giao dịch THỪA một cột không thuộc màn (Tuition Payment Office)
      Cả hai đều không làm gãy bất kỳ step nào ⇒ test theo bước sẽ PASS, chỉ kiểm-kê-tập-hợp mới bắt được. -->
 <h2>Add-on Product Info</h2>
 <div id="addon-info">
   <label>Add-on Product</label><input value="Becker CMA Part 1" />
   <label>Version</label><input value="v2" />
-  <label>Gross Price</label><input value="5.000.000" />
+  <label>Giá gốc</label><input value="5.000.000" />
   <label>Custom Discount</label><input value="750.000" />
-  <!-- THIẾU: Net Price -->
+  <!-- THIẾU: Giá sau giảm -->
 </div>
 
 <h2>Transaction List</h2>
@@ -69,13 +69,13 @@
   <input style="position:absolute;left:200px;top:550px" value="Nguyễn Văn A" />
   <div style="position:absolute;left:20px;top:600px">Email</div>
   <input style="position:absolute;left:200px;top:600px" value="khach.that@example.com" />
-  <div style="position:absolute;left:20px;top:650px">Deal ID</div>
+  <div style="position:absolute;left:20px;top:650px">Mã hồ sơ</div>
   <input style="position:absolute;left:200px;top:650px" value="64333601619" />
 </div>
 
 <h2>Customer Grid</h2>
 <table id="cust">
-  <thead><tr><th>Deal ID</th><th>Customer</th><th>Email</th><th>Phone</th><th>Gross Amount</th></tr></thead>
+  <thead><tr><th>Mã hồ sơ</th><th>Customer</th><th>Email</th><th>Phone</th><th>Tổng tiền</th></tr></thead>
   <tbody>
     <tr><td>64333601619</td><td>Nguyễn Văn A</td><td>a.that@example.com</td><td>0339299199</td><td>60 000 000</td></tr>
   </tbody>
