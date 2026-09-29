@@ -7,6 +7,80 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## v2.2.0 — 2026-09-29 — Kit hết mang dữ liệu của dự án trước, và ba máy gác tự tố mình
+
+Đợt này không thêm tính năng. Nó gỡ thứ nguy hiểm hơn thiếu tính năng: kit đang **mang theo dữ liệu đo
+được của một dự án khác** ở đúng những chỗ máy đọc để tự quyết. Agent đọc phải thì neo theo một sản phẩm
+không tồn tại, mà vẫn ra kết luận có số.
+
+### Config mà MÁY đọc để chấm điểm đang neo vào dự án cũ
+
+`risk_score.js` đổ **mọi** tên khai trong `risk_model.json` vào register của **mọi** task, không lọc theo
+scope. Nên 6 file `risk-register.json` của các task đang chạy đầy module của một sản phẩm khác, và
+`executeOrder` chỉ đường test tới thứ không tồn tại. Chính một task đã ghi nhận việc này từ trước mà
+không ai xử.
+
+Gỡ 29 module mang tên riêng của dự án cũ, giữ 20 tên tổng quát. Gỡ được mà **không đổi kết quả chấm**:
+`knowledge/bugs` và `historical_execution` đang rỗng nên mọi tên ở đó đều là phantom, 0 tín hiệu.
+
+`db.conventions.json` từ 19,9KB xuống 6,2KB — gỡ toàn bộ bảng, cột, màn và bản đồ enum của dự án cũ.
+`fieldMap` nay **rỗng có chủ ý**, nên `db_verify_preflight` CHẶN mọi task khai `[DbPersist]`. Đó là cơ
+chế đúng theo chính thông điệp của nó. Trước đợt này hai task vẫn qua cửa bằng một bản đồ cột 100% không
+liên quan — xanh giả, tệ hơn đỏ.
+
+### Máy gác tên bảng ghi cứng tên của một dự án
+
+`package_kit` từ chối phát hành file mang tên bảng của dự án, nhưng danh sách tên bảng **ghi cứng trong
+code**. Hệ quả hai đầu: dự án đó đi rồi thì luật thành luật chết; dự án mới thì tên bảng THẬT của họ
+không nằm trong danh sách nên gói vẫn phát ra ngoài kèm tên bảng của họ.
+
+Nay suy từ `db.conventions.json` của chính thư mục đang quét — nơi mỗi dự án đã phải khai bảng của mình.
+
+### `gate:policy` báo "sạch công cụ đã bỏ" trong khi 38 chỗ vẫn dạy lệnh của nó
+
+Mẫu cấm viết `\bAIO\b`, phân biệt hoa-thường, nên **mù với dạng thường**. Trang thư viện vẫn dạy
+`npm run aio:publish`, `aio:verify-fields` — lệnh không còn trong `package.json`, trỏ vào thư mục đã xoá.
+Đúng bài học mà chính file luật đó đã ghi lại hồi 07/09 với badge `XR`, lặp lại ở kiểu chữ khác.
+
+Thêm `/\baio:/` vào danh sách cấm — bắt **dạng lệnh**, không bắt tên công cụ trong câu kể lịch sử.
+`RULE_GLOBAL` canonical còn chỉ đường qua thư mục đã xoá và nói "script đòi `--qa-approved`"; không còn
+script nào. `backlog/README.md` mô tả công cụ cũ như còn sống, kèm một câu sai hẳn do lượt find-replace
+trước để lại. Viết lại cả hai.
+
+### Ba luật tự tố mình khi bị đem ra dùng thật
+
+- Luật "lý do treo phải có con số" viết `/d/` thay vì `/\d/` — nó kiểm **có chữ cái d**. Mọi lý do tiếng
+  Việt đều lọt; luật xanh suốt chỉ vì văn bản cũ tình cờ có chữ `d`.
+- Máy canh bảng số QUICKSTART nhận nhánh bằng `strip.every(...)`, mà `every` trên mảng **rỗng** trả `true`
+  — ngày danh sách hết mục thì nó coi mọi cây là nhánh mirror rồi cộng nhầm số. Nó bắt đúng lượt lệch này.
+- Phép kiểm chống-báo-oan của `env_signals` ngủ 400ms rồi assert danh sách rỗng **ngay**. Request chưa kịp
+  về thì mọi danh sách đều rỗng và test XANH mà chưa kiểm gì. Một phép kiểm chống-báo-oan **pass rỗng
+  được** thì nó không chứng minh được điều nó nói.
+
+### Testcase kèm câu SQL chạy tay được
+
+Dự án nặng CSDL nên testcase giờ mang sẵn câu truy vấn để QA copy đi chạy. Đặt câu vào ô mở đúng hai đường
+lách hai luật nặng nhất, và cả hai đều không nhìn ra bằng mắt khi bộ có vài trăm case: một câu `UPDATE`
+lọt vào ô là QA chạy thật lên UAT; `WHERE email = '…'` là PII khách nằm trong testcase rồi lên Sheet.
+Máy gác chặn cả hai, và có ba phép kiểm âm tính để nó khỏi báo oan — trong đó có ca thật: một câu `DELETE`
+được **trích dẫn** để nói ra rằng proc xoá cứng, tức phát hiện có giá trị nhất của case đó.
+
+### Neo MẪU SỐ của Phase 1
+
+Phase 1 có ba con số quyết định "thế nào là đủ", cả ba đều do chính agent viết ra rồi gate lấy chính nó
+làm chuẩn. Triệu chứng: sinh 50 case, QA đọc thấy thiếu, rà lại thì lượt sau ra nhiều hơn hẳn — không
+phải lượt sau giỏi hơn, là lượt đầu **không có gì neo**. `scope_anchor` kiểm xuất xứ của mẫu số.
+
+### Dọn văn
+
+220 câu dài quá 35 từ xuống 0 trên toàn bộ tài liệu, và 4 lỗi ĐO của chính `writing_lint` được sửa —
+khoảng 1/6 "nợ văn phong" hoá ra là do máy đo sai chứ không phải người viết dở.
+
+### Số đo
+
+`tests/fe/infra` 581 xanh, 0 đỏ, ổn định qua 4 lượt liên tiếp (trước đó flaky 2/5). 11/11 bước
+static-check ĐẠT, gồm `library:drift` — lần đầu xanh sau nhiều đợt.
+
 ## v2.1.2 — 2026-09-19 — Soi chính thứ đã phát hành, không soi thứ định phát hành
 
 Lượt rà này tải về đúng file `kit-2.1.1.tar.gz` từ GitHub Release rồi kiểm trên đó. Góc đó tìm ra hai

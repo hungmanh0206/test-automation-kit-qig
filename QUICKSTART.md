@@ -20,7 +20,7 @@
 
 | Step | Action | Command/File |
 |---:|---|---|
-| 1 | Clone repo | GitHub: `git clone https://github.com/hungmanh0206/test-automation-kit_v2.git` · GitLab (cần VPN + SSH key): `git clone git@gitlab.example.com:tester/test_automation_test_kit_v2.git`. **Hai nhánh KHÁC NHAU có chủ ý** — xem mục *Hai remote* bên dưới |
+| 1 | Clone repo | GitHub: `git clone https://github.com/hungmanh0206/test-automation-kit-qig.git` · GitLab (cần VPN + SSH key): `git clone git@gitlab.example.com:tester/test_automation_test_kit_v2.git`. **Hai nhánh KHÁC NHAU có chủ ý** — xem mục *Hai remote* bên dưới |
 | 2 | Vào workspace | `cd <YOUR_PROJECT>` |
 | 3 | Cài dependencies | `npm ci` — KHÔNG dùng `npm install`, phải theo lockfile |
 | 4 | Cài Playwright browsers | `npx playwright install` |
