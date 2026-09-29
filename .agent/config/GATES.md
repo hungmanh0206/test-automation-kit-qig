@@ -11,7 +11,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | Mức | npm script | Chặn/kiểm cái gì | File | Gọi từ |
 |---|---|---|---|---|
 | CHẶN | `library:build` | ghép src/ thành docs/library/index.html (một file duy nhất, self-contained). | `docs/library/build.js` | README.md |
-| CHẶN | `merge:execution-status` | ghi kết quả execute (testcase-status.json) NGƯỢC vào cột `Result` của file | `scripts/convert_excel/merge_execution_status.js` | **KHÔNG BỀ MẶT NÀO** |
+| CHẶN | `merge:execution-status` | ghi kết quả execute (testcase-status.json) NGƯỢC vào cột `Result` của file | `scripts/convert_excel/merge_execution_status.js` | RULE_GLOBAL.md |
 | CHẶN | `backlog:bug-report`, `backlog:bug-report:dry-run` | Create Backlog Sub-bug issues for failed Playwright test cases. | `scripts/integrations/backlog/bug_reporter.js` | README.md · .github/workflows · .agent/skills · prompt_templates |
 | CHẶN | `integration:check`, `integration:check:live` | const axios = require('axios'); | `scripts/integrations/backlog/check_connection.js` | .gitlab-ci.yml · README.md · USER_GUIDE.md · QUICKSTART.md · .github/workflows · tests/fe/infra |
 | CHẶN | `gdoc:read` | Đọc nội dung từ Google Docs | `scripts/integrations/google_doc/doc_reader.js` | prompt_templates |
