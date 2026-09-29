@@ -12,13 +12,26 @@ import path from 'path';
 
 const { attachEnvSignals, toFindings } = require(path.resolve(__dirname, '../../../scripts/utils/runtime/env_signals.js'));
 
+/*
+ * CHỜ THEO ĐIỀU KIỆN, KHÔNG NGỦ ĐỦ LÂU.
+ *
+ * Bản trước dùng `waitForTimeout(300..500)` sau mỗi `fetch`, và nó đỏ ngẫu nhiên 2/5 lượt khi chạy CẢ BỘ
+ * trong khi chạy riêng thì 3/3 xanh — đúng hình dạng của một cuộc đua: chạy riêng thì máy rảnh nên 400ms
+ * thừa, chạy cùng 580 test khác thì không.
+ *
+ * `report()` là ảnh chụp đồng bộ nên hỏi lại được bao nhiêu lần tuỳ thích. Chờ tới khi tín hiệu CÓ MẶT thì
+ * đúng nhanh và đúng chắc: máy rảnh thì xong sau một nhịp, máy bận thì nó đợi thêm thay vì phán bừa.
+ */
+const doiTinHieu = async (lay: () => number, viSao: string) => {
+  await expect.poll(lay, { message: viSao, timeout: 10_000, intervals: [25, 50, 100, 200] }).toBeGreaterThan(0);
+};
+
 test.describe('@infra env_signals — assert thay vì chỉ dùng để triage', () => {
   test('bắt JS exception (zero-tolerance, dù màn trông bình thường)', async ({ page }) => {
     const sig = attachEnvSignals(page);
     await page.setContent('<h1>Màn trông rất ổn</h1><script>setTimeout(()=>{ throw new Error("boom trong runtime") },10)</script>');
-    await page.waitForTimeout(300);
+    await doiTinHieu(() => sig.report().pageErrors.length, 'collector không bắt được JS exception');
     const r = sig.report();
-    expect(r.pageErrors.length).toBeGreaterThan(0);
     expect(r.pageErrors[0].message).toContain('boom');
     expect(r.clean, 'có exception thì KHÔNG được coi là sạch').toBe(false);
     await expect(async () => sig.assertClean('màn X')).rejects.toThrow(/env-signals/);
@@ -28,9 +41,8 @@ test.describe('@infra env_signals — assert thay vì chỉ dùng để triage',
     await page.route('**/api/phu**', (r) => r.fulfill({ status: 500, body: 'boom' }));
     const sig = attachEnvSignals(page);
     await page.setContent('<h1>OK</h1><script>fetch("https://x.test/api/phu").catch(()=>{})</script>');
-    await page.waitForTimeout(400);
+    await doiTinHieu(() => sig.report().httpErrors.length, 'API phụ 500 phải bị bắt dù UI không báo gì');
     const r = sig.report();
-    expect(r.httpErrors.length, 'API phụ 500 phải bị bắt dù UI không báo gì').toBeGreaterThan(0);
     expect(r.httpErrors[0].status).toBe(500);
   });
 
@@ -40,10 +52,14 @@ test.describe('@infra env_signals — assert thay vì chỉ dùng để triage',
     const sig = attachEnvSignals(page);
     sig.expect4xx(/\/api\/validate/, 'case negative: gửi payload thiếu field để đòi 422');
     await page.setContent('<h1>OK</h1><script>fetch("https://www.googletagmanager.com/gtag/js").catch(()=>{});fetch("https://x.test/api/validate").catch(()=>{})</script>');
-    await page.waitForTimeout(400);
+    /*
+     * PHẢI chờ tín hiệu MONG ĐỢI tới TRƯỚC, rồi mới khẳng định danh sách "lạ" là rỗng. Bản trước ngủ rồi
+     * assert `toHaveLength(0)` ngay: nếu request chưa kịp về thì mọi danh sách đều rỗng và test XANH mà
+     * chưa kiểm gì. Một phép kiểm chống-báo-oan có thể pass rỗng thì nó không chứng minh được điều nó nói.
+     */
+    await doiTinHieu(() => sig.report().httpErrorsExpected.length, '422 cố ý vẫn phải được GHI LẠI, không im lặng');
     const r = sig.report();
     expect(r.httpErrors, 'gtag 404 + 422 đã khai trước ⇒ không phải tín hiệu lạ').toHaveLength(0);
-    expect(r.httpErrorsExpected.length, 'nhưng 422 cố ý vẫn phải được GHI LẠI, không im lặng').toBeGreaterThan(0);
   });
 
   test('lệch contract chỉ kiểm khi task KHAI contract (không tự đoán schema)', async ({ page }) => {
@@ -52,9 +68,8 @@ test.describe('@infra env_signals — assert thay vì chỉ dùng để triage',
       contracts: [{ match: /\/api\/orders/, validate: (b: any) => (typeof b?.data?.total === 'number' ? [] : ['`data.total` phải là number, nhận string']) }],
     });
     await page.setContent('<h1>OK</h1><script>fetch("https://x.test/api/orders").catch(()=>{})</script>');
-    await page.waitForTimeout(500);
+    await doiTinHieu(() => sig.report().contractViolations.length, 'khai contract rồi mà lệch kiểu vẫn lọt');
     const r = sig.report();
-    expect(r.contractViolations.length).toBeGreaterThan(0);
     expect(r.contractViolations[0].problems[0]).toContain('number');
   });
 
