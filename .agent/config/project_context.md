@@ -12,20 +12,24 @@
 
 ## Sites
 
-### LMS
+> Hai tiền tố `OPS_` và `LMS_` là **tên cũ còn lại từ một dự án trước**, giờ chỉ còn nghĩa "app thứ nhất"
+> và "app thứ hai" của dự án đang chạy. Đừng suy ra sản phẩm nào từ tên biến. Chưa đổi tên vì tiền tố này
+> nằm trong `opsLogin.ts`, `opsAuth.ts` và vài script — đổi là một lượt refactor riêng, không phải việc dọn tên.
 
-| Field | Env key |
-|---|---|
-| Base/Login/User/Password | `LMS_BASE_URL`, `LMS_LOGIN_URL`, `LMS_USERNAME`, `LMS_PASSWORD` |
-| API/Swagger | `LMS_API_BASE_URL`, `LMS_SWAGGER_URL` |
-
-### OPS
+### App 1 — app chính đang test
 
 | Field | Env key |
 |---|---|
 | Base/Login/User/Password | `OPS_BASE_URL`, `OPS_LOGIN_URL`, `OPS_USERNAME`, `OPS_PASSWORD` |
 | API/Swagger | `OPS_API_BASE_URL`, `OPS_SWAGGER_URL` |
 | Feature URLs | `FEATURE_1_URL`, `FEATURE_2_URL`, `FEATURE_3_URL` |
+
+### App 2 — app phụ, bỏ trống nếu dự án chỉ có một app
+
+| Field | Env key |
+|---|---|
+| Base/Login/User/Password | `LMS_BASE_URL`, `LMS_LOGIN_URL`, `LMS_USERNAME`, `LMS_PASSWORD` |
+| API/Swagger | `LMS_API_BASE_URL`, `LMS_SWAGGER_URL` |
 
 ## Rules
 
@@ -40,13 +44,13 @@
 > hệ thống, không phải cách dựng state) — nó là **cách đội này thống nhất làm việc**. Trước đây chỉ nằm trong
 > trí nhớ của người/agent đã làm lâu, nên người tiếp nhận dự án không có. Ghi ở đây để ai vào cũng thấy.
 >
-> Điền/sửa theo dự án của bạn — các dòng dưới là ví dụ có thật từ một dự án đang chạy.
+> Điền/sửa theo dự án của bạn.
 
 | Quy ước | Nội dung |
 |---|---|
-| **Chạy lại Phase 1 ⇒ KHÔNG push testcase lên Sheet** | Với task đã có testcase publish trước đó (lịch sử: từng publish lên Google Sheet, vd `CSDL-24395` — bộ 530 đã publish và đã execute; nay tương đương là Google Sheet), lượt chạy Phase 1 **lại** là để *đo/kiểm/bổ sung*, **không phải để publish**. Dừng ở Excel + summary; **KHÔNG** chạy `phase1/04_auto_publish_backlog.md` (giờ là publish lên Sheet). User chốt 17/08/2026 — không hỏi lại mỗi lần. Muốn publish thì phải có yêu cầu **tường minh** của user cho đúng lượt đó. |
+| **Chạy lại Phase 1 ⇒ KHÔNG push testcase lên Sheet** | Với task đã publish testcase trước đó, lượt chạy Phase 1 **lại** là để *đo/kiểm/bổ sung*, **không phải để publish**. Dừng ở Excel + summary. User chốt 17/08/2026 — không hỏi lại mỗi lần. Muốn publish thì phải có yêu cầu **tường minh** của user cho đúng lượt đó. |
 | Cấu trúc publish testcase | Mỗi **nhóm chức năng = 1 sheet riêng** trong cùng workbook Google Sheet (do `md_to_xlsx.js` xuất, upload nguyên file qua Drive MCP). Đây là mặc định, không hỏi lại từng lần. |
 | Case regression/change-impact | Xếp vào **nhóm chức năng liên quan**, KHÔNG tách nhóm/subfolder "Regression" riêng. |
-| Đặt tên dữ liệu test | Contact/order tạo qua tool phải bắt đầu bằng **`IT test`** + tên ngắn gọn, để phân biệt với dữ liệu thật và dọn được theo tiền tố. |
+| Đặt tên dữ liệu test | Bản ghi tạo qua tool phải bắt đầu bằng **`IT test`** + tên ngắn gọn, để phân biệt với dữ liệu thật và dọn được theo tiền tố. |
 | Case vướng data/env (không phải defect) | Ghi **PASS kèm comment giải thích trung thực** trên testcase, KHÔNG để FAIL đỏ — FAIL dành cho defect. |
 | Trước khi gen testcase | Phân tích tài liệu xong phải **gom câu hỏi làm rõ hỏi trước**, có câu trả lời rồi phân tích lại mới gen. Không đoán chỗ mờ. |

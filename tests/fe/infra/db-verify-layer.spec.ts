@@ -27,6 +27,68 @@ const REPO = path.resolve(__dirname, '..', '..', '..');
  * production chạy một đường khác. */
 const grant = (table: string, privilege: string): GrantRow => ({ table, privilege: normalizePrivilege(privilege) });
 
+/*
+ * QUY ƯỚC GIẢ, dựng riêng cho các luật về `fieldMap`.
+ *
+ * Vì sao KHÔNG kiểm những luật đó trên file thật của repo: `db.conventions.json` là **dữ liệu của một dự án
+ * cụ thể**, không phải hành vi của kit. Bản trước khoá thẳng tên cột và tên màn của một dự án vào test, nên
+ * khi dự án đổi thì 10 test đỏ — mà thứ chúng cần chứng minh (bản đồ phải khoá theo màn, enum phải đơn ánh,
+ * chưa neo thì phải NÉM chứ đừng trả nhãn màn khác) không hề đổi. Kiểm trên fixture thì các luật đó đúng với
+ * MỌI dự án, còn file thật chỉ còn phải đạt các luật về HÌNH DẠNG — và được phép rỗng khi chưa neo.
+ *
+ * Fixture cố ý dựng đúng các bẫy đã từng làm sai kết luận:
+ *   - `gia_goc` mang HAI nhãn khác nhau ở hai màn (lý do bản đồ phải khoá theo màn),
+ *   - `thanh_tien` neo ở màn danh sách nhưng KHÔNG neo ở màn chi tiết,
+ *   - `tien_coc` chỉ neo ở màn sửa, trong khi màn chi tiết cũng có nhãn trùng chữ nhưng khác nghĩa,
+ *   - `gia_tuy_chon` treo, kèm lý do có số đo.
+ */
+const CONV_FIXTURE = {
+  idColumn: 'id',
+  softDelete: {
+    default: { mode: 'timestamp', column: 'deleted_at' },
+    byEntity: { don_hang_chi_tiet: { mode: 'none' } },
+  },
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at', storedZone: 'UTC' },
+  audit: { supported: false },
+  money: { entities: { don_hang: ['gia_goc', 'thanh_tien', 'tien_coc', 'gia_tuy_chon'] } },
+  rates: { entities: { don_hang: ['ty_le_phi', 'giam_gia_co_dinh'] }, unitUnknown: ['giam_gia_co_dinh'] },
+  relations: {},
+  safety: { requireReadonlyUser: true, allowedHosts: [], denyHostPatterns: ['prod'], statementTimeoutMs: 5000, maxRows: 500 },
+  fieldMap: {
+    entity: 'don_hang',
+    byScreen: {
+      CHI_TIET: { _route: '/don-hang/<id>/chi-tiet', gia_goc: 'Giá gốc', trang_thai: 'Trạng thái' },
+      DANH_SACH: { _route: '/don-hang?page=1', id: 'Mã đơn hàng', gia_goc: 'Giá niêm yết', thanh_tien: 'Thành tiền' },
+      SUA: { _route: '/don-hang/<id>/sua', tien_coc: 'Tiền đã trả' },
+    },
+    unanchored: {
+      gia_tuy_chon: 'ĐO toàn bộ 132 bản ghi non-null trên màn chi tiết: không bản ghi nào có gia_tuy_chon khác mọi cột tiền khác ⇒ chưa phân biệt được, cần fixture đặt giá riêng.',
+      giam_gia_co_dinh: 'ĐO 2 bản ghi trên 3 màn (chi tiết, danh sách, form sửa): không màn nào hiện giá trị 10 hay 15 ⇒ chưa xác định được đơn vị.',
+    },
+    notDisplayed: {
+      loai_man: 'Quyết định ROUTE chứ không hiện dưới dạng một field. Khoá màn trong byScreen CHÍNH LÀ giá trị cột này.',
+    },
+    valueMaps: {
+      _coverage: 'ĐẦY ĐỦ, nói rõ từng cột: don_hang.trang_thai = 3/3 enum của DB, đo độc lập trên cả hai màn danh sách và cho kết quả trùng nhau. Vì sao phải đọc hai màn: trang đầu của một màn chỉ thấy 2/3 enum — bản đồ THIẾU mà trông như đủ.',
+      'don_hang.trang_thai': { CHO_DUYET: 'Chờ duyệt', DA_DUYET: 'Đã duyệt', TU_CHOI: 'Từ chối' },
+      _deviations: {
+        'don_hang.trang_thai@DANH_SACH': 'Màn danh sách hiện enum thô TU_CHOI thay vì nhãn "Từ chối". Giữ ở đây chứ không ghi vào bản đồ, vì ghi vào là lấy chính cái sai làm chuẩn rồi assert theo nó. Chưa log bug vì chưa đối chiếu được với bản thiết kế.',
+      },
+    },
+    _method_enum_by_groups:
+      'Neo cột enum không hiện dạng chuỗi: lấy HAI NHÓM bản ghi cùng màn khác nhau ở cột đó, tìm nhãn nào có ở mọi bản ghi cả hai nhóm, không đổi trong từng nhóm, và khác nhau giữa hai nhóm. Mỗi nhóm phải từ 3 đơn của các đối tượng KHÁC NHAU — hai bản ghi gần-bản-sao làm mọi phép so nhóm ra kết quả giả.',
+  },
+};
+
+/** Ghi một bộ quy ước giả ra repo tạm rồi nạp bằng CHÍNH loader thật, không tự dựng object. */
+function convFixture(over: Record<string, unknown> = {}) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'convfix-'));
+  fs.mkdirSync(path.join(tmp, '.agent', 'config'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, '.agent', 'config', 'db.conventions.json'),
+    JSON.stringify({ ...CONV_FIXTURE, ...over }), 'utf8');
+  try { return loadConventions(tmp); } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
+}
+
 test.describe('@infra db guard — chứng minh read-only bằng ĐỌC QUYỀN', () => {
   test('user chỉ có SELECT ⇒ ĐẠT (role read-only đúng chuẩn không được bị từ chối oan)', () => {
     const proof = proveReadOnlyFromGrants([grant('orders', 'SELECT'), grant('transactions', 'SELECT')]);
@@ -201,10 +263,14 @@ test.describe('@infra config — conventions commit được, creds thì không'
   test('file conventions THẬT của repo hợp lệ và phản ánh schema đã đo', () => {
     const conv = loadConventions(REPO);
     expect(conv.idColumn).toBe('id');
-    // 7 bảng nối KHÔNG có deleted_at ⇒ phải khai `none`, không được để rơi vào default.
-    expect(softDeleteFor(conv, 'ic_payment_order_product_instances').mode).toBe('none');
-    expect(softDeleteFor(conv, 'ic_payment_orders').mode).toBe('timestamp');
-    expect(softDeleteFor(conv, 'ic_payment_orders').column).toBe('deleted_at');
+    expect(softDeleteFor(conv, 'bang_bat_ky').mode).toBe('timestamp');
+    expect(softDeleteFor(conv, 'bang_bat_ky').column).toBe('deleted_at');
+    /*
+     * Bảng khai `none` phải THẮNG default — ở đó xoá là xoá CỨNG nên `expectSoftDeleted` phải từ chối phán.
+     * Kiểm trên fixture chứ không trên file thật: `byEntity` của file thật là dữ liệu của dự án, nó được
+     * phép rỗng khi chưa ai đo bảng nào thiếu cột xoá mềm. Hành vi "none thắng default" thì không đổi.
+     */
+    expect(softDeleteFor(convFixture(), 'don_hang_chi_tiet').mode).toBe('none');
     /*
      * Trước 27/08/2026 test này khoá `storedZone` phải TRỐNG (chưa đo được thì `instant()` trả inconclusive —
      * đó là câu trả lời đúng). Nay đã ĐO được bằng phép read-only nên khoá vào giá trị đo: đổi kết luận này
@@ -282,19 +348,24 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
   };
 
   test('bản đồ phải khoá THEO MÀN, không phẳng', () => {
-    const fm = fieldMap();
-    expect(fm.byScreen, 'bản đồ phẳng là neo sai màn').toBeTruthy();
-    expect(Object.keys(fm.byScreen).length).toBeGreaterThanOrEqual(2);
-    for (const [screen, cols] of Object.entries(fm.byScreen)) {
+    const fx = convFixture().fieldMap!;
+    expect(fx.byScreen, 'bản đồ phẳng là neo sai màn').toBeTruthy();
+    expect(Object.keys(fx.byScreen).length).toBeGreaterThanOrEqual(2);
+    /*
+     * File thật được phép RỖNG (chưa neo màn nào), nhưng màn nào ĐÃ khai thì phải có `_route`. Khai nửa vời
+     * còn tệ hơn rỗng: rỗng thì `db_verify_preflight` CHẶN, còn nửa vời thì §23 chạy rồi đo trên URL nào
+     * không ai biết.
+     */
+    for (const [screen, cols] of Object.entries(fieldMap().byScreen)) {
       expect(cols._route, `màn ${screen} thiếu \`_route\` — không biết neo trên URL nào`).toBeTruthy();
     }
   });
 
   test('CÙNG một cột được phép có nhãn KHÁC nhau giữa hai màn (đó là lý do phải khoá theo màn)', () => {
-    const fm = fieldMap();
-    expect(fm.byScreen.SERVICE_FEE.original_price).toBe('Gross Price');
-    expect(fm.byScreen.CORE.original_price).toBe('Gross Amount');
-    expect(fm.byScreen.SERVICE_FEE.original_price).not.toBe(fm.byScreen.CORE.original_price);
+    const fx = convFixture().fieldMap!;
+    expect(fx.byScreen.CHI_TIET.gia_goc).toBe('Giá gốc');
+    expect(fx.byScreen.DANH_SACH.gia_goc).toBe('Giá niêm yết');
+    expect(fx.byScreen.CHI_TIET.gia_goc).not.toBe(fx.byScreen.DANH_SACH.gia_goc);
   });
 
   test('mỗi cột tiền phải được QUYẾT: neo ở ít nhất 1 màn HOẶC khai unanchored', () => {
@@ -313,14 +384,22 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
      * không thể là VND. Để chúng trong `money` thì `money()` vẫn "chạy" nhưng thông điệp thành "lệch 5 đồng"
      * cho một tỉ lệ, và gate độ-phủ-cột-tiền đếm sai. Cột nào chưa biết đơn vị phải khai `unitUnknown`.
      */
-    const conv = loadConventions(REPO);
-    const money = conv.money?.entities?.ic_payment_orders || [];
-    const rates = conv.rates?.entities?.ic_payment_orders || [];
-    expect(rates.length, 'chưa khai cột tỉ lệ nào').toBeGreaterThan(0);
-    for (const r of rates) expect(money, `"${r}" vừa là tiền vừa là tỉ lệ — phải chọn một`).not.toContain(r);
-    for (const u of conv.rates?.unitUnknown || []) {
-      expect(rates, `"${u}" khai unitUnknown thì phải nằm trong rates`).toContain(u);
-    }
+    const check = (conv: ReturnType<typeof loadConventions>) => {
+      for (const [entity, rates] of Object.entries(conv.rates?.entities || {})) {
+        const money = (conv.money?.entities || {})[entity] || [];
+        for (const r of rates) expect(money, `"${r}" vừa là tiền vừa là tỉ lệ — phải chọn một`).not.toContain(r);
+      }
+      const allRates = Object.values(conv.rates?.entities || {}).flat();
+      for (const u of conv.rates?.unitUnknown || []) {
+        expect(allRates, `"${u}" khai unitUnknown thì phải nằm trong rates`).toContain(u);
+      }
+    };
+    // Fixture CÓ khai tỉ lệ ⇒ chứng minh luật tách thật sự có răng.
+    const fx = convFixture();
+    expect(Object.values(fx.rates?.entities || {}).flat().length).toBeGreaterThan(0);
+    check(fx);
+    // File thật được phép chưa khai cột nào; khai rồi thì phải theo đúng luật trên.
+    check(loadConventions(REPO));
   });
 
   test('mỗi cột TỈ LỆ cũng phải được QUYẾT (neo / treo / không-hiển-thị)', () => {
@@ -347,9 +426,16 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
      * Bẫy đã dính: neo status/service_fee_type từ 50 hàng đầu rồi tưởng xong. DB có 9 service_fee_type mà
      * 50 hàng chỉ thấy 6 — bản đồ THIẾU mà trông như đủ. Nên bắt buộc khai `_coverage` nói rõ đủ/thiếu.
      */
-    const maps = fieldMap().valueMaps || {};
-    expect(String(maps._coverage || ''), 'thiếu `_coverage`: không ai biết bản đồ enum đã đủ chưa').toMatch(/DAY DU|ĐẦY ĐỦ|đủ/);
-    expect(String(maps._coverage).length).toBeGreaterThan(80);
+    const needsCoverage = (maps: Record<string, unknown>) => {
+      const keys = Object.keys(maps).filter((k) => !k.startsWith('_'));
+      if (!keys.length) return;                // chưa neo enum nào thì chưa có gì để khai độ phủ
+      expect(String(maps._coverage || ''), 'thiếu `_coverage`: không ai biết bản đồ enum đã đủ chưa').toMatch(/DAY DU|ĐẦY ĐỦ|đủ/);
+      expect(String(maps._coverage).length).toBeGreaterThan(80);
+    };
+    const fxMaps = (convFixture().fieldMap!.valueMaps || {}) as Record<string, unknown>;
+    expect(Object.keys(fxMaps).filter((k) => !k.startsWith('_')).length).toBeGreaterThan(0);
+    needsCoverage(fxMaps);
+    needsCoverage((fieldMap().valueMaps || {}) as Record<string, unknown>);
   });
 
   test('lý do treo phải là SỐ ĐO, không phải phỏng đoán (nêu bao nhiêu đơn / màn nào)', () => {
@@ -370,7 +456,8 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
     const fm = fieldMap() as unknown as { _method_enum_by_groups?: string };
     const m = String(fm._method_enum_by_groups || '');
     expect(m.length, 'conventions chưa khai phương pháp neo cột enum').toBeGreaterThan(80);
-    expect(m, 'phải ghi ràng buộc ≥3 đơn của khách khác nhau — đây là chỗ đã tạo 4 kết quả giả').toMatch(/3 don|3 đơn/);
+    expect(m, 'phải ghi ràng buộc ≥3 bản ghi của đối tượng khác nhau — đây là chỗ đã tạo 4 kết quả giả')
+      .toMatch(/3 (don|đơn|ban ghi|bản ghi)/);
     const spec = fs.readFileSync(path.join(REPO, 'tests/support/setup/db/fieldmap.anchor.spec.ts'), 'utf8');
     expect(spec, 'khai phương pháp mà không có máy chạy thì chỉ là văn bản').toContain('SO HAI NHÓM');
   });
@@ -398,7 +485,8 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
      * Hai enum dùng chung một nhãn thì nhãn đó không phân biệt được trạng thái ⇒ dùng để phán là ra kết luận
      * sai. Đây chính là luật đã áp lúc đo; kiểm lại ở đây để lần sau ai sửa file tay cũng bị chặn.
      */
-    const maps = fieldMap().valueMaps || {};
+    // Fixture CÓ bản đồ giá trị ⇒ luật đơn ánh được chứng minh là có răng, kể cả khi file thật đang rỗng.
+    const maps = { ...(convFixture().fieldMap!.valueMaps || {}), ...(fieldMap().valueMaps || {}) };
     const keys = Object.keys(maps).filter((k) => !k.startsWith('_'));
     expect(keys.length, 'chưa neo bản đồ giá trị nào').toBeGreaterThan(0);
     for (const k of keys) {
@@ -445,45 +533,45 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
   });
 
   test('màn danh sách và màn chi tiết là HAI màn khác nhau trong bản đồ', () => {
-    const fm = fieldMap();
-    // `final_price` neo ở SERVICE_FEE (Net Amount) và ở CORE_LIST, nhưng KHÔNG neo ở CORE (tab Overview).
-    expect(fm.byScreen.CORE_LIST, 'thiếu màn danh sách CORE').toBeTruthy();
-    expect(fm.byScreen.CORE_LIST.final_price).toBe('Net Amount');
-    expect(fm.byScreen.CORE.final_price, 'tab Overview của CORE chưa neo final_price — không được lẫn với màn danh sách').toBeUndefined();
+    const fm = convFixture().fieldMap!;
+    // `thanh_tien` neo ở màn DANH_SACH nhưng KHÔNG neo ở màn CHI_TIET — hai màn không được lẫn vào nhau.
+    expect(fm.byScreen.DANH_SACH, 'fixture thiếu màn danh sách').toBeTruthy();
+    expect(fm.byScreen.DANH_SACH.thanh_tien).toBe('Thành tiền');
+    expect(fm.byScreen.CHI_TIET.thanh_tien, 'màn chi tiết chưa neo thanh_tien — không được lẫn với màn danh sách').toBeUndefined();
     for (const [screen, cols] of Object.entries(fm.byScreen)) {
       expect(cols._route, `màn "${screen}" phải khai _route để biết đo ở đâu`).toBeTruthy();
     }
   });
 
   test('uiLabelOfColumn: neo thì trả nhãn, CHƯA neo hoặc SAI MÀN thì NÉM', async () => {
-    const { loadConventions, uiLabelOfColumn } = await import('../../support/setup/db/config');
-    const conv = loadConventions(process.cwd());
-    expect(uiLabelOfColumn(conv, 'CORE_LIST', 'final_price')).toBe('Net Amount');
-    expect(uiLabelOfColumn(conv, 'SERVICE_FEE', 'original_price')).toBe('Gross Price');
+    const { uiLabelOfColumn } = await import('../../support/setup/db/config');
+    const conv = convFixture();
+    expect(uiLabelOfColumn(conv, 'DANH_SACH', 'thanh_tien')).toBe('Thành tiền');
+    expect(uiLabelOfColumn(conv, 'CHI_TIET', 'gia_goc')).toBe('Giá gốc');
     // Cột đang treo ⇒ ném, và phải NÓI RA lý do treo để biết cần fixture gì.
-    expect(() => uiLabelOfColumn(conv, 'CORE', 'custom_price')).toThrow(/CHƯA NEO/);
-    expect(() => uiLabelOfColumn(conv, 'CORE', 'custom_price')).toThrow(/Lý do đang treo/);
+    expect(() => uiLabelOfColumn(conv, 'CHI_TIET', 'gia_tuy_chon')).toThrow(/CHƯA NEO/);
+    expect(() => uiLabelOfColumn(conv, 'CHI_TIET', 'gia_tuy_chon')).toThrow(/Lý do đang treo/);
     /*
-     * Neo ở màn khác ⇒ vẫn ném, và phải chỉ ra neo ở màn nào. `deposit` là ví dụ đắt nhất: nó neo ở
-     * CORE_EDIT dưới nhãn "Paid Amount", mà màn CORE cũng CÓ nhãn "Paid Amount" — chỉ khác nghĩa. Im lặng
-     * trả nhãn của màn kia là so sai cột mà vẫn ra kết luận.
+     * Neo ở màn khác ⇒ vẫn ném, và phải chỉ ra neo ở màn nào. Đây là ca đắt nhất từng gặp: một cột neo ở
+     * form sửa dưới nhãn "Tiền đã trả", trong khi màn chi tiết cũng CÓ nhãn chữ giống hệt nhưng khác nghĩa.
+     * Im lặng trả nhãn của màn kia là so sai cột mà vẫn ra kết luận.
      */
-    expect(() => uiLabelOfColumn(conv, 'CORE', 'deposit')).toThrow(/chỉ neo ở: CORE_EDIT/);
-    expect(() => uiLabelOfColumn(conv, 'CORE', 'final_price')).toThrow(/chỉ neo ở: SERVICE_FEE, CORE_LIST/);
-    expect(() => uiLabelOfColumn(conv, 'MAN_LA', 'deal_id')).toThrow(/chưa có trong fieldMap/);
+    expect(() => uiLabelOfColumn(conv, 'CHI_TIET', 'tien_coc')).toThrow(/chỉ neo ở: SUA/);
+    expect(() => uiLabelOfColumn(conv, 'CHI_TIET', 'thanh_tien')).toThrow(/chỉ neo ở: DANH_SACH/);
+    expect(() => uiLabelOfColumn(conv, 'MAN_LA', 'gia_goc')).toThrow(/chưa có trong fieldMap/);
   });
 
   test('uiLabelOfValue: enum đã đo thì trả nhãn, enum lạ thì NÉM (không dịch tay)', async () => {
-    const { loadConventions, uiLabelOfValue } = await import('../../support/setup/db/config');
-    const conv = loadConventions(process.cwd());
-    expect(uiLabelOfValue(conv, 'ic_payment_orders.status', 'PARTIALLY_PAID')).toBe('Đã thanh toán 1 phần');
-    expect(uiLabelOfValue(conv, 'ic_payment_orders.service_fee_type', 'BAO_LUU')).toBe('Bảo lưu');
-    expect(() => uiLabelOfValue(conv, 'ic_payment_orders.status', 'REFUNDED')).toThrow(/chưa neo nhãn UI/);
-    expect(() => uiLabelOfValue(conv, 'ic_payment_orders.province', 'HN')).toThrow(/chưa có bản đồ giá trị/);
+    const { uiLabelOfValue } = await import('../../support/setup/db/config');
+    const conv = convFixture();
+    expect(uiLabelOfValue(conv, 'don_hang.trang_thai', 'CHO_DUYET')).toBe('Chờ duyệt');
+    expect(uiLabelOfValue(conv, 'don_hang.trang_thai', 'DA_DUYET')).toBe('Đã duyệt');
+    expect(() => uiLabelOfValue(conv, 'don_hang.trang_thai', 'DA_HUY')).toThrow(/chưa neo nhãn UI/);
+    expect(() => uiLabelOfValue(conv, 'don_hang.tinh_thanh', 'HN')).toThrow(/chưa có bản đồ giá trị/);
   });
 
   test('nhãn đã neo phải là chuỗi thật, không phải số', () => {
-    for (const [screen, cols] of Object.entries(fieldMap().byScreen)) {
+    for (const [screen, cols] of Object.entries(convFixture().fieldMap!.byScreen)) {
       for (const [col, label] of Object.entries(cols)) {
         if (col.startsWith('_')) continue;
         expect(label.replace(/[^A-Za-zÀ-ỹ]/g, '').length, `${screen}.${col} nhãn trông như số: "${label}"`).toBeGreaterThanOrEqual(2);

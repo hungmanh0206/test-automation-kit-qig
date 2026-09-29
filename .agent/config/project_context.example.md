@@ -12,27 +12,29 @@
 
 ## Sites
 
-### LMS
+> Hai tiền tố `OPS_` và `LMS_` là **tên cũ còn lại từ một dự án trước**, giờ chỉ còn nghĩa "app thứ nhất"
+> và "app thứ hai". Đừng suy ra sản phẩm nào từ tên biến.
+
+### App 1 — app chính đang test
 
 | Field | Env key | Ghi chú |
 |---|---|---|
-| Base/Login/User/Password | `LMS_BASE_URL`, `LMS_LOGIN_URL`, `LMS_USERNAME`, `LMS_PASSWORD` | Bắt buộc nếu test app này. |
-| API/Swagger | `LMS_API_BASE_URL`, `LMS_SWAGGER_URL` | Optional nếu chỉ test UI. |
-
-### OPS
-
-| Field | Env key | Ghi chú |
-|---|---|---|
-| Base/Login/User/Password | `OPS_BASE_URL`, `OPS_LOGIN_URL`, `OPS_USERNAME`, `OPS_PASSWORD` | Optional nếu project chỉ có một app. |
-| API/Swagger | `OPS_API_BASE_URL`, `OPS_SWAGGER_URL` | Optional nếu không test API app 2. |
+| Base/Login/User/Password | `OPS_BASE_URL`, `OPS_LOGIN_URL`, `OPS_USERNAME`, `OPS_PASSWORD` | Bắt buộc nếu test app này. |
+| API/Swagger | `OPS_API_BASE_URL`, `OPS_SWAGGER_URL` | Optional nếu chỉ test UI. |
 | Feature URLs | `FEATURE_1_URL`, `FEATURE_2_URL`, `FEATURE_3_URL` | Optional cho module đặc thù. |
+
+### App 2 — app phụ
+
+| Field | Env key | Ghi chú |
+|---|---|---|
+| Base/Login/User/Password | `LMS_BASE_URL`, `LMS_LOGIN_URL`, `LMS_USERNAME`, `LMS_PASSWORD` | Optional nếu project chỉ có một app. |
+| API/Swagger | `LMS_API_BASE_URL`, `LMS_SWAGGER_URL` | Optional nếu không test API app 2. |
 
 ## Dashboard branding (optional)
 
-Dashboard (`npm run dashboard`) mặc định dùng **dự án trước Academy Design System**. Để đổi branding cho project
-khác (màu/logo/font/tên), copy `.agent/config/dashboard.branding.example.json` →
-`.agent/config/dashboard.branding.json` và chỉ khai field muốn đổi (phần thiếu kế thừa default dự án trước).
-Không có file override → giữ nguyên dự án trước DS.
+Dashboard (`npm run dashboard`) mặc định dùng bản **trung tính**, không logo, không khẩu hiệu. Để gắn thương
+hiệu của đội bạn (màu/logo/font/tên), copy `.agent/config/dashboard.branding.example.json` →
+`.agent/config/dashboard.branding.json` và chỉ khai field muốn đổi; phần thiếu kế thừa mặc định.
 
 ## Learning data
 

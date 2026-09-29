@@ -1,81 +1,37 @@
 {
-  "_why": "Quy ước DB của dự án — TRI THỨC, không phải secret, nên file này ĐƯỢC COMMIT. Creds đi riêng ở `profiles/<TASK_KEY>/task.env` (prefix `LIB_MASTER_DB_RO_`). Mọi giá trị dưới đây ĐO TỪ SCHEMA THẬT `một DB UAT thật` ngày 27/08/2026 qua `information_schema`, không phỏng đoán.",
+  "_why": "Quy ước DB của dự án — TRI THỨC, không phải secret, nên file này ĐƯỢC COMMIT. Creds đi riêng ở `profiles/<TASK_KEY>/task.env` (prefix `LIB_MASTER_DB_RO_`). Mọi giá trị ở đây phải ĐO TỪ SCHEMA THẬT qua `information_schema`, kèm ngày đo — không phỏng đoán, không chép từ dự án khác.",
   "_enforced_by": "tests/support/setup/db/config.ts + guard.ts. Bảng/khái niệm chưa khai ở đây thì helper TỪ CHỐI phán (trả `inconclusive`) thay vì đoán — đoán ra số từ DB là cách tạo bug ma trông rất thuyết phục.",
+  "_trang_thai": "ĐÃ GỠ bộ neo của một dự án TRƯỚC: khác schema, khác màn, không liên quan gì tới dự án hiện tại. Giữ lại chỉ khiến §23 đọc ra kết luận sai tên cột mà vẫn có số từ DB nên trông thuyết phục hơn bug ma thường. Các khối dưới đây RỖNG CÓ CHỦ Ý; riêng khối `safety` thì KHÔNG — nó đo ngày 24/09/2026 trên chính DB đang dùng.",
   "idColumn": "id",
   "softDelete": {
-    "_why": "ĐO: `deleted_at` chỉ có ở 9/16 bảng. 7 bảng nối KHÔNG có cột này ⇒ không thể dùng một quy ước toàn cục. Bảng khai `none` thì `expectSoftDeleted` phải từ chối phán, vì ở đó xoá là xoá CỨNG.",
+    "_why": "CHƯA ĐO Ở DỰ ÁN NÀY. `default` bên dưới là quy ước phổ biến, không phải kết quả đo. Phải đo cột xoá mềm có ở những bảng nào, rồi khai bảng KHÔNG có vào `byEntity` với mode `none` — ở đó xoá là xoá CỨNG nên `expectSoftDeleted` phải từ chối phán chứ không được suy ra từ `default`.",
     "default": {
       "mode": "timestamp",
       "column": "deleted_at"
     },
-    "byEntity": {
-      "ic_payment_combo_product_instances": {
-        "mode": "none"
-      },
-      "ic_payment_order_combo_instances": {
-        "mode": "none"
-      },
-      "ic_payment_order_product_instances": {
-        "mode": "none"
-      },
-      "ic_payment_promotion_combination_instances": {
-        "mode": "none"
-      },
-      "ic_payment_promotion_combo_instances": {
-        "mode": "none"
-      },
-      "ic_payment_promotion_order_instances": {
-        "mode": "none"
-      },
-      "ic_payment_promotion_product_instances": {
-        "mode": "none"
-      }
-    }
+    "byEntity": {}
   },
   "timestamps": {
-    "_why": "DO: 39/39 cot thoi gian la `timestamp WITHOUT time zone` ⇒ du lieu KHONG mang offset. storedZone = UTC, xac dinh 27/08/2026 bang phep do READ-ONLY (khong can ai bam gi): ban ghi MOI NHAT cua 4 bang doc lap (orders.created_at/updated_at, transactions.created_at, webhook_logs.created_at) deu nam ~30-40 phut TRUOC gio UTC thuc te. Neu app ghi +07 thi ban ghi moi nhat phai o TUONG LAI ~6.5h so voi UTC — khong phai. Session TimeZone cua DB cung la Etc/UTC. Diem yeu cua phep do (noi ra de sau nay doi chieu): neu UAT im ang nhieu gio thi do tre 'im ang' lan voi lech mui gio; luc do script _tzprobe tu tu choi phan. Doi ket luan nay thi phai do lai, dung sua tay.",
+    "_why": "CHƯA ĐO Ở DỰ ÁN NÀY. Tên cột bên dưới là quy ước phổ biến. `storedZone` BẮT BUỘC phải đo trước khi so sánh bất kỳ mốc thời gian nào: đo read-only bằng cách lấy bản ghi MỚI NHẤT của vài bảng độc lập rồi đối chiếu với giờ UTC thực tế. Điểm yếu của phép đo đó, nói ra để sau này đối chiếu: nếu môi trường im ắng nhiều giờ thì độ trễ im ắng lẫn với lệch múi giờ, lúc đó phải từ chối phán chứ không sửa tay.",
     "createdAt": "created_at",
     "updatedAt": "updated_at",
     "storedZone": "UTC"
   },
   "audit": {
-    "_why": "ĐO: KHÔNG có bảng audit hành động người dùng. `ic_payment_webhook_logs` là log webhook (bên thứ ba gọi vào), không phải audit. Cột ai-sửa chỉ có ở 2 bảng (`created_by_staff_id` trên combos/products); `ic_payment_orders` và `ic_payment_transaction_orders` KHÔNG có cột nào ghi người sửa. Vì vậy `expectAudit` KHÔNG áp được cho 2 bảng lõi — checklist §23 chỉ kiểm `updated_at` có nhảy. Hứa kiểm audit trong khi bảng không có cột audit là hứa thứ máy không làm được.",
+    "_why": "CHƯA ĐO Ở DỰ ÁN NÀY. Để `supported` = false cho tới khi chứng minh được DB có bảng hoặc cột ghi người sửa. Hứa kiểm audit trong khi bảng không có cột audit là hứa thứ máy không làm được.",
     "supported": false
   },
   "money": {
-    "_why": "CÙNG khái niệm tiền, HAI kiểu lưu — đây là lý do lớp so sánh phải type-aware: `orders` lưu `bigint`, còn `transaction_orders.amount` lưu `character varying` (chuỗi).",
-    "entities": {
-      "ic_payment_orders": [
-        "original_price",
-        "automatic_price",
-        "total_discount",
-        "deposit",
-        "final_price",
-        "custom_price",
-        "service_fee",
-        "fee_per_month"
-      ],
-      "ic_payment_transaction_orders": [
-        "amount"
-      ]
-    }
+    "_why": "CHƯA ĐO Ở DỰ ÁN NÀY. Khai `entities` theo dạng bảng → danh sách cột tiền. Nhớ kiểm cả KIỂU LƯU: cùng một khái niệm tiền có thể lưu số ở bảng này và chuỗi ở bảng kia, nên lớp so sánh phải type-aware.",
+    "entities": {}
   },
   "relations": {
-    "_why": "Bảng phải đổi theo khi sửa bản ghi chính — nguồn cho `expectCount` quan hệ cha–con.",
-    "ic_payment_orders": [
-      {
-        "entity": "ic_payment_transaction_orders",
-        "fk": "order_id"
-      },
-      {
-        "entity": "ic_payment_order_product_instances",
-        "fk": "order_id"
-      },
-      {
-        "entity": "ic_payment_order_combo_instances",
-        "fk": "order_id"
-      }
-    ]
+    "_why": "CHƯA ĐO Ở DỰ ÁN NÀY. Khai bảng cha → các bảng con phải đổi theo khi sửa bản ghi chính. Đây là nguồn cho `expectCount` quan hệ cha–con."
+  },
+  "rates": {
+    "_why": "TÁCH KHỎI khối `money` có chủ ý: cột tỉ lệ hay phần trăm gọi lên `money()` thì thông điệp sai (\"lệch 5 đồng\" cho một tỉ lệ) và so sánh sai ngữ nghĩa. Cách phân biệt: đo biên độ giá trị thật, biên độ kiểu 0..100 thì không thể là tiền.",
+    "entities": {},
+    "unitUnknown": []
   },
   "safety": {
     "_why_requireReadonlyUser": "TAT 24/09/2026 theo quyet dinh cua chu du an. Login `csdl` tren DB nghiep vu UAT map sang `dbo` va thuoc db_owner + db_datawriter + db_ddladmin (du INSERT/UPDATE/DELETE/ALTER/CONTROL/TAKE OWNERSHIP tren 888 bang). Bat co nay lai thi assertReadOnly() se CHAN moi ket noi. Doi lai, lop chan duy nhat con lai la lint `assertReadOnlySql`/`assertReadOnlyQuery` trong tien trinh — T-SQL KHONG co transaction READ ONLY nhu Postgres. Xin duoc login chi SELECT thi bat lai thanh true.",
@@ -91,120 +47,17 @@
     "maxRows": 500
   },
   "fieldMap": {
-    "_why": "BAN DO cot DB <-> nhan UI, KHOA THEO MAN (order_type). Vong 2 (27/08/2026) da BAC gia dinh 'mot ban do cho ca DB': man Service Fee va man Core hien CUNG mot cot duoi HAI nhan khac nhau — `original_price` la 'Gross Amount' o CORE nhung la 'Gross Price' o SERVICE_FEE. Neo toan cuc thi giao rong; bo luat giao thi neo sai man.",
-    "_method": "Doc UI READ-ONLY 6 don thuc, trich cap nhan->gia tri, roi lay GIAO cac tap nhan khop qua moi don CUNG MAN. Chi neo khi gia tri DUY NHAT trong hang DB (chong 'hai cot cung so'). Cot o `unanchored` KHONG duoc dung de phan.",
-    "_evidence": "requirements/ui_pairs_for_db_map.json (raw cap nhan-gia tri) + evidence/db-map/*.png (6 anh full-page). Don: f25ce82a, 9773d42b, 7869e2b1, 98863049, 6e8a01cd, 7c93f58b.",
-    "_how_to_reanchor": "Neo lai gom HAI nua. (1) DOC UI read-only: script nam o TANG TASK nen KHONG track trong repo — outputs/<project>/tasks/<TASK>/automation/_db_field_map.js (tab Overview) va _status_label_map.js (man danh sach); chung chua selector dang nhap + route cua OPS nen thuoc lop PROJECT, khong dua vao scripts/ chung. (2) DOI CHIEU + neo: tests/support/setup/db/fieldmap.anchor.spec.ts (CO track, chay bang INFRA_VERIFY=1, doc thu muc khai o env DB_ANCHOR_DIR). Luat neo: cot chi duoc neo khi gia tri cua no PHAN BIET duoc voi moi cot cung loai o TOAN BO hang do (\"Net Amount\" khop final_price 48/48 va khong khop cot tien nao khac); enum chi duoc neo khi ban do la ham VA don anh.",
-    "entity": "ic_payment_orders",
-    "byScreen": {
-      "SERVICE_FEE": {
-        "_route": "/operations/sales/service-fee-orders/<id>/detail/overview",
-        "deal_id": "Deal ID",
-        "original_price": "Gross Price",
-        "automatic_price": "Total Course Transfer Amount",
-        "total_discount": "Original Discount Amount",
-        "final_price": "Net Amount",
-        "service_fee": "Service Fee",
-        "service_fee_rate": "Service Fee Rate",
-        "fee_per_month": "Service Fee Per Month",
-        "_exact_label_only": "fee_per_month: chu thich phu \"Dua tren muc phi va so thang gia han\" cung mang DUNG con so do (300.000d) ⇒ khop nhan phai EXACT, dung substring/contains."
-      },
-      "CORE": {
-        "_route": "/operations/sales/orders/<id>/detail/overview",
-        "deal_id": "Deal ID",
-        "original_price": "Gross Amount",
-        "total_discount": "Order Discount",
-        "province": "Tỉnh/ Thành phố"
-      },
-      "CORE_LIST": {
-        "_route": "/operations/sales/orders?page_index=1&page_size=50",
-        "_method": "Neo theo CHI SO COT lay tu <th> cua luoi (KHONG theo hinh dang chu), khoa noi = \"Ma don hang\" = ic_payment_orders.id (luoi render id voi dau _ thay -). Noi 48/48 hang. Nhan tien chi neo khi khop DUY NHAT 1 cot trong 7 cot tien: \"Net Amount\" khop final_price 48/48 va KHONG khop cot nao khac ⇒ phan biet duoc.",
-        "id": "Mã đơn hàng",
-        "deal_id": "Deal ID",
-        "status": "Status",
-        "original_price": "Gross Amount",
-        "final_price": "Net Amount"
-      },
-      "SERVICE_FEE_LIST": {
-        "_route": "/operations/sales/service-fee-orders?page_index=1&page_size=50",
-        "_method": "Nhu CORE_LIST, noi 50/50 hang. Man nay KHONG co cot tien tren luoi.",
-        "id": "Mã đơn hàng",
-        "deal_id": "Deal ID",
-        "status": "Status",
-        "service_fee_type": "Service Fee Type"
-      },
-      "ADD_ON_LIST": {
-        "_route": "/operations/sales/add-on-orders?page_index=1&page_size=250",
-        "_method": "Noi 133/133 hang. \"Gross Amount\" khop original_price toan bo hang va KHONG khop cot tien nao khac. \"Net Amount\" khop DONG THOI final_price va automatic_price o ca 133 hang ⇒ KHONG phan biet duoc, khong neo (khac man CORE_LIST, o do Net Amount neo duoc).",
-        "id": "Mã đơn hàng",
-        "deal_id": "Deal ID",
-        "status": "Status",
-        "service_fee_type": "Add-on Order Type",
-        "original_price": "Gross Amount"
-      },
-      "CORE_EDIT": {
-        "_route": "/operations/sales/orders/<id>/edit  (CHI DOC: mo form khong doi du lieu; chi bam Save moi doi — cong cu doc khong co lenh click nao ngoai link/tab)",
-        "_method": "Doc GIA TRI TRONG O NHAP (input.value / ant-select .ant-select-selection-item / trang thai radio), khong doc textContent. Neo `deposit` bang 4 don PHAN BIET MANH: deposit=1.500.000 khi tien-da-tra=6.312.000 · deposit=1.000.000 khi da tra=74.355.082 · deposit=0 khi da tra=9.001.000 (form de RONG) · deposit=1.000.000 khi da tra=0. Ba don co tien-da-tra khac han deposit nen khong the la trung hop.",
-        "deposit": "Paid Amount",
-        "_label_collision": "CANH BAO: nhan \"Paid Amount\" o day KHONG cung nghia voi \"Paid Amount\" tren tab Overview. Do tren cung 2 don: a4b10fbd (deposit=1.000.000, da tra=0) → Overview hien 0d, form hien 1.000.000; e4a87e98 (deposit=1.500.000, da tra=6.312.000) → Overview hien 6.312.000d, form hien 1.500.000. ⇒ Overview = tien DA TRA that, form = cot `deposit`. Day la vi du manh nhat cho viec ban do PHAI khoa theo man."
-      }
-    },
-    "unanchored": {
-      "custom_price": "Cot DUY NHAT that su can FIXTURE: quet TOAN BO DB (132 ban ghi non-null) khong co don nao custom_price khac moi cot tien khac ⇒ khong the neo bang du lieu san co. Can don dat gia custom khac ca automatic_price va final_price.",
-      "fixed_discount": "DO 2 don (fixed_discount = 10 va 15) tren 3 man: tab Overview, tab dong bo ngoai, va form /edit (form SF chi co 12 o nhap, 4 co gia tri, khong o nao mang 10/15). Chuoi \"10%\" duy nhat tim thay lai nam trong TEN LIEN HE test (\"IT M4-10%\"). Chi 3 ban ghi trong toan DB, gia tri 5/10/15 — qua nho de la VND nen kha nang cao la PHAN TRAM, nhung chua thay hien nen chua xac dinh duoc kieu (khai o khoi rates.unitUnknown).",
-      "payment_method": "SUA KET LUAN (29/08, sau khi doc FSD): cot nay TEN SAI so voi nghia. FSD phan biet HAI field: \"Payment Type\" (Hinh thuc thanh toan = Tra thang / Tra gop) va \"Payment Method\" (Phuong thuc thanh toan = Chuyen khoan / VNPay). Enum cua ic_payment_orders.payment_method la ONETIME/INSTALLMENT ⇒ no mang nghia PAYMENT TYPE, khong phai Payment Method. Truoc do toi tim tren UI theo dung TEN COT nen ra 0 nhan phan biet o 6 loai man — do la loi tim, khong phai \"khong hien thi\". Nguon gia tri: FSD 3.2.1.1 buoc 3 — dropdown \"Lua chon thanh toan\" o luong CHECKOUT (khop voi cot payment_page_url + cot song sinh forced_payment_method). Da do: KHONG the neo qua grid giao dich — tx co cot RIENG payment_type (ONETIME 420 / INSTALLMENT 22) va payment_method (BANK_TRANSFER 555 / CASH 55 / VNPAY 39 / SWIPE_POS 17); doi chieu 402 cap don-giao dich thi 387 khop nhung 15 LECH (5 don ONETIME co tx INSTALLMENT, 10 don INSTALLMENT co tx ONETIME) ⇒ grid tx khong phai noi hien gia tri cua DON. Man con phai doc: trang checkout.",
-      "full_name": "DO tren 1005 ban ghi DB (cot full_name TOAN NULL) va tren man Overview cua 6 don (nhan \"Full name\" CO hien, gia tri lay tu first_name/last_name). Day la VI DU MANH NHAT cho luat \"dung suy tu ten cot\": ten nhan trung khop ten cot ma neo vao la sai hoan toan. Chi neo duoc neu app bat dau ghi cot nay."
-    },
-    "valueMaps": {
-      "_why": "Ban do GIA TRI (enum DB -> nhan tieng Viet tren UI) — khac ban do COT. Do 28/08/2026 READ-ONLY tren man danh sach, noi 98 hang voi DB. Luat neo: enum -> nhan phai la HAM (1 enum chi 1 nhan) VA DON ANH (2 enum khong dung chung nhan); vi pham bat ky dieu nao thi ghi CHUA NEO, khong chon nhan pho bien nhat.",
-      "_evidence": "requirements/db_status_label_map.json + evidence/db-map/LIST_CORE.png, LIST_SERVICE_FEE.png. Sinh lai: xem fieldMap._how_to_reanchor.",
-      "_cross_screen": "status do doc lap o CA HAI man va cho ket qua TRUNG NHAU (CORE 6 enum, SERVICE_FEE 5 enum, khong xung dot) ⇒ ban do nay khong phu thuoc man. EXPIRED chi gap o man CORE.",
-      "ic_payment_orders.status": {
-        "PURCHASED": "Đã thanh toán",
-        "PURCHASING": "Đang thanh toán",
-        "PARTIALLY_PAID": "Đã thanh toán 1 phần",
-        "CANCEL": "Đã hủy",
-        "TO_PURCHASE": "Chờ thanh toán",
-        "EXPIRED": "Hết hạn"
-      },
-      "ic_payment_orders.service_fee_type": {
-        "GIA_HAN": "Gia hạn",
-        "CHUYEN_NHUONG": "Chuyển nhượng",
-        "KHONG_GHI_NHAN_PHI": "Không ghi nhận phí",
-        "CHUYEN_DOI": "Chuyển đổi",
-        "BAO_LUU": "Bảo lưu",
-        "TU_VAN_KHOA_HOC": "Tư vấn khóa học",
-        "MUA_TAI_KHOAN_CERT": "Mua tài khoản Cert",
-        "MUA_TAI_KHOAN_BECKER": "Mua tài khoản Becker",
-        "DANG_KY_CBE": "Đăng ký CBE"
-      },
-      "_coverage": "DAY DU hay chua, noi ro tung cot: status = 6/6 enum cua DB (DAY DU, do doc lap tren CA BA man danh sach, ket qua trung nhau). sync_status = 2/2 enum non-null (DAY DU). service_fee_type = 9/9 enum non-null (DAY DU sau vong 4): 6 enum doc o man Service Fee (249 hang) + 3 enum chi ton tai o don ADD_ON doc o man Add-on (133 hang). Vi sao phai doc 3 man: trang dau 50 hang cua MOT man chi thay 6/9 enum — ban do THIEU ma trong nhu du, do la ly do khoi nay bat buoc phai co.",
-      "_deviations": {
-        "_why": "Lech GIUA MAN da DO duoc — giu rieng, KHONG tron vao ban do nhan. Ban do nhan la thu app LE RA phai hien; lech la PHAT HIEN. Tron vao nhau thi phep kiem sau nay lay chinh cai sai lam chuan roi assert theo no.",
-        "ic_payment_orders.service_fee_type@ADD_ON_LIST": "PHAN LOAI LAI bang FSD (29/08): khong phai \"thieu nhan\" ma la GIA TRI NGOAI MIEN. FSD khai dung BA Add-on Order Type: Dang ky thi CBE / Mua tai khoan thi Cert / Mua tai khoan thi Becker. CHUYEN_DOI thuoc mien cua \"Type of Service Fee\" (man Service Fee), KHONG thuoc man Add-on ⇒ bang nhan cua man Add-on chi co 3 khoa la DUNG, va enum ngoai mien roi ra duoi dang chu tho. Cau hoi that su la: vi sao ton tai 3 don order_type=ADD_ON + service_fee_type=CHUYEN_DOI. Do duoc: ca 3 tao ngay 04/08/2026 trong 41 phut (deal 63442134907 / 63447370088 / 63448287815), sync_status=SYNC_SUCCESS, payment_method NULL — dang lo test qua API. Chua ket luan: da thu doc option cua dropdown \"Add-on Order Type\" tren form tao nhung dropdown KHONG MO (kha nang can Deal ID truoc) ⇒ chua biet UI co sinh ra duoc trang thai nay khong. Kiem tiep can POST thu (ghi du lieu) ⇒ phai xin xac nhan. | QUAN SAT KEM (chua co oracle): FSD viet \"Mua tai khoan THI Cert\" / \"Mua tai khoan THI Becker\" / \"Dang ky THI CBE\", con UI hien thieu chu \"thi\". Chua ket luan vi chu hien thi phai neo FIGMA, ma ban trich Figma dang co (requirements/figma/figma_node_6-5_summary.md) chi liet ke TEN FIELD, khong co nhan option — can mo dung frame Figma cua man Add-on Order List. | TRUY NGUON 04/09: `service_fee_type` KHONG phai field nhap — ca NewAddOnProductOrderDto va UpdateAddOnProductOrderDto deu khong co, va khong schema nao trong 347 schema Swagger khai no ⇒ server suy ra. Ung vien duy nhat la ic_payment_products.add_on_category (CBE/CERT/BECKER, trung 3 gia tri FSD). NHUNG DO DUOC LA KHONG KHOP: tren tap sach nhat (chi don 1 san pham VA san pham chua bi sua sau khi tao don, 110 don) co 57 khop / 36 lech / 17 NULL — tuc 36/93 don non-null khong ung voi category. Da loai 2 nhieu: don nhieu san pham (129 don 1 sp, chi 1 don 2 sp) va category bi sua sau (loai 19 don co product.updated_at > order.created_at). ⇒ TUYET DOI KHONG lay add_on_category lam oracle cho service_fee_type. Con dung mot gia dinh chua xac nhan (co suy tu category hay khong) — chi tiet + cach kiem tiep o reports/FINDING_addon_category_vs_type.md",
-        "ic_payment_orders.deposit@CORE_EDIT": "DA GIAI QUYET bang FSD (29/08): KHONG phai bug. FSD khai field so 19 `paid_amount` nhan \"Paid Amount\" tren form them/sua don, gia tri = tien khach DA TRA mang sang (tu combo da thanh toan, hoac tu Paid Amount cua Cancelled Order khi co deal lost) ⇒ ung voi cot `deposit` la HOP LY. Nhung CANH BAO van con nguyen gia tri: cung nhan \"Paid Amount\" o tab Overview lai la TIEN DA TRA THAT (tong giao dich PAID) — do tren 2 don co deposit khac han tien-da-tra: a4b10fbd (1.000.000 / 0) va e4a87e98 (1.500.000 / 6.312.000). Bat ky phep kiem nao dung nhan \"Paid Amount\" ma khong khoa theo man se SO SAI COT."
-      }
-    },
-    "notDisplayed": {
-      "_why": "Cot KHONG PHAI field hien thi — tach khoi \"unanchored\" vi khong bao gio neo duoc bang cach doc man, va de o \"unanchored\" thi cu tuong con viec phai lam.",
-      "order_type": "Quyet dinh ROUTE/MAN (CORE -> /orders, SERVICE_FEE -> /service-fee-orders, ADD_ON -> man add-on) chu khong hien duoi dang mot field. Khoa man trong byScreen CHINH LA gia tri cot nay."
-    },
-    "_method_enum_by_groups": "Neo cot ENUM khong hien dang chuoi: lay HAI NHOM don CUNG MAN khac nhau dung o cot do, roi tim nhan nao (a) co o MOI don ca hai nhom, (b) gia tri KHONG DOI trong tung nhom, (c) gia tri KHAC nhau giua hai nhom. Thieu (b) thi moi nhan hien so tien deu lot; thieu (a) thi khac biet do thu khac cung lot. VA moi nhom phai >= 3 don CUA CAC KHACH KHAC NHAU: hai don gan-ban-sao (cung khach, cung so tien) lam moi phep so nhom ra ket qua GIA. Cai dat: tests/support/setup/db/fieldmap.anchor.spec.ts, test \"SO HAI NHOM\".",
-    "_instrument_note": "INSTRUMENT MU tung lam suyt ket luan sai: bo doc form ban dau bao \"select=0\" o MOI form OPS. OPS dung ant-select (div, khong phai <select>) nen input.value RONG, va radio/checkbox thi `value` la hang so cua tung o (doc value la ra gia tri o CHUA CHON). Phai doc .ant-select-selection-item + trang thai checked. Mot form nghiep vu OPS co 0 dropdown la dau hieu SUA CONG CU, khong phai ket luan \"form khong co field\".",
-    "_oracle_source": "FSD cua task: outputs/<project>/tasks/CSDL-24395/docs/fsd.txt (+ docs/spec_sheet.xlsx, requirements/figma/). Luat: chu hien thi neo vao FIGMA, con MIEN GIA TRI (enum nao hop le o man nao) neo vao FSD. Ba muc `_deviations` duoi day da doi chieu voi FSD ngay 29/08 — doc oracle TRUOC khi ket luan, dung ket luan roi moi tim oracle.",
-    "_canh_bao_du_an": "fieldMap.byScreen duoi day neo theo mot du an CU (man SERVICE_FEE/CORE/ADD_ON). Du an khac PHAI neo lai truoc khi dung §23, neu khong moi ket luan doc ra deu sai ten cot. Xem prompt_templates/phase1/dimensions/23_db_persistence.md muc \"Neo them cot\"."
-  },
-  "rates": {
-    "_why": "TACH KHOI khoi \"money\". DO bien do gia tri: service_fee_rate n=39 distinct=3 min=0 max=20; fixed_discount n=3 distinct=3 min=5 max=15. Bien do 0..20 khong the la tien VND. Goi money() len chung thi thong diep sai (\"lech 5 dong\" cho mot ti le) va so sanh sai ngu nghia.",
-    "entities": {
-      "ic_payment_orders": [
-        "service_fee_rate",
-        "fixed_discount"
-      ]
-    },
-    "unitUnknown": [
-      "fixed_discount"
-    ],
-    "_unit_note": "service_fee_rate: da neo nhan \"Service Fee Rate\" o man SERVICE_FEE. fixed_discount: CHUA xac dinh la % hay tien — chua thay hien o man nao."
+    "_why": "BẢN ĐỒ cột DB ↔ nhãn UI, KHOÁ THEO MÀN. Khoá theo màn là bắt buộc, không phải cho đẹp: cùng một cột thường hiện dưới hai nhãn khác nhau ở hai màn, nên neo toàn cục thì giao rỗng, còn bỏ luật giao thì neo sai màn.",
+    "_trang_thai": "RỖNG CÓ CHỦ Ý — bộ neo cũ thuộc một dự án khác đã được gỡ. Khi `byScreen` rỗng thì `db_verify_preflight` CHẶN mọi task khai `[DbPersist]`. Đó là cơ chế đúng, không phải lỗi: chưa neo cột nào thì không được phép phán bằng DB.",
+    "_method": "Đọc UI READ-ONLY nhiều bản ghi thật, trích cặp nhãn→giá trị, rồi lấy GIAO các tập nhãn khớp qua mọi bản ghi CÙNG MÀN. Chỉ neo khi giá trị PHÂN BIỆT ĐƯỢC với mọi cột cùng loại trên toàn bộ hàng đã đọc — chống bẫy \"hai cột cùng số\". Cột chưa phân biệt được thì khai ở `unanchored`, KHÔNG được dùng để phán.",
+    "_method_enum_by_groups": "Neo cột ENUM không hiện dạng chuỗi: lấy HAI NHÓM bản ghi CÙNG MÀN khác nhau ở cột đó, rồi tìm nhãn nào (a) có ở MỌI bản ghi cả hai nhóm, (b) giá trị KHÔNG ĐỔI trong từng nhóm, (c) giá trị KHÁC nhau giữa hai nhóm. Thiếu (b) thì mọi nhãn hiện số tiền đều lọt; thiếu (a) thì khác biệt do thứ khác cũng lọt. VÀ mỗi nhóm phải có từ 3 bản ghi của các đối tượng KHÁC NHAU: hai bản ghi gần-bản-sao làm mọi phép so nhóm ra kết quả GIẢ.",
+    "_luat_neo_enum": "enum → nhãn phải là HÀM (1 enum chỉ 1 nhãn) VÀ ĐƠN ÁNH (2 enum không dùng chung nhãn). Vi phạm bất kỳ điều nào thì ghi CHƯA NEO, không chọn nhãn phổ biến nhất.",
+    "_canh_bao_nhan_trung_ten_cot": "Đừng suy neo từ việc tên nhãn trùng tên cột. Đã gặp ca cột `full_name` toàn NULL trong khi màn vẫn hiện nhãn \"Full name\" lấy giá trị từ hai cột khác — neo theo tên là sai hoàn toàn.",
+    "_canh_bao_instrument_mu": "Bộ đọc form báo \"0 dropdown\" ở mọi form nghiệp vụ là dấu hiệu SỬA CÔNG CỤ, không phải kết luận \"form không có field\". Component dropdown hiện đại thường là `div` chứ không phải `<select>` nên `input.value` rỗng; phải đọc phần tử hiển thị giá trị đã chọn và trạng thái checked.",
+    "_canh_bao_lech_giua_man": "Lệch giữa các màn phải giữ RIÊNG, KHÔNG trộn vào bản đồ nhãn. Bản đồ nhãn là thứ app LẼ RA phải hiện; lệch là PHÁT HIỆN. Trộn vào nhau thì phép kiểm sau này lấy chính cái sai làm chuẩn rồi assert theo nó.",
+    "byScreen": {},
+    "valueMaps": {},
+    "unanchored": {},
+    "notDisplayed": {}
   }
 }
