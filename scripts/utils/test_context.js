@@ -10,7 +10,7 @@
  *
  * Dùng:
  *   const { createTestContext } = require('<repo>/scripts/utils/test_context');
- *   const ctx = createTestContext({ taskKey:'dự án trước-XXXX', tcId:'OPS_ORD_TC_021' }); // đọc env nếu thiếu opts
+ *   const ctx = createTestContext({ taskKey:'<TASK_KEY>', tcId:'<TC_ID>' }); // đọc env nếu thiếu opts
  *   const rec = ctx.evidence();                    // EvidenceRecorder (lazy, đúng task/run)
  *   ctx.onCleanup(async () => api.delete(id), 'order:'+id);
  *   ...

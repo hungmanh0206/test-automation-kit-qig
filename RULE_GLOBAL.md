@@ -286,7 +286,7 @@ Bộ testcase có **hai trục**. *Module hoặc màn* trả lời "test **ở �
 Áp dụng khi execute (Phase 2, Re-run, Partial Rerun). Mục tiêu: **tối đa coverage mỗi lượt, tối thiểu gián đoạn**. Vi phạm = execute lắt nhắt, đứt đoạn, phải làm lại.
 
 1. **Batch tối đa mỗi lượt — KHÔNG lắt nhắt.** Trước khi chạy, liệt kê TẤT CẢ case khả thi của đợt rồi gom vào ÍT script phủ NHIỀU case. Case độc lập thì chạy song song. CẤM kiểu "mỗi case một script / một vòng rồi dừng-báo". Một lượt phải verify được nhiều case, không phải 1–2 cái.
-2. **KHÔNG mặc định `TODO`/`SKIP` khi CHƯA THỬ.** Trước khi đánh 1 case là chưa chạy, làm đủ ba việc. (a) Rà và DÙNG HẾT fixture, Deal ID, tài khoản, data đã được cấp trong task, không bỏ sót input đã nhận. (b) Case negative và lỗi thì **tự tạo input để tái hiện** (vd ID không tồn tại, giá trị biên) thay vì chờ fixture. (c) Drive thật UI hoặc API rồi mới kết luận. Chỉ để `TODO`/`BLOCKED` khi **chặn thật**: capability chưa có (payment sandbox chưa reconcile, account phân quyền), fixture đặc thù chưa được cấp, hoặc cần BA/dev làm rõ scope / fix bug. Khi để lại phải ghi **lý do cụ thể + điều kiện để chạy được** (không ghi chung chung).
+2. **KHÔNG mặc định `TODO`/`SKIP` khi CHƯA THỬ.** Trước khi đánh 1 case là chưa chạy, làm đủ ba việc. (a) Rà và DÙNG HẾT fixture, khoá nối, tài khoản, data đã được cấp trong task, không bỏ sót input đã nhận. (b) Case negative và lỗi thì **tự tạo input để tái hiện** (vd ID không tồn tại, giá trị biên) thay vì chờ fixture. (c) Drive thật UI hoặc API rồi mới kết luận. Chỉ để `TODO`/`BLOCKED` khi **chặn thật**: capability chưa có (payment sandbox chưa reconcile, account phân quyền), fixture đặc thù chưa được cấp, hoặc cần BA/dev làm rõ scope / fix bug. Khi để lại phải ghi **lý do cụ thể + điều kiện để chạy được** (không ghi chung chung).
 3. **KHÔNG hỏi lắt nhắt.** Việc read-only / verify / tạo fixture trong quyền hạn đã thiết lập → thực thi ngay, không xin xác nhận từng bước ("chạy luôn không?"). Nếu buộc phải hỏi (thiếu input hoặc cần quyết định nghiệp vụ) → **GOM toàn bộ câu hỏi + input cần thiết vào MỘT lần**, không hỏi rải rác.
 4. **Báo cáo gộp, ít vòng.** Chỉ dừng để báo khi đã xong MỘT CỤM lớn hoặc gặp chặn thật; không tường thuật từng thao tác nhỏ. Mỗi lần báo = nhiều kết quả.
 5. Ranh giới không đổi: vẫn tuân thủ **Backlog Bug Gate**, **Evidence**, **PII/Security**, **Parallel Story Safety**, **Shared Change Gate** — siết coverage hay tốc độ KHÔNG được nới các gate này.
@@ -648,7 +648,7 @@ Không xóa:
 
 | Good | Bad |
 |---|---|
-| `PROJECT_OUTPUT_DIR=outputs/<YOUR_PROJECT>` | Hardcode `outputs/lms-operations-automation` trong template chung. |
+| `PROJECT_OUTPUT_DIR=outputs/<YOUR_PROJECT>` | Hardcode tên project cụ thể trong template chung. |
 | Evidence path dưới `test-results/artifacts/` | Screenshot tạm ở workspace root. |
 | Bug Backlog có steps, expected, actual, evidence | Bug Backlog từ case skip hoặc lỗi setup. |
 

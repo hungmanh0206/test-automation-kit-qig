@@ -12,7 +12,7 @@ Chưa chiều nào đứng ở vị trí **mình là người NHẬN** — nơi 
 nội dung gửi.
 
 Bằng chứng đây là lỗ thật ở dự án này:
-`knowledge/bugs/dự án trước-24395__be-callback-thanh-toan-trung-lap-lam-paid-amount.json` — cổng thanh toán gọi
+`knowledge/bugs/<KEY>-24395__be-callback-thanh-toan-trung-lap-lam-paid-amount.json` — cổng thanh toán gọi
 callback **trùng**, hệ thống cộng `Paid Amount` **hai lần** (CSDL-28236). Bug đó do **người** phát hiện
 khi dựng fixture, không do máy nào bắt. Theo luật của kit ("bug do người ngoài tìm ra = lỗi của máy"),
 đúng cái phải vá là **chỗ này**: không có checklist nào dạy sinh case "gửi lại callback y hệt".
@@ -57,4 +57,4 @@ mình tự trả.
 
 - §5 API (idempotency phía GỬI) · §8 Resilience (đồng thời/retry) · §9 Side-effect (webhook ĐI RA)
 - §15 Security cho ca 2/3/7 (chữ ký, IDOR) — case có thể mang **cả 2 tag**
-- `knowledge/bugs/dự án trước-24395__be-callback-thanh-toan-trung-lap-lam-paid-amount.json` (bug gốc)
+- `knowledge/bugs/<KEY>-24395__be-callback-thanh-toan-trung-lap-lam-paid-amount.json` (bug gốc)

@@ -6,9 +6,9 @@
  * qua chuỗi**. Đo trên CSDL-24395 có 13 bug thuộc trục này, và mỗi cái đều "đúng" ở vài điểm nên nhìn từng điểm
  * riêng lẻ thì thấy bình thường:
  *   - CSDL-28310: form nhập Service Fee 1.000.000 → **BE lưu 0** → đơn tự nhảy "Đã thanh toán" (thất thu).
- *   - CSDL-28376: form tính Net Amount đúng → **payload gửi 0** khi tick "included in Course Payment".
+ *   - CSDL-28376: form tính thành tiền đúng → **payload gửi 0** khi tick "included in Course Payment".
  *   - CSDL-28442: gói chuyển nhượng **không được gửi lên payload**, API trả success nhưng không tạo Order.
- *   - CSDL-28403: tiền USD **không quy đổi** sang VND ⇒ Net Amount sai một bậc độ lớn.
+ *   - CSDL-28403: tiền USD **không quy đổi** sang VND ⇒ thành tiền sai một bậc độ lớn.
  * Điểm chung: phải so **4 điểm cùng một giá trị mồi**, và phải nói được **mắt nào đứt** — vì "kết quả sai" thì
  * FE và BE đẩy qua đẩy lại, còn "payload đã gửi 0" thì hết tranh luận.
  *

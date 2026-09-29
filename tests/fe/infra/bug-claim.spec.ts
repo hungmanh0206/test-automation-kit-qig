@@ -184,7 +184,7 @@ test.describe('@infra bug:claim — kiểm chứng phải đi trước lời nó
   test('case ĐÃ CÓ bug key thì bỏ qua, nhưng phải ĐẾM và nói ra', () => {
     /*
      * Gate này chặn claim CHƯA kiểm chứng lọt tới người đọc, không đòi hồi tố cho bug đã log và đã
-     * đóng. Case mang `bug: dự án trước-xxxxx` nghĩa là đã qua gate của phase2_04. Bắt nó viết claim ngược
+     * đóng. Case mang `bug: <KEY>-<số>` nghĩa là đã qua gate của phase2_04. Bắt nó viết claim ngược
      * là biến gate thành tiếng ồn trên nợ cũ, mà gate hay báo oan thì bị tắt.
      * Vẫn phải IN ra số bỏ qua: bỏ qua âm thầm là cách một gate chết dần mà không ai biết.
      */

@@ -118,7 +118,7 @@ for (const s of sections.slice(0, 12)) console.log(`[fig]   ${s.heading} → ${s
 
 // ─── KẾT LUẬN ĐO ĐƯỢC, KHÔNG PHẢI PHỎNG ĐOÁN ───────────────────────────────────────────────────────────────
 // Trích trên canvas THẬT (173 text) ra 7 khối, nhưng vẫn lẫn: tiêu đề kiểu "Drag & Drop your file here", và một
-// khối trộn nhãn của hai màn ("Add-on Courses | Deal ID | Cancel | Send"). Nguyên nhân bản chất: canvas Figma là
+// khối trộn nhãn của hai màn ("Khoá bổ sung | Mã liên kết | Huỷ | Gửi"). Nguyên nhân bản chất: canvas Figma là
 // **bảng mockup nhiều màn cạnh nhau**, nhóm theo trục Y sẽ tràn giữa các màn. Vì thế:
 //   MẶC ĐỊNH = xuất BẢN NHÁP để người soi (không ghi knowledge).
 //   `--write` = chỉ ghi khi có `--sections <file đã người curate>`; ghi từ bản trích thô là tạo **oracle GIẢ**,

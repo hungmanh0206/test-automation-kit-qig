@@ -227,7 +227,7 @@ Ghi 3 thứ (theo `knowledge/SCHEMA.md`):
 ```bash
 TASK_ENV=profiles/<TASK>/task.env npm run learn:bugs          # DRY-RUN (mặc định, chỉ in)
 TASK_ENV=profiles/<TASK>/task.env npm run learn:bugs:apply    # ghi thật vào knowledge/bugs + index
-[--story <BACKLOG_STORY_KEY>] [--project dự án trước] [--max 100]
+[--story <BACKLOG_STORY_KEY>] [--project <PROJECT>] [--max 100]
 ```
 
 - **Nguồn canonical**: bug do kit tạo luôn có label `auto-bug` + label `<tcId>`, là sub-task của story ⇒ JQL đúng bộ đó **chỉ học bug ĐÃ QUA GATE** (không dính flaky/setup — đúng `knowledge/SCHEMA.md`).

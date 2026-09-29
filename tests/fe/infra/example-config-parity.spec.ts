@@ -22,7 +22,7 @@ const CONFIG = path.join(REPO, '.agent', 'config');
 
 /*
  * SO TÊN TRƯỜNG, KHÔNG SO KHOÁ DỮ LIỆU. Bản đầu của test này so mọi khoá lồng nhau và báo oan ngay:
- * nó kể `impact.modules.Order`, `softDelete.byEntity.ic_payment_orders` là "thiếu", trong khi bản mẫu
+ * nó kể `impact.modules.Order`, `softDelete.byEntity.<bảng>` là "thiếu", trong khi bản mẫu
  * CỐ Ý không có module và bảng của dự án này — đó chính là lý do bản mẫu tồn tại.
  *
  * Phân biệt bằng hình dạng, không bằng tên: một object mà các giá trị con cũng là object thì nó là
@@ -80,7 +80,7 @@ const cap = fs.readdirSync(CONFIG)
  * `db.conventions.json` là BẢN ĐỒ DỮ LIỆU: bảng, cột, giá trị enum đo từ DB của một dự án. Bản mẫu
  * của nó cố ý chỉ minh hoạ HÌNH DẠNG với vài bảng giả, không phải bản đầy đủ. So hai file đó là so
  * dữ liệu chứ không so schema, và mọi cảnh báo sinh ra đều oan — bản đầu của test này đã kể 60 khoá
- * "thiếu" toàn là tên bảng `ic_payment_*` của dự án.
+ * "thiếu" toàn là tên bảng của dự án.
  *
  * Miễn trừ HẸP: khai đúng tên file kèm lý do. Cặp `.example` mới xuất hiện mà chưa khai thì test
  * dưới cùng ĐỎ, nên không ai thêm được một miễn trừ im lặng.

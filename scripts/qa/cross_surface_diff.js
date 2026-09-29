@@ -23,7 +23,7 @@
  *     { "screen": "Order Detail / Overview", "url": "/…/detail/overview", "label": "Service Fee" },
  *     { "screen": "Sync Info", "url": "/…/detail/sync-information", "label": "Service fee" },
  *     { "screen": "Order List", "url": "/…?page_index=1", "column": "Service Fee",
- *       "rowMatch": { "column": "Deal ID", "value": "64095623819" } },
+ *       "rowMatch": { "column": "Mã liên kết", "value": "64095623819" } },
  *     { "screen": "API", "api": "/api/v1/service-fee-orders/<id>", "jsonPath": "data.service_fee" }
  *   ] }] }
  */

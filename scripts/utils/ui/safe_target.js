@@ -85,7 +85,7 @@ async function section(page, title, opts = {}) {
 /**
  * Neo scope theo CỤM NHÃN: tìm khối NHỎ NHẤT chứa đủ các nhãn cho trước.
  * Dùng khi panel không có tiêu đề/class ổn định để neo (vd panel summary tiền) — thay vì đọc toàn trang
- * rồi vớ nhầm số của section khác. Ví dụ: sectionContaining(page, ['Net Amount','Total Amount Due']).
+ * rồi vớ nhầm số của section khác. Ví dụ: sectionContaining(page, ['Thành tiền','Tổng phải trả']).
  */
 async function sectionContaining(page, labels, opts = {}) {
   const MARK = 'data-xp-scope';
@@ -159,7 +159,7 @@ async function readValue(scope, label, opts = {}) {
     const own = (e) => norm([...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(''));
     const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
     const nodes = [...root.querySelectorAll('*')].filter((e) => (own(e) === lbl || own(e) === `${lbl}:`) && vis(e));
-    // MƠ HỒ = LỖI: nhãn xuất hiện ở >1 chỗ (vd "Net Amount" có ở cả summary lẫn bảng con) thì
+    // MƠ HỒ = LỖI: nhãn xuất hiện ở >1 chỗ (vd "Thành tiền" có ở cả summary lẫn bảng con) thì
     // đọc "cái đầu tiên" là đúng cơ chế lấy nhầm số → oracle sai → bug sai. Bắt buộc thu hẹp scope.
     if (nodes.length > 1 && !allowMulti) return { ambiguous: nodes.length };
     for (const n of nodes) {

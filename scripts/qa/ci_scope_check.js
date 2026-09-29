@@ -15,7 +15,7 @@
  * không thay được: nó chỉ chặn đúng đường dẫn đã biết, `tests/fe/CSDL-99999/` ngày mai vẫn lọt.
  *
  * Ba điều gate này kiểm:
- *   1. Spec trong thư mục theo task (`dự án trước-<số>`) mà ĐANG ĐƯỢC TRACK ⇒ ĐỎ (nợ đã khai thì cảnh báo).
+ *   1. Spec trong thư mục theo task (`<KEY>-<số>`) mà ĐANG ĐƯỢC TRACK ⇒ ĐỎ (nợ đã khai thì cảnh báo).
  *   2. Spec drive UAT mà nằm trong phạm vi `nightly` ⇒ ĐỎ.
  *   3. File CI phải lấy phạm vi TỪ config này, và KHÔNG được còn `playwright test` trần ⇒ nếu không thì
  *      config chỉ là trang trí, CI vẫn chạy cả suite.

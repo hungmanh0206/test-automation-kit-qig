@@ -20,7 +20,7 @@
   ],
   "_selfTestExempt_why": "Test CUA CHINH gate nay chua fixture `import opsLogin` / `process.env.OPS_USERNAME` duoi dang CHUOI de kiem gate co bat khong ⇒ gate tu gan co chinh no. Mien tru HEP: dung 1 file, va co test khoa so luong (them file thu 2 = do). Cung khuon voi `SELF` trong policy_source_check.js.",
   "taskSpecDebt": [],
-  "_taskSpecDebt_why": "Spec theo task da track TRUOC dot siet nay. Khai ra de gate CANH BAO (no nhin thay duoc) thay vi do ngay. RONG tu 24/08/2026: `tests/fe/CSDL-26523/**` da bo track, khong con no nao. File theo task MOI thi DO, khong co ngoai le ngam — `.gitignore` da tong quat hoa thanh `tests/**/dự án trước-*/`.",
+  "_taskSpecDebt_why": "Spec theo task da track TRUOC dot siet nay. Khai ra de gate CANH BAO (no nhin thay duoc) thay vi do ngay. RONG tu 24/08/2026: `tests/fe/CSDL-26523/**` da bo track, khong con no nao. File theo task MOI thi DO, khong co ngoai le ngam — `.gitignore` da tong quat hoa thanh `tests/**/[A-Z]*-[0-9]*/`.",
   "allowedTaskSpecDirs": [],
-  "_allowedTaskSpecDirs_why": "Rỗng có chủ ý: không thư mục `dự án trước-<số>` nào được phép track. Test theo task ở lại máy người chạy task (`.gitignore` có luật), vì suite chung chạy nó = chạm UAT không ai xác nhận."
+  "_allowedTaskSpecDirs_why": "Rỗng có chủ ý: không thư mục `<KEY>-<số>` nào được phép track. Test theo task ở lại máy người chạy task (`.gitignore` có luật), vì suite chung chạy nó = chạm UAT không ai xác nhận."
 }

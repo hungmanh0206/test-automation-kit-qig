@@ -26,7 +26,7 @@
  *
  * Dùng:
  *   node scripts/qa/seed_knowledge_from_backlog.js                         # dry-run, project = BACKLOG_PROJECT_KEY
- *   node scripts/qa/seed_knowledge_from_backlog.js --project dự án trước --since 2025-01-01
+ *   node scripts/qa/seed_knowledge_from_backlog.js --project <PROJECT> --since 2025-01-01
  *   node scripts/qa/seed_knowledge_from_backlog.js --apply                 # ghi thật vào knowledge/
  */
 

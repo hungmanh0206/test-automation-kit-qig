@@ -43,6 +43,18 @@ test.describe('@infra phát hành kit — gói chỉ mang lớp GENERIC', () => 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const kit = require(path.join(REPO, 'scripts/qa/package_kit.js'));
 
+  /*
+   * Marker tên bảng KHÔNG còn ghi cứng trong code mà suy từ `db.conventions.json` của chính thư mục đang
+   * quét. Nên fixture phải KHAI bảng của mình, y như một dự án thật phải khai. Đổi lại được thứ đáng giá:
+   * luật này không bao giờ lỗi thời theo một dự án cụ thể nữa.
+   */
+  const declareTables = (root: string, tables: string[]) => {
+    const dir = path.join(root, '.agent', 'config');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'db.conventions.json'),
+      JSON.stringify({ money: { entities: Object.fromEntries(tables.map((t) => [t, []])) } }), 'utf8');
+  };
+
   test('danh sách gói KHÔNG chứa đường dẫn lớp PROJECT', () => {
     /*
      * Đây là luật đắt nhất của file này. Lỗi đã thật: bản đề bài xếp `db.conventions.json` vào GENERIC, mà
@@ -87,8 +99,9 @@ test.describe('@infra phát hành kit — gói chỉ mang lớp GENERIC', () => 
 
   test('luật quét gói: CHẶN ở file dữ liệu, CẢNH BÁO ở code (không chặn oan)', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pkgscan-'));
-    fs.writeFileSync(path.join(tmp, 'a.json'), '{"entity":"ic_payment_orders"}');
-    fs.writeFileSync(path.join(tmp, 'b.ts'), '// ví dụ: ic_payment_orders lưu tiền dạng bigint');
+    declareTables(tmp, ['bang_don_hang']);
+    fs.writeFileSync(path.join(tmp, 'a.json'), '{"entity":"bang_don_hang"}');
+    fs.writeFileSync(path.join(tmp, 'b.ts'), '// ví dụ: bang_don_hang lưu tiền dạng bigint');
     fs.writeFileSync(path.join(tmp, 'c.md'), 'tài liệu kể lại db-uat.example.vn');
     const r = kit.scanPackage(tmp, ['a.json', 'b.ts', 'c.md']);
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -106,8 +119,9 @@ test.describe('@infra phát hành kit — gói chỉ mang lớp GENERIC', () => 
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pkgscan2-'));
     const sub = path.join(tmp, 'prompt_templates', 'phase1');
     fs.mkdirSync(sub, { recursive: true });
-    fs.writeFileSync(path.join(sub, 'd.md'), 'DB này: `ic_payment_orders` không có cột audit.');
-    fs.writeFileSync(path.join(tmp, 'e.md'), 'README kể lại `ic_payment_orders` như một ví dụ.');
+    declareTables(tmp, ['bang_don_hang']);
+    fs.writeFileSync(path.join(sub, 'd.md'), 'DB này: `bang_don_hang` không có cột audit.');
+    fs.writeFileSync(path.join(tmp, 'e.md'), 'README kể lại `bang_don_hang` như một ví dụ.');
     const r = kit.scanPackage(tmp, ['prompt_templates/phase1/d.md', 'e.md']);
     fs.rmSync(tmp, { recursive: true, force: true });
     expect(r.hits.join(' '), 'prompt template mang tên bảng dự án phải CHẶN').toMatch(/d\.md/);

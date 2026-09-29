@@ -10,7 +10,7 @@
  *
  * Cách dùng trong automation task-scoped (standalone Playwright):
  *   const { EvidenceRecorder } = require('<repo>/scripts/utils/evidence_recorder');
- *   const rec = new EvidenceRecorder({ taskKey:'dự án trước-XXXX', projectOutputDir:'outputs/lms-operations-automation', runId });
+ *   const rec = new EvidenceRecorder({ taskKey:'<TASK_KEY>', projectOutputDir:'outputs/<PROJECT>', runId });
  *   const tc = rec.case('OPS_ORD_TC_021');
  *   await tc.step(page, 'Mở dropdown Hình thức', { highlight: page.getByLabel('Hình thức'),
  *        assert: async () => (await page.getByRole('option').count()) === 2 });   // pass/fail suy từ assert

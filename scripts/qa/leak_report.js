@@ -148,7 +148,7 @@ function classify(text) {
     console.log(`[leak] ĐÓNG VÒNG: ${humanFound.length} bug do NGƯỜI tìm · ${humanFound.length - noMachine.length} đã có máy tương ứng · ${noMachine.length} CHƯA gán được máy`);
     for (const r of noMachine) console.log(`[leak] ✗ ${r.key}: chưa chỉ ra được máy lẽ ra bắt được — ${r.summary.slice(0, 80)}`);
     if (noMachine.length) {
-      console.log('[leak]   Xử lý: gán máy vào `knowledge/leak_machine_map.json` ({"dự án trước-xxxxx": {"machine": "...", "why": "..."}})');
+      console.log('[leak]   Xử lý: gán máy vào `knowledge/leak_machine_map.json` ({"<KEY>-<số>": {"machine": "...", "why": "..."}})');
       console.log('[leak]   hoặc nếu THẬT SỰ chưa có máy nào phủ trục đó ⇒ ghi đề xuất máy mới vào reports/ (đừng để trống).');
     }
   }

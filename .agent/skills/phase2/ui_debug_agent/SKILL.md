@@ -161,7 +161,7 @@ Nghi product bug ⇒ **chuyển Phase 2 triage**. **KHÔNG log Backlog từ skil
   **không bao giờ heal locator dùng để assert** (heal oracle = tự làm test luôn xanh).
 - **Không in credential/PII.** Mask ngay trong DOM **trước** khi chụp (theo giá trị · theo nhãn PII ·
   `input.value`), và mask khi đính evidence. Đừng mask theo hình dạng số chung — nó ăn luôn khoá nghiệp vụ
-  như Deal ID.
+  như mã liên kết ngoài.
 - **Không tạo luật song song.** Mọi thứ về ưu tiên locator, cấm, và heal đều ở `.agent/rules/*`.
 
 ## Rules References

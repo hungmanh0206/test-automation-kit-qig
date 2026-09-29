@@ -77,7 +77,7 @@ const CI_OK = {
 const INFRA_OK = { 'tests/fe/infra/gates.spec.ts': "import { test } from '@playwright/test';\ntest('x', () => {});\n" };
 
 test.describe('@infra ci:scope — spec theo task không được vào suite chung', () => {
-  test('spec trong thư mục dự án trước-<số> được track ⇒ CHẶN, kèm cách gỡ', () => {
+  test('spec trong thư mục <KEY>-<số> được track ⇒ CHẶN, kèm cách gỡ', () => {
     const root = sandbox({
       ...CI_OK, ...INFRA_OK, '.agent/config/ci_scope.json': CFG(),
       'tests/mobile-web/CSDL-22827/student_delete.spec.ts': "import { test } from '@playwright/test';\n",

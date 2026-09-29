@@ -28,7 +28,7 @@
  *
  * Luật mask (cố ý KHÔNG mask theo hình dạng số chung): email che theo MẪU — không khoá nghiệp vụ nào trông
  * giống email; còn họ tên / ngày sinh / CCCD / địa chỉ che theo NHÃN hoặc theo HEADER CỘT. Lý do: luật
- * `d{9,12}` từng che luôn Deal ID (11 chữ số) — khoá dùng để nối UI với DB, che nó là mất chính thứ cần đọc.
+ * `d{9,12}` từng che luôn mã liên kết ngoài (11 chữ số) — khoá dùng để nối UI với DB, che nó là mất chính thứ cần đọc.
  */
 const PII_LABEL = /^(full ?name|họ (và )?tên|ho ten|tên khách|email|e-?mail|phone( number)?|số điện thoại|so dien thoai|mobile|d\.?o\.?b|ngày sinh|ngay sinh|số cccd|so cccd|cccd|cmnd|hộ chiếu|passport|địa chỉ|dia chi|address)\b/i;
 const EMAIL_RE = /[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g;

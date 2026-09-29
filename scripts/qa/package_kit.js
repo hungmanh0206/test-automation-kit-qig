@@ -8,7 +8,7 @@
  * được lọt, vì hai lý do khác nhau và đều nghiêm trọng:
  *   · SECRET/PII — `.env*`, `profiles/<TASK>/task.env`, `knowledge/**`, `outputs/**` là dữ liệu công ty.
  *   · ORACLE SAI — `.agent/config/db.conventions.json` chứa schema + bản đồ cột↔nhãn ĐO TỪ DB của MỘT dự án
- *     (đo được: `ic_payment_orders`, `db-uat.example`, 8 màn nhãn tiếng Việt của OPS). Phát cho dự án
+ *     (đo được: tên bảng thật, host DB, và nhãn tiếng Việt của màn nội bộ). Phát cho dự án
  *     khác là đưa họ một bản đồ cột sai mà vẫn "có số từ DB" — đúng cách tạo bug ma thuyết phục nhất. Nên
  *     gói mang `db.conventions.example.json`, không mang bản thật.
  *
@@ -88,11 +88,11 @@ const DENY = [
   /^profiles\/(?!task\.env\.example$)/,
   /^knowledge\/(?!SCHEMA\.md$)(?!.*\.gitkeep$)/,
   /^tests\/api\//, /^tests\/mobile-web\//,
-  /^tests\/fe\/(auth|support|order|transaction|dự án trước-)/,
+  /^tests\/fe\/(auth|support|order|transaction)\//,
   /\.spec\.ts-snapshots\//,           // ảnh baseline visual là của dự án, không phải của kit
   /*
    * Spec CHẠY THẬT trên DB/màn của dự án này ⇒ lớp PROJECT, dù nằm trong thư mục GENERIC.
-   * Chúng truy vấn `ic_payment_orders` trên `db-uat.example` và assert nhãn UI tiếng Việt của OPS: mang
+   * Chúng truy vấn bảng thật trên DB thật và assert nhãn UI tiếng Việt của app nội bộ: mang
    * sang dự án khác thì KHÔNG THỂ pass, và một spec đỏ-vì-sai-dự-án còn tệ hơn không có spec (người nhận sẽ
    * học cách bỏ qua màu đỏ). Kit vẫn mang ĐỘNG CƠ của tầng DB (`types/match/guard/config/dbVerify/adapters`)
    * + `db.conventions.example.json`; phần NEO là việc mỗi dự án tự đo.
@@ -131,7 +131,10 @@ function collect() {
  * của khách nằm ở outputs/knowledge/profiles — đã loại theo CẤU TRÚC.
  */
 function scanPackage(root, files) {
-  const { PATTERNS, CRED_FILE, CRED_CONTENT, PROJECT_MARKERS } = require(path.resolve(__dirname, 'lib', 'secret_patterns'));
+  const sp = require(path.resolve(__dirname, 'lib', 'secret_patterns'));
+  const { PATTERNS, CRED_FILE, CRED_CONTENT } = sp;
+  // Marker tên bảng suy từ quy ước DB của CHÍNH `root` — xem `markersFromConventions` để biết vì sao.
+  const PROJECT_MARKERS = [...sp.PROJECT_MARKERS, ...sp.markersFromConventions(root)];
   const hits = [];
   const warns = [];
   for (const f of files) {
@@ -164,7 +167,7 @@ function scanPackage(root, files) {
      *
      * Đo 19/09/2026: luật cũ bỏ qua mọi `.md` nên gói `kit-2.1.1` phát ra ngoài kèm mục
      * "Hai giới hạn ĐÃ ĐO của DB NÀY" trong `prompt_templates/phase1/dimensions/23_db_persistence.md`,
-     * khẳng định `ic_payment_orders` không có cột audit. Người nhận ở dự án khác đọc đó là sự thật về DB
+     * khẳng định một bảng cụ thể không có cột audit. Người nhận ở dự án khác đọc đó là sự thật về DB
      * của họ. Sau khi khái quát hoá lại: 0 hit trên toàn bộ `prompt_templates/**` và `.agent/**`, nên bật
      * mức CHẶN không báo oan file nào đang có.
      *

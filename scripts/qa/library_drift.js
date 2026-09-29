@@ -558,7 +558,7 @@ if (!exists(COURSE_MD)) {
     const NOI_BO_KIT = [
       'RULE_GLOBAL', 'verdict_taxonomy', 'dimension-manifest', 'dimension_manifest',
       'policy_check', 'gates_index', 'self_review', 'preflight_gate', 'inventory_gate',
-      'secret_scan', 'PROJECT_OUTPUT_DIR', 'TASK_KEY', 'dự án trước'
+      'secret_scan', 'PROJECT_OUTPUT_DIR', 'TASK_KEY'
     ];
     const danKit = [];
     for (const rel of lessonFiles.concat(['COURSE.md'])) {

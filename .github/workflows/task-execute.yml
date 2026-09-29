@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       project_output_dir:
-        description: 'PROJECT_OUTPUT_DIR (vd outputs/lms-operations-automation)'
+        description: 'PROJECT_OUTPUT_DIR (vd outputs/<PROJECT>)'
         required: true
       task_key:
         description: 'TASK_KEY (vd CSDL-26276)'

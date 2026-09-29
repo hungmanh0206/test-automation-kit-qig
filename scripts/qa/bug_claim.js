@@ -201,7 +201,7 @@ function missingClaims(taskOut, claims) {
     const id = t.id || t.tcId || '(không đọc được id)';
     /*
      * BỎ QUA case ĐÃ CÓ BUG KEY. Gate này sinh ra để chặn claim CHƯA kiểm chứng lọt tới người đọc,
-     * không phải để đòi hồi tố cho bug đã log và đã đóng. Case có `bug: dự án trước-xxxxx` nghĩa là nó đã đi
+     * không phải để đòi hồi tố cho bug đã log và đã đóng. Case có `bug: <KEY>-<số>` nghĩa là nó đã đi
      * qua gate của phase2_04 rồi. Bắt nó viết claim ngược là biến gate thành tiếng ồn trên nợ cũ, và
      * gate hay báo oan thì bị tắt. Vẫn ĐẾM và in ra, để việc bỏ qua không âm thầm.
      */

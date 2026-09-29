@@ -87,28 +87,26 @@ giống DB" là **tautology**, nên cấm. Giá trị lớn nhất của kiểm 
 
 **② Chỉ dùng cột ĐÃ NEO, và neo theo ĐÚNG MÀN.** `db.conventions.json → fieldMap` có **hai bản đồ**:
 
-- `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. **6 màn** đã neo: `SERVICE_FEE` (8 cột) ·
-  `CORE` (4) · `CORE_LIST` (5) · `SERVICE_FEE_LIST` (4) · `ADD_ON_LIST` (5) · `CORE_EDIT` (1).
-  Khoá theo màn vì CÙNG một cột có nhãn khác nhau. `original_price` là **"Gross Amount"** ở CORE nhưng
-  **"Gross Price"** ở SERVICE_FEE. `final_price` **chưa neo** ở tab Overview của CORE mà **đã neo**
-  ("Net Amount") ở màn danh sách. Có cột chỉ hiện ở **một tab phụ**, không có ở Overview.
-  Nên kết luận "cột này không hiển thị" khi mới xem một tab là kết luận thiếu.
-- `fieldMap.valueMaps` — **giá trị enum DB → nhãn tiếng Việt**, khoá `"<bảng>.<cột>"`. Đã neo
-  `status` (6/6 enum — đủ), `sync_status` (2/2 — đủ), `service_fee_type` (6 enum — **đủ cho màn Service Fee**;
-  3 enum `DANG_KY_CBE`/`MUA_TAI_KHOAN_CERT`/`MUA_TAI_KHOAN_BECKER` chỉ tồn tại ở đơn **ADD_ON** nên phải neo
-  ở màn add-on). Luật neo: **hàm** (1 enum → 1 nhãn) **và đơn ánh** (2 enum không dùng chung nhãn). Khối
-  `_coverage` **bắt buộc** nói rõ đủ hay thiếu. Bẫy đã dính: neo từ 50 hàng đầu rồi tưởng xong, trong khi DB có
-  9 enum mà 50 hàng chỉ thấy 6.
-- `notDisplayed` — cột **không phải field**: `order_type` quyết định route/màn, khoá màn trong `byScreen`
-  chính là giá trị của nó. Để chung với `unanchored` thì cứ tưởng còn việc phải làm.
-- `rates` (tách khỏi `money`) — `service_fee_rate` (max 20) và `fixed_discount` (5/10/15) là **tỉ lệ**, không
-  phải tiền. Gọi `money()` lên tỉ lệ thì thông điệp thành "lệch 5 đồng" cho một phần trăm.
+> ⛔ **Hiện `byScreen` đang RỖNG.** Bộ neo cũ thuộc dự án khác đã gỡ. Nên `db_verify_preflight` **CHẶN**
+> mọi task khai `[DbPersist]`. Đó là cơ chế đúng: chưa neo cột nào thì không được phán bằng DB. Muốn dùng
+> §23 thì việc đầu tiên là đo và neo.
+
+- `fieldMap.byScreen` — **cột DB → nhãn UI**, khoá theo màn. Khoá theo màn là bắt buộc. CÙNG một cột
+  thường mang nhãn khác nhau ở hai màn. Cột neo được ở màn danh sách vẫn có thể chưa neo ở tab chi tiết.
+  Nên xem một tab rồi kết luận "cột này không hiển thị" là kết luận thiếu.
+- `fieldMap.valueMaps` — **giá trị enum DB → nhãn tiếng Việt**, khoá `"<bảng>.<cột>"`. Luật neo: **hàm**
+  (1 enum → 1 nhãn) **và đơn ánh** (2 enum không dùng chung nhãn). Khối `_coverage` **bắt buộc** nói rõ đủ hay
+  thiếu. Bẫy đã dính: neo từ 50 hàng đầu rồi tưởng xong, trong khi cột đó có 9 enum mà 50 hàng chỉ thấy 6.
+- `notDisplayed` — cột **không phải field hiển thị**. Ví dụ cột quyết định route: khoá màn trong
+  `byScreen` chính là giá trị của nó. Để chung với `unanchored` thì cứ tưởng còn việc phải làm.
+- `rates` (tách khỏi `money`) — cột tỉ lệ **không phải tiền**. Gọi `money()` lên tỉ lệ thì thông điệp
+  thành "lệch 5 đồng" cho một phần trăm. Cách phân biệt: đo biên độ giá trị thật.
 
 Tra bản đồ **phải đi qua helper** `uiLabelOfColumn(conv, screen, column)` và
 `uiLabelOfValue(conv, 'bảng.cột', enum)` trong `config.ts` — hai hàm này **NÉM** khi cột/enum chưa neo hoặc
 khi bạn hỏi nhãn của màn khác. Đọc `conv.fieldMap` trực tiếp là bỏ mất lớp chặn đó.
 
-Cột trong `unanchored` thì **KHÔNG được dùng để phán**. Hiện có **4 mục**, mỗi mục ghi rõ **cần fixture gì**.
+Cột trong `unanchored` thì **KHÔNG được dùng để phán**, và mỗi mục phải ghi rõ **cần fixture gì**.
 Đoán sai cột thì kết luận vẫn ra, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường.
 
 Cần thêm cột thì neo trước bằng fixture phân biệt. Nhãn chỉ được neo khi giá trị của nó **phân biệt** được với

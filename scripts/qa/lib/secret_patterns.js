@@ -52,8 +52,37 @@ const CRED_CONTENT = /"private_key"\s*:|BEGIN (RSA |EC )?PRIVATE KEY|"client_sec
  */
 const PROJECT_MARKERS = [
   { name: 'host DB của dự án', re: /\bdb-uat\.[a-z0-9.-]+\b/i },
-  { name: 'bảng DB của dự án', re: /\bic_payment_[a-z_]+\b/ },
-  { name: 'base URL nội bộ của dự án', re: /https?:\/\/(?:uat-)?ops[a-z0-9.-]*\.[a-z]{2,}/i },
 ];
 
-module.exports = { PATTERNS, CRED_FILE, CRED_CONTENT, PROJECT_MARKERS };
+/*
+ * TÊN BẢNG phải lấy TỪ CHÍNH DỰ ÁN, không hardcode.
+ *
+ * Bản trước ghi cứng tiền tố bảng của một dự án vào đây. Hệ quả có hai đầu và đầu nào cũng tệ: dự án đó đi
+ * rồi thì marker thành luật chết, không chặn được gì; còn dự án mới thì tên bảng của họ KHÔNG nằm trong
+ * marker nên gói vẫn phát ra ngoài kèm tên bảng thật của họ. Nay suy từ `db.conventions.json` — nơi mỗi dự
+ * án đã phải khai bảng của mình rồi, nên marker tự đúng theo dự án đang chạy mà không ai phải nhớ cập nhật.
+ *
+ * Chưa khai bảng nào ⇒ trả rỗng. Đó là trạng thái đúng: không có gì để rò thì không chặn oan.
+ */
+function markersFromConventions(root) {
+  let conv;
+  try {
+    conv = JSON.parse(require('fs').readFileSync(
+      require('path').join(root, '.agent', 'config', 'db.conventions.json'), 'utf8'));
+  } catch (e) { return []; }
+  const names = new Set();
+  const take = (o) => { for (const k of Object.keys(o || {})) if (!k.startsWith('_')) names.add(k); };
+  take((conv.softDelete || {}).byEntity);
+  take((conv.money || {}).entities);
+  take((conv.rates || {}).entities);
+  take(conv.relations);
+  if ((conv.fieldMap || {}).entity) names.add(conv.fieldMap.entity);
+  for (const k of Object.keys((conv.fieldMap || {}).valueMaps || {})) {
+    if (!k.startsWith('_') && k.includes('.')) names.add(k.split('.')[0]);
+  }
+  return [...names]
+    .filter((n) => /^[A-Za-z_][A-Za-z0-9_]{2,}$/.test(n))
+    .map((n) => ({ name: `bảng DB của dự án (${n})`, re: new RegExp(`\\b${n}\\b`) }));
+}
+
+module.exports = { PATTERNS, CRED_FILE, CRED_CONTENT, PROJECT_MARKERS, markersFromConventions };
