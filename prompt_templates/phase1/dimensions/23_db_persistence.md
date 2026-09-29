@@ -110,7 +110,7 @@ Cột trong `unanchored` thì **KHÔNG được dùng để phán**, và mỗi m
 Đoán sai cột thì kết luận vẫn ra, lại **có số từ DB** nên trông thuyết phục hơn bug ma thường.
 
 Cần thêm cột thì neo trước bằng fixture phân biệt. Nhãn chỉ được neo khi giá trị của nó **phân biệt** được với
-mọi cột cùng loại trên **toàn bộ** hàng đo, xem `fieldMap._how_to_reanchor`. Đừng suy từ tên cột.
+mọi cột cùng loại trên **toàn bộ** hàng đo, xem `fieldMap._method`. Đừng suy từ tên cột.
 
 **③ Chỉ verify bản ghi do CHÍNH lượt test tạo** (lọc theo `id`/`RUN_ID`). UAT dùng chung: assert lên dữ liệu
 người khác là nguồn flaky và là đường ra kết luận sai. `snapshot`/`expectNoChange` **bắt buộc khai `columns`**

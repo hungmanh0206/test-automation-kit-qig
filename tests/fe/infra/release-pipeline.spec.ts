@@ -271,7 +271,12 @@ test.describe('@infra phát hành kit — script chạy được từ ZIP (khôn
      * Dấu hiệu: cây GitLab KHÔNG track các đường dẫn khai trong `gitlab_strip.json`.
      */
     const dangTrack = new Set(String(lsFiles.stdout).split(/\r?\n/).map((x: string) => x.trim()));
-    const laGitlab = strip.every((x) => !dangTrack.has(x.path));
+    /*
+     * `strip.length > 0` là bắt buộc. Bản trước chỉ viết `strip.every(...)`, mà `every` trên mảng RỖNG trả
+     * TRUE, nên ngày danh sách strip hết mục thì máy này kết luận mọi cây đều là GitLab rồi cộng nhầm số.
+     * Danh sách rỗng nghĩa là hai cây không còn phân kỳ, tức đứng đâu cũng là cây nguồn.
+     */
+    const laGitlab = strip.length > 0 && strip.every((x) => !dangTrack.has(x.path));
     const fileGh = laGitlab ? soFile + nStrip : soFile;
     const specGh = laGitlab ? soSpec + nSpecStrip : soSpec;
 

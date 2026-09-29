@@ -31,26 +31,26 @@
 | 9 | Bật 2 hook forcing-function | `.claude/settings.json` là **local, gitignored** nên KHÔNG đi theo clone, tức hook đang TẮT. Copy đoạn JSON trong `scripts/qa/hooks/README.md` vào `.claude/settings.json` rồi mở `/hooks` một lần. `preflight` có cảnh báo chỗ này, không chặn |
 | 10 | Kiểm lại | `npx playwright test tests/fe/infra` — bộ tự-kiểm của kit, phải xanh hết trước khi dùng thật |
 
-## Hai remote — clone bên nào cũng được, nhưng số đo khác nhau
+## Hai remote — clone bên nào cũng được, số đo giống nhau
 
-Nhánh GitLab **cố ý bị gỡ 2 file** so với GitHub (khai ở `.agent/config/gitlab_strip.json`, do chủ repo
-yêu cầu): `tests/support/setup/db/db2db3.connect.spec.ts` và `tests/support/setup/db/verify.db2db3.spec.ts`.
+Trước đây nhánh GitLab cố ý bị gỡ 2 file so với GitHub. Hai file đó nay đã bị **xoá khỏi cả hai bên**
+(mã của một dự án cũ, viết cho Postgres nên chỉ SKIP trên DB hiện tại), nên `gitlab_strip.json` rỗng và
+hai cây **hết phân kỳ**. Cơ chế strip vẫn giữ: lần sau có đường dẫn nào chỉ được nằm ở một nhánh thì khai
+vào file đó, đừng gỡ tay.
 
-Nên sau khi cài xong, con số đúng của mỗi bên khác nhau. Đo ngày 25/09/2026 trên cây GitHub. Cột GitLab suy từ `.agent/config/gitlab_strip.json` (2 mục, đều là
-`.spec.ts`), KHÔNG clone lại — riêng dòng `tests/fe/infra` thì hai cây BẰNG NHAU, vì cả 2 file bị strip
-đều nằm ở `tests/support/setup/db/`, ngoài phạm vi thư mục đó:
+Đo ngày 29/09/2026:
 
 | | GitHub | GitLab |
 |---|---|---|
-| file được track | 472 | 470 |
-| `npx playwright test tests/fe/infra` | **574 xanh · 0 bỏ qua · 0 đỏ** | **574 xanh · 0 bỏ qua · 0 đỏ** |
-| `npm run ci:scope` đếm | 57 spec | 55 spec |
+| file được track | 468 | 468 |
+| `npx playwright test tests/fe/infra` | **581 xanh · 0 đỏ** | **581 xanh · 0 đỏ** |
+| `npm run ci:scope` đếm | 53 spec | 53 spec |
 
 **Số của bạn khác bảng này là có gì đó sai** — đừng bỏ qua. Test bỏ qua đều tự khai lý do khi chạy.
 
-Một ngoại lệ hợp lệ: **tổng luôn là 574**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
-Clone mới thì `knowledge/` rỗng nên 2 test tự bỏ qua. Khôi phục bundle `knowledge:backup` xong thì
-chúng chạy thật, và bạn thấy **611 xanh, 0 bỏ qua** — đó là ĐÚNG, không phải lệch.
+Một ngoại lệ hợp lệ: **tổng luôn là 581**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
+Clone mới thì `knowledge/` rỗng nên vài test tự bỏ qua; khôi phục bundle `knowledge:backup` xong thì
+chúng chạy thật. Đó là ĐÚNG, không phải lệch.
 
 ## Thứ KHÔNG đi theo clone
 

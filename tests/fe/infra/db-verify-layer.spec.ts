@@ -462,14 +462,18 @@ test.describe('@infra fieldMap — theo MÀN, và cột chưa neo KHÔNG đượ
     }
   });
 
-  test('phương pháp so-hai-nhóm phải được khai VÀ có máy chạy nó', () => {
+  /*
+   * Bản trước còn đòi thêm "và PHẢI có máy chạy nó", trỏ vào `fieldmap.anchor.spec.ts`. File đó đã bị xoá:
+   * nó viết cho Postgres và khoá cứng vào bảng của một dự án khác, nên trên DB hiện tại nó chỉ SKIP.
+   * Bỏ vế đó đi chứ KHÔNG đổi nó thành một file khác cho xanh — khẳng định "có máy chạy" trong khi máy
+   * không chạy được chính là thứ luật này sinh ra để chặn. Dựng lại máy neo thì thêm vế đó trở lại.
+   */
+  test('phương pháp so-hai-nhóm phải được khai rõ ràng', () => {
     const fm = fieldMap() as unknown as { _method_enum_by_groups?: string };
     const m = String(fm._method_enum_by_groups || '');
     expect(m.length, 'conventions chưa khai phương pháp neo cột enum').toBeGreaterThan(80);
     expect(m, 'phải ghi ràng buộc ≥3 bản ghi của đối tượng khác nhau — đây là chỗ đã tạo 4 kết quả giả')
       .toMatch(/3 (don|đơn|ban ghi|bản ghi)/);
-    const spec = fs.readFileSync(path.join(REPO, 'tests/support/setup/db/fieldmap.anchor.spec.ts'), 'utf8');
-    expect(spec, 'khai phương pháp mà không có máy chạy thì chỉ là văn bản').toContain('SO HAI NHÓM');
   });
 
   test('mỗi cột unanchored phải nói RÕ vì sao (để biết cần fixture gì)', () => {
