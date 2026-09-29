@@ -55,6 +55,47 @@ test.describe('@infra phát hành kit — gói chỉ mang lớp GENERIC', () => 
       JSON.stringify({ money: { entities: Object.fromEntries(tables.map((t) => [t, []])) } }), 'utf8');
   };
 
+  /*
+   * FILE CHƯA COMMIT KHÔNG ĐƯỢC LÊN GÓI.
+   *
+   * Lỗi thật, bắt được 29/09/2026 bằng cách nghiệm thu chính gói đã phát hành: gói dựng tại máy có 365
+   * file, gói CI dựng ra có 364. Chênh đúng một spec CHƯA COMMIT của người đang chạy lệnh, vì `collect()`
+   * duyệt ĐĨA. CI không dính vì checkout sạch — tức lỗi chỉ hiện ở máy người, đúng chỗ không ai soi.
+   *
+   * Hai vế phải khoá, vì bỏ vế nào cũng còn đường rò:
+   *   ① mọi file trong gói phải nằm trong `git ls-files`;
+   *   ② không đọc được danh sách track thì phải TỪ CHỐI, không phải cảnh báo rồi gói tiếp.
+   */
+  test('gói chỉ mang file ĐÃ git track — file chưa commit không được phát ra ngoài', () => {
+    const { execFileSync } = require('child_process');
+    let ls = '';
+    try { ls = execFileSync('git', ['-C', REPO, 'ls-files', '-z'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch (e) { /* gói phát hành không có .git */ }
+    test.skip(!ls, 'không có .git (đang chạy trong gói phát hành) — không có danh sách track để so');
+    const tracked = new Set(ls.split('\0').filter(Boolean));
+
+    const files: string[] = kit.collect();
+    const la = files.filter((f) => !tracked.has(f));
+    expect(la, `gói mang ${la.length} file chưa commit: ${la.slice(0, 5).join(' · ')}`).toEqual([]);
+  });
+
+  test('KHÔNG có .git ⇒ TỪ CHỐI đóng gói, không im lặng gói cả thư mục', () => {
+    /*
+     * Đối chứng âm cho luật trên. Nếu thiếu `.git` mà vẫn gói thì luật ① vô nghĩa: chỉ cần chạy ở một bản
+     * giải nén là mọi file lạ lại lên gói. Chạy `collect()` trong một repo tạm không có `.git`.
+     */
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'nogit-'));
+    fs.mkdirSync(path.join(tmp, 'scripts', 'qa'), { recursive: true });
+    fs.copyFileSync(path.join(REPO, 'scripts/qa/package_kit.js'), path.join(tmp, 'scripts/qa/package_kit.js'));
+    fs.writeFileSync(path.join(tmp, 'README.md'), '# x\n');
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const kitRoi = require(path.join(tmp, 'scripts/qa/package_kit.js'));
+      expect(() => kitRoi.collect(), 'thiếu .git mà vẫn gói ⇒ không chứng minh được gói mang gì').toThrow(/git track/);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
   test('danh sách gói KHÔNG chứa đường dẫn lớp PROJECT', () => {
     /*
      * Đây là luật đắt nhất của file này. Lỗi đã thật: bản đề bài xếp `db.conventions.json` vào GENERIC, mà

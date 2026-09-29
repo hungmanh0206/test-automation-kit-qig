@@ -114,6 +114,29 @@ function walk(dir, out = []) {
   return out;
 }
 
+/*
+ * CHỈ GÓI FILE ĐÃ ĐƯỢC GIT TRACK.
+ *
+ * Đo 29/09/2026, ngay sau khi phát hành 2.2.0: gói dựng tại máy có 365 file còn gói CI dựng ra chỉ 364.
+ * Chênh đúng một file, và đó là một spec CHƯA COMMIT của người đang chạy lệnh. Nguyên nhân: `walk()` duyệt
+ * ĐĨA, mà đĩa thì có cả thứ chưa track. CI không dính vì checkout sạch — tức lỗi chỉ hiện ra ở máy người,
+ * đúng chỗ không ai soi.
+ *
+ * Hệ quả nếu để nguyên: ai đóng gói tại máy rồi đưa gói cho người khác sẽ phát luôn MỌI file chưa track
+ * của mình — file nháp, ghi chú, dữ liệu dò tay. Đúng thứ đầu file này gọi là "đường rò khó thu hồi nhất".
+ *
+ * Không có `.git` thì TỪ CHỐI đóng gói, không phải cảnh báo rồi làm tiếp: lúc đó công cụ KHÔNG chứng minh
+ * được nó đang mang gì đi. `release:verify` không gọi hàm này nên không vướng.
+ */
+function trackedFiles() {
+  try {
+    const out = execFileSync('git', ['-C', REPO, 'ls-files', '-z'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    const list = out.split('\0').filter(Boolean);
+    if (list.length) return new Set(list);
+  } catch (e) { /* không có git hoặc không phải repo */ }
+  return null;
+}
+
 function collect() {
   const files = new Set();
   for (const d of KEEP_DIRS) for (const f of walk(d)) files.add(f);
@@ -121,7 +144,21 @@ function collect() {
   // Bản .example.* của mọi config + mọi .gitkeep (giữ khung thư mục cho người nhận).
   for (const f of walk('.agent/config')) if (/\.example\.[a-z]+$/.test(f)) files.add(f);
   for (const f of walk('knowledge')) if (f.endsWith('.gitkeep')) files.add(f);
-  return [...files].filter((f) => !DENY.some((re) => re.test(f))).sort();
+
+  const tracked = trackedFiles();
+  if (!tracked) {
+    throw new Error('[package] KHÔNG đọc được danh sách file git track (thiếu .git hoặc thiếu git). '
+      + 'Từ chối đóng gói: không chứng minh được gói mang những gì. Đóng gói từ một bản clone đầy đủ.');
+  }
+  const ketQua = [...files].filter((f) => !DENY.some((re) => re.test(f)));
+  const boQua = ketQua.filter((f) => !tracked.has(f)).sort();
+  if (boQua.length) {
+    // In ra chứ KHÔNG im lặng: bỏ file mà không nói thì lần sau người ta lại tưởng gói có nó.
+    console.log(`[package] bỏ ${boQua.length} file CHƯA git track (không được phát ra ngoài):`);
+    for (const f of boQua.slice(0, 20)) console.log(`    ~ ${f}`);
+    if (boQua.length > 20) console.log(`    … (+${boQua.length - 20})`);
+  }
+  return ketQua.filter((f) => tracked.has(f)).sort();
 }
 
 /*
