@@ -427,7 +427,12 @@ async function searchExistingBug(tcId, projectId, parentIssueNumericId) {
       }),
     );
     const issues = response.data || [];
-    const match = issues.find((issue) => issue.parentIssueId === parentIssueNumericId && String(issue.summary || '').includes(marker));
+    /*
+     * Doi chieu CA HAI cho. Marker nay da doi tu summary xuong description (06/10/2026), nhung bug log
+     * TRUOC do van mang no o summary — bo ve summary la moi bug cu bi log lai mot lan nua.
+     */
+    const match = issues.find((issue) => issue.parentIssueId === parentIssueNumericId
+      && (String(issue.summary || '').includes(marker) || String(issue.description || '').includes(marker)));
     return match || null;
   } catch (error) {
     console.warn(`WARN: Duplicate check failed for ${tcId}: ${formatApiError(error)}`);
@@ -549,28 +554,46 @@ function foundBySource() {
 }
 
 /*
- * Backlog description là PLAIN TEXT (hỗ trợ mention `[[...]]`, không phải rich-doc JSON như hệ bug-tracking cũ) —
- * không cần build content-tree, ghép thẳng string với heading dạng `■ <tên mục>` (quy ước Backlog hay dùng
- * cho heading trong text thường vì Backlog description không có markdown heading thật).
+ * Backlog description la TEXT, khong phai rich-doc JSON — ghep thang string, khong can content-tree.
+ *
+ * DO 06/10/2026 qua `GET /api/v2/projects`: project dang dung `textFormattingRule = markdown`, nen
+ * `**dam**` RENDER THAT. Ban truoc dung `■ <ten muc>` vi tin rang Backlog khong co markdown — niem tin
+ * do sai, va no lam bon tieu de muc chim lan vao van ban. Nay in dam theo yeu cau cua chu du an.
+ *
+ * Doi project sang `textFormattingRule = backlog` thi phai doi lai thanh `''dam''`, va phai DO lai
+ * bang chinh API tren chu dung doan.
  */
 function buildBugDescription(payload) {
   const parts = [];
-  parts.push('■ Tiền điều kiện:');
+  parts.push('**Tiền điều kiện:**');
   parts.push(String(payload.preconditions || '(không có thông tin)').slice(0, 30000));
   parts.push('');
-  parts.push('■ Bước:');
+  parts.push('**Bước:**');
   parts.push(formatNumberedOrParagraph(payload.steps, '(xem file test case gốc)'));
   parts.push('');
-  parts.push('■ Kết quả hiện tại:');
+  parts.push('**Kết quả hiện tại:**');
   parts.push(formatBulletOrParagraph(payload.actualResult, '(không có thông tin)'));
   parts.push('');
-  parts.push('■ Kết quả mong muốn:');
+  parts.push('**Kết quả mong muốn:**');
   parts.push(formatBulletOrParagraph(payload.expectedResult, '(xem file test case gốc)'));
   if (payload.foundBy) {
     const tag = payload.foundBy === 'human' ? 'found-by-human' : 'found-by-kit';
     const desc = payload.foundBy === 'human' ? 'người báo (sheet bug/BA/QA thủ công)' : 'kit (automation tự bắt được)';
     parts.push('');
-    parts.push(`■ [${tag}] Nguồn phát hiện: ${desc}`);
+    parts.push(`**[${tag}] Nguồn phát hiện:** ${desc}`);
+  }
+  /*
+   * MARKER MAY DOC, khong phai mot muc cua description.
+   * De o CUOI va KHONG in dam, de nguoi doc luot qua duoc va de `lintBugHeadings` khong dem no thanh
+   * muc thu 5. Mat dong nay thi moi luot rerun lai log them mot bug trung, va bug do khong map duoc
+   * ve Module nen khong vao duoc risk model.
+   */
+  if (payload.tcId || payload.layer) {
+    parts.push('');
+    const dau = [];
+    if (payload.tcId) dau.push(`TC: [${payload.tcId}]`);
+    if (payload.layer) dau.push(`Tầng: [${String(payload.layer).toUpperCase()}]`);
+    parts.push(dau.join(' · '));
   }
   return parts.join('\n');
 }
@@ -710,9 +733,17 @@ function buildBugSummary(layer, title, actualResult, tcId = '') {
 
   if (!bugName && !isTcOnlyTitle) bugName = rawTitle;
   if (!bugName) bugName = rawActual || 'Loi phat hien khi execute automation';
-  // `[<tcId>]` trong summary là marker cho duplicate-check (searchExistingBug đọc lại qua keyword) — Backlog
-  // không có labels tự do như Backlog nên không thể gắn tcId ở field riêng.
-  return `[${layer}][${tcId}] ${bugName}`.slice(0, 255);
+  /*
+   * TIEU DE CHI CO TEN BUG — khong ma, khong tang. Chu du an chot 06/10/2026: title la thu dev doc
+   * luot trong danh sach bug, nen no phai noi LOI GI. Truoc day no mo dau bang hai khoi ngoac
+   * `[FE][TC_ID]` ma dev doc khong dung duoc vao viec gi.
+   *
+   * HAI MARKER KHONG MAT, ca hai xuong dong cuoi description (xem buildBugDescription):
+   *   - `TC: [<tcId>]` — `searchExistingBug` doi chieu de chong trung, `learn_bugs` map bug ve Module.
+   *   - `Tang: [<layer>]` — `lintBeVsFeLayer` doi no de doi dau vet API.
+   * Bo bat ky dong nao la mot may lang le ngung lam viec, va khong cai nao bao loi.
+   */
+  return String(bugName).slice(0, 255);
 }
 
 function stripPositiveNegativePrefix(value) {
@@ -1288,6 +1319,8 @@ async function main() {
       actualResult,
       expectedResult: tcInfo.expectedResult || '(xem file test case gốc)',
       foundBy: foundBySource(),
+      tcId: testCase.tcId,
+      layer,
     });
 
     if (UPDATE_ISSUE_KEY) {

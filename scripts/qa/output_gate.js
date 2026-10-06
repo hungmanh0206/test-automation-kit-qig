@@ -244,6 +244,8 @@ function gateBugWarnings(bug = {}) {
 
   return out.concat(rules.lintBeVsFeLayer({
     summary: bug.summary || bug.title,
+    // Title khong con mang `[FE]` tu 06/10/2026 — tang phai den tu field khai hoac tu description.
+    layer: bug.layer || bug.failureLayer || '',
     description: [bug.steps, bug.actualResult, bug.expectedResult, bug.description].filter(Boolean).join('\n'),
     beVsFe: tax.beVsFe,
   }).map((v) => `${id}: ${v.message}`));

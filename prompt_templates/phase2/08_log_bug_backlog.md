@@ -121,7 +121,7 @@ Các bước thực hiện:
    - Nếu có Backlog project key riêng, thêm `--project [BACKLOG_PROJECT_KEY]`.
    - Nếu muốn ép loại bug, thêm `--layer FE` hoặc `--layer BE`.
 11. Chống duplicate:
-   - Backlog KHÔNG có labels tự do — reporter tự tìm bug trùng bằng `keyword` search + marker `[<TC_ID>]` nhúng đầu summary (xem bug_reporter.js searchExistingBug). Đây là full-text match, không chính xác tuyệt đối như JQL cũ — review tay nếu nghi ngờ.
+   - Backlog KHÔNG có labels tự do — reporter tự tìm bug trùng bằng `keyword` search + marker `TC: [<TC_ID>]` ở CUỐI description (xem bug_reporter.js searchExistingBug). Đây là full-text match, không chính xác tuyệt đối như JQL cũ — review tay nếu nghi ngờ.
    - Nếu đã có bug mở cho TC ID đó, không tạo bug mới; ghi trạng thái duplicate/skipped vào report.
 12. Upload evidence:
    - Chỉ upload screenshot hoặc video đã được sinh trong lần execute trước đó.
@@ -152,14 +152,23 @@ Quy tắc Backlog issue:
   - `BACKLOG_DEV_ASSIGNEE` dùng khi muốn ép cùng một assignee cho mọi layer.
   - Nếu không có env assignee, dùng assignee của Backlog Story/Task parent nếu có.
 - Đánh dấu (Backlog KHÔNG có labels tự do như Backlog — các thông tin dưới đây nằm trong SUMMARY/DESCRIPTION, không phải field riêng):
-  - `[<TC_ID>]` nhúng đầu summary (truy vết testcase + chống trùng).
-  - `[FE]`/`[BE]` nhúng đầu summary (layer).
+  - `TC: [<TC_ID>]` ở DÒNG CUỐI description (truy vết testcase + chống trùng). KHÔNG gắn vào title.
+  - `Tầng: [FE]`/`[BE]` ở DÒNG CUỐI description (layer). KHÔNG gắn vào title.
   - `[found-by-kit]`/`[found-by-human]` trong description khi chạy `--found-by kit|human` (nguồn phát hiện).
 
 Form bug bắt buộc:
 
 Title (= Backlog `summary`):
-`[FE hoặc BE][<TC_ID>] Tên bug (mô tả ngắn gọn lỗi)`
+`Tên bug — mô tả đủ để người đọc hiểu ngay lỗi là gì`
+
+**Title CHỈ có tên bug** — không `TASK_KEY`, không `TC_ID`, không mã story, và KHÔNG `[FE]`/`[BE]`. Title là thứ dev
+đọc lướt trong danh sách bug, nên nó phải nói được LỖI GÌ chứ không phải mã nào. Chủ dự án chốt 06/10/2026.
+
+> Title trước đây mở đầu bằng `[FE][TC_ID]` vì Backlog không có labels tự do, và BA máy đọc hai dấu đó:
+> duplicate-check của reporter, `learn_bugs` (map bug về Module cho risk model), và `lintBeVsFeLayer`
+> (gán tầng thì phải có dấu vết API). Nay cả hai dấu ĐÃ DỜI xuống dòng cuối description:
+> `TC: [<TC_ID>] · Tầng: [FE]`. Ba máy vẫn chạy. **Đừng gắn lại vào title** — và cũng đừng xoá dòng đó,
+> xoá là ba máy lặng lẽ ngừng làm việc mà không cái nào báo lỗi.
 
 Quy tắc chọn prefix title:
 - Prefix `[FE]` / `[BE]` trên title phải theo layer/surface của testcase fail tại thời điểm log bug.
@@ -168,10 +177,19 @@ Quy tắc chọn prefix title:
 - Không tự đổi title UI bug sang `[BE]` chỉ vì phỏng đoán root cause; nếu cần, ghi nhận nghi ngờ root cause trong report/triage local.
 
 Ví dụ:
-- `[FE][HS_TC_012] Không đăng nhập được App 2 sau khi submit form`
-- `[BE][ORD_TC_045] API tạo bản ghi trả sai status khi thiếu required_field`
+- `Không đăng nhập được App 2 sau khi submit form`
+- `API tạo bản ghi trả sai status khi thiếu required_field`
 
-Description (plain text — Backlog không dùng định dạng rich-doc):
+Description:
+
+**Bốn tên mục phải IN ĐẬM** — `**Tiền điều kiện:**` · `**Bước:**` · `**Kết quả hiện tại:**` ·
+`**Kết quả mong muốn:**`. Đo 06/10/2026 qua `GET /api/v2/projects`: project đang dùng
+`textFormattingRule = markdown`, nên `**đậm**` render thật. Đổi project sang chế độ `backlog` thì phải
+đổi cú pháp thành `''đậm''` — và phải ĐO lại bằng chính API đó chứ đừng đoán.
+
+**Nội dung NGẮN GỌN, SÚC TÍCH, nhưng cực kỳ dễ hiểu.** Người đọc là dev đang sửa, không phải người
+nghiệm thu. Mỗi dòng một ý, bỏ chữ đệm, bỏ câu dẫn kiểu "như đã nêu ở trên". Viết dài không làm bug rõ
+hơn, nó chỉ làm dev đọc lướt rồi bỏ sót đúng chỗ cần sửa.
 
 Description chỉ được có đúng 4 phần bên dưới, theo đúng thứ tự. Tất cả nội dung phải mô tả theo testcase/requirement đang fail:
 1. `Tiền điều kiện`
@@ -237,8 +255,12 @@ Evidence attachment:
 - Backlog attachment chỉ được là ảnh hoặc video, ví dụ `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.mp4`, `.webm`.
 - Không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md`, execution summary hoặc bất kỳ file text/diagnostic nào lên Backlog.
 - Nếu có nhiều evidence, chỉ upload file ảnh/video liên quan trực tiếp tới testcase fail.
-- Video là optional với bug đơn giản, nhưng bắt buộc với flow phức tạp nếu screenshot không đủ mô tả trình tự lỗi.
-- **Annotate/highlight evidence (khuyến nghị mạnh)**: trước khi attach, ảnh nên được khoanh vùng + gắn nhãn để dev/reviewer thấy NGAY điểm cần chú ý thay vì tự dò cả màn.
+- **VIDEO BẮT BUỘC khi thao tác phức tạp** — nhiều bước, nhiều màn, state đổi theo thời gian,
+  toast/modal tự đóng, cập nhật bất đồng bộ, kéo-thả. Một ảnh tĩnh không chở được trình tự, nên dev
+  phải tự dựng lại và hay dựng sai. Bug đơn giản một màn một bước thì ảnh là đủ.
+- **HIGHLIGHT BẮT BUỘC trên mọi ảnh evidence** — không còn là khuyến nghị. Chủ dự án chốt 06/10/2026.
+  Ảnh không khoanh vùng thì dev phải tự dò xem lỗi nằm ở đâu trong một màn đầy dữ liệu, và đó chính là
+  lúc ticket bị trả lại hỏi "lỗi ở chỗ nào". Chi tiết cách khoanh: trước khi attach, ảnh nên được khoanh vùng + gắn nhãn để dev/reviewer thấy NGAY điểm cần chú ý thay vì tự dò cả màn.
   - Quy ước màu: **đỏ = điểm còn lỗi** (kèm nhãn ngắn nêu sai gì + đúng phải thế nào, vd "✗ SAI: MM/DD/YYYY — cần DD/MM/YYYY"); **xanh lá = điểm đã đúng/đã fix** (vd "✓ Title cột đúng FS").
   - Cách làm (không cần thư viện ngoài): dùng Playwright inject overlay lên đúng element rồi chụp — với mỗi target lấy `getBoundingClientRect()`, thêm 1 `div` viền màu (absolute theo `scrollX/scrollY`) + 1 `div` nhãn nền màu, sau đó `screenshot({ fullPage: true })`; xoá overlay giữa các lần chụp. Mẫu tham khảo: `outputs/**/automation/annotate_*.js`.
   - Chụp full-page/scroll để không cắt vùng cần highlight (bảng rộng).

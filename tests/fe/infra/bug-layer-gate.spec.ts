@@ -15,6 +15,21 @@ const rules = require(path.resolve(__dirname, '../../../scripts/qa/lib/output_ru
 const BASE = { steps: '1. Mở màn Order detail', expectedResult: 'Phải khớp spec' };
 
 test.describe('@infra beVsFe — gán tầng FE/BE phải có bằng chứng API', () => {
+  /*
+   * TITLE KHÔNG CÒN MANG TẦNG (06/10/2026, chủ dự án chốt). Nếu luật chỉ dò title thì nó lặng lẽ ngừng
+   * chạy: không gì báo, và mọi bug qua cửa. Hai test dưới khoá hai nguồn thay thế.
+   */
+  test('tầng khai bằng field `layer` (title sạch) → VẪN cảnh báo khi thiếu dấu vết API', () => {
+    const out = rules.lintBeVsFeLayer({ ...BASE, summary: 'Order detail hiển thị sai Thành tiền', layer: 'BE', description: 'Màn hiện 0đ' });
+    expect(out, 'title sạch mà bỏ qua thì luật chết âm thầm').toHaveLength(1);
+    expect(out[0].level).toBe('warning');
+  });
+
+  test('tầng nằm ở DÒNG CUỐI description (bản render thật) → VẪN cảnh báo', () => {
+    const out = rules.lintBeVsFeLayer({ ...BASE, summary: 'Order detail hiển thị sai Thành tiền', description: 'Màn hiện 0đ\n\nTC: [ORD_TC_045] · Tầng: [FE]' });
+    expect(out).toHaveLength(1);
+  });
+
   test('gán tầng mà KHÔNG có dấu vết API → 1 cảnh báo (không phải problem)', () => {
     const out = rules.lintBeVsFeLayer({ ...BASE, summary: '[BE] Order detail hiển thị sai Thành tiền', description: 'Màn hiện 0đ' });
     expect(out).toHaveLength(1);

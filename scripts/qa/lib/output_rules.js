@@ -47,7 +47,7 @@ const extListText = (re = VISUAL_EXT) => String(re.source)
   .map((s) => `.${s.replace('jpe?g', 'jpg/.jpeg')}`)
   .join('/');
 
-// Bug đã GÁN TẦNG (prefix `[FE]`/`[BE]`) thì phải có dấu vết API cụ thể — nhìn UI sai chỉ chứng minh CÓ lỗi,
+// Bug đã GÁN TẦNG (field `layer`, hoặc dấu `[FE]`/`[BE]` ở description/title) thì phải có dấu vết API cụ thể — nhìn UI sai chỉ chứng minh CÓ lỗi,
 // không chứng minh lỗi NẰM Ở ĐÂU. Gán sai tầng ⇒ ticket đi nhầm người ⇒ dev bounce ⇒ mất trọn một vòng.
 // `beVsFe` truyền vào từ `.agent/config/verdict_taxonomy.json` (giữ module này thuần, và để JSON là nguồn thật
 // chứ không phải "chi tiết máy-đọc" mà không máy nào đọc).
@@ -61,18 +61,28 @@ const STATUS_CODE = /\b(?:HTTP|status(?:\s*code)?|mã\s*(?:lỗi|trạng thái)|
  * @param {{summary?: string, description?: string, beVsFe?: object}} input
  * @returns {{level: 'warning'|'problem', message: string}[]}
  */
-function lintBeVsFeLayer({ summary = '', description = '', beVsFe = null } = {}) {
-  if (!LAYER_PREFIX.test(String(summary))) return [];
+function lintBeVsFeLayer({ summary = '', description = '', layer: layerKhai = '', beVsFe = null } = {}) {
+  /*
+   * BA NGUỒN, theo thứ tự tin cậy. Từ 06/10/2026 title KHÔNG còn mang `[FE]`/`[BE]` nữa, nên nếu chỉ
+   * dò title thì luật này lặng lẽ ngừng chạy — không gì báo, và mọi bug sẽ qua cửa.
+   *   ① field `layer` khai tường minh — đường chính từ nay;
+   *   ② `[FE]`/`[BE]` trong description — bản render ghi `Tầng: [FE]` ở dòng cuối;
+   *   ③ `[FE]`/`[BE]` trong title — giữ để bug log TRƯỚC 06/10 vẫn được kiểm.
+   */
   const desc = String(description || '');
+  const layer = String(layerKhai || '').trim()
+    || (desc.match(LAYER_PREFIX) || [])[1]
+    || (String(summary).match(LAYER_PREFIX) || [])[1]
+    || '';
+  if (!layer) return [];
   if (API_TRACE.test(desc) || STATUS_CODE.test(desc)) return [];
-  const layer = (String(summary).match(LAYER_PREFIX) || [])[1] || '';
   // Lời nhắc lấy TỪ config để sửa một chỗ là đổi mọi nơi.
   const how = Array.isArray(beVsFe && beVsFe.howTo) ? beVsFe.howTo[0] : 'Bắt response của chính API mà màn đang xem gọi, không đoán endpoint.';
   // Mức WARNING, không chặn: đo trên 99 bug đã log thì 66 (67%) chưa có dấu vết API ⇒ chặn ngay là đỏ oan
   // hai phần ba. Theo tiền lệ locator_lint: cảnh báo trước, siết sau khi thói quen đã đổi.
   return [{
     level: 'warning',
-    message: `tiêu đề gán tầng [${layer.toUpperCase()}] nhưng description KHÔNG có dấu vết API (method+path, /api/v…, hoặc mã status) → chưa chứng minh được lỗi nằm ở tầng đó. ${how}`,
+    message: `bug gán tầng [${layer.toUpperCase()}] nhưng description KHÔNG có dấu vết API (method+path, /api/v…, hoặc mã status) → chưa chứng minh được lỗi nằm ở tầng đó. ${how}`,
   }];
 }
 

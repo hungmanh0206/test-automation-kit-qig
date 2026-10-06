@@ -60,7 +60,7 @@ Hoặc qua npm: `npm run backlog:bug-report:dry-run -- --task <TASK_KEY> --story
 
 - Priority chỉ 3 mức (High/Normal/Low, không có Critical/Lowest riêng) — Critical/High testcase đều map vào Backlog "High".
 - Không có Sprint — set `BACKLOG_SPRINT_FIELD_ID` (id số, không phải tên) nếu project cần copy 1 custom field cụ thể từ Story, để trống thì bỏ qua.
-- Không có labels tự do — nguồn phát hiện (`--found-by kit|human`) và marker duplicate-check (`[<tcId>]`) nằm trong summary/description, không phải field riêng.
+- Không có labels tự do — nguồn phát hiện (`--found-by kit|human`) và marker duplicate-check (`TC: [<tcId>]`, dòng cuối description — KHÔNG ở title) nằm trong description, không phải field riêng.
 
 ## Anti-Patterns
 
