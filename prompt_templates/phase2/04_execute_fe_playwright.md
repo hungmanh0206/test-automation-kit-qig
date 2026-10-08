@@ -88,6 +88,17 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 10. Nếu testcase bị SKIP, phải ghi TC ID, lý do skip, đã thử sửa gì, có thể sửa để chạy được không; nếu sửa được thì ưu tiên sửa và rerun thay vì giữ skip.
 11. Nếu product fail, rerun case fail theo ngưỡng `.agent/config/verdict_taxonomy.json` §rerun (min–max, hiện 2–3 lần) để loại trừ flaky/setup, rồi lưu evidence theo rule bên dưới.
 12. Cập nhật testcase output và execution summary. Nếu có `RUN_ID`, chỉ cập nhật run-scoped report/status, không ghi trực tiếp testcase Markdown/Excel chính.
+12b. **Đối soát Excel canonical với file status — BẮT BUỘC sau mỗi lượt ghi kết quả vào Excel:**
+   `npm run ledger:check:enforce -- --task <TASK_KEY>`
+   Gate so cột `Result` trong Excel với (a) mốc đã chụp lần trước và (b) MỌI `testcase-status*.json`
+   dưới thư mục task, kể cả shard và archive. Nó CHẶN khi có ô mất giá trị, hoặc khi một case từng có
+   verdict ghi được mà Excel không còn ô nào mang giá trị.
+   Rà xong và xác nhận trạng thái hiện tại là đúng thì chụp lại mốc: `npm run ledger:snapshot -- --task <TASK_KEY>`.
+   Ô trống ĐÚNG mà vẫn bị báo (vd verdict đến từ lượt chạy SAI CẤP) thì khai ở
+   `<TASK_OUTPUT_DIR>/test-results/result-ledger-mien.json`, mỗi mục bắt buộc có `lyDo` + `ngay`.
+   *Vì sao bắt buộc:* Excel là nơi người ta ĐỌC để kết luận độ phủ, còn sự thật nằm ở file status —
+   hai nơi phân kỳ mà không gì báo. CSDL-9001 mất 129 ô kết quả theo đúng đường đó, và chỉ lộ ra vì
+   chủ dự án tình cờ hỏi "test hết case chưa".
 13. Chỉ log Backlog sau khi report PASS/FAIL/SKIP hoàn tất, fail đã được rerun/xác nhận và user/prompt cho phép.
 
 # Quy tắc bắt buộc

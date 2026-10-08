@@ -3,7 +3,7 @@
  *   - trạng thái pass/fail theo từng step,
  *   - 1 ảnh evidence highlight vào đúng element được kiểm ở step đó.
  *
- * Ảnh lưu: <projectOutputDir>/tasks/<taskKey>/test-results/artifacts/<TC_ID>/step-NN-<status>.png
+ * Ảnh lưu: <projectOutputDir>/tasks/<taskKey>/test-results/evidence/<TC_ID>/step-NN-<status>.png
  * Ghi ra:  <projectOutputDir>/tasks/<taskKey>/test-results/testcase-status.json
  *   schema đúng với push_test_execution.js:
  *   { taskKey, generatedAt, runId?, tests: [ { tcId, status, comment, evidence:[...], steps:[ {status, comment, evidence:[...]} ] } ] }
@@ -25,6 +25,16 @@ const path = require('path');
 const { sanitize } = require('./evidence/sanitize');   // #3: PII safety-net
 const { buildManifest, readManifest } = require('./evidence/manifest'); // #3: index evidence + kiểm tồn tại
 
+// Danh mục tầng lỗi lấy TỪ MỘT NGUỒN (.agent/config/verdict_taxonomy.json), không chép lại thành hằng
+// ở đây — chép là mở đường cho hai danh mục trôi khỏi nhau.
+const VERDICT_TAXONOMY = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../.agent/config/verdict_taxonomy.json'), 'utf8'));
+  } catch (e) {
+    return {};   // thiếu file thì bước preflight config-integrity đã chặn riêng
+  }
+})();
+
 function pad2(n) { return String(n).padStart(2, '0'); }
 function ts() { try { return new Date().toISOString(); } catch { return ''; } }
 
@@ -36,6 +46,33 @@ function writeJsonAtomic(file, obj) {
   const tmp = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(obj, null, 2), 'utf8');
   fs.renameSync(tmp, file);
+}
+
+/**
+ * PHẠM VI của lượt chạy hiện tại — đơn vị/cấp mà kết quả này thuộc về.
+ *
+ * Đọc từ env chứ không nhận tham số: mọi spec đều đã lấy đơn vị làm việc từ đúng những biến này, nên
+ * đọc lại ở đây thì dấu LUÔN khớp thứ thật sự được drive. Nếu bắt spec tự khai, sẽ có spec khai sai
+ * hoặc quên khai — mà dấu sai còn tệ hơn không có dấu.
+ *
+ * `capHocLamViec` ưu tiên trước `capHoc`: biến sau là cấp ở FORM ĐĂNG NHẬP, biến trước mới là cấp của
+ * ĐƠN VỊ LÀM VIỆC — và chính chỗ lệch giữa hai biến này từng làm 8 spec đo nhầm màn.
+ *
+ * Trả `null` khi không có biến nào: task không chạy QEMIS thì không bịa ra dấu.
+ */
+function scopeHienTai() {
+  const g = (k) => {
+    const v = process.env[k];
+    return v && String(v).trim() ? String(v).trim() : undefined;
+  };
+  const s = {
+    capHoc: g('QEMIS_CAP_HOC_LAM_VIEC') || g('QEMIS_CAP_HOC'),
+    truong: g('QEMIS_TRUONG_LAM_VIEC') || g('QEMIS_TRUONG'),
+    namHoc: g('QEMIS_NAM_HOC'),
+  };
+  return Object.values(s).some(Boolean)
+    ? Object.fromEntries(Object.entries(s).filter(([, v]) => v !== undefined))
+    : null;
 }
 
 /**
@@ -55,7 +92,10 @@ function aggregateStatus({ testResultsDir, taskKey = '', runId = '', log = false
       try { const s = JSON.parse(fs.readFileSync(path.join(shardDir, f), 'utf8')); if (s && s.test && s.test.tcId) { byId.set(s.test.tcId, s.test); shards++; } } catch { /* shard hỏng → skip */ }
     }
   } catch { /* chưa có shard dir */ }
-  const out = { taskKey, generatedAt: ts(), ...(runId ? { runId } : {}), tests: [...byId.values()] };
+  const scope = scopeHienTai();
+  const out = {
+    taskKey, generatedAt: ts(), ...(runId ? { runId } : {}), ...(scope ? { scope } : {}), tests: [...byId.values()],
+  };
   writeJsonAtomic(statusFile, out);
   let missingCount = 0;
   try { missingCount = buildManifest(testResultsDir).missingCount; } catch (e) { /* best-effort */ }
@@ -121,7 +161,13 @@ class Case {
     }
     await unhighlight(page, h);
     const rel = path.relative(this.rec.repoRoot, file).split(path.sep).join('/');
-    this.steps.push({ status, comment: sanitize(comment), evidence: [rel] }); // #3: mask PII lỡ quên
+    /* Giữ CẢ tên bước lẫn comment.
+     *
+     * Trước đây record chỉ có `comment`, và `comment = opts.comment || name` ⇒ bước nào có comment thì
+     * TÊN BƯỚC biến mất khỏi file kết quả, chỉ còn trên console. Người đọc report sau đó thấy một dãy
+     * số đo không biết đang đo cái gì. Tên bước là thứ nói "đang kiểm điều gì", comment là "đo được gì"
+     * — hai vai khác nhau, phải giữ cả hai. */
+    this.steps.push({ name: sanitize(name), status, comment: sanitize(comment), evidence: [rel] }); // #3: mask PII lỡ quên
     if (this.rec.log) console.log(`   [step ${idx}] ${status} — ${name} → ${path.basename(file)}`);
     return status;
   }
@@ -133,9 +179,50 @@ class Case {
     const status = overallStatus || (anyFail ? 'FAILED' : (this.steps.length ? 'PASSED' : 'TODO'));
     const failEv = this.steps.find((s) => s.status === 'FAILED');
     const caseEv = [...((failEv || this.steps[this.steps.length - 1] || {}).evidence || []), ...[].concat(opts.evidence || [])];
+
+    /* `failureLayer` — verdict_taxonomy bắt buộc mọi FAIL phải khai tầng lỗi, và `bug_claim.js` đọc
+     * `t.failureLayer` để chặn việc gọi "bug" khi chưa viết claim. Nhưng recorder trước đây KHÔNG có
+     * đường nào truyền nó vào, nên mọi FAIL ghi ra đều thiếu trường bắt buộc và bug_claim không bao giờ
+     * thấy case nào để chặn — luật có mà không ai áp được. Nay nhận qua opts, và kiểm theo đúng danh mục
+     * trong taxonomy để không đẻ ra giá trị tự phát. */
+    // Chỉ gắn khi case THẬT SỰ fail: khai tầng lỗi trên một case PASS là thông tin sai trong file kết
+    // quả, và `bug_claim.js` đọc trường này để đòi claim ⇒ sẽ đòi claim cho case không có lỗi nào.
+    let failureLayer = (opts.failureLayer && status === 'FAILED') ? String(opts.failureLayer) : '';
+    if (failureLayer) {
+      const allowed = Object.keys(VERDICT_TAXONOMY.failureLayers || {});
+      if (allowed.length && !allowed.includes(failureLayer)) {
+        throw new Error(`failureLayer "${failureLayer}" không có trong verdict_taxonomy.failureLayers `
+          + `(${allowed.join(' | ')}) — đừng tự đặt tầng lỗi mới`);
+      }
+    } else if (status === 'FAILED') {
+      throw new Error(`${this.tcId} chấm FAILED nhưng thiếu failureLayer. `
+        + `verdict_taxonomy bắt buộc khai tầng lỗi: finish('FAILED', { failureLayer: 'product_bug' | 'script_error' | … }). `
+        + `FAIL không nói được là lỗi tầng nào thì chưa phán được, và "chưa phán được" KHÔNG thành bug.`);
+    }
+
+    /* `reruns` phải ĐẾM ĐƯỢC, không khai tay.
+     *
+     * `output_gate` đòi case FAIL ở tầng product/api_bug khai số lần rerun, để chứng minh đã loại flaky
+     * trước khi gọi là bug. Nhưng nếu con số do người gõ vào thì nó chỉ là lời khai — đúng thứ gate sinh
+     * ra để chặn. Nên recorder tự đếm: mỗi lần case này lại FAIL trong một lượt chạy mới, đọc shard của
+     * lượt trước và cộng 1. Muốn `reruns: 2` thì phải chạy thật 3 lượt, không có đường tắt.
+     *
+     * Case chuyển từ FAILED sang PASSED thì bộ đếm về 0 — lần fail sau là một quan sát mới, không được
+     * cộng dồn vào chuỗi cũ. */
+    let reruns = 0;
+    if (status === 'FAILED') {
+      try {
+        const shard = path.join(this.rec.shardDir, `${safeName(this.tcId)}.json`);
+        const prev = JSON.parse(fs.readFileSync(shard, 'utf8'));
+        if (prev && prev.test && prev.test.status === 'FAILED') reruns = Number(prev.test.reruns || 0) + 1;
+      } catch { /* chưa có shard = lượt chạy đầu ⇒ 0 */ }
+    }
+
     this.rec._put({
       tcId: this.tcId,
       status,
+      ...(failureLayer ? { failureLayer } : {}),
+      ...(status === 'FAILED' ? { reruns } : {}),
       comment: sanitize(opts.comment || (anyFail ? 'Có step FAILED — xem step evidence' : 'Executed')),
       evidence: caseEv,
       steps: this.steps,
@@ -153,7 +240,17 @@ class EvidenceRecorder {
     this.log = log;
     this.taskDir = path.join(repoRoot, projectOutputDir, 'tasks', taskKey);
     this.testResults = path.join(this.taskDir, 'test-results');
-    this.artifactsRoot = path.join(this.testResults, 'artifacts');
+    /* `evidence/`, KHÔNG phải `artifacts/`.
+     *
+     * `playwright.config.js` đặt `outputDir: <test-results>/artifacts`, và Playwright XOÁ SẠCH outputDir
+     * ở đầu MỖI lượt chạy. Recorder trước đây ghi evidence vào đúng thư mục đó ⇒ mỗi lượt chạy sau xoá
+     * hết evidence của các lượt trước. Đã dựng lại được 30/09: chấm 4 case xong, chạy tiếp
+     * `--project infra-verify` là toàn bộ ảnh của 4 case bốc hơi, trong khi `testcase-status.json` và
+     * `evidence-manifest.json` vẫn ghi `exists: true` (manifest chỉ là ảnh chụp lúc sinh, không soi lại).
+     *
+     * Hậu quả đúng bằng thứ CLAUDE.md §4 muốn chặn: case có verdict mà KHÔNG có bằng chứng, lại trông
+     * như có. Nên evidence phải nằm NGOÀI outputDir. */
+    this.artifactsRoot = path.join(this.testResults, 'evidence');
     fs.mkdirSync(this.artifactsRoot, { recursive: true });
     this.statusFile = path.join(this.testResults, 'testcase-status.json');
     // G0: thư mục shard per-TC (atomic, chống race) — nguồn để aggregate ra statusFile.
@@ -167,6 +264,19 @@ class EvidenceRecorder {
     // `recordedAt` = lúc case NÀY thật sự chạy xong. Provenance phải bám vào từng case: nếu chỉ dựa
     // `generatedAt` của file thì mỗi lần write() lại đóng dấu mới cho cả case cũ → rửa sạch dấu vết.
     entry.recordedAt = ts();
+    /*
+     * ĐÓNG DẤU PHẠM VI vào TỪNG case, không chỉ vào file.
+     *
+     * Vì sao từng case: `testcase-status.json` gộp cả shard của lượt trước, nên một file có thể chứa
+     * kết quả của NHIỀU lượt — dấu ở mức file thì không nói được case nào thuộc lượt nào.
+     *
+     * Vì sao cần: 08/10/2026 phát hiện cột `Result THCS` của CSDL-9001 bị ghi đè bằng 45 verdict của
+     * lượt chạy GDTX. Đường đi: `merge-theo-cap.js --cap THCS` chạy trong lúc `testcase-status.json`
+     * đang chứa kết quả lượt GDTX. Không ai sai một cách cố ý, và KHÔNG MÁY NÀO BÁO — vì file kết quả
+     * không ghi nó thuộc cấp nào, nên bên merge không có gì để đối chiếu. Dấu này là thứ để đối chiếu.
+     */
+    const scope = scopeHienTai();
+    if (scope) entry.scope = scope;
     this._tests.set(entry.tcId, entry);
     // G0: PERSIST NGAY per-TC shard (atomic) khi case finish → process chết vẫn giữ case đã xong;
     // mỗi TC 1 file riêng → 2 worker khác TC KHÔNG đè nhau (khác file cũ read→merge→write chung).
@@ -220,7 +330,17 @@ class EvidenceRecorder {
     } catch { /* chưa có shard dir */ }
     // 3) case in-memory lần này — LUÔN thắng, và không bao giờ mang cờ carriedOver.
     for (const [id, e] of this._tests) byId.set(id, e);
-    const out = { taskKey: this.taskKey, generatedAt: ts(), ...(this.runId ? { runId: this.runId } : {}), tests: [...byId.values()] };
+    /* Dấu phạm vi ở mức FILE nói "lượt chạy vừa rồi làm trên đơn vị nào". Nó KHÔNG thay dấu ở mức
+     * case: file gộp cả shard của lượt trước nên có thể trộn nhiều cấp, và khi đó chỉ dấu từng case
+     * mới phân biệt được. Hai dấu phục vụ hai câu hỏi khác nhau, giữ cả hai. */
+    const scope = scopeHienTai();
+    const out = {
+      taskKey: this.taskKey,
+      generatedAt: ts(),
+      ...(this.runId ? { runId: this.runId } : {}),
+      ...(scope ? { scope } : {}),
+      tests: [...byId.values()],
+    };
     writeJsonAtomic(this.statusFile, out);
     const carried = out.tests.filter((t) => t.carriedOver);
     if (carried.length && this.log) {

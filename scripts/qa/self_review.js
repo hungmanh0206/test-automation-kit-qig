@@ -83,6 +83,51 @@ if (statusFile && fs.existsSync(statusFile)) {
   results.push(engine.toResult('execution output', { skipped: true, note: 'không thấy testcase-status.json', severity: engine.SEVERITY.P0 }));
 }
 
+/*
+ * 3b) Đối soát Excel canonical với file status (`result_ledger`).
+ *
+ * Check #3 ở trên hỏi "kết quả đã execute có đạt chuẩn không" — nó đọc `testcase-status.json`. Nhưng thứ
+ * người ta ĐỌC để kết luận độ phủ lại là Excel canonical, và hai nơi đó có thể phân kỳ mà không gì báo.
+ * Đã xảy ra: CSDL-9001 mất 129 ô kết quả, chỉ lộ ra vì có người tình cờ hỏi "test hết case chưa".
+ *
+ * Chạy bằng tiến trình con vì `result_ledger` là async (ExcelJS) còn file này chạy đồng bộ. Đổi cả
+ * self_review sang async chỉ để gọi một gate là cái giá quá lớn so với một `spawnSync`.
+ */
+if (TASK && taskDir && fs.existsSync(taskDir)) {
+  const { spawnSync } = require('child_process');
+  const r = spawnSync(process.execPath, [path.join(__dirname, 'result_ledger.js'), '--task', TASK, '--json'],
+    { encoding: 'utf8', env: process.env });
+  if (r.status === 2 || r.error) {
+    results.push(engine.toResult('đối soát Excel ↔ file status', {
+      warnings: [`không chạy được result_ledger: ${(r.error && r.error.message) || (r.stderr || '').trim().slice(0, 200)}`],
+      severity: engine.SEVERITY.P1,
+    }));
+  } else {
+    let d;
+    try { d = JSON.parse(r.stdout || '{}'); } catch (e) { d = null; }
+    if (!d || !d.gate) {
+      results.push(engine.toResult('đối soát Excel ↔ file status', { warnings: ['result_ledger trả output không đọc được'], severity: engine.SEVERITY.P1 }));
+    } else {
+      const problems = [
+        ...(d.matSoVoiLedger || []).map((x) => `MẤT ô: ${x}`),
+        ...(d.thieuSoVoiStatus || []).map((x) => `Excel trống: ${x}`),
+      ];
+      // Đổi giá trị KHÔNG phải lỗi (rerun đổi Fail→Pass là đúng), nhưng vẫn nêu để người soát nhìn thấy.
+      const warnings = (d.doiSoVoiLedger || []).map((x) => `đổi giá trị: ${x}`);
+      if (!d.ledger) warnings.push('chưa có result-ledger.json — chạy `npm run ledger:snapshot` để chụp mốc, không có mốc thì không phát hiện được mất ô');
+      results.push(engine.toResult('đối soát Excel ↔ file status', {
+        problems,
+        warnings,
+        note: `${d.oCoGiaTri} ô Result · ${d.fileStatus} file status · ${d.caseCoVerdict} case có verdict`
+          + `${(d.daMienTru || []).length ? ` · ${d.daMienTru.length} miễn trừ có lý do` : ''}`,
+        severity: engine.SEVERITY.P0,
+      }));
+    }
+  }
+} else {
+  results.push(engine.toResult('đối soát Excel ↔ file status', { skipped: true, note: 'không xác định được task dir', severity: engine.SEVERITY.P0 }));
+}
+
 // 4) Learning data (F10/F11) — chống "làm nhiều task mà knowledge/ vẫn trống".
 // Workflow phase2_04 Bước 9 yêu cầu ghi learning entry, nhưng vốn "Suggest-only" nên hay bị bỏ →
 // check ở đây: đã execute (có testcase-status.json) thì PHẢI có snapshot + KPI cho task này.

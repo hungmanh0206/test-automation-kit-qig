@@ -118,7 +118,10 @@
     "package:kit": "node scripts/qa/package_kit.js",
     "release:verify": "node scripts/qa/verify_release.js",
     "library:build": "node docs/library/build.js",
-    "library:drift": "node scripts/qa/library_drift.js"
+    "library:drift": "node scripts/qa/library_drift.js",
+    "ledger:check": "node scripts/qa/result_ledger.js",
+    "ledger:check:enforce": "node scripts/qa/result_ledger.js --enforce",
+    "ledger:snapshot": "node scripts/qa/result_ledger.js --snapshot"
   },
   "dependencies": {
     "axe-core": "^4.12.1",
