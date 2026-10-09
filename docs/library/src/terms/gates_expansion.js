@@ -104,6 +104,21 @@ const TERMS_GATE2 = [
   cmd:'npm run explore:check   ·   npm run explore:check:enforce   ·   npm run explore:close',
   src:'scripts/qa/explore_session.js', rel:['g-explore_charter','r-evidence','c-mask-pii','c-chieu-coverage'] },
 
+{ id:'g-prompt_budget', t:'prompt_budget', cat:'gate',
+  def:'Mỗi điểm vào bảo AI đọc bao nhiêu token hướng dẫn.',
+  detail:'Lần theo chuỗi slash command, workflow, template, sub-prompt, rule của từng điểm vào. Tách ba loại: bắt buộc, có điều kiện, và đoạn chỉ để người đọc. Còn báo đoạn trùng ý giữa các lớp. Có --enforce để chặn khi vượt ngưỡng.',
+  why:'Kit có 10 điểm vào, mỗi cái dẫn tới một chuỗi bốn lớp. Không chỗ nào trả lời được câu chạy /phase2 thì AI phải nạp bao nhiêu chữ trước khi làm việc đầu tiên. Không có số thì mọi quyết định cắt gọt về sau là cảm tính.',
+  cmd:'npm run prompt:budget',
+  src:'scripts/qa/prompt_budget.js', rel:['g-token_audit','g-doc_budget'] },
+
+{ id:'g-token_audit', t:'token_audit', cat:'gate',
+  def:'Một lượt chạy thật đã tiêu token vào đâu.',
+  detail:'Đọc transcript phiên, quy token về nguồn: Read từng file, kết quả tool theo loại, ảnh, snapshot MCP, output gate. Phân loại phiên CHẠY TASK so với SỬA KIT bằng số lượt ghi vào outputs/tasks. Chỉ ghi số đếm, tên file, tên tool.',
+  why:'Đo tĩnh trả lời hướng dẫn dài bao nhiêu, không trả lời token thật đã đi đâu. Hai câu đó lệch nhau rất xa: đo trên 4 lượt chạy task thật thì Read vào tài liệu của kit chỉ có 0 đến 4 lượt, còn kết quả lệnh shell chiếm 62 đến 75 phần trăm. Cắt tài liệu mà không đo động thì rất dễ tối ưu đúng chỗ không tốn.',
+  how:['Không ghi nội dung transcript ra file — transcript có thể chứa PII hoặc secret.','Chạy secret:scan sau khi ghi.'],
+  cmd:'npm run token:audit -- --list   ·   npm run token:audit -- --transcript <file.jsonl>',
+  src:'scripts/qa/token_audit.js', rel:['g-prompt_budget'] },
+
 { id:'g-manual_run_check', t:'manual_run_check', cat:'gate',
   def:'Máy cho nhánh chạy tay, gác ranh giới của lợi khai [manual].',
   detail:'Làm đúng hai việc. Một, case chạy tay mà bộ canonical khai [api], [factory], [test_hook], [ui] hay [pre_existing] thì CHẶN. Hai, ủy quyền phần chất lượng output cho output_gate mode test-execution, nên không có danh sách luật thứ hai về evidence hay verdict.',
