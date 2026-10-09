@@ -22,9 +22,28 @@ const XB_GREP = process.env.CROSS_BROWSER_GREP ? new RegExp(process.env.CROSS_BR
 // KHÔNG thuộc lane suite; chạy có chủ đích bằng INFRA_VERIFY=1.
 const INFRA_VERIFY = process.env.INFRA_VERIFY === '1';
 
+/*
+ * Spec KHÁM PHÁ (`*.probe.spec.*`) — dò DOM/locator một lượt để tìm selector bền và neo nhãn UI ↔ cột
+ * DB (xem `.agent/skills/phase2/ui_debug_agent/SKILL.md`). Chúng KHÔNG có oracle và KHÔNG chấm verdict,
+ * nên để lẫn vào lane suite là tự bơm số lượt chạy, và tệ hơn: bắn thao tác khám phá vào UAT trong lượt
+ * regression.
+ *
+ * Đo 09/10/2026: CSDL-9003 có 33 file `*.probe.spec.ts` nằm trong `tests/fe/` (task đó là task duy nhất
+ * thiếu `playwright.task.config.js` nên spec không có chỗ đứng khác). `testDir: './tests'` gom hết, tức
+ * `npm run test:fe` kéo cả 33 cái vào. Đống đó đã chuyển về `outputs/CSDL/tasks/CSDL-9003/automation/`,
+ * nên hiện KHÔNG còn probe nào dưới `tests/` — dòng ignore này là LƯỚI CHẮN cho lần sau, không phải
+ * bản vá cho một đống đang tồn tại.
+ *
+ * Chạy probe có chủ đích: `PROBE=1` (cùng idiom với INFRA_VERIFY=1). Phải có đường mở này vì
+ * `testIgnore` chặn CẢ KHI gọi thẳng tên file — không có nó thì `npx playwright test <file>.probe.spec.ts`
+ * trả "No tests found", trông y như spec hỏng.
+ */
+const PROBE = process.env.PROBE === '1';
+const probeIgnore = PROBE ? [] : ['**/*.probe.spec.*'];
+
 // Dùng CHUNG cho MỌI project desktop — quên ignore ở 1 engine là mobile-web/load/support bị phủ chéo.
 // (`load/` hiện cũng không khớp testMatch `*.spec.*`, giữ ignore làm lớp chắn dự phòng.)
-const desktopIgnore = ['**/mobile-web/**', '**/load/**', '**/support/**'];
+const desktopIgnore = ['**/mobile-web/**', '**/load/**', '**/support/**', ...probeIgnore];
 const desktop = (name, device, extra = {}) => ({ name, testIgnore: desktopIgnore, use: { ...devices[device] }, ...extra });
 
 /*
@@ -189,11 +208,15 @@ module.exports = defineConfig({
     {
       name: 'iphone-13',
       testDir: './tests/mobile-web',
+      // Cùng lý do với desktopIgnore: probe là spec khám phá, không thuộc lane suite. Mobile-web hiện
+      // không có file probe nào — giữ đây làm lớp chắn dự phòng, y như cách `load/` được giữ ở trên.
+      testIgnore: probeIgnore,
       use: { ...devices['iPhone 13'] },
     },
     {
       name: 'pixel-7',
       testDir: './tests/mobile-web',
+      testIgnore: probeIgnore,
       use: { ...devices['Pixel 7'] },
     },
     // Opt-in (INFRA_VERIFY=1): spec hạ tầng/diagnostic — không chạy trong lane suite/PR.
