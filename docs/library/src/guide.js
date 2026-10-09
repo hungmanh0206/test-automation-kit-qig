@@ -83,7 +83,7 @@ const SETUP_CARDS = [
     items:['TASK_KEY','PROJECT_OUTPUT_DIR','link tài liệu nguồn'],
     note:'Thiếu một trong ba thì output đổ nhầm chỗ hoặc chạy trên nền sai.' },
   { icon:'⌘', title:'Slash command — điểm vào gõ được',
-    items:['/phase1 · /phase2 · /rerun · /partial-rerun','/publish · /preflight · /gates','/explore · /ui-debug'],
+    items:['/phase1 · /phase2 · /rerun · /partial-rerun','/publish · /preflight · /gates','/explore · /ui-debug · /manual-run'],
     note:'Mỗi lệnh nạp đúng thứ tự file phải đọc và gate phải chạy — không phải tự nhớ. Không thay thế gate, chỉ dẫn đúng đường.' }
 ];
 
@@ -239,6 +239,7 @@ const CMD_GROUPS = [
   { g:'Nhánh dò tự do (exploratory)', items:[
     ['npm run explore:charter','Chọn vùng dò bằng dữ liệu, không theo vùng mình quen'],
     ['npm run explore:check  ·  npm run explore:check:enforce','Kiểm ràng buộc của phiên dò'],
+    ['npm run manual:check  ·  npm run manual:check:enforce','Lượt chạy tay case Manual-only: gác ranh giới lời khai [manual], ủy quyền chất lượng output cho output_gate'],
     ['npm run explore:close','Đóng vòng học của phiên dò']
   ]},
   { g:'Backlog & Google Sheet', items:[
@@ -249,7 +250,7 @@ const CMD_GROUPS = [
     ['npm run merge:execution-status -- --task <KEY>','Ghép kết quả execute vào bộ canonical']
   ]},
   { g:'Kit: tự kiểm toán & phát hành', items:[
-    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 79 máy, 55 CHẶN; :check chặn khi bảng lệch source'],
+    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 80 máy, 56 CHẶN; :check chặn khi bảng lệch source'],
     ['npm run rule -- <mục>  ·  npm run rule:toc','Tra RULE_GLOBAL theo mục (287 token) thay vì đọc cả file (12,8k)'],
     ['npm run version:check','Chặn phát hành thiếu số phiên bản; kiểm khớp tag'],
     ['npm run package:kit','Đóng gói dist/ CHỈ lớp GENERIC — không để lọt secret hay oracle của dự án khác'],

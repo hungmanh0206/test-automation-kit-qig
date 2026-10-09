@@ -104,6 +104,14 @@ const TERMS_GATE2 = [
   cmd:'npm run explore:check   ·   npm run explore:check:enforce   ·   npm run explore:close',
   src:'scripts/qa/explore_session.js', rel:['g-explore_charter','r-evidence','c-mask-pii','c-chieu-coverage'] },
 
+{ id:'g-manual_run_check', t:'manual_run_check', cat:'gate',
+  def:'Máy cho nhánh chạy tay, gác ranh giới của lợi khai [manual].',
+  detail:'Làm đúng hai việc. Một, case chạy tay mà bộ canonical khai [api], [factory], [test_hook], [ui] hay [pre_existing] thì CHẶN. Hai, ủy quyền phần chất lượng output cho output_gate mode test-execution, nên không có danh sách luật thứ hai về evidence hay verdict.',
+  why:'Kit đã biết đánh dấu case không tự động hoá được rồi DẮNG ở đó: Phase 2 ghi SKIP_SETUP, và case nằm mãi ở đó. SKIP_SETUP là lời khai chưa chạy, không phải một kết luận. Nhưng mở nhánh chạy tay mà không có cửa thì nó thành đường lách: case nào viết automation khó thì đẩy sang chạy tay, và coverage automation tụt mà không ai thấy.',
+  how:['Chỉ đọc, không cần môi trường.','Kết quả đi qua khuôn testcase-status.json dùng chung với Phase 2.'],
+  cmd:'npm run manual:check   ·   npm run manual:check:enforce',
+  src:'scripts/qa/manual_run_check.js', rel:['g-explore_session','r-evidence','c-mask-pii'] },
+
 /* ── Vệ sinh hạ tầng ── */
 { id:'g-ci_scope_check', t:'ci_scope_check', cat:'gate',
   def:'Máy đứng sau luật "CI generic KHÔNG được tự chạm UAT".',

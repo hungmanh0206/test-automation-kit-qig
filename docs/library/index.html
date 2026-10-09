@@ -862,7 +862,7 @@ body.lropen{overflow:hidden}
 
     <h3 class="subhead"><span class="num">5</span>Lệnh hay dùng</h3>
     <p class="sectip">Danh mục gate của kit là <b>tự sinh từ source</b>, không viết tay — bản hiện tại đếm được
-      <b>79 máy: 55 CHẶN · 16 SINH · 8 BÁO CÁO</b>. Sinh lại bằng <code>npm run gates:index</code>.</p>
+      <b>80 máy: 56 CHẶN · 16 SINH · 8 BÁO CÁO</b>. Sinh lại bằng <code>npm run gates:index</code>.</p>
     <div id="cmdList"></div>
 
     <h3 class="subhead"><span class="num">6</span>Quy ước bắt buộc</h3>
@@ -993,7 +993,7 @@ body.lropen{overflow:hidden}
       </ul>
 
       <h3>Vì sao cần</h3>
-      <p>Kit có 23 skill, 79 máy kiểm (55 trong đó CHẶN thật) và một bộ từ vựng riêng (oracle độc lập, tautology, failureLayer,
+      <p>Kit có 23 skill, 80 máy kiểm (56 trong đó CHẶN thật) và một bộ từ vựng riêng (oracle độc lập, tautology, failureLayer,
         readiness, TRI, chiều coverage…). Người mới vào phải đọc rải rác nhiều file mới ghép được bức tranh.
         Trang này gom lại một chỗ, giữ nguyên nguồn, và cố tình <b>không</b> diễn giải thêm ngoài những gì repo đã ghi.</p>
 
@@ -1519,6 +1519,14 @@ const TERMS_GATE2 = [
   cmd:'npm run explore:check   ·   npm run explore:check:enforce   ·   npm run explore:close',
   src:'scripts/qa/explore_session.js', rel:['g-explore_charter','r-evidence','c-mask-pii','c-chieu-coverage'] },
 
+{ id:'g-manual_run_check', t:'manual_run_check', cat:'gate',
+  def:'Máy cho nhánh chạy tay, gác ranh giới của lợi khai [manual].',
+  detail:'Làm đúng hai việc. Một, case chạy tay mà bộ canonical khai [api], [factory], [test_hook], [ui] hay [pre_existing] thì CHẶN. Hai, ủy quyền phần chất lượng output cho output_gate mode test-execution, nên không có danh sách luật thứ hai về evidence hay verdict.',
+  why:'Kit đã biết đánh dấu case không tự động hoá được rồi DẮNG ở đó: Phase 2 ghi SKIP_SETUP, và case nằm mãi ở đó. SKIP_SETUP là lời khai chưa chạy, không phải một kết luận. Nhưng mở nhánh chạy tay mà không có cửa thì nó thành đường lách: case nào viết automation khó thì đẩy sang chạy tay, và coverage automation tụt mà không ai thấy.',
+  how:['Chỉ đọc, không cần môi trường.','Kết quả đi qua khuôn testcase-status.json dùng chung với Phase 2.'],
+  cmd:'npm run manual:check   ·   npm run manual:check:enforce',
+  src:'scripts/qa/manual_run_check.js', rel:['g-explore_session','r-evidence','c-mask-pii'] },
+
 /* ── Vệ sinh hạ tầng ── */
 { id:'g-ci_scope_check', t:'ci_scope_check', cat:'gate',
   def:'Máy đứng sau luật "CI generic KHÔNG được tự chạm UAT".',
@@ -1584,7 +1592,7 @@ const TERMS_GATE3 = [
   src:'scripts/qa/scope_anchor.js', rel:['g-dimension_coverage','c-canonical','g-preflight_gate'] },
 { id:'g-gate_index', t:'gates:index', cat:'gate',
   def:'Sinh DANH MỤC GATE của kit từ chính source. Trả lời được "kit có bao nhiêu gate, mỗi cái CHẶN gì, gọi ở đâu".',
-  detail:'Quét source rồi suy mức từ code: exit 1 là CHẶN · ghi artifact là SINH · chỉ in là BÁO CÁO. Bảng hiện tại: 79 máy — 55 CHẶN, 16 SINH, 8 BÁO CÁO. Bản --check chặn khi bảng lệch source.',
+  detail:'Quét source rồi suy mức từ code: exit 1 là CHẶN · ghi artifact là SINH · chỉ in là BÁO CÁO. Bảng hiện tại: 80 máy — 56 CHẶN, 16 SINH, 8 BÁO CÁO. Bản --check chặn khi bảng lệch source.',
   why:'Kit có hơn 30 npm script dạng gate và gần 60 file trong scripts/qa/, nhưng không chỗ nào trả lời được câu trên. Hệ quả không phải bất tiện: luận đề của kit là "luật cần MÁY", mà máy không LIỆT KÊ ĐƯỢC thì không kiểm toán được. Không ai biết một gate đã âm thầm tụt thành cảnh báo, hay đã mất nơi gọi.',
   how:['npm run gates:index để sinh lại bảng.','npm run gates:index:check để chặn khi bảng lệch source.'],
   cmd:'npm run gates:index   ·   npm run gates:index:check',
@@ -2795,7 +2803,7 @@ const TERMS_FLOW2 = [
 
 { id:'f-gate-catalog', t:'Danh mục gate (tự sinh)', cat:'flow',
   def:'Bảng liệt kê mọi máy của kit kèm mức chặn, sinh tự động từ source.',
-  detail:'Con số hiện tại: 79 máy — 55 CHẶN · 16 SINH (ghi artifact) · 8 BÁO CÁO (chỉ in). Mức được suy từ code chứ không khai tay: exit 1 là CHẶN, ghi artifact là SINH, chỉ in là BÁO CÁO. Bảng còn ghi mỗi máy được gọi từ đâu, và ghi ra .agent/config/GATES.md.',
+  detail:'Con số hiện tại: 80 máy — 56 CHẶN · 16 SINH (ghi artifact) · 8 BÁO CÁO (chỉ in). Mức được suy từ code chứ không khai tay: exit 1 là CHẶN, ghi artifact là SINH, chỉ in là BÁO CÁO. Bảng còn ghi mỗi máy được gọi từ đâu, và ghi ra .agent/config/GATES.md.',
   why:'Luận đề của kit là "luật cần MÁY". Nhưng máy mà không liệt kê được thì không kiểm toán được. Không ai biết một gate đã âm thầm tụt xuống thành cảnh báo, hay đã mất hết nơi gọi và thành mồ côi.',
   how:['Sinh lại: npm run gates:index.','Chặn khi bảng lệch source: npm run gates:index:check.'],
   trap:'SINH và BÁO CÁO không phải gate bị nới. Chúng không kiểm vi phạm, chỉ tạo dữ liệu cho máy khác chặn.',
@@ -2913,7 +2921,7 @@ const SETUP_CARDS = [
     items:['TASK_KEY','PROJECT_OUTPUT_DIR','link tài liệu nguồn'],
     note:'Thiếu một trong ba thì output đổ nhầm chỗ hoặc chạy trên nền sai.' },
   { icon:'⌘', title:'Slash command — điểm vào gõ được',
-    items:['/phase1 · /phase2 · /rerun · /partial-rerun','/publish · /preflight · /gates','/explore · /ui-debug'],
+    items:['/phase1 · /phase2 · /rerun · /partial-rerun','/publish · /preflight · /gates','/explore · /ui-debug · /manual-run'],
     note:'Mỗi lệnh nạp đúng thứ tự file phải đọc và gate phải chạy — không phải tự nhớ. Không thay thế gate, chỉ dẫn đúng đường.' }
 ];
 
@@ -3069,6 +3077,7 @@ const CMD_GROUPS = [
   { g:'Nhánh dò tự do (exploratory)', items:[
     ['npm run explore:charter','Chọn vùng dò bằng dữ liệu, không theo vùng mình quen'],
     ['npm run explore:check  ·  npm run explore:check:enforce','Kiểm ràng buộc của phiên dò'],
+    ['npm run manual:check  ·  npm run manual:check:enforce','Lượt chạy tay case Manual-only: gác ranh giới lời khai [manual], ủy quyền chất lượng output cho output_gate'],
     ['npm run explore:close','Đóng vòng học của phiên dò']
   ]},
   { g:'Backlog & Google Sheet', items:[
@@ -3079,7 +3088,7 @@ const CMD_GROUPS = [
     ['npm run merge:execution-status -- --task <KEY>','Ghép kết quả execute vào bộ canonical']
   ]},
   { g:'Kit: tự kiểm toán & phát hành', items:[
-    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 79 máy, 55 CHẶN; :check chặn khi bảng lệch source'],
+    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 80 máy, 56 CHẶN; :check chặn khi bảng lệch source'],
     ['npm run rule -- <mục>  ·  npm run rule:toc','Tra RULE_GLOBAL theo mục (287 token) thay vì đọc cả file (12,8k)'],
     ['npm run version:check','Chặn phát hành thiếu số phiên bản; kiểm khớp tag'],
     ['npm run package:kit','Đóng gói dist/ CHỈ lớp GENERIC — không để lọt secret hay oracle của dự án khác'],
