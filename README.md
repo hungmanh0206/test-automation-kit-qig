@@ -224,7 +224,14 @@ npm run rule -- security     # in ĐÚNG một mục — đo 287 token, thay vì
 npm run rule:toc             # sinh lại mục lục neo trong RULE_GLOBAL.md
 npm run gates:index          # sinh .agent/config/GATES.md — CHẶN / SINH / BÁO CÁO cho từng máy
 npm run gates:index:check    # CI chặn khi bảng lệch source (một gate bị nới thành cảnh báo = bắt được)
+npm run prompt:budget        # mỗi điểm vào bảo AI đọc bao nhiêu token; --json ghi mốc, --dup soi đoạn trùng
+npm run token:audit -- --list # transcript nào là lượt CHẠY TASK; rồi --transcript <file> để xem token đi đâu
 ```
+
+Hai lệnh cuối đo chi phí của chính kit. `prompt:budget` đo TĨNH (hướng dẫn dài bao nhiêu), `token:audit` đo
+ĐỘNG từ transcript (token thật đã đi đâu). Hai câu đó lệch nhau rất xa: đo trên 4 lượt chạy task thật thì
+`Read` vào tài liệu của kit chỉ có 0 đến 4 lượt, trong khi kết quả lệnh shell chiếm 62 đến 75%. Số mốc và
+kế hoạch cắt gọt ở [docs/token-diet/BASELINE.md](docs/token-diet/BASELINE.md).
 
 `RULE_GLOBAL.md` **không** được auto-load (file luôn-trong-ngữ-cảnh là `CLAUDE.md`, 13 dòng) — nên tra
 theo mục là cách đọc luật đúng, không phải đọc cả file. Danh mục máy: [.agent/config/GATES.md](.agent/config/GATES.md).
