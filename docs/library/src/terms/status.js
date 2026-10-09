@@ -111,6 +111,13 @@ const TERMS_STATUS = [
   why:'Blocker không ghi rõ đối tượng chờ thì nó nằm im tới cuối sprint rồi mới lộ ra là chưa ai làm.',
   src:'.agent/config/verdict_taxonomy.json', rel:['c-readiness','s-BLOCKED_SETUP'] },
 
+{ id:'s-doc_outdated', t:'doc_outdated', cat:'status', kind:'Tầng lỗi', log:'KHÔNG log',
+  def:'Tài liệu cũ hơn build — app chạy đúng, nhưng chữ trong đặc tả hoặc hướng dẫn không còn khớp app.',
+  detail:'Dấu hiệu nhận ra: lệch CHỈ ở cách viết mà NGHĨA không đổi. Nhãn nút "Cập nhật" so với "Ghi"; "Xóa" so với "Xoá"; "(m2)" so với "(m²)"; thiếu một dấu cách trước ngoặc. Hoặc app diễn đạt rõ hơn tài liệu. KHÔNG log Backlog cho Dev — mở yêu cầu sửa tài liệu với người viết.',
+  why:'Bảy tầng lỗi cũ đều nói về LỖI, không tầng nào nói được "app đúng, tài liệu cũ". Thiếu nó thì mọi lệch chữ buộc phải khai product_bug, tức nói app sai trong khi việc cần làm là sửa tài liệu — đúng cái mà chú thích của taxonomy cảnh báo: đoán tầng là gán sai người. Dev mở bug ra, đọc, thấy app không có gì sai, rồi trả về.',
+  ex:'Hướng dẫn sử dụng ghi nút [Cập nhật], màn thật hiện "Ghi". Hộp xác nhận tài liệu ghi "Bạn có muốn xóa", app hiện "Bạn có chắc chắn xoá 1 điểm trường đã chọn? Sau khi đã xóa, dữ liệu sẽ không thể khôi phục." — app nói rõ hơn.',
+  src:'.agent/config/verdict_taxonomy.json', rel:['c-failure-layer','s-product_bug','c-oracle'] },
+
 /* ── Quyết định phát hành (quality_decision) ── */
 { id:'s-GO', t:'GO', cat:'status', kind:'Quyết định phát hành',
   def:'Đủ điều kiện phát hành, không có tín hiệu chặn nào.',

@@ -151,6 +151,18 @@ Sau khi lưu file Markdown testcase:
 
      Dimension không áp dụng thì ghi `N/A` kèm lý do ở Coverage Gaps, KHÔNG bỏ im lặng. Expected của logic và data là **oracle độc lập tự tính**, KHÔNG lấy từ build
 11. Không được để steps/expected thành một câu dài; phải xuống dòng hoặc đánh số rõ ràng trong cell
+11b. **Ô testcase chỉ ghi CÁI GÌ phải kiểm — không ghi VÌ SAO case được viết thế.** `Tiền điều kiện` và
+     `Kết quả mong đợi` là thứ người test đọc trên Excel/Google Sheet để làm việc, không phải sổ tay của
+     người viết case. **KHÔNG** nhét vào đó: trích dẫn oracle (`- Oracle: BR-…`), assumption và số hiệu
+     câu hỏi (`ASSUMPTION Q2…`), nhãn `OBSERVATION: đặc tả chưa nêu…`, ngày đo và số liệu DB, con trỏ
+     sang case khác (`Cặp đôi với TC_064`), hay bình luận về verdict (`cái này là FAIL`).
+     Những thứ đó thuộc `reports/phase1-clarifications.md` và `reports/phase1-summary.md`; neo oracle đã
+     nằm sẵn ở cột `Tag` (`[BR-…]`) nên nhắc lại trong Expected là thừa.
+     **Vẫn GIỮ trong ô**: dòng đánh số theo bước · assertion con cụ thể (`- Nhãn nút: "Ghi"`) · ràng buộc
+     an toàn bắt buộc theo CLAUDE.md §1 (`- File chứa PII, không đính vào report, mask trước khi chụp`).
+     `output_gate --mode gen-testcase` cảnh báo khi phát hiện ghi chú lẫn vào Expected.
+11c. **KHÔNG dùng cú pháp Markdown trong ô** (`**đậm**`, `~~gạch~~`, `` `code` ``). Excel và Google Sheet
+     không render Markdown. Converter có bóc, nhưng viết sạch từ đầu vẫn hơn — cần nhấn mạnh thì VIẾT HOA.
 12. Khi chạy trong repo này, phải xuất thêm file Excel `.xlsx` từ testcase Markdown trước khi kết thúc Phase 1
 13. Mỗi testcase phải có nhóm chức năng rõ ràng trong cột `Module`; Excel export phải thể hiện được nhóm đó để lọc/review
 14. Không coi Phase 1 hoàn tất nếu thiếu `reports/phase1-summary.md` hoặc report không có tổng testcase, breakdown theo loại, `Coverage Summary`, `Risk-based Gate`, `High/Critical Gaps`, `Testcase Quality Issues` và `Final Decision`

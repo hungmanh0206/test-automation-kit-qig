@@ -288,6 +288,11 @@ function gateTestcaseRow(row, { strictSemicolon = false } = {}) {
   if (rules.looksTautology(row.expected)) warnings.push(`${id}: "Kết quả mong đợi" có dấu hiệu tautology (đối chiếu app==app "như hệ thống…") → nêu giá trị/spec độc lập`);
   if (rules.hasRangeGrouping(row.steps)) problems.push(`${id}: "Các bước" gộp range (vd 1-2.) — mỗi bước 1 số`);
   if (rules.hasRangeGrouping(row.expected)) problems.push(`${id}: "Kết quả mong đợi" gộp range (vd 1-2.) — mỗi bước 1 kết quả`);
+  // Ghi chú của người viết case lẫn vào ô testcase → người đọc trên Excel/Sheet phải đọc rác.
+  const notes = rules.noteLinesInExpected(row.expected);
+  if (notes.length) {
+    warnings.push(`${id}: "Kết quả mong đợi" lẫn ${notes.length} dòng GHI CHÚ (lý do/xuất xứ/trỏ case khác), vd "${notes[0].slice(0, 70)}…" — ô testcase chỉ nên ghi CÁI GÌ phải kiểm; lý do để ở report`);
+  }
   const sN = rules.leadingNumbers(row.steps); const eN = rules.leadingNumbers(row.expected);
   /*
    * KẾT QUẢ CÓ ĐÁNH SỐ MÀ BƯỚC KHÔNG CÓ DÒNG SỐ NÀO = luôn sai, và trước đây LỌT.

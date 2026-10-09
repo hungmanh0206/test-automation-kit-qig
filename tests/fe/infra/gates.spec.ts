@@ -64,6 +64,27 @@ test.describe('@infra Lớp 1 — bằng chứng tối thiểu theo tag chiều'
     ['validation', '1. Báo "This field is required"', '1. Báo lỗi'],
   ];
 
+  /*
+   * TÊN CỘT VIẾT HOA cũng là tên field. Luật cũ dò `/[a-z][a-z0-9]*_[a-z0-9_]{2,}/` — chỉ chữ thường,
+   * mà CẢ schema của hệ thống này viết HOA (`MA_NAM_HOC`, `API_MA_BO`, `NHAN_SU`). Đo 30/09/2026:
+   * `CSDL_NHANSU_TC_259` nêu đích danh cột `API_MA_BO` ngay trong Kết quả mong đợi mà vẫn bị báo
+   * "thiếu tên field" — gate đòi thứ case đã có, chỉ vì không đọc được chữ hoa.
+   */
+  test('[bedata] — tên cột viết HOA cũng tính là tên field', () => {
+    expect(
+      rules.lintTagDepth({ dimensions: ['bedata'], expected: '1. Phản hồi mang cột API_MA_BO gồm 10 chữ số' }),
+      'API_MA_BO là tên cột cụ thể, soi lại được — không được đòi thêm',
+    ).toHaveLength(0);
+  });
+
+  test('[bedata] — trích MỘT TC ID khác KHÔNG phải là nêu tên field', () => {
+    // Nới sang chữ hoa kéo theo dương tính giả: "CSDL_HS_TC_062" cũng có dạng snake_case.
+    expect(
+      rules.lintTagDepth({ dimensions: ['bedata'], expected: '1. Kết quả giống CSDL_HS_TC_062 đã ghi nhận' }),
+      'nhắc TC khác không cho biết trường nào đang được kiểm',
+    ).toHaveLength(1);
+  });
+
   for (const [tag, ok, bad] of CASES) {
     test(`[${tag}] — nhận expected có bằng chứng, bắt expected thiếu`, () => {
       expect(rules.lintTagDepth({ tcId: 'X', dimensions: [tag], expected: ok }), `"${ok}" phải ĐẠT`).toHaveLength(0);
@@ -108,6 +129,39 @@ test.describe('@infra Lớp 1 — bằng chứng tối thiểu theo tag chiều'
   test('case không có tag chiều nào → im lặng (không phạt bộ TC cũ)', () => {
     expect(rules.lintTagDepth({ dimensions: ['positive'], expected: '1. ok' })).toHaveLength(0);
     expect(rules.lintTagDepth({ dimensions: [], expected: '1. ok' })).toHaveLength(0);
+  });
+});
+
+// ── output_rules.lintStrayAnomaly: ranh giới từ phải tính theo chữ cái Unicode ────────────────────────
+test.describe('@infra lintStrayAnomaly — không bắt oan chữ tiếng Việt', () => {
+  /*
+   * VÌ SAO (đo 06/10/2026): luật dùng `\bnghi\b`, mà `\b` của JavaScript tính theo ASCII — ranh giới rơi
+   * đúng giữa "i" và "ệ", nên nó KHỚP VÀO chữ "nghiệp". Mọi case trích nhãn thật trên form GDTX
+   * "Hướng nghiệp, dạy nghề" đều bị chặn với lý do "PASS mà có ghi nhận bất thường", trong khi kết luận
+   * không có một chữ nghi ngờ nào. Gác nhầm kiểu này đẩy người viết tới chỗ sửa chữ TRÍCH DẪN cho lọt
+   * gate — tức là làm sai evidence, đúng thứ mà gate sinh ra để chặn.
+   */
+  const batOan = ['Hướng nghiệp, dạy nghề | Bán trú | Giải thể', 'nghiệp vụ chạy đúng như đặc tả', 'lớp hướng nghiệp'];
+  for (const c of batOan) {
+    test(`không bắt: ${c.slice(0, 32)}`, () => {
+      expect(rules.lintStrayAnomaly({ status: 'PASSED', comment: c })).toBeNull();
+    });
+  }
+
+  /* Vẫn phải bắt được anomaly thật — nới luật không được làm luật mất tác dụng. */
+  const batThat = ['tôi nghi ngờ chỗ này sai', 'có vẻ chưa đúng với đặc tả', 'chưa rõ vì sao app cho qua'];
+  for (const c of batThat) {
+    test(`vẫn bắt: ${c.slice(0, 32)}`, () => {
+      expect(rules.lintStrayAnomaly({ status: 'PASSED', comment: c })).not.toBeNull();
+    });
+  }
+
+  test('anomaly thật nhưng đã có nơi đến thì thôi bắt', () => {
+    expect(rules.lintStrayAnomaly({ status: 'PASSED', comment: 'nghi ngờ thiếu cấu hình — đã hỏi BA' })).toBeNull();
+  });
+
+  test('chỉ xét case PASS', () => {
+    expect(rules.lintStrayAnomaly({ status: 'FAILED', comment: 'có vẻ chưa đúng' })).toBeNull();
   });
 });
 

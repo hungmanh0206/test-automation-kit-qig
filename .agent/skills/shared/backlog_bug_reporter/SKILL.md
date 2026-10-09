@@ -56,6 +56,13 @@ node scripts/integrations/backlog/bug_reporter.js --task <TASK_KEY> --story <BAC
 
 Hoặc qua npm: `npm run backlog:bug-report:dry-run -- --task <TASK_KEY> --story <BACKLOG_STORY_KEY>` / `npm run backlog:bug-report -- ...`.
 
+Hai cờ hay cần (06/10/2026):
+
+| Cờ | Dùng khi |
+|---|---|
+| `--only-priority` | Chỉ điền `Priority`; để trống `Assignee`/`Milestone`/`Category`. Mặc định reporter copy Milestone+Category từ parent và DỪNG nếu thiếu assignee. |
+| `--bug-payload <file.json>` | Case kiểm nhiều điều mà chỉ trượt một điều — khai tay `title`/`preconditions`/`steps`/`actualResult`/`expectedResult`, và `screenshot`/`video` để trỏ ảnh ĐÃ KHOANH VÙNG (mặc định reporter lấy `test-failed-*.png` không có highlight). |
+
 ## Khác biệt so với Backlog (đọc trước khi log lần đầu)
 
 - Priority chỉ 3 mức (High/Normal/Low, không có Critical/Lowest riêng) — Critical/High testcase đều map vào Backlog "High".

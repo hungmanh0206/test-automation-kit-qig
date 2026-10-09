@@ -244,7 +244,29 @@ async function main() {
    * phải thứ tin theo tên user. Bỏ qua phải tường minh để không thành lối tắt im lặng.
    */
   if (res.dbVerifyDeclared && !has('skip-db-live')) {
-    problems.push(...await dbv.checkDbReadonlyLive(rc.REPO_ROOT, { task }));
+    const live = await dbv.checkDbReadonlyLive(rc.REPO_ROOT, { task });
+    /*
+     * Miễn trừ có chữ ký ở `safety.waiver` (xem `db_verify_preflight.js`) áp cho CẢ phép đo sống, không
+     * riêng cờ tĩnh: đó là MỘT quyết định — "môi trường không cấp nổi login chỉ-SELECT" — và nó đúng ở cả
+     * hai chỗ. Chỉ nới cờ tĩnh thì phép đo sống vẫn chặn vĩnh viễn, tức miễn trừ không có tác dụng gì.
+     *
+     * Nới CHỈ cho kết luận "user có quyền ghi". Hai kết luận còn lại vẫn CHẶN nguyên: không đọc được dòng
+     * quyền nào (phép đo HỎNG, khác hẳn "sạch") và không kết nối được. Miễn trừ là để chấp nhận một rủi ro
+     * ĐÃ BIẾT, không phải để biến một phép đo hỏng thành đạt.
+     */
+    let w = null;
+    try {
+      const cv = JSON.parse(fs.readFileSync(abs('.agent/config/db.conventions.json'), 'utf8'));
+      w = (cv.safety || {}).waiver || null;
+    } catch (e) { /* file thiếu/hỏng đã được checkDbVerifyStatic báo — ở đây coi như KHÔNG có miễn trừ */ }
+    const duVe = !!w && ['nguoi_quyet', 'ly_do', 'bu_tru', '_canh_bao'].every((k) => String(w[k] || '').trim());
+    for (const p of live) {
+      if (duVe && /CÓ quyền ghi/.test(p)) {
+        warnings.push(`${p}\n    → MIỄN TRỪ CÓ CHỮ KÝ (safety.waiver): ${String(w.ly_do).slice(0, 110)} Người quyết: ${String(w.nguoi_quyet).slice(0, 60)}.`);
+      } else {
+        problems.push(p);
+      }
+    }
   } else if (res.dbVerifyDeclared) {
     warnings.push('DB verify: [--skip-db-live] bỏ qua phép đọc quyền — chưa có bằng chứng user là read-only.');
   }

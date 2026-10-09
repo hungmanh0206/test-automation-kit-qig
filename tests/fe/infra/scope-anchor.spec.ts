@@ -191,3 +191,55 @@ test('@infra bảng "đã loại" (không có cột Nguồn) KHÔNG bị tính v
   const r = parseInventory(multiTable);
   expect(r.rows.some((x: { item: string }) => x.item.includes('báo cáo'))).toBe(false);
 });
+
+/*
+ * ATTESTATION CŨ — bảng gate là ẢNH CHỤP một lượt chạy, không phải thứ tự cập nhật.
+ *
+ * Ca thật, lặp ở cả bốn bộ CSDL (đo 30/09/2026): bộ case đi 100 → 148 → 202 → 271, nhưng bảng
+ * "Kết quả các gate đã chạy" ở cuối `phase1-summary.md` vẫn là số của lượt cũ. Thêm case thì người
+ * ta chỉ sửa con số tổng ở đầu file; bảng ở cuối không ai chạm, nên artifact đi duyệt chứng thực
+ * một trạng thái không còn tồn tại. 13 dòng như vậy trên 4 task, không gate nào bắt.
+ *
+ * Phép kiểm cố ý HẸP: chỉ soi dòng BẢNG có dấu verdict hoặc ô đầu là tên script. Văn xuôi thường
+ * nhắc số của bộ KHÁC ("sheet Hồ sơ trường 200 case") và số lịch sử ("147 case thật hơn 148 case")
+ * — soi cả văn xuôi là báo oan, và gate báo oan một lần là mất người nghe.
+ */
+test.describe('@infra attestation trong bảng gate phải là số của LƯỢT NÀY', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { staleAttestations } = require(path.resolve(__dirname, '../../../scripts/qa/scope_anchor.js'));
+
+  test('bắt dòng bảng gate còn mang số case của lượt trước', () => {
+    const md = '| `output_gate --mode gen-testcase` | ✅ **261 case · 0 CHẶN** |';
+    const r = staleAttestations(md, 271, 's.md');
+    expect(r.length, 'dòng gate ghi 261 trong khi bộ có 271 case phải bị bắt').toBe(1);
+    expect(r[0].nums).toEqual([261]);
+  });
+
+  test('ÂM TÍNH: dòng đã mang số đúng thì im lặng — kể cả khi viết cả số cũ lẫn số mới', () => {
+    expect(staleAttestations('| `design_gate` | ✅ 271 case |', 271, 's.md')).toEqual([]);
+    expect(
+      staleAttestations('| `output_gate` | ✅ 261 → 271 case |', 271, 's.md'),
+      'ghi rõ lộ trình 261 → 271 là cách viết ĐÚNG, không được coi là cũ',
+    ).toEqual([]);
+  });
+
+  test('ÂM TÍNH: văn xuôi nhắc số của BỘ KHÁC không bị bắt', () => {
+    const md = 'Đối chiếu sheet "Hồ sơ trường" của đội QA hệ thống — 200 case, cập nhật 17/09.';
+    expect(staleAttestations(md, 271, 's.md')).toEqual([]);
+  });
+
+  test('ÂM TÍNH: con số CON trong cùng dòng (không phải tổng) không bị bắt', () => {
+    // 84 là số case mang tag, không phải tổng bộ — dưới nửa tổng nên bỏ qua.
+    const md = '| `domain:trace-back` | ✅ 271 TC · 84 case mang tag chiều |';
+    expect(staleAttestations(md, 271, 's.md')).toEqual([]);
+  });
+
+  test('ÂM TÍNH: dòng bảng KHÔNG phải attestation (không verdict, ô đầu không phải script) bỏ qua', () => {
+    const md = '| Nhóm chức năng | Thêm mới | 123 case |';
+    expect(staleAttestations(md, 271, 's.md')).toEqual([]);
+  });
+
+  test('không có bộ case (tcCount = 0) thì KHÔNG phán bừa', () => {
+    expect(staleAttestations('| `output_gate` | ✅ 261 case |', 0, 's.md')).toEqual([]);
+  });
+});

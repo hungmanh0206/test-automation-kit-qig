@@ -89,7 +89,37 @@ function checkDbVerifyStatic(root, { task, declared, why, readFile = null, exist
     if (!conv.safety) {
       problems.push(`DB verify: ${DB_CONV} thiếu khối safety`);
     } else if (conv.safety.requireReadonlyUser === false) {
-      problems.push('DB verify: safety.requireReadonlyUser = false — TẮT lớp bảo vệ chính. "UAT non-destructive + DB read-only" là non-negotiable của kit; muốn đổi thì sửa CLAUDE.md trước, không tắt lặng lẽ ở config.');
+      /*
+       * TẮT lớp bảo vệ chính thì mặc định là CHẶN. Nhưng có môi trường thật sự không cấp nổi login
+       * chỉ-SELECT — ở đó chặn cứng khiến `self-review:enforce` đỏ vĩnh viễn, và một gate luôn đỏ thì
+       * không còn báo động được gì: lần sau có chặn MỚI cũng lẫn vào đó. Nên theo đúng nếp miễn trừ kit
+       * đang dùng (`gate_waiver` ở risk_gate.js, `waived` kèm lý do ở policy_source_check.js):
+       * miễn trừ phải VIẾT RA ĐƯỢC thì mới tranh luận được, im lặng thì không.
+       *
+       * Hạ xuống cảnh báo CHỈ KHI đủ cả bốn, thiếu bất kỳ cái nào thì vẫn chặn:
+       *   - `nguoi_quyet`  ai chịu trách nhiệm (không phải "team", phải là người)
+       *   - `ly_do`        vì sao không cấp được login chỉ-SELECT
+       *   - `bu_tru`       lớp chặn thay thế, NÊU TÊN — không nêu tên thì không ai kiểm được nó có thật
+       *   - `_canh_bao`    ghi rõ rủi ro còn lại, để không ai đọc miễn trừ rồi tưởng đã an toàn
+       * Cố ý KHÔNG kiểm `bu_tru` có chạy không: gate này đọc file, không chạy test. Việc đó là của
+       * `tests/fe/infra/db-verify-layer.spec.ts`. Nói quá khả năng của mình cũng là một kiểu bug ma.
+       */
+      const w = conv.safety.waiver || null;
+      const filled = (k) => !!(w && String(w[k] || '').trim());
+      const thieu = ['nguoi_quyet', 'ly_do', 'bu_tru', '_canh_bao'].filter((k) => !filled(k));
+      if (!w || thieu.length) {
+        problems.push(
+          'DB verify: safety.requireReadonlyUser = false — TẮT lớp bảo vệ chính. "UAT non-destructive + DB read-only" là non-negotiable của kit. '
+          + 'Môi trường không cấp nổi login chỉ-SELECT thì khai MIỄN TRỪ CÓ CHỮ KÝ ở `safety.waiver`, đủ bốn khoá: '
+          + '`nguoi_quyet` (một người, không phải "team") · `ly_do` · `bu_tru` (nêu TÊN lớp chặn thay thế) · `_canh_bao` (rủi ro còn lại). '
+          + (w ? `Đang thiếu: ${thieu.join(', ')}.` : 'Hiện chưa khai gì.'),
+        );
+      } else {
+        warnings.push(
+          `DB verify: safety.requireReadonlyUser = false — MIỄN TRỪ CÓ CHỮ KÝ, không phải đã an toàn. Người quyết: ${String(w.nguoi_quyet).slice(0, 80)}. `
+          + `Lớp bù trừ: ${String(w.bu_tru).slice(0, 120)}. Rủi ro còn lại đã ghi trong config — đọc trước khi dựa vào kết luận từ DB.`,
+        );
+      }
     }
     if (!Object.keys((conv.fieldMap || {}).byScreen || {}).length) {
       problems.push(`DB verify: ${DB_CONV} chưa có fieldMap.byScreen — chưa neo cột nào thì KHÔNG được phán bằng DB. Đoán sai cột thì kết luận vẫn ra, lại CÓ SỐ từ DB nên trông thuyết phục hơn bug ma thường.`);

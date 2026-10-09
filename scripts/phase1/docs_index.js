@@ -55,8 +55,31 @@ const rest = (n) => {
  * Hai hệ khác hẳn nhau và đừng trộn: `BR-SAPSYNC-003` là luật trong `knowledge/domain/` do
  * `domain_rules.js` gác, còn `BR-07` với `AC-2.1` là mục đánh số trong chính trang tài liệu nguồn. File
  * này chỉ lo hệ thứ hai. Phần đuôi `(?![A-Za-z])` để `BR-07` không nuốt mất `BR-SAPSYNC-003`.
+ *
+ * `NT-PH` và `LH` thêm 25/09/2026. Tài liệu nghiệp vụ CSDL (vault QEMIS, tab `Lớp`) đánh mã business
+ * rule là `NT-PH-01` và mã chức năng là `LH-01.1` — không tiền tố nào trong danh sách cũ khớp, và
+ * `NT-PH` còn bị chính đuôi `(?![A-Za-z])` chặn vì có chữ sau dấu gạch. Hệ quả đo được trước khi sửa:
+ * cả bộ spec `CSDL - Hồ sơ lớp.md` ra `0 neo`, tức mọi `oracle_ref` của task đó không tra ngược được và
+ * theo RULE_GLOBAL §3 chỉ còn là OBSERVATION. Đây là tiền tố của TÀI LIỆU chứ không phải của kit, nên
+ * thêm vào đây đúng chỗ.
+ *
+ * `NT-PH` phải đứng trước trong nhóm chọn: JS thử các nhánh theo thứ tự, và không nhánh nào khác bắt đầu
+ * bằng `N`, nhưng để nguyên thứ tự dài-trước-ngắn cho khỏi bẫy người sửa sau.
+ *
+ * `NS-BR` và `NS` thêm 25/09/2026, cho note `CSDL - Hồ sơ đội ngũ.md`: mã chức năng là `NS-01.1`, mã
+ * business rule là `NS-BR-01`. Trước khi thêm, cả bộ spec đó ra `2 neo · 0 có dòng định nghĩa`, mà 2 neo
+ * ấy lại là `BR-192`/`BR-217` — tham chiếu tới tài liệu khác, không định nghĩa ở đâu trong vault. Tức
+ * task đó chỉ có neo GIẢ, đúng thứ file này sinh ra để chặn.
+ *
+ * `NS-BR` BẮT BUỘC đứng trước `BR`, và đứng trước cả `NS`. Không phải để cho đẹp:
+ *   - đứng sau `BR` thì `NS-BR-01` bị khớp thành `BR-01` (dấu `-` là ký tự không-từ nên `\b` vẫn đúng
+ *     trước chữ `B`), và `BR-01` là mã CÓ THẬT của hai note khác (Hồ sơ trường, Hồ sơ học sinh) ⇒ neo
+ *     của đội ngũ sẽ trộn vào namespace của chức năng khác. Đây chính là lý do note đội ngũ chọn tiền tố
+ *     riêng thay vì dùng `BR-` trần như hai note kia.
+ *   - đứng sau `NS` thì nhờ backtracking vẫn ra đúng, nhưng dựa vào backtracking để đúng là bẫy.
+ * Có `tests/fe/infra/docs-index.spec.ts` giữ đúng hai điều này, kèm một đối chứng âm.
  */
-const ANCHOR_RE = /\b(BR|AC|EC|NFR|OQ|CR|US|FR|REL)-(\d+(?:\.\d+)*)\b(?![A-Za-z])/g;
+const ANCHOR_RE = /\b(NS-BR|NS|NT-PH|BR|AC|EC|NFR|OQ|CR|US|FR|REL|LH)-(\d+(?:\.\d+)*)\b(?![A-Za-z])/g;
 
 /** Dòng bảng markdown `| BR-01 | ... |` là ĐỊNH NGHĨA; nhắc trong câu văn chỉ là tham chiếu. */
 function laDinhNghia(line, anchor) {

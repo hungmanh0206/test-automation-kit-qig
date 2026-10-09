@@ -107,6 +107,36 @@ function declaredDenominator(md) {
   return null;
 }
 
+/**
+ * Dòng bảng ATTESTATION mang số case của LƯỢT CHẠY CŨ.
+ *
+ * Bảng gate là ảnh chụp một lượt chạy, không phải thứ tự cập nhật. Thêm case thì người ta sửa con số
+ * tổng ở đầu file, còn bảng ở cuối thì không ai chạm — artifact đi duyệt chứng thực một trạng thái
+ * không còn tồn tại. Chỉ soi dòng bảng CÓ dấu verdict hoặc ô đầu là tên script: văn xuôi thường nhắc
+ * số của bộ khác hoặc số lịch sử, soi cả văn xuôi là báo oan.
+ *
+ * Dòng đã chứa đúng số hiện tại thì bỏ qua — nhờ vậy viết "261 → 271" vẫn hợp lệ.
+ */
+function staleAttestations(md, tcCount, label) {
+  const out = [];
+  if (!md || !tcCount) return out;
+  const SO = /(?<![\d/])(\d{2,4})\s*(?:\*\*\s*)?(?:test ?case|testcase|case|TC\b)/gi;
+  const VERDICT = /[✅⚠❌✓✗]/;
+  const DUNG = new RegExp(`(?<![\\d/])${tcCount}(?![\\d/])`);
+  const lines = String(md).split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const ln = lines[i];
+    if (!ln.trim().startsWith('|')) continue;
+    const cells = ln.split('|').slice(1, -1);
+    if (cells.length < 2) continue;
+    if (!VERDICT.test(ln) && !/`[^`]*(?:gate|:|\.js)[^`]*`/i.test(cells[0])) continue;
+    if (DUNG.test(ln)) continue;
+    const cu = [...ln.matchAll(SO)].map((m) => Number(m[1]))
+      .filter((n) => n !== tcCount && n >= tcCount * 0.5 && n <= tcCount * 3);
+    if (cu.length) out.push({ file: label, line: i + 1, nums: [...new Set(cu)], text: ln.trim().slice(0, 120) });
+  }
+  return out;
+}
 /** Lấy Final Decision đã kết luận. */
 function finalDecision(md) {
   const m = String(md || '').match(/Final Decision[\s\S]{0,200}?\b(CONDITIONAL PASS|BLOCKED|PASS|FAIL)\b/i);
@@ -241,6 +271,17 @@ function gateScopeAnchor(taskDir) {
     } catch (e) { warnings.push(`Không ghi được \`.scope_ledger.json\`: ${e.message}`); }
   }
 
+
+  // ---- 4b. Số trong bảng gate phải là số của LƯỢT NÀY, không phải lượt trước ----
+  {
+    const stale = staleAttestations(sumMd, tcCount, 'reports/phase1-summary.md')
+      .concat(staleAttestations(readText(path.join(taskDir, 'task.md')), tcCount, 'task.md'));
+    if (stale.length) {
+      problems.push(
+        `Attestation CŨ: ${stale.length} dòng bảng gate còn mang số case của lượt chạy trước (bộ hiện có ${tcCount} case). Bảng gate là ẢNH CHỤP một lượt chạy — thêm case mà chỉ sửa con số tổng ở đầu file thì bảng ở cuối vẫn chứng thực một trạng thái không còn tồn tại. CHẠY LẠI cả bó gate rồi chép số mới vào, đừng sửa mỗi con số:\n${stale.map((x) => `  · ${x.file}:${x.line} [${x.nums.join(', ')}] ${x.text}`).join('\n')}`,
+      );
+    }
+  }
   // ---- 5. Chưa neo thì không được kết luận PASS ----
   const decision = finalDecision(sumMd);
   if (problems.length && decision && /PASS/.test(decision)) {
@@ -299,4 +340,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { gateScopeAnchor, parseInventory, declaredDenominator, finalDecision, isFilled };
+module.exports = { gateScopeAnchor, parseInventory, declaredDenominator, finalDecision, isFilled, staleAttestations };

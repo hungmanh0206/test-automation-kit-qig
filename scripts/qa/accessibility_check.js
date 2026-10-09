@@ -9,6 +9,8 @@
  * Dùng:
  *   node scripts/qa/accessibility_check.js --catalog <path/ui_catalog.json> [--out <dir>]
  *   node scripts/qa/accessibility_check.js --url <file-or-http> --no-login   # smoke 1 trang, không login
+ *   node scripts/qa/accessibility_check.js --catalog <...> --storage-state .auth/<user>::<đơn vị>.json
+ *                                                                          # dùng phiên đã nạp, không tự login
  *
  * Kiểm: missing label, color contrast, keyboard navigation, ARIA role (ruleset mặc định axe-core).
  * Output: <out>/accessibility-report.md + accessibility-report.json (mặc định cạnh reports/).
@@ -110,7 +112,21 @@ function mdReport(report) {
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+
+  /* `--storage-state <file.json>` — tái dùng phiên đã nạp thay vì tự đăng nhập.
+   *
+   * Hàm `login()` bên dưới giả định form đăng nhập phẳng `input[name=username]` + `input[name=password]`.
+   * Ứng dụng nào bắt captcha, hoặc dựng form bằng ASP.NET WebForms với chuỗi 5 combobox phụ thuộc nhau
+   * (QEMIS), thì nó timeout ở `page.fill` và cả lượt quét hỏng — dù kit ĐÃ có sẵn phiên nạp bằng tay ở
+   * `.auth/`. Máy quét a11y không có lý do gì phải tự đăng nhập lại. */
+  const STORAGE = arg('storage-state', '');
+  const ctx = await browser.newContext(
+    STORAGE && fs.existsSync(STORAGE) ? { storageState: STORAGE } : {},
+  );
+  if (STORAGE && !fs.existsSync(STORAGE)) {
+    console.error(`WARN: --storage-state "${STORAGE}" không tồn tại — chạy như chưa đăng nhập.`);
+  }
+  const page = await ctx.newPage();
   const report = { source: URL_ARG || CATALOG, generatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '), screens: [], totalViolations: 0 };
 
   try {

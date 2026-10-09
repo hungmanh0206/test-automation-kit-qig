@@ -96,6 +96,48 @@ const UPDATE_ISSUE_KEY = normalizeIssueKey(argString('update-issue') || argStrin
 const QA_APPROVED = argFlag('qa-approved');
 const STRICT = !(argFlag('lenient') || process.env.QA_STRICT === '0');
 /*
+ * Chủ dự án chốt 06/10/2026: bug lên Backlog CHỈ điền Priority. Assignee, Milestone, Category để TRỐNG
+ * cho PM tự phân — QA không đoán hộ.
+ * Phải là CỜ TƯỜNG MINH chứ không phải "để trống env rồi coi là xong": mặc định reporter copy
+ * Milestone+Category từ Story và DỪNG HẲN nếu không resolve được assignee. Không có cờ thì người chạy
+ * buộc phải xoá env assignee hoặc bỏ assignee trên Story — hai thứ ảnh hưởng mọi task khác, và nhìn
+ * lại không biết là cố ý hay quên.
+ */
+const ONLY_PRIORITY = argFlag('only-priority') || process.env.BACKLOG_BUG_ONLY_PRIORITY === '1';
+/*
+ * Đường cấp nội dung bug TƯỜNG MINH: file JSON `{ "<TC_ID>": { title, preconditions, steps,
+ * actualResult, expectedResult } }`, chỉ ghi đè những khoá có mặt.
+ *
+ * Vì sao cần: reporter dựng title/description từ TESTCASE, mà một case thường kiểm NHIỀU điều. Case
+ * trượt ở điều thứ tư thì title vẫn mang tên case (= điều thứ nhất, vốn ĐẠT) và tiền điều kiện vẫn là
+ * đơn vị ghi trong case, không phải đơn vị đã chạy thật. Bug kiểu đó dev đọc sẽ đi sai hướng ngay từ
+ * tiêu đề. Builder tự động không có cách nào biết assertion nào trượt, nên chỗ này phải do người viết.
+ * KHÔNG dùng để nới nội dung cho dễ nghe: mọi giá trị phải khớp evidence và report local.
+ */
+const BUG_PAYLOAD_FILE = argString('bug-payload');
+const BUG_PAYLOAD = BUG_PAYLOAD_FILE ? readBugPayloadFile(resolvePath(BUG_PAYLOAD_FILE)) : {};
+
+function readBugPayloadFile(file) {
+  if (!fs.existsSync(file)) fail(`--bug-payload không thấy file: ${file}`);
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    fail(`--bug-payload không đọc được JSON (${file}): ${error.message}`);
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    fail('--bug-payload phải là object dạng { "<TC_ID>": { ... } }.');
+  }
+  return parsed;
+}
+
+/** Lấy phần ghi đè cho 1 tcId, so khớp mã đã chuẩn hoá để không phụ thuộc cách viết hoa/gạch. */
+function bugOverrideFor(tcId) {
+  const want = normalizeTcId(tcId);
+  const hit = Object.keys(BUG_PAYLOAD).find((k) => normalizeTcId(k) === want);
+  return hit ? BUG_PAYLOAD[hit] || {} : {};
+}
+/*
  * Priority Backlog CỐ ĐỊNH 3 mức (không tạo thêm được, không đổi tên): 2=High, 3=Normal, 4=Low. Kit vẫn
  * nhận input priority 5 mức quen thuộc (Critical/High/Medium/Low/Lowest, có thể đọc từ testcase) và MAP
  * xuống 3 mức — không có đường 1-1, đây là mất mát dữ liệu có chủ đích (Critical/High đều → High).
@@ -171,8 +213,22 @@ function normalizeBacklogPriority(value) {
   return 0;
 }
 
+/*
+ * Issue type có được dùng để log bug hay không.
+ *
+ * Bản cũ đòi TÊN type chứa "sub"/"child". Sai cơ chế: trong Backlog, con hay không là do
+ * `parentIssueId` (reporter luôn set, xem createIssue), KHÔNG do tên type. Đo trên project CSDL
+ * (06/10/2026) — `GET /api/v2/projects/:k/issueTypes` trả về: Bug · Renew · Task · Request · Other.
+ * Không có type nào tên "Sub-*", nên luật cũ chặn MỌI cấu hình hợp lệ của project này.
+ *
+ * Thứ thật sự cần chặn là khai bug thành việc-cần-làm (prompt 08: "Không dùng Sub-task cho bug").
+ * Nên: nhận type mang nghĩa BUG, từ chối type mang nghĩa TASK.
+ */
 function isChildIssueType(issueType) {
-  return /sub|child/i.test(String(issueType || ''));
+  const t = String(issueType || '').trim();
+  if (!t) return false;
+  if (/task|việc|cong viec|công việc/i.test(t)) return false;
+  return /bug|lỗi|loi\b|defect|sub|child/i.test(t);
 }
 
 function validate() {
@@ -446,6 +502,8 @@ async function assertParentIssue(projectId) {
     const issue = response.data;
     if (!issue?.id) fail(`Parent Story/Task not found: ${STORY_KEY}`);
     console.log(`Parent Story/Task verified: ${issue.issueKey} - ${issue.summary || ''}`);
+    // In ra để lượt chạy nào bỏ trống Assignee/Milestone/Category cũng thấy ngay là CỐ Ý, không phải quên.
+    if (ONLY_PRIORITY) console.log('Chế độ --only-priority: chỉ điền Priority; Assignee/Milestone/Category để trống.');
     return issue;
   } catch (error) {
     fail(`Cannot verify parent Story/Task "${STORY_KEY}": ${formatApiError(error)}`);
@@ -466,7 +524,7 @@ async function createIssue({ tcId, summary, description, assigneeId, priority, p
   const priorityId = normalizeBacklogPriority(priority);
   if (priorityId) body.priorityId = priorityId;
 
-  copyMilestoneAndCategory(body, parentIssue);
+  if (!ONLY_PRIORITY) copyMilestoneAndCategory(body, parentIssue);
 
   const response = await withRetry(() => backlogRequest('POST', '/api/v2/issues', { body }));
   return response.data;
@@ -478,7 +536,7 @@ async function updateIssue(issueIdOrKey, { summary, description, priority, paren
   const priorityId = normalizeBacklogPriority(priority);
   if (priorityId) body.priorityId = priorityId;
 
-  if (parentIssue) copyMilestoneAndCategory(body, parentIssue);
+  if (parentIssue && !ONLY_PRIORITY) copyMilestoneAndCategory(body, parentIssue);
 
   const response = await withRetry(() => backlogRequest('PATCH', `/api/v2/issues/${encodeURIComponent(issueIdOrKey)}`, { body }));
   return response.data;
@@ -524,6 +582,18 @@ async function uploadAttachmentFile(filePath) {
 /** Gắn danh sách attachmentId đã upload vào 1 issue. GHI CHÚ CHƯA VERIFY: giả định `attachmentId[]` trên
  * PATCH issue THAY THẾ toàn bộ set hiện có (không cộng dồn) — vì vậy gọi 1 LẦN với ĐỦ danh sách, không gọi
  * lặp lại nhiều lần cho cùng issue. Kiểm lại hành vi thật khi chạy `--apply` lần đầu (xem plan Verification). */
+/** Tên file các attachment đang có trên issue — để update không đính kèm lại cùng một ảnh. */
+async function layTenFileDaDinhKem(issueIdOrKey) {
+  try {
+    const res = await withRetry(() => backlogRequest('GET', `/api/v2/issues/${encodeURIComponent(issueIdOrKey)}/attachments`));
+    return new Set((res.data || []).map((a) => a.name).filter(Boolean));
+  } catch (error) {
+    // Không đọc được thì coi như chưa có gì: thà đính kèm trùng còn hơn bug thiếu bằng chứng.
+    console.warn(`WARN: không đọc được danh sách attachment của ${issueIdOrKey}: ${formatApiError(error)}`);
+    return new Set();
+  }
+}
+
 async function attachIssueAttachments(issueId, attachmentIds) {
   if (!attachmentIds.length) return true;
   try {
@@ -1274,20 +1344,57 @@ async function main() {
     const tcInfo = findTestCaseInfo(testCase.tcId, TESTCASES_DIR);
     const selectedTcInfo = findSelectedTestCaseInfo(testCase.tcId);
     const artifactInfo = readArtifactInfo(ARTIFACTS_DIR, testCase.tcId);
-    const displayTitle = tcInfo.title || selectedTcInfo.title || testCase.title;
+    const override = bugOverrideFor(testCase.tcId);
+    const displayTitle = override.title || tcInfo.title || selectedTcInfo.title || testCase.title;
     const layer = determineBugLayer(testCase, tcInfo);
-    const priority = normalizeBacklogPriority(tcInfo.priority || selectedTcInfo.priority || testCase.priority);
-    const actualResult = buildActualResult(testCase, artifactInfo, displayTitle);
-    const summary = buildBugSummary(layer, displayTitle, actualResult, testCase.tcId);
+    /*
+     * `--bug-payload` được phép khai Priority — trước đây là trường DUY NHẤT nó không khai được.
+     *
+     * Priority vốn chỉ lấy từ file testcase, mà `findTestCaseInfo` chỉ đọc `.md`. Task nào giữ
+     * testcase canonical ở `.xlsx` (CSDL-9004) thì không có nguồn priority nào, và Backlog từ chối
+     * tạo issue với `400 error.invalid : priorityId`. Tức: khai tay được cả title/steps/kết quả
+     * nhưng vẫn không log được, mà thông báo lỗi lại không chỉ ra thiếu gì.
+     */
+    const priority = normalizeBacklogPriority(
+      override.priority || tcInfo.priority || selectedTcInfo.priority || testCase.priority,
+    );
+    const actualResult = override.actualResult || buildActualResult(testCase, artifactInfo, displayTitle);
+    // Title do người viết thì dùng nguyên văn: buildBugSummary chỉ để CỨU title máy dựng từ case.
+    const summary = override.title
+      ? String(override.title).replace(/\s+/g, ' ').trim().slice(0, 255)
+      : buildBugSummary(layer, displayTitle, actualResult, testCase.tcId);
     const prioritySuffix = priority ? ` (Priority: ${BACKLOG_PRIORITY_NAME[priority] || priority})` : '';
 
     // GATE chất lượng bug (RULE_GLOBAL): ≥1 ảnh/video, video cho case phức tạp, KQ không run-on.
-    const attachmentsPreview = [artifactInfo.screenshotPath, artifactInfo.videoPath].filter(isBugEvidenceAttachment);
+    /*
+     * Evidence ƯU TIÊN file khai tường minh trong --bug-payload (`screenshot`, `video`).
+     * Vì sao: `readArtifactInfo` ưu tiên `test-failed-*.png` — ảnh Playwright tự chụp lúc assertion
+     * trượt, KHÔNG khoanh vùng. Luật 06/10/2026 bắt buộc highlight, nên ảnh đã khoanh phải thắng.
+     */
+    // `screenshots` (mảng) cho bug cần nhiều ảnh — vd form nhiều tab, một ảnh không chở hết.
+    const anhKhai = []
+      .concat(override.screenshots || [])
+      .concat(override.screenshot ? [override.screenshot] : [])
+      .map((p) => resolvePath(p));
+    const videoKhai = override.video ? resolvePath(override.video) : null;
+    for (const f of anhKhai.concat(videoKhai ? [videoKhai] : [])) {
+      if (!fs.existsSync(f)) fail(`--bug-payload ${testCase.tcId}: không thấy file evidence ${f}`);
+    }
+    const attachmentsPreview = (anhKhai.length ? anhKhai : [artifactInfo.screenshotPath])
+      .concat([videoKhai || artifactInfo.videoPath])
+      .filter(isBugEvidenceAttachment);
+    /*
+     * Mảng ý phải XUỐNG DÒNG trước khi vào gate. `looksRunOn` làm `String(text)`, mà `String(['a','b'])`
+     * nối bằng DẤU PHẨY thành một dòng — nội dung đã đúng một-ý-một-dòng vẫn bị chấm run-on, và càng
+     * tách ý ra thì càng nhiều dấu phẩy nên càng chắc bị chặn. `buildBugDescription` không mắc lỗi này
+     * vì nó có nhánh riêng cho mảng; chỗ truyền cho gate thì không.
+     */
+    const dongHoaYs = (v) => (Array.isArray(v) ? v.join('\n') : v);
     const gateProblems = outputGate.gateBug({
       id: testCase.tcId,
       summary,
-      actualResult,
-      expectedResult: tcInfo.expectedResult || '',
+      actualResult: dongHoaYs(actualResult),
+      expectedResult: dongHoaYs(override.expectedResult || tcInfo.expectedResult || ''),
       attachments: attachmentsPreview,
     });
     if (gateProblems.length) bugGateProblems.push(...gateProblems);
@@ -1296,6 +1403,22 @@ async function main() {
     console.log(`Processing ${testCase.tcId}: ${displayTitle}${prioritySuffix}`);
 
     if (DRY_RUN) {
+      /*
+       * In TITLE + DESCRIPTION thật ra console. Trước đây dry-run chỉ in một dòng "Would create" nên
+       * không soát được nội dung — mà nội dung mới là thứ dễ sai nhất (title mang tên case, tiền điều
+       * kiện của đơn vị khác). Preview không đọc được thì nó không phải preview.
+       */
+      console.log(`  TITLE: ${summary}`);
+      console.log(buildBugDescription({
+        preconditions: override.preconditions || tcInfo.preconditions || '(không có thông tin tiền điều kiện)',
+        steps: override.steps?.length ? override.steps : (tcInfo.steps?.length ? tcInfo.steps : testCase.steps),
+        actualResult,
+        expectedResult: override.expectedResult || tcInfo.expectedResult || '(xem file test case gốc)',
+        foundBy: foundBySource(),
+        tcId: testCase.tcId,
+        layer,
+      }).split('\n').map((l) => `  | ${l}`).join('\n'));
+      console.log(`  ĐÍNH KÈM: ${attachmentsPreview.length ? attachmentsPreview.map((a) => path.basename(a)).join(', ') : '(KHÔNG CÓ — gate sẽ chặn)'}`);
       rows.push({
         tcId: testCase.tcId,
         issueKey: UPDATE_ISSUE_KEY || 'DRY-RUN',
@@ -1314,10 +1437,10 @@ async function main() {
     }
 
     const description = buildBugDescription({
-      preconditions: tcInfo.preconditions || '(không có thông tin tiền điều kiện)',
-      steps: tcInfo.steps?.length ? tcInfo.steps : testCase.steps,
+      preconditions: override.preconditions || tcInfo.preconditions || '(không có thông tin tiền điều kiện)',
+      steps: override.steps?.length ? override.steps : (tcInfo.steps?.length ? tcInfo.steps : testCase.steps),
       actualResult,
-      expectedResult: tcInfo.expectedResult || '(xem file test case gốc)',
+      expectedResult: override.expectedResult || tcInfo.expectedResult || '(xem file test case gốc)',
       foundBy: foundBySource(),
       tcId: testCase.tcId,
       layer,
@@ -1325,7 +1448,34 @@ async function main() {
 
     if (UPDATE_ISSUE_KEY) {
       try {
-        await updateIssue(UPDATE_ISSUE_KEY, { summary, description, priority, parentIssue });
+        /*
+         * Backlog trả 400 "No comment content" (code 7) khi PATCH không đổi gì — vd chạy lại update
+         * trên issue đã đúng nội dung. Đó KHÔNG phải lỗi: coi là không-có-gì-để-sửa rồi đi tiếp sang
+         * đính kèm. Để nó ném ra thì một bug đã log đúng chữ sẽ vĩnh viễn không bổ sung được ảnh.
+         */
+        try {
+          await updateIssue(UPDATE_ISSUE_KEY, { summary, description, priority, parentIssue });
+        } catch (error) {
+          if (!/No comment content/i.test(formatApiError(error))) throw error;
+          console.log('  nội dung đã đúng sẵn, không cần sửa chữ — đi tiếp phần đính kèm.');
+        }
+        /*
+         * Update cũng phải mang evidence. Trước đây nhánh này KHÔNG upload gì, nên sửa mô tả bug mà
+         * ảnh vẫn là bộ cũ — mô tả và bằng chứng lệch nhau mà không ai báo.
+         * Bỏ qua file đã đính kèm (so theo tên) để chạy lại không nhân bản ảnh.
+         */
+        const daCo = await layTenFileDaDinhKem(UPDATE_ISSUE_KEY);
+        const canThem = attachmentsPreview.filter((f) => !daCo.has(path.basename(f)));
+        if (canThem.length) {
+          const ids = [];
+          for (const f of canThem) {
+            const id = await uploadAttachmentFile(f);
+            console.log(`  attachment ${path.basename(f)}: ${id ? 'OK' : 'WARN'}`);
+            if (id) ids.push(id);
+          }
+          if (ids.length) await attachIssueAttachments(UPDATE_ISSUE_KEY, ids);
+        }
+        console.log(`  evidence: ${daCo.size} file đã có · thêm ${canThem.length} file`);
         rows.push({
           tcId: testCase.tcId,
           issueKey: UPDATE_ISSUE_KEY,
@@ -1340,8 +1490,11 @@ async function main() {
       continue;
     }
 
-    const assigneeId = await resolveBugAssigneeAccountId(layer, parentIssue, assigneeCache, projectId);
-    if (!assigneeId) {
+    // --only-priority: KHÔNG resolve assignee và không dừng vì thiếu — để trống cho PM phân.
+    const assigneeId = ONLY_PRIORITY
+      ? null
+      : await resolveBugAssigneeAccountId(layer, parentIssue, assigneeCache, projectId);
+    if (!ONLY_PRIORITY && !assigneeId) {
       fail('Missing assignee. Configure BACKLOG_FE_ASSIGNEE/BACKLOG_BE_ASSIGNEE or assign the parent Story/Task.');
     }
 
@@ -1368,10 +1521,12 @@ async function main() {
         issueTypeId,
       });
 
-      const attachments = [
-        artifactInfo.screenshotPath,
-        artifactInfo.videoPath,
-      ].filter(isBugEvidenceAttachment);
+      /*
+       * DÙNG LẠI `attachmentsPreview` — đúng danh sách gate đã duyệt và dry-run đã in ra.
+       * Trước đây chỗ này dựng LẠI danh sách từ `artifactInfo`, nên preview nói 3 file mà thực tế chỉ
+       * upload 1: preview và hành động là hai nhánh code khác nhau thì preview không bảo chứng gì cả.
+       */
+      const attachments = attachmentsPreview;
 
       if (attachments.length) {
         const attachmentIds = [];

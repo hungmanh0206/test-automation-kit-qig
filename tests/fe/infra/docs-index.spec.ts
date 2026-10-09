@@ -213,3 +213,137 @@ test('mỗi trang chỉ lấy MỘT bản, và là bản giữ được bảng',
   expect(r.out).toContain('us01.md:8');
   expect(r.out).not.toContain('us01-ban-cu.md');
 });
+
+/*
+ * Tiền tố `NT-PH` và `LH` của tài liệu nghiệp vụ CSDL (vault QEMIS, tab `Lớp`): business rule đánh
+ * `NT-PH-01`, mã chức năng đánh `LH-01.1`. Trước 25/09/2026 `ANCHOR_RE` không nhận hai tiền tố này —
+ * đo thật trên CSDL-9002: cả bộ spec ra `0 neo`, nghĩa là mọi `oracle_ref` của task đó không tra ngược
+ * được, và theo RULE_GLOBAL §3 thì không chấm PASS/FAIL được, chỉ còn OBSERVATION. Hai test dưới giữ
+ * chỗ đó khỏi bị thu lại lặng lẽ khi có người dọn regex.
+ */
+function docsCsdlFixture(): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'docs-index-csdl-'));
+  fs.writeFileSync(path.join(dir, 'ho-so-lop.md'), `# Hồ sơ lớp
+
+| Mã CN | Tên chức năng | Màn hình |
+| --- | --- | --- |
+| LH-01.1 | Xem danh sách lớp học | Hồ sơ lớp học |
+| LH-01.7 | Sao chép lớp môn | Xếp môn học cho lớp |
+
+| # | Business rule | Cấp áp dụng |
+| --- | --- | --- |
+| NT-PH-01 | Một lớp học thuộc đúng một phân hiệu | MN / TH / THCS |
+| NT-PH-06 | Tên lớp duy nhất trong phạm vi một phân hiệu và một năm học | MN / TH / THCS |
+
+${'Chữ nghiệp vụ dài dòng để file đủ lớn. '.repeat(60)}
+`, 'utf8');
+  return dir;
+}
+
+test('nhận tiền tố NT-PH và LH của tài liệu CSDL, ra đúng file kèm số dòng', () => {
+  const dir = docsCsdlFixture();
+
+  const rule = run(dir, ['--cite', 'NT-PH-06']);
+  expect(rule.code).toBe(0);
+  expect(rule.out).toMatch(/ho-so-lop\.md:11/);
+  expect(rule.out).toContain('Tên lớp duy nhất trong phạm vi một phân hiệu');
+
+  /* Mã chức năng có phần thập phân: `LH-01.1` phải ăn trọn `01.1`, không cắt thành `LH-01`. */
+  const cn = run(dir, ['--cite', 'LH-01.1']);
+  expect(cn.code).toBe(0);
+  expect(cn.out).toMatch(/ho-so-lop\.md:5/);
+  expect(cn.out).toContain('Xem danh sách lớp học');
+});
+
+/*
+ * ĐỐI CHỨNG ÂM cho chính lần nới này. Thêm tiền tố vào nhóm chọn là nới cửa, nên phải chứng minh cửa
+ * cũ vẫn đóng: `BR-SAPSYNC-003` là id knowledge của kit (`knowledge/domain/`, do `domain_rules.js`
+ * gác), KHÔNG phải neo tài liệu. Nó lọt vào chỉ mục thì hai hệ mã bị trộn.
+ */
+test('nới tiền tố nhưng BR-SAPSYNC-003 vẫn KHÔNG thành neo tài liệu', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'docs-index-knowledge-'));
+  fs.writeFileSync(path.join(dir, 'spec.md'), `# Spec
+
+| BR | Rule |
+| --- | --- |
+| BR-01 | Luật thật của trang này |
+
+Đoạn này nhắc tới luật domain BR-SAPSYNC-003 của kit, không phải neo của trang.
+
+${'Chữ nghiệp vụ. '.repeat(80)}
+`, 'utf8');
+
+  expect(run(dir, ['--cite', 'BR-01']).code).toBe(0);
+  const r = run(dir, ['--cite', 'BR-003']);
+  expect(r.code).toBe(1);
+  expect(r.out).toContain('KHÔNG TRA ĐƯỢC');
+});
+
+/*
+ * Tiền tố `NS-BR` và `NS` của note `CSDL - Hồ sơ đội ngũ.md` (vault QEMIS, tab `Đội ngũ`): mã chức năng
+ * đánh `NS-01.1`, business rule đánh `NS-BR-01`. Trước 25/09/2026 `ANCHOR_RE` không nhận hai tiền tố này
+ * — đo thật trên CSDL-9004: `2 neo · 0 có dòng định nghĩa`, và 2 neo ấy là `BR-192`/`BR-217`, tham chiếu
+ * tới một tài liệu BR khác chưa import, không định nghĩa ở đâu trong vault. Tức task chỉ có neo GIẢ.
+ *
+ * Note đó cố ý KHÔNG dùng `BR-` trần như hai note Hồ sơ trường / Hồ sơ học sinh, vì chính nó đã mang sẵn
+ * `BR-192`/`BR-217`. Test dưới giữ đúng lựa chọn đó: `NS-BR-01` phải ra `NS-BR-01`, KHÔNG được rơi thành
+ * `BR-01` — mà `BR-01` lại là mã có thật của hai note kia.
+ */
+function docsDoiNguFixture(): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'docs-index-doingu-'));
+  fs.writeFileSync(path.join(dir, 'ho-so-doi-ngu.md'), `# Hồ sơ đội ngũ
+
+| Mã CN | Tên chức năng |
+| --- | --- |
+| NS-01.3 | Thêm mới hồ sơ đội ngũ |
+| NS-01.10 | Quản lý giáo viên theo tổ |
+
+| # | Business rule |
+| --- | --- |
+| NS-BR-01 | Bộ KEY chống trùng nhân sự gồm bốn thành phần |
+| NS-BR-13 | Cán bộ quản lý có tích Tham gia giảng dạy thì Môn dạy bắt buộc |
+
+Trường Số CMND/CCCD nhắc (BR-217) và (BR-192) — mã của tài liệu khác, không định nghĩa ở đây.
+
+${'Chữ nghiệp vụ dài dòng để file đủ lớn. '.repeat(60)}
+`, 'utf8');
+  return dir;
+}
+
+test('nhận tiền tố NS-BR và NS của note đội ngũ, ra đúng file kèm số dòng', () => {
+  const dir = docsDoiNguFixture();
+
+  const rule = run(dir, ['--cite', 'NS-BR-13']);
+  expect(rule.code).toBe(0);
+  expect(rule.out).toMatch(/ho-so-doi-ngu\.md:11/);
+  expect(rule.out).toContain('Môn dạy bắt buộc');
+
+  /* Mã chức năng hai chữ số sau dấu chấm: `NS-01.10` phải ăn trọn `01.10`, không cắt thành `NS-01.1`. */
+  const cn = run(dir, ['--cite', 'NS-01.10']);
+  expect(cn.code).toBe(0);
+  expect(cn.out).toMatch(/ho-so-doi-ngu\.md:6/);
+  expect(cn.out).toContain('Quản lý giáo viên theo tổ');
+});
+
+/*
+ * ĐỐI CHỨNG ÂM cho lần nới này — hai cửa phải cùng đóng.
+ *
+ * 1. `NS-BR-01` KHÔNG được khớp thành `BR-01`. Dấu `-` là ký tự không-từ nên `\b` vẫn đúng ngay trước
+ *    chữ `B`; nếu `NS-BR` đứng SAU `BR` trong nhóm chọn thì neo của đội ngũ rơi vào namespace `BR-` của
+ *    Hồ sơ trường và Hồ sơ học sinh, và report sẽ trích dẫn sai chức năng mà máy không kêu.
+ * 2. `BR-192`/`BR-217` vẫn phải trích ra được (chúng CÓ trong trang) nhưng KHÔNG có dòng định nghĩa —
+ *    đây là neo mồ côi mà `--cite` vẫn in ra dòng tham chiếu. Giữ hành vi này hiện hình trong test để
+ *    không ai tưởng nhầm là đã xử lý xong.
+ */
+test('NS-BR-01 không rơi thành BR-01, và BR-192 vẫn là neo mồ côi', () => {
+  const dir = docsDoiNguFixture();
+
+  const roi = run(dir, ['--cite', 'BR-01']);
+  expect(roi.code).toBe(1);
+  expect(roi.out).toContain('KHÔNG TRA ĐƯỢC');
+
+  const mocoi = run(dir, ['--cite', 'BR-192']);
+  expect(mocoi.code).toBe(0);
+  expect(mocoi.out).toContain('mã của tài liệu khác');
+  expect(mocoi.out).not.toMatch(/\| BR-192 \|/);
+});

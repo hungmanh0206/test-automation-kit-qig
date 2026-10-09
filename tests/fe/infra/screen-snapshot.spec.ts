@@ -9,6 +9,8 @@ import * as path from 'path';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { snapshotScreen, diffWithDoc } = require(path.resolve(__dirname, '../../../scripts/utils/ui/screen_snapshot.js'));
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const safeTarget = require(path.resolve(__dirname, '../../../scripts/utils/ui/safe_target.js'));
 
 const FIXTURE = `file://${path.resolve(__dirname, '../fixtures/field-inventory.html').replace(/\\/g, '/')}`;
 
@@ -91,8 +93,18 @@ test.describe('screen_snapshot — instrument không được MÙ', () => {
     const sel = snap.controls.filter((c: any) => c.kind === 'ant-select');
     expect(sel.length, 'không thấy ant-select nào ⇒ instrument vẫn mù').toBe(2);
     expect(sel.find((c: any) => c.label === 'Payment Method')?.value).toBe('Trả góp');
-    // Kiểm-âm: nếu chỉ đọc input.value thì giá trị này rỗng — chứng minh test có răng.
-    expect(await page.locator('#pay-form .ant-select input').first().inputValue()).toBe('');
+    /*
+     * Kiểm-âm: nếu chỉ đọc `input.value` thì giá trị này RỖNG — chứng minh test có răng.
+     *
+     * Neo vào ĐÚNG ô vừa assert ở trên ("Payment Method"), không phải một ô ant-select bất kỳ. Bản trước
+     * lấy ô nhập ant-select đầu tiên trong `#pay-form`: hiện tại nó tình cờ khớp đúng 1 phần tử
+     * (ant-select thứ hai không có `<input>`), nhưng `.first()` là lời hứa "nhiều match thì chọn đại" —
+     * thêm một ô có input vào fixture là kiểm-âm lặng lẽ đọc sang ô khác mà vẫn xanh, vì ô nào cũng rỗng.
+     * `one()` ném lỗi khi ≠1 match, nên sai lộ ra ngay lúc viết chứ không nằm chờ.
+     */
+    const oPaymentMethod = page.locator('#pay-form .ant-select', { has: page.getByText('Trả góp', { exact: true }) });
+    const inputCuaNo = await safeTarget.one(oPaymentMethod.locator('input'), { what: 'ô nhập của ant-select "Payment Method"' });
+    expect(await inputCuaNo.inputValue()).toBe('');
     expect(sel.find((c: any) => c.label === 'Recipient Bank Account')?.disabled, 'phải nhận ra ant-select bị disable').toBe(true);
   });
 

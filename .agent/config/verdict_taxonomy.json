@@ -96,6 +96,10 @@
     "dependency": {
       "loggableAsBug": false,
       "desc": "Phụ thuộc ngoài chưa sẵn."
+    },
+    "doc_outdated": {
+      "loggableAsBug": false,
+      "desc": "Tài liệu cũ hơn build — app hoạt động đúng, nhưng CHỮ trong đặc tả/hướng dẫn không còn khớp với app. Dấu hiệu: lệch chỉ ở cách viết mà NGHĨA không đổi (nhãn nút \"Cập nhật\" vs \"Ghi\"; \"Xóa\" vs \"Xoá\"; \"(m2)\" vs \"(m²)\"; thiếu một dấu cách), hoặc app diễn đạt RÕ HƠN tài liệu. KHÔNG log Backlog cho dev — mở yêu cầu sửa tài liệu với người viết. Phân biệt với product_bug: nghĩa có đổi không. Mất thông tin phân biệt (bỏ hậu tố khiến 12 ô trùng nhãn), đổi cấu trúc (một ô tách thành hai), hay thiếu hẳn field thì vẫn là product_bug."
     }
   },
   "rerun": {

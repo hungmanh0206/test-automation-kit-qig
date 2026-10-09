@@ -186,3 +186,85 @@ test.describe('@infra phase2 — ngưỡng rerun/lint/mutation có số', () => 
     expect(src, 'phải là CẢNH BÁO — mutation cần app sống + catalog, chặn sẽ khoá task backend').toMatch(/warnings\.push\('task có case band HIGH/);
   });
 });
+
+/*
+ * MANIFEST ↔ BỘ CASE NÓI NGƯỢC NHAU, và LÝ DO n/a ĐÃ BỊ BÁC.
+ *
+ * Ca thật (CSDL-9004, đo 30/09/2026): manifest khai `accessibility: "n/a"` với lý do "đặc tả không
+ * nêu yêu cầu a11y", trong khi bộ case ĐANG CÓ ba case bàn phím gắn tag `[A11y]`. Hai file nằm cạnh
+ * nhau nói ngược nhau mà `dim:coverage` vẫn xanh — bảng chỉ in "N/A (khai)" rồi thôi, vì gate chỉ
+ * hỏi "chiều required có case chưa", không hỏi "chiều n/a có case không".
+ *
+ * Và chính lý do đó đã bị rút lại ở BA task trước (9001, 9002, 9003). Việc bác bỏ chỉ sống trong task
+ * nơi nó xảy ra, nên cùng một câu sống lại ở bộ thứ tư. Nay có sổ chung
+ * `.agent/config/na_reasons_rejected.json`.
+ */
+test.describe('@infra dim:coverage — manifest phải khớp bộ case, và lý do n/a phải còn đứng vững', () => {
+  test('chiều khai n/a mà case VẪN gắn tag chiều đó ⇒ CHẶN', () => {
+    const base = task({
+      a: 6, b: 3, band: 'High',
+      manifest: {
+        dimensions: { field_validation: 'required', display_conformance: 'n/a' },
+        na_reasons: { display_conformance: 'Màn này không có bảng đối chiếu nhãn nào để so.' },
+      },
+    });
+    const r = run(base, ['--enforce']);
+    expect(r.code, r.out).toBe(1);
+    expect(r.out).toContain('khai n/a mà bộ case VẪN có case gắn tag chiều đó');
+    expect(r.out, 'phải chỉ ra TC nào để soi lại được').toContain('TC_007');
+  });
+
+  test('ÂM TÍNH: chiều khai n/a mà KHÔNG case nào gắn tag ⇒ im lặng', () => {
+    const base = task({
+      a: 9, b: 0, band: 'High',
+      manifest: {
+        dimensions: { field_validation: 'required', display_conformance: 'n/a' },
+        na_reasons: { display_conformance: 'Màn này không có bảng đối chiếu nhãn nào để so.' },
+      },
+    });
+    const r = run(base, ['--enforce']);
+    expect(r.code, r.out).toBe(0);
+    expect(r.out).not.toContain('nói ngược nhau');
+  });
+
+  test('lý do n/a trùng lập luận ĐÃ BỊ BÁC ⇒ CHẶN, và nói rõ bác ở đâu', () => {
+    const base = task({
+      a: 9, b: 0, band: 'High',
+      manifest: {
+        dimensions: { field_validation: 'required', accessibility: 'n/a' },
+        na_reasons: { accessibility: 'Không có yêu cầu a11y trong đặc tả và dự án chưa khai tiêu chuẩn nào.' },
+      },
+    });
+    const r = run(base, ['--enforce']);
+    expect(r.code, r.out).toBe(1);
+    expect(r.out).toContain('LẬP LUẬN ĐÃ BỊ BÁC');
+    expect(r.out, 'phải nói thay bằng gì, không chỉ báo sai').toContain('Thay bằng:');
+  });
+
+  test('giữ được lý do đã bị bác, nhưng phải KHAI RÕ exempt (không im lặng)', () => {
+    const base = task({
+      a: 9, b: 0, band: 'High',
+      manifest: {
+        dimensions: { field_validation: 'required', accessibility: 'n/a' },
+        na_reasons: { accessibility: 'Không có yêu cầu a11y trong đặc tả và dự án chưa khai tiêu chuẩn nào.' },
+        na_reasons_exempt: ['dac-ta-khong-neu-yeu-cau'],
+      },
+    });
+    const r = run(base, ['--enforce']);
+    expect(r.code, r.out).toBe(0);
+    expect(r.out).not.toContain('LẬP LUẬN ĐÃ BỊ BÁC');
+  });
+
+  test('ÂM TÍNH: lý do n/a CỤ THỂ, không trùng lập luận nào đã bị bác ⇒ im lặng', () => {
+    const base = task({
+      a: 9, b: 0, band: 'High',
+      manifest: {
+        dimensions: { field_validation: 'required', api: 'n/a' },
+        na_reasons: { api: 'Task không có Swagger/OpenAPI, profile không khai endpoint nào — không có hợp đồng để neo expected.' },
+      },
+    });
+    const r = run(base, ['--enforce']);
+    expect(r.code, r.out).toBe(0);
+    expect(r.out).not.toContain('LẬP LUẬN ĐÃ BỊ BÁC');
+  });
+});

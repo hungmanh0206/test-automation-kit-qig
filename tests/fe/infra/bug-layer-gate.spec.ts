@@ -102,3 +102,67 @@ test.describe('@infra failureLayer — canonical value phải lọt qua chính g
     }
   });
 });
+
+/*
+ * Luật "description không chứa suy đoán" phải dò ĐÚNG TỪ, không dò theo cụm ký tự.
+ *
+ * Bug đã xảy ra (06/10/2026): regex dùng `\bnghi\b`, mà `\b` của JS là ranh giới ASCII — chữ có dấu tiếng
+ * Việt bị tính là KHÔNG-phải-chữ, nên "nghi" KHỚP vào giữa "nghiệp vụ" và "nghiêm". Một bug thật bị gate
+ * kêu "chứa suy đoán" chỉ vì description có chữ "tài liệu nghiệp vụ".
+ *
+ * Luật rút ra: mọi regex dò TỪ trong văn bản tiếng Việt phải chặn ranh giới bằng \p{L}\p{M} + cờ `u`,
+ * đừng tin `\b`.
+ */
+test.describe('@infra suy đoán — dò đúng từ, không khớp oan vào chữ có dấu', () => {
+  const coSuyDoan = (description: string) => rules
+    .lintBugRealism({ summary: 'x', description })
+    .some((p: { message: string }) => /SUY ĐOÁN/.test(p.message));
+
+  test('từ bình thường có chứa cụm "nghi" → KHÔNG kêu', () => {
+    for (const s of ['tài liệu nghiệp vụ', 'quy định nghiêm ngặt', 'nghiệm thu']) {
+      expect(coSuyDoan(s), `khớp oan: ${JSON.stringify(s)}`).toBe(false);
+    }
+  });
+
+  test('suy đoán thật → VẪN kêu (vá khớp-oan không được làm luật chết)', () => {
+    for (const s of ['nghi ngờ do cache', 'nghi vấn ở tầng BE', 'khả năng cao là do BE',
+      'nhiều khả năng là cấu hình riêng', 'có thể do thiếu quyền', 'phỏng đoán nguyên nhân',
+      'có lẽ do timeout']) {
+      expect(coSuyDoan(s), `bỏ sót: ${JSON.stringify(s)}`).toBe(true);
+    }
+  });
+});
+
+/*
+ * Tên bảng và tên cột của sản phẩm viết kiểu HOC_SINH_NGHI_HOC, MA_LY_DO_NGHI. Nếu ranh giới từ chỉ
+ * tính chữ cái thì chuỗi NGHI giữa hai gạch dưới bị coi là từ đứng riêng, và mọi bug nhắc tên bảng đó
+ * đều bị chấm "suy đoán nguyên nhân". Đã dính thật ngày 07/10/2026 khi log lỗi bảng HOC_SINH_NGHI_HOC.
+ */
+test.describe('@infra suy đoán — không bắt nhầm tên bảng viết hoa có gạch dưới', () => {
+  const coSuyDoan = (mo: string) => rules
+    .lintBugRealism({ summary: 'x', description: mo })
+    .some((p: { message: string }) => /SUY ĐOÁN/.test(p.message));
+
+  for (const mo of [
+    'Chuyển lớp bỏ sót HOC_SINH_NGHI_HOC, hai bảng trỏ về hai lớp khác nhau',
+    'Cột MA_LY_DO_NGHI để trống sau khi ghi',
+    'Bảng CHUYEN_CAN và HOC_SINH_NGHI_HOC bất nhất',
+    'Thống kê nghỉ học theo lớp tính nhầm học sinh',
+  ]) {
+    test(`cho qua: ${mo.slice(0, 48)}`, () => {
+      expect(coSuyDoan(mo), 'tên bảng và từ nghỉ có dấu không phải suy đoán').toBe(false);
+    });
+  }
+
+  for (const mo of [
+    'Lỗi này nghi do cache phía máy chủ',
+    'Khả năng cao là do phân quyền',
+    'Có thể do dữ liệu cũ',
+    'Tôi đoán là lỗi ánh xạ cột',
+    'Chắc là do phiên hết hạn',
+  ]) {
+    test(`vẫn chặn: ${mo.slice(0, 48)}`, () => {
+      expect(coSuyDoan(mo), 'câu suy đoán nguyên nhân vẫn phải bị chặn').toBe(true);
+    });
+  }
+});

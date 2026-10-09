@@ -18,8 +18,20 @@ export interface StorageStateLike {
   origins?: Array<{ origin?: string; localStorage?: Array<{ name: string; value: string }> }>;
 }
 
+/*
+ * Mẫu URL của MÀN ĐĂNG NHẬP — bị đẩy về đây nghĩa là phiên đã chết.
+ *
+ * ⚠️ SỬA 30/09/2026. Bản trước chỉ kiểm `/auth/login` (mẫu của LMS). QEMIS là ASP.NET WebForms và đá về
+ * **`/Login.aspx`**, không khớp mẫu đó ⇒ phiên CHẾT bị chấm là CÒN SỐNG, `loginOps` trả về mà không đăng
+ * nhập, và spec chạy tiếp trong trạng thái chưa auth. Lỗi im lặng: không ném, không đỏ ở bước seed, chỉ
+ * vỡ ở assertion sau đó dưới dạng "không tìm thấy element" — trông y hệt bug sản phẩm.
+ *
+ * Thêm mẫu, KHÔNG thay mẫu cũ: `/auth/login` giữ nguyên nên 30 spec của lane LMS không đổi hành vi.
+ */
+const LOGIN_URL_PATTERNS = [/\/auth\/login/i, /\/login\.aspx/i];
+
 /**
- * @returns true nếu seed xong và KHÔNG bị đẩy về /auth/login (tức phiên còn dùng được).
+ * @returns true nếu seed xong và KHÔNG bị đẩy về màn đăng nhập (tức phiên còn dùng được).
  */
 export async function seedSession(
   page: Page,
@@ -45,5 +57,6 @@ export async function seedSession(
   const base = (ss.origins && ss.origins[0] && ss.origins[0].origin) || baseFallback;
   if (!base) return false;
   await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => { /* xác minh bằng URL bên dưới */ });
-  return !/\/auth\/login/.test(page.url());
+  const url = page.url();
+  return !LOGIN_URL_PATTERNS.some((re) => re.test(url));
 }

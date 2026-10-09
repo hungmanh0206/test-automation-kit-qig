@@ -26,7 +26,20 @@
     "entities": {}
   },
   "relations": {
-    "_why": "CHƯA ĐO Ở DỰ ÁN NÀY. Khai bảng cha → các bảng con phải đổi theo khi sửa bản ghi chính. Đây là nguồn cho `expectCount` quan hệ cha–con."
+    "_why": "CHƯA ĐO Ở DỰ ÁN NÀY. Khai bảng cha → các bảng con phải đổi theo khi sửa bản ghi chính. Đây là nguồn cho `expectCount` quan hệ cha–con.",
+    "_csdl9002_LOP": {
+      "_do_ngay": "2026-09-30",
+      "_nguon": "tests/support/setup/db/csdl9002.chuyenlop.impact.spec.ts + csdl9002.lop.schema.spec.ts",
+      "bangMangKhoaLop": 81,
+      "coKhoaNgoaiThat": [
+        "DOT_NHAP_DIEM_LOP.ID_LOP",
+        "HOC_SINH.ID_LOP",
+        "KHOA_SO_LOP_MON_HOC.ID_LOP",
+        "LOP_CAU_HINH_IN_AN.ID_LOP"
+      ],
+      "_canh_bao": "81 bảng mang `ID_LOP`/`MA_LOP` nhưng CHỈ 4 có khoá ngoại thật. 77 bảng còn lại (LOP_MON, LOP_NGHE, CHUYEN_CAN, TONG_KET, MIEN_MON, NHAN_SU_LOP_CHU_NHIEM…) không có gì ở tầng DB ngăn chúng thành dòng mồ côi khi xoá lớp. Đã đếm 2.699 dòng mồ côi sẵn có ở LOP_MON. Xem `BR-HSLOP-030`.",
+      "khongCoCotSiSo": "Bảng LOP KHÔNG có cột nào mang nghĩa sĩ số ⇒ mọi con số sĩ số hiển thị là đếm sống từ HOC_SINH."
+    }
   },
   "rates": {
     "_why": "TÁCH KHỎI khối `money` có chủ ý: cột tỉ lệ hay phần trăm gọi lên `money()` thì thông điệp sai (\"lệch 5 đồng\" cho một tỉ lệ) và so sánh sai ngữ nghĩa. Cách phân biệt: đo biên độ giá trị thật, biên độ kiểu 0..100 thì không thể là tiền.",
@@ -34,7 +47,7 @@
     "unitUnknown": []
   },
   "safety": {
-    "_why_requireReadonlyUser": "TAT 24/09/2026 theo quyet dinh cua chu du an. Login `csdl` tren DB nghiep vu UAT map sang `dbo` va thuoc db_owner + db_datawriter + db_ddladmin (du INSERT/UPDATE/DELETE/ALTER/CONTROL/TAKE OWNERSHIP tren 888 bang). Bat co nay lai thi assertReadOnly() se CHAN moi ket noi. Doi lai, lop chan duy nhat con lai la lint `assertReadOnlySql`/`assertReadOnlyQuery` trong tien trinh — T-SQL KHONG co transaction READ ONLY nhu Postgres. Xin duoc login chi SELECT thi bat lai thanh true.",
+    "_why_requireReadonlyUser": "TAT 24/09/2026 theo quyet dinh cua chu du an, GIU NGUYEN sau ra soat 30/09/2026. Login `csdl` tren DB nghiep vu UAT map sang `dbo` va thuoc db_owner + db_datawriter + db_ddladmin (du INSERT/UPDATE/DELETE/ALTER/CONTROL/TAKE OWNERSHIP tren 888 bang). QUYET DINH 30/09/2026 (chu du an): KHONG xin them login chi-SELECT — chi co tai khoan DBA da cap, va nhom TU GIOI HAN o tang code. Vi vay lop chan duy nhat la lint `assertReadOnlySql` trong tien trinh (T-SQL KHONG co transaction READ ONLY nhu Postgres). Lop chan do CO RANG, do duoc: 7 test o tests/fe/infra/db-verify-layer.spec.ts phu tu khoa ghi/DDL, cau ghi giau sau mot SELECT hop le, `SELECT ... INTO <bang>`, thu tuc he thong/doc-ghi file, stacked query, va cau rong — 60/61 test cua file do xanh ngay 30/09/2026. RUI RO CON LAI, noi ro de khong ai tuong da an toan tuyet doi: lop chan chi ap cho cau di qua `queryUatReadonly`. Bat ky duong nao KHONG qua helper do — goi thang `tedious`, `sqlcmd`, SSMS, hay mot script moi — deu KHONG duoc chan. Ky luat do nam o review code, khong nam o may.",
     "requireReadonlyUser": false,
     "_why_allowedHosts": "Repo PUBLIC ma file nay DUOC COMMIT => KHONG ghi host noi bo vao day. Khai host that o `LIB_MASTER_DB_ALLOWED_HOSTS` trong `.env` / `profiles/<TASK>/task.env` (gitignored); loadConventions() gop env TRUOC roi moi toi danh sach nay. Bo trong ca hai => khong ap allowlist.",
     "allowedHosts": [],
@@ -44,7 +57,15 @@
       "live"
     ],
     "statementTimeoutMs": 5000,
-    "maxRows": 500
+    "maxRows": 500,
+    "waiver": {
+      "noi_dung": "Giữ `requireReadonlyUser: false`. Không xin login chỉ-SELECT.",
+      "ly_do": "Chỉ có tài khoản DBA đã cấp; nhóm tự giới hạn chỉ SELECT ở tầng code.",
+      "nguoi_quyet": "Chủ dự án (it-dev@sapp.edu.vn), nêu trong phiên làm việc 30/09/2026",
+      "bu_tru": "assertReadOnlySql trong tests/support/setup/db/uatDbClient.ts — 7 test phủ ở tests/fe/infra/db-verify-layer.spec.ts",
+      "_canh_bao": "Đây là MIỄN TRỪ CÓ GHI, không phải \"đã an toàn\". `db_verify_preflight` vẫn CHẶN — và nên chặn — cho tới khi kit có cơ chế miễn trừ có chữ ký. Đừng gỡ chặn bằng cách sửa lặng lẽ.",
+      "ngay": "2026-09-30"
+    }
   },
   "fieldMap": {
     "_why": "BẢN ĐỒ cột DB ↔ nhãn UI, KHOÁ THEO MÀN. Khoá theo màn là bắt buộc, không phải cho đẹp: cùng một cột thường hiện dưới hai nhãn khác nhau ở hai màn, nên neo toàn cục thì giao rỗng, còn bỏ luật giao thì neo sai màn.",
@@ -55,9 +76,74 @@
     "_canh_bao_nhan_trung_ten_cot": "Đừng suy neo từ việc tên nhãn trùng tên cột. Đã gặp ca cột `full_name` toàn NULL trong khi màn vẫn hiện nhãn \"Full name\" lấy giá trị từ hai cột khác — neo theo tên là sai hoàn toàn.",
     "_canh_bao_instrument_mu": "Bộ đọc form báo \"0 dropdown\" ở mọi form nghiệp vụ là dấu hiệu SỬA CÔNG CỤ, không phải kết luận \"form không có field\". Component dropdown hiện đại thường là `div` chứ không phải `<select>` nên `input.value` rỗng; phải đọc phần tử hiển thị giá trị đã chọn và trạng thái checked.",
     "_canh_bao_lech_giua_man": "Lệch giữa các màn phải giữ RIÊNG, KHÔNG trộn vào bản đồ nhãn. Bản đồ nhãn là thứ app LẼ RA phải hiện; lệch là PHÁT HIỆN. Trộn vào nhau thì phép kiểm sau này lấy chính cái sai làm chuẩn rồi assert theo nó.",
-    "byScreen": {},
+    "byScreen": {
+      "Quản lý hồ sơ lớp học": {
+        "TEN": "Tên lớp",
+        "THU_TU": "Thứ tự",
+        "MA_DANH_MUC_NGOAI_NGU": "Học ngoại ngữ 1",
+        "MA_DANH_MUC_NGOAI_NGU_2": "Học ngoại ngữ 2",
+        "MA_SO_BUOI_HOC_TREN_TUAN": "Số buổi học trên tuần",
+        "IS_BAN_TRU": "Bán trú",
+        "IS_LOP_SONG_NGU": "Lớp song ngữ",
+        "_route": "/{C1|C2|C3|GDTX}/Lop.aspx — đo trên /C2/Lop.aspx (cấp THCS) ngày 30/09/2026; đường dẫn đổi theo cấp học nhưng lưới cùng cấu trúc."
+      }
+    },
     "valueMaps": {},
-    "unanchored": {},
-    "notDisplayed": {}
+    "unanchored": {
+      "LOP.TEN@Quản lý hồ sơ lớp học": "Đo trên schema UAT BO_GIAO_DUC_2026 ngày 30/09/2026 bằng csdl9002.*.spec.ts (5 phép đo). CHƯA đọc được màn \"2.1.1 Quản lý hồ sơ lớp học\" nên chưa có cặp nhãn→giá trị nào để lấy giao: 0/35 trường đặc tả có cặp đo được. Không neo bằng cách so tên cột với nhãn đặc tả. Đo thêm: kiểu `nvarchar(50)`, trong khi đặc tả nói ba cấp phổ thông tối đa 200 ký tự — hai nguồn mâu thuẫn, đừng neo trước khi BA chốt.",
+      "LOP.MA_KHOI@Quản lý hồ sơ lớp học": "Đo trên schema UAT BO_GIAO_DUC_2026 ngày 30/09/2026 bằng csdl9002.*.spec.ts (5 phép đo). CHƯA đọc được màn \"2.1.1 Quản lý hồ sơ lớp học\" nên chưa có cặp nhãn→giá trị nào để lấy giao: 0/35 trường đặc tả có cặp đo được. Không neo bằng cách so tên cột với nhãn đặc tả. Đo thêm: GDTX dùng mã khối 13/14/15, KHÔNG phải 10/11/12.",
+      "LOP.MA_PHAN_HIEU@Quản lý hồ sơ lớp học": "Đo trên schema UAT BO_GIAO_DUC_2026 ngày 30/09/2026 bằng csdl9002.*.spec.ts (5 phép đo). CHƯA đọc được màn \"2.1.1 Quản lý hồ sơ lớp học\" nên chưa có cặp nhãn→giá trị nào để lấy giao: 0/35 trường đặc tả có cặp đo được. Không neo bằng cách so tên cột với nhãn đặc tả. Đo thêm: tên lớp duy nhất theo PHÂN HIỆU chứ không theo trường (528 cụm trùng tên khác phân hiệu là hợp lệ; 22 cụm trùng trong cùng phân hiệu là vi phạm `NT-PH-06`).",
+      "LOP.THU_TU@Quản lý hồ sơ lớp học": "Đo trên schema UAT BO_GIAO_DUC_2026 ngày 30/09/2026 bằng csdl9002.*.spec.ts (5 phép đo). CHƯA đọc được màn \"2.1.1 Quản lý hồ sơ lớp học\" nên chưa có cặp nhãn→giá trị nào để lấy giao: 0/35 trường đặc tả có cặp đo được. Không neo bằng cách so tên cột với nhãn đặc tả.",
+      "LOP.IS_LOP_XOA_MU_CHU@Quản lý hồ sơ lớp học": "Đo trên schema UAT BO_GIAO_DUC_2026 ngày 30/09/2026 bằng csdl9002.*.spec.ts (5 phép đo). CHƯA đọc được màn \"2.1.1 Quản lý hồ sơ lớp học\" nên chưa có cặp nhãn→giá trị nào để lấy giao: 0/35 trường đặc tả có cặp đo được. Không neo bằng cách so tên cột với nhãn đặc tả. Đo thêm: cột *Cấp áp dụng* của đặc tả ghi \"chỉ TH\" nhưng dữ liệu thật có THCS 20 · THPT 9 · TH chỉ 6 lớp dùng.",
+      "LOP.IS_DAY_2_BUOI_NGAY@Quản lý hồ sơ lớp học": "Đo trên schema UAT BO_GIAO_DUC_2026 ngày 30/09/2026 bằng csdl9002.*.spec.ts (5 phép đo). CHƯA đọc được màn \"2.1.1 Quản lý hồ sơ lớp học\" nên chưa có cặp nhãn→giá trị nào để lấy giao: 0/35 trường đặc tả có cặp đo được. Không neo bằng cách so tên cột với nhãn đặc tả. Đo thêm: đặc tả ghi \"chỉ MN\" nhưng TH/THCS/THPT đều dùng.",
+      "HOC_SINH.MA_PHAN_HIEU@Quản lý hồ sơ lớp học": "Đo trên schema UAT BO_GIAO_DUC_2026 ngày 30/09/2026 bằng csdl9002.*.spec.ts (5 phép đo). CHƯA đọc được màn \"2.1.1 Quản lý hồ sơ lớp học\" nên chưa có cặp nhãn→giá trị nào để lấy giao: 0/35 trường đặc tả có cặp đo được. Không neo bằng cách so tên cột với nhãn đặc tả. Đây là BẢN SAO phi chuẩn hoá của `LOP.MA_PHAN_HIEU`, hiện lệch nguồn 2.486/229.915 dòng — xem `BR-HSLOP-029`.",
+      "HOC_SINH.MA_KHOI@Quản lý hồ sơ lớp học": "Đo trên schema UAT BO_GIAO_DUC_2026 ngày 30/09/2026 bằng csdl9002.*.spec.ts (5 phép đo). CHƯA đọc được màn \"2.1.1 Quản lý hồ sơ lớp học\" nên chưa có cặp nhãn→giá trị nào để lấy giao: 0/35 trường đặc tả có cặp đo được. Không neo bằng cách so tên cột với nhãn đặc tả. Bản sao phi chuẩn hoá của `LOP.MA_KHOI`, hiện lệch 0 dòng.",
+      "HOC_SINH.MA_TRUONG@Quản lý hồ sơ lớp học": "Đo trên schema UAT BO_GIAO_DUC_2026 ngày 30/09/2026 bằng csdl9002.*.spec.ts (5 phép đo). CHƯA đọc được màn \"2.1.1 Quản lý hồ sơ lớp học\" nên chưa có cặp nhãn→giá trị nào để lấy giao: 0/35 trường đặc tả có cặp đo được. Không neo bằng cách so tên cột với nhãn đặc tả. Bản sao phi chuẩn hoá, hiện lệch 1.133/229.915 dòng.",
+      "MA_KHOI@Quản lý hồ sơ lớp học": "Đo 30/09/2026 trên màn \"Quản lý hồ sơ lớp học\" (/C2/Lop.aspx, 8 lớp của trường 01000754): giá trị KHỚP MA_KHOI ở cả 8 dòng, nhưng toàn bộ 8 dòng đều bằng \"06\" ⇒ chưa phân biệt được với mọi cột hằng khác (lưới luôn lọc theo MỘT khối nên cột này không thể biến thiên trong một lần đọc). Khớp mà không phân biệt được KHÔNG phải bằng chứng. Gỡ treo bằng cách đọc thêm lưới ở khối khác hoặc trường khác cho tới khi ô này có ≥2 giá trị.",
+      "IS_CO_HOC_SINH_HOC_NGHE@Quản lý hồ sơ lớp học": "Đo 30/09/2026 trên màn \"Quản lý hồ sơ lớp học\" (/C2/Lop.aspx, 8 lớp của trường 01000754): giá trị KHỚP IS_CO_HOC_SINH_HOC_NGHE ở cả 8 dòng, nhưng toàn bộ 8 dòng đều bằng \"0\" ⇒ chưa phân biệt được với 14 cột IS_* khác của LOP cũng bằng 0 ở 8 lớp này. Khớp mà không phân biệt được KHÔNG phải bằng chứng. Gỡ treo bằng cách đọc thêm lưới ở khối khác hoặc trường khác cho tới khi ô này có ≥2 giá trị.",
+      "IS_LOP_GHEP@Quản lý hồ sơ lớp học": "Đo 30/09/2026 trên màn \"Quản lý hồ sơ lớp học\" (/C2/Lop.aspx, 8 lớp của trường 01000754): giá trị KHỚP IS_LOP_GHEP ở cả 8 dòng, nhưng toàn bộ 8 dòng đều bằng \"0\" ⇒ chưa phân biệt được với IS_LOP_GHEP_2_TUOI / _3_TUOI / _4_TUOI và các cột IS_* khác, đều bằng 0. Khớp mà không phân biệt được KHÔNG phải bằng chứng. Gỡ treo bằng cách đọc thêm lưới ở khối khác hoặc trường khác cho tới khi ô này có ≥2 giá trị.",
+      "ISVNEN@Quản lý hồ sơ lớp học": "Đo 30/09/2026 trên màn \"Quản lý hồ sơ lớp học\" (/C2/Lop.aspx, 8 lớp của trường 01000754): giá trị KHỚP ISVNEN ở cả 8 dòng, nhưng toàn bộ 8 dòng đều bằng \"0\" ⇒ chưa phân biệt được với các cột IS_* khác của LOP, đều bằng 0. Khớp mà không phân biệt được KHÔNG phải bằng chứng. Gỡ treo bằng cách đọc thêm lưới ở khối khác hoặc trường khác cho tới khi ô này có ≥2 giá trị.",
+      "GIAI_THE@Quản lý hồ sơ lớp học": "Đo 30/09/2026 trên màn \"Quản lý hồ sơ lớp học\" (/C2/Lop.aspx, 8 lớp): cột lưới \"Lớp giải thể\" dùng control id \"chbGiaiTheKI\", nhưng dbo.LOP KHÔNG có cột nào chứa chuỗi GIAI hay THE — 0 ứng viên trên 1 phép quét toàn bộ cột của bảng. Nghĩa là giá trị này KHÔNG nằm ở LOP: hoặc tính động, hoặc ở bảng khác. Đừng neo vào tên control — id là tên biến của lập trình viên, không phải tên cột.",
+      "SI_SO@Quản lý hồ sơ lớp học": "Đo 30/09/2026 trên màn \"Quản lý hồ sơ lớp học\" (/C2/Lop.aspx): lưới có 25 ô tiêu đề, KHÔNG ô nào về sĩ số; và dbo.LOP không có cột SI_SO trên 1 phép quét toàn bộ cột. Sĩ số nếu hiện ở đâu đó là ĐẾM SỐNG từ HOC_SINH, không phải cột lưu sẵn. Ảnh hưởng expected của CSDL_LOP_TC_134."
+    },
+    "notDisplayed": {
+      "LOP.ID@Quản lý hồ sơ lớp học": "Đo ngày 30/09/2026: khoá thay thế, không nằm trong 35 trường của màn \"2.1.1 Quản lý hồ sơ lớp học\". Dùng để phân biệt 2 lớp TRÙNG TÊN ở 2 phân hiệu (528 cụm trùng tên hợp lệ) — đừng phân biệt lớp bằng tên.",
+      "MA_GIAO_VIEN_CHU_NHIEM@Quản lý hồ sơ lớp học": "Đo 30/09/2026: cột \"Giáo viên chủ nhiệm\" có trên lưới nhưng RỖNG ở cả 8 lớp, và MA_GIAO_VIEN_CHU_NHIEM trong DB cũng null. Rỗng ↔ null không phân biệt được với bất kỳ cột rỗng nào khác ⇒ không neo.",
+      "MA_DIEM_TRUONG@Quản lý hồ sơ lớp học": "Đo 30/09/2026: cột \"Điểm trường\" rỗng ở cả 8 lớp, DB cũng null. Cùng lý do trên."
+    },
+    "_trang_thai_csdl9002": "CSDL-9002 (Quản lý hồ sơ lớp học) ĐÃ đo schema nhưng CHƯA neo được màn nào — xem `unanchored`. 8 case `[DbPersist]` của task này vì vậy vẫn bị `guard.ts` từ chối phán, ĐÚNG như thiết kế. Gỡ được khi vào được UI: pin `OPS_BASE_URL`, chốt đơn vị test, rồi đọc read-only theo `_method`.",
+    "_nguon_csdl9002": {
+      "man": "Quản lý hồ sơ lớp học",
+      "url": "https://devtruongdevelop.quangich.com/C2/Lop.aspx (cấp THCS)",
+      "do_ngay": "2026-09-30",
+      "don_vi": "MN-TH-THCS-THPT-GDTX Thủ Đô (01000754), Thành phố Hà Nội, năm học 2026",
+      "bang_chung": "8 lớp × 6 ô = 80 phép so, 0 lệch — tests/support/setup/db/csdl9002.neo.doichieu.spec.ts (CÓ assertion, lệch 1 ô là ĐỎ)",
+      "_bay_da_gap": "Vòng đầu 4/80 ô \"lệch\" — thật ra tra nhầm lớp TRÙNG TÊN ở phân hiệu khác. Khoá tra cứu phải là (TEN + MA_PHAN_HIEU), vì NT-PH-06 CHO PHÉP trùng tên giữa các phân hiệu. Tra theo tên là lấy nhầm bản ghi rồi kết luận app sai.",
+      "_bay_da_gap_2": "Nhãn \"Học ngoại ngữ 1\" KHÔNG ứng với cột MA_HOC_NGOAI_NGU_1 — cột đó KHÔNG TỒN TẠI. Thật ra là MA_DANH_MUC_NGOAI_NGU. Suy neo từ tên nhãn giống tên cột là neo vào cột không có."
+    },
+    "_cot_luoi_csdl9002": {
+      "_do_ngay": "2026-09-30",
+      "_ghi_chu": "Đọc từ bảng tiêu đề ctl00_ContentPlaceHolder1_ctl00_RadGrid1_ctl00_Header. Mỗi cột \"kép\" là một cặp MÃ + NHÃN (vd Phân hiệu: mã 01000754 rồi tên trường). KHÔNG có cột Sĩ số.",
+      "cot": [
+        "STT",
+        "Sửa",
+        "Phân hiệu",
+        "Tên lớp",
+        "Khối",
+        "Thứ tự",
+        "Giáo viên chủ nhiệm",
+        "Học ngoại ngữ 1",
+        "Học ngoại ngữ 2",
+        "Học sinh học nghề",
+        "Lớp ghép",
+        "Ghép vào lớp",
+        "Bán trú",
+        "Lớp song ngữ",
+        "Lớp VNEN",
+        "Số buổi học trên tuần",
+        "Lớp giải thể",
+        "Điểm trường"
+      ]
+    }
   }
 }

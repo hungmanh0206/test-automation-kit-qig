@@ -120,6 +120,49 @@ test.describe('@infra preflight DB verify — kiểm TĨNH có răng', () => {
     expect(p).toMatch(/non-negotiable|CLAUDE\.md/);
   });
 
+  /*
+   * Miễn trừ chỉ có nghĩa khi nó CHẶT. Ba test dưới khoá đúng chỗ dễ trượt: miễn trừ rỗng, miễn trừ
+   * thiếu vế, và miễn trừ đủ vế. Thiếu bộ này thì lần sau ai đó thêm `waiver: {}` là gate im lặng cho qua.
+   */
+  const WAIVER_DU = {
+    ly_do: 'Nhà cung cấp chỉ cấp một tài khoản DBA, không tách được login chỉ-SELECT.',
+    nguoi_quyet: 'Chủ dự án (nêu tên thật)',
+    bu_tru: 'assertReadOnlySql trong tests/support/setup/db/uatDbClient.ts',
+    _canh_bao: 'Chỉ áp cho câu đi qua queryUatReadonly; gọi thẳng driver thì không được chặn.',
+  };
+
+  test('requireReadonlyUser: false + miễn trừ RỖNG ⇒ vẫn chặn', () => {
+    const conv = JSON.parse(JSON.stringify(GOOD_CONV));
+    conv.safety.requireReadonlyUser = false;
+    conv.safety.waiver = {};
+    const p = run({ conv }).problems.join(' ');
+    expect(p, 'miễn trừ rỗng mà lọt thì cơ chế này vô dụng').toMatch(/requireReadonlyUser = false/);
+  });
+
+  test('miễn trừ THIẾU bất kỳ vế nào ⇒ vẫn chặn, và nói rõ thiếu vế nào', () => {
+    for (const bo of ['nguoi_quyet', 'ly_do', 'bu_tru', '_canh_bao']) {
+      const conv = JSON.parse(JSON.stringify(GOOD_CONV));
+      conv.safety.requireReadonlyUser = false;
+      conv.safety.waiver = { ...WAIVER_DU };
+      delete (conv.safety.waiver as Record<string, unknown>)[bo];
+      const p = run({ conv }).problems.join(' ');
+      expect(p, `bỏ "${bo}" mà vẫn lọt ⇒ miễn trừ không chặt`).toMatch(/requireReadonlyUser = false/);
+      expect(p, `phải nói rõ đang thiếu "${bo}"`).toContain(bo);
+    }
+  });
+
+  test('miễn trừ ĐỦ bốn vế ⇒ hạ xuống cảnh báo, và cảnh báo phải nêu người quyết + lớp bù trừ', () => {
+    const conv = JSON.parse(JSON.stringify(GOOD_CONV));
+    conv.safety.requireReadonlyUser = false;
+    conv.safety.waiver = { ...WAIVER_DU };
+    const r = run({ conv });
+    expect(r.problems.join(' '), JSON.stringify(r.problems)).not.toMatch(/requireReadonlyUser/);
+    const w = r.warnings.join(' ');
+    expect(w).toMatch(/MIỄN TRỪ CÓ CHỮ KÝ/);
+    expect(w, 'cảnh báo không nêu người quyết thì không ai truy được trách nhiệm').toContain('Chủ dự án');
+    expect(w, 'cảnh báo không nêu lớp bù trừ thì không ai kiểm được nó có thật').toContain('assertReadOnlySql');
+  });
+
   test('fieldMap.byScreen rỗng ⇒ chặn (chưa neo cột nào thì không được phán bằng DB)', () => {
     const conv = JSON.parse(JSON.stringify(GOOD_CONV));
     conv.fieldMap.byScreen = {};
@@ -208,6 +251,25 @@ test.describe('@infra preflight DB verify — nối vào gate thật', () => {
     // runPreflight (sync, harness hook gọi) KHÔNG được chứa phép đo sống.
     const rp = src.slice(src.indexOf('function runPreflight'), src.indexOf('function checkHarnessHooks'));
     expect(rp, 'phép đo sống lọt vào runPreflight ⇒ hook sẽ chờ mạng').not.toContain('checkDbReadonlyLive');
+  });
+
+  /*
+   * Miễn trừ phải áp cho CẢ phép đo sống, nếu không thì nới cờ tĩnh xong gate vẫn đỏ vĩnh viễn —
+   * miễn trừ coi như không có. Nhưng chỉ được nới ĐÚNG kết luận "có quyền ghi": phép đo HỎNG
+   * (không đọc được dòng quyền nào / không kết nối được) vẫn phải chặn, vì "không phán được" KHÔNG
+   * thành đạt. Test đọc mã nguồn vì nhánh này nằm trong `main()` của CLI.
+   */
+  test('miễn trừ có chữ ký áp cho phép đo sống, và CHỈ cho kết luận "có quyền ghi"', () => {
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/preflight_gate.js'), 'utf8');
+    const i = src.indexOf('dbv.checkDbReadonlyLive');
+    expect(i, 'không tìm thấy chỗ gọi phép đo sống').toBeGreaterThan(0);
+    const khoi = src.slice(i, i + 1800);
+    expect(khoi, 'chưa đọc safety.waiver ⇒ miễn trừ không với tới phép đo sống').toContain('waiver');
+    for (const ve of ['nguoi_quyet', 'ly_do', 'bu_tru', '_canh_bao']) {
+      expect(khoi, `miễn trừ phải đòi đủ vế "${ve}"`).toContain(ve);
+    }
+    expect(khoi, 'phải nới ĐÚNG kết luận "có quyền ghi", không nới cả nhóm').toMatch(/CÓ quyền ghi/);
+    expect(khoi, 'các kết luận còn lại vẫn phải vào problems').toMatch(/problems\.push\(p\)/);
   });
 
   test('§23 phải nhắc lệnh preflight (gate không ai gọi thì không phải gate)', () => {

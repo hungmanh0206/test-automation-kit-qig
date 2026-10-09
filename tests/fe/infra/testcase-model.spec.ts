@@ -16,7 +16,7 @@ import path from 'path';
 const REPO = path.resolve(__dirname, '..', '..', '..');
 const read = (p: string) => fs.readFileSync(path.join(REPO, p), 'utf8');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { groupNumbered, splitNumbered, buildTestCase, validate, tagNamesOf } = require(path.join(REPO, 'scripts/lib/testcase'));
+const { groupNumbered, splitNumbered, buildTestCase, validate, tagNamesOf, cleanCell } = require(path.join(REPO, 'scripts/lib/testcase'));
 
 const PROMPT = 'prompt_templates/phase1/02_gen_testcases.md';
 
@@ -182,5 +182,107 @@ test.describe('@infra Ưu tiên → risk band — PRIO_RANK phải phủ đủ 5
     expect(src, "REQUIRED_COLS không được đòi cột Severity").not.toMatch(/'Severity \| Mức độ rủi ro'/);
     // check "High-risk cần [Boundary]/[Security]" phải neo vào Ưu tiên, không thì im lặng ở bộ mới
     expect(src).toMatch(/highs = doc\.tests\.filter\(\(t\) => \/\^\(critical\|high\)\$\/i\.test/);
+  });
+});
+
+test.describe('@infra cleanCell — Markdown nội dòng KHÔNG được lọt vào Excel/Google Sheet', () => {
+  /*
+   * VÌ SAO CÓ NHÓM NÀY (đo 30/09/2026 trên bộ CSDL-9004, 150 case, 1500 ô dữ liệu):
+   * backtick được bóc 52/52 ô, nhưng **đậm** LỌT NGUYÊN 18/18 ô vào .xlsx. Excel và Google Sheet
+   * không render Markdown, nên ô testcase hiện ra đầy dấu sao — người đọc testcase phải đọc rác.
+   * Lỗi này không thuộc riêng task nào: mọi bộ case dùng cú pháp đậm đều dính. Khoá lại bằng test
+   * để lần gen sau ở task khác không tái diễn.
+   */
+  const TICK = String.fromCharCode(96);
+  const CASES: Array<[string, string, string]> = [
+    ['bỏ đậm', 'Ô Mã định danh bị **khoá**, không nhập được', 'Ô Mã định danh bị khoá, không nhập được'],
+    ['bỏ đậm nhiều lần trong một ô', '**A** rồi **B** rồi **C**', 'A rồi B rồi C'],
+    ['đậm trải qua xuống dòng', 'mở **đầu\ncuối** xong', 'mở đầu\ncuối xong'],
+    ['bỏ gạch ngang', 'giá trị ~~cũ~~ đã bỏ', 'giá trị cũ đã bỏ'],
+    ['bỏ backtick', `cột ${TICK}MA_NAM_HOC${TICK} là năm học`, 'cột MA_NAM_HOC là năm học'],
+    ['đậm lồng backtick', `**cột ${TICK}API_MA_BO${TICK}** để trống`, 'cột API_MA_BO để trống'],
+    ['dấu sao LẺ không bị đụng', 'ghi chú (*) xem dưới', 'ghi chú (*) xem dưới'],
+    ['phép nhân không bị đụng', 'tổng = 2 * 3 * 4', 'tổng = 2 * 3 * 4'],
+    ['một dấu ngã lẻ không bị đụng', 'xấp xỉ ~50 dòng', 'xấp xỉ ~50 dòng'],
+  ];
+  for (const [ten, vao, ra] of CASES) {
+    test(ten, () => { expect(cleanCell(vao)).toBe(ra); });
+  }
+
+  test('thẻ <br> thành xuống dòng thật', () => {
+    expect(cleanCell('1. một<br>2. hai')).toBe('1. một\n2. hai');
+  });
+
+  test('icon bị bóc, nhưng MŨI TÊN thì giữ vì là chữ nghĩa', () => {
+    /*
+     * Dải stripEmoji cũ (`\u{1F300}+` và `✀-➿`) bỏ sót đúng hai icon hay dùng nhất trong
+     * ghi chú: ⚠ U+26A0 (130 lần) và ⛔ U+26D4 (9 lần) — chúng nằm ở khối Misc Symbols U+2600–U+26FF
+     * và lọt thẳng ra Excel. Đo 30/09/2026 trên 5 bộ testcase.
+     */
+    expect(cleanCell('⚠️ Mask PII trước khi chụp')).toBe('Mask PII trước khi chụp');
+    expect(cleanCell('⛔ CHƯA EXECUTE ĐƯỢC')).toBe('CHƯA EXECUTE ĐƯỢC');
+    expect(cleanCell('🔒 File chứa PII')).toBe('File chứa PII');
+    expect(cleanCell('✅ đạt · ❌ không đạt')).toBe('đạt · không đạt');
+    // mũi tên là nội dung, không phải trang trí
+    expect(cleanCell('màn 1.1 → màn 1.3 ⇒ khác nhau ↔ hai chiều')).toBe('màn 1.1 → màn 1.3 ⇒ khác nhau ↔ hai chiều');
+  });
+
+  test('in nghiêng bị bóc, nhưng dấu sao của SQL thì giữ', () => {
+    /*
+     * `COUNT(*)` và tên cột kiểu `IS_*` / `*_KHONG_DAU` phải sống sót — chúng là nội dung truy vấn thật
+     * trong cột Các bước. Nếu luật in-nghiêng ghép hai `(*)` trong cùng một ô thì ăn mất cả đoạn SQL.
+     */
+    expect(cleanCell('Đặc tả ghi *"tối đa 250 ký tự"* nên chặn')).toBe('Đặc tả ghi "tối đa 250 ký tự" nên chặn');
+    expect(cleanCell('BR-C07: *"mã lớp phải khớp<br>- ngoài danh mục thì báo lỗi"* xong'))
+      .toBe('BR-C07: "mã lớp phải khớp\n- ngoài danh mục thì báo lỗi" xong');
+    expect(cleanCell('SELECT COUNT(*) AS N FROM LOP')).toBe('SELECT COUNT(*) AS N FROM LOP');
+    expect(cleanCell('SELECT COUNT(*) FROM A rồi COUNT(*) FROM B')).toBe('SELECT COUNT(*) FROM A rồi COUNT(*) FROM B');
+    expect(cleanCell('Danh sách 51 cột IS_* của bảng TRUONG')).toBe('Danh sách 51 cột IS_* của bảng TRUONG');
+    expect(cleanCell('phép so chạy trên các cột *_KHONG_DAU nên bỏ dấu')).toBe('phép so chạy trên các cột *_KHONG_DAU nên bỏ dấu');
+  });
+
+  test('ghi chú của người viết case KHÔNG được nằm trong "Kết quả mong đợi"', () => {
+    /*
+     * Người đọc testcase trên Excel/Sheet cần biết KIỂM CÁI GÌ, không cần biết vì sao case ra đời.
+     * Đo 30/09/2026 trên 5 bộ đã sinh: 254 dòng loại này lẫn trong ô Kết quả mong đợi.
+     * CẢNH BÁO chứ không CHẶN — phân loại là heuristic, chặn nhầm sẽ đẩy người ta đi XOÁ assertion
+     * con thật cho qua cửa, đúng thứ RULE_GLOBAL §6 cấm.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { noteLinesInExpected } = require(path.join(REPO, 'scripts/qa/lib/output_rules'));
+    const LA_GHI_CHU = [
+      '- Oracle: BR-THPT-A09',
+      '- ASSUMPTION Q2: chấm theo bộ KEY 4 thành phần',
+      '- OBSERVATION: đặc tả chưa nêu quy tắc này',
+      '- Đo DB 28/09/2026: bảng có 4493 dòng NULL',
+      '- Cặp đôi với CSDL_HS_TC_064 (cùng luồng)',
+      '- Bất kỳ cặp nào hoán đổi cho nhau là FAIL',
+    ];
+    for (const s of LA_GHI_CHU) {
+      expect(noteLinesInExpected(s), `phải nhận ra ghi chú: ${s}`).toHaveLength(1);
+    }
+
+    const PHAI_GIU = [
+      '1. Hệ thống CHẶN lưu, không tạo bản ghi mới',
+      '- Nhãn nút: "Đồng bộ dữ liệu"',                                  // có trích nguyên văn
+      '- File kết quả chứa dữ liệu học sinh, không đính vào report',     // ràng buộc an toàn
+      '- Mask Họ tên khi chụp evidence',                                 // ràng buộc an toàn
+      '- Ô Email vẫn sửa được bình thường',                              // assertion con
+      '- STT 1: "Hồ sơ trường"',
+    ];
+    for (const s of PHAI_GIU) {
+      expect(noteLinesInExpected(s), `KHÔNG được coi là ghi chú: ${s}`).toHaveLength(0);
+    }
+  });
+
+  test('md_to_xlsx.js và model.js phải bóc CÙNG một bộ dấu', () => {
+    // Hai bản cài đặt song song. Lệch nhau là .md đọc một kiểu, .xlsx hiện một kiểu khác.
+    const xlsx = read('scripts/convert_excel/md_to_xlsx.js');
+    const model = read('scripts/lib/testcase/model.js');
+    for (const src of [xlsx, model]) {
+      expect(src, 'phải bóc **đậm**').toContain('\\*\\*([\\s\\S]*?)\\*\\*');
+      expect(src, 'phải bóc ~~gạch~~').toContain('~~([\\s\\S]*?)~~');
+      expect(src, 'phải bóc backtick').toContain('([^`]*)');
+    }
   });
 });

@@ -205,9 +205,58 @@ function lintBugHeadings(headings = []) {
 
 // ---- Gen testcase: cột "Các bước thực hiện" / "Kết quả mong đợi" (RULE_GLOBAL + prompt 02 §6) ----
 
-// Gộp range kiểu "1-2." / "2–3.)" ở đầu dòng (bên trong cell ngăn bằng <br>).
-const RANGE_GROUP = /(?:^|<br\s*\/?>|\n|\s)\d+\s*[-–—]\s*\d+\s*[.)]/;
+// Gộp range kiểu "1-2." / "2–3.)" ở ĐẦU DÒNG (bên trong cell ngăn bằng <br>).
+//
+// Phải neo vào đầu dòng, KHÔNG nhận `\s` bất kỳ: bản cũ nhận cả khoảng trắng giữa câu nên bắt nhầm
+// văn xuôi bình thường. Đo 30/09/2026 — sau khi cleanCell bóc `**`/backtick, câu
+// "sót khối 10 — 10.252 bản ghi" lộ ra chuỗi "10 — 10." và bị chặn oan, làm CSDL-9003 không export
+// được; "năm học 2026-2027)" ở CSDL-9004 cũng vậy. Cả hai đều không phải gộp range.
+// Ý định của rule (ghi ngay ở dòng trên) vốn là "ở đầu dòng" — sửa này làm pattern khớp đúng ý định đó.
+const RANGE_GROUP = /(?:^|<br\s*\/?>|\n)[ \t]*\d+\s*[-–—]\s*\d+\s*[.)]/;
 const hasRangeGrouping = (t) => RANGE_GROUP.test(String(t || ''));
+
+/*
+ * GHI CHÚ CỦA NGƯỜI VIẾT CASE lẫn vào "Kết quả mong đợi".
+ *
+ * Người đọc testcase (trên Excel/Google Sheet) cần biết KIỂM CÁI GÌ, không cần biết vì sao case được
+ * viết thế. Đo 30/09/2026 trên 5 bộ đã sinh: 254 dòng loại này — trích dẫn oracle, "ASSUMPTION Q2…",
+ * "OBSERVATION: đặc tả chưa nêu…", ngày đo DB, trỏ sang case khác, bình luận "cái này là FAIL".
+ * Chỗ của chúng là report (`phase1-clarifications.md`, `phase1-summary.md`), không phải ô testcase.
+ *
+ * CẢNH BÁO, không CHẶN — có chủ đích. Phân loại này là heuristic, mà chặn nhầm sẽ đẩy người ta đi XOÁ
+ * assertion con thật để cho qua cửa, đúng thứ RULE_GLOBAL §6 cấm. Đã suýt dính: bản dọn đầu tiên cắt
+ * nhầm 57 ràng buộc mask PII và 13 mục điều hướng precondition.
+ *
+ * KHÔNG tính là ghi chú: dòng đánh số "N.", dòng mang ràng buộc an toàn (PII/mask), dòng có chuỗi
+ * trích nguyên văn trong ngoặc kép — ba loại này là nội dung kiểm được hoặc nghĩa vụ phải giữ.
+ */
+const NOTE_MARKERS = [
+  /\bOracle\s*:/i, /\bASSUMPTION\b/i, /\bOBSERVATION\b/i, /\bQ\d+\b/,
+  /\bBA (chốt|xác nhận|trả lời)/i, /\bQA chốt\b/i, /\bđã chốt\b/i, /\bxem mục\b/i,
+  /\bđặc tả (không|chưa) nêu\b/i, /\bĐây là (nhánh|câu|phép|vùng|bằng chứng)\b/i,
+  /\bĐo (DB|UAT|read-only|lại)\b/i, /\b\d{1,2}\/\d{1,2}\/20\d{2}\b/,
+  /\blà (FAIL|PASS|BLOCKED)\b/, /\bkhông chấm (PASS|FAIL)\b/i,
+  /_TC_\d+\b/, /\bspec:gap\b/i, /\bkho BR\b/i, /\bCLAUDE\.md\b/i, /\bphase1-/i,
+  // cụm "kể lể" đo được trên 5 bộ ngày 30/09/2026 — đều là lời người viết case nói với người đọc report
+  /\bVùng rủi ro\b/i, /\bNghi ngờ có cơ sở\b/i, /\bđối chứng âm\b/i, /\bGhi OBSERVATION\b/i,
+  /\bchưa ai test\b/i, /\bCHƯA TỪNG bị chạm\b/i, /\bcần chốt trước khi chạy\b/i,
+  /\bxác nhận trước khi log bug\b/i, /\brò PII\b/i, /\bđo trên dữ liệu thật\b/i,
+  /\bHDSD [^:]{0,20}§\d/i, /\bnêu để BA\b/i, /\bhại không kém\b/i,
+];
+const SAFETY_LINE = /\bPII\b|dữ liệu thật|KHÔNG commit|không chia sẻ|che trước|\bmask\b|KÈM DỮ LIỆU|read-only|RULE_GLOBAL §1|xoá file sau/i;
+const VERBATIM_LINE = /"[^"]{3,}"/;
+
+/** Trả danh sách dòng "ghi chú" lẫn trong Kết quả mong đợi (rỗng = sạch). */
+function noteLinesInExpected(expected) {
+  return String(expected || '')
+    .split(/<br\s*\/?>|\n/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .filter((s) => !/^\d+\./.test(s))
+    .filter((s) => !SAFETY_LINE.test(s))
+    .filter((s) => !VERBATIM_LINE.test(s))
+    .filter((s) => NOTE_MARKERS.some((re) => re.test(s)));
+}
 
 // Số thứ tự ở đầu mỗi dòng (tách theo <br>) — để so bước vs kết quả.
 function leadingNumbers(cell) {
@@ -242,6 +291,11 @@ const FAILURE_LAYER = new RegExp([
   // Bắt buộc nhận diện được — nếu không, FAIL kiểu này bị dồn thành product bug → LOG BUG SAI.
   'script[_ ]?error', 'lỗi script', 'sai (locator|selector|element)', 'locator (sai|mơ hồ)',
   'bấm nhầm', 'click nhầm', 'bắt nhầm', 'sai (màn|vùng|section)',
+  // doc_outdated: app đúng, CHỮ trong tài liệu không còn khớp. Khoá này được thêm vào
+  // `verdict_taxonomy.failureLayers` mà quên phía gate ⇒ khai đúng chuẩn vẫn bị chặn oan, và FAIL kiểu
+  // này sẽ bị dồn sang product_bug → LOG BUG SAI cho dev trong khi việc cần làm là sửa tài liệu.
+  // `bug-layer-gate.spec.ts` ("MỌI khoá canonical đều được chấp nhận") là chỗ khoá lại lệch này.
+  'doc[_ ]?outdated', 'tài liệu (cũ|lỗi thời|chưa cập nhật)',
 ].join('|'), 'i');
 const hasFailureLayer = (text) => FAILURE_LAYER.test(String(text || ''));
 
@@ -309,12 +363,22 @@ function lintMappingOracle({ title = '', expected = '', comment = '' } = {}) {
 // Vì sao: rà một task thật thấy có anomaly đã được NHÌN THẤY và ghi lại trong kết luận ("nghi thiếu cấu hình
 // X", "không đúng như mong đợi") nhưng case vẫn PASS và ghi chú đó không thành bug, không thành câu hỏi BA,
 // không thành decision — sau đó chính chỗ đó là bug thật do người khác tìm ra. Thấy mà mất còn tệ hơn không thấy.
+/*
+ * Ranh giới từ phải tính theo CHỮ CÁI UNICODE, không dùng `\b`.
+ *
+ * `\b` của JavaScript tính theo ASCII, nên `\bnghi\b` KHỚP VÀO chữ "nghiệp": ranh giới rơi đúng giữa "i"
+ * (ký tự từ theo ASCII) và "ệ" (không phải ký tự từ theo ASCII). Hậu quả đo được: mọi case trích nhãn thật
+ * trên form GDTX — "Hướng nghiệp, dạy nghề" — đều bị gate chặn với lý do "PASS mà có ghi nhận bất thường",
+ * trong khi kết luận không hề có chữ nghi ngờ nào. Gác nhầm kiểu này tệ hơn không gác: nó đẩy người viết
+ * tới chỗ sửa chữ TRÍCH DẪN cho lọt gate, tức là làm sai evidence.
+ */
+const RANH = (tu) => `(?<![\\p{L}\\p{N}])${tu}(?![\\p{L}\\p{N}])`;
 const ANOMALY_HINT = new RegExp([
-  '\\bnghi\\b', 'nghi ngờ', 'có vẻ', 'co ve', 'hình như', 'hinh nhu',
+  RANH('nghi'), 'nghi ngờ', 'có vẻ', 'co ve', 'hình như', 'hinh nhu',
   'chưa rõ', 'chua ro', 'không rõ', 'khong ro', 'cần xác nhận', 'can xac nhan',
   'lạ là', 'bất thường', 'bat thuong', 'chưa đúng', 'chua dung',
   'không đúng như', 'khong dung nhu', 'khác mong đợi', 'đáng ngờ',
-].join('|'), 'i');
+].join('|'), 'iu');
 // Nơi đến hợp lệ: Backlog key · id quyết định/rule trong knowledge · câu hỏi đã ghi cho BA/Dev.
 const ANOMALY_SINK = /\b[A-Z][A-Z0-9]+-\d{2,}\b|\bDEC-[A-Z0-9]+-\d{3}\b|\bBR-[A-Z0-9]+-\d{3}\b|\bSM-[A-Z0-9]+-\d{3}\b|hỏi (BA|Dev|QA-Lead|PO)|clarification|coverage gap/i;
 
@@ -343,7 +407,27 @@ function lintStrayAnomaly({ status = '', comment = '' } = {}) {
 const API_DIRECT = /\b(POST|PATCH|PUT|DELETE|GET)\s+\/|\/api\/v\d|endpoint|swagger|curl\b|payload/i;
 const REAL_ACTOR = /\bUI\b|màn |man hinh|giao diện|form |lưới|bấm |click|role |quyền |tài khoản |token của|đăng nhập bằng/i;
 const ARTIFICIAL = /replay|giả lập|gia lap|tự bắn|tu ban|inject|bypass|sửa payload|sua payload|gửi thẳng|gui thang|mass[- ]assign|tamper|giả chữ ký|gia chu ky/i;
-const SPECULATION = /\bnghi\b|nghi ngờ|khả năng cao|kha nang cao|có thể do|co the do|nhiều khả năng|nhieu kha nang|đoán|doan la|chắc là|có lẽ/i;
+/*
+ * ⚠️ `\b` của JS là ranh giới ASCII: chữ có dấu tiếng Việt bị tính là KHÔNG-phải-chữ, nên `\bnghi\b`
+ * KHỚP OAN vào giữa "nghiệp vụ" và "nghiêm" (đo 06/10/2026 — chặn một bug chỉ vì description có chữ
+ * "tài liệu nghiệp vụ"). Dùng ranh giới theo \p{L}\p{M} (có \p{M} vì text dạng NFD tách dấu ra thành
+ * ký tự kết hợp riêng), cờ `u` bắt buộc để property escape có hiệu lực.
+ */
+const VI_CHU = '[\\p{L}\\p{M}]';
+/*
+ * Ranh giới hai bên KHÔNG được tính cả dấu gạch dưới.
+ *
+ * Vì sao: tên bảng và tên cột của sản phẩm viết kiểu `HOC_SINH_NGHI_HOC`, `MA_LY_DO_NGHI`. Chỉ chặn
+ * theo chữ cái thì chuỗi `NGHI` nằm giữa hai gạch dưới được coi là một từ đứng riêng, và mọi bug nhắc
+ * tên bảng đó đều bị chấm là "suy đoán nguyên nhân" — đã dính thật khi log lỗi bảng HOC_SINH_NGHI_HOC
+ * ngày 07/10/2026. Đây là cùng một lỗi với lần `\b` bắt nhầm "nghiệp vụ" trước đó: ranh giới quá rộng.
+ */
+const VI_RANH = `[\\p{L}\\p{M}_]`;
+const SPECULATION = new RegExp(
+  `(?<!${VI_RANH})(?:nghi|nghi ngờ|khả năng cao|kha nang cao|có thể do|co the do`
+  + `|nhiều khả năng|nhieu kha nang|đoán|doan la|chắc là|có lẽ)(?!${VI_RANH})`,
+  'iu',
+);
 
 /**
  * Kiểm "hiện thực" của một bug trước khi log.
@@ -415,9 +499,10 @@ const HAS_FORMAT = /dd\/mm|mm\/yyyy|hh:mm|DD\/MM|YYYY|\d{2}\/\d{2}\/\d{4}/i;
 const HAS_STATUS = /\b(4\d{2}|5\d{2})\b|\bhttp\s*\d{3}/i;
 const HAS_BLOCK = /bị chặn|không cho|không được|chặn lưu|từ chối|deny|forbidden/i;
 const HAS_UNCHANGED = /không đổi|giữ nguyên|vẫn là|vẫn ở/i;
-const HAS_PROPERTY = /[a-z][a-z0-9]*_[a-z0-9_]{2,}/;                    // snake_case field/property
+const HAS_PROPERTY = /[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]*[A-Za-z][A-Za-z0-9_]*/; // snake_case field/property, CẢ chữ HOA (cột DB của hệ thống này viết hoa); bắt buộc có chữ cái sau "_" để "TC_001" không lọt
+const TC_ID_LIKE = /\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*_TC_\d+\b|\bTC_\d+\b/g; // trích TC ID khác KHÔNG phải là nêu tên trường
 const HAS_NULLISH = /\bnull\b|rỗng|trống|thiếu key|\[\]|""/i;
-const HAS_REPEAT = /lần (hai|2)|gọi lại|lặp lại|trùng|đồng thời|idempotent|retry|thử lại/i;
+const HAS_REPEAT = /lần (hai|2|thứ hai)|thứ hai|hai lần|2 lần|gọi lại|lặp lại|trùng|đồng thời|song song|hai tab|2 tab|hai phiên|idempotent|retry|thử lại|nửa vời|nguyên vẹn|trọn vẹn|rollback|phiên đã chết|phiên hết hạn/i; // từ vựng của ba nhóm ca: ghi LẶP · ghi SONG SONG · ghi NỬA CHỪNG (xem TC_101/136/102/182 của CSDL-9001)
 const HAS_TIME_UNIT = /\b\d+(\.\d+)?\s*(ms|s|giây|phút)\b|p9[05]|\bSLA\b/i;
 
 // "Giá trị ĐỂ TRỐNG đúng nghĩa" là oracle hiển thị hợp lệ và §12 nêu thẳng ("buổi chưa diễn ra → cột công
@@ -441,7 +526,7 @@ const TAG_EVIDENCE = {
       : (HAS_STATUS.test(e) || (HAS_BLOCK.test(e) && HAS_UNCHANGED.test(e)))),
     need: 'nhánh CHẶN: MÃ TRẠNG THÁI (403/409…) hoặc "bị chặn" KÈM "dữ liệu không đổi" · nhánh CHO PHÉP (case [Positive]): thông báo nguyên văn hoặc giá trị/trạng thái cụ thể',
   },
-  bedata: { test: (e) => HAS_PROPERTY.test(e) || HAS_NULLISH.test(e), need: 'TÊN property/field cụ thể, hoặc phân biệt null/rỗng/thiếu key/0 — "map đúng" không kiểm được' },
+  bedata: { test: (e) => HAS_PROPERTY.test(String(e || '').replace(TC_ID_LIKE, ' ')) || HAS_NULLISH.test(e), need: 'TÊN property/field cụ thể, hoặc phân biệt null/rỗng/thiếu key/0 — "map đúng" không kiểm được' },
   resilience: { test: (e) => HAS_REPEAT.test(e) && HAS_NUMBER.test(e), need: 'nêu lần gọi THỨ HAI/trùng/đồng thời KÈM kết quả bằng số (vd "đúng 1 transaction", "Paid Amount vẫn 120.000")' },
   perf: { test: (e) => HAS_TIME_UNIT.test(e), need: 'NGƯỠNG có đơn vị (ms/s/p95) — không có ngưỡng thì không phán được đạt/không đạt' },
   validation: { test: (e) => HAS_QUOTED.test(e) || HAS_NUMBER.test(e), need: 'THÔNG BÁO LỖI trích nguyên văn hoặc giá trị biên cụ thể' },
@@ -551,7 +636,7 @@ module.exports = {
   isVisualEvidence, isVideoEvidence, VISUAL_EXT, VIDEO_EXT, extListText, MIME_BY_EXT, mimeOf,
   hasDebugTokens, looksRunOn, splitIdeas, looksComplex,
   cleanComment, lintComment, lintEvidence, lintBugHeadings,
-  hasRangeGrouping, leadingNumbers, vagueExpectedLines,
+  hasRangeGrouping, noteLinesInExpected, leadingNumbers, vagueExpectedLines,
   hasFailureLayer, looksTautology,
   BUG_SECTIONS, RAW_MONEY,
 };

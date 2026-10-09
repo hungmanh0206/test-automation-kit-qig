@@ -267,13 +267,14 @@ console.log('|---|---|---|---|---|---|---|');
 
 const missingRequired = [];
 const belowThreshold = [];
+const naButTagged = []; // chiều khai n/a mà case vẫn gắn tag chiều đó — hai file cạnh nhau nói ngược nhau
 for (const d of DIMS) {
   const list = hits.get(d.id);
   const { state: decl, min } = declOf(d.id);
   const share = Math.round((list.length / totalTests) * 1000) / 10;
   const need = decl === 'required' ? `≥${min}` : '—';
   let state;
-  if (decl === 'n/a') state = 'N/A (khai)';
+  if (decl === 'n/a') { state = list.length ? `⛔ N/A (khai) nhưng có ${list.length} case` : 'N/A (khai)'; if (list.length && MODE === 'label') naButTagged.push({ d, tcs: list }); }
   else if (list.length === 0 && decl === 'required') { state = '❌ THIẾU'; missingRequired.push(d); }
   else if (list.length === 0) state = '⚠ 0 case';
   else if (decl === 'required' && list.length < min) { state = `⚠ MỎNG ${list.length}/${min}`; belowThreshold.push({ d, have: list.length, min }); }
@@ -319,6 +320,63 @@ if (manifest && manifest.dimensions) {
   for (const [k] of naNoReason) console.warn(`[dim] ⚠ chiều "${k}" khai n/a mà KHÔNG có lý do trong na_reasons — bỏ chiều thì phải nói vì sao.`);
   const unknown = Object.keys(manifest.dimensions).filter((k) => !DIMS.some((d) => d.id === k));
   for (const k of unknown) console.warn(`[dim] ⚠ manifest khai chiều lạ "${k}" — không có trong DIMS, sẽ bị bỏ qua.`);
+}
+
+/*
+ * LÝ DO n/a ĐÃ BỊ BÁC Ở TASK KHÁC — `.agent/config/na_reasons_rejected.json`.
+ * Không có phép kiểm này thì việc bác bỏ chỉ sống trong task nơi nó xảy ra: đo 30/09/2026, lý do n/a
+ * của `accessibility` bị rút lại ở BA task liên tiếp mà task thứ tư vẫn khai y nguyên câu đó, và mọi
+ * gate vẫn xanh — vì gate chỉ hỏi "chiều required có case chưa", không hỏi "lý do n/a có đứng vững không".
+ */
+const REJECTED_NA = (() => {
+  try {
+    const j = JSON.parse(fs.readFileSync(path.join(rc.REPO_ROOT, '.agent', 'config', 'na_reasons_rejected.json'), 'utf8'));
+    return Array.isArray(j.rejected) ? j.rejected : [];
+  } catch (e) { return []; }
+})();
+/** Bỏ dấu + thường hoá, để pattern viết bằng ASCII khớp được câu tiếng Việt có dấu. */
+const boDau = (x) => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
+const naRejected = [];
+if (manifest && manifest.dimensions) {
+  const exempt = new Set(Array.isArray(manifest.na_reasons_exempt) ? manifest.na_reasons_exempt : []);
+  for (const [dim, v] of Object.entries(manifest.dimensions)) {
+    const state = v && typeof v === 'object' ? (v.required === false ? 'n/a' : 'required') : v;
+    if (state !== 'n/a') continue;
+    const why = boDau((manifest.na_reasons || {})[dim] || '');
+    if (!why) continue;
+    for (const r of REJECTED_NA) {
+      if (exempt.has(r.id)) continue;
+      if (Array.isArray(r.ap_dung_cho) && r.ap_dung_cho.length && !r.ap_dung_cho.includes(dim)) continue;
+      let re;
+      try { re = new RegExp(r.pattern, 'i'); } catch (e) { continue; }
+      if (re.test(why)) { naRejected.push({ dim, r }); break; }
+    }
+  }
+}
+if (naRejected.length) {
+  console.error(`\n[dim] ✗ ${naRejected.length} chiều khai n/a bằng LẬP LUẬN ĐÃ BỊ BÁC ở task khác:`);
+  for (const { dim, r } of naRejected) {
+    console.error(`  - ${dim} — trúng "${r.id}". ${r.vi_sao_bac}`);
+    console.error(`    Thay bằng: ${r['lam-gi-thay-the']}`);
+    console.error(`    Muốn giữ thì phải phản bác bằng chứng cứ MỚI, ghi vào _revisions rồi thêm "${r.id}" vào na_reasons_exempt.`);
+  }
+  if (ENFORCE) process.exit(1);
+  console.error('[dim] (chưa --enforce nên KHÔNG chặn — nhưng lý do này đã bị bác rồi.)');
+}
+
+/*
+ * MANIFEST ↔ BỘ CASE NÓI NGƯỢC NHAU. Chiều khai n/a mà case vẫn gắn tag chiều đó thì một trong hai sai,
+ * và trước 30/09/2026 không phép kiểm nào đối chiếu hai file này: bảng cứ in "N/A (khai)" rồi thôi.
+ * Chỉ chặn ở chế độ NHÃN — chế độ gợi ý suy tag từ văn bản nên chặn theo nó là báo oan.
+ */
+if (naButTagged.length) {
+  console.error(`\n[dim] ✗ ${naButTagged.length} chiều khai n/a mà bộ case VẪN có case gắn tag chiều đó:`);
+  for (const { d, tcs } of naButTagged) {
+    console.error(`  - ${d.label} (${d.sec}) — manifest nói không áp dụng, nhưng ${tcs.length} case mang tag [${TAG_OF[d.id]}]: ${tcs.slice(0, 5).join(', ')}${tcs.length > 5 ? ' …' : ''}`);
+    console.error('    Một trong hai sai. Hoặc lật manifest sang "required" (rồi chiều này phải đạt ngưỡng), hoặc gỡ tag khỏi các case đó nếu chúng thuộc chiều khác.');
+  }
+  if (ENFORCE) process.exit(1);
+  console.error('[dim] (chưa --enforce nên KHÔNG chặn — nhưng manifest và bộ case đang nói ngược nhau.)');
 }
 
 if (missingRequired.length) {

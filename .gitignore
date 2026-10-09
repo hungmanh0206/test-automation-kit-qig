@@ -273,3 +273,6 @@ tests/support/setup/db/verify.confirm.spec.ts
 tests/support/setup/db/verify.db2.beforeafter.spec.ts
 tests/support/setup/db/verify.rootcause.spec.ts
 tests/support/setup/db/verify.validate-dryrun.spec.ts
+
+# Gói nhập từ ngoài để đối chiếu — KHÔNG commit (lớp PROJECT của người khác).
+_import/

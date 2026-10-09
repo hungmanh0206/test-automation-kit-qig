@@ -133,6 +133,18 @@ class Case {
     this.rec = recorder;
     this.tcId = tcId;
     this.steps = [];
+    /*
+     * GHI DANH NGAY KHI TẠO — để `write()` phát hiện case nào CHƯA `finish()`.
+     *
+     * Vì sao cần: recorder chỉ ghi shard khi `finish()` chạy. Mà mọi spec đều có `expect` chốt tiền
+     * điều kiện TRƯỚC khi gọi `finish` (vd "form không mở"); assert đó ném là `finish` không bao giờ
+     * tới, shard GIỮ NGUYÊN verdict của LƯỢT TRƯỚC — và một verdict cũ trông y hệt một verdict mới.
+     * Đo 09/10/2026: `TC_123` mang nhãn `BLOCKED_SETUP` sai suốt 4 lượt vì chuyện này, dù lượt nào
+     * cũng trích đủ dữ liệu. Quét toàn bộ spec thấy 9 chỗ cùng mẫu.
+     *
+     * Sửa ở ĐÂY thay vì ở 9 chỗ gọi: spec mới viết sai thứ tự vẫn không để lại kết quả cũ.
+     */
+    if (recorder && recorder._dangTreo) recorder._dangTreo.add(tcId);
     this.dir = path.join(recorder.artifactsRoot, tcId);
     fs.mkdirSync(this.dir, { recursive: true });
   }
@@ -257,10 +269,13 @@ class EvidenceRecorder {
     this.shardDir = path.join(this.testResults, STATUS_DIRNAME);
     fs.mkdirSync(this.shardDir, { recursive: true });
     this._tests = new Map();
+    /** TC đã `case()` nhưng chưa `finish()` — `write()` sẽ tự đóng để không để lại verdict cũ. */
+    this._dangTreo = new Set();
     this.startedAt = Date.now();
   }
   case(tcId) { return new Case(this, tcId); }
   _put(entry) {
+    if (this._dangTreo) this._dangTreo.delete(entry.tcId);
     // `recordedAt` = lúc case NÀY thật sự chạy xong. Provenance phải bám vào từng case: nếu chỉ dựa
     // `generatedAt` của file thì mỗi lần write() lại đóng dấu mới cho cả case cũ → rửa sạch dấu vết.
     entry.recordedAt = ts();
@@ -292,6 +307,39 @@ class EvidenceRecorder {
    * Idempotent — dưới parallel, gọi write()/aggregateStatus() lần cuối cho bản đầy đủ.
    */
   write() {
+    /*
+     * TỰ ĐÓNG CASE TREO trước khi gộp.
+     *
+     * Case đã `case()` mà chưa `finish()` nghĩa là test ném giữa chừng (thường là `expect` chốt
+     * tiền điều kiện). Không đóng thì shard giữ verdict của LƯỢT TRƯỚC, và kết quả cũ đó trông y
+     * hệt kết quả mới — nguy hiểm hơn hẳn việc thiếu kết quả.
+     *
+     * Đóng thành `BLOCKED_SETUP`: test có chạy nhưng KHÔNG kết luận được. Không dùng `FAILED` vì
+     * chưa biết sai ở sản phẩm hay ở dụng cụ, mà `FAILED` thì kéo theo đòi `failureLayer` và rerun.
+     */
+    if (this._dangTreo && this._dangTreo.size) {
+      const treo = [...this._dangTreo];
+      for (const tcId of treo) {
+        this._put({
+          tcId,
+          status: 'BLOCKED_SETUP',
+          comment: '- Test ném giữa chừng nên case KHÔNG tự ghi verdict (thường do assert chốt tiền '
+            + 'điều kiện chạy trước finish).'
+            + String.fromCharCode(10)
+            + '- Recorder tự đóng để KHÔNG để lại verdict của lượt chạy trước — kết quả cũ trông '
+            + 'giống hệt kết quả mới.'
+            + String.fromCharCode(10)
+            + '- Xem log lượt chạy để biết nó dừng ở bước nào.',
+          evidence: [],
+          steps: [],
+        });
+      }
+      if (this.log) {
+        console.warn(`
+⚠ ${treo.length} case ném giữa chừng, recorder tự đóng thành BLOCKED_SETUP: ${treo.join(', ')}`);
+        console.warn('  Sửa gốc: gọi finish() TRƯỚC các assert trong spec, để verdict phản ánh đúng lượt này.');
+      }
+    }
     const byId = new Map();
     /*
      * KẾ THỪA KẾT QUẢ CŨ — phải ĐÁNH DẤU, không được im lặng.

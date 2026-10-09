@@ -23,9 +23,36 @@
  */
 
 // ---- helper chuỗi (đồng bộ md_to_xlsx để parity) ----
-function stripEmoji(text) { return String(text || '').replace(/[\u{1F300}-\u{1FAFF}✀-➿]/gu, '').trim(); }
-/** Làm sạch cell: <br>→\n, bỏ backtick, bỏ emoji. */
-function cleanCell(text) { return stripEmoji(String(text || '').replace(/<br\s*\/?>/gi, '\n').replace(/`([^`]*)`/g, '$1')); }
+/*
+ * Bóc icon. Dải cũ (`\u{1F300}-\u{1FAFF}` + `✀-➿`) BỎ SÓT đúng những icon hay dùng nhất trong ghi chú:
+ * ⚠ U+26A0 (130 lần) và ⛔ U+26D4 (9 lần) nằm ở khối Miscellaneous Symbols U+2600–U+26FF — đo trên
+ * 5 bộ testcase ngày 30/09/2026, chúng lọt thẳng ra Excel.
+ * GIỮ mũi tên U+2190–U+21FF (→ ⇒ ↔): đó là chữ nghĩa trong câu ("màn A → màn B"), không phải trang trí.
+ * U+FE0F là variation selector đi kèm emoji, bỏ luôn nếu không sẽ còn ô vuông lạ.
+ */
+function stripEmoji(text) {
+  return String(text || '').replace(/(?:[☀-➿⬀-⯿\u{1F000}-\u{1FAFF}]|\uFE0F)/gu, '').replace(/[ \t]{2,}/g, ' ').trim();
+}
+/**
+ * Bóc Markdown nội dòng. Excel/Google Sheet không render Markdown nên `**x**` và `~~x~~` hiện
+ * NGUYÊN dấu trong ô. Đo 30/09/2026 (CSDL-9004): backtick bóc 52/52 ô, `**` lọt 18/18 ô vào .xlsx.
+ */
+function stripMarkdownInline(text) {
+  // `COUNT(*)` trong SQL phải sống sót. Cất tạm rồi trả lại, nếu không hai cái `(*)` trong cùng một ô
+  // sẽ bị luật in-nghiêng ghép thành một cặp và ăn mất cả đoạn SQL ở giữa.
+  const GIU = '\u0000SAO\u0000';
+  return String(text || '')
+    .split('(*)').join(GIU)
+    .replace(/\*\*([\s\S]*?)\*\*/g, '$1')
+    .replace(/~~([\s\S]*?)~~/g, '$1')
+    // Cho phép in nghiêng trải qua xuống dòng (ô testcase ngăn ý bằng <br> đã thành \n), nhưng CHẶN
+    // độ dài để hai dấu sao không liên quan ở hai đầu ô không bị ghép thành một cặp.
+    .replace(/(^|[\s("'“‘—–-])\*(?!\s)([^*]{1,300}?)(?<!\s)\*(?=$|[\s.,;:!?)"'”’—–-])/g, '$1$2')
+    .replace(/`([^`]*)`/g, '$1')
+    .split(GIU).join('(*)');
+}
+/** Làm sạch cell: <br> thành xuống dòng, bỏ Markdown nội dòng (đậm, gạch, backtick), bỏ emoji. */
+function cleanCell(text) { return stripEmoji(stripMarkdownInline(String(text || '').replace(/<br\s*\/?>/gi, '\n'))); }
 /** Tách 1 dòng markdown "| a | b |" → ['a','b'] (bỏ pipe biên, unescape \|). */
 function splitMarkdownRow(line) { return line.split(/(?<!\\)\|/).slice(1, -1).map((c) => c.replace(/\\\|/g, '|').trim()); }
 /** Chuẩn hoá tên cột: bỏ dấu, đ→d, non-alnum→space, lowercase. */
@@ -231,15 +258,24 @@ function buildTestCase(headers, cells, story = '') {
   const tagSrc = `${tagCell} ${title}`;
   const stepsRaw = get(COL.steps);
   const expectedRaw = get(COL.expected);
+  /*
+   * `reqId` TRƯỚC ĐÂY hardcode rỗng, và `story` thì md_to_xlsx luôn truyền '' ⇒ cột `REQ ID` của file Excel
+   * RỖNG với MỌI task, không có đường nào điền. Trong khi đó `oracleRefs` — id rule/bản đồ mà chính case
+   * trỏ tới (`BR-…`/`SM-…`, luật §0c của prompt gen) — đã được tính ngay ở đây. Đó đúng là thứ cột REQ ID
+   * cần: từ một dòng Excel truy ngược được về rule trong `knowledge/`.
+   * Đo trên bộ CSDL-9001: 107/142 case có oracleRefs ⇒ cột REQ ID từ 0% lên 75% có giá trị.
+   * Nhiều id thì nối bằng ', ' để một ô vẫn đọc được bằng mắt và lọc được bằng Ctrl+F.
+   */
+  const oracleRefs = oracleRefsOf(tagSrc);
   return {
     tcId: get(COL.tcId), module: get(COL.module), title,
     precondition: get(COL.precondition), data: get(COL.data),
     steps: splitNumbered(stepsRaw), stepsRaw,
     expected: splitNumbered(expectedRaw), expectedRaw,
     priority: get(COL.priority), risk: get(COL.risk),
-    dimensions: dimensionsOf(tagSrc), oracleRefs: oracleRefsOf(tagSrc), tags: tagCell,
+    dimensions: dimensionsOf(tagSrc), oracleRefs, tags: tagCell,
     group: get(COL.group), caseType: get(COL.caseType),
-    traceability: { reqId: '', story: story || '' },
+    traceability: { reqId: oracleRefs.join(', '), story: story || '' },
     _cells,
   };
 }

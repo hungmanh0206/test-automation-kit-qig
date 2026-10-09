@@ -120,6 +120,22 @@ Các bước thực hiện:
    - Nếu có `RUN_ID`, thêm `--run-id [RUN_ID]`.
    - Nếu có Backlog project key riêng, thêm `--project [BACKLOG_PROJECT_KEY]`.
    - Nếu muốn ép loại bug, thêm `--layer FE` hoặc `--layer BE`.
+10b. Hai cờ cho các tình huống mặc định không phủ (thêm 06/10/2026):
+   - `--only-priority`: CHỈ điền `Priority`, để TRỐNG `Assignee`/`Milestone`/`Category` cho PM tự phân.
+     Mặc định reporter copy Milestone+Category từ parent và DỪNG nếu không resolve được assignee, nên
+     muốn bỏ trống thì phải khai cờ — đừng xoá env assignee, vì env ảnh hưởng mọi task khác và nhìn lại
+     không biết là cố ý hay quên.
+   - `--bug-payload <file.json>`: khai TƯỜNG MINH nội dung bug theo từng TC — `{ "<TC_ID>": { title,
+     preconditions, steps, actualResult, expectedResult, screenshot, video } }`, chỉ ghi đè khoá có mặt.
+     **Khi nào BẮT BUỘC dùng**: case kiểm nhiều điều mà chỉ trượt một điều. Reporter dựng title từ TÊN
+     CASE và tiền điều kiện từ ô tiền điều kiện của case — nên bug sẽ mang tên của điều ĐÃ ĐẠT, và tiền
+     điều kiện của đơn vị ghi trong case chứ không phải đơn vị đã chạy thật. Builder không có cách nào
+     biết assertion nào trượt.
+     `screenshot`/`video` để chỉ đúng ảnh ĐÃ KHOANH VÙNG: `readArtifactInfo` ưu tiên `test-failed-*.png`
+     mà ảnh đó Playwright tự chụp, KHÔNG có highlight — trái luật highlight bắt buộc.
+     Cấm dùng cờ này để nới nội dung cho dễ nghe: mọi giá trị phải khớp evidence và report local.
+   - `--dry-run` giờ in TITLE + DESCRIPTION thật ra console để soát trước khi tạo.
+
 11. Chống duplicate:
    - Backlog KHÔNG có labels tự do — reporter tự tìm bug trùng bằng `keyword` search + marker `TC: [<TC_ID>]` ở CUỐI description (xem bug_reporter.js searchExistingBug). Đây là full-text match, không chính xác tuyệt đối như JQL cũ — review tay nếu nghi ngờ.
    - Nếu đã có bug mở cho TC ID đó, không tạo bug mới; ghi trạng thái duplicate/skipped vào report.
