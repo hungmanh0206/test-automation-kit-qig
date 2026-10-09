@@ -195,6 +195,50 @@ mode của máy đã được nối.
 | Verdict của A | `verdict_taxonomy.json` là nguồn duy nhất | **BỎ luật của A** | FAIL phải rerun 2–3 lần rồi qua Bug Claim Gate |
 | Ghi kết quả | `merge_execution_status.js` | **NHẬN** | ⚠ File này đang dở dang — xem §0.1 |
 
+#### H6 đã làm — nhánh `manual-run/`, và hai lỗi do chính máy của kit bắt
+
+Nhánh mới `manual-run/` theo mẫu `exploratory/`: `reference.md` giữ ranh giới, `run_manual_execution.md`
+là workflow, `scripts/qa/manual_run_check.js` là máy, `.claude/commands/manual-run.md` là điểm vào.
+
+**Lỗ hổng nó đóng.** Kit đã biết đánh dấu case không tự động hoá được (`[manual]` ở ô Tiền điều kiện →
+Readiness `Manual-only` → Phase 2 ghi `SKIP_SETUP`) rồi **dừng ở đó**. Case tồn tại trong bộ, không ai
+chạy, và báo cáo in `SKIP_SETUP` như thể đó là một kết luận. `SKIP_SETUP` là lời khai *"chưa chạy"*.
+
+**Máy này chỉ làm hai việc**, và việc thứ nhất mới là lý do nó tồn tại:
+
+1. **Gác ranh giới của lời khai `[manual]`.** Case chạy tay mà trong bộ canonical khai `[api]`, `[factory]`,
+   `[test_hook]`, `[ui]` hay `[pre_existing]` là **CHẶN**. Không có cửa này thì nhánh chạy tay thành đường
+   lách: case nào viết automation khó thì đẩy sang chạy tay, coverage automation tụt mà không ai thấy.
+   Chiều ngược lại là cảnh báo: case `[manual]` chưa có lượt chạy nào thì nó **chưa có verdict**.
+2. **Ủy quyền** phần chất lượng output cho `output_gate --mode test-execution`. Evidence cho mọi case kể cả
+   PASS, video case phức tạp, FAIL phân tầng, verdict thuộc taxonomy — đã có máy. Test chứng minh vi phạm
+   đến **từ** `output_gate` (tiền tố `[output_gate]`), không phải từ luật chép lại.
+
+**Khuôn kết quả dùng chung với Phase 2**, không có khuôn riêng cho chạy tay. Nhờ vậy
+`merge_execution_status.js` ghi cột `Result` y như lượt automation, và báo cáo không phải phân biệt hai nguồn.
+
+**Thêm `manual-run` vào `branch_parity.json`**, khác với `exploratory` (không có trong đó). Lý do: nhánh này
+**sinh verdict** và ghi vào cột `Result`, đúng loại nhánh mà file đó được dựng để đo — *"nhánh rerun 0 gate
+máy dù nó là nhánh TRỰC TIẾP chuyển bug sang Done"*. Ba máy `applies`: `output_gate.js`, `expansion:plan`
+(chạy tay **không** miễn mục 3 của `CLAUDE.md`), `self-review`. Năm máy `waived` kèm lý do cụ thể.
+
+**Hai lỗi do chính máy của kit bắt, không phải tôi tự thấy:**
+
+- `slash-commands.spec.ts` đỏ: *"mỗi NHÁNH khai trong branch_parity.json phải có command cùng tên"*. Comment
+  của test đó viết sẵn từ trước: *"mai ai thêm nhánh thứ 5 mà quên điểm vào thì đỏ ngay"*. Đúng là tôi quên.
+- `output_gate` cảnh báo thiếu khối `attestation`. Soi ra thì là **bug của tôi**: tôi truyền mảng `tests`
+  thay vì cả doc, nên `doc.attestation` vĩnh viễn `undefined` và cảnh báo bắn ra ở **mọi** lượt kể cả lượt
+  đã khai đủ. Một cảnh báo luôn đúng là một cảnh báo vô dụng. Đã sửa, và prompt nay nói rõ năm cờ phải khai.
+
+**Hai chỗ dọn kèm, vì không dọn thì chính tôi tạo ra cái mình đang chặn:**
+
+- `PII_PATTERNS` về một nguồn ở `output_rules.js`. Trước đó `explore_session.js` tự viết cặp regex đó, và
+  bản đầu của tôi viết bản thứ ba. Hai bản chép tay thì sớm muộn lệch nhau.
+- Danh sách command chạm UAT trong `slash-commands.spec.ts` **suy ra** thay vì gõ tay. Bản cũ liệt kê cứng
+  4 file, và `manual-run.md` chạm UAT bằng tay nhưng không nằm trong danh sách nên **thoát** khỏi phép kiểm
+  xác nhận. Đo trước khi đổi: 5 command nhắc UAT, cả 5 đều đã nhắc xác nhận, nên cách suy không làm đỏ gì
+  đang xanh. Có thêm một chốt mẫu số để phép kiểm không đi qua một cách rỗng.
+
 ## 2. Những thứ của A KHÔNG nhập
 
 | Thứ | Lý do |

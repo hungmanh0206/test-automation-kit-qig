@@ -258,6 +258,16 @@ function noteLinesInExpected(expected) {
     .filter((s) => NOTE_MARKERS.some((re) => re.test(s)));
 }
 
+/*
+ * PII KHÁCH — một nguồn cho mọi nhánh. Trước đây mỗi nhánh tự viết lại cặp regex này, và hai bản
+ * chép tay thì sớm muộn lệch nhau: nhánh nào sửa trước thì nhánh kia âm thầm gác lỏng hơn.
+ * CỐ Ý KHÔNG bắt tên người: tiếng Việt quá nhiều báo oan, và một gate báo oan sẽ bị tắt.
+ */
+const PII_PATTERNS = [
+  /[\w.+-]+@[\w-]+\.[\w.]+/,
+  /(?:^|[^\d])(0\d{9}|\+84\d{9})(?!\d)/,
+];
+
 // Số thứ tự ở đầu mỗi dòng (tách theo <br>) — để so bước vs kết quả.
 function leadingNumbers(cell) {
   return String(cell || '').split(/<br\s*\/?>|\r?\n/)
@@ -638,5 +648,5 @@ module.exports = {
   cleanComment, lintComment, lintEvidence, lintBugHeadings,
   hasRangeGrouping, noteLinesInExpected, leadingNumbers, vagueExpectedLines,
   hasFailureLayer, looksTautology,
-  BUG_SECTIONS, RAW_MONEY,
+  BUG_SECTIONS, RAW_MONEY, PII_PATTERNS,
 };

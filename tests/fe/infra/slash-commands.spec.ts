@@ -102,8 +102,19 @@ test.describe('@infra slash commands — con trỏ phải trỏ đúng chỗ', (
   });
 
   test('luồng chạm UAT phải nhắc XÁC NHẬN trước (CLAUDE.md §2)', () => {
-    for (const f of ['phase2.md', 'rerun.md', 'explore.md', 'ui-debug.md']) {
-      if (!files.includes(f)) continue;
+    /*
+     * SUY RA danh sách, không gõ tay. Bản trước liệt kê cứng 4 file, và nó LẠC HẬU ngay lần có nhánh mới:
+     * `manual-run.md` chạm UAT bằng tay mà không nằm trong danh sách nên thoát khỏi phép kiểm này. Một
+     * danh sách gõ tay thì mỗi lần thêm nhánh lại phải nhớ sửa hai chỗ, và chỗ bị quên là chỗ không ai thấy.
+     *
+     * Dấu hiệu dùng để suy: thân command có nhắc UAT. Đo 09/10/2026 trên 10 command: 5 file nhắc UAT và
+     * cả 5 đều đã nhắc xác nhận, nên đổi sang cách suy KHÔNG làm đỏ gì đang xanh.
+     */
+    const chamUat = files.filter((f) => /UAT/i.test(body(f)));
+    // Không có file nào khớp thì phép kiểm này đi qua một cách RỖNG — đúng lớp bẫy `every()` trên mảng
+    // rỗng mà kit đã dính một lần. Nên chốt mẫu số trước khi chấm.
+    expect(chamUat.length, 'không command nào nhắc UAT ⇒ phép kiểm rỗng, dấu hiệu suy đã hỏng').toBeGreaterThanOrEqual(4);
+    for (const f of chamUat) {
       expect(body(f), `${f}: luồng này chạm UAT mà không nhắc xác nhận với user`).toMatch(/xác nhận/i);
     }
   });

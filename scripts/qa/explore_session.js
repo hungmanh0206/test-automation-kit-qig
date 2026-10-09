@@ -33,8 +33,8 @@ const csv = (s) => String(s || '').split(',').map((x) => x.trim()).filter(Boolea
 const FILES = ['session-charter.md', 'observations.md', 'crash-log.md', 'draft-testcases.md'];
 /* Ảnh/video mới là evidence — dùng CHUNG regex đuôi của output_rules để không sinh luật thứ hai. */
 const VISUAL = rules.VISUAL_EXT;   // regex sẵn có của output_rules — 1 nguồn cho đuôi evidence, không khai lại
-/* PII: cùng họ pattern với gate output (email/sđt VN). Cố ý KHÔNG bắt tên người — quá nhiều báo oan. */
-const PII = [/[\w.+-]+@[\w-]+\.[\w.]+/, /(?:^|[^\d])(0\d{9}|\+84\d{9})(?!\d)/];
+/* PII: dùng lại PII_PATTERNS của output_rules — 1 nguồn cho mọi nhánh, không chép tay lần thứ hai. */
+const PII = rules.PII_PATTERNS;
 
 /** Nội dung có "bước tái hiện" hay chỉ là cảm nhận? Nhận cả 2 cách viết: đánh số hoặc mục "Bước". */
 const hasRepro = (block) => /(^|\n)\s*1[.)]\s+\S/.test(block) || /b(ướ|uo)c t(á|a)i hi(ệ|e)n/i.test(block) || /không tái hiện/i.test(block);

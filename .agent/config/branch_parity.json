@@ -30,13 +30,18 @@
       "partial-rerun/run_requirement_apply_approved.md",
       "partial-rerun/run_testcase_cleanup.md",
       "partial-rerun/reference.md"
+    ],
+    "manual-run": [
+      "manual-run/run_manual_execution.md",
+      "manual-run/reference.md"
     ]
   },
   "machines": {
     "output_gate.js": {
       "applies": [
         "phase2",
-        "rerun"
+        "rerun",
+        "manual-run"
       ],
       "waived": {
         "phase1": "Phase 1 chưa có kết quả execute để soi; chất lượng bộ case do design_gate + tc_validator gác.",
@@ -47,7 +52,8 @@
     "expansion:plan": {
       "applies": [
         "phase2",
-        "rerun"
+        "rerun",
+        "manual-run"
       ],
       "waived": {
         "phase1": "Mở rộng là chuyện lúc EXECUTE (quanh case đang chạy); ở Phase 1 vai trò đó do dim:coverage + spec:gap đảm nhiệm.",
@@ -62,13 +68,15 @@
       ],
       "waived": {
         "phase2": "Phase 2 execute theo bộ case đã chốt; Error Guessing từ bug lịch sử thuộc lúc SINH case (phase1) và lúc bug vừa đóng (rerun).",
-        "partial-rerun": "Error Guessing thuộc lúc sinh case (phase1) và lúc bug vừa đóng (rerun)."
+        "partial-rerun": "Error Guessing thuộc lúc sinh case (phase1) và lúc bug vừa đóng (rerun).",
+        "manual-run": "Nhánh này không sinh case và không phải lượt verify-fix — hai thời điểm mà checklist bug lặp có giá trị. Bug tìm ra khi chạy tay chuyển sang Phase 2 bug triage, nơi máy này đã được nối."
       },
       "why": "Bug lặp lại là bug rẻ nhất để bắt. Thời điểm giá trị nhất: lúc sinh case, và lúc vừa fix xong (root cause còn nóng)."
     },
     "self-review": {
       "applies": [
-        "phase2"
+        "phase2",
+        "manual-run"
       ],
       "waived": {
         "phase1": "Phase 1 dùng design_gate + dim:coverage + risk:gate; self-review là checklist trước FINALIZE của lượt execute.",
@@ -84,7 +92,8 @@
       ],
       "waived": {
         "phase2": "Độ phủ theo chiều là thuộc tính của BỘ CASE (Phase 1), không phải của lượt execute.",
-        "rerun": "Rerun chạy tập con đã map theo bug — đo độ phủ chiều ở đây là vô nghĩa."
+        "rerun": "Rerun chạy tập con đã map theo bug — đo độ phủ chiều ở đây là vô nghĩa.",
+        "manual-run": "Đo độ phủ của BỘ case, việc của Phase 1. Nhánh này chỉ chạy một tập con đã có trong bộ, không thêm bớt chiều nào."
       },
       "why": "Đo độ phủ 22 chiều theo ngưỡng risk band."
     },
@@ -95,7 +104,8 @@
       ],
       "waived": {
         "phase2": "Rubric chấm bản THIẾT KẾ của case. Lượt execute không sửa thiết kế nên chấm lại là đo cùng một thứ hai lần.",
-        "rerun": "Rerun chạy tập con đã map theo bug, không sinh hay sửa case."
+        "rerun": "Rerun chạy tập con đã map theo bug, không sinh hay sửa case.",
+        "manual-run": "Chấm chất lượng từng case, việc của Phase 1. Nhánh này không sinh hay sửa case."
       },
       "why": "Chấm từng case theo rubric 8 tiêu chí — đo case có DÙNG ĐƯỢC không, khác với dim:coverage đo bộ có ĐỦ không."
     },
@@ -106,7 +116,8 @@
       ],
       "waived": {
         "phase2": "Phase 2 execute theo bộ case đã chốt, không sinh/sửa cột canonical.",
-        "rerun": "Rerun chạy tập con đã map, không sửa bộ case."
+        "rerun": "Rerun chạy tập con đã map, không sửa bộ case.",
+        "manual-run": "Chặn bộ case thiếu cột canonical. Nhánh này không sinh hay sửa bộ case, chỉ đọc bộ đã có."
       },
       "why": "Chặn testcase thiếu cột canonical / rỗng ô lõi / thiếu ui_catalog khi có case hiển thị. Nhánh nào SINH-SỬA bộ case rồi đẩy lên Sheet đều phải qua."
     },
@@ -117,7 +128,8 @@
       ],
       "waived": {
         "phase2": "Phase 2 ĐỌC oracle để phán, không phiên bản hoá nó.",
-        "rerun": "Rerun verify fix theo oracle hiện hành; rule đổi là việc của partial-rerun."
+        "rerun": "Rerun verify fix theo oracle hiện hành; rule đổi là việc của partial-rerun.",
+        "manual-run": "Máy này gác việc phiên bản hoá oracle khi requirement đổi. Nhánh chạy tay không xử lý requirement đổi."
       },
       "why": "Oracle (business rule / state machine / permission matrix) phải được PHIÊN BẢN HOÁ đúng lúc nó đổi — kèm supersedes + confirmed_at, để `--stale` phát hiện được TC đã execute theo rule cũ. Nhánh xử lý 'requirement đổi' mà không cập nhật kho tri thức thì lần sinh case sau dùng rule lỗi thời."
     }

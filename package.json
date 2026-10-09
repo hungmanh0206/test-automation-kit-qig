@@ -105,6 +105,8 @@
     "explore:charter": "node scripts/qa/explore_charter.js",
     "explore:check:enforce": "node scripts/qa/explore_session.js --enforce",
     "explore:close": "node scripts/qa/explore_session.js --close",
+    "manual:check": "node scripts/qa/manual_run_check.js",
+    "manual:check:enforce": "node scripts/qa/manual_run_check.js --enforce",
     "learn:report": "node scripts/qa/learn_report.js",
     "docs:budget": "node scripts/qa/doc_budget.js",
     "docs:health": "node scripts/phase1/docs_health.js",

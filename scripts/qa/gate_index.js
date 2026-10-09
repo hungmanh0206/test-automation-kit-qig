@@ -39,7 +39,7 @@ const QA = path.join(REPO, 'scripts', 'qa');
  */
 const SURFACE_DIRS = [
   '.github/workflows', '.agent/workflows', '.agent/rules', '.agent/skills',
-  'prompt_templates', 'exploratory', 'partial-rerun', '.claude/commands', 'tests/fe/infra',
+  'prompt_templates', 'exploratory', 'partial-rerun', 'manual-run', '.claude/commands', 'tests/fe/infra',
 ];
 const SURFACE_FILES = [
   '.gitlab-ci.yml', '.claude/settings.json',
