@@ -7,6 +7,88 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## v2.3.0 — 2026-10-09 — Sáu luật của gói RBT thành máy, và hai luật của nó bị bỏ
+
+Đợt này nhập một gói tài liệu QA bên ngoài vào kit. Việc khó không phải là chép vào — là quyết **chỗ nào
+gói đó đúng hơn kit, chỗ nào kit đã có thứ mạnh hơn, và chỗ nào luật của nó phải bị bỏ**. Mỗi quyết định
+đều kèm máy kiểm, vì một luật không có máy đứng sau thì lần nào quên cũng không ai biết.
+
+### Kỹ thuật thiết kế thành tag có máy đếm
+
+`02_gen_testcases.md` vốn đã NHẮC TÊN bốn kỹ thuật, nhưng không gì đo xem case có thật sự thiết kế theo
+kỹ thuật đó hay không. Nay sáu mã ISTQB (`EP` `BVA` `DT` `ST` `UC` `EG`) khai ở
+`.agent/config/design_techniques.json`, đi vào cột `Tag`, và `validate.js` gác hai tầng.
+
+Chỗ suýt sai: `dimensionsOf()` khớp bằng `includes`. Đo trên 25 chiều đang khai thì `[ST]` là chuỗi con
+của `bughistory` và `dbpersist`, `[EG]` là chuỗi con của `negative` và `regression`. Viết `techniquesOf()`
+theo cùng kiểu thì **mọi case `[Negative]` của mọi bộ cũ bỗng "đã khai kỹ thuật EG"** — một luật mới tự
+bịa dữ liệu để chấm chính nó. Nên so bằng `===` trên tên tag đã bóc.
+
+### Rubric 8 tiêu chí thành máy chấm: `tc:review`
+
+Chấm theo TỶ LỆ chứ không theo điểm tuyệt đối trên 16, vì tiêu chí 8 là `n/a` với bộ chưa dùng tag kỹ
+thuật. Chấm tuyệt đối thì bộ cũ tự động mất 2 điểm vì một thứ nó không có lỗi.
+
+### Thứ tự nguồn khi dựng oracle, và `[NeedsVerify]`
+
+Gói nguồn quy định `DOM thật > ảnh > tài liệu`, và "ảnh thắng tài liệu". Luật đó **bị đảo**: DOM và ảnh
+CHÍNH LÀ app đang kiểm, nên lấy chúng làm expected là app bằng app. `RULE_GLOBAL.md` nay có ba hạng nguồn,
+trong đó ảnh và DOM **chỉ chốt sự thật quan sát**. Lệch giữa hai hạng thành CÂU HỎI Ambiguity Gate, không
+tự chọn bên.
+
+Case không trỏ được tới nguồn nào thì mang `[NeedsVerify]`. Cửa đặt ở **publish**, không ở Phase 1: tag đó
+sinh ra để tồn tại trong lúc thiết kế, nên chặn sớm là cấm người ta thừa nhận, và họ sẽ GỠ TAG thay vì đi
+tìm bằng chứng.
+
+### Danh mục loại field và component
+
+18 loại field (10 của kit HỢP 15 của gói nguồn, trùng 7) và 6 component khai ở
+`.agent/config/ui_components.json`, checklist nằm trong file chiều. Hai thứ **không** chép lại vì kit đã có
+thứ mạnh hơn: `Status flow` đã có `state_machine` bắt mọi cặp không khai là bất hợp pháp; `CRUD lifecycle`
+có 4 trong 7 chặng ở `13b` và `23_db_persistence`.
+
+Giới hạn đã đo và tuyên bố: component KHÔNG phải tag nên máy không đếm được "component X có mấy case". Nó
+chỉ gác XUẤT XỨ của lời khai. Và check theo loại field không làm được như gói nguồn mô tả —
+`ui_conformance_check.js` kiểm kê TÊN field chứ không có thuộc tính LOẠI, nên inventory theo loại field
+không tồn tại, và suy loại từ tên nhãn là dò chữ.
+
+### Sub-mode CHECKLIST cho rà tay
+
+`05_manual_quick.md` có thêm mode CHECKLIST với 4 loại và ngưỡng số mục ở
+`.agent/config/checklist_types.json`, gác bằng `design_gate --mode checklist`.
+
+Lỗi bắt được trong lúc làm: tiêu chí "mọi luồng sống còn có mục P1" bản đầu so tên luồng với văn bản các
+mục P1, và nó **báo oan ngay trên fixture hợp lệ đầu tiên** — luồng "Phân quyền" được phủ bởi mục P1
+"Đăng nhập vai Phòng, mở URL trực tiếp, bị chặn", mà mục đó không chứa chữ "phân quyền". Tên luồng là khái
+niệm nghiệp vụ, nhãn mục là thao tác cụ thể. Bản sửa bắt khai hai đầu: luồng phải là một `### Nhóm:` có
+thật, và nhóm đó phải có mục P1.
+
+Thêm hai luật gói nguồn không có, vì khuôn mới mở ra hai chỗ gian lận: **ô tick phải trống lúc sinh**
+(checklist kèm dấu tick là kết quả bịa), và **số mục tự khai ở tiêu đề phải khớp số máy đếm**.
+
+### Nhánh `manual-run/` — case `Manual-only` có verdict thật
+
+Kit đã biết đánh dấu case không tự động hoá được rồi **dừng ở đó**: Phase 2 ghi `SKIP_SETUP`, và case nằm
+mãi ở đó. `SKIP_SETUP` là lời khai "chưa chạy", không phải kết luận.
+
+`manual_run_check.js` làm đúng hai việc. Một, **gác ranh giới lời khai `[manual]`**: case chạy tay mà bộ
+canonical khai `[api]`, `[factory]`, `[test_hook]`, `[ui]` hay `[pre_existing]` là CHẶN. Không có cửa này
+thì nhánh chạy tay thành đường lách, và coverage automation tụt mà không ai thấy. Hai, **ủy quyền** chất
+lượng output cho `output_gate --mode test-execution`.
+
+Luật gói nguồn bị bỏ: nó chỉ chụp ảnh khi FAIL. `CLAUDE.md` mục 4 đòi ảnh hoặc video cho MỌI case đã
+execute, cả PASS.
+
+### Dọn hai nguồn trùng, vì không dọn thì tự tạo ra cái mình đang chặn
+
+`PII_PATTERNS` về một nguồn ở `output_rules.js`; trước đó `explore_session.js` tự viết cặp regex đó. Và
+danh sách slash command chạm UAT trong spec nay **suy ra** thay vì gõ tay — bản cũ liệt kê cứng 4 file nên
+`manual-run.md` thoát khỏi phép kiểm xác nhận.
+
+### Số đo
+
+80 máy kiểm (56 CHẶN) · 23 skill · 59 spec được track · 710 test hạ tầng · 488 file được track.
+
 ## v2.2.0 — 2026-09-29 — Kit hết mang dữ liệu của dự án trước, và ba máy gác tự tố mình
 
 Đợt này không thêm tính năng. Nó gỡ thứ nguy hiểm hơn thiếu tính năng: kit đang **mang theo dữ liệu đo

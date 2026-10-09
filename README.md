@@ -115,6 +115,7 @@ test-automation-kit/
 │                         #   ⚠ KHÔNG commit (dữ liệu công ty, như .env). Repo chỉ giữ SCHEMA.md + .gitkeep;
 │                         #   nạp lại: npm run learn:bugs:apply (Backlog) · npm run learn -- --scan · ghi tay domain/system
 ├── exploratory/          # nhánh phụ never-auto (charter-based), ngoài Main Flow
+├── manual-run/           # nhánh phụ never-auto: chạy tay case Manual-only cho có verdict thật
 ├── profiles/
 │   └── <TASK_KEY>/task.env   # env động theo task, nạp qua TASK_ENV (tạo bằng npm run profile:create)
 │                         #   ⚠ KHÔNG commit CẢ THƯ MỤC (creds + output chạy thật có PII); chỉ task.env.example
@@ -135,7 +136,7 @@ test-automation-kit/
 | [QUICKSTART.md](QUICKSTART.md) | Onboarding nhanh cho project mới. |
 | [RULE_GLOBAL.md](RULE_GLOBAL.md) | Quy tắc chung về ngôn ngữ, bảo mật, output và cleanup. |
 | `.agent/workflows/` | Workflow chính dạng flat: mỗi flow gồm 1 file entry (`phase1_generate_tc.md`, `phase2_execute.md`, `rerun.md`) và các step file `*_NN_*.md` cùng thư mục. Step đánh số reset theo từng flow (phase1_01..04, phase2_01..04, rerun_01..03). |
-| `.claude/commands/` | **Slash command — điểm vào chuẩn hoá** cho 9 luồng: `/preflight` `/phase1` `/phase2` `/rerun` `/partial-rerun` `/explore` `/ui-debug` `/gates` `/publish`. Mỗi command là **con trỏ mỏng**: chỉ nói đọc workflow nào · chạy npm script nào · dừng ở gate nào — **không** chép policy (kit đã có `gate:policy` giữ `RULE_GLOBAL.md` là canonical). Máy giữ chúng khỏi mục rữa: `tests/fe/infra/slash-commands.spec.ts` kiểm mọi npm script/đường dẫn được nhắc phải tồn tại, và mọi nhánh trong `branch_parity.json` phải có command cùng tên. |
+| `.claude/commands/` | **Slash command — điểm vào chuẩn hoá** cho 10 luồng: `/preflight` `/phase1` `/phase2` `/rerun` `/partial-rerun` `/explore` `/ui-debug` `/manual-run` `/gates` `/publish`. Mỗi command là **con trỏ mỏng**: chỉ nói đọc workflow nào · chạy npm script nào · dừng ở gate nào — **không** chép policy (kit đã có `gate:policy` giữ `RULE_GLOBAL.md` là canonical). Máy giữ chúng khỏi mục rữa: `tests/fe/infra/slash-commands.spec.ts` kiểm mọi npm script/đường dẫn được nhắc phải tồn tại, và mọi nhánh trong `branch_parity.json` phải có command cùng tên. |
 | `.agent/skills/` | Skill instructions cho agent theo vai trò chuyên biệt (**22 skill**). Danh mục: `.agent/skills/INDEX.md` (sinh lại: `npm run skills:index`). |
 | `.agent/rules/` | Rule bắt buộc cho core behavior, locator, Playwright FE/API. |
 | `prompt_templates/` | Prompt dùng để chạy Phase 1, Phase 2 và rerun. Lưu ý đánh số: prompt con là sub-prompt theo hoạt động, số chạy liên tục theo trình tự pipeline (`phase1/01..04` chuẩn bị→sinh testcase→test data→publish Sheet; `phase2/04..08` execute FE→execute API→triage review→flaky→log bug Backlog) — KHÁC với workflow `.agent/workflows/` đánh số reset theo từng phase (phase2_01..04). Số prompt không ánh xạ 1:1 với số workflow; chạy từng prompt khi cần đúng hoạt động đó. **`phase1/dimensions/`** giữ 20 chương **chiều coverage** (§3–§23; tách khỏi `02_gen_testcases.md` ngày 14/08/2026) — mở đúng chiều task khai `required`, không nạp cả 20; **`phase1/02b_output_format.md`** giữ Summary Report + Export Excel, chỉ nạp ở cuối lượt. |
@@ -144,6 +145,7 @@ test-automation-kit/
 | `partial-rerun/run_requirement_apply_approved.md` | Phase 2 của nhánh phụ: merge testcase đã approve và partial execute. |
 | `partial-rerun/run_testcase_cleanup.md` | Chỉ còn cần khi muốn unlink Test↔Story/Task trên Backlog cho case rời Excel sau partial rerun (optional) — re-publish (ghi đè Sheet) đã tự đủ đồng bộ, không còn lifecycle Deprecate riêng. |
 | `partial-rerun/reference.md` | Rule tham chiếu duy nhất cho nhánh phụ, thay cho nhiều file workflow/prompt/skill rời rạc. |
+| `manual-run/` | Nhánh phụ never-auto cho case khai `[manual]`. Kit vốn đánh dấu case không tự động hoá được rồi dừng ở `SKIP_SETUP`, mà `SKIP_SETUP` là lời khai "chưa chạy" chứ không phải kết luận. Nhánh này chạy nốt chúng cho có verdict, qua đúng khuôn `testcase-status.json` của Phase 2. Máy: `npm run manual:check`, CHẶN khi case chạy tay không khai `[manual]` — nếu không thì nhánh này thành đường lách automation. |
 | `scripts/convert_excel/` | Convert testcase Markdown sang Excel (đồng thời là nội dung publish lên Google Sheet). |
 | `scripts/integrations/backlog/` | Kiểm tra Backlog connection, log bug, fetch tài liệu nguồn/Figma. |
 | `scripts/integrations/google_doc/` | Đọc nội dung Google Doc làm nguồn spec. |

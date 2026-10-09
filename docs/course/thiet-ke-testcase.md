@@ -635,6 +635,10 @@ gate, và lúc đó bạn có máy để sửa hàng loạt.
 ## Đọc thêm
 
 - [`scripts/lib/testcase/`](../../scripts/lib/testcase/) của kit này, bản đầy đủ, có cả phần đọc Excel.
+- [`.agent/config/design_techniques.json`](../../.agent/config/design_techniques.json) — sáu kỹ thuật
+  thiết kế kèm điều kiện bắt buộc dùng, và dấu hiệu máy kiểm được cho từng cái.
+- [`.agent/config/ui_components.json`](../../.agent/config/ui_components.json) — 18 loại field và 6
+  component phải rà. Đây là mẫu số: thiếu danh mục thì "đã rà đủ" chỉ có nghĩa "tôi thấy đủ".
 - Bài 12 sẽ dùng chính parser này để kiểm bộ case do agent sinh.
 
 ## Bài sau

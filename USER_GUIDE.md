@@ -302,6 +302,7 @@ test-automation-kit_v2/
 ├── .agent/
 ├── prompt_templates/
 ├── partial-rerun/
+├── manual-run/
 ├── scripts/
 ├── tests/
 ├── profiles/
@@ -315,10 +316,11 @@ test-automation-kit_v2/
 | Folder/File | Dùng để làm gì |
 |---|---|
 | [docs/UPGRADE.md](docs/UPGRADE.md) | **Nâng bản kit** — đọc số version để biết có phải sửa lớp PROJECT không; ghi đè GENERIC, giữ PROJECT; sau khi nâng chạy `preflight` + `gate:policy`. |
-| `.claude/commands/` | **Slash command** — điểm vào chuẩn hoá cho 9 luồng (xem Mục 9.0). Chỉ `commands/` được commit; `settings*.json` là cấu hình máy cá nhân. |
-| `.agent/` | Workflow, skill (22), rule và config cho AI Agent. `config/db.conventions.json` giữ quy ước DB + bản đồ cột↔nhãn khoá **theo màn**; `config/locators.schema.json` là schema cho `knowledge/locators/`. |
+| `.claude/commands/` | **Slash command** — điểm vào chuẩn hoá cho 10 luồng (xem Mục 9.0). Chỉ `commands/` được commit; `settings*.json` là cấu hình máy cá nhân. |
+| `.agent/` | Workflow, skill (23), rule và config cho AI Agent. `config/db.conventions.json` giữ quy ước DB + bản đồ cột↔nhãn khoá **theo màn**; `config/locators.schema.json` là schema cho `knowledge/locators/`. |
 | `prompt_templates/` | Prompt chạy Phase 1, Phase 2 và Re-run. Bên trong `phase1/dimensions/` là **20 chương chiều coverage** (§3–§23, gồm §22 inbound callback và §23 DB persistence) — mở đúng chiều task khai `required`, không nạp cả 20 (xem mục 5, bước sinh testcase). |
 | `partial-rerun/` | Nhánh phụ khi tài liệu requirement/design/API thay đổi. |
+| `manual-run/` | Nhánh phụ chạy tay case khai `[manual]`, để chúng có verdict thật thay vì nằm mãi ở `SKIP_SETUP`. Xem Mục 9.0. |
 | `scripts/` | Script export Excel, Backlog/Google Doc/Sheet integration, Playwright helper. |
 | `tests/` | Regression spec/shared automation; `tests/support/setup/` là setup layer dùng chung (factory/hook/fixture/mock/cleanup/contract). |
 | `profiles/` | Env động theo từng task (`profiles/<TASK_KEY>/task.env`, nạp qua `TASK_ENV`); tạo bằng `npm run profile:create -- <TASK_KEY>`. Giá trị tĩnh vẫn ở `.env` chung. |
@@ -920,6 +922,7 @@ Từ 04/09/2026 mỗi luồng có một **slash command** làm điểm vào. Gõ
 | `/partial-rerun <TASK_KEY>` | Requirement đổi | Bản review TRƯỚC, chỉ apply sau khi bạn duyệt |
 | `/explore <phạm vi>` | Phiên exploratory có charter | Chưa khai charter thì không chạy |
 | `/ui-debug <màn>` | Khám phá DOM tìm locator bền | **Never-auto** — mở browser vào UAT nên phải xác nhận |
+| `/manual-run <TASK_KEY>` | Chạy tay case khai `[manual]` | Case chưa khai `[manual]` thì **dừng** — không phải đường lách automation |
 | `/gates <TASK_KEY>` | Bó gate trước khi finalize | Còn dòng CHẶN thì sửa nội dung, **không nới ngưỡng** |
 | `/publish <TASK_KEY>` | Đẩy Google Sheet | Review nội dung local trước, `update_file`/`create_file` qua Drive MCP sau |
 

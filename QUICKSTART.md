@@ -142,6 +142,7 @@ Mỗi luồng có một slash command trong `.claude/commands/`. Gõ trong Claud
 /rerun <TASK_KEY>           # chạy lại case của bug đã fix
 /partial-rerun <TASK_KEY>   # requirement đổi (review trước, apply sau)
 /explore <phạm vi>          # exploratory session có charter
+/manual-run <TASK_KEY>      # chạy tay case khai [manual] cho có verdict
 /ui-debug <màn>             # khám phá DOM tìm locator bền
 /gates <TASK_KEY>           # bó gate trước khi finalize
 /publish <TASK_KEY>         # đẩy Google Sheet qua Drive MCP (review trước khi ghi đè)
