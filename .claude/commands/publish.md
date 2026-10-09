@@ -7,6 +7,10 @@ Task: **$ARGUMENTS**
 > Chỉ truyền đúng `<TASK_KEY>`, không thêm chữ nào — `$ARGUMENTS` đi thẳng vào các script bên dưới.
 > Cần khai thêm tham số (QA confirmation, người xác nhận…) thì dùng prompt mẫu ở USER_GUIDE Mục 9.2.
 
+> **Đầu lượt chỉ đọc hai thứ: `handoff/phase1.md` của task, và artifact canonical.** Hội thoại của
+> lượt trước KHÔNG phải nguồn — nó không qua gate nào, và sau một lần nén thì chính nó cũng mất chi
+> tiết. Chưa có file bàn giao thì `preflight_gate` sẽ kêu; đọc `reports/` của phase trước thay thế.
+
 **Publish testcase** (sau khi Phase 1 xuất `.xlsx` canonical) — đọc và làm theo:
 
 1. `prompt_templates/phase1/04_auto_publish_backlog.md` (điểm vào, có khối QA confirmation)

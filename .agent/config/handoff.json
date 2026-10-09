@@ -1,0 +1,28 @@
+{
+  "_doc": "Hợp đồng file BÀN GIAO giữa các phase. NGUỒN DUY NHẤT — `preflight_gate.js`, prompt template và spec đều đọc file này.",
+
+  "_vi_sao": "Đo trên 4 lượt chạy task thật (CSDL-9001 đến 9004): cache-hit 98,5 đến 99,0%, context trung bình 494 đến 515k token mỗi message, và 6.121 đến 7.682 message một lượt. Chi phí tỉ lệ với context nhân số message. Chạy cả Phase 1 và Phase 2 trong MỘT phiên nghĩa là Phase 2 mang theo toàn bộ hội thoại của Phase 1 ở mọi message còn lại. Cắt phiên là cách duy nhất hạ được nhân tử context.",
+
+  "_vi_sao_bang_FILE_chu_khong_bang_hoi_thoai": "Kit vốn đã cấm dựa vào hội thoại cũ: `CLAUDE.md` mục 5 cấm suy TASK_KEY từ context cũ, mục 6 bắt mỗi phase đọc lại artifact canonical. Nhưng không có chỗ nào để GHI trạng thái bàn giao, nên thực tế người ta giữ phiên mở. File handoff cho cái chỗ đó, và nhờ vậy lời cấm mới thực hiện được.",
+
+  "max_token": 1000,
+  "_max_token": "Handoff dài hơn mốc này thì nó đang thành bản báo cáo thứ hai. Báo cáo thật đã có ở `reports/`; handoff chỉ cần đủ để lượt sau biết bắt đầu từ đâu.",
+
+  "truong": [
+    { "ten": "Trạng thái", "neo": "## Trạng thái", "y": "Phase này xong tới đâu, và kết luận một dòng." },
+    { "ten": "Artifact chính", "neo": "## Artifact chính", "y": "Đường dẫn file canonical mà lượt sau phải đọc. Không chép nội dung vào đây." },
+    { "ten": "Việc còn mở", "neo": "## Việc còn mở", "y": "Chỗ chưa xong hoặc đang chờ người. Không có thì ghi `Không có`." },
+    { "ten": "Lệnh tiếp theo", "neo": "## Lệnh tiếp theo", "y": "Đúng lệnh mà lượt sau chạy, kèm TASK_KEY." }
+  ],
+
+  "phase": {
+    "phase1": { "file": "handoff/phase1.md", "sau_do": "publish hoặc phase2" },
+    "publish": { "file": "handoff/publish.md", "truoc": "phase1", "sau_do": "phase2" },
+    "phase2": { "file": "handoff/phase2.md", "truoc": "phase1", "sau_do": "rerun khi có bug đã fix" },
+    "rerun": { "file": "handoff/rerun.md", "truoc": "phase2", "sau_do": "kết thúc" }
+  },
+
+  "_truoc_la_canh_bao": "Thiếu handoff của phase trước là CẢNH BÁO, không phải CHẶN. Lý do: bộ task cũ không có file nào, và một gate làm đỏ mọi task cũ sẽ bị tắt trong một ngày. Nhưng phải KÊU, vì im lặng thì 'chưa chạy phase trước' và 'quên ghi bàn giao' trông giống hệt nhau.",
+
+  "_khong_tu_dong_doc_lai_hoi_thoai": "Đầu mỗi lượt chỉ đọc handoff cộng artifact canonical. Hội thoại của lượt trước KHÔNG phải nguồn: nó không qua gate nào, và sau một lần nén thì chính nó cũng đã mất chi tiết."
+}

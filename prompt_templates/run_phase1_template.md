@@ -216,6 +216,13 @@ Yêu cầu testcase output:
 - **Dừng sớm nếu Ambiguity Gate PENDING**: nếu có mơ hồ Critical/High, dừng ngay sau khi xuất `reports/phase1-clarifications.md` + `AMBIGUITY_GATE: PENDING`; KHÔNG sinh testcase cho tới khi QA/BA resolve.
 - Dừng sau khi sinh/cập nhật testcase Markdown, export Excel, sinh/cập nhật Phase 1 report và cập nhật task log.
 - Chờ review trước khi chuyển Phase 2.
+- **Ghi bàn giao rồi dừng phiên.** Viết `<TASK_OUTPUT_DIR>/handoff/phase1.md` theo khuôn ở
+  [`.agent/config/handoff.json`](../.agent/config/handoff.json): bốn mục `Trạng thái`, `Artifact chính`,
+  `Việc còn mở`, `Lệnh tiếp theo`, tổng dưới 1k token. Rồi bảo user chạy `/clear` trước khi gọi lệnh kế
+  tiếp. Lý do là số đo, không phải sở thích: context trung bình mỗi message của một lượt task thật là
+  494 đến 515k token, và cache-hit 98,5 đến 99,0% nghĩa là cả context đó được đọc lại ở MỌI message.
+  Giữ một phiên cho cả hai phase là bắt phase sau trả tiền cho hội thoại của phase trước.
+
 - Trước khi dừng, tự kiểm tra: testcase có đủ precondition/data/steps/expected, coverage chính >= 80% hoặc có gap rõ, không còn gap Critical/High nếu muốn kết luận PASS, Excel mở được và là source of truth khi gen/publish (Phase 2 execute mặc định từ Google Sheet), publish testcase đang ở trạng thái `Pending QA confirmation`, report/task log tiếng Việt chuẩn có dấu, không có placeholder hoặc encoding lỗi.
 - Trước khi dừng, chạy `Self-check vét cạn biên` (mục 18 — vẫn ở [`phase1/02_gen_testcases.md`](phase1/02_gen_testcases.md); mục 12–17 đã dời sang [`phase1/dimensions/`](phase1/dimensions/)): mỗi input đủ EP/BVA; filter/list có biên ngày/tháng/năm nhuận; export verify cấu trúc file + mapping + empty + dataset lớn; side-effect có negative; UI guard có cross-layer check; entity có status có đủ ma trận status x action; computed field có TC derivation + biên; nếu có Figma thì component chính có TC design compliance (token màu/font/radius/spacing/alignment); **mỗi màn có bảng/field có case Display Conformance (tên cột exact + format + số cột/thứ tự + field bắt buộc + empty-state, expected từ `ui_catalog.md`/tài liệu — mục 12)**; **logic/tính toán có oracle giá trị cụ thể + so khớp/delta dữ liệu (mục 13); field trống nghi ngờ đối chiếu response BE, phân biệt null/rỗng/thiếu/0 (mục 14); IDOR/privilege/injection/mass-assignment/data-exposure (mục 15); SLA/large-dataset/concurrent khi có ngưỡng (mục 16); change impact: story đụng bề mặt dùng chung (data/endpoint/component/rule/status/permission) → regression smoke cho feature bị ảnh hưởng + backward-compat, cái nghi ghi `QA confirm` (mục 17)**. Mục thiếu phải ghi vào Coverage Gaps.
 

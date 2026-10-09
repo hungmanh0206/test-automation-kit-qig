@@ -248,6 +248,15 @@ TC_IDS_OR_N/A=<TC_ID_1>, <TC_ID_2>
 RERUN_SCOPE_OR_ERROR=N/A
 ```
 
+## Điều kiện dừng
+
+- **Ghi bàn giao rồi dừng phiên.** Viết `<TASK_OUTPUT_DIR>/handoff/rerun.md` theo khuôn ở
+  [`.agent/config/handoff.json`](../.agent/config/handoff.json): bốn mục `Trạng thái`, `Artifact chính`,
+  `Việc còn mở`, `Lệnh tiếp theo`, tổng dưới 1k token. Rồi bảo user chạy `/clear` trước khi gọi lệnh kế
+  tiếp. Lý do là số đo, không phải sở thích: context trung bình mỗi message của một lượt task thật là
+  494 đến 515k token, và cache-hit 98,5 đến 99,0% nghĩa là cả context đó được đọc lại ở MỌI message.
+  Giữ một phiên cho cả hai phase là bắt phase sau trả tiền cho hội thoại của phase trước.
+
 ## Tài liệu tham chiếu
 
 | Tài liệu | Mục đích |

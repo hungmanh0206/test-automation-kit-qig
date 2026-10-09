@@ -44,6 +44,12 @@ const MANIFEST = {
     parse: ['knowledge/index.json', '.agent/config/risk_model.example.json'],
     recommend: ['.agent/config/risk_model.json', 'knowledge/index.json'],
   },
+  /* rerun dùng cùng manifest với phase2 — nó cũng execute, chỉ khác phạm vi. */
+  rerun: {
+    require: [],
+    parse: ['.agent/config/verdict_taxonomy.json'],
+    recommend: [],
+  },
   phase2: {
     require: ['.agent/config/project_context.md'],
     parse: ['knowledge/index.json'],
@@ -60,13 +66,62 @@ const MANIFEST = {
 const abs = (p) => path.resolve(rc.REPO_ROOT, p);
 const rel = (p) => path.relative(rc.REPO_ROOT, p).replace(/\\/g, '/');
 
+/*
+ * BÀN GIAO GIỮA PHASE (H1). Đo trên 4 lượt chạy task thật: cache-hit 98,5 đến 99,0%, context trung bình
+ * 494 đến 515k token mỗi message, 6.121 đến 7.682 message một lượt. Chi phí tỉ lệ với context nhân số
+ * message, nên chạy Phase 1 và Phase 2 trong MỘT phiên là bắt Phase 2 mang theo cả hội thoại Phase 1 ở
+ * mọi message còn lại.
+ *
+ * CẢNH BÁO, KHÔNG CHẶN. Bộ task cũ không có file nào, và một gate làm đỏ mọi task cũ sẽ bị tắt trong một
+ * ngày. Nhưng phải KÊU: im lặng thì "chưa chạy phase trước" và "quên ghi bàn giao" trông giống hệt nhau.
+ *
+ * Hàm thuần để có test kiểm chính nó, thay vì kiểm bằng mắt — cùng khuôn `checkHarnessHooks` ở trên.
+ */
+/** Thư mục task, hoặc null khi chưa đủ TASK_KEY và PROJECT_OUTPUT_DIR. */
+function taskDirCua(projectOutputDir, task) {
+  if (!projectOutputDir || !task) return null;
+  return path.resolve(rc.REPO_ROOT, projectOutputDir, 'tasks', task);
+}
+
+function checkHandoff(repoRoot, { mode, taskDir }) {
+  const out = [];
+  let cfg;
+  try { cfg = JSON.parse(fs.readFileSync(path.join(repoRoot, '.agent', 'config', 'handoff.json'), 'utf8')); }
+  catch (e) { return [`handoff.json không đọc được (${e.message}) ⇒ không kiểm được bàn giao giữa phase.`]; }
+
+  const spec = (cfg.phase || {})[mode];
+  if (!spec || !taskDir) return out;
+
+  // 1) Phase TRƯỚC đã để lại bàn giao chưa.
+  const truoc = spec.truoc && (cfg.phase || {})[spec.truoc];
+  if (truoc) {
+    const p = path.join(taskDir, truoc.file);
+    if (!fs.existsSync(p)) {
+      out.push(`${mode}: chưa có ${truoc.file} của phase "${spec.truoc}" ⇒ lượt này đang phải dựa vào hội thoại cũ, mà hội thoại cũ không qua gate nào và mất chi tiết sau mỗi lần nén. Ghi bàn giao ở cuối phase trước.`);
+    }
+  }
+
+  // 2) Bàn giao CỦA CHÍNH phase này, nếu đã có, phải đúng khuôn.
+  const cua = path.join(taskDir, spec.file);
+  if (fs.existsSync(cua)) {
+    const txt = fs.readFileSync(cua, 'utf8');
+    const tok = Math.round(txt.length / 3.2);
+    if (cfg.max_token && tok > cfg.max_token) {
+      out.push(`${spec.file}: ~${tok} token, vượt mốc ${cfg.max_token}. Bàn giao dài là bản báo cáo thứ hai; báo cáo thật đã ở reports/.`);
+    }
+    const thieu = (cfg.truong || []).filter((t) => !txt.includes(t.neo)).map((t) => t.ten);
+    if (thieu.length) out.push(`${spec.file}: thiếu mục ${thieu.join(', ')} — lượt sau sẽ không biết bắt đầu từ đâu.`);
+  }
+  return out;
+}
+
 /**
  * Chạy preflight thuần (không exit) → { problems, warnings, mode, task }.
  * @param {object} o { mode, task, extraRequire:[], allowMissing:[], projectOutputDir }
  */
 function runPreflight({ mode = 'generic', task = '', extraRequire = [], allowMissing = [], projectOutputDir = process.env.PROJECT_OUTPUT_DIR || '' } = {}) {
   const cfg = MANIFEST[mode];
-  if (!cfg) return { error: `mode "${mode}" không hỗ trợ (generic|phase1|phase2|publish)`, problems: [], warnings: [] };
+  if (!cfg) return { error: `mode "${mode}" không hỗ trợ (generic|phase1|phase2|publish|rerun)`, problems: [], warnings: [] };
   const problems = [];
   const warnings = [];
   const allow = new Set(allowMissing);
@@ -118,6 +173,7 @@ function runPreflight({ mode = 'generic', task = '', extraRequire = [], allowMis
   // Tách thành hàm thuần (xuất ở cuối file) để có test kiểm chính nó, thay vì kiểm bằng mắt.
   warnings.push(...checkHarnessHooks(rc.REPO_ROOT));
   warnings.push(...checkKnowledgeBackup(rc.REPO_ROOT, process.env));
+  warnings.push(...checkHandoff(rc.REPO_ROOT, { mode, taskDir: taskDirCua(projectOutputDir, task) }));
 
   /*
    * DB VERIFY (§23) — chỉ kiểm khi task KHAI dùng. Trước 28/08/2026 `db.conventions.json` không được gate
@@ -282,6 +338,6 @@ async function main() {
   process.exit(1);
 }
 
-module.exports = { runPreflight, MANIFEST, checkHarnessHooks, checkKnowledgeBackup, dbVerify: dbv };
+module.exports = { runPreflight, MANIFEST, checkHarnessHooks, checkKnowledgeBackup, checkHandoff, taskDirCua, dbVerify: dbv };
 
 if (require.main === module) main().catch((e) => { console.error('[preflight] LỖI:', e.message); process.exit(2); });
