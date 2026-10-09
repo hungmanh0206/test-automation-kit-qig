@@ -58,6 +58,14 @@ Skill này mở browser vào UAT ⇒ theo `CLAUDE.md` §2 phải **xác nhận v
 **Luật cứng:** `snapshot` để phân tích · `screenshot` để làm bằng chứng. Chọn locator từ ảnh là đoán — ảnh
 không mang tên accessible, không mang cấu trúc DOM.
 
+**Luật cứng thứ hai, về CHI PHÍ:** `snapshot` toàn trang chỉ mở khi **chưa biết cấu trúc màn**, hoặc khi
+**locator vừa vỡ**. Biết màn rồi thì dùng công thức `browser_evaluate` ở mục dưới, nó trả đúng mấy field
+cần thay vì cả cây accessibility.
+
+Và **tra [`knowledge/locators/`](../../../../knowledge/locators/) TRƯỚC khi mở MCP.** Màn đã dò ở sprint
+trước thì locator đã nằm ở đó, kèm quirk. Mở MCP để dò lại là trả tiền hai lần cho cùng một câu trả lời,
+và nó còn làm mất dấu vòng learning: lần sau vẫn không ai biết màn này đã từng được dò.
+
 ### Chạy 6 bước đó bằng gì
 
 Repo này **chưa cài browser MCP** (đo: `.claude/settings*.json` không khai `mcpServers` nào). Nên bước 1–6

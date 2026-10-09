@@ -314,6 +314,30 @@ Backlog upload:
 - Upload video nếu thao tác trước fail cần nhìn sequence ngắn.
 - Không upload `trace.zip`, markdown, text/log, JSON hoặc `error-context.md` lên Backlog.
 
+
+## Đọc kết quả bằng bản tóm tắt, không đọc JSON thô
+
+```bash
+npm run results:summary -- --ids
+```
+
+Lệnh này đọc `test-results/results.json` rồi in **mỗi case đỏ một dòng**: TC ID, lỗi rút gọn, đường dẫn
+ảnh. Nó có **trần số dòng**, và khi cắt thì nói rõ đã cắt bao nhiêu.
+
+Ba luật đi kèm, cả ba đều là chuyện chi phí:
+
+1. **KHÔNG `Read` thẳng `results.json`.** File đó của một suite thật là hàng trăm KB, và phần lớn là stdout
+   của case ĐÃ PASS. Reporter của kit đã là `dot` chứ không phải `list` (đo 19/09/2026: 143.542 byte xuống
+   10.646 byte), nên bản tóm tắt là nửa còn lại của cùng một việc.
+2. **Rerun ĐÚNG case đỏ**, bằng `--grep` mà `--ids` in ra, hoặc `--last-failed`. Chạy lại cả suite chỉ đúng
+   khi lỗi chạm `tests/support/**`, vì lúc đó case xanh cũng có thể đã sai theo.
+3. **KHÔNG mở ảnh evidence ra xem** để tự kiểm. Ảnh là bằng chứng cho người đọc và cho
+   `output_gate --mode test-execution`; agent chỉ mở khi đang triage một case FAIL cụ thể, hoặc khi gate
+   báo ảnh nghi sai màn.
+
+Bản tóm tắt **không phải verdict**. Verdict do `output_gate --mode test-execution` chấm theo
+`verdict_taxonomy.json`.
+
 ## `complex_ui_e2e`
 Flow UI/E2E phức tạp hoặc khó tái hiện chỉ bằng ảnh.
 
