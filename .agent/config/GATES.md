@@ -3,7 +3,7 @@
 > **SINH TỰ ĐỘNG** bởi `node scripts/qa/gate_index.js --write`. Đừng sửa tay — `--check` sẽ chặn khi
 > bảng lệch source. Cột **Mức** suy từ code: `exit 1` = CHẶN · ghi artifact = SINH · chỉ in = BÁO CÁO.
 
-Tổng **78** máy — **54 CHẶN** · 16 SINH (ghi artifact) · 8 BÁO CÁO (chỉ in).
+Tổng **79** máy — **55 CHẶN** · 16 SINH (ghi artifact) · 8 BÁO CÁO (chỉ in).
 
 SINH/BÁO CÁO **không phải gate bị nới** — chúng không kiểm vi phạm. Ví dụ `bugs:checklist` in brief bug
 lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` §20).
@@ -26,7 +26,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN | `leak:report` | đo "kit đang rò bao nhiêu và rò kiểu gì" (baseline cho mọi cải tiến sau). | `scripts/qa/leak_report.js` | RULE_GLOBAL.md · README.md · .agent/workflows · .agent/rules · prompt_templates · tests/fe/infra |
 | CHẶN | `learn:bugs`, `learn:bugs:apply` | nối mắt xích còn ĐỨT: bug đã log Backlog → knowledge/bugs/ (+ root_causes ref, index). | `scripts/qa/learn_bugs.js` | README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .agent/workflows · prompt_templates |
 | CHẶN | `library:drift` | CHẶN "thư viện thuật ngữ đã trôi khỏi repo". | `scripts/qa/library_drift.js` | .gitlab-ci.yml · README.md · .github/workflows |
-| CHẶN | `gate:output`, `gate:output:fix`, `gate:gen-testcase` | Gate chất lượng output THỰC THI, tự chạy trước khi push Backlog/Sheet. | `scripts/qa/output_gate.js` | RULE_GLOBAL.md · README.md · scripts/qa/README.md · .agent/workflows · .agent/rules · prompt_templates · .claude/commands |
+| CHẶN | `gate:output`, `gate:output:fix`, `gate:gen-testcase` | Gate chất lượng output THỰC THI, tự chạy trước khi push Backlog/Sheet. | `scripts/qa/output_gate.js` | RULE_GLOBAL.md · README.md · scripts/qa/README.md · .agent/workflows · .agent/rules · .agent/skills · prompt_templates · .claude/commands |
 | CHẶN | `package:kit` | đóng gói bản phát hành SẠCH của kit vào `dist/`. | `scripts/qa/package_kit.js` | README.md · .github/workflows · tests/fe/infra |
 | CHẶN | `gate:policy` | giữ 1 NGUỒN policy duy nhất: RULE_GLOBAL.md là canonical. | `scripts/qa/policy_source_check.js` | .gitlab-ci.yml · RULE_GLOBAL.md · README.md · USER_GUIDE.md · .github/workflows · .agent/rules · prompt_templates · .claude/commands · tests/fe/infra |
 | CHẶN | `preflight`, `preflight:lanes` | round-3) — CHẶN "miss đọc file / input hỏng" TRƯỚC khi workflow chạy. | `scripts/qa/preflight_gate.js` | .gitlab-ci.yml · README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .github/workflows · .agent/workflows · prompt_templates · .claude/commands · tests/fe/infra |
@@ -63,6 +63,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN (có cờ --enforce) | `self-review`, `self-review:enforce` | Lượt 2: đối chiếu CHECKLIST trước finalize (ADVISORY). | `scripts/qa/self_review.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · scripts/qa/README.md · .agent/workflows · prompt_templates · .claude/commands · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `spec:gap` | CHIỀU NGƯỢC: build CÓ mà tài liệu KHÔNG NHẮC (B3 của chương trình chống lọt bug). | `scripts/qa/spec_gap_report.js` | RULE_GLOBAL.md · CLAUDE.md · README.md · .agent/workflows · .agent/rules · prompt_templates · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `system:check`, `system:index` | quản lý `knowledge/system/`: bản đồ HỆ THỐNG đã được xác nhận. | `scripts/qa/system_map.js` | README.md · USER_GUIDE.md · .agent/workflows · .agent/skills · prompt_templates · partial-rerun |
+| CHẶN (có cờ --enforce) | `tc:review`, `tc:review:enforce` | CHẤM CHẤT LƯỢNG bộ testcase theo rubric 8 tiêu chí, 0–2 điểm mỗi tiêu chí. | `scripts/qa/tc_review.js` | .agent/workflows · .agent/skills · prompt_templates · partial-rerun · .claude/commands · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `typecheck:task`, `typecheck:task:enforce` | chạy `tsc --noEmit` trên automation CỦA MỘT TASK. | `scripts/qa/typecheck_task.js` | prompt_templates |
 | SINH | `docs:index`, `docs:cite` | mỗi neo yêu cầu trong tài liệu phải TRA NGƯỢC ĐƯỢC về file và số dòng. | `scripts/phase1/docs_index.js` | README.md · USER_GUIDE.md · prompt_templates · tests/fe/infra |
 | SINH | `accessibility` | tái dùng hạ tầng của ui_conformance_check.js (login/pre-steps/catalog schema | `scripts/qa/accessibility_check.js` | README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .agent/rules · .agent/skills · prompt_templates · tests/fe/infra |

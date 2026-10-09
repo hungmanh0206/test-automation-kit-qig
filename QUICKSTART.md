@@ -42,13 +42,13 @@ vào file đó, đừng gỡ tay.
 
 | | GitHub | GitLab |
 |---|---|---|
-| file được track | 473 | 473 |
-| `npx playwright test tests/fe/infra` | **643 test · 0 đỏ** | **643 test · 0 đỏ** |
-| `npm run ci:scope` đếm | 54 spec | 54 spec |
+| file được track | 477 | 477 |
+| `npx playwright test tests/fe/infra` | **657 test · 0 đỏ** | **657 test · 0 đỏ** |
+| `npm run ci:scope` đếm | 55 spec | 55 spec |
 
 **Số của bạn khác bảng này là có gì đó sai** — đừng bỏ qua. Test bỏ qua đều tự khai lý do khi chạy.
 
-Một ngoại lệ hợp lệ: **tổng luôn là 643**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
+Một ngoại lệ hợp lệ: **tổng luôn là 657**, nhưng phần bỏ qua đổi theo dữ liệu bạn có.
 Clone mới thì `knowledge/` rỗng nên vài test tự bỏ qua; khôi phục bundle `knowledge:backup` xong thì
 chúng chạy thật. Đó là ĐÚNG, không phải lệch.
 
