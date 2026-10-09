@@ -147,6 +147,7 @@ npm run domain:trace-back            # case UPDATED/NEW có trỏ đúng id rule
 ```powershell
 npm run design:gate                                  # cột canonical, ô lõi rỗng, ui_catalog khi có case hiển thị
 TASK_ENV=... npm run dim:coverage -- --enforce        # chiều required + NGƯỠNG theo risk band
+TASK_ENV=... npm run tc:review:enforce                 # rubric 8 tiêu chí trên từng case NEW/UPDATED
 ```
 
    Vì sao cần: TC `NEW`/`UPDATED` ở đây đi **thẳng lên Sheet**. Không có gate nội dung thì case thiếu cột/rỗng

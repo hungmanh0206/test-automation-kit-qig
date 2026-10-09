@@ -31,6 +31,8 @@
     "gate:output": "node scripts/qa/output_gate.js --mode test-execution",
     "gate:output:fix": "node scripts/qa/output_gate.js --mode test-execution --fix",
     "gate:gen-testcase": "node scripts/qa/output_gate.js --mode gen-testcase",
+    "tc:review": "node scripts/qa/tc_review.js",
+    "tc:review:enforce": "node scripts/qa/tc_review.js --enforce",
     "design:gate": "node scripts/qa/design_gate.js",
     "self-review": "node scripts/qa/self_review.js",
     "dep:graph": "node scripts/qa/dependency_graph.js",

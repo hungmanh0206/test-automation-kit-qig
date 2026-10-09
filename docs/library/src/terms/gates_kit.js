@@ -26,6 +26,15 @@ const TERMS_GATE3 = [
   cmd:'npm run typecheck:task -- --task <TASK_KEY>',
   src:'scripts/qa/typecheck_task.js', rel:['g-gate_index','c-forcing-function','c-tin-hieu-sach-gia'] },
 
+{ id:'g-tc_review', t:'tc:review', cat:'gate',
+  def:'Chấm từng testcase theo rubric 8 tiêu chí, 0-2 điểm mỗi tiêu chí, rồi xếp loại theo tỉ lệ.',
+  detail:'Sáu tiêu chí máy chấm đủ (rõ ràng · Expected đo được · độc lập · data cụ thể · truy vết · kỹ thuật). Hai tiêu chí máy chỉ chấm một phần và gắn cờ AI: đúng trọng tâm, và Actor/Context. Báo cáo ra reports/tc-review.md kèm trích nguyên văn chỗ chưa đạt và danh sách TC trùng.',
+  why:'Kit đã chặn được từng lỗi rời, nhưng không chỗ nào trả lời câu người review hỏi đầu tiên: "bộ này dùng được chưa". Thiếu câu đó thì chất lượng bộ TC là cảm nhận của người đọc gần nhất, mà cảm nhận không so được giữa hai lượt hay hai người. Đo trên một bộ 212 case thật: trung bình 96,3%, và lộ ra 46 case không có oracle-ref.',
+  how:['npm run tc:review để chấm và xem báo cáo.','npm run tc:review:enforce khi muốn CHẶN ở dưới ngưỡng.'],
+  cmd:'npm run tc:review   ·   npm run tc:review:enforce',
+  trap:'Tiêu chí gắn cờ AI KHÔNG được tính là đạt chỉ vì máy không kêu. Cộng điểm cho thứ chưa ai nhìn là cách nhanh nhất biến máy chấm thành máy phát chứng chỉ. Bộ chưa dùng tag kỹ thuật thì tiêu chí 8 là n/a và mẫu số co lại còn 14, không phải cho 0 điểm — cho 0 là phạt bộ cũ vì một luật ra đời sau nó.',
+  src:'scripts/qa/tc_review.js', rel:['g-design_gate','g-dimension_coverage','c-canonical','sk-tc_reviewer'] },
+
 { id:'g-scope_anchor', t:'scope:anchor', cat:'gate',
   def:'Neo MẪU SỐ của Phase 1: kiểm xuất xứ của con số mà mọi tỉ lệ coverage chia cho.',
   detail:'Bốn câu hỏi: mỗi quyết định thu hẹp phạm vi có lý do và người ký chưa · con số mẫu số có danh mục liệt kê từng mục kèm NGUỒN không · catalog expected lấy từ tài liệu hay lấy từ build · so lượt trước, số case đổi mà danh mục KHÔNG đổi thì lượt trước đã sinh thiếu.',

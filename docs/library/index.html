@@ -993,7 +993,7 @@ body.lropen{overflow:hidden}
       </ul>
 
       <h3>Vì sao cần</h3>
-      <p>Kit có 22 skill, 78 máy kiểm (54 trong đó CHẶN thật) và một bộ từ vựng riêng (oracle độc lập, tautology, failureLayer,
+      <p>Kit có 23 skill, 78 máy kiểm (54 trong đó CHẶN thật) và một bộ từ vựng riêng (oracle độc lập, tautology, failureLayer,
         readiness, TRI, chiều coverage…). Người mới vào phải đọc rải rác nhiều file mới ghép được bức tranh.
         Trang này gom lại một chỗ, giữ nguyên nguồn, và cố tình <b>không</b> diễn giải thêm ngoài những gì repo đã ghi.</p>
 
@@ -1565,6 +1565,15 @@ const TERMS_GATE3 = [
   cmd:'npm run typecheck:task -- --task <TASK_KEY>',
   src:'scripts/qa/typecheck_task.js', rel:['g-gate_index','c-forcing-function','c-tin-hieu-sach-gia'] },
 
+{ id:'g-tc_review', t:'tc:review', cat:'gate',
+  def:'Chấm từng testcase theo rubric 8 tiêu chí, 0-2 điểm mỗi tiêu chí, rồi xếp loại theo tỉ lệ.',
+  detail:'Sáu tiêu chí máy chấm đủ (rõ ràng · Expected đo được · độc lập · data cụ thể · truy vết · kỹ thuật). Hai tiêu chí máy chỉ chấm một phần và gắn cờ AI: đúng trọng tâm, và Actor/Context. Báo cáo ra reports/tc-review.md kèm trích nguyên văn chỗ chưa đạt và danh sách TC trùng.',
+  why:'Kit đã chặn được từng lỗi rời, nhưng không chỗ nào trả lời câu người review hỏi đầu tiên: "bộ này dùng được chưa". Thiếu câu đó thì chất lượng bộ TC là cảm nhận của người đọc gần nhất, mà cảm nhận không so được giữa hai lượt hay hai người. Đo trên một bộ 212 case thật: trung bình 96,3%, và lộ ra 46 case không có oracle-ref.',
+  how:['npm run tc:review để chấm và xem báo cáo.','npm run tc:review:enforce khi muốn CHẶN ở dưới ngưỡng.'],
+  cmd:'npm run tc:review   ·   npm run tc:review:enforce',
+  trap:'Tiêu chí gắn cờ AI KHÔNG được tính là đạt chỉ vì máy không kêu. Cộng điểm cho thứ chưa ai nhìn là cách nhanh nhất biến máy chấm thành máy phát chứng chỉ. Bộ chưa dùng tag kỹ thuật thì tiêu chí 8 là n/a và mẫu số co lại còn 14, không phải cho 0 điểm — cho 0 là phạt bộ cũ vì một luật ra đời sau nó.',
+  src:'scripts/qa/tc_review.js', rel:['g-design_gate','g-dimension_coverage','c-canonical','sk-tc_reviewer'] },
+
 { id:'g-scope_anchor', t:'scope:anchor', cat:'gate',
   def:'Neo MẪU SỐ của Phase 1: kiểm xuất xứ của con số mà mọi tỉ lệ coverage chia cho.',
   detail:'Bốn câu hỏi: mỗi quyết định thu hẹp phạm vi có lý do và người ký chưa · con số mẫu số có danh mục liệt kê từng mục kèm NGUỒN không · catalog expected lấy từ tài liệu hay lấy từ build · so lượt trước, số case đổi mà danh mục KHÔNG đổi thì lượt trước đã sinh thiếu.',
@@ -1830,7 +1839,7 @@ const TERMS_GATE5 = [
 
 ];
 
-/* NHÓM 3 — 22 skill (nguồn: .agent/skills/INDEX.md + từng SKILL.md) */
+/* NHÓM 3 — 23 skill (nguồn: .agent/skills/INDEX.md + từng SKILL.md) */
 const TERMS_SKILL = [
 
 /* ── Phase 1 ── */
@@ -1861,6 +1870,13 @@ const TERMS_SKILL = [
   detail:'Sinh risk-register ở dạng suggest-only, rồi gate độ sâu test theo band. Mặc định chỉ cảnh báo. Bật --enforce mới chặn. QA có quyền override band nhưng phải ghi lý do.',
   why:'Thời gian test luôn ít hơn thứ cần test. Câu hỏi thật không phải "test hết chưa" mà "chỗ nguy hiểm nhất đã test đủ sâu chưa", và câu đó cần một con số để trả lời nhất quán giữa các người, các sprint.',
   src:'.agent/skills/phase1/risk_scorer/SKILL.md', rel:['c-rbt','g-risk_gate','g-risk_score','f-risk-model'] },
+
+{ id:'sk-tc_reviewer', t:'tc_reviewer', cat:'skill', phase:'Phase 1',
+  def:'Chấm chất lượng bộ testcase theo rubric 8 tiêu chí — máy chấm 6, người chấm 2.',
+  detail:'Chạy bằng npm run tc:review. Báo cáo ra reports/tc-review.md: điểm từng TC kèm trích nguyên văn chỗ chưa đạt, và danh sách TC trùng để cân nhắc gộp. Ngưỡng ở .agent/config/tc_review.json.',
+  why:'Trả lời được câu người review hỏi đầu tiên: bộ này dùng được chưa. Không có thước thì chất lượng bộ TC là cảm nhận của người đọc gần nhất, mà cảm nhận không so được giữa hai lượt hay hai người.',
+  trap:'Hai tiêu chí gắn cờ AI là chỗ máy mới đo được một phần. Coi chúng là đạt vì máy không kêu thì con số tổng trông như đã kiểm hết.',
+  src:'.agent/skills/phase1/tc_reviewer/SKILL.md', rel:['g-tc_review','sk-tc_validator','c-canonical'] },
 
 { id:'sk-tc_validator', t:'tc_validator', cat:'skill', phase:'Phase 1',
   def:'Validate bộ testcase theo 7 cột canonical bắt buộc, kiểm coverage/risk và khả năng automate được.',
@@ -2751,7 +2767,7 @@ const TERMS_FLOW = [
   src:'.agent/config/kit-layers.md', rel:['r-scope','g-policy_source_check'] },
 
 { id:'f-skills-index', t:'.agent/skills/INDEX.md', cat:'flow',
-  def:'Bảng tra 22 skill, sinh tự động, không sửa tay.',
+  def:'Bảng tra 23 skill, sinh tự động, không sửa tay.',
   detail:'Skill của kit nằm ở .agent/skills/** chứ không phải .claude/skills/, nên harness không tự phát hiện. Bảng này là cách agent biết có skill nào và nằm ở đâu; SessionStart hook tự bơm danh sách tên vào ngữ cảnh.',
   why:'Skill không được biết tới thì coi như không tồn tại. Sinh tự động để bảng không bao giờ lệch với thực tế thư mục.',
   cmd:'npm run skills:index',
@@ -2962,7 +2978,7 @@ const TREE = [
   [0,'.agent/','cấu hình, workflow, skill, rule của agent','dir'],
   [1,'config/','project_context · risk_model · verdict_taxonomy · kit-layers · impact-map','dir'],
   [1,'workflows/','entry + step của phase1 (01–04), phase2 (01–04), rerun (01–03)','dir'],
-  [1,'skills/','22 skill theo phase1 / phase2 / shared','dir'],
+  [1,'skills/','23 skill theo phase1 / phase2 / shared','dir'],
   [1,'rules/','core_rules · qa_instincts · locator_strategy · playwright_fe/api','dir'],
   [0,'prompt_templates/','prompt chạy từng phase','dir'],
   [1,'phase1/dimensions/','15 chương chiều coverage — mở đúng chiều task cần, không nạp cả 15','dir'],

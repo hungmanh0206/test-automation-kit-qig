@@ -9,6 +9,7 @@
 | `git_impact_analyzer` | phase1 | `.agent/skills/phase1/git_impact_analyzer/SKILL.md` | Đọc git diff của branch/PR gắn TASK_KEY, liệt kê file/module thay đổi và phân loại vào 7 bề mặt dùng chung của mục 17 — cấp dữ liệu diff thật làm input cho Bước 1 mục 17 thay vì đọc code đoán. Suggest-only. |
 | `requirements_analyzer` | phase1 | `.agent/skills/phase1/requirements_analyzer/SKILL.md` | Phân tích requirement/UI/API artifact để tạo scope, business rule và coverage input cho Phase 1. |
 | `risk_scorer` | phase1 | `.agent/skills/phase1/risk_scorer/SKILL.md` | Risk-Based Testing có thực thi — chấm Risk = Likelihood × Impact per module từ knowledge/ + config, sinh risk-register (Suggest-only), và gate depth theo band (default cảnh báo, --enforce chặn). QA override band. |
+| `tc_reviewer` | phase1 | `.agent/skills/phase1/tc_reviewer/SKILL.md` | Chấm chất lượng bộ testcase theo rubric 8 tiêu chí (0-2 điểm mỗi tiêu chí) — máy chấm 6, người chấm 2. Dùng trước khi publish, hoặc khi nhận bàn giao một bộ TC không phải mình viết. |
 | `tc_validator` | phase1 | `.agent/skills/phase1/tc_validator/SKILL.md` | Validate testcase Phase 1 theo template 10 cột, coverage/risk gate và khả năng execute automation. |
 | `flaky_test_analyzer` | phase2 | `.agent/skills/phase2/flaky_test_analyzer/SKILL.md` | Phân tích testcase Playwright flaky và đề xuất/sửa root cause trong phạm vi an toàn. |
 | `lighthouse_check` | phase2 | `.agent/skills/phase2/lighthouse_check/SKILL.md` | Điểm Lighthouse thật (Performance/Accessibility/SEO/Best-practices) chạy qua CDP bằng playwright-lighthouse; verdict advisory theo dải điểm chuẩn. Opt-in nặng (skip nếu chưa cài), never-auto + non-prod, evidence PNG bảng điểm. |
@@ -28,4 +29,4 @@
 | `system_mapper` | shared | `.agent/skills/shared/system_mapper/SKILL.md` | Ghi bản đồ HỆ THỐNG đã xác nhận vào knowledge/system/ (state machine · ma trận phân quyền · surface dùng chung) để trả lời được "hành vi này là bug hay đúng thiết kế" và "sửa chỗ này phải regression đâu" mà không suy từ app. |
 | `test_data_generator` | shared | `.agent/skills/shared/test_data_generator/SKILL.md` | Sinh test data cụ thể, unique, traceable và rollback được cho Phase 1/Phase 2. |
 
-> 22 skill. Thiếu description: 0.
+> 23 skill. Thiếu description: 0.

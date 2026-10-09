@@ -148,7 +148,7 @@ const TREE = [
   [0,'.agent/','cấu hình, workflow, skill, rule của agent','dir'],
   [1,'config/','project_context · risk_model · verdict_taxonomy · kit-layers · impact-map','dir'],
   [1,'workflows/','entry + step của phase1 (01–04), phase2 (01–04), rerun (01–03)','dir'],
-  [1,'skills/','22 skill theo phase1 / phase2 / shared','dir'],
+  [1,'skills/','23 skill theo phase1 / phase2 / shared','dir'],
   [1,'rules/','core_rules · qa_instincts · locator_strategy · playwright_fe/api','dir'],
   [0,'prompt_templates/','prompt chạy từng phase','dir'],
   [1,'phase1/dimensions/','15 chương chiều coverage — mở đúng chiều task cần, không nạp cả 15','dir'],

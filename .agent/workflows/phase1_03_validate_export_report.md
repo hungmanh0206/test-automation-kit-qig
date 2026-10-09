@@ -42,6 +42,10 @@
    Đây là thứ duy nhất đo "bộ case có đầy đủ theo chiều" chứ không chỉ đếm số case; bỏ qua thì thiếu-chiều không bao giờ lộ ra.
 6c. **Error Guessing từ bug lịch sử:** `TASK_ENV=... npm run bugs:checklist` — đối chiếu bộ case với bug đã từng xảy ra ở module này.
    Bug lặp lại là bug rẻ nhất để bắt; không tra kho thì mỗi sprint lại vấp lại.
+6e. **Chất lượng từng case (rubric 8 tiêu chí):** `TASK_ENV=... npm run tc:review:enforce` (skill `tc_reviewer`).
+   Sáu tiêu chí máy chấm đủ, hai tiêu chí máy chỉ chấm một phần và gắn cờ `AI` — **không được coi cờ đó là đạt**.
+   Các gate trên đo bộ case có ĐỦ không; gate này đo từng case có DÙNG ĐƯỢC không. Thiếu nó thì một bộ phủ đủ chiều
+   vẫn có thể gồm toàn case mơ hồ, và không gì nói ra điều đó. Báo cáo ở `reports/tc-review.md`.
 6d. **Chiều ngược (spec → case):** `TASK_ENV=... npm run spec:gap` — thứ tài liệu NÊU mà bộ case chưa phủ.
    Cả 3 lệnh chỉ đọc artefact local, không gọi mạng, nên chạy được cả khi offline.
 6b. Sinh **Traceability Matrix** tường minh `<TASK_OUTPUT_DIR>/reports/traceability-matrix.md` — bảng `| REQ-ID | Requirement/AC | Risk | TC ID (trace) | Status |` (1 dòng/requirement in-scope; `Status` ∈ `Covered`/`Partial`/`Gap`). Hỗ trợ Gap Analysis: requirement `Gap`/`Partial` mức Critical/High phải khớp `### High/Critical Gaps` trong summary. Đây là artifact riêng, chi tiết hơn Coverage Matrix tóm tắt trong summary.

@@ -1,0 +1,29 @@
+{
+  "_doc": "Ngưỡng cho `npm run tc:review`. NGUỒN DUY NHẤT — script đọc file này, không hardcode số.",
+
+  "_vi_sao_ti_le_chu_khong_phai_diem": "Gói nguồn chấm theo ĐIỂM TUYỆT ĐỐI trên thang 16 (13-16 tốt · 8-12 cần sửa · 0-7 viết lại). Kit dùng TỈ LỆ vì mẫu số đổi: bộ chưa dùng tag kỹ thuật thì tiêu chí 8 là `n/a` và không tính vào mẫu số, nên tối đa là 14 chứ không phải 16. Giữ thang tuyệt đối thì mọi bộ cũ tự động mất 2 điểm vì một luật ra đời sau nó — đó là phạt oan, và một gate phạt oan sẽ bị tắt.",
+
+  "nguong": {
+    "tot": 0.8125,
+    "can_sua": 0.5,
+    "trung_binh_bo": 0.75,
+    "_doc": "tot = 13/16 của thang gốc. can_sua = 8/16. trung_binh_bo là ngưỡng CHẶN cho cả bộ khi chạy --enforce, đặt thấp hơn `tot` để một vài case khó không làm đỏ cả lượt."
+  },
+
+  "_tieu_chi": {
+    "_doc": "Tám tiêu chí, 0-2 điểm mỗi cái. Cột `may_do_duoc` nói rõ máy đo được tới đâu — chỗ ghi `mot_phan` thì script gắn cờ AI và KHÔNG tự cộng điểm cho phần còn lại.",
+    "1-ro-rang": { "may_do_duoc": "du", "do_gi": "bước có đánh số, không gộp range, không dồn từ 3 hành động trở lên vào một bước" },
+    "2-expected-do-duoc": { "may_do_duoc": "du", "do_gi": "TÁI DÙNG `vagueExpectedLines` và `looksTautology` của output_rules — không viết lại luật" },
+    "3-doc-lap": { "may_do_duoc": "du", "do_gi": "Tiền điều kiện có tag cách dựng, và không tham chiếu case khác chạy trước" },
+    "4-data-cu-the": { "may_do_duoc": "du", "do_gi": "ô Dữ liệu Test không còn placeholder chưa điền" },
+    "5-truy-vet": { "may_do_duoc": "du", "do_gi": "có oracle-ref để truy ngược về rule. Kit dùng oracle-ref thay cho cột REQ ID của gói nguồn" },
+    "6-dung-trong-tam": { "may_do_duoc": "mot_phan", "do_gi": "máy chỉ bắt dấu hiệu thô ở tiêu đề (gộp nhiều hành vi). Case verify nhiều mục tiêu không liên quan thì người chấm" },
+    "7-actor-context": { "may_do_duoc": "mot_phan", "do_gi": "máy bắt actor chung chung và trường hợp Tiền điều kiện không nêu được ai thao tác. Actor có đúng vai trò thật hay không thì người chấm" },
+    "8-ky-thuat": { "may_do_duoc": "du", "do_gi": "dùng kết quả H1. Bộ chưa dùng quy ước thì n/a, KHÔNG cho 0 điểm" }
+  },
+
+  "_actor_cam": {
+    "_doc": "Actor chung chung bị cấm, lấy nguyên từ gói nguồn và có lý do: 'Người dùng' không nói được ai có quyền gì, nên case phân quyền viết kiểu đó là không kiểm được gì.",
+    "danh_sach": ["người dùng", "user", "tester", "qa", "ai đó"]
+  }
+}

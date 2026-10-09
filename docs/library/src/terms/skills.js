@@ -1,4 +1,4 @@
-/* NHÓM 3 — 22 skill (nguồn: .agent/skills/INDEX.md + từng SKILL.md) */
+/* NHÓM 3 — 23 skill (nguồn: .agent/skills/INDEX.md + từng SKILL.md) */
 const TERMS_SKILL = [
 
 /* ── Phase 1 ── */
@@ -29,6 +29,13 @@ const TERMS_SKILL = [
   detail:'Sinh risk-register ở dạng suggest-only, rồi gate độ sâu test theo band. Mặc định chỉ cảnh báo. Bật --enforce mới chặn. QA có quyền override band nhưng phải ghi lý do.',
   why:'Thời gian test luôn ít hơn thứ cần test. Câu hỏi thật không phải "test hết chưa" mà "chỗ nguy hiểm nhất đã test đủ sâu chưa", và câu đó cần một con số để trả lời nhất quán giữa các người, các sprint.',
   src:'.agent/skills/phase1/risk_scorer/SKILL.md', rel:['c-rbt','g-risk_gate','g-risk_score','f-risk-model'] },
+
+{ id:'sk-tc_reviewer', t:'tc_reviewer', cat:'skill', phase:'Phase 1',
+  def:'Chấm chất lượng bộ testcase theo rubric 8 tiêu chí — máy chấm 6, người chấm 2.',
+  detail:'Chạy bằng npm run tc:review. Báo cáo ra reports/tc-review.md: điểm từng TC kèm trích nguyên văn chỗ chưa đạt, và danh sách TC trùng để cân nhắc gộp. Ngưỡng ở .agent/config/tc_review.json.',
+  why:'Trả lời được câu người review hỏi đầu tiên: bộ này dùng được chưa. Không có thước thì chất lượng bộ TC là cảm nhận của người đọc gần nhất, mà cảm nhận không so được giữa hai lượt hay hai người.',
+  trap:'Hai tiêu chí gắn cờ AI là chỗ máy mới đo được một phần. Coi chúng là đạt vì máy không kêu thì con số tổng trông như đã kiểm hết.',
+  src:'.agent/skills/phase1/tc_reviewer/SKILL.md', rel:['g-tc_review','sk-tc_validator','c-canonical'] },
 
 { id:'sk-tc_validator', t:'tc_validator', cat:'skill', phase:'Phase 1',
   def:'Validate bộ testcase theo 7 cột canonical bắt buộc, kiểm coverage/risk và khả năng automate được.',

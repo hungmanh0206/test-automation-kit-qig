@@ -88,6 +88,17 @@
       },
       "why": "Đo độ phủ 22 chiều theo ngưỡng risk band."
     },
+    "tc:review": {
+      "applies": [
+        "phase1",
+        "partial-rerun"
+      ],
+      "waived": {
+        "phase2": "Rubric chấm bản THIẾT KẾ của case. Lượt execute không sửa thiết kế nên chấm lại là đo cùng một thứ hai lần.",
+        "rerun": "Rerun chạy tập con đã map theo bug, không sinh hay sửa case."
+      },
+      "why": "Chấm từng case theo rubric 8 tiêu chí — đo case có DÙNG ĐƯỢC không, khác với dim:coverage đo bộ có ĐỦ không."
+    },
     "design:gate": {
       "applies": [
         "phase1",

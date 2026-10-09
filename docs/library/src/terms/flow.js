@@ -202,7 +202,7 @@ const TERMS_FLOW = [
   src:'.agent/config/kit-layers.md', rel:['r-scope','g-policy_source_check'] },
 
 { id:'f-skills-index', t:'.agent/skills/INDEX.md', cat:'flow',
-  def:'Bảng tra 22 skill, sinh tự động, không sửa tay.',
+  def:'Bảng tra 23 skill, sinh tự động, không sửa tay.',
   detail:'Skill của kit nằm ở .agent/skills/** chứ không phải .claude/skills/, nên harness không tự phát hiện. Bảng này là cách agent biết có skill nào và nằm ở đâu; SessionStart hook tự bơm danh sách tên vào ngữ cảnh.',
   why:'Skill không được biết tới thì coi như không tồn tại. Sinh tự động để bảng không bao giờ lệch với thực tế thư mục.',
   cmd:'npm run skills:index',
