@@ -229,6 +229,30 @@ function validate(doc) {
   }
 
   /*
+   * 2d-ter) [NeedsVerify] — case chưa có nguồn chống lưng (H3).
+   *
+   * BỐN NHÓM case không được suy diễn, vì đoán sai là fail giả hàng loạt: bố cục và thứ tự · nhãn nguyên
+   * văn · giá trị mặc định · định dạng hiển thị. Case thuộc bốn nhóm đó mà không trỏ được tới spec, Figma
+   * hay một lần đọc DOM cụ thể thì PHẢI mang `[NeedsVerify]`.
+   *
+   * Ở ĐÂY CHỈ CẢNH BÁO, cố ý. Tag này SINH RA để tồn tại trong lúc Phase 1 chạy — chặn nó ngay là cấm
+   * người viết thừa nhận mình chưa có bằng chứng, và họ sẽ bỏ tag đi thay vì đi tìm bằng chứng.
+   * Chỗ CHẶN là lúc PUBLISH: `design:gate --publish` (xem file đó), vì lên Sheet rồi thì cả đội đọc nó
+   * như một khẳng định chắc chắn.
+   */
+  {
+    const canXac = doc.tests.filter((t) => (t.tags || '').toLowerCase().includes('needsverify')
+      || String(t.title || '').toLowerCase().includes('[needsverify]'));
+    if (canXac.length) {
+      warnings.push(`${canXac.length}/${doc.tests.length} case mang \`[NeedsVerify]\` — chưa có nguồn chống `
+        + `lưng (spec, Figma, hoặc một lần đọc DOM cụ thể): `
+        + `${canXac.slice(0, 6).map((t) => t.tcId || '(no-id)').join(', ')}`
+        + `${canXac.length > 6 ? ` … (+${canXac.length - 6})` : ''}. `
+        + `Publish sẽ CHẶN khi còn tag này — đi tìm nguồn, đừng gỡ tag.`);
+    }
+  }
+
+  /*
    * 2e) PRE-CODE ↔ CATALOG — mã tiền điều kiện phải neo được vào catalog Setup Strategy.
    * Tiền điều kiện chỉ là TEXT
    * trong case ⇒ mã trỏ vào hư không vẫn publish trót lọt, và Phase 2 KHÔNG có gì để dựng precondition đó.

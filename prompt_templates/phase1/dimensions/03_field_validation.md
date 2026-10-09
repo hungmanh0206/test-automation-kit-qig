@@ -19,3 +19,16 @@ Mỗi input field phải có TC validation riêng:
 | **Time (HH:mm)** | Biên 00:00 và 23:59; start == end; start > end (phải chặn); sai format; thiếu leading zero |
 | **Computed/derived field** | Mỗi field auto-derive (deadline = ngày tạo + N, approver mặc định, file naming, mapping) phải có TC kiểm derivation + 1 biên (vd deadline rơi qua cuối tháng/cuối năm, timezone) |
 | **File upload** | Sai format, đúng dung lượng max (boundary) vs vượt max (max+1), file rỗng/0 byte, đúng số lượng max vs file thứ (max+1), upload từ Resource có sẵn |
+
+## Ô bị khoá là một business rule chưa ai viết ra
+
+Checkbox xám mờ là **disabled**, khác hẳn **không tick**. Ảnh độ phân giải thường không phân biệt nổi
+hai thứ đó, nên đây là chỗ bắt buộc đọc DOM chứ không nhìn ảnh.
+
+Thấy một ô bị khoá nghĩa là có **rule phụ thuộc** mà tài liệu chưa nêu. Phải làm hai việc:
+
+1. Sinh case cho **cả hai chiều**: điều kiện khiến ô mở, và điều kiện khiến ô khoá.
+2. Mở **câu hỏi Ambiguity Gate** về rule đó. Đoán ra rule rồi viết expected theo suy đoán là dựng
+   oracle từ chính app, tức app==db mà `CLAUDE.md` §3 cấm.
+
+Ô khoá mà không có case nào cho chiều khoá thì rule đó không ai kiểm, và nó sẽ đổi lặng lẽ.

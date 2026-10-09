@@ -38,7 +38,7 @@
 | 3 | [Inputs](#inputs) | 85-97 | 332 | npm run rule -- 3 |
 | 4 | [Outputs](#outputs) | 98-142 | 743 | npm run rule -- 4 |
 | 5 | &nbsp;&nbsp;[Giọng văn output](#giọng-văn-output) | 110-142 | 451 | npm run rule -- 5 |
-| 6 | [Rules](#rules) | 143-604 | 11780 | npm run rule -- 6 |
+| 6 | [Rules](#rules) | 143-630 | 12155 | npm run rule -- 6 |
 | 7 | &nbsp;&nbsp;[Language](#language) | 145-151 | 80 | npm run rule -- 7 |
 | 8 | &nbsp;&nbsp;[Security](#security) | 152-165 | 498 | npm run rule -- 8 |
 | 9 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 166-177 | 284 | npm run rule -- 9 |
@@ -50,20 +50,20 @@
 | 15 | &nbsp;&nbsp;[Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)](#analysis-ambiguity-gate-phase-1-đọc-kỹ-hỏi-trước-khi-gen) | 257-262 | 500 | npm run rule -- 15 |
 | 16 | &nbsp;&nbsp;[Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)](#chiều-coverage-phase-1-khai-phạm-vi-gắn-tag-có-máy-đếm) | 263-283 | 544 | npm run rule -- 16 |
 | 17 | &nbsp;&nbsp;[Execution Discipline (Kỷ luật thực thi — chạy thông suốt)](#execution-discipline-kỷ-luật-thực-thi-chạy-thông-suốt) | 284-293 | 452 | npm run rule -- 17 |
-| 18 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 294-488 | 3680 | npm run rule -- 18 |
-| 19 | &nbsp;&nbsp;[Execute Results](#execute-results) | 489-508 | 224 | npm run rule -- 19 |
-| 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 509-523 | 307 | npm run rule -- 20 |
-| 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 524-535 | 629 | npm run rule -- 21 |
-| 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 536-547 | 396 | npm run rule -- 22 |
-| 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 548-581 | 530 | npm run rule -- 23 |
-| 24 | &nbsp;&nbsp;[Backlog Bug Gate](#backlog-bug-gate) | 582-591 | 154 | npm run rule -- 24 |
-| 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 592-604 | 397 | npm run rule -- 25 |
-| 26 | [Workflow](#workflow) | 605-618 | 43 | npm run rule -- 26 |
-| 27 | [Cleanup Rules](#cleanup-rules) | 619-646 | 388 | npm run rule -- 27 |
-| 28 | [Examples](#examples) | 647-654 | 80 | npm run rule -- 28 |
-| 29 | [References](#references) | 655-663 | 84 | npm run rule -- 29 |
+| 18 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 294-514 | 4055 | npm run rule -- 18 |
+| 19 | &nbsp;&nbsp;[Execute Results](#execute-results) | 515-534 | 224 | npm run rule -- 19 |
+| 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 535-549 | 307 | npm run rule -- 20 |
+| 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 550-561 | 629 | npm run rule -- 21 |
+| 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 562-573 | 396 | npm run rule -- 22 |
+| 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 574-607 | 530 | npm run rule -- 23 |
+| 24 | &nbsp;&nbsp;[Backlog Bug Gate](#backlog-bug-gate) | 608-617 | 154 | npm run rule -- 24 |
+| 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 618-630 | 397 | npm run rule -- 25 |
+| 26 | [Workflow](#workflow) | 631-644 | 43 | npm run rule -- 26 |
+| 27 | [Cleanup Rules](#cleanup-rules) | 645-672 | 388 | npm run rule -- 27 |
+| 28 | [Examples](#examples) | 673-680 | 80 | npm run rule -- 28 |
+| 29 | [References](#references) | 681-689 | 84 | npm run rule -- 29 |
 
-> Cả file ~15004 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
+> Cả file ~15379 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
 <!-- MỤC-LỤC:KẾT-THÚC -->
 
 ## Purpose
@@ -335,7 +335,33 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
    - Không có máy nào: ghi đề xuất máy mới vào `reports/`.
 
    CẤM kết thúc bằng "sẽ chú ý hơn" — chú ý không phải forcing function. Máy đo: `leak:report --require-machine`.
-6. **ĐIỀU KIỆN SỐNG CÒN — mở rộng phải có ORACLE, nếu không thì KHÔNG được kết luận.** Khi mở sang field lân cận
+6. **THỨ TỰ NGUỒN KHI DỰNG ORACLE. Ảnh và DOM của build KHÔNG phải nguồn đúng-sai.**
+
+   | Hạng | Nguồn | Dùng để làm gì |
+   |---|---|---|
+   | 1 | Business rule đã xác nhận trong `knowledge/domain/` | Dựng oracle. Chỉ hạng này phán đúng-sai được |
+   | 2 | Spec, FSD, Figma | Dựng oracle khi rule chưa vào knowledge |
+   | 3 | Ảnh chụp hoặc DOM của build | Chỉ chốt sự thật quan sát. Nhãn, option, giá trị mặc định, disabled hay không tick |
+
+   Hạng 3 KHÔNG được dùng làm chuẩn đúng-sai. Ảnh và DOM chính là app đang kiểm. Lấy chúng làm expected
+   là app bằng app, đúng thứ mục dưới cấm.
+
+   Nhưng cũng đừng bỏ hạng 3. Ảnh độ phân giải thường không phân biệt nổi disabled với không tick, nên
+   có chỗ chỉ DOM mới chốt được.
+
+   **Lệch giữa hai hạng thì thành CÂU HỎI Ambiguity Gate.** Không tự chọn bên. Tài liệu nói một đằng mà
+   build hiện một nẻo là tín hiệu tài liệu lỗi thời, hoặc build sai. Chọn bừa bên nào cũng là quyết định
+   nghiệp vụ mà QA không có quyền.
+
+   **Bốn nhóm case BẮT BUỘC có nguồn chống lưng**, vì đoán sai là fail giả hàng loạt: bố cục và thứ tự,
+   nhãn nguyên văn, giá trị mặc định, định dạng hiển thị. Không trỏ được tới hạng 1, hạng 2, hay một lần
+   đọc DOM cụ thể thì case phải mang `[NeedsVerify]`.
+
+   Máy đo: `design:gate` cảnh báo khi còn tag đó, và `design:gate --publish` thì CHẶN.
+   Tag sinh ra để tồn tại trong lúc Phase 1 chạy. Chặn sớm thì người ta gỡ tag thay vì đi tìm bằng chứng.
+   Lên Sheet rồi thì cả đội đọc case như một khẳng định chắc chắn.
+
+7. **ĐIỀU KIỆN SỐNG CÒN — mở rộng phải có ORACLE, nếu không thì KHÔNG được kết luận.** Khi mở sang field lân cận
    / bề mặt khác, kit phải biết **cái đúng là gì**. Không có nguồn thì mặc định "app đang hiện thế là đúng" ⇒
    tautology **nhân theo số trục**, tạo ra PASS giả nhìn rất thuyết phục. Ba loại kết luận, không có loại thứ tư:
    - `EXPANSION_FINDING` — app **tự mâu thuẫn với chính nó** (lệch giữa 2 bề mặt · mắt đứt trong chuỗi lưu trữ ·
@@ -346,17 +372,17 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
      quy đổi, `form/payload/api/ui` đều `10` trong khi đúng là `260.500`). Bắt buộc kèm câu hỏi mở; không vào pass-rate.
    Máy ép: `scripts/lib/expansion/finding.js` tự hạ cấp PASS→OBSERVATION khi thiếu neo; `self_review` **CHẶN** nếu
    file finding có PASS/FAIL không neo (kể cả bị sửa tay).
-7. **Độ sâu theo RISK BAND, không mở 5 trục cho mọi case.** Chi phí là thật: một task đang giữ
+8. **Độ sâu theo RISK BAND, không mở 5 trục cho mọi case.** Chi phí là thật: một task đang giữ
    **1021 file, 136 MB** evidence. Mở đủ trục cho một bộ 530 case ước lượng **~3740 lượt tải trang, ~9,4 giờ,
    ~335 MB**. Band lấy **cái nặng hơn** giữa `Mức độ rủi ro` và `Ưu tiên`: high thì đủ trục runtime, medium thì
    ③ và ⑤, low thì ③. Xem chi phí TRƯỚC
    khi chạy: `npm run expansion:plan`.
-8. **Phân vai Phase 1 / Phase 2 — đừng làm trùng.** ①field ②surface ③persist ⑥lặp-đồng-thời ⑦chiều-ngược **cần
+9. **Phân vai Phase 1 / Phase 2 — đừng làm trùng.** ①field ②surface ③persist ⑥lặp-đồng-thời ⑦chiều-ngược **cần
    runtime** (DOM/response thật) ⇒ Phase 2. ④nhánh ⑤trạng-thái-kế-cận **đoán trước được từ tài liệu**
    (permission matrix, state machine) nên là **case do Phase 1 sinh** (§10 Cross-layer Guard), để được đếm
    coverage và publish lên TCM. Phase 2 chỉ đo **ô nào chạy được** (`fixture:matrix --discover`). Thứ chỉ sống ở execute thì
    chỉ lượt chạy đó biết.
-9. **ASSERT tín hiệu môi trường, không chỉ dùng để triage.** Mỗi lượt execute đã mở trang thật và gọi API thật,
+10. **ASSERT tín hiệu môi trường, không chỉ dùng để triage.** Mỗi lượt execute đã mở trang thật và gọi API thật,
    nên đang có sẵn một kho tín hiệu mà **không case nào assert**:
 
    - JS exception (`pageerror`)
@@ -369,7 +395,7 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
    phải cắm tương tự. Kỷ luật: `pageerror` là **zero-tolerance**, có exception là finding dù case PASS. 4xx do
    case negative CỐ Ý gây ra thì phải **khai trước** bằng `expect4xx(rx, why)`, không khai thì bị tính là tín hiệu
    lạ. Còn console.error của tracking và cert môi trường chỉ là **ghi chú**, không phải deviation.
-10. **CHỨNG MINH bộ kiểm bắt được bug, đừng giả định (`mutation:check`).** Mọi máy khác *cố bắt thêm bug*.
+11. **CHỨNG MINH bộ kiểm bắt được bug, đừng giả định (`mutation:check`).** Mọi máy khác *cố bắt thêm bug*.
     Máy này **đo năng lực phát hiện**: cố ý tiêm lỗi ở tầng `page.route()` (**không chạm dữ liệu UAT**) rồi xem
     bộ kiểm có đỏ không. Mutant **sống sót = vùng mù CÓ BẰNG CHỨNG**, không phải phỏng đoán. Đo lần đầu 19/08 trên
     `ui_conformance_check`: **mutation score 0/4 = 0%**. Bóp `convertible_amount` thành 0, xoá hẳn, chia nửa hay
@@ -386,7 +412,7 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
       mới đọc nguồn sạch.
  Chạy **định kỳ**
     (nightly hoặc mỗi release), không phải mỗi PR.
-11. **NHÂN NHƯỢNG phải để lại dấu, bằng `PASS_WITH_DEVIATION`.** Rủi ro đặc thù của agent là gặp trở ngại thì
+12. **NHÂN NHƯỢNG phải để lại dấu, bằng `PASS_WITH_DEVIATION`.** Rủi ro đặc thù của agent là gặp trở ngại thì
     có xu hướng **làm cho nó chạy**: chờ thêm, retry, đổi locator, refresh, đi đường khác. Mỗi lần như vậy là
     **một bug tiềm năng bị lấp**. Nút bị overlay che là bug thật, mà biến thành "chờ thêm 3s rồi bấm được" thì
     case xanh. Kit đã gác
@@ -396,12 +422,12 @@ Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn �
     diện nghi vấn cần review. `self_review` cảnh báo khi Actual kể chuyện lệch kịch bản mà case ghi PASS trơn. Chỉ cảnh báo thôi,
     vì đây là suy từ văn xuôi. Đo thật cho thấy **không đối chiếu kịch bản thì 2/2 cảnh báo đều oan**: từ khoá
     "Retry" và "tải lại trang" chính là nội dung của case. Nên phải đối chiếu với bước của case trước khi nghi.
-12. **FLAKY chỉ được gọi là flaky khi nêu được CƠ CHẾ. Không nêu được thì `SUSPECT_REAL_BUG`.** Cơ chế flaky
+13. **FLAKY chỉ được gọi là flaky khi nêu được CƠ CHẾ. Không nêu được thì `SUSPECT_REAL_BUG`.** Cơ chế flaky
     triage có thể đang **chôn bug thật**: race condition, cache, timezone lúc chuyển ngày đều trông y như flaky.
     Retry 3 lần có 1 lần xanh là bị dán nhãn flaky rồi bỏ qua. Phải nêu cơ chế cụ thể (animation chưa xong, race
     giữa 2 request, cache CDN, đổi ngày lúc 00:00) **và cách chứng minh**. Không nêu được thì giữ
     `SUSPECT_REAL_BUG`, vẫn loggable. Metric phải theo dõi: **% flaky đã xác định được nguyên nhân** — tỷ lệ thấp nghĩa là đang chôn bug.
-13. **ĐỦ ASSERTION.** Mỗi điều kiện trong "Kết quả mong đợi" phải có một verification kèm bằng chứng.
+14. **ĐỦ ASSERTION.** Mỗi điều kiện trong "Kết quả mong đợi" phải có một verification kèm bằng chứng.
     Ví dụ expected *"tổng 540.000đ, đúng format có dấu phân cách, số dư giảm tương ứng"* chứa **3** assertion.
     Execute kiểm 1 rồi ghi PASS thì 2 cái còn lại lọt êm. Đây là cơ chế lọt **cơ học** phổ biến nhất.
 

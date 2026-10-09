@@ -13,7 +13,12 @@
  * KHÔNG viết lại phần đã có: row-quality/oracle → output_gate (--mode gen-testcase); depth/dimension
  * per-module theo risk band → risk_gate (npm run risk:gate:enforce). design_gate ĐIỀU PHỐI + bổ khuyết.
  *
- * Dùng: node scripts/qa/design_gate.js --file <testcase.md> [--dir test-cases/] [--with-rows] [--qa-approved]
+ * Dùng: node scripts/qa/design_gate.js --file <testcase.md> [--dir test-cases/] [--with-rows] [--publish] [--qa-approved]
+ *
+ * `--publish`: bật các luật CHỈ áp lúc đẩy ra ngoài. Hiện có một luật — còn `[NeedsVerify]` là CHẶN.
+ * Tag đó sinh ra để tồn tại TRONG LÚC Phase 1 chạy (người viết thừa nhận chưa có bằng chứng), nên
+ * chặn nó từ sớm là cấm người ta thừa nhận, và họ sẽ gỡ tag thay vì đi tìm bằng chứng. Nhưng lên
+ * Sheet rồi thì cả đội đọc nó như một khẳng định chắc chắn — nên cửa đặt đúng ở đây.
  *   --with-rows: chạy kèm output_gate gen-testcase (row-quality/oracle) để ra 1 báo cáo Phase-1 đầy đủ.
  * Exit: 0 = đạt (hoặc --qa-approved) · 1 = có CHẶN · 2 = lỗi dùng sai.
  */
@@ -55,6 +60,7 @@ function main() {
   const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
   const has = (n) => process.argv.includes(`--${n}`);
   const FILE = arg('file', ''); const DIR = arg('dir', ''); const WITH_ROWS = has('with-rows'); const QA_APPROVED = has('qa-approved');
+  const PUBLISH = has('publish');
 
   let files = [];
   if (FILE) files = [FILE];
@@ -125,6 +131,19 @@ function main() {
         } catch (e) { problems.push(`\`requirements/ui_catalog.json\` lỗi JSON: ${e.message}`); }
       }
     }
+  }
+
+  /*
+   * --publish: nâng cảnh báo [NeedsVerify] thành CHẶN.
+   *
+   * Tag đó sinh ra để tồn tại TRONG LÚC Phase 1 chạy — nó là cách người viết thừa nhận "chỗ này tôi chưa
+   * có bằng chứng". Chặn từ sớm là cấm người ta thừa nhận, và họ sẽ GỠ TAG thay vì đi tìm bằng chứng, tức
+   * mất luôn tín hiệu. Nhưng lên Sheet rồi thì cả đội đọc case như một khẳng định chắc chắn, nên cửa đặt
+   * đúng ở ranh giới publish.
+   */
+  if (PUBLISH) {
+    const canXac = warnings.filter((w) => /NeedsVerify/.test(w));
+    for (const w of canXac) problems.push(w.replace(/^/, '[publish] '));
   }
 
   console.log(`[design] ${fileCount} file · ${rowCount} testcase · ${problems.length} CHẶN · ${warnings.length} cảnh báo${WITH_ROWS ? ' (kèm row-quality)' : ''}.`);

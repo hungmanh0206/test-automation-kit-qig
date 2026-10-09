@@ -34,6 +34,15 @@ Report phải đủ chi tiết để review chất lượng bộ testcase mà kh
      Sáu mã là EP, BVA, DT, ST, UC và EG. Kỹ thuật bị kích hoạt mà 0 case thì KHÔNG được xuất.
      Khai `n/a` phải kèm lý do. Lý do phải nói task này không có thứ kích hoạt kỹ thuật đó.
      Không kịp làm thì đó là việc còn nợ, không phải `n/a`.
+   - **Bảng đối soát nguồn** (bắt buộc khi bộ có case thuộc bốn nhóm không được suy diễn: bố cục và thứ
+     tự, nhãn nguyên văn, giá trị mặc định, định dạng hiển thị):
+
+     | Nguồn | Màn hoặc trạng thái | TC dựa vào | Đủ? |
+     |---|---|---|---|
+     | spec, Figma, hoặc một lần đọc DOM cụ thể | tên màn | danh sách TC ID | Đủ, hoặc thiếu |
+
+     Vùng nào không có nguồn chống lưng thì TC của nó phải mang `[NeedsVerify]`, và đánh dấu thiếu ở cột cuối.
+     Thứ tự nguồn khi dựng oracle ở `RULE_GLOBAL` mục Oracle. Ảnh và DOM chỉ chốt sự thật quan sát.
 3. **Đánh giá Coverage và Quality/Risk**
    - Review bộ testcase automation theo đúng protocol trong section này.
    - Xác định tổng số requirement/business rule/API behavior nằm trong scope.
