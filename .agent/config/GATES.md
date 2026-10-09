@@ -11,7 +11,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | Mức | npm script | Chặn/kiểm cái gì | File | Gọi từ |
 |---|---|---|---|---|
 | CHẶN | `library:build` | ghép src/ thành docs/library/index.html (một file duy nhất, self-contained). | `docs/library/build.js` | README.md |
-| CHẶN | `merge:execution-status` | ghi kết quả execute (testcase-status.json) NGƯỢC vào cột `Result` của file | `scripts/convert_excel/merge_execution_status.js` | RULE_GLOBAL.md · tests/fe/infra |
+| CHẶN | `merge:execution-status` | ghi kết quả execute (testcase-status.json) NGƯỢC vào cột `Result` của file | `scripts/convert_excel/merge_execution_status.js` | RULE_GLOBAL.md |
 | CHẶN | `backlog:bug-report`, `backlog:bug-report:dry-run` | Create Backlog Sub-bug issues for failed Playwright test cases. | `scripts/integrations/backlog/bug_reporter.js` | README.md · .github/workflows · .agent/skills · prompt_templates |
 | CHẶN | `integration:check`, `integration:check:live` | const axios = require('axios'); | `scripts/integrations/backlog/check_connection.js` | .gitlab-ci.yml · README.md · USER_GUIDE.md · QUICKSTART.md · .github/workflows · tests/fe/infra |
 | CHẶN | `gdoc:read` | Đọc nội dung từ Google Docs | `scripts/integrations/google_doc/doc_reader.js` | prompt_templates |
@@ -65,7 +65,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN (có cờ --enforce) | `system:check`, `system:index` | quản lý `knowledge/system/`: bản đồ HỆ THỐNG đã được xác nhận. | `scripts/qa/system_map.js` | README.md · USER_GUIDE.md · .agent/workflows · .agent/skills · prompt_templates · partial-rerun |
 | CHẶN (có cờ --enforce) | `typecheck:task`, `typecheck:task:enforce` | chạy `tsc --noEmit` trên automation CỦA MỘT TASK. | `scripts/qa/typecheck_task.js` | prompt_templates |
 | SINH | `docs:index`, `docs:cite` | mỗi neo yêu cầu trong tài liệu phải TRA NGƯỢC ĐƯỢC về file và số dòng. | `scripts/phase1/docs_index.js` | README.md · USER_GUIDE.md · prompt_templates · tests/fe/infra |
-| SINH | `accessibility` | tái dùng hạ tầng của ui_conformance_check.js (login/pre-steps/catalog schema | `scripts/qa/accessibility_check.js` | README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .agent/rules · .agent/skills · prompt_templates · tests/fe/infra |
+| SINH | `accessibility` | tái dùng hạ tầng của ui_conformance_check.js (login/pre-steps/catalog schema | `scripts/qa/accessibility_check.js` | README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .agent/rules · .agent/skills · prompt_templates |
 | SINH | `dashboard` | đọc dữ liệu ĐÃ CÓ (knowledge/ + flaky-triage.md), KHÔNG thu thập lại, | `scripts/qa/dashboard_generate.js` | .gitlab-ci.yml · RULE_GLOBAL.md · README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .github/workflows · .agent/workflows · .agent/skills · prompt_templates · tests/fe/infra |
 | SINH | `dep:graph` | GỘP traceability + impact-map thành 1 graph query-được. | `scripts/qa/dependency_graph.js` | README.md · scripts/qa/README.md |
 | SINH | `explore:charter` | CHỌN VÙNG DÒ BẰNG DỮ LIỆU, không bằng cảm tính. | `scripts/qa/explore_charter.js` | exploratory · .claude/commands |
