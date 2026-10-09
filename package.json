@@ -109,6 +109,8 @@
     "manual:check:enforce": "node scripts/qa/manual_run_check.js --enforce",
     "learn:report": "node scripts/qa/learn_report.js",
     "docs:budget": "node scripts/qa/doc_budget.js",
+    "prompt:budget": "node scripts/qa/prompt_budget.js",
+    "token:audit": "node scripts/qa/token_audit.js",
     "docs:health": "node scripts/phase1/docs_health.js",
     "docs:index": "node scripts/phase1/docs_index.js --write",
     "docs:cite": "node scripts/phase1/docs_index.js --cite",
