@@ -19,6 +19,13 @@
   - `shared_surface` — nếu scope đụng surface dùng chung thì **mọi `consumers`** phải có case regression (`--impact "<surface>"` liệt kê).
   Bản đồ mới xác nhận trong task này thì ghi vào `knowledge/system/`, dùng skill `system_mapper`. Nguồn xác nhận là bảng trạng thái hoặc ma trận quyền trong FSD, hoặc dev confirm khi triage.
 
+  **Component `Status flow`** trong danh mục
+  [`.agent/config/ui_components.json`](../../../.agent/config/ui_components.json) neo vào đây, và cố ý
+  **KHÔNG có checklist riêng**. Lý do: `state_machine` ở trên vốn đã mạnh hơn một checklist. Nó bắt **mọi**
+  cặp không khai là bất hợp pháp, và đòi expected lấy từ `illegal_verified.expected`, tức một giá trị đã
+  xác nhận thay vì câu "bị chặn". Viết thêm một checklist song song chỉ tạo nguồn thứ hai để hai bên lệch
+  nhau. Máy đếm của chiều này là kỹ thuật `[ST]` trong `.agent/config/design_techniques.json`.
+
   **TUYỆT ĐỐI không dựng bản đồ bằng cách thử API rồi ghi lại kết quả.** App đang sai thì bản đồ hợp thức hoá cái sai. TC sau đó vĩnh viễn không bắt được bug đó.
 
 **Với mỗi màn có bảng/danh sách/field, sinh case ATOMIC — mỗi (phần tử × thuộc tính) là 1 case:**

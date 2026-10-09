@@ -252,6 +252,106 @@ if (kyThuatThieu.length && ENFORCE) {
   process.exit(1);
 }
 
+const CP_PLACEHOLDER = /^(|-+|n\/?a|tbd|todo|\?+|<[^>]*>|\[[^\]]*\]|xxx+)$/i;
+const isFilledReason = (v) => typeof v === 'string' && v.trim().length >= 20 && !CP_PLACEHOLDER.test(v.trim());
+
+/*
+ * ── COMPONENT + LOẠI FIELD (H4) ───────────────────────────────────────────────────────────────────
+ *
+ * Form input chỉ là một phần của app. Lưới dữ liệu, modal, toast và vòng đời CRUD là những NHÓM HÀNH VI
+ * rải trên nhiều chiều, nên không chiều nào tự liệt kê chúng ra — và thứ không được liệt kê thì "đã rà đủ"
+ * chỉ có nghĩa "agent thấy đủ".
+ *
+ * GIỚI HẠN, nói trước để không ai tưởng chỗ này chặn được nhiều hơn thực tế: component KHÔNG phải tag, nên
+ * máy KHÔNG đếm được "component X có mấy case". Thêm tag component vào cột Tag thì mỗi case đeo 5-6 tag,
+ * đã cân nhắc và loại. Vì vậy ở đây chỉ gác được XUẤT XỨ CỦA LỜI KHAI:
+ *   - có khai chưa (chưa khai ⇒ cảnh báo, vì "không áp dụng" và "quên rà" trông giống hệt nhau);
+ *   - khai `n/a` có kèm lý do chưa;
+ *   - lời khai có TRÁI ARTIFACT có thật không (chỉ 2 component có artifact ⇒ chỉ 2 chỗ chặn được).
+ *
+ * HAI TẦNG: manifest chưa có khối `components` ⇒ tự từ chối chặn, nhưng in rõ là CHƯA ĐƯỢC GÁC.
+ */
+const UIC = require(path.join(rc.REPO_ROOT, '.agent', 'config', 'ui_components.json'));
+const khaiCp = manifest && manifest.components ? manifest.components : null;
+const lyDoCp = (manifest && manifest.na_reasons) || {};
+
+console.log('');
+console.log('[dim] Component (nguồn: .agent/config/ui_components.json)');
+const cpThieuKhai = [];
+const cpXungDot = [];
+const cpThieuLyDo = [];
+const cpLechChieu = [];
+if (!khaiCp) {
+  console.log(`[dim]   manifest CHƯA có khối \`components\` ⇒ ${UIC.components.length} component CHƯA ĐƯỢC GÁC.`);
+  console.log('[dim]   Khung để dán: "components": { ' + UIC.components.map((c) => `"${c.code}": "required|n/a"`).join(', ') + ' }');
+} else {
+  for (const c of UIC.components) {
+    const k = khaiCp[c.code];
+    const nhan = k === 'required' ? 'BẮT BUỘC' : (k === 'n/a' ? 'n/a' : 'CHƯA KHAI');
+    console.log(`[dim]   ${c.code.padEnd(12)} ${c.ten.padEnd(22)} ${nhan.padEnd(10)} checklist: ${c.o}`);
+    if (k === undefined) { cpThieuKhai.push(c); continue; }
+    if (k === 'n/a') {
+      if (!isFilledReason(lyDoCp[c.code])) cpThieuLyDo.push(c);
+      if (c.artifact_signal && knowSystem(c.artifact_signal)) cpXungDot.push(c);
+      continue;
+    }
+    // Khai `required` mà MỌI chiều chứa checklist của nó đều n/a ⇒ hai lời khai chống nhau.
+    const chieu = c.chieu || [];
+    if (chieu.length && manifest.dimensions && chieu.every((id) => manifest.dimensions[id] === 'n/a')) {
+      cpLechChieu.push({ c, chieu });
+    }
+  }
+}
+for (const c of cpThieuKhai) {
+  console.warn(`[dim] ⚠ component "${c.ten}" CHƯA KHAI trong manifest — kích hoạt khi: ${c.kich_hoat} Không áp dụng thì khai "n/a" kèm lý do, đừng im lặng bỏ qua.`);
+}
+for (const c of cpThieuLyDo) {
+  console.error(`[dim] ✗ component "${c.ten}" khai n/a mà \`na_reasons.${c.code}\` trống — n/a không lý do là thu hẹp phạm vi mà không ai chịu trách nhiệm.`);
+}
+for (const c of cpXungDot) {
+  console.error(`[dim] ✗ XUNG ĐỘT: component "${c.ten}" khai n/a nhưng \`knowledge/system/\` có khai \`${c.artifact_signal}\`. Artifact chứng minh component này ÁP DỤNG.`);
+}
+for (const x of cpLechChieu) {
+  console.warn(`[dim] ⚠ component "${x.c.ten}" khai required nhưng mọi chiều chứa checklist của nó (${x.chieu.join(', ')}) đều khai n/a — hai lời khai chống nhau.`);
+}
+if ((cpXungDot.length || cpThieuLyDo.length) && ENFORCE) {
+  console.error(`[dim] ✗ ${cpXungDot.length + cpThieuLyDo.length} lời khai component không hợp lệ. Sửa manifest rồi chạy lại.`);
+  process.exit(1);
+}
+
+/*
+ * LOẠI FIELD. Prompt gốc muốn check "loại field X có trong inventory mà 0 case [Validation]". Đã đo:
+ * `field-inventory.spec.ts` và `ui_conformance_check.js` kiểm kê TÊN field của từng màn
+ * (`expectedFields` là mảng chuỗi nhãn), KHÔNG có thuộc tính LOẠI. Nên inventory theo loại field hiện
+ * KHÔNG tồn tại, và suy loại từ tên nhãn là dò chữ — đúng thứ đã gây dương tính giả nhiều lần.
+ *
+ * Vì vậy mẫu số phải do NGƯỜI khai: `"field_types": ["text", "email", ...]` trong manifest. Máy kiểm được
+ * đúng hai điều, và chỉ hai điều đó:
+ *   - mã lạ ⇒ CHẶN (sai mã thì danh mục vô nghĩa);
+ *   - số loại khai NHIỀU HƠN số case [Validation] ⇒ cảnh báo, vì mỗi loại cần tối thiểu một case.
+ * Nó KHÔNG biết case nào thuộc loại nào. Nói rõ ra, đừng để ai tưởng đây là phép đo per-field.
+ */
+const FT_CODES = new Set(UIC.field_types.map((f) => f.code));
+const khaiFt = manifest && Array.isArray(manifest.field_types) ? manifest.field_types : null;
+const ftRequired = manifest && manifest.dimensions && manifest.dimensions.field_validation !== 'n/a';
+const soValidation = (hits.get('field_validation') || []).length;
+console.log('');
+console.log('[dim] Loại field (nguồn: .agent/config/ui_components.json — 18 loại)');
+if (!khaiFt) {
+  if (ftRequired) console.log(`[dim]   manifest CHƯA khai \`field_types\` ⇒ mẫu số của chiều Validation là số tự nhận. ${soValidation} case [Validation] hiện KHÔNG so được với gì.`);
+  else console.log('[dim]   chiều field_validation khai n/a ⇒ bỏ qua.');
+} else {
+  const la = khaiFt.filter((c) => !FT_CODES.has(c));
+  console.log(`[dim]   khai ${khaiFt.length} loại · ${soValidation} case [Validation]`);
+  if (la.length) {
+    console.error(`[dim] ✗ mã loại field lạ: ${la.join(', ')} — mã hợp lệ ở .agent/config/ui_components.json`);
+    if (ENFORCE) process.exit(1);
+  }
+  if (soValidation < khaiFt.length) {
+    console.warn(`[dim] ⚠ khai ${khaiFt.length} loại field mà chỉ có ${soValidation} case [Validation]. Mỗi loại cần tối thiểu 1 case ⇒ có loại chưa được kiểm. (Phép đo này chỉ so TỔNG, không biết case nào thuộc loại nào.)`);
+  }
+}
+
 // FAIL-FAST hai điều kiện của việc chặn. Đặt TRƯỚC bảng để không ai tưởng gate đã gác trong khi nó chưa gác.
 // Chặn bằng số liệu suy diễn, hoặc chặn khi chưa ai khai chiều nào bắt buộc, đều dẫn tới báo oan — và gate báo
 // oan một lần là mất uy tín vĩnh viễn.

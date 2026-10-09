@@ -103,6 +103,50 @@ Cột **Quyết định**: NHẬN (lấy nguyên ý) · CHỈNH (lấy ý, đổ
 | "Component không áp dụng → ghi 'Không áp dụng', KHÔNG lặng lẽ bỏ qua" | `dimension_manifest.json` đã có cơ chế khai `n/a` + lý do | **NHẬN** | Khớp sẵn với cơ chế đang có |
 | `field-inventory.spec.ts` có inventory loại field | Đã có | **NHẬN** | Thêm check mức CẢNH BÁO: field loại X có trong inventory mà 0 case `[Validation]` |
 
+#### H4 đã làm — và hai chỗ lệch với prompt, nói thẳng
+
+**Danh mục ra 18 loại field, không phải 15.** 15 loại của A hợp 10 loại kit vốn có, trùng 7. Ba loại chỉ
+kit có (`Date/Month filter` · `Time (HH:mm)` · `Computed/derived`) giữ nguyên, vì chúng đến từ bug thật đã
+gặp. Tám loại của A là mới hẳn: Phone · Checkbox/Radio · Textarea · OTP/MFA · Date range · Rich text ·
+Multi-select · Range slider. Bảy loại trùng thì chỉ lấy **trục còn thiếu** (SQL injection ở Text; nhiều `@`
+và case sensitivity ở Email; overflow và leading zero ở Number; toggle hiện/ẩn và confirm ở Password; tên
+file đặc biệt ở File upload), không chép lại dòng.
+
+**Status flow KHÔNG nhập checklist.** `12_display.md` đã có `state_machine`, và nó mạnh hơn checklist của A:
+nó bắt **mọi** cặp không khai là bất hợp pháp, và đòi expected lấy từ `illegal_verified.expected` thay vì
+câu "bị chặn". Viết checklist song song chỉ tạo nguồn thứ hai để lệch nhau. Chỉ neo tên component vào đó.
+CRUD lifecycle cũng vậy: 4 trong 7 chặng của A đã có chỗ ở `13b` và `23_db_persistence`, nên phần nhập
+vào là **ba chặng chưa chiều nào lo** (nhánh Cancel của hộp xoá · xoá bản ghi đang được tham chiếu · ba
+kiểu trùng ở field unique).
+
+**Chỗ lệch 1 — check theo loại field KHÔNG làm được như prompt mô tả.** Prompt viết: "field loại X có trong
+inventory mà bộ TC không có case `[Validation]` nào cho nó". Đã đo: `field-inventory.spec.ts` và
+`ui_conformance_check.js` kiểm kê **TÊN** field của từng màn (`expectedFields` là mảng chuỗi nhãn), **không
+có thuộc tính LOẠI**. Inventory theo loại field vì vậy không tồn tại, và suy loại từ tên nhãn là dò chữ.
+Nên mẫu số phải do người khai (`field_types` trong manifest), và máy chỉ kiểm được hai điều: mã lạ thì
+CHẶN, và số loại khai nhiều hơn số case `[Validation]` thì cảnh báo. Nó **không** biết case nào thuộc loại
+nào, và câu cảnh báo in kèm giới hạn đó.
+
+**Chỗ lệch 2 — cửa component cho artifact nằm SAU cửa chiều.** Đo khi viết test: khai
+`permission: n/a` mà `knowledge/system/` có `permission_matrix` thì cửa **chiều** (`security: n/a`) chặn
+trước và script thoát, nên cửa component không chạy tới. Cửa component vì thế chỉ bắt được ca mà cửa chiều
+không bắt: **chiều khai `required` mà component khai `n/a`**. Test khoá đúng ca đó.
+
+**Đo token trước và sau** (`node scripts/qa/doc_budget.js`, ngưỡng đọc-trực-tiếp là 8.0k):
+
+| File chiều | Trước | Sau |
+|---|---|---|
+| `03_field_validation.md` | 1.0k | 1.9k |
+| `04_ui.md` | 0.6k | 1.3k |
+| `10_guard.md` | 0.2k | 0.7k |
+| `12_display.md` | 2.1k | 2.2k |
+| `13_business_logic.md` | 2.5k | 3.0k |
+| **tổng** | **6.3k** | **9.1k** |
+
+Không file nào tới ngưỡng, nên **không tách file con**. Nhưng cộng thêm 2.8k là thật, và nó đi ngược mục
+tiêu của `PROMPT_giam_token_kit.md`. Mỗi task chỉ nạp những chiều mình khai `required`, nên phần phải trả
+thật là 1-2 file, không phải cả 2.8k.
+
 ### H5 — Mode CHECKLIST
 
 | Ý của A | Kit đã có ở đâu | Quyết định | Máy kiểm |

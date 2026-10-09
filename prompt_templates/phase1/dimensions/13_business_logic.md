@@ -34,6 +34,33 @@
   - **Bản "hiện hành" là duy nhất và đúng cái**: đúng 1 bản current tại một thời điểm; action không hợp lệ trên bản current (vd xoá) phải bị chặn.
   - **Danh sách/filter/lịch sử cập nhật theo**: sau khi tạo bản mới, danh sách phiên bản, bộ lọc và cột dẫn xuất phải phản ánh đúng ngay (không cache cũ, không lệch thứ tự).
 
+### CRUD lifecycle — một VÒNG, không phải bốn case rời
+
+Component `crud` trong [`.agent/config/ui_components.json`](../../../.agent/config/ui_components.json).
+Tạo, sửa, xoá thường được viết thành ba case độc lập, mỗi case tự kiểm "thành công". Vòng đời thì khác:
+nó kiểm **bản ghi đi qua đủ các chặng mà vẫn đúng ở MỌI nơi nó xuất hiện**.
+
+Phần lớn các chặng đã có chỗ ở chiều khác, chỉ cần trỏ tới chứ không viết lại:
+
+| Chặng | Đã lo ở đâu |
+|---|---|
+| Tạo xong thì hiện đúng trong lưới, và chi tiết khớp dữ liệu vừa tạo | *Data consistency đa màn* ở trên |
+| Sửa xong thì cập nhật ở **cả lưới lẫn chi tiết** | *Data consistency đa màn* ở trên |
+| Giá trị dẫn xuất (đếm, tổng, trạng thái) đổi đúng delta | *Before/after mutation* ở trên |
+| Save hai lần không ra hai bản ghi | [`23_db_persistence.md`](23_db_persistence.md) checklist #7 |
+| Thao tác FAIL thì DB không đổi gì | [`23_db_persistence.md`](23_db_persistence.md) checklist #6 |
+| Xoá mềm đúng quy ước, không phải UI ẩn mà DB còn nguyên | [`23_db_persistence.md`](23_db_persistence.md) checklist #3 |
+| Hai người sửa cùng lúc | [`08_resilience.md`](08_resilience.md) |
+
+Còn lại **ba chặng chưa chiều nào lo**, và đây mới là phần phải sinh case ở đây:
+
+1. **Hộp xác nhận xoá có hai nhánh.** Cancel phải giữ nguyên bản ghi. Nhánh này hay bị bỏ vì nó "không
+   làm gì", nhưng nút Cancel mà xoá thật thì là bug mất dữ liệu.
+2. **Xoá bản ghi đang được tham chiếu.** Phải bị chặn, hoặc xoá kèm theo quy tắc rõ ràng. Hai kết quả này
+   khác nhau về nghiệp vụ, nên spec không khai thì mở câu hỏi Ambiguity Gate, đừng đoán.
+3. **Tạo trùng ở field unique.** Trùng y nguyên, và trùng sau khi chuẩn hoá (khác hoa thường, thừa khoảng
+   trắng, khác dấu). Ba kiểu trùng đó thường cho ba kết quả khác nhau.
+
 ### 13b. Bền vững dữ liệu sau mutation — oracle PHỤ ở TẦNG BẢN GHI (chỉ 5 tình huống dưới)
 
 **KHÔNG tạo TC riêng cho việc "kiểm DB".** Đây là **một dòng verification thêm vào chính case create, edit hay delete đã có**. Viết câu `SELECT` vào "Các bước thực hiện" và kết quả cụ thể (số dòng hoặc giá trị cột) vào "Kết quả mong đợi". Rải khắp nơi thì test dính chặt schema, đổi tên cột là gãy hàng loạt.
