@@ -84,6 +84,38 @@ if (statusFile && fs.existsSync(statusFile)) {
 }
 
 /*
+ * 3a) Typecheck automation CỦA TASK.
+ *
+ * `tsconfig.json` khai `exclude: ["outputs"]`, nên `npm run typecheck` KHÔNG soi spec của task — mọi
+ * câu "typecheck sạch" nói về chúng đều rỗng. Giá phải trả, đo 09/10/2026 ở CSDL-9001: hai thuộc tính
+ * không tồn tại (`ScreenField.hidden`, `ScreenField.value`) dùng ở 17 chỗ, sinh ra một PASS giả và một
+ * FAIL oan; cộng một biến `MA` không khai, ném ReferenceError làm case chết không ghi verdict.
+ * Chạy theo TASK chứ không bật toàn cục: task đang sửa dở không được quyền chặn task khác.
+ */
+if (TASK) {
+  const { spawnSync } = require('child_process');
+  const r = spawnSync(process.execPath, [path.join(__dirname, 'typecheck_task.js'), '--task', TASK],
+    { encoding: 'utf8', env: process.env });
+  const out = `${r.stdout || ''}${r.stderr || ''}`;
+  const m = out.match(/·\s*(\d+)\s*lỗi/);
+  if (r.status === 2 || r.error || !m) {
+    results.push(engine.toResult('typecheck automation của task', {
+      warnings: [`không chạy được typecheck_task: ${(r.error && r.error.message) || out.trim().split(/\r?\n/).slice(-2).join(' ').slice(0, 200)}`],
+      severity: engine.SEVERITY.P1,
+    }));
+  } else {
+    const so = Number(m[1]);
+    results.push(engine.toResult('typecheck automation của task', {
+      problems: so ? [`${so} lỗi kiểu trong outputs/**/${TASK}/automation — chạy \`npm run typecheck:task -- --task ${TASK}\` để xem chi tiết`] : [],
+      note: so ? `${so} lỗi` : 'sạch',
+      severity: engine.SEVERITY.P0,
+    }));
+  }
+} else {
+  results.push(engine.toResult('typecheck automation của task', { skipped: true, note: 'thiếu TASK_KEY', severity: engine.SEVERITY.P0 }));
+}
+
+/*
  * 3b) Đối soát Excel canonical với file status (`result_ledger`).
  *
  * Check #3 ở trên hỏi "kết quả đã execute có đạt chuẩn không" — nó đọc `testcase-status.json`. Nhưng thứ

@@ -121,7 +121,9 @@
     "library:drift": "node scripts/qa/library_drift.js",
     "ledger:check": "node scripts/qa/result_ledger.js",
     "ledger:check:enforce": "node scripts/qa/result_ledger.js --enforce",
-    "ledger:snapshot": "node scripts/qa/result_ledger.js --snapshot"
+    "ledger:snapshot": "node scripts/qa/result_ledger.js --snapshot",
+    "typecheck:task": "node scripts/qa/typecheck_task.js",
+    "typecheck:task:enforce": "node scripts/qa/typecheck_task.js --enforce"
   },
   "dependencies": {
     "axe-core": "^4.12.1",
@@ -138,6 +140,7 @@
     "eslint": "^10.7.0",
     "lighthouse": "^12.0.0",
     "playwright-lighthouse": "^4.0.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }

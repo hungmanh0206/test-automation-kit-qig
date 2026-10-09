@@ -88,6 +88,16 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 10. Nếu testcase bị SKIP, phải ghi TC ID, lý do skip, đã thử sửa gì, có thể sửa để chạy được không; nếu sửa được thì ưu tiên sửa và rerun thay vì giữ skip.
 11. Nếu product fail, rerun case fail theo ngưỡng `.agent/config/verdict_taxonomy.json` §rerun (min–max, hiện 2–3 lần) để loại trừ flaky/setup, rồi lưu evidence theo rule bên dưới.
 12. Cập nhật testcase output và execution summary. Nếu có `RUN_ID`, chỉ cập nhật run-scoped report/status, không ghi trực tiếp testcase Markdown/Excel chính.
+11b. **Typecheck automation của task — BẮT BUỘC trước khi tin bất kỳ verdict nào:**
+   `npm run typecheck:task:enforce -- --task <TASK_KEY>`
+   `tsconfig.json` của kit khai `exclude: ["outputs"]`, nên `npm run typecheck` KHÔNG soi
+   `outputs/**/<TASK_KEY>/automation/**`. Không chạy lệnh này thì spec của task **chưa từng được
+   typecheck**, dù `npm run typecheck` báo xanh.
+   *Vì sao bắt buộc:* đo 09/10/2026 ở CSDL-9001 — hai thuộc tính KHÔNG TỒN TẠI (`ScreenField.hidden`,
+   `ScreenField.value`) được dùng ở 17 chỗ. `undefined !== true` luôn đúng nên phép kiểm "ô có hiện
+   không" thành "ô có trong DOM không" ⇒ một case báo PASS giả; `f.value` luôn `undefined` ⇒ một case
+   khác chấm FAIL oan. Thêm một biến không khai (`MA`) ném ReferenceError làm case chết không ghi
+   verdict. Cả ba đều là lỗi `tsc` bắt được trong một giây.
 12b. **Đối soát Excel canonical với file status — BẮT BUỘC sau mỗi lượt ghi kết quả vào Excel:**
    `npm run ledger:check:enforce -- --task <TASK_KEY>`
    Gate so cột `Result` trong Excel với (a) mốc đã chụp lần trước và (b) MỌI `testcase-status*.json`
