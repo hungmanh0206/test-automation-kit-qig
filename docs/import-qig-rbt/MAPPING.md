@@ -155,6 +155,37 @@ thật là 1-2 file, không phải cả 2.8k.
 | Smoke 10–20 · Post-hotfix 5–15 · Regression 20–40 · Release 30–60 | — | **NHẬN** | Ngưỡng đặt ở config |
 | Gate 4 tiêu chí (`:841`) | Tiêu chí 1 **ĐÃ CÓ** (`VAGUE_EXPECTED`) | **CHỈNH** | `design_gate --mode checklist`: ① tái dùng bộ từ cấm ② luồng sống còn ③ mỗi component ≥1 mục hoặc "không áp dụng" ④ số mục trong ngưỡng, vượt ⇒ CHẶN + gợi ý tách |
 
+#### H5 đã làm — và một lỗi THẬT bắt được trong lúc làm
+
+Vào `05_manual_quick.md` dạng **sub-mode**, không pipeline mới. Ngưỡng 4 loại ở
+[`.agent/config/checklist_types.json`](../../.agent/config/checklist_types.json), bảng trong prompt là bản
+cho người đọc và có test đối chiếu hai bên.
+
+Checklist **không dùng parser testcase canonical**. Nó có 7 cột khác hẳn, không Tiền điều kiện, không Các
+bước, mỗi mục cố ý một dòng. Nhét vào `scripts/lib/testcase` thì checklist sẽ bị đòi đủ 10 cột canonical rồi
+chết ngay dòng đầu. Nên có parser riêng ở `scripts/qa/lib/checklist.js`. Nhưng **bộ từ "kỳ vọng chung
+chung" thì dùng lại nguyên** `vagueExpectedLines` của `output_rules.js`, và test khoá việc đó: hai danh
+sách từ cấm là hai danh sách lệch nhau.
+
+**Lỗi bắt được, và nó là lỗi của tôi.** Tiêu chí 2 của gói nguồn là *"mọi luồng sống còn đều có ít nhất một
+mục P1"*. Bản đầu tôi viết so tên luồng với văn bản các mục P1, và nó **báo oan ngay trên fixture hợp lệ
+đầu tiên**: luồng "Phân quyền" được phủ bởi mục P1 *"Đăng nhập vai Phòng, mở URL thêm học sinh trực tiếp,
+bị chặn, về trang không có quyền"*, mà mục đó không chứa chữ "phân quyền" nào. Tên luồng là **khái niệm
+nghiệp vụ**, nhãn mục là **thao tác cụ thể**, hai thứ cố ý khác chữ nhau, nên so chữ sai từ tiền đề. Bản
+sửa bắt khai hai đầu: luồng sống còn phải là một `### Nhóm:` có thật, và nhóm đó phải có mục P1. Có một
+test giữ nguyên ca báo oan đó, vì không có nó thì ai cũng có thể rút gọn về lại dò chữ.
+
+**Thêm hai luật gói nguồn không có, vì khuôn mới mở ra hai chỗ gian lận:**
+
+- **Ô tick phải TRỐNG lúc sinh.** Checklist xuất ra kèm dấu tick là kết quả bịa: chưa ai chạy mà đã có đáp
+  án. Đây là `CLAUDE.md` mục 6 áp vào một khuôn output mới.
+- **Số mục tự khai ở tiêu đề phải khớp số máy đếm.** Chỗ mẫu số trôi dễ nhất: sửa bảng rồi quên sửa tiêu
+  đề, và báo cáo về sau lấy con số ở tiêu đề.
+
+**Không thêm npm script riêng.** Chạy bằng `node scripts/qa/design_gate.js --mode checklist --file <f>`,
+cùng cách `--publish` của H3. Thêm script mới thì `gate:policy` đòi nối cặp máy với nhánh CI, mà đây là một
+mode của máy đã được nối.
+
 ### H6 — Nhánh chạy tay cho case `Manual-only`
 
 | Ý của A | Kit đã có ở đâu | Quyết định | Luật kit ĐÈ luật A |

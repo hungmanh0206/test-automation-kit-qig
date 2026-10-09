@@ -1,0 +1,52 @@
+{
+  "_doc": "Bốn loại checklist rà tay và quy mô của từng loại. NGUỒN DUY NHẤT — `05_manual_quick.md` và `design_gate.js --mode checklist` đọc file này, KHÔNG chép ngưỡng ra chỗ khác.",
+
+  "_vi_sao": "Checklist sống bằng việc RÀ NHANH. Dài quá ngưỡng là nó mất đúng công dụng đó: người chạy bỏ giữa, hoặc tick cho xong. Nên số mục không phải chuyện thẩm mỹ, nó là điều kiện để checklist còn là checklist. Và loại checklist phải được KHAI, vì cùng một module thì Smoke và Release-readiness có mẫu số khác nhau hoàn toàn.",
+
+  "_vuot_nguong_thi_tach": "Vượt `max` thì CHẶN, kèm gợi ý tách theo module hoặc hạ scope. Dưới `min` chỉ CẢNH BÁO: module nhỏ thật thì ít mục là đúng, còn dài quá thì không có cách nào đúng.",
+
+  "_so_tu_khai_phai_khop_may_dem": "Tiêu đề checklist tự khai số mục. Gate đối chiếu số đó với số dòng đếm được và CHẶN khi lệch. Đây là chỗ mẫu số trôi dễ nhất: người viết sửa bảng rồi quên sửa tiêu đề, và báo cáo về sau dùng con số ở tiêu đề.",
+
+  "types": [
+    {
+      "code": "smoke",
+      "ten": "Smoke",
+      "muc_dich": "Xác nhận build chạy được, luồng sống còn không vỡ.",
+      "min": 10,
+      "max": 20,
+      "phut": 15
+    },
+    {
+      "code": "post_hotfix",
+      "ten": "Post-hotfix",
+      "muc_dich": "Rà vùng ảnh hưởng của bản vá, cộng vùng lân cận có rủi ro.",
+      "min": 5,
+      "max": 15,
+      "phut": 10
+    },
+    {
+      "code": "regression",
+      "ten": "Regression",
+      "muc_dich": "Rà toàn bộ một module trước khi bàn giao.",
+      "min": 20,
+      "max": 40,
+      "phut": 45
+    },
+    {
+      "code": "release",
+      "ten": "Release-readiness",
+      "muc_dich": "Rà toàn hệ thống trước khi lên production.",
+      "min": 30,
+      "max": 60,
+      "phut": 60
+    }
+  ],
+
+  "priorities": ["P1", "P2", "P3"],
+
+  "o_tick_trong": ["☐", "[ ]", "□", ""],
+
+  "_o_tick_phai_trong": "Ô tick phải TRỐNG lúc sinh. Checklist xuất ra mà đã có dấu tick là kết quả bịa: không ai chạy mà đã có verdict. Gate CHẶN, cùng lý lẽ với `CLAUDE.md` mục không gian lận để PASS.",
+
+  "_gioi_han_da_do": "Tiêu chí 'critical path đủ' KHÔNG đo được bằng cách máy tự nhận ra luồng nào là sống còn — đoán hộ là dò chữ. Nên checklist phải KHAI dòng `Luồng sống còn:` và gate kiểm mỗi luồng đã khai có ít nhất một mục P1. Máy gác lời khai, không gác thay người quyết định phạm vi."
+}

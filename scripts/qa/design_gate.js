@@ -14,6 +14,12 @@
  * per-module theo risk band → risk_gate (npm run risk:gate:enforce). design_gate ĐIỀU PHỐI + bổ khuyết.
  *
  * Dùng: node scripts/qa/design_gate.js --file <testcase.md> [--dir test-cases/] [--with-rows] [--publish] [--qa-approved]
+ *       node scripts/qa/design_gate.js --mode checklist --file <checklist.md>
+ *
+ * `--mode checklist`: gate 4 tiêu chí cho CHECKLIST RÀ TAY (sub-mode của `05_manual_quick.md`).
+ * Checklist KHÔNG phải bộ testcase — 7 cột khác hẳn, không Tiền điều kiện, không Các bước — nên nó có
+ * parser riêng ở `lib/checklist.js`. Nhưng bộ từ "kỳ vọng chung chung" thì DÙNG LẠI của output_rules,
+ * vì hai danh sách từ cấm là hai danh sách lệch nhau.
  *
  * `--publish`: bật các luật CHỈ áp lúc đẩy ra ngoài. Hiện có một luật — còn `[NeedsVerify]` là CHẶN.
  * Tag đó sinh ra để tồn tại TRONG LÚC Phase 1 chạy (người viết thừa nhận chưa có bằng chứng), nên
@@ -56,16 +62,58 @@ function runFile(file, { withRows }) {
   return { problems, warnings, rowCount: d.rowCount, found: true };
 }
 
+/*
+ * Nhánh CHECKLIST. Tách hẳn khỏi nhánh testcase thay vì nhồi `if` vào giữa: hai nhánh đọc hai khuôn bảng
+ * khác nhau và in hai bộ nhắc khác nhau, trộn vào nhau thì mỗi lần sửa một bên lại phải đọc cả hai.
+ */
+function chayChecklist(files, { QA_APPROVED }) {
+  const checklist = require(path.resolve(__dirname, 'lib', 'checklist'));
+  const problems = []; const warnings = []; let itemCount = 0; let fileCount = 0; const loai = [];
+  for (const f of files) {
+    if (!fs.existsSync(f)) { console.error(`[design] không thấy: ${f}`); continue; }
+    const base = path.basename(f);
+    const r = checklist.gateChecklistFile(f);
+    if (!r.found) { console.log(`[design] ${base}: không thấy tiêu đề "## … Checklist …" — bỏ qua.`); continue; }
+    fileCount++; itemCount += r.itemCount;
+    if (r.type) loai.push(`${base}: ${r.type.ten} (${r.itemCount}/${r.type.min}-${r.type.max} mục)`);
+    r.problems.forEach((p) => problems.push(`${base} · ${p}`));
+    r.warnings.forEach((p) => warnings.push(`${base} · ${p}`));
+  }
+
+  console.log(`[design] mode CHECKLIST — ${fileCount} file · ${itemCount} mục · ${problems.length} CHẶN · ${warnings.length} cảnh báo.`);
+  loai.forEach((l) => console.log(`  · ${l}`));
+  if (warnings.length) { console.log('\n[design] ⚠ Cảnh báo (nên sửa, không chặn):'); warnings.slice(0, 40).forEach((p) => console.log(`  ~ ${p}`)); if (warnings.length > 40) console.log(`  … +${warnings.length - 40} nữa`); }
+  if (!problems.length) {
+    if (!fileCount) { console.log('\n[design] không có checklist nào để kiểm.'); process.exit(0); }
+    console.log('\n[design] ✓ ĐẠT — 4 tiêu chí checklist: verify được · luồng sống còn có P1 · component khai đủ · đúng quy mô.');
+    process.exit(0);
+  }
+  console.log('\n[design] ✗ VI PHẠM CHẶN (checklist chưa dùng được để rà tay):');
+  problems.forEach((p) => console.log(`  - ${p}`));
+  console.log('\n  Nhắc: khuôn checklist và 4 tiêu chí ở `prompt_templates/phase1/05_manual_quick.md`; ngưỡng số mục ở `.agent/config/checklist_types.json`.');
+  if (QA_APPROVED) { console.log('\n[design] [--qa-approved] bỏ qua → exit 0 (đã log).'); process.exit(0); }
+  console.log('\n[design] BLOCK.');
+  process.exit(1);
+}
+
 function main() {
   const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
   const has = (n) => process.argv.includes(`--${n}`);
   const FILE = arg('file', ''); const DIR = arg('dir', ''); const WITH_ROWS = has('with-rows'); const QA_APPROVED = has('qa-approved');
   const PUBLISH = has('publish');
 
+  const MODE = arg('mode', 'testcase');
+  if (MODE !== 'testcase' && MODE !== 'checklist') {
+    console.error(`[design] --mode lạ: "${MODE}". Chỉ nhận "testcase" (mặc định) hoặc "checklist".`);
+    process.exit(2);
+  }
+
   let files = [];
   if (FILE) files = [FILE];
   else if (DIR) { try { files = fs.readdirSync(DIR).filter((f) => f.endsWith('.md')).map((f) => path.join(DIR, f)); } catch (e) { console.error(`[design] đọc --dir lỗi: ${e.message}`); process.exit(2); } }
   else { console.error('[design] cần --file <testcase.md> hoặc --dir <test-cases/>'); process.exit(2); }
+
+  if (MODE === 'checklist') { chayChecklist(files, { QA_APPROVED }); return; }
 
   const problems = []; const warnings = []; let rowCount = 0; let fileCount = 0;
   for (const f of files) {
