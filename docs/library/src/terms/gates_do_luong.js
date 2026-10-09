@@ -3,7 +3,7 @@
    và bảng trả lời preflight:lanes.
 
    Vì sao gom một nhóm: đây đều là máy đã có trong danh mục GATES.md nhưng CHƯA có mục trong thư viện.
-   Rà ngày 29/09/2026: 76 máy trong danh mục. Thiếu mục nghĩa là người đọc tra
+   Rà ngày 29/09/2026: 78 máy trong danh mục. Thiếu mục nghĩa là người đọc tra
    không ra, và một máy tra không ra thì coi như không có.
    Nguồn: header của chính từng script + .agent/config/GATES.md. */
 const TERMS_GATE5 = [
