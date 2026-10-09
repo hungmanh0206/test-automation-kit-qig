@@ -25,6 +25,15 @@ Report phải đủ chi tiết để review chất lượng bộ testcase mà kh
    - Report phải liệt kê toàn bộ nhóm thực tế xuất hiện trong testcase, ví dụ với CRUD có thể là `Xem danh sách`, `Tạo`, `Sửa`, `Xóa`; với domain khác có thể là `Đăng nhập`, `Thanh toán`, `Báo cáo`, `Thông báo`,...
    - Số testcase theo layer/site: UI, API, E2E và các app/site thực tế trong scope nếu xác định được.
    - Số testcase theo priority và risk.
+   - **Bảng phân bố kỹ thuật thiết kế** (bắt buộc khi bộ đã dùng tag kỹ thuật):
+
+     | Kỹ thuật | Số TC | Điều kiện kích hoạt trong task này | Đã áp dụng? |
+     |---|---|---|---|
+     | một dòng cho mỗi mã | số lấy từ `npm run dim:coverage` | trích từ `.agent/config/design_techniques.json` | Có hoặc Không |
+
+     Sáu mã là EP, BVA, DT, ST, UC và EG. Kỹ thuật bị kích hoạt mà 0 case thì KHÔNG được xuất.
+     Khai `n/a` phải kèm lý do. Lý do phải nói task này không có thứ kích hoạt kỹ thuật đó.
+     Không kịp làm thì đó là việc còn nợ, không phải `n/a`.
 3. **Đánh giá Coverage và Quality/Risk**
    - Review bộ testcase automation theo đúng protocol trong section này.
    - Xác định tổng số requirement/business rule/API behavior nằm trong scope.
