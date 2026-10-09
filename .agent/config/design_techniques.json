@@ -1,0 +1,69 @@
+{
+  "_doc": "Sáu kỹ thuật thiết kế testcase (ISTQB). NGUỒN DUY NHẤT — prompt, validate.js, model.js và mọi gate đọc file này, KHÔNG chép danh sách ra chỗ khác. Cùng khuôn với case_types.json.",
+  "_vi_sao": "prompt_templates/phase1/02_gen_testcases.md §2 vốn đã NHẮC TÊN bốn kỹ thuật, nhưng không có gì đo xem case có thật sự được thiết kế theo kỹ thuật đó hay không. Nhắc tên là lời dặn; lời dặn không có máy đứng sau thì lần nào quên cũng không ai biết. File này biến 'nên dùng BVA' thành 'có field min/max thì PHẢI có BVA', tức một điều kiện đo được.",
+
+  "_khop_chinh_xac": "Mã kỹ thuật so bằng === trên TÊN TAG đã bóc, TUYỆT ĐỐI không dùng includes(). Đo 09/10/2026 trên 25 chiều đang khai: [ST] là chuỗi con của 'bughistory' và 'dbpersist'; [EG] là chuỗi con của 'negative' và 'regression'. Viết techniquesOf() theo kiểu includes() như dimensionsOf() thì mọi case mang [Negative] của mọi bộ TC cũ bỗng 'đã khai kỹ thuật EG', và mọi case [BugHistory] thành 'ST'. tagNamesOf() đã bóc sẵn từng tag thành tên rời nên so === là đủ — không cần đổi cú pháp sang [T:BVA], và giữ được đúng cú pháp của tài liệu nguồn.",
+
+  "_cach_ghi": "Tag kỹ thuật ghi ở cột `Tag`, đứng cạnh tag loại, tag chiều và oracle-ref. Ví dụ: `[Boundary][Validation][BVA][BR-HSLOP-004]`. KHÔNG thêm cột mới, KHÔNG nhét mã kỹ thuật vào `TC ID` — đã có hàng nghìn case publish trên Google Sheet, đổi TC ID là mất truy vết và hỏng cơ chế chống trùng bug.",
+
+  "_hai_tang": "Gate áp theo mẫu của case_types.json. Bộ CHƯA có case nào mang tag kỹ thuật ⇒ tự từ chối chặn, nhưng PHẢI in rõ 'bộ này chưa được gác theo kỹ thuật thiết kế'. Bộ ĐÃ có từ một case trở lên ⇒ case thiếu tag = CHẶN, mã lạ = CHẶN. Im lặng bỏ qua là mất luôn luật.",
+
+  "techniques": [
+    {
+      "code": "EP",
+      "name": "Equivalence Partitioning",
+      "definition": "Chia miền input thành các nhóm tương đương, mỗi nhóm chỉ cần một đại diện vì mọi giá trị trong nhóm cho cùng kết quả.",
+      "kich_hoat": "Field có miền giá trị chia nhóm được: hợp lệ với không hợp lệ, hoặc nhiều nhánh theo loại giá trị.",
+      "cach_lam": "Mỗi partition ít nhất một case. Nêu rõ case này đại diện cho nhóm nào.",
+      "dau_hieu_may_kiem": "Cùng một field có từ hai case [EP] trở lên, và dữ liệu test của chúng khác nhóm nhau."
+    },
+    {
+      "code": "BVA",
+      "name": "Boundary Value Analysis",
+      "definition": "Kiểm tại ranh giới của miền hợp lệ, nơi lỗi off-by-one hay nằm.",
+      "kich_hoat": "Mọi field có ràng buộc min/max/độ dài/khoảng ngày. Có ràng buộc mà không có case BVA là bỏ trống đúng chỗ dễ sai nhất.",
+      "cach_lam": "Bốn điểm biên cho mỗi ràng buộc: min-1 · min · max · max+1. Biên của ngày, của độ dài chuỗi và của số là ba loại khác nhau, ghi rõ đang kiểm biên nào.",
+      "dau_hieu_may_kiem": "Ô `Dữ liệu Test` chứa giá trị ở biên: số, độ dài chuỗi, hoặc mốc ngày. Thiếu một trong bốn điểm ⇒ cảnh báo."
+    },
+    {
+      "code": "DT",
+      "name": "Decision Table",
+      "definition": "Bảng tổ hợp điều kiện: mỗi cột là một luật, mỗi luật là một case.",
+      "kich_hoat": "Từ BA điều kiện trở lên cùng quyết định một output.",
+      "cach_lam": "Lập bảng đủ tổ hợp, mỗi luật một case. Quá 20 tổ hợp thì chuyển pairwise (skill combinatorial_matrix) và GHI LÝ DO rút gọn — rút gọn không ghi lý do thì lần sau không ai biết đã bỏ nhánh nào.",
+      "dau_hieu_may_kiem": "Module có tag [DT] mà chỉ một case ⇒ cảnh báo: một luật không thành bảng quyết định."
+    },
+    {
+      "code": "ST",
+      "name": "State Transition",
+      "definition": "Kiểm chuyển trạng thái: đi được những đường nào, và đường nào phải bị chặn.",
+      "kich_hoat": "Entity có từ BA trạng thái trở lên, hoặc có luồng trạng thái.",
+      "cach_lam": "Mỗi transition hợp lệ một case. Mỗi transition bị chặn CŨNG một case — nửa sau hay bị bỏ, mà đó mới là chỗ bug sống.",
+      "dau_hieu_may_kiem": "Có [ST] mà không case nào vừa [ST] vừa [Negative] ⇒ cảnh báo: chỉ kiểm đường đi được, chưa kiểm đường phải chặn. Có state machine trong knowledge/system/ thì đối chiếu từng cặp trạng thái."
+    },
+    {
+      "code": "UC",
+      "name": "Use Case Testing",
+      "definition": "Kiểm một luồng nghiệp vụ đầu-cuối theo đúng cách người dùng thật đi.",
+      "kich_hoat": "Luồng đi qua nhiều màn hoặc nhiều bước mới hoàn tất một việc có nghĩa với người dùng.",
+      "cach_lam": "Một case cho luồng chính, các case riêng cho nhánh thay thế và nhánh ngoại lệ.",
+      "dau_hieu_may_kiem": "Case [UC] thường có nhiều bước và chạm nhiều màn. Máy không phán được chất lượng luồng — phần đó người đọc chấm."
+    },
+    {
+      "code": "EG",
+      "name": "Error Guessing",
+      "definition": "Dựa vào hành vi bất thường đã quan sát hoặc bug lịch sử để đoán chỗ dễ vỡ.",
+      "kich_hoat": "Đã có bug lịch sử ở vùng này, hoặc đã quan sát được hành vi lạ trong lượt dò.",
+      "cach_lam": "Neo vào một quan sát CÓ THẬT. Đoán không có chỗ neo thì nó là cảm tính, không phải kỹ thuật.",
+      "dau_hieu_may_kiem": "Case [EG] phải kèm [BugHistory] hoặc một oracle-ref. Thiếu cả hai ⇒ cảnh báo: đoán mà không nêu được dựa vào đâu."
+    }
+  ],
+
+  "_nguong": {
+    "_doc": "Mức của từng phép kiểm. Đổi mức phải kèm số đo tỉ lệ báo oan trên bộ TC thật, đừng đổi theo cảm giác.",
+    "ma_la": "chan",
+    "thieu_tag_khi_bo_da_dung": "chan",
+    "bva_data_khong_o_bien": "canh_bao",
+    "_vi_sao_bva_chi_canh_bao": "Heuristic 'giá trị có ở biên không' phải đoán xem con số trong ô là độ dài, là số lượng hay là ngày, mà ba loại đó nhìn giống nhau. Chưa đo tỉ lệ báo oan trên bộ TC thật thì chưa được đặt mức CHẶN — theo đúng tiền lệ locator_lint: cảnh báo trước, siết sau khi có số."
+  }
+}

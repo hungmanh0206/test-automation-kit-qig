@@ -19,6 +19,8 @@ const m = require('./model');
  * `legacy` = tên còn tồn tại trên Google Sheet nhưng không thuộc 9 loại đã chốt (hiện: `Unit`): NHẬN kèm cảnh báo để
  * dữ liệu cũ không đỏ, nhưng case sinh mới không được dùng.
  */
+const TECHNIQUE_CODES = require('../../../.agent/config/design_techniques.json')
+  .techniques.map((t) => t.code);
 const CASE_TYPES = require(path.join(__dirname, '..', '..', '..', '.agent', 'config', 'case_types.json'));
 const CASE_TYPE_NAMES = CASE_TYPES.types.map((t) => t.name);
 const CASE_TYPE_SET = new Set(CASE_TYPE_NAMES.map((n) => n.toLowerCase()));
@@ -151,6 +153,81 @@ function validate(doc) {
     if (legacy && !modern) warnings.push(`Bộ này dùng thang rủi ro CŨ 3 mức (${legacy} TC) — task mới dùng \`Severity\`: Blocker|Critical|Major|Minor|Trivial (§8). Bộ cũ không cần chuyển.`);
     else if (legacy && modern) warnings.push(`Bộ này TRỘN 2 thang: ${modern} TC dùng Severity 5 mức, ${legacy} TC còn thang cũ 3 mức — thống nhất 1 thang trong cùng một bộ để lọc/thống kê không lệch.`);
   }
+  /*
+   * 2d-bis) KỸ THUẬT THIẾT KẾ (EP · BVA · DT · ST · UC · EG) — HAI TẦNG, theo đúng mẫu `Loại case` ở trên.
+   *
+   * VÌ SAO Ở CẤP BỘ chứ không cấp dòng: câu hỏi "bộ này đã dùng quy ước kỹ thuật chưa" chỉ trả lời được khi
+   * nhìn cả bộ. Hỏi từng dòng thì bộ cũ ra 530 dòng đỏ, và một luật làm đỏ toàn bộ sẽ bị tắt trong một ngày.
+   *
+   * TẦNG 1 — bộ CHƯA có case nào mang tag kỹ thuật: tự từ chối chặn, nhưng PHẢI KÊU. Im lặng thì không ai
+   * biết bộ đang không được gác, và "không ai báo gì" bị đọc nhầm thành "đã đạt".
+   * TẦNG 2 — bộ ĐÃ có từ một case trở lên: thiếu tag = CHẶN, mã lạ = CHẶN.
+   */
+  {
+    const coTag = doc.tests.filter((t) => (t.techniques || []).length);
+    const maLa = [];
+    for (const tc of doc.tests) {
+      for (const bad of m.unknownTechniqueTags(tc.tags, tc.title)) {
+        maLa.push(`${tc.tcId || '(no-id)'}: \`[${bad}]\``);
+      }
+    }
+    // Mã lạ CHẶN bất kể bộ đã dùng hay chưa: `[XYZ]` không phải quy ước cũ, nó là lỗi gõ hoặc mã tự bịa.
+    if (maLa.length) {
+      problems.push(`${maLa.length} tag trông như mã kỹ thuật nhưng KHÔNG có trong `
+        + `\`.agent/config/design_techniques.json\` (6 mã: ${TECHNIQUE_CODES.join('|')}): ${maLa.slice(0, 6).join(' · ')}`
+        + `${maLa.length > 6 ? ` … (+${maLa.length - 6})` : ''}. Sửa mã, hoặc khai thêm vào config kèm điều kiện kích hoạt.`);
+    }
+
+    if (!coTag.length) {
+      warnings.push(`Bộ này CHƯA ĐƯỢC GÁC theo kỹ thuật thiết kế: 0/${doc.tests.length} case mang tag `
+        + `[EP]/[BVA]/[DT]/[ST]/[UC]/[EG]. Gate tự từ chối chặn để bộ cũ không đỏ oan — nhưng cũng nghĩa là `
+        + `không gì kiểm được case có thật sự thiết kế theo kỹ thuật nào. Điều kiện bắt buộc dùng từng kỹ `
+        + `thuật nằm ở \`.agent/config/design_techniques.json\`.`);
+    } else {
+      const thieu = doc.tests.filter((t) => !(t.techniques || []).length).map((t) => t.tcId || '(no-id)');
+      if (thieu.length) {
+        problems.push(`${thieu.length}/${doc.tests.length} case THIẾU tag kỹ thuật, trong khi bộ này ĐÃ dùng `
+          + `quy ước (${coTag.length} case có): ${thieu.slice(0, 8).join(', ')}`
+          + `${thieu.length > 8 ? ` … (+${thieu.length - 8})` : ''}. Trộn hai quy ước trong một bộ thì mọi `
+          + `con số đếm theo kỹ thuật về sau đều là phần của một mẫu số không ai biết.`);
+      }
+
+      /*
+       * BVA mà dữ liệu test không có giá trị ở biên — mức CẢNH BÁO, cố ý.
+       * Heuristic này phải đoán con số trong ô là độ dài, là số lượng hay là ngày, mà ba loại nhìn giống
+       * nhau. Chưa đo tỉ lệ báo oan trên bộ TC thật thì chưa được đặt CHẶN (xem `_nguong` trong config,
+       * cùng tiền lệ với locator_lint: cảnh báo trước, siết sau khi có số).
+       */
+      const CO_SO = /\d/;
+      const bvaRong = doc.tests
+        .filter((t) => (t.techniques || []).includes('BVA'))
+        .filter((t) => !CO_SO.test(String(t.data || '')))
+        .map((t) => t.tcId || '(no-id)');
+      if (bvaRong.length) {
+        warnings.push(`${bvaRong.length} case khai \`[BVA]\` mà ô \`Dữ liệu Test\` KHÔNG có con số nào: `
+          + `${bvaRong.slice(0, 6).join(', ')}${bvaRong.length > 6 ? ` … (+${bvaRong.length - 6})` : ''}. `
+          + `BVA là kiểm tại biên — không nêu giá trị biên cụ thể thì tag chỉ là nhãn dán.`);
+      }
+
+      // ST mà không có case nào vừa [ST] vừa [Negative]: mới kiểm đường đi được, chưa kiểm đường phải CHẶN.
+      const coST = doc.tests.filter((t) => (t.techniques || []).includes('ST'));
+      if (coST.length && !coST.some((t) => (t.dimensions || []).includes('negative'))) {
+        warnings.push(`${coST.length} case khai \`[ST]\` nhưng KHÔNG case nào vừa [ST] vừa [Negative] — `
+          + `mới kiểm transition đi được, chưa kiểm transition phải bị CHẶN. Nửa sau mới là chỗ bug sống.`);
+      }
+
+      // EG phải neo vào một quan sát có thật, không thì nó là cảm tính chứ không phải kỹ thuật.
+      const egTreo = doc.tests
+        .filter((t) => (t.techniques || []).includes('EG'))
+        .filter((t) => !(t.dimensions || []).includes('bughistory') && !(t.oracleRefs || []).length)
+        .map((t) => t.tcId || '(no-id)');
+      if (egTreo.length) {
+        warnings.push(`${egTreo.length} case khai \`[EG]\` mà không kèm \`[BugHistory]\` lẫn oracle-ref: `
+          + `${egTreo.slice(0, 6).join(', ')}. Error Guessing phải neo vào quan sát CÓ THẬT, không thì là cảm tính.`);
+      }
+    }
+  }
+
   /*
    * 2e) PRE-CODE ↔ CATALOG — mã tiền điều kiện phải neo được vào catalog Setup Strategy.
    * Tiền điều kiện chỉ là TEXT

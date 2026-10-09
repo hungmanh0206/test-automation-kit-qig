@@ -202,6 +202,56 @@ if (scopeConflict.length && ENFORCE) {
   process.exit(1);
 }
 
+/*
+ * ── KỸ THUẬT THIẾT KẾ (H1) ────────────────────────────────────────────────────────────────────────
+ *
+ * Đếm case theo 6 mã, và CHẶN khi manifest khai một kỹ thuật là `required` mà 0 case dùng.
+ *
+ * VÌ SAO CHẶN THEO MANIFEST chứ không tự suy "task này có field min/max nên phải có BVA": suy được thì
+ * cũng phải đọc được ràng buộc của từng field, mà thứ đó nằm trong spec dạng văn xuôi. Đoán hộ rồi chặn
+ * là báo oan, và một gate báo oan một lần là mất uy tín vĩnh viễn — cùng lý lẽ đã ghi cho chiều coverage
+ * ngay bên dưới. Người khai `required`, máy giữ lời khai đó.
+ *
+ * Bộ chưa dùng quy ước (0 case có tag) thì KHÔNG chặn: `validate.js` đã kêu ở tầng của nó, kêu hai lần
+ * thành tiếng ồn.
+ */
+const TECHS = require(path.join(rc.REPO_ROOT, '.agent', 'config', 'design_techniques.json')).techniques;
+const demKyThuat = new Map(TECHS.map((t) => [t.code, 0]));
+let caseCoKyThuat = 0;
+for (const tc of tests) {
+  const ks = tc.techniques || [];
+  if (ks.length) caseCoKyThuat += 1;
+  for (const k of ks) if (demKyThuat.has(k)) demKyThuat.set(k, demKyThuat.get(k) + 1);
+}
+
+console.log('');
+console.log('[dim] Kỹ thuật thiết kế (nguồn: .agent/config/design_techniques.json)');
+if (!caseCoKyThuat) {
+  console.log('[dim]   0 case mang tag kỹ thuật ⇒ CHƯA ĐƯỢC GÁC. Điều kiện bắt buộc dùng từng kỹ thuật ở config.');
+} else {
+  for (const t of TECHS) {
+    const n = demKyThuat.get(t.code) || 0;
+    const khai = manifest && manifest.techniques ? manifest.techniques[t.code] : undefined;
+    const nhan = khai === 'required' ? 'BẮT BUỘC' : (khai === 'n/a' ? 'n/a' : 'chưa khai');
+    console.log(`[dim]   ${t.code.padEnd(4)} ${String(n).padStart(4)} case · ${nhan} · ${t.kich_hoat.slice(0, 70)}`);
+  }
+}
+
+const kyThuatThieu = [];
+if (manifest && manifest.techniques) {
+  for (const t of TECHS) {
+    if (manifest.techniques[t.code] !== 'required') continue;
+    if ((demKyThuat.get(t.code) || 0) === 0) kyThuatThieu.push(t);
+  }
+}
+for (const t of kyThuatThieu) {
+  console.error(`[dim] ✗ kỹ thuật ${t.code} khai \`required\` trong manifest nhưng 0 case dùng — ${t.kich_hoat}`);
+}
+if (kyThuatThieu.length && ENFORCE) {
+  console.error(`[dim] ✗ ${kyThuatThieu.length} kỹ thuật bắt buộc mà 0 case. Sinh case, hoặc đổi manifest sang "n/a" KÈM LÝ DO.`);
+  process.exit(1);
+}
+
 // FAIL-FAST hai điều kiện của việc chặn. Đặt TRƯỚC bảng để không ai tưởng gate đã gác trong khi nó chưa gác.
 // Chặn bằng số liệu suy diễn, hoặc chặn khi chưa ai khai chiều nào bắt buộc, đều dẫn tới báo oan — và gate báo
 // oan một lần là mất uy tín vĩnh viễn.

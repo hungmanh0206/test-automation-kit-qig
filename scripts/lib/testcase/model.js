@@ -188,6 +188,52 @@ function dimensionsOf(title) {
   return [...out];
 }
 
+/*
+ * KỸ THUẬT THIẾT KẾ (EP · BVA · DT · ST · UC · EG) đọc từ tag, nguồn là
+ * `.agent/config/design_techniques.json`.
+ *
+ * KHỚP CHÍNH XÁC, KHÔNG `includes()`. Đây là chỗ khác hẳn `dimensionsOf()` ngay bên trên, và khác có lý do
+ * đo được: trên 25 chiều đang khai, `[ST]` là chuỗi con của `bughistory` và `dbpersist`; `[EG]` là chuỗi con
+ * của `negative` và `regression`. Viết theo kiểu `includes()` thì MỌI case mang `[Negative]` của MỌI bộ TC cũ
+ * bỗng "đã khai kỹ thuật EG", và mọi case `[BugHistory]` thành `ST` — một luật mới tự bịa ra dữ liệu để
+ * chấm chính nó. `tagNamesOf()` đã bóc sẵn từng tag thành tên rời nên so `===` là đủ.
+ *
+ * Không đổi cú pháp sang `[T:BVA]`: giữ `[BVA]` đúng như tài liệu nguồn thì người tra cứu không phải dịch lại.
+ */
+// require tương đối: file này KHÔNG import 'path', và thêm import chỉ để ghép một đường dẫn là thừa.
+const TECHNIQUES = require('../../../.agent/config/design_techniques.json');
+const TECHNIQUE_CODES = new Set(TECHNIQUES.techniques.map((t) => t.code.toLowerCase()));
+
+/** Mã kỹ thuật của case, từ ô `Tag` (và tag dẫn đầu tiêu đề). Trả mã VIẾT HOA, không trùng. */
+function techniquesOf(tagCell, title) {
+  const out = [];
+  const seen = new Set();
+  for (const name of tagNamesOf(tagCell, title)) {
+    const low = String(name).trim().toLowerCase();
+    if (!TECHNIQUE_CODES.has(low) || seen.has(low)) continue;
+    seen.add(low);
+    out.push(low.toUpperCase());
+  }
+  return out;
+}
+
+/*
+ * Mã LẠ: tag trông như mã kỹ thuật (2-3 chữ HOA) mà không có trong config — để gate CHẶN, không im lặng.
+ *
+ * PHẢI trừ tag chiều và tag loại case ra. Đo được: , ,  vừa là chiều vừa là loại case, và cả
+ * ba đều khớp khuôn 2-3 chữ HOA. Không trừ thì  — tag hợp lệ, có mặt ở hàng trăm case — bị báo là mã
+ * kỹ thuật lạ và CHẶN oan cả bộ. Luật mới mà làm đỏ bộ cũ là luật sẽ bị tắt trong một ngày.
+ */
+const SHORT_OK = new Set(DIMENSION_TAGS.filter((d) => d.length <= 3));
+function unknownTechniqueTags(tagCell, title) {
+  return tagNamesOf(tagCell, title)
+    .filter((n) => /^[A-Z]{2,3}$/.test(String(n).trim()))
+    .filter((n) => {
+      const low = String(n).trim().toLowerCase();
+      return !TECHNIQUE_CODES.has(low) && !SHORT_OK.has(low);
+    });
+}
+
 /**
  * ID knowledge dùng làm ORACLE của case, đọc từ tag tiêu đề: `[Positive][Calc][BR-RECIPBANK-001] …`
  *
@@ -274,6 +320,7 @@ function buildTestCase(headers, cells, story = '') {
     expected: splitNumbered(expectedRaw), expectedRaw,
     priority: get(COL.priority), risk: get(COL.risk),
     dimensions: dimensionsOf(tagSrc), oracleRefs, tags: tagCell,
+    techniques: techniquesOf(tagCell, title),
     group: get(COL.group), caseType: get(COL.caseType),
     traceability: { reqId: oracleRefs.join(', '), story: story || '' },
     _cells,
@@ -293,5 +340,6 @@ function buildSetup(headers, cells) {
 module.exports = {
   stripEmoji, cleanCell, splitMarkdownRow, normalizeHeader,
   COL, SETUP_COL, isTestCaseHeader, isSetupContractHeader, colIndex,
-  splitNumbered, groupNumbered, dimensionsOf, oracleRefsOf, tagNamesOf, buildTestCase, buildSetup, DIMENSION_TAGS,
+  splitNumbered, groupNumbered, dimensionsOf, oracleRefsOf, tagNamesOf, buildTestCase,
+  techniquesOf, unknownTechniqueTags, TECHNIQUES, buildSetup, DIMENSION_TAGS,
 };

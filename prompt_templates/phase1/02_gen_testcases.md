@@ -412,11 +412,15 @@ Nếu không thể cover rule nào vì thiếu requirement/data/API, vẫn ghi v
 Không giảm số lượng testcase bằng cách gộp nhiều rule khác nhau vào một case nếu việc gộp làm steps/expected mơ hồ.
 
 ## 2. Áp dụng kỹ thuật thiết kế TC
-- **Equivalence Partitioning (EP)**: chia input thành nhóm valid/invalid
-- **Boundary Value Analysis (BVA)**: test giá trị biên (min, min-1, max, max+1)
-- **Decision Table**: cho logic nhiều điều kiện kết hợp
-- **State Transition**: cho workflow có trạng thái. Với entity có vòng đời trạng thái, BẮT BUỘC sinh đủ ma trận `status x action` (vd View/Edit/Cancel theo từng status), gồm cả action bị chặn ở mỗi status.
+
+NGUỒN DUY NHẤT của sáu kỹ thuật và điều kiện bắt buộc dùng từng cái: [`.agent/config/design_techniques.json`](../../.agent/config/design_techniques.json). Đọc file đó. Đừng chép danh sách ra đây.
+
+**Khai kỹ thuật vào cột `Tag`**, cạnh tag loại, tag chiều và oracle-ref. Ví dụ: `[Boundary][Validation][BVA][BR-HSLOP-004]`. KHÔNG thêm cột. KHÔNG nhét mã vào `TC ID`.
+
+Máy gác chạy hai tầng. Bộ chưa case nào mang tag kỹ thuật thì gate tự từ chối chặn, nhưng vẫn kêu. Bộ đã dùng thì case thiếu tag là CHẶN, mã lạ cũng CHẶN. Mức từng phép kiểm ghi ở khối `_nguong` trong config.
+
 - **Không gộp biên vào 1 TC**: mỗi giá trị biên/đại diện partition là 1 TC riêng để steps/expected không mơ hồ.
+- Với entity có vòng đời trạng thái, BẮT BUỘC sinh đủ ma trận `status x action` (vd View/Edit/Cancel theo từng status), gồm cả action bị chặn ở mỗi status.
 
 **Cách dựng — ví dụ mẫu (áp dụng khi applicable, không copy nguyên):**
 
