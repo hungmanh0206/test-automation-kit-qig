@@ -27,8 +27,39 @@ const INFRA_VERIFY = process.env.INFRA_VERIFY === '1';
 const desktopIgnore = ['**/mobile-web/**', '**/load/**', '**/support/**'];
 const desktop = (name, device, extra = {}) => ({ name, testIgnore: desktopIgnore, use: { ...devices[device] }, ...extra });
 
-const projectOutputDir = getProjectOutputDir();
-const taskKey = getTaskKey();
+/*
+ * ĐƯỜNG DỰ PHÒNG KHI THIẾU ENV — để panel Testing của VS Code liệt kê được test.
+ *
+ * Vấn đề đo được 09/10/2026: hai hàm dưới đây chạy ở CẤP MODULE và NÉM khi thiếu `PROJECT_OUTPUT_DIR`
+ * hoặc `TASK_KEY`. Extension Playwright nạp file này trong tiến trình riêng, không có shell env và
+ * không truyền `TASK_ENV` được, nên nó luôn vấp lỗi TRƯỚC khi kịp quét file test — panel hiện TRỐNG,
+ * trông y như chưa cài gì. Đường CLI không dính vì nó chạy qua `profiles/<TASK>/task.env`.
+ *
+ * KHÔNG nới `requireValue` ở `runtime_config`: ràng buộc đó đang bảo vệ mọi hộ tiêu thụ khác
+ * (preflight, bug reporter, script phase) khỏi ghi kết quả vào nhầm thư mục task. Chỉ riêng file này
+ * được phép đi tiếp, và đi vào một thư mục NHÁP tách hẳn — chạy từ panel sẽ không bao giờ đụng
+ * `outputs/<project>/tasks/<task>/`, nên không lặp lại được ca mất evidence vì trùng outputDir.
+ *
+ * In cảnh báo to khi rơi vào nhánh này: một lượt chạy từ panel KHÔNG phải một lượt execute của task,
+ * và không được dùng kết quả của nó làm verdict.
+ */
+const DISCOVERY_TASK = '_vscode-discovery';
+function duPhong(fn, macDinh, ten) {
+  try {
+    return fn();
+  } catch (e) {
+    if (!global.__kitDaCanhBaoEnv) {
+      global.__kitDaCanhBaoEnv = true;
+      console.warn(`[playwright.config] THIẾU ${ten} ⇒ chạy ở CHẾ ĐỘ NHÁP, kết quả đổ vào `
+        + `"outputs/${DISCOVERY_TASK}". Đây KHÔNG phải một lượt execute của task: đừng lấy verdict từ đây. `
+        + `Chạy thật bằng: TASK_ENV=profiles/<TASK>/task.env npm run test:task -- --task <TASK>`);
+    }
+    return macDinh;
+  }
+}
+
+const projectOutputDir = duPhong(() => getProjectOutputDir(), 'outputs', 'PROJECT_OUTPUT_DIR');
+const taskKey = duPhong(() => getTaskKey(), DISCOVERY_TASK, 'TASK_KEY');
 const taskOutputDir = getTaskOutputDir({ projectOutputDir, taskKey });
 const runId = getRunId();
 const testResultsDir = getTestResultsDir({ taskOutputDir, runId });

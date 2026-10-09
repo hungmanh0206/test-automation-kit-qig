@@ -22,11 +22,26 @@ const rc = require(path.resolve(__dirname, '../../../scripts/utils/runtime_confi
 const vis = require(path.resolve(__dirname, '../../../scripts/utils/ui/visual.js'));
 const { login } = require(path.resolve(__dirname, '../../../scripts/qa/ui_conformance_check.js'));
 
-const taskDir = path.join(rc.REPO_ROOT, rc.getProjectOutputDir(), 'tasks', rc.getTaskKey());
-const targets = vis.loadTargets(fs, path, taskDir);
+/*
+ * THIẾU ENV THÌ KHÔNG ĐƯỢC NÉM Ở CẤP MODULE.
+ *
+ * `getTaskKey()` ném khi thiếu `TASK_KEY`, và lời ném đó xảy ra lúc Playwright QUÉT file. Một spec ném
+ * lúc quét là cả lượt liệt kê chết, nên panel Testing của VS Code hiện TRỐNG — trông y như chưa cài gì.
+ * Đo 09/10/2026: đúng file này làm `playwright test --list` ra "0 tests in 0 files".
+ *
+ * Nuốt lỗi rồi báo xanh thì còn tệ hơn. Nên: không định vị được thư mục task ⇒ `targets` = null, và
+ * `test.skip` ngay dưới sẽ bỏ qua KÈM LÝ DO. Bỏ qua có lý do thì đọc log là biết; ném lúc quét thì
+ * không ai biết gì ngoài một panel trống.
+ */
+let taskDir = '';
+try {
+  taskDir = path.join(rc.REPO_ROOT, rc.getProjectOutputDir(), 'tasks', rc.getTaskKey());
+} catch (e) { /* thiếu PROJECT_OUTPUT_DIR hoặc TASK_KEY — xử ở test.skip bên dưới */ }
+const targets = taskDir ? vis.loadTargets(fs, path, taskDir) : null;
 
 test.describe('@visual so ảnh với baseline đã được chấp nhận', () => {
   // Không có config ⇒ CHƯA ĐO ĐƯỢC. Cố ý không tạo test rỗng rồi báo xanh (0 màn mà xanh là false-green).
+  test.skip(!taskDir, 'thiếu PROJECT_OUTPUT_DIR hoặc TASK_KEY ⇒ không định vị được thư mục task để đọc baseline');
   test.skip(!targets, 'chưa có requirements/visual_targets.json ⇒ CHƯA ĐO ĐƯỢC (không phải PASS). Khai {screens:[{name,url,mask?[]}]} rồi chạy lại.');
   test.skip(!!targets && !targets.screens.length, 'visual_targets.json không có màn hợp lệ (cần name + url)');
 
