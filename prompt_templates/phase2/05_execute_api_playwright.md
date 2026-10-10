@@ -79,7 +79,7 @@ Nếu precondition chỉ có thể DỰNG bằng DB hoặc backend internal stat
 5. Assert status code, response body schema, headers và response time.
 6. Cập nhật testcase output: Status + Actual Result + Evidence/log path.
    Nếu có `RUN_ID`, chỉ cập nhật run-scoped report/status, không ghi trực tiếp testcase Markdown/Excel chính.
-   - Với API FAIL thuần, chụp ảnh visual evidence page hiển thị request/response đã redact (log text chỉ để debug local, KHÔNG phải evidence).
+   - Mọi case API (PASS **và** FAIL): `renderApiCard(page, {method,url,status,requestBody,responseBody}, "<...>-api-card.png")` (`scripts/utils/evidence/api_card.js`). Nó TỪ CHỐI render khi thiếu method/URL/status và tự che PII. Log text chỉ để debug local, KHÔNG phải evidence.
    - Khi log Backlog cho API FAIL, không upload log/text/markdown/JSON; nếu cần attachment Backlog, render visual evidence page hoặc screenshot response summary đã sanitize.
    - Với API FAIL nằm trong UI/E2E flow hoặc cần chứng minh hành vi người dùng, kèm screenshot fail; flow phức tạp cần video.
 7. Chạy selected API suite/TC IDs/endpoints trước; chỉ chạy toàn bộ API suite khi mode yêu cầu ALL hoặc vừa sửa shared API client/auth/schema helper.
