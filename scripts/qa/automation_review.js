@@ -116,7 +116,49 @@ const RULES = [
     why: 'Credential viết thẳng trong code. `secret:scan` chỉ quét file ĐƯỢC TRACK, nên spec theo task (ở `outputs/**`, vốn gitignore) hoàn toàn ngoài tầm nó.',
     fix: 'Đưa về `profiles/<TASK>/task.env` rồi đọc bằng `process.env.X`. Non-negotiable §1 và §5.',
   },
+  {
+    id: 'spec-page-locator',
+    sev: 'P1',
+    re: /\bpage\s*\.\s*locator\s*\(/,
+    taskOnly: true,
+    specOnly: true,
+    /*
+     * ĐO MỨC ÁP DỤNG PAGE OBJECT, KHÔNG PHÁN TỪNG DÒNG — và con số mới là điểm của luật này.
+     *
+     * Đo 10/10/2026: `page.locator(` xuất hiện **1381 lượt trong 254/354 spec theo task**, còn ở suite
+     * dùng chung chỉ ~6 lượt — và cả 6 nằm trong spec có việc kiểm CHÍNH bộ locator
+     *
+     * (Grep thô đếm 1401. Lệch 20 vì gate chỉ phán trên phần LÀ CODE: 20 lượt kia nằm trong chuỗi hoặc
+     * chú thích. Số của gate là số đúng, và chênh lệch này chính là bằng chứng phép làm-trắng-chuỗi đang
+     * làm việc.)
+     * (`safe-target`, `screen-snapshot`, `geometry`). Nên:
+     *  · `taskOnly`: ở tầng shared, gắn cờ chúng là sai — spec kiểm bộ locator thì phải gọi locator.
+     *  · `P1`, không phải P0: 1401 dòng không phải 1401 lỗi. Quy ước POM bị bỏ qua ở quy mô đó là một
+     *    SỰ THẬT CẦN BIẾT trước khi làm v2.8.0 (thư viện bước dùng lại), chứ không phải việc phải sửa
+     *    hết hôm nay.
+     * Chỉ thấy khi chạy `--include-tasks`, và đó là đúng chỗ của nó.
+     */
+    why: 'Spec gọi `page.locator` trực tiếp thay vì đi qua Page Object hoặc `safe_target`. Đo được 1381 lượt ở 254/354 spec theo task — locator nằm rải trong spec thì UI đổi một nhãn là phải sửa hàng trăm chỗ.',
+    fix: 'Đưa locator về Page Object (`tests/fe/pages/`) hoặc `safe_target.one()/section()`. Đây là nền của thư viện bước dùng lại (v2.8.0), nên con số này là mốc để đo tiến độ.',
+  },
+  {
+    /*
+     * `khoi: true` — luật ở cấp KHỐI, không quét theo dòng (thân một `test(...)` có khẳng định nào không).
+     *
+     * Vì sao nó phải nằm TRONG `RULES` chứ không dựng inline như bản đầu: không có nó ở đây thì bộ luật
+     * KHÔNG liệt kê được, và mọi phép kiểm "tài liệu nhắc rule nào thì rule đó phải có thật" sẽ báo oan.
+     * Chính `playwright-conventions.spec.ts` bắt được chỗ này.
+     */
+    id: 'no-assert',
+    sev: 'P0',
+    khoi: true,
+    why: 'Test KHÔNG có khẳng định nào: nó chỉ thao tác rồi kết thúc, nên luôn XANH — kể cả khi sản phẩm sai. Đây là false-green nặng nhất ở tầng spec.',
+    fix: 'Thêm oracle theo cột `Kết quả mong đợi` của case. Chưa phán được thì `test.skip(true, "<lý do>")`, KHÔNG để test rỗng xanh.',
+  },
 ];
+
+/** Tra một luật theo id — dùng cho luật cấp khối, để thông điệp chỉ có MỘT nguồn. */
+const luat = (id) => RULES.find((r) => r.id === id);
 
 /*
  * LUẬT ĐÃ VIẾT RỒI BỎ: `task-key-in-shared` — bắt `\b[A-Z]{2,}-\d{3,}\b` trong suite dùng chung, để gác
@@ -355,7 +397,10 @@ function mainCli() {
     for (let i = 0; i < lines.length; i += 1) {
       if (/auto-review-disable-next-line\s+\S/.test(lines[i - 1] || '')) continue;
       for (const r of RULES) {
+        if (r.khoi) continue;             // luật cấp KHỐI, không quét theo dòng
         if (r.sharedOnly && scope !== 'shared') continue;
+        if (r.taskOnly && scope !== 'task') continue;
+        if (r.specOnly && !laSpec(rel)) continue;
         if (r.not && r.not.test(codeLines[i])) continue;
         const m = r.re.exec(codeLines[i]);
         if (!m) continue;
@@ -391,12 +436,7 @@ function mainCli() {
           line: t.dong,
           scope,
           tang,
-          rule: {
-            id: 'no-assert',
-            sev: 'P0',
-            why: 'Test KHÔNG có khẳng định nào: nó chỉ thao tác rồi kết thúc, nên luôn XANH — kể cả khi sản phẩm sai. Đây là false-green nặng nhất ở tầng spec.',
-            fix: 'Thêm oracle theo cột `Kết quả mong đợi` của case. Chưa phán được thì `test.skip(true, "<lý do>")`, KHÔNG để test rỗng xanh.',
-          },
+          rule: luat('no-assert'),
           code: `test("${String(t.ten).slice(0, 60)}")`,
         });
       }

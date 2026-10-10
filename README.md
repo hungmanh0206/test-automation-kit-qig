@@ -8,6 +8,17 @@ Test Automation Kit hỗ trợ quy trình kiểm thử end-to-end cho nhiều pr
 
 Tài liệu này là landing page của toàn bộ kit. Team QA nên đọc cùng [USER_GUIDE.md](USER_GUIDE.md) và [QUICKSTART.md](QUICKSTART.md) trước khi chạy Phase 1 hoặc Phase 2.
 
+### Giới hạn — đọc trước khi chọn kit này
+
+Nói thẳng ở đây rẻ hơn nhiều so với để bạn phát hiện sau khi đã dựng xong profile và viết xong một nửa bộ case:
+
+- **Chỉ Playwright.** Không có Selenium, không có Appium, không có lớp mobile-native. Mobile chỉ tới mức **mobile-web** (device emulation trong cùng một browser, `npm run test:mobile-web`). Dự án cần mobile-native thì cần một kit khác.
+- **Test management là Google Sheet**, công cụ duy nhất. Bug đi Backlog. Không có tầng tích hợp nào khác.
+- **DB chỉ đọc**, và chỉ qua client riêng của kit. Precondition không được dựng bằng DB.
+- **Captcha không tự giải được.** Màn login của app hiện tại có captcha sinh lại mỗi postback, nên **CI không người trông KHÔNG tự đăng nhập được** — phải nạp sẵn session hoặc có người/agent đọc captcha.
+
+Quy ước chi tiết cho Playwright: [`.agent/rules/playwright_fe.md`](.agent/rules/playwright_fe.md).
+
 ## Architecture
 
 ```mermaid
