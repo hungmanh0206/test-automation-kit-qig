@@ -140,6 +140,47 @@ function findConflicts(list) {
   return out;
 }
 
+/*
+ * NHẬT KÝ ĐỔI RULE — `knowledge/domain/CHANGELOG.md`, một dòng bảng cho mỗi lần đổi:
+ *
+ *   | 2026-10-10 | BR-HOCSINH-002 | 1→2 | siết | FSD v3 §4.2 | CSDL_HS_TC_088, CSDL_HS_TC_092 |
+ *     ngày        rule id           ver   loại   nguồn         TC cần xử lý
+ *
+ * Đọc MỘT LẦN rồi cache: `validate()` chạy cho từng rule trong 118 file, nên đọc file ở trong đó là 118
+ * lượt đọc đĩa cho cùng một nội dung.
+ *
+ * Khớp theo `id` + version ĐÍCH, không khớp theo chữ: một dòng nhật ký phải nói rõ nó ghi cho lần đổi nào.
+ */
+let _nhatKy = null;
+function napNhatKy() {
+  if (_nhatKy) return _nhatKy;
+  _nhatKy = new Set();
+  try {
+    const raw = fs.readFileSync(path.join(DIR, 'CHANGELOG.md'), 'utf8');
+    for (const d of raw.replace(/\r\n?/g, '\n').split('\n')) {
+      if (!d.trim().startsWith('|')) continue;
+      const o = d.split('|').map((x) => x.trim());
+      const id = o.find((x) => ID_RE.test(x));
+      if (!id) continue;
+      /*
+       * Cột version: `1→2`, `1->2`, hoặc chỉ `2`. Phải neo vào HÌNH DẠNG CẢ Ô, không lấy "số cuối của ô
+       * nào cũng được" — bản đầu làm vậy và nó đọc cột NGÀY `2026-10-10` thành version 10, nên một dòng
+       * ghi cho v3 bị đăng ký thành v10 và rule v3 vẫn báo thiếu nhật ký.
+       */
+      const ver = o.map((x) => {
+        const m = x.match(/^\d+\s*(?:→|->|–>|—>)\s*(\d+)$/) || x.match(/^v?(\d+)$/i);
+        return m ? m[1] : null;
+      }).find((x) => x && Number(x) >= 2);
+      if (ver) _nhatKy.add(`${id}@${Number(ver)}`);
+    }
+  } catch { /* chưa có nhật ký ⇒ tập rỗng, và mọi rule version >= 2 sẽ được cảnh báo */ }
+  return _nhatKy;
+}
+const coDongNhatKy = (id, ver) => napNhatKy().has(`${id}@${ver}`);
+
+/** Rule có version >= 2 mà thiếu dòng nhật ký — gom để in MỘT dòng. */
+const THIEU_NHAT_KY = [];
+
 /** Validate 1 rule → mảng lỗi (chặn) + cảnh báo. */
 function validate(r) {
   const problems = []; const warnings = [];
@@ -164,6 +205,27 @@ function validate(r) {
       problems.push(at(`nội dung ĐÃ ĐỔI sau lần seal (\`content_sha\` ${d.content_sha} ≠ ${now}) mà không seal lại. Nếu đổi có chủ đích: bump \`confirmed_at\` rồi chạy \`npm run domain:check -- --seal\` (để \`--stale\` đánh dấu TC phải chạy lại). Nếu không cố ý đổi: hoàn nguyên nội dung.`));
     }
   }
+  /*
+   * NHẬT KÝ ĐỔI RULE (v2.5.0 G1.3b, nhận ý của A — CHỈNH lại: KHÔNG thêm hệ mã `REQ-*` thứ hai, B đã
+   * truy vết bằng `oracle_ref`).
+   *
+   * Kit ĐÃ có `version`, `status` + `invalidated_reason` (gỡ rule phải đổi trạng thái, không xoá), và
+   * seal `content_sha`. Thiếu đúng một thứ: **đổi rule thì đổi CÁI GÌ, và TC nào phải xử lý**. Số đo
+   * 10/10/2026: 118 rule, trong đó **32 rule đã ở version ≥ 2** (30 ở v2, 1 ở v3, 1 ở v5) — tức rule đã
+   * đổi ít nhất 32 lần mà không có một dòng nào ghi lại đổi gì.
+   *
+   * CẢNH BÁO chứ không chặn: 32 rule đang ở version ≥ 2 và chưa có nhật ký, nên chặn ngay là làm đỏ 32
+   * rule rồi gate bị tắt. Đây là hai tầng quen thuộc của kit.
+   */
+  if (Number.isInteger(d.version) && d.version >= 2 && !coDongNhatKy(d.id, d.version)) {
+    /*
+     * GOM lại, in MỘT dòng ở cuối. Bản đầu push từng rule và ra 32 dòng gần như y nhau trên repo thật —
+     * cùng lỗi đã gặp ở `bug_claim` (23 dòng cảnh báo thiếu `build`). Cảnh báo lặp 32 lần thì người đọc
+     * cuộn qua, tức nó không còn là cảnh báo.
+     */
+    THIEU_NHAT_KY.push(`${d.id} v${d.version}`);
+  }
+
   if (d.status === 'invalid') {
     // Go mot oracle la quyet dinh nang — phai de lai vet doc duoc, khong duoc go im lang.
     if (!String(d.invalidated_reason || '').trim()) problems.push(at('`status: invalid` PHAI co `invalidated_reason` — vi sao rule nay SAI TU DAU (doc nham tai lieu? BA noi lai? suy tu app?)'));
@@ -277,6 +339,9 @@ if (!rules.length) {
 
 let problems = []; let warnings = [];
 for (const r of rules) { const v = validate(r); problems = problems.concat(v.problems); warnings = warnings.concat(v.warnings); }
+if (THIEU_NHAT_KY.length) {
+  warnings.push(`${THIEU_NHAT_KY.length} rule có \`version\` >= 2 mà \`knowledge/domain/CHANGELOG.md\` KHÔNG có dòng tương ứng: ${THIEU_NHAT_KY.slice(0, 6).join(' · ')}${THIEU_NHAT_KY.length > 6 ? ` … +${THIEU_NHAT_KY.length - 6}` : ''}. Không có dòng đó thì lần sau không ai biết đổi GÌ và TC nào phải chạy lại — \`covered_by\` chỉ nói TC nào ĐANG phủ, không nói TC nào bị lệch vì lần đổi này. Khuôn một dòng: \`| ngày | BR-… | 1→2 | loại đổi | nguồn | TC cần xử lý |\`.`);
+}
 
 // trùng id@version
 const seen = new Map();

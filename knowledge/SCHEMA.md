@@ -53,7 +53,30 @@ nó chỉ làm được một việc: **buộc người xem lại**. Ba cơ ch�
 | `status: invalid` + `invalidated_reason` + `invalidated_at` | Rule **SAI TỪ ĐẦU** (khác `superseded`: rule đúng nhưng nghiệp vụ đổi). Gate liệt kê TC trong `covered_by` phải **REVIEW LẠI expected**, không chỉ chạy lại — chạy lại theo oracle sai thì vẫn sai | CHẶN nếu thiếu lý do/ngày |
 | `npm run domain:check -- --seal` → `content_sha` | Sửa nội dung **tại chỗ** mà không bump `confirmed_at`. Đây là lỗ của `--stale` (nó so `confirmed_at` với lần execute cuối, nên sửa mà không bump thì không gì bắt) | CHẶN khi lệch hash |
 
+| `domain/CHANGELOG.md` (thêm 10/10/2026) | Rule có `version` ≥ 2 mà **không có dòng nhật ký** cho version đó. `version` nói rule đã đổi; `covered_by` nói TC nào ĐANG phủ. Không cái nào nói **đổi GÌ** và **TC nào bị lệch vì lần đổi này** | CẢNH BÁO (đo 10/10/2026: 32/118 rule đang ở version ≥ 2 và chưa có nhật ký — chặn ngay là làm đỏ 32 rule rồi gate bị tắt) |
+
 Rule chưa `--seal` thì **không** bị chặn — seal là tiến hoá dần, không phải rào chặn kho cũ.
+
+### `domain/CHANGELOG.md` — nhật ký đổi rule
+
+Mỗi lần đổi một rule là **một dòng bảng**. Cố ý KHÔNG thêm hệ mã `REQ-*` thứ hai: kit đã truy vết bằng
+`oracle_ref`, và hai hệ mã song song là hai nguồn sẽ lệch nhau.
+
+```markdown
+| Ngày | Rule | Version | Loại đổi | Nguồn | TC cần xử lý |
+|---|---|---|---|---|---|
+| 2026-10-10 | BR-HOCSINH-002 | 1→2 | siết điều kiện | FSD v3 §4.2, BA xác nhận | CSDL_HS_TC_088, CSDL_HS_TC_092 |
+| 2026-10-10 | BR-HSLOP-017 | 1→2 | mở rộng phạm vi | Backlog CSDL-3544 | CSDL_LOP_TC_011 |
+```
+
+- **Version** ghi dạng `cũ→mới`. Máy khớp theo `id` + version ĐÍCH, nên mỗi dòng phải nói rõ nó ghi cho
+  lần đổi nào.
+- **Loại đổi** để lần sau đọc được hệ quả mà không phải mở cả hai bản: siết điều kiện · mở rộng phạm vi ·
+  sửa phát biểu sai · đổi ví dụ.
+- **TC cần xử lý** là mắt xích mà `covered_by` không thay được: `covered_by` nói TC nào đang phủ rule,
+  không nói TC nào có expected đã lệch vì lần đổi này.
+- **Rule bỏ thì đổi `status`, KHÔNG xoá** (`invalid` nếu sai từ đầu, `superseded` nếu nghiệp vụ đổi) — luật
+  này đã có máy gác từ trước, nhật ký chỉ ghi thêm lý do và TC bị ảnh hưởng.
 
 > Việc còn lại **không** máy nào làm thay: nhịp **tái xác nhận với BA**. `--stale-months` (mặc định 9) chỉ
 > nhắc rule đã cũ; nó không biết rule còn đúng hay không. Bỏ nhịp đó thì sau 1–2 năm kho tích rule lạc hậu
