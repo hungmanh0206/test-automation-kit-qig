@@ -41,7 +41,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN | `release:verify` | CHỨNG MINH bản phát hành chạy được từ con số 0. Đây là thước đo chính của cả luồng CD, | `scripts/qa/verify_release.js` | README.md · .github/workflows · .agent/skills · tests/fe/infra |
 | CHẶN | `version:check` | CHẶN phát hành thiếu sót. | `scripts/qa/version_check.js` | README.md · .github/workflows · tests/fe/infra |
 | CHẶN | `writing:lint`, `writing:lint:docs` | output phải đọc như QA viết, không như máy viết. | `scripts/qa/writing_lint.js` | RULE_GLOBAL.md · tests/fe/infra |
-| CHẶN | `profile:create` | Tạo profile task từ template: profiles/task.env.example -> profiles/<TASK_KEY>/task.env | `scripts/utils/create_profile.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md |
+| CHẶN | `profile:create` | Tạo profile task từ template: profiles/task.env.example -> profiles/<TASK_KEY>/task.env | `scripts/utils/create_profile.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · .claude/commands · tests/fe/infra |
 | CHẶN | `user-guide:images` | User Guide board renderer (HTML/CSS + Playwright) | `scripts/utils/generate_user_guide_images.mjs` | README.md · tests/fe/infra |
 | CHẶN | `test:task`, `test:task:fe`, `test:task:api` | const { spawn } = require('child_process'); | `scripts/utils/run_playwright_task.js` | README.md · USER_GUIDE.md · QUICKSTART.md · prompt_templates |
 | CHẶN | `sync:gitlab` | đẩy `main` sang nhánh GitLab, TRỪ những đường dẫn khai trong | `scripts/utils/sync_gitlab.js` | tests/fe/infra |
@@ -69,7 +69,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN (có cờ --enforce) | `risk:gate`, `risk:gate:enforce` | ép Risk-Based Testing: đối chiếu testcase với depthPolicy theo band trong risk-register. | `scripts/qa/risk_gate.js` | README.md · USER_GUIDE.md · QUICKSTART.md · .github/workflows · .agent/workflows · .agent/skills · prompt_templates · .claude/commands |
 | CHẶN (có cờ --enforce) | `rule:parity`, `rule:parity:enforce` | RÚT GỌN `core_rules.md` MÀ KHÔNG MẤT LUẬT NÀO. | `scripts/qa/rule_parity.js` | .github/workflows · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `run:analysis`, `run:analysis:enforce` | LƯỢT CHẠY NÀY CÓ ĐƯỢC DÙNG ĐỂ KẾT LUẬN CHẤT LƯỢNG KHÔNG? | `scripts/qa/run_analysis.js` | .agent/workflows · .agent/rules · .agent/skills · tests/fe/infra |
-| CHẶN (có cờ --enforce) | `scope:anchor`, `scope:anchor:enforce`, `scope:anchor:init` | NEO MẪU SỐ của Phase 1. | `scripts/qa/scope_anchor.js` | .agent/workflows · .agent/skills · prompt_templates · tests/fe/infra |
+| CHẶN (có cờ --enforce) | `scope:anchor`, `scope:anchor:enforce`, `scope:anchor:init` | NEO MẪU SỐ của Phase 1. | `scripts/qa/scope_anchor.js` | .agent/workflows · .agent/skills · prompt_templates · .claude/commands · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `self-review`, `self-review:enforce` | Lượt 2: đối chiếu CHECKLIST trước finalize (ADVISORY). | `scripts/qa/self_review.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · scripts/qa/README.md · .agent/workflows · prompt_templates · manual-run · .claude/commands · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `skills:lint`, `skills:lint:enforce` | MÔ TẢ SKILL CÓ ĐỦ THÔNG TIN ĐỂ CHỌN HAY CHƯA? | `scripts/qa/skills_lint.js` | tests/fe/infra |
 | CHẶN (có cờ --enforce) | `spec:gap` | CHIỀU NGƯỢC: build CÓ mà tài liệu KHÔNG NHẮC (B3 của chương trình chống lọt bug). | `scripts/qa/spec_gap_report.js` | RULE_GLOBAL.md · CLAUDE.md · README.md · .agent/workflows · prompt_templates · tests/fe/infra |
