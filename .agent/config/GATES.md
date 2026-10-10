@@ -16,7 +16,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN | `integration:check`, `integration:check:live` | const axios = require('axios'); | `scripts/integrations/backlog/check_connection.js` | .gitlab-ci.yml · README.md · USER_GUIDE.md · QUICKSTART.md · .github/workflows · tests/fe/infra |
 | CHẶN | `gdoc:read` | Đọc nội dung từ Google Docs | `scripts/integrations/google_doc/doc_reader.js` | prompt_templates |
 | CHẶN | `audit:ci` | npm audit cho CI, phân biệt rõ 2 tình huống: | `scripts/qa/audit_ci.js` | .gitlab-ci.yml · README.md · .github/workflows |
-| CHẶN | `bug:claim`, `bug:claim:new`, `bug:claim:report` | một phát hiện bug phải QUA MÁY trước khi được nói thành lời. | `scripts/qa/bug_claim.js` | RULE_GLOBAL.md · .agent/workflows · prompt_templates · manual-run · tests/fe/infra |
+| CHẶN | `bug:claim`, `bug:claim:new`, `bug:claim:report`, `bug:claim:chot` | một phát hiện bug phải QUA MÁY trước khi được nói thành lời. | `scripts/qa/bug_claim.js` | RULE_GLOBAL.md · .agent/workflows · prompt_templates · manual-run · tests/fe/infra |
 | CHẶN | `ci:scope` | MÁY ĐỨNG SAU LUẬT "CI generic KHÔNG tự chạm UAT". | `scripts/qa/ci_scope_check.js` | .gitlab-ci.yml · QUICKSTART.md · .github/workflows · tests/fe/infra |
 | CHẶN | `course:maturity`, `course:maturity:check` | sinh khối "Bộ kit của bạn đang ở đâu" cho từng bài giảng. | `scripts/qa/course_maturity.js` | .gitlab-ci.yml · .github/workflows |
 | CHẶN | `course:numbers` | CHẶN "ví dụ trong bài giảng không khớp sản phẩm thực hành". | `scripts/qa/course_numbers.js` | .gitlab-ci.yml · .github/workflows |
