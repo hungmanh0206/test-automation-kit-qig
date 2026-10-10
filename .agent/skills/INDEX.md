@@ -26,7 +26,8 @@
 | `domain_recorder` | shared | `.agent/skills/shared/domain_recorder/SKILL.md` | Ghi business rule ĐÃ ĐƯỢC XÁC NHẬN vào knowledge/domain/ (versioned, có source + examples cụ thể, trace covered_by) để oracle của testcase luôn trích được nguồn thay vì suy từ app. |
 | `learning_recorder` | shared | `.agent/skills/shared/learning_recorder/SKILL.md` | Ghi fact đã qua gate (bug đã confirm, root cause, snapshot pass/fail) vào knowledge/ để tái dùng xuyên task. Suggest-only — chỉ lưu dữ liệu, không tự kết luận risk/PASS-FAIL. |
 | `precondition_setup_planner` | shared | `.agent/skills/shared/precondition_setup_planner/SKILL.md` | Phân loại tiền điều kiện, chọn setup method (factory/hook/fixture/mock), ghi verification + cleanup, đánh dấu readiness/blocker và Definition of Ready cho Setup Strategy contract. |
+| `release_summary` | shared | `.agent/skills/shared/release_summary/SKILL.md` | Gộp kết quả nhiều lượt chạy của MỘT MỐC (release/sprint/UAT) thành khuyến nghị go/no-go có căn cứ, đối chiếu với tiêu chí exit đã chốt TRƯỚC khi xem kết quả. Dùng khi sắp bàn giao một mốc và cần nói với PM "có nên release không". KHÔNG dùng cho một lượt chạy đơn lẻ (dùng results:summary) hay để kiểm bản đóng gói (dùng release:verify). |
 | `system_mapper` | shared | `.agent/skills/shared/system_mapper/SKILL.md` | Ghi bản đồ HỆ THỐNG đã xác nhận vào knowledge/system/ (state machine · ma trận phân quyền · surface dùng chung) để trả lời được "hành vi này là bug hay đúng thiết kế" và "sửa chỗ này phải regression đâu" mà không suy từ app. |
 | `test_data_generator` | shared | `.agent/skills/shared/test_data_generator/SKILL.md` | Sinh test data cụ thể, unique, traceable và rollback được cho Phase 1/Phase 2. |
 
-> 23 skill. Thiếu description: 0.
+> 24 skill. Thiếu description: 0.
