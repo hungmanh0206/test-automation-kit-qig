@@ -100,4 +100,25 @@ test.describe('@infra token:audit — mẫu lệnh và ngưỡng một lượt',
     expect(d).toContain('Hai lỗi đo đã mắc');
     expect(d, 'phải nói rõ chưa đo được cái gì').toContain('Chưa đo được');
   });
+
+  test('`--model` quy model cho lượt subagent, và NÓI RÕ khi không phán được', () => {
+    /*
+     * Khai `model: haiku` trong frontmatter KHÔNG phải phép đo. Thứ duy nhất trong transcript có số
+     * theo model là `cost-state`, mà nó TÍCH LUỸ cả phiên — một con số tích luỹ không quy được cho lượt
+     * nào, phải lấy HIỆU giữa hai mốc ôm sát lượt cần hỏi.
+     *
+     * Điều quan trọng nhất ở đây là nhánh KHÔNG PHÁN ĐƯỢC. Đo 10/10/2026: mốc cuối ở dòng 21.367 còn
+     * hai lượt subagent ở 29.527 và 29.564, tức không có mốc nào sau chúng. Một máy đo im lặng trả về
+     * "haiku" trong tình huống đó là đúng thứ cả đợt v2.4.1 đi sửa.
+     */
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/token_audit.js'), 'utf8');
+    expect(src, 'phải có chế độ đo theo model').toContain('inTheoModel');
+    expect(src, 'thiếu mốc thì phải nói KHÔNG PHÁN ĐƯỢC, không đoán').toContain('KHÔNG PHÁN ĐƯỢC');
+    expect(src, 'phải lấy HIỆU giữa hai mốc, không đọc số tích luỹ').toContain('cost-state');
+
+    const d = fs.readFileSync(path.join(REPO, 'docs/v2.4.1/AGENTS_VERIFY.md'), 'utf8');
+    expect(d, 'biên bản phải ghi là chưa đo được, không khai đã kiểm').toContain('KHÔNG PHÁN ĐƯỢC');
+    expect(d, 'phải ghi cách đo khi có điều kiện').toContain('--model');
+  });
+
 });

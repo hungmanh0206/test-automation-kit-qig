@@ -357,6 +357,76 @@ async function inTopMau(dir) {
     console.log(`\n${tongMau} mẫu khác nhau trên ${soShell} lượt — trung bình mỗi mẫu lặp ${(soShell / tongMau).toFixed(1)} lần.`);
 }
 
+/*
+ * `--model` — MỘT LƯỢT SUBAGENT ĐÃ CHẠY MODEL NÀO.
+ *
+ * VÌ SAO CẦN. `.claude/agents/*.md` KHAI `model: haiku`, nhưng khai không phải đo. Xác minh 10/10/2026
+ * dừng ở chỗ này: hai subagent chạy đúng hợp đồng, nhưng KẾT QUẢ TRẢ VỀ KHÔNG MANG TÊN MODEL, và lượt nội
+ * bộ của subagent cũng không nằm trong transcript của phiên cha. Nên câu "việc máy móc đã đi model rẻ"
+ * lúc đó dựa vào KHAI BÁO, không dựa vào phép đo.
+ *
+ * Thứ DUY NHẤT trong transcript có số theo model là bản ghi `cost-state`, và nó là TÍCH LUỬe của cả
+ * phiên. Một con số tích luỹ không quy được cho lượt nào — phải lấy HIỆU giữa hai mốc bao quanh lượt
+ * cần hỏi. Máy này làm đúng việc đó, và NÓI RÕ khi không đủ mốc để phán.
+ *
+ * ĐIỀU KIỆN ĐỂ ĐO ĐƯỢC: phải có một mốc `cost-state` SAU lượt gọi subagent. Mốc này do harness ghi
+ * theo sự kiện riêng của nó, không gọi ra được. Đo 10/10/2026: mốc cuối ở dòng 21.367 trong khi hai
+ * lượt subagent ở dòng 29.527 và 29.564 — nên lượt đó KHÔNG PHÁN ĐƯỢC, và máy này nói thẳng thế.
+ */
+async function inTheoModel(file) {
+  const rl = readline.createInterface({ input: fs.createReadStream(file, { encoding: 'utf8' }), crlfDelay: Infinity });
+  let i = 0;
+  const moc = [];
+  const goi = [];
+  for await (const line of rl) {
+    i += 1;
+    if (!line || line[0] !== '{') continue;
+    let rec;
+    try { rec = JSON.parse(line); } catch (e) { continue; }
+
+    if (rec.type === 'cost-state' && rec.modelUsage) {
+      const theo = {};
+      for (const [m, v] of Object.entries(rec.modelUsage)) {
+        theo[m] = typeof v === 'number' ? v : Number((v && (v.outputTokens || v.output_tokens)) || 0);
+      }
+      moc.push({ dong: i, usd: Number(rec.totalCostUSD || 0), theo });
+    }
+
+    const c = rec.message && rec.message.content;
+    if (!Array.isArray(c)) continue;
+    for (const b of c) {
+      if (b && b.type === 'tool_use' && /^(Agent|Task)$/.test(b.name || '')) {
+        goi.push({ dong: i, loai: (b.input && b.input.subagent_type) || '?', at: rec.timestamp || '' });
+      }
+    }
+  }
+
+  console.log(`[token-audit] ${goi.length} lượt gọi subagent · ${moc.length} mốc cost-state · ${i} dòng`);
+  if (!goi.length) { console.log('  Không có lượt subagent nào trong phiên này.'); return; }
+
+  console.log('');
+  console.log('| Lượt | Subagent | Mốc trước | Mốc sau | Model đã dùng thêm |');
+  console.log('|---|---|---|---|---|');
+  for (const g of goi) {
+    const truoc = [...moc].reverse().find((m) => m.dong < g.dong);
+    const sau = moc.find((m) => m.dong > g.dong);
+    if (!truoc || !sau) {
+      console.log(`| dòng ${g.dong} | ${g.loai} | ${truoc ? truoc.dong : '—'} | ${sau ? sau.dong : '—'} | **KHÔNG PHÁN ĐƯỢC** — thiếu mốc ${sau ? 'trước' : 'sau'} |`);
+      continue;
+    }
+    const hieu = [];
+    for (const m of new Set([...Object.keys(truoc.theo), ...Object.keys(sau.theo)])) {
+      const d = (sau.theo[m] || 0) - (truoc.theo[m] || 0);
+      if (d > 0) hieu.push(`${m} +${d}`);
+    }
+    console.log(`| dòng ${g.dong} | ${g.loai} | ${truoc.dong} | ${sau.dong} | ${hieu.length ? hieu.join(' · ') : '(không tăng)'} |`);
+  }
+
+  console.log('');
+  console.log('Lưu ý đọc bảng: hiệu giữa hai mốc gồm CẢ lượt của phiên cha trong khoảng đó. Nó chỉ quy');
+  console.log('được cho subagent khi hai mốc ÔM SÁT lượt gọi, và khi model hiện ra là model mà phiên cha KHÔNG dùng.');
+}
+
 async function main() {
   const dir = thuMucTranscript();
 
@@ -373,6 +443,16 @@ async function main() {
       console.log(`| ${r.file.slice(0, 8)} | ${r.loai} | ${r.message} | ${r.ghiVaoTask} | ~${k(r.message ? tongVao / r.message : 0)} | \`${r.file}\` |`);
     }
     console.log('\nPhiên `CHẠY TASK` mới dùng được làm mốc. `SỬA KIT` là phiên bảo trì kit, chi phí của nó KHÔNG phải chi phí của task.');
+    return;
+  }
+
+  if (flag('model')) {
+    const t0 = arg('transcript', '');
+    const f0 = t0 ? path.resolve(t0) : (dir ? path.join(dir, fs.readdirSync(dir).filter((x) => x.endsWith('.jsonl'))
+      .map((x) => ({ x, at: fs.statSync(path.join(dir, x)).mtimeMs })).sort((a, b) => b.at - a.at)[0].x) : '');
+    if (!f0 || !fs.existsSync(f0)) { console.error('[token-audit] không thấy transcript để đo.'); process.exit(2); }
+    console.log(`[token-audit] đo trên ${path.basename(f0)}`);
+    await inTheoModel(f0);
     return;
   }
 

@@ -62,9 +62,30 @@ phải để đi nhanh hơn, mà để vòng lặp đọc-kết-quả không n�
 
 ## Giới hạn, nói thẳng
 
-- **Không đọc lại được model đã chạy.** Frontmatter khai `haiku` và harness nhận agent, nhưng kết quả
-  trả về không mang tên model. Nên câu "việc máy móc đã đi model rẻ" hiện dựa vào KHAI BÁO, không dựa
-  vào phép đo. Chưa có cách đo trong tầm tay.
+- **Model đã chạy: KHÔNG PHÁN ĐƯỢC, và đây là lý do dứt khoát chứ không phải chưa thử.**
+
+  Đã truy ba chỗ:
+
+  | Nguồn | Có tên model không |
+  | --- | --- |
+  | Kết quả trả về của lượt gọi (`toolUseResult`) | không — chỉ có `status`, `agentId`, `agentType`, `handback` |
+  | Lượt nội bộ của subagent trong transcript phiên cha | không có mặt; mọi dòng `model=` trong vùng đó là lượt của phiên CHA |
+  | Transcript riêng của subagent | không tồn tại; không file `.jsonl` nào được ghi vào lúc đó |
+
+  Thứ DUY NHẤT trong transcript có số theo model là bản ghi `cost-state`, và nó là TÍCH LUỸ của cả
+  phiên. Một con số tích luỹ không quy được cho lượt nào: phải lấy HIỆU giữa hai mốc ôm sát lượt cần
+  hỏi. Đo 10/10/2026 thì mốc cuối ở dòng 21.367 còn hai lượt subagent ở dòng 29.527 và 29.564, tức
+  **không có mốc nào sau chúng**. Lượt `haiku` 2.153 token đã có từ dòng 253, tức TRƯỚC mọi lượt
+  subagent, nên cũng không quy được cho chúng.
+
+  Nên câu "việc máy móc đã đi model rẻ" hiện dựa vào KHAI BÁO trong frontmatter, không dựa vào phép đo.
+  Nói rõ thế, thay vì để người đọc tưởng đã kiểm.
+
+  **Cách đo khi có điều kiện:** `npm run token:audit -- --model` lấy hiệu model-usage giữa hai mốc
+  `cost-state` ôm quanh từng lượt gọi subagent, và in thẳng `KHÔNG PHÁN ĐƯỢC` khi thiếu mốc. Điều kiện
+  để nó phán được: phải có một mốc `cost-state` SAU lượt gọi, và hai mốc phải đủ sát để hiệu không lẫn
+  lượt của phiên cha. Mốc do harness ghi theo sự kiện riêng của nó, không gọi ra được — nên phép đo này
+  chạy được hay không là chuyện may rủi của từng phiên, và máy nói rõ khi nó không phán được.
 - **Chưa đo trên task thật.** Hai lượt trên chạy fixture offline. Số token của một lượt Phase 2 thật có
   subagent so với không có subagent thì cần runbook `docs/token-diet/DO-LAI.md`.
 - **Chưa kiểm hành vi khi lỗi hạ tầng.** Hợp đồng dặn "lỗi hạ tầng thì báo lại ngay, đừng thử sửa",
