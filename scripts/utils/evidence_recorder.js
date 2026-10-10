@@ -223,11 +223,35 @@ class Case {
      * cộng dồn vào chuỗi cũ. */
     let reruns = 0;
     if (status === 'FAILED') {
+      let truoc = null;
       try {
         const shard = path.join(this.rec.shardDir, `${safeName(this.tcId)}.json`);
         const prev = JSON.parse(fs.readFileSync(shard, 'utf8'));
-        if (prev && prev.test && prev.test.status === 'FAILED') reruns = Number(prev.test.reruns || 0) + 1;
-      } catch { /* chưa có shard = lượt chạy đầu ⇒ 0 */ }
+        if (prev && prev.test) truoc = prev.test;
+      } catch { /* chưa có shard */ }
+
+      /*
+       * SHARD MẤT THÌ ĐỌC TIẾP BẢN GỘP. Shard theo TC nằm trong thư mục của MỘT lượt chạy, nên nó đi theo
+       * lượt đó khi người ta archive (`archive-cap-THCS/`) hoặc dọn thư mục. Bản gộp `testcase-status.json`
+       * thì sống lâu hơn.
+       *
+       * Đo trên CSDL-9001: bản archive ngày 02/10 ghi `CSDL_HSTRUONG_TC_123` có `reruns: 2`; mọi bản từ
+       * 06/10 ghi 0, vì shard theo TC đã biến mất cùng lượt chạy được archive. Verdict sống sót qua
+       * carry-over nhưng BẰNG CHỨNG đã rerun thì reset. Hệ quả: 7 verdict vốn đúng luật bị `output_gate`
+       * chặn với lý do "chỉ rerun 0 lần", và người gặp sẽ hoặc chạy lại một cách vô ích, hoặc sửa tay
+       * `reruns` — tức bịa đúng con số mà gate sinh ra để chặn.
+       *
+       * Vẫn KHÔNG phải "khai tay": bản gộp cũng do máy ghi, không phải người gõ.
+       */
+      if (!truoc) {
+        try {
+          const goc = JSON.parse(fs.readFileSync(this.rec.statusFile, 'utf8'));
+          const ds = Array.isArray(goc) ? goc : (goc.tests || []);
+          truoc = ds.find((x) => x && x.tcId === this.tcId) || null;
+        } catch { /* chưa có bản gộp = lượt chạy đầu */ }
+      }
+
+      if (truoc && truoc.status === 'FAILED') reruns = Number(truoc.reruns || 0) + 1;
     }
 
     this.rec._put({
