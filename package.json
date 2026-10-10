@@ -55,6 +55,8 @@
     "trace:matrix": "node scripts/qa/traceability_matrix.js",
     "select:tests": "node scripts/qa/select_tests.js",
     "metrics:collect": "node scripts/qa/metrics_collect.js",
+    "run:analysis": "node scripts/qa/run_analysis.js",
+    "run:analysis:enforce": "node scripts/qa/run_analysis.js --enforce",
     "learn": "node scripts/qa/learn_task.js",
     "learn:backfill": "node scripts/qa/learn_task.js --scan",
     "learn:bugs": "node scripts/qa/learn_bugs.js",

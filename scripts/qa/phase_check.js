@@ -57,6 +57,12 @@ const BUOC = {
     { ten: 'ledger:check', cmd: ['scripts/qa/result_ledger.js', '--enforce'], task: '--task', chan: true },
     { ten: 'self-review', cmd: ['scripts/qa/self_review.js', '--enforce'], task: '--task', chan: true },
     { ten: 'results:summary', cmd: ['scripts/qa/summarize_results.js'], task: null, chan: false },
+    /*
+     * `run:analysis` CHẶN (v2.5.0 G1.2): tỉ lệ BLOCKED vượt dải trên thì lượt đó không đủ mẫu số để kết
+     * luận chất lượng. Không phải "lượt chạy sai" — là "chưa đủ để phán", nên nó phải đứng ở bó gate
+     * CUỐI PHASE, nơi người ta sắp viết báo cáo. Đo được là 4/11 lượt thật của repo vượt 20%.
+     */
+    { ten: 'run:analysis', cmd: ['scripts/qa/run_analysis.js', '--enforce'], task: null, chan: true },
   ],
 };
 

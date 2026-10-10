@@ -112,6 +112,7 @@ const KEEP_FILES = [
   '.agent/config/deps_allow.json',
   '.agent/config/rule_parity.json',
   '.agent/config/auto_review.json',
+  '.agent/config/run_analysis.json',
 ];
 
 /*

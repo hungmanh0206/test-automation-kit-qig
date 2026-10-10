@@ -1,0 +1,23 @@
+{
+  "_why": "Ngưỡng và tín hiệu cho `npm run run:analysis` (v2.5.0 G1.2, nhận của A). Kit đã có `metrics_collect` (KPI mỗi lượt) và `reliability_index` (độ tin cậy mỗi case), nhưng KHÔNG có gì đọc tỉ lệ BLOCKED để quyết định 'lượt này có được dùng để kết luận chất lượng hay không'.",
+
+  "blockedBands": { "binhThuong": 0.05, "neuDauBaoCao": 0.2 },
+  "_blockedBands_do_duoc": "Hai ngưỡng 5% và 20% lấy từ A, và ĐO LẠI trên 78 file testcase-status.json của repo để chắc chúng phân biệt được thật: trong 11 lượt có từ 20 case trở lên, 3 lượt dưới 5%, 4 lượt trong dải 5-20% (12.6 · 13.9 · 19.2 · 16.7), và 4 lượt VƯỢT 20% (20.5 · 21.7 · 22.2 · 28.9). Ngưỡng mà mọi lượt đều nằm cùng một bên thì không phân biệt được gì; ở đây nó chia tập làm ba phần thật.",
+  "_blockedBands_y_nghia": "Dưới 5%: bình thường, không cần nói gì. 5-20%: phải NÊU NGAY ĐẦU báo cáo, vì mẫu số đã bị khuyết đủ để một tỉ lệ pass nghe hay hơn thực tế. Trên 20%: KHÔNG được kết luận chất lượng từ lượt này — hơn một phần năm phạm vi chưa chạy được thì 'pass rate' là tỉ lệ trên phần còn lại, không phải trên phạm vi.",
+
+  "noKiemThu": {
+    "signals": ["xoá", "xóa", "phá huỷ", "phá hủy", "destructive", "không hoàn tác", "không khôi phục", "irreversible", "không rollback"],
+    "_vi_sao": "SKIP vì thao tác phá huỷ KHÔNG giống SKIP vì thiếu tiền đề: nó là NỢ KIỂM THỬ, tức một phần sản phẩm cố ý chưa ai test và sẽ KHÔNG tự được test ở lượt sau. Gộp nó vào con số SKIP chung là làm nó biến mất.",
+    "_do_duoc": "Đo 10/10/2026: 0 case SKIP trong toàn bộ 78 file testcase-status.json của repo. Nghĩa là phép kiểm này HIỆN CHƯA GÁC DỮ LIỆU THẬT NÀO, và script phải nói ra điều đó thay vì báo xanh."
+  },
+
+  "duLieuBan": {
+    "signals": ["dữ liệu rác", "dữ liệu bẩn", "dữ liệu cũ", "trùng dữ liệu", "dữ liệu test cũ", "còn sót dữ liệu", "chưa dọn"],
+    "_vi_sao": "Dữ liệu bẩn làm cả PASS và FAIL đều đáng nghi: PASS có thể do trùng bản ghi cũ, FAIL có thể do dữ liệu lượt trước còn sót. Đây là TÍN HIỆU để người đọc soi lại, KHÔNG phải một verdict — script nói rõ chuyện đó."
+  },
+
+  "historyFile": "knowledge/metrics/run-analysis.jsonl",
+  "_historyFile_vi_sao": "Lịch sử RIÊNG, không ghi lẫn vào `runs.jsonl` của `metrics_collect`: hai file đo hai thứ khác nhau (`runs.jsonl` đọc Playwright `results.json` — tức SỐ TEST CHẠY; file này đọc `testcase-status.json` — tức VERDICT của case). Trộn vào nhau là trộn hai mẫu số.",
+
+  "_so_xu_huong": "Chỉ so hai lượt khi DẤU VÂN TAY NGUỒN TC giống nhau. Dấu vân tay = băm tập `tcId` đã sắp xếp, cộng số case. KHÔNG dùng mtime hay băm file canonical: bản tải lại từ Google Sheet đổi byte mà nội dung không đổi, nên mtime/băm-file sẽ báo 'nguồn đổi' ở mọi lượt. Nguồn đổi mà vẫn so số thô thì 'pass rate tăng 4%' có thể chỉ là đã bỏ bớt case khó."
+}

@@ -8,8 +8,13 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
 
 ## Bó gate cuối phase
 
-`npm run phase2:check -- --task <TASK_KEY>` chạy cả năm bước trong một lượt: preflight, gate:output,
-ledger:check, self-review, results:summary. Bước nào CHẶN thì nó in nguyên output của bước đó.
+`npm run phase2:check -- --task <TASK_KEY>` chạy cả sáu bước trong một lượt: preflight, gate:output,
+ledger:check, self-review, results:summary, `run:analysis`. Bước nào CHẶN thì nó in nguyên output của bước đó.
+
+`run:analysis` là bước quyết định **có được kết luận chất lượng hay không**: BLOCKED trên 20% thì CHẶN,
+vì hơn một phần năm phạm vi chưa chạy được nên "pass rate" là tỉ lệ trên PHẦN CÒN LẠI. Dải 5–20% thì phải
+nêu ngay đầu báo cáo. Nó cũng tách **nợ kiểm thử** (SKIP vì thao tác phá huỷ — thứ sẽ không tự chạy ở lượt
+sau) khỏi SKIP vì thiếu tiền đề, và chỉ so xu hướng giữa hai lượt khi **cùng nguồn TC**.
 
 Nó KHÔNG tự kiểm gì. Nó gọi đúng những script kia rồi gom kết quả, nên chạy bó và chạy rời cho cùng
 exit code và cùng tập vi phạm. `tests/fe/infra/phase-check.spec.ts` gác điều kiện đó.
