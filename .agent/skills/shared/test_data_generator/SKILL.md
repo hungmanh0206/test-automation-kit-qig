@@ -1,6 +1,6 @@
 ---
 name: test_data_generator
-description: Sinh test data cụ thể, unique, traceable và rollback được cho Phase 1/Phase 2.
+description: Sinh test data cụ thể, unique theo RUN_ID, truy vết được và rollback được cho Phase 1 và Phase 2. Dùng khi case cần dữ liệu mới thay vì dữ liệu sẵn có. KHÔNG dùng để dựng state qua DB, và KHÔNG sinh dữ liệu chứa PII khách thật.
 ---
 
 # Test Data Generator

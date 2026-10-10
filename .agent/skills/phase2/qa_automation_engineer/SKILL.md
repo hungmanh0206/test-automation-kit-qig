@@ -1,6 +1,6 @@
 ---
 name: qa_automation_engineer
-description: Generate, update và execute Playwright UI/API automation cho Phase 2.
+description: Sinh, cập nhật và chạy automation Playwright UI/API cho Phase 2 từ testcase canonical. Dùng khi đã có bộ TC và cần code chạy được. KHÔNG dùng để gỡ một case đã đỏ (dùng case-debugger), cũng không dùng để chấm verdict cuối.
 ---
 
 # QA Automation Engineer

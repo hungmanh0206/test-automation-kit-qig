@@ -1,0 +1,21 @@
+{
+  "_why": "Tiêu chí CHẤT LƯỢNG mô tả skill (v2.5.0 G3.3). `skills:index --check` đã khoá rằng INDEX.md khớp cây và frontmatter có `name`/`description`, nhưng KHÔNG chấm chất lượng: một description 20 ký tự vẫn qua. Mà description là thứ DUY NHẤT agent đọc để quyết định có mở skill hay không — mô tả không nói được 'dùng khi nào' thì skill đó không bao giờ được gọi, và 25 skill thành 25 file chết.",
+
+  "descMinChars": 80,
+  "_descMinChars_do_duoc": "Đo 10/10/2026 trên 25 skill: chỉ 3 skill có description dưới 80 ký tự (`qa_automation_engineer` 69 · `backlog_bug_reporter` 61 · `test_data_generator` 78), và cả 3 đều chỉ thiếu một mệnh đề 'dùng khi'. Ngưỡng 80 vì vậy CHẶN được ngay mà chỉ phải sửa 3 chỗ — không phải một ngưỡng đặt cho đẹp.",
+
+  "dupDescThreshold": 0.3,
+  "_dupDescThreshold_do_duoc": "Jaccard trên tập từ ≥ 4 ký tự. Đo 10/10/2026: **0 cặp** trong 25 skill đạt 0.30, nên ngưỡng này CHẶN được ngay. Hai skill mô tả giống nhau thì agent không có căn cứ để chọn, và nó sẽ chọn sai hoặc mở cả hai.",
+
+  "no": {
+    "thieuKhiDung": 15,
+    "thieuKhiKhongDung": 15,
+    "thieuMayKiem": 13
+  },
+  "_no_vi_sao": "Ba tiêu chí này ở mức CẢNH BÁO vì nợ cũ lớn: đo 10/10/2026 trên 25 skill thì 17 skill thiếu mục 'dùng khi', 16 thiếu 'KHÔNG dùng khi', 13 không nhắc một máy kiểm nào. Chặn ngay là làm đỏ 17 skill rồi gate bị tắt — đúng lớp lỗi 'gate báo oan thì người ta tắt nó, chứ không sửa theo nó'.",
+  "_no_cach_go": "Nợ khai theo SỐ LƯỢNG và bị KHOÁ: nhiều hơn số khai = CHẶN, nên nợ không phình âm thầm. Mỗi lần nâng cấp một skill, hạ số tương ứng. Gate CẢNH BÁO khi số thực nhỏ hơn số khai, để con số không nằm lại cao hơn thực tế.",
+
+  "_mien_tru_may_kiem": "Skill không có máy kiểm nào thì được khai bằng một dòng `> KHÔNG có máy kiểm vì <lý do>` trong chính file. Có skill thuần phán đoán (vd phân tích flaky) mà không có gì đo được, và bắt chúng bịa ra một gate là tệ hơn.",
+
+  "_khong_kiem_gi": "Gate này KHÔNG chấm được mô tả có ĐÚNG hay không — nó chỉ chấm mô tả có ĐỦ THÔNG TIN để chọn hay chưa. Phần đúng/sai vẫn là việc người đọc."
+}
