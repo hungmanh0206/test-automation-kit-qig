@@ -104,6 +104,21 @@
           "khi": "Lượt rerun phát hiện bug mới, hoặc cần cập nhật bug cũ."
         }
       ]
+    },
+    "start": {
+      "_vi_sao": "Cửa vào cho người mới (v2.5.0 G3.5). Luồng RIÊNG, cố ý không đụng phase1/phase2:  chỉ hỏi 5 điều rồi chỉ sang lệnh có sẵn, nên nó không được làm phình phần nạp của hai luồng chính.",
+      "diem_vao": ".claude/commands/start.md",
+      "bat_buoc": [],
+      "co_dieu_kien": [
+        {
+          "file": "prompt_templates/run_phase1_template.md",
+          "khi": "Người dùng trả lời câu 3 là Phase 1 — lúc đó mới nạp, và nạp thì chuyển hẳn sang luồng phase1."
+        },
+        {
+          "file": "prompt_templates/run_phase2_template.md",
+          "khi": "Người dùng trả lời câu 3 là Phase 2 — tương tự, chuyển hẳn sang luồng phase2."
+        }
+      ]
     }
   },
   "_bay_da_biet": "Một file nằm trong `co_dieu_kien` của luồng này vẫn có thể là `bat_buoc` của luồng khác — `04_execute_fe_playwright.md` bắt buộc ở phase2 nhưng có điều kiện ở rerun. Spec kiểm theo TỪNG luồng, không gộp.",
