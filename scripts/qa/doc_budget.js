@@ -162,7 +162,7 @@ if (WANT_CONTRACT && heavy.length) {
   Hình dạng bắt buộc (theo knowledge/SCHEMA.md):
     { "domain": [ { "id":"BR-<SLUG>-<NNN>", "module":"…", "rule":"…", "applies_when":"…",
                     "examples":[{"input":"…","expected":"<giá trị/số CỤ THỂ>"}],
-                    "source":"<tên tài liệu> · <tab/mục/dòng>", "confirmed_by":"BA|Dev|QA-Lead|PO" } ],
+                    "source":"<tên tài liệu> · <tab/mục/dòng>", "confirmed_by":"BA|Dev|QA-Lead|PO|Van-ban-phap-quy" } ],
       "system": [ { "id":"SM|PM|SS|DM-<SLUG>-<NNN>", "type":"state_machine|permission_matrix|shared_surface|data_model", … } ],
       "open_questions": [ "<chỗ tài liệu KHÔNG trả lời được — ghi ra, TUYỆT ĐỐI không tự điền>" ],
       "not_covered": [ "<phần đã đọc nhưng không rút ra rule nào — để biết bạn đã đọc tới đâu>" ] }

@@ -90,7 +90,7 @@ function khung(id, module_, soCase) {
     todo: `Hỏi BA/tài liệu: module "${module_}" (${soCase} case trong bộ TC) có những business rule nào bắt buộc? Mỗi rule cần: phát biểu kiểm được · nguồn (FSD/văn bản gốc/BA xác nhận) · ít nhất một ví dụ input→expected.`,
     covered_by: [],
     version: 1,
-    _dung_nhu_the_nao: 'Đây là KHUNG, chưa phải oracle. Điền `rule` + `source` + `examples`, đặt `confirmed_by` (BA|Dev|QA-Lead|PO) và `confirmed_at`, rồi đổi `status` thành `active`. `domain:check` CHẶN mọi case trỏ vào một rule còn ở `draft`.',
+    _dung_nhu_the_nao: 'Đây là KHUNG, chưa phải oracle. Điền `rule` + `source` + `examples`, đặt `confirmed_by` (BA|Dev|QA-Lead|PO, hoac `Van-ban-phap-quy` khi neo la van ban phap quy - luc do `source` phai neu so hieu) và `confirmed_at`, rồi đổi `status` thành `active`. `domain:check` CHẶN mọi case trỏ vào một rule còn ở `draft`.',
     _nguon_khung: 'knowledge:bootstrap — module lấy từ cột `Module` của bộ testcase canonical, KHÔNG suy từ app và KHÔNG sinh từ text Backlog.',
   };
 }

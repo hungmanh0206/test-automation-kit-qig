@@ -97,7 +97,7 @@ npm run knowledge:backup -- --restore <bundle.json>    # CHỈ ghi file còn THI
 ## `status: draft` — CHƯA PHẢI ORACLE (thêm 10/10/2026, v2.5.0 G2.3)
 
 Trước đợt này **không có cách nào ghi một bản ghi chưa ai xác nhận**: `status` chỉ nhận
-`active|superseded|deprecated|invalid`, và `confirmed_by` thì bắt buộc ∈ `BA|Dev|QA-Lead|PO`. Nghĩa là một
+`active|superseded|deprecated|invalid`, và `confirmed_by` thì bắt buộc ∈ `BA|Dev|QA-Lead|PO|Van-ban-phap-quy`. Nghĩa là một
 khung mới dựng — thứ chưa hỏi BA — không thể tồn tại trong kho. Hệ quả: dự án mới có `knowledge/` rỗng thì
 nó **ở lại rỗng**, vì bước đầu tiên đã bị chặn.
 
@@ -262,7 +262,7 @@ tautology bị cấm). `domain/` là chỗ lưu **sự thật nghiệp vụ đã
 | `applies_when` |  | Điều kiện áp dụng / ngoại lệ (rất hay là nguồn bug bị bỏ sót). |
 | `examples` | ✓ | ≥1 cặp `{input, expected}` **cụ thể bằng số/giá trị** — đây là thứ biến rule thành oracle dùng được. |
 | `source` | ✓ | Trích dẫn nguồn (tài liệu + mục, hoặc "BA confirm <ngày>"). **Rỗng = không được ghi** (chống rule tự bịa). |
-| `confirmed_by` | ✓ | `BA` \| `Dev` \| `QA-Lead` \| `PO` — ai chốt. |
+| `confirmed_by` | ✓ | `BA` \| `Dev` \| `QA-Lead` \| `PO` — ai chốt — hoạc `Van-ban-phap-quy` khi neo là văn bản còn hiệu lực chứ không phải người. **Giá của giá trị này:** `source` phải nêu SỐ HIỆU (`TT32/2018`, `Thông tư 12/2022/TT-BGDĐT`), nên có cả điều/khoản — không có số hiệu thì **CHẶN**. Đừng dùng nó thay cho việc hỏi BA: chỉ dùng khi văn bản LÀ neo, còn BA xác nhận thì ghi `BA` và đẩy văn bản xuống `source`. |
 | `confirmed_at` | ✓ | ISO date. Dùng để phát hiện TC đã execute TRƯỚC khi rule đổi → cần re-verify. |
 | `version` | ✓ | Bắt đầu `1`; **tăng khi nội dung rule đổi** (không tăng khi chỉ sửa chính tả). |
 | `supersedes` |  | `<id>@v<n>` khi bump version. |

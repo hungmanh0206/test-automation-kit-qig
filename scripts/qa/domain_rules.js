@@ -46,7 +46,7 @@ const ID_RE = /^BR-[A-Z0-9]+-\d{3}$/;
  * `draft` thêm 10/10/2026 (v2.5.0 G2.3) — và nó lấp một lỗ làm cả hạng mục này bất khả thi trước đó.
  *
  * Trước đây KHÔNG có cách nào ghi một bản ghi "chưa ai xác nhận": `status` chỉ nhận
- * `active|superseded|deprecated|invalid`, và `confirmed_by` thì BẮT BUỘC ∈ `BA|Dev|QA-Lead|PO`. Nghĩa là
+ * `active|superseded|deprecated|invalid`, và `confirmed_by` thì BẮT BUỘC ∈ `BA|Dev|QA-Lead|PO` (tu 11/10/2026 them `Van-ban-phap-quy`). Nghĩa là
  * một khung mới dựng — thứ chưa hỏi BA — không thể tồn tại trong kho. Hệ quả: dự án mới có `knowledge/`
  * rỗng thì nó ở lại rỗng, vì bước đầu tiên đã bị chặn.
  *
@@ -55,7 +55,26 @@ const ID_RE = /^BR-[A-Z0-9]+-\d{3}$/;
  * v2.8.0 cần: cả hai đều nói "bản ghi ở `draft`, có `confirmed_by` mới thành `active`".
  */
 const STATUSES = ['draft', 'active', 'superseded', 'deprecated', 'invalid'];
-const CONFIRMERS = ['BA', 'Dev', 'QA-Lead', 'PO'];
+/*
+ * `Van-ban-phap-quy` thêm 11/10/2026 — và nó sửa một chỗ chính bộ luật này tự mâu thuẫn.
+ *
+ * Đo được: 6 rule trong `knowledge/domain` làm `domain:check --enforce` đỏ vì `confirmed_by` ghi
+ * `"Van ban phap quy"` / `"Van ban goc TT28/2020 va TT52/2020"` / `"BA + van ban goc TT28/2020"`. Cách
+ * "sửa" nhanh là đổi cả 6 thành `BA`. ĐỪNG. Bốn trong sáu rule đó KHÔNG có ai phê duyệt: chúng neo vào
+ * Thông tư còn hiệu lực (TT32/2018 · TT12/2022 · TT13/2022 · TT28/2020 · TT52/2020), và ghi `BA` lên đó
+ * là bịa ra một lượt xác nhận không hề xảy ra — đúng thứ CLAUDE.md §3 gọi là neo giả.
+ *
+ * Mà chính file này, ở `coNeo` phía dưới, ĐÃ nhận "văn bản pháp quy" là neo độc lập hợp lệ. Nên lỗ hổng
+ * không nằm ở 6 bản ghi, nó nằm ở danh sách này: nó chỉ có chỗ cho NGƯỜI. Một Thông tư còn hiệu lực là
+ * neo MẠNH HƠN lời một người, vì nó kiểm chứng lại được mà không cần hỏi ai.
+ *
+ * ĐỔI LẠI: giá trị này đắt hơn bốn giá trị kia. `source` phải nêu ĐÚNG số hiệu văn bản (và nên có cả
+ * điều/khoản), vì "theo quy định" mà không có số hiệu thì mơ hồ hơn cả lời một người có tên.
+ */
+const CONFIRMERS = ['BA', 'Dev', 'QA-Lead', 'PO', 'Van-ban-phap-quy'];
+const VBPQ = 'Van-ban-phap-quy';
+/** Số hiệu văn bản pháp quy VN: `TT32/2018`, `Thông tư 12/2022/TT-BGDĐT`, `NĐ 99/2019`, `QĐ 16/2006`. */
+const SO_HIEU_RE = /(?:TT|NĐ|ND|QĐ|QD|Th[ôo]ng t[ưu]|Nghị đ[ịi]nh|Quy[ếe]t đ[ịi]nh|Lu[ậa]t)\s*\.?\s*\d+\s*\/\s*\d{4}|\b\d+\/\d{4}\/(?:TT|NĐ|ND|QĐ|QD)\b/i;
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 
 // Dấu hiệu expected CÓ thứ để đối chiếu: số, chuỗi nguyên văn trong ngoặc, tên field/property, hoặc khẳng
@@ -264,7 +283,12 @@ function validate(r) {
   if (specIm && !coNeo) {
     warnings.push(at('`source` khai đặc tả KHÔNG đề cập, nhưng không nêu NEO ĐỘC LẬP nào. "Không đề cập" KHÁC "không áp dụng": dừng ở đó thì rule chỉ còn là suy đoán hoặc quan sát từ app. Nêu rõ neo — thuộc tính toàn vẹn phổ quát, văn bản pháp quy, BA/dev xác nhận, hoặc bộ testcase chuẩn của hệ thống.'));
   }
-  if (!CONFIRMERS.includes(String(d.confirmed_by || ''))) problems.push(at(`\`confirmed_by\` phải ∈ ${CONFIRMERS.join('|')} (ai CHỐT rule này)`));
+  if (!CONFIRMERS.includes(String(d.confirmed_by || ''))) problems.push(at(`\`confirmed_by\` phải ∈ ${CONFIRMERS.join('|')} (ai CHỐT rule này — hoặc \`${VBPQ}\` nếu neo là văn bản pháp quy, KHÔNG phải người)`));
+  // Giá của `Van-ban-phap-quy`: phải nêu số hiệu. "Theo quy định" không có số hiệu thì không tra lại được,
+  // tức mơ hồ hơn cả lời một người có tên — mà lại mang vẻ khách quan hơn. Đó là một neo tệ đi giả dạng.
+  if (String(d.confirmed_by || '') === VBPQ && !SO_HIEU_RE.test(src)) {
+    problems.push(at(`\`confirmed_by: ${VBPQ}\` thì \`source\` PHẢI nêu số hiệu văn bản (vd \`TT32/2018\`, \`Thông tư 12/2022/TT-BGDĐT\`) — nên có cả điều/khoản. Không có số hiệu thì không ai tra lại được, và một neo không tra được thì không phải neo.`));
+  }
   if (!DATE_RE.test(String(d.confirmed_at || ''))) problems.push(at('`confirmed_at` phải là ISO date YYYY-MM-DD (dùng để phát hiện TC stale)'));
   if (!Number.isInteger(d.version) || d.version < 1) problems.push(at('`version` phải là số nguyên ≥ 1'));
   if (!STATUSES.includes(String(d.status || ''))) problems.push(at(`\`status\` phải ∈ ${STATUSES.join('|')}`));

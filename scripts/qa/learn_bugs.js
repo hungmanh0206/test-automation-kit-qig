@@ -31,6 +31,7 @@ const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const { loadEnv } = require(path.resolve(__dirname, '..', 'integrations', 'backlog', 'utils.js'));
 const learn = require(path.resolve(__dirname, 'learn_task.js'));
+const canonical = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
 
 loadEnv();
 
@@ -130,7 +131,20 @@ function loadManualMap() {
   console.log(`[learn-bugs] Backlog trả ${issues.length} bug con của story ${STORY}.`);
   if (!issues.length) { console.log('[learn-bugs] Không có bug nào → knowledge/bugs giữ nguyên (đúng: không có bug thì không học bug).'); return; }
 
-  const modMap = taskDir ? learn.buildModuleMap(taskDir) : new Map();
+  const tcMap = taskDir ? learn.buildTcMap(taskDir) : new Map();
+  const modMap = new Map([...tcMap].map(([k, v]) => [k, v.module]));
+  /**
+   * Tag của bản ghi bug = tag CHIỀU của testcase (nguồn: ô `Tag` canonical) + slug tên module.
+   *
+   * Thứ tự có chủ ý: `risk_score.impactOf()` lấy `max` trên tag có cân nặng, nên tag chiều phải vào
+   * trước để không bị cắt mất khi chạm trần 8. Slug module GIỮ LẠI vì `bugs_checklist --tag <module>`
+   * đang lọc bằng nó — gỡ là phá một lệnh đang dùng, trong khi nó không tốn gì.
+   */
+  const tagsFor = (tcId, mod) => {
+    const slug = String(mod || '').toLowerCase().replace(/\s+/g, '-');
+    const dim = ((tcId && tcMap.get(tcId)) || {}).tags || [];
+    return [...dim, slug].filter((x, i, a) => x && a.indexOf(x) === i).slice(0, 8);
+  };
   const manual = loadManualMap();
   const manualUsed = []; const manualStale = [];
   const created = []; const synced = []; const skipped = []; const renamedSummary = []; const backfilled = [];
@@ -192,6 +206,18 @@ function loadManualMap() {
         if (gap) cur._coverage_gap = gap;
         backfilled.push(`${it.issueKey}: + module "${module}" (hạng B — thiếu TC: ${String(gap || '').slice(0, 60)}…)`);
       }
+      /*
+       * BACKFILL TAG CHIỀU cho bản ghi cũ. Không có bước này thì bản ghi sinh trước 11/10/2026 mãi mãi
+       * chỉ có slug module, và `tagWeights` chỉ nổ cho bug MỚI — tức Impact của một module phụ thuộc vào
+       * việc bug của nó được ghi trước hay sau hôm nay. Đó là một thiên lệch theo thời điểm, không phải
+       * theo rủi ro. Chỉ bù khi bản ghi CHƯA có tag chiều nào: có rồi thì không ghi đè lựa chọn của người.
+       */
+      const dimHienCo = (cur.tags || []).some((t) => canonical.DIMENSION_TAGS.includes(String(t).toLowerCase()));
+      const dimMoi = ((cur.tc_id && tcMap.get(cur.tc_id)) || {}).tags || [];
+      if (!dimHienCo && dimMoi.length) {
+        cur.tags = tagsFor(cur.tc_id, cur.module); touched = true;
+        backfilled.push(`${it.issueKey}: + tag chiều ${dimMoi.join('/')} (từ ô Tag của ${cur.tc_id})`);
+      }
       if (touched && APPLY) fs.writeFileSync(hit.file, JSON.stringify(cur, null, 2), 'utf8');
       if (touched) { /* index.json chỉ theo status, không cần list riêng ở đây */ }
       if (!touched) skipped.push(it.issueKey);
@@ -202,7 +228,7 @@ function loadManualMap() {
       id: it.issueKey,
       bug: summary,
       module,
-      tags: [module.toLowerCase().replace(/\s+/g, '-')].slice(0, 8),
+      tags: tagsFor(tcId, module),
       task_key: TASK,
       detected_phase: 'phase2',
       confirmed_via_gate: true,           // đã qua Backlog gate của bug_reporter mới tồn tại trên Backlog

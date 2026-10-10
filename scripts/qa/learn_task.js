@@ -49,8 +49,17 @@ function bucket(status) {
   return 'skip';
 }
 
-/** Map tcId → module nghiệp vụ từ testcase canonical. Cột `Module` dạng "Nhóm / US" → lấy phần NHÓM. */
-function buildModuleMap(taskDir) {
+/**
+ * Map tcId → `{ module, tags }` từ testcase canonical. Cột `Module` dạng "Nhóm / US" → lấy phần NHÓM.
+ *
+ * VÌ SAO TRẢ CẢ `tags` (11/10/2026): `risk_model.json §impact.tagWeights` là đường DUY NHẤT còn lại để
+ * chấm Impact theo đặc tả sau khi `impact.modules` bị gỡ (20 tên của dự án TRƯỚC, 0 cái có dữ liệu). Nhưng
+ * `impactOf()` đọc tag từ **bản ghi bug**, mà `learn_bugs` lúc đó ghi `tags` bằng ĐÚNG MỘT giá trị: slug
+ * của chính tên module (`them-moi-lop-hoc`). Không slug nào khớp tên chiều, nên `tagWeights` **không thể
+ * nào nổ** — một khối config 20 khoá không bao giờ chạy. Tag chiều thật nằm ngay trong hàng TC mà hàm này
+ * đã đọc sẵn, nên chỗ rẻ nhất để nối lại là đây.
+ */
+function buildTcMap(taskDir) {
   const map = new Map();
   const dirs = getTestcaseDirs(taskDir);   // 1 nguồn: test-cases/ + bản kéo về từ Google Sheet (from-aio)
   for (const dir of dirs) {
@@ -77,11 +86,23 @@ function buildModuleMap(taskDir) {
       for (const t of (doc && doc.tests) || []) {
         if (!t.tcId) continue;
         const mod = String(t.module || '').split('/')[0].trim() || '(unmapped)';
-        if (!map.has(t.tcId)) map.set(t.tcId, mod);
+        // LỌC theo `DIMENSION_TAGS`, không lấy thô: ô `Tag` trộn ba thứ khác loại — tag chiều
+        // (`[Security][Guard]`), LOẠI case (`[Positive]`) và oracle ref (`[BR-HOCSINH-001]`). Đo trên bộ
+        // CSDL-9003: 55 tên riêng biệt, trong đó 29 là `br-…`. Nhét thô vào bản ghi bug thì vừa làm bẩn
+        // nó vừa khiến `bugs_checklist --tag` lọc ra theo mã oracle — một nhãn không ai khai để lọc.
+        const tags = canonical.tagNamesOf(t.tags, t.title)
+          .map((x) => x.toLowerCase())
+          .filter((x) => canonical.DIMENSION_TAGS.includes(x));
+        if (!map.has(t.tcId)) map.set(t.tcId, { module: mod, tags });
       }
     }
   }
   return map;
+}
+
+/** Giữ chữ ký cũ (Map tcId → module) cho chỗ chỉ cần module. */
+function buildModuleMap(taskDir) {
+  return new Map([...buildTcMap(taskDir)].map(([k, v]) => [k, v.module]));
 }
 
 function readJson(p) { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; } }
@@ -241,4 +262,4 @@ function main() {
 if (require.main === module) main();
 
 // Export helper để script khác tái dùng (vd learn_bugs.js cần map tcId→module y hệt).
-module.exports = { buildModuleMap, readJson, bucket, findResults, KNOW, HIST_DIR };
+module.exports = { buildTcMap, buildModuleMap, readJson, bucket, findResults, KNOW, HIST_DIR };

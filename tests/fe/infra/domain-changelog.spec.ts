@@ -170,3 +170,75 @@ test.describe('@infra domain:check — KHÔNG thêm hệ mã thứ hai', () => {
     expect(Math.abs(n - 32), `đếm được ${n} rule ở version >= 2 (tài liệu ghi 32) ⇒ cập nhật số trong SCHEMA.md`).toBeLessThanOrEqual(8);
   });
 });
+
+test.describe('@infra confirmed_by — có ô cho VĂN BẢN PHÁP QUY, và nó đắt hơn', () => {
+  /*
+   * VÌ SAO MỞ THÊM MỘT GIÁ TRỊ (11/10/2026). Đo được: 6 rule trong `knowledge/domain` làm
+   * `domain:check --enforce` ĐỎ vì `confirmed_by` ghi `"Van ban phap quy"` /
+   * `"Van ban goc TT28/2020 va TT52/2020"` / `"BA + van ban goc TT28/2020"`.
+   *
+   * Cách sửa nhanh là đổi cả 6 thành `BA`. Nó SAI: bốn trong sáu rule không có ai phê duyệt — chúng neo
+   * vào Thông tư còn hiệu lực (TT32/2018 · TT12/2022 · TT13/2022 · TT28/2020 · TT52/2020). Ghi `BA` lên
+   * đó là bịa ra một lượt xác nhận không hề xảy ra, đúng thứ CLAUDE.md §3 gọi là neo giả. Và chính
+   * `domain_rules.js` đã nhận "văn bản pháp quy" là NEO ĐỘC LẬP hợp lệ ở phép kiểm `specIm`/`coNeo` —
+   * nên lỗ hổng nằm ở danh sách `CONFIRMERS` (chỉ có chỗ cho NGƯỜI), không nằm ở 6 bản ghi.
+   *
+   * ĐỔI LẠI giá trị này phải đắt hơn: không nêu số hiệu văn bản thì CHẶN. "Theo quy định" không tra lại
+   * được, tức mơ hồ hơn cả lời một người có tên — mà lại mang vẻ khách quan hơn.
+   */
+  test('`Van-ban-phap-quy` + source có số hiệu ⇒ ĐI QUA', () => {
+    const r = chay([RULE({
+      version: 1,
+      confirmed_by: 'Van-ban-phap-quy',
+      source: 'TT32/2018 §Cấp tiểu học, chép từ `99 - Nguồn/TT32-2018.md`',
+    })]);
+    expect(r.code, r.out).toBe(0);
+    expect(r.out, 'không được còn dòng CHẶN nào về confirmed_by').not.toMatch(/`confirmed_by` phải ∈/);
+    fs.rmSync(r.d, { recursive: true, force: true });
+  });
+
+  test('`Van-ban-phap-quy` mà source KHÔNG có số hiệu ⇒ CHẶN', () => {
+    const r = chay([RULE({ version: 1, confirmed_by: 'Van-ban-phap-quy', source: 'Theo quy định của Bộ' })]);
+    expect(r.code, 'phải chặn').not.toBe(0);
+    expect(r.out).toMatch(/PHẢI nêu số hiệu văn bản/);
+    expect(r.out, 'và nói vì sao: neo không tra được thì không phải neo').toMatch(/không phải neo/);
+    fs.rmSync(r.d, { recursive: true, force: true });
+  });
+
+  test('nhận nhiều cách viết số hiệu thật đang dùng trong kho', () => {
+    /* Bốn dạng này đều có mặt thật ở `knowledge/domain`: ép một khuôn duy nhất là chặn oan. */
+    for (const s of ['TT32/2018', 'Thông tư 12/2022/TT-BGDĐT', 'Nghị định 99/2019 Điều 5', 'TT 28/2020 Điều 16 khoản 1']) {
+      const r = chay([RULE({ version: 1, confirmed_by: 'Van-ban-phap-quy', source: s })]);
+      expect(r.code, `"${s}" bị chặn oan: ${r.out}`).toBe(0);
+      fs.rmSync(r.d, { recursive: true, force: true });
+    }
+  });
+
+  test('giá trị tự do vẫn CHẶN — mở một ô, không mở cả cửa', () => {
+    /* `"BA + van ban goc TT28/2020"` là ghép hai neo vào một ô; phải chọn neo CHÍNH, phần kia vào `source`. */
+    const r = chay([RULE({ version: 1, confirmed_by: 'BA + van ban goc TT28/2020' })]);
+    expect(r.code).not.toBe(0);
+    expect(r.out).toMatch(/`confirmed_by` phải ∈/);
+    expect(r.out, 'thông báo phải chỉ ra lối đi đúng').toMatch(/Van-ban-phap-quy.*KHÔNG phải người/);
+    fs.rmSync(r.d, { recursive: true, force: true });
+  });
+
+  test('kho THẬT: không còn bản ghi nào sai khuôn `confirmed_by`', () => {
+    /*
+     * Gác trên kho thật, không chỉ trên fixture: 6 bản ghi kia đã được sửa theo neo THẬT của từng cái
+     * (2 cái có người chốt → `BA` và `PO`; 4 cái neo văn bản → `Van-ban-phap-quy`), không gộp một kiểu.
+     */
+     
+    const dir = path.join(REPO, 'knowledge/domain');
+    const OK = ['BA', 'Dev', 'QA-Lead', 'PO', 'Van-ban-phap-quy'];
+    const sai: string[] = [];
+    for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.json'))) {
+      try {
+        const d = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+        if (d.status === 'draft') continue;              // draft được miễn `confirmed_by`
+        if (!OK.includes(String(d.confirmed_by || ''))) sai.push(`${f} → "${d.confirmed_by}"`);
+      } catch { /* file hỏng đã có phép kiểm riêng */ }
+    }
+    expect(sai, `bản ghi sai khuôn: ${sai.join(' · ')}`).toEqual([]);
+  });
+});
