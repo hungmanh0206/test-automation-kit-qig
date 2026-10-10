@@ -47,6 +47,19 @@ Hiện tại:
 - **Live regression chỉ non-prod, không every-push**: hit UAT thật → để nightly/manual, không mutate dữ liệu UAT (đúng rule non-destructive). `OPS_BASE_URL` phải trỏ UAT/staging.
 - **Mobile-native (Appium) không nằm trong CI này**: cần runner riêng (Android emulator trên Linux; iOS cần macOS runner / device farm).
 
+## Mạng cần mở
+
+`npm ci` kéo một gói KHÔNG qua registry npm, nên môi trường có proxy phải mở thêm một host:
+
+| Host | Gói | Thiếu thì sao |
+| --- | --- | --- |
+| `cdn.sheetjs.com` | `xlsx@0.20.3` | `npm ci` trả **403 và dừng** — không phải lỗi im lặng, nhưng cả pipeline không chạy được. |
+
+Lý do không chuyển về registry: bản trên registry dừng ở `0.18.5`, mang 2 lỗ đã công bố
+(CVE-2023-30533, CVE-2024-22363) và chỉ vá từ `0.19.3`/`0.20.2` — hai bản đó chỉ có trên CDN. Đầy đủ
+lý do, nơi dùng và điều kiện gỡ được: `.agent/config/deps_allow.json`. `npm run deps:check` gác chỗ này
+— thêm một dep dạng URL mà không khai lý do thì nó CHẶN.
+
 ## Gotchas kỹ thuật
 
 - `playwright.config.js` **throw nếu thiếu `PROJECT_OUTPUT_DIR` + `TASK_KEY`** khi load → các job chạy `playwright test` đã set sẵn 2 biến này (`outputs/ci` + `CI-REGRESSION` cho regression; theo input cho task-execute).

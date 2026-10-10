@@ -1,0 +1,27 @@
+{
+  "_purpose": "Miễn trừ cho `deps:check`. Mỗi dependency KHÔNG xuất hiện dưới dạng `require`/`import` trong file đã track, hoặc khai bằng URL/`git+`, phải có một dòng ở đây kèm `vi_sao`. Không có dòng ⇒ CHẶN.",
+  "_vi_sao_can": "Đo 10/10/2026: `xlsx` được khai bằng URL tới CDN của SheetJS, và một lượt rà độc lập kết luận \"không ai dùng\" vì chỉ grep `scripts/` và `tests/`. Thực tế có 11 file dùng, nằm trong `outputs/**` (lớp PROJECT, gitignore). Gỡ theo kết luận đó là làm gãy automation của một task đang chạy. Nên miễn trừ phải NÓI RÕ nơi dùng, để lần rà sau không phải đoán lại.",
+  "_luat": "`url_ok` chỉ dành cho dep khai bằng URL hoặc `git+`. Dep dạng đó còn phải có `integrity` trong `package-lock.json`, nếu không thì CHẶN — URL không khoá băm là một bản tải về có thể đổi nội dung dưới chân mình.",
+  "mien_tru": {
+    "xlsx": {
+      "url_ok": true,
+      "noi_dung": "outputs/<PROJECT>/tasks/<TASK>/automation/**  (11 file ở lượt đo 10/10/2026)",
+      "vi_sao": "Thêm 09/10/2026 (commit 40beaf1) để `typecheck:task` nạp được automation của task có `require('xlsx')`. Thiếu nó thì chính gate typecheck của kit đỏ, không phải code dự án đỏ.",
+      "vi_sao_khong_dung_registry": "Registry npm dừng ở 0.18.5 — bản đó mang 2 lỗ đã công bố (prototype pollution CVE-2023-30533, ReDoS CVE-2024-22363), chỉ vá từ 0.19.3/0.20.2 và hai bản đó CHỈ có trên CDN. Chuyển về registry là HẠ CẤP vào 2 lỗ đã biết, trong khi repo vừa có một lượt vá lỗ high (commit 3aee909). `npm audit` trên bản 0.20.3 đang dùng: không cảnh báo.",
+      "rui_ro_con_lai": "Mạng chặn cdn.sheetjs.com thì `npm ci` trả 403 và DỪNG — lỗi to tiếng, đọc ra được. Cố ý không chuyển sang `optionalDependencies`: ở đó lỗi tải sẽ bị bỏ qua im lặng, rồi spec của task chết với `Cannot find module 'xlsx'` ở một chỗ xa nguyên nhân. Mục mạng cần mở ghi ở `.github/workflows/README.md`.",
+      "go_duoc_khi": "Không còn file nào trong `outputs/**` dùng `xlsx` (kit đọc/ghi Excel bằng `exceljs`). Lúc đó gỡ dep và xoá dòng này."
+    },
+    "axe-core": {
+      "noi_dung": "nạp vào trang bằng `addScriptTag`/`evaluate` trong spec a11y, không `require` ở tầng Node",
+      "vi_sao": "Thư viện chạy TRONG trình duyệt. Nó không bao giờ xuất hiện dưới dạng `require` nên phép quét tĩnh không thấy."
+    },
+    "typescript": {
+      "noi_dung": "npm script `typecheck` và `typecheck:task` gọi binary `tsc`",
+      "vi_sao": "Tên GÓI là `typescript` nhưng BINARY là `tsc`, nên phép quét theo tên gói không thấy. Cố ý KHÔNG để phép quét đi tra `bin` trong node_modules: làm vậy là gate phụ thuộc vào thư mục đã cài, tức nó đo môi trường chứ không đo khai báo."
+    },
+    "@types/node": {
+      "noi_dung": "tsconfig.json — kiểu của Node, `tsc` nạp ngầm",
+      "vi_sao": "Gói chỉ có file `.d.ts`. Nó không bao giờ bị `require`/`import`, và cũng không có binary nào để bắt ở dòng lệnh."
+    }
+  }
+}

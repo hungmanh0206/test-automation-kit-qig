@@ -39,6 +39,7 @@
     "quality:decision": "node scripts/qa/quality_decision.js",
     "gate:policy": "node scripts/qa/policy_source_check.js",
     "json:check": "node scripts/qa/json_check.js",
+    "deps:check": "node scripts/qa/deps_check.js",
     "gdoc:read": "node scripts/integrations/google_doc/doc_reader.js",
     "ci:scope": "node scripts/qa/ci_scope_check.js",
     "sync:gitlab": "node scripts/utils/sync_gitlab.js",
@@ -140,7 +141,6 @@
     "axe-core": "^4.12.1",
     "axios": "^1.18.1",
     "exceljs": "^3.4.0",
-    "form-data": "^4.0.6",
     "googleapis": "^150.0.1",
     "tedious": "^20.0.0"
   },
