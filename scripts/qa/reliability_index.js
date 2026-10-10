@@ -94,3 +94,51 @@ fs.writeFileSync(path.join(OUT, 'reliability-index.md'), L.join('\n'), 'utf8');
 
 console.log(`[reliability] ${tests.length} test · ${quarantined.length} quarantine · từ ${recs.length} record → knowledge/metrics/reliability-index.md`);
 if (quarantined.length) for (const t of quarantined) console.log(`  QUARANTINE: ${t.title || t.key} (TRI ${t.tri}, flaky ${t.flakyRate})`);
+
+/*
+ * `--promote` (v2.5.0 G3.4) — ỨNG VIÊN đưa vào bộ regression/smoke dùng chung.
+ *
+ * Không có dữ liệu mới và không có phép tính mới: ứng viên = `rank` S hoặc A, đủ `minRuns`, và **0 lần
+ * flaky**. Tất cả đã tính ở trên; đây chỉ là một GÓC NHÌN. Viết nó ở đây thay vì dựng script mới vì mọi
+ * tín hiệu cần đã nằm trong file này — dựng script thứ hai đọc lại `tc-history` là tạo nguồn trôi.
+ *
+ * ĐỀ XUẤT, KHÔNG TỰ LÀM. Một case xanh 3 lượt vẫn có thể xanh vì oracle yếu, không vì sản phẩm đúng —
+ * TRI đo ĐỘ ỔN ĐỊNH, không đo CHẤT LƯỢNG ORACLE. Nên đầu ra là danh sách để người duyệt, và nó nói ra
+ * đúng giới hạn đó.
+ *
+ * `--top` bắt buộc khi muốn in danh sách: đo 11/10/2026 có **669/956 case** đạt tiêu chí. In 669 dòng thì
+ * người đọc cuộn qua — cùng bài học đã trả giá ở `knowledge:bootstrap` (44 khung) và ở cảnh báo của
+ * `bug_claim` (23 dòng).
+ */
+if (process.argv.includes('--promote')) {
+  /*
+   * LOẠI test ĐÃ NẰM TRONG SUITE DÙNG CHUNG (`tests/**`) — promote chúng là vô nghĩa, chúng đã ở đó.
+   *
+   * Bản đầu không lọc và in ra "669 ứng viên", nghe rất nhiều. Đo lại thì **611/669 là
+   * `tests/fe/infra`** và 58 là `tests/` khác — tức **0 ứng viên là automation theo task**, đúng thứ hạng
+   * mục này muốn promote. Một con số lớn mà sai đối tượng thì tệ hơn con số 0, vì nó làm người đọc tin là
+   * có 669 việc để làm.
+   *
+   * Vì sao `tc-history` không có automation theo task: `metrics_collect` đọc `results.json` của lượt
+   * chạy, và lượt chạy suite infra nhiều hơn hẳn — còn spec theo task thường chạy ít hơn `minRuns`.
+   */
+  const laSuiteChung = (f) => /^tests[\\/]/.test(String(f || ''));
+  const uv = tests.filter((t) => ['S', 'A'].includes(t.rank) && t.flakyRate === 0 && t.runs >= MIN_RUNS && !laSuiteChung(t.file))
+    .sort((a, b) => (b.runs - a.runs) || (b.tri - a.tri));
+  const daTrongSuite = tests.filter((t) => ['S', 'A'].includes(t.rank) && t.flakyRate === 0 && t.runs >= MIN_RUNS && laSuiteChung(t.file)).length;
+  const top = parseInt(arg('top', ''), 10);
+  console.log(`\n[reliability] ỨNG VIÊN PROMOTE: ${uv.length} case — rank S/A, ≥${MIN_RUNS} lượt, 0 flaky, và CHƯA ở trong \`tests/**\`.`);
+  console.log(`  (Đã loại ${daTrongSuite} test vốn đã nằm trong suite dùng chung — promote chúng là vô nghĩa.)`);
+  if (!uv.length) {
+    console.log('  Chưa có case nào đủ tiêu chí. Đây KHÔNG phải lỗi, và cũng KHÔNG phải "không có gì để promote":');
+    console.log('  nghĩa là automation theo task chưa chạy đủ lượt để có tín hiệu. `tc-history` tích luỹ từ mọi lượt,');
+    console.log('  mà lượt suite infra nhiều hơn hẳn lượt spec theo task.');
+  } else if (!(top > 0)) {
+    console.log(`  Thêm \`--top <n>\` để xem danh sách. Không in cả ${uv.length} dòng: danh sách dài thì người đọc cuộn qua.`);
+  } else {
+    uv.slice(0, top).forEach((t) => console.log(`  ${String(t.runs).padStart(3)} lượt · TRI ${t.tri} · ${t.rank} · ${(t.title || t.key).slice(0, 86)}`));
+    if (uv.length > top) console.log(`  … +${uv.length - top}`);
+  }
+  console.log('  ⚠️ ĐỀ XUẤT, cần NGƯỜI duyệt. TRI đo ĐỘ ỔN ĐỊNH, KHÔNG đo chất lượng oracle — một case xanh');
+  console.log('     nhiều lượt vẫn có thể xanh vì assertion yếu. Soi oracle trước khi đưa vào bộ dùng chung.');
+}

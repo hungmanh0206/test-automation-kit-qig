@@ -10,7 +10,11 @@
  *   - Đổi spec test cụ thể → chạy ĐÚNG các spec đó (targeted).
  *   - Chỉ đổi kit/scripts/docs (không đụng tests/) → chạy @smoke (an toàn tối thiểu, nhanh).
  *   - Không đổi gì liên quan → @smoke.
- * Ưu tiên High: nếu risk-register có (khi chạy trong task) — hiện in gợi ý, chưa auto-lọc.
+ * Ưu tiên rủi ro: `--risk-first` xếp file hay fail/flaky lên trước, `--include-risky <n>` kéo thêm file
+ * rủi ro cao dù diff không đụng. Tín hiệu lấy từ `tc-history` theo FILE (xem `fileRisk`).
+ *   (Dòng này trước ghi "hiện in gợi ý, chưa auto-lọc" — SAI từ lúc `fileRisk()` được dùng thật, và nó
+ *    mâu thuẫn với chú thích ngay phía dưới trong cùng file. Sửa 11/10/2026.)
+ * Khi `--risk-first`: cảnh báo nếu risk-register toàn module band High KHÔNG có tín hiệu (xem cuối file).
  *
  * LƯU Ý wiring: PR KHÔNG chạy UAT test (rule bảo mật — không secret trên PR/fork). F9 dùng để
  * scope run manual/nightly/local, KHÔNG phải PR-gate chạy UAT.
@@ -101,6 +105,42 @@ const riskyAdded = INCLUDE_RISKY > 0 ? rankedRisky.slice(0, INCLUDE_RISKY).map((
 
 let selected = [...new Set([...specChanged, ...impactTests, ...riskyAdded])];
 if (RISK_FIRST) selected = selected.sort((a, b) => ((risk.get(b) || {}).score || 0) - ((risk.get(a) || {}).score || 0));
+
+/*
+ * RISK REGISTER PHANTOM (v2.5.0 G3.4) — xếp thứ tự test theo một register phantom TỆ HƠN không xếp.
+ *
+ * Đo 11/10/2026 trên `CSDL-9003/reports/risk-register.json`: **10 module band High, và cả 10 đều là tên
+ * KHÔNG tồn tại trong dự án này** (`Payment`, `Transaction Management`, `Cash Management`, `Order`,
+ * `Product & Order` — module của dự án TRƯỚC, còn trong `impact.modules` của `risk_model.json`). Trong
+ * khi đó 18 module CÓ dữ liệu thật bị chặn trần Medium vì không khai Impact.
+ *
+ * `risk:score` ĐÃ cảnh báo đúng chuyện này ("20/20 tên trong impact.modules không có dữ liệu"). Nhưng
+ * cảnh báo ở chỗ SINH register không ngăn được việc DÙNG nó: `--risk-first` vẫn xếp theo điểm, và
+ * `executeOrder` vẫn chỉ đường test tới thứ không tồn tại. Nên chỗ gác phải ở đây — nơi register được
+ * đem ra dùng.
+ *
+ * CẢNH BÁO, không chặn: điểm rủi ro theo FILE (`fileRisk()` từ `tc-history`) vẫn là tín hiệu THẬT và độc
+ * lập với register. Chặn `--risk-first` sẽ bỏ luôn tín hiệu đúng vì một tín hiệu sai.
+ */
+let phantomHigh = 0;
+if (RISK_FIRST || INCLUDE_RISKY > 0) {
+  try {
+    const reg = JSON.parse(fs.readFileSync(path.join(rc.getTaskOutputDir(), 'reports', 'risk-register.json'), 'utf8'));
+    const mods = Array.isArray(reg.modules) ? reg.modules : [];
+    const high = mods.filter((m) => m.band === 'High');
+    phantomHigh = high.filter((m) => {
+      const d = m.drivers || {};
+      /* "Phantom" = band High mà KHÔNG có tín hiệu nào: 0 bug, 0 failRate, và Impact lấy từ config. */
+      return !Number(d.bugCount) && !Number(d.failRate) && String(d.impactSource || '').startsWith('config');
+    }).length;
+    if (high.length && phantomHigh === high.length) {
+      console.log(`[select] ⚠ risk-register có ${high.length} module band High và CẢ ${high.length} đều KHÔNG có tín hiệu nào (0 bug · 0 failRate · Impact lấy từ config).`);
+      console.log('[select]   Thứ tự theo register sẽ chỉ đường test tới module không tồn tại trong dự án này. Khai Impact đúng');
+      console.log('[select]   theo cột `Module` của bộ TC canonical trong `.agent/config/risk_model.json` rồi chạy lại `npm run risk`.');
+      console.log('[select]   Điểm rủi ro theo FILE (từ tc-history) vẫn dùng được — nó độc lập với register.');
+    }
+  } catch (e) { /* chưa có register hoặc chưa có TASK context: không phán gì */ }
+}
 
 // Quarantine (F10): test kém tin cậy — CẢNH BÁO để không tin nhầm kết quả xanh/đỏ của chúng.
 let quarantined = 0;

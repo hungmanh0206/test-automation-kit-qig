@@ -90,6 +90,25 @@ workflow (không thuộc phần bắt buộc). G4.3 là nguồn bù nếu có h�
 3. **Thứ tự làm.** Đề xuất **G4.3 trước tiên** (rút `core_rules`), vì nó tạo ngân sách token cho mọi hạng
    mục sau. Rồi G4.1/G4.2 (sửa cái sai đang có), rồi G1, G2, G3.
 
+## HOÃN: G3.1 (gate hợp đồng API theo OpenAPI) — chốt 11/10/2026
+
+**Không làm ở v2.5.0.** Lý do là một phép đo cộng một câu xác nhận của chủ dự án:
+
+- Đo 10/10/2026: **0 file OpenAPI/Swagger** trong cả 5 task; **0 spec** trong `tests/api/`; và **không
+  script nào của kit parse OpenAPI** (kế hoạch ghi `spec_extract.js` đọc OpenAPI — câu đó SAI).
+- Chủ dự án xác nhận 11/10/2026: *"hiện tại chưa hề có API từ swagger, tôi mới chỉ để tạm biến để sau này
+  có thể dùng thôi"* — tức `OPS_SWAGGER_URL`/`LMS_SWAGGER_URL` là chỗ dành sẵn, không phải nguồn đang có.
+
+Không có schema thì không có oracle, nên gate này sẽ **xanh mà không gác gì** — đúng lớp lỗi kit đi chặn ở
+mọi chỗ khác. Và phần "so hình dạng response với build trước" thì **không phải oracle** (app so với app),
+nó đã có nhà ở v2.8.0 §L dưới dạng `EXPANSION_FINDING`; làm ở đây là làm hai lần rồi phải gỡ.
+
+**Điều kiện mở lại:** có file OpenAPI thật trong `requirements/swagger/**`, HOẶC discovery của v2.6.0 sinh
+được danh mục API (`api_inventory.json`) — nguồn thứ hai còn đúng hơn, vì nó là endpoint app THẬT SỰ gọi.
+
+⚙️ Máy nhắc: `tests/fe/infra/ui-mocking.spec.ts` neo con số 0 đó. Ngày có file OpenAPI đầu tiên, test đỏ và
+người sửa buộc phải đọc lại quyết định này.
+
 ## Không có hạng mục nào tôi đề nghị BỎ
 
 Sau khi đọc nguồn của A, không mục nào va luật B đến mức phải bỏ. Bốn chỗ va thì **chỉnh được**, và đã ghi

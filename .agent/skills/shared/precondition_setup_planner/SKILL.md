@@ -34,6 +34,25 @@ Skill này không đề xuất DB để DỰNG state hoặc đọc toàn bộ so
 | Fixture | Data có sẵn/read-only, chỉ verify tồn tại | Không tạo mới |
 | Mock/Test double | Cô lập dependency NGOÀI scope (3rd-party/integration), fault injection | KHÔNG mock logic/behavior đang test; phải ghi trong report |
 | Cleanup registry | Gom data tạo ra theo `RUN_ID` để rollback | LIFO, idempotent |
+| Hộp thư test (sandbox) | Kiểm email/thông báo GỬI ĐI: nội dung, người nhận, link kích hoạt | ⛔ **KHÔNG BAO GIỜ đọc hộp thư thật** — xem dưới. Chưa có hộp thư test ⇒ `needs_sandbox` |
+
+### Hộp thư test — chưa có thì BLOCKED_SETUP, đừng xoay cách khác
+
+Kiểm "hệ thống có gửi email/thông báo không" cần một **hộp thư test** (Mailpit, MailHog, hoặc sandbox của
+nhà cung cấp). Chưa có thì đó là `needs_sandbox` → `BLOCKED_SETUP`, đi vào `reports/capability-request.md`.
+
+⛔ **Tuyệt đối không đọc hộp thư THẬT của người dùng hay của khách** để thay thế. Đó là đọc dữ liệu cá nhân
+thật (non-negotiable §1), và nó không chỉ sai về quy định — nó còn làm evidence không thể dùng, vì mọi ảnh
+chụp hộp thư thật đều mang PII không mask nổi.
+
+Hai cách xoay cũng KHÔNG được tính là verify: đọc log SMTP của server, và đọc bảng hàng đợi email trong DB
+(DB chỉ đọc, và **DB không phải evidence**). Cả hai chứng minh "đã xếp hàng để gửi", không chứng minh
+"người nhận nhận được đúng nội dung".
+
+> ⚠️ Đo 11/10/2026 trên 949 case của dự án: **0 case** cần kiểm email hoặc thông báo gửi đi. Nên kit CHƯA
+> dựng adapter hộp thư — dựng một adapter cho 0 case là code không ai chạy. Phần ở đây là phần dùng được
+> ngay: gọi đúng tên capability còn thiếu, để lần đầu có case như vậy thì nó ra `BLOCKED_SETUP` chứ không
+> ra một phép verify tự nghĩ.
 
 Thứ tự ưu tiên setup method:
 `pre_existing` (nếu đã có) → `api`/`factory` → `test_hook` → `ui` (chỉ khi không còn cách) → `manual`.
