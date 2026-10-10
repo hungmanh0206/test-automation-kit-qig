@@ -153,6 +153,9 @@ Hai bẫy khi viết truy vấn tìm ứng viên:
   toàn có thể hiện con số đó dưới nhãn khác. Đúng cách: lấy mọi cặp (nhãn → giá trị) trên màn, chuẩn hoá số,
   rồi hỏi "giá trị này khớp cột DB nào" — và chỉ neo khi khớp **đúng một** cột.
 
+> **Xuất xứ: dự án TRƯỚC, không phải app hiện tại.** Từ đây tới hết mục là ca điều tra thật, giữ vì nó dạy
+> PHƯƠNG PHÁP. Đừng áp selector ở đây vào app hiện tại (ASP.NET WebForms + Telerik, không `.ant-select-*`).
+
 **Form giữ giá trị ở `input.value`, KHÔNG ở `textContent`.** OPS còn dùng **ant-select**, vốn là `div` chứ
 không phải `<select>`, nên `input.value` của nó **rỗng**. Radio và checkbox thì `value` là hằng số của từng ô,
 nên đọc `value` là ra giá trị của ô **chưa chọn**. Bản đọc form đầu tiên báo `select=0` ở **mọi** form OPS — đó

@@ -13,8 +13,13 @@ từ tên tính năng, và đó là nguồn `script_error` lớn nhất ở lư�
 
 Vì sao buộc phải inspect DOM thật: **đo trên repo, `getByTestId` xuất hiện 0 lần dùng thật** (2 hit duy nhất
 đều nằm trong comment giải thích chính chuyện này), và `tests/**` không có `data-testid` nào. App là
-ant-design + Metronic → **không phát test id**. Tầng 5 của `locator_strategy.md` là **tầng chết**; locator bền
-chỉ lấy được bằng cách đọc DOM.
+**ASP.NET WebForms + Telerik** → id do server sinh (`ctl00$ContentPlaceHolder1$...`), và **không phát
+`data-testid`**. Tầng 5 của `locator_strategy.md` là **tầng chết**; locator bền chỉ lấy được bằng cách đọc DOM.
+
+> Sửa 10/10/2026. Câu này trước đó ghi "ant-design + Metronic" — stack của **dự án trước**. Kết luận (tầng 5
+> là tầng chết) vẫn đúng, nhưng LÝ DO thì sai, và agent suy tiếp từ lý do sai sẽ đi tìm `.ant-select-*` trên
+> một app không có nó. Stack hiện tại đo được ở `tests/fe/support/opsLogin.ts` (control tên
+> `ctl00$ContentPlaceHolder1$ctl00$tbU`) và `knowledge/locators/qemis-login__radcombobox-5-o-va-cap-hoc.json`.
 
 ## Mức tự chủ: **Never-auto**
 

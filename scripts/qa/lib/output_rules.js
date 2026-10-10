@@ -363,7 +363,7 @@ function lintMappingOracle({ title = '', expected = '', comment = '' } = {}) {
   if (/\b[45]\d\d\b/.test(comment) && /exception|error|lỗi|không (đồng bộ|tạo|lưu)/i.test(comment)) return null;
   // CHẶN khi kết luận rơi vào mẫu "có dữ liệu là đạt" — mẫu này chắc chắn không bắt được lỗi mapping.
   if (PRESENCE_ONLY.test(comment)) {
-    return { level: 'problem', message: 'case mapping/đồng bộ nhưng kết luận chỉ ở mức CÓ-dữ-liệu ("populate" / "có dữ liệu" / "map đủ field" / "hiển thị đúng") — field lấy NHẦM NGUỒN vẫn populate nên kết luận kiểu này không thể bắt lỗi mapping. Phải ghi GIÁ TRỊ HAI ĐẦU và so bằng nhau, vd "OPS Net 4.250.000 = Deal amount 4.250.000".' };
+    return { level: 'problem', message: 'case mapping/đồng bộ nhưng kết luận chỉ ở mức CÓ-dữ-liệu ("populate" / "có dữ liệu" / "map đủ field" / "hiển thị đúng") — field lấy NHẦM NGUỒN vẫn populate nên kết luận kiểu này không thể bắt lỗi mapping. Phải ghi GIÁ TRỊ HAI ĐẦU và so bằng nhau, vd "Lưới \"Số học sinh\" 1.234 = Báo cáo 1.234".' };
   }
   // CẢNH BÁO khi chỉ liệt kê giá trị một phía (hay gặp: nêu số phía OPS rồi kết luận sync_status = SUCCESS).
   return { level: 'warning', message: 'case mapping/đồng bộ nhưng kết luận không nêu PHÉP ĐỐI CHIẾU hai đầu — trạng thái "sync thành công" KHÔNG chứng minh giá trị bên nhận đúng (sai định dạng/sai đơn vị/nhầm property vẫn báo thành công).' };

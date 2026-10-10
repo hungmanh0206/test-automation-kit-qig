@@ -49,12 +49,18 @@ k6 cho **CLI flag đè `options` trong script**. Wrapper vì thế KHÔNG đư�
 **Script mẫu trong kit** (đổi endpoint theo dự án):
 | File | Profile | Dùng khi |
 |---|---|---|
-| `tests/load/example.load.js` | cap wrapper | template khởi đầu |
-| `tests/load/ops-transactions.load.js` | constant 5 VU | baseline hồi quy |
-| `tests/load/ops-transactions.stress.js` | ramp 5→20 VU | nhìn hình dạng đường cong theo tải |
-| `tests/load/ops-transactions.soak.js` | 3 VU × 20′ | tìm degradation/rò tài nguyên |
+| `tests/load/example.load.js` | cap wrapper | template khởi đầu — **file duy nhất còn trong kit** |
 
-Hai script sau tách `Trend` theo **băng VU** / **khoảng thời gian** — summary gộp cả run che mất xu hướng, mà xu hướng mới là thứ cần đọc. Cả hai đặt van an toàn `abortOnFail` (lỗi > 10% thì k6 tự dừng, không dội tải vào service đang gãy).
+⚠️ **Đo 10/10/2026: `tests/load/` chỉ còn `example.load.js`.** Bảng này trước đó còn ba dòng nữa
+(`ops-transactions.load/.stress/.soak.js`) — chúng thuộc dự án trước và đã đi theo dự án đó. Một bảng trỏ tới
+file không tồn tại thì người đọc đi tìm, không tìm thấy, rồi mất lòng tin vào cả trang. Nên nó bị gỡ, không
+phải được giữ cho đẹp.
+
+Ba script đó **bỏ đi nhưng bài học thì không** — đây là yêu cầu cho script bạn tự viết, không phải mô tả file
+có sẵn:
+- Tách `Trend` theo **băng VU** hoặc **khoảng thời gian**. Summary gộp cả run che mất xu hướng, mà xu hướng
+  mới là thứ cần đọc ở stress và soak.
+- Đặt van an toàn `abortOnFail` (lỗi > 10% thì k6 tự dừng), để không dội tải vào service đang gãy.
 
 Nhường quyền cho script = **mất cap an toàn** → wrapper cảnh báo khi profile dựng > 50 VU. Đọc `profile`/`profileSource` trong `load-report.json` để biết tải THẬT đã chạy là gì.
 

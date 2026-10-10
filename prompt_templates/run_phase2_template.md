@@ -66,14 +66,14 @@ Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
 Chạy Phase 2 cho module/task sau: generate/update automation scripts nếu cần, execute testcases thật, auto-heal lỗi automation/setup, tổng hợp report và chỉ log bug Backlog khi đã đủ điều kiện xác nhận.
 
 Project:
-- Project là toàn bộ LMS + Operations automation workspace.
+- Project là **toàn bộ hệ thống đang test**, không phải một module.
 - Phạm vi hiện tại là module/task/feature được cung cấp bên dưới.
 - Backlog key hoặc module name chỉ là task/feature scope, không phải tên project.
 
 Phạm vi:
 - Module/Feature: [MODULE_FEATURE]
 - Task key/scope folder: [TASK_KEY]
-- Site liên quan: [LMS / Operations / LMS + Operations]
+- Site/ứng dụng liên quan: [TEN_SITE hoặc N/A]
 - Nguồn testcase: Google Sheet (agent tải bản mới nhất về `test-cases/from-sheet/*.xlsx` qua Drive MCP trước execute)
 - Đồng bộ kết quả lên Sheet sau execute: [PUSH_EXECUTION = confirm (mặc định, QA duyệt preview rồi mới ghi đè Sheet) | auto | 0]
 
@@ -82,10 +82,8 @@ Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ �
 - Backlog Story/Task: [BACKLOG_STORY_URL]
 - tài liệu nguồn Requirement: [REQUIREMENT_DOC]
 - Figma: [FIGMA_FILE_URL]
-- LMS URL: [LMS_BASE_URL]
-- Operations URL: [OPS_BASE_URL]
-- LMS Swagger URL: [LMS_SWAGGER_URL]
-- Operations Swagger URL: [OPS_SWAGGER_URL]
+- App 1 (chính) URL: [OPS_BASE_URL] · Swagger: [OPS_SWAGGER_URL]
+- App 2 (phụ) URL: [LMS_BASE_URL] · Swagger: [LMS_SWAGGER_URL]
 - Other docs/files: [OTHER_DOCS hoặc N/A]
 
 Run profile (chạy song song an toàn):

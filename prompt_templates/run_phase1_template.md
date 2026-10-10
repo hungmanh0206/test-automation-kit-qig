@@ -71,28 +71,26 @@ Lệnh chỉ nằm ở `.agent/workflows/` thì không ai chạy. Luôn truyền
 Chạy Phase 1 cho module/task sau: collect context và sinh/update testcases.
 
 Project:
-- Project là toàn bộ LMS + Operations automation workspace.
+- Project là **toàn bộ hệ thống đang test**, không phải một module.
 - Phạm vi hiện tại là module/task/feature được cung cấp bên dưới.
 - Backlog key hoặc module name chỉ là task/feature scope, không phải tên project.
 
 Phạm vi:
 - Module/Feature: [MODULE_FEATURE]
 - Task key/scope folder: [TASK_KEY]
-- Site liên quan: [LMS / Operations / LMS + Operations]
+- Site/ứng dụng liên quan: [TEN_SITE hoặc N/A]
 
 Input links: (lấy từ profile của task — profiles/[TASK_KEY].env; chỉ điền trực tiếp ở đây khi muốn override profile)
 - Backlog Epic: [BACKLOG_EPIC_URL]
 - Backlog Story/Task: [BACKLOG_STORY_URL]
 - tài liệu nguồn Requirement: [REQUIREMENT_DOC]
 - Figma: [FIGMA_FILE_URL]
-- LMS URL: [LMS_BASE_URL]
-- Operations URL: [OPS_BASE_URL]
-- LMS Swagger URL: [LMS_SWAGGER_URL]
-- Operations Swagger URL: [OPS_SWAGGER_URL]
+- App 1 (chính) URL: [OPS_BASE_URL] · Swagger: [OPS_SWAGGER_URL]
+- App 2 (phụ) URL: [LMS_BASE_URL] · Swagger: [LMS_SWAGGER_URL]
 - Other docs/files: [OTHER_DOCS hoặc N/A]
 
 Run profile (chạy song song an toàn):
-- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, tài khoản OPS/LMS theo task, `GOOGLE_SHEET_URL`); giá trị TĨNH (Figma/tài liệu nguồn/Backlog key + base URL) giữ ở .env chung.
+- Mỗi task dùng profile riêng profiles/[TASK_KEY]/task.env chứa GIÁ TRỊ ĐỘNG (scope, link cụ thể của task, tài khoản ứng dụng theo task, `GOOGLE_SHEET_URL`); giá trị TĨNH (Figma/tài liệu nguồn/Backlog key + base URL) giữ ở .env chung.
 - Truyền TASK_ENV=profiles/[TASK_KEY]/task.env cho MỌI command; không đọc TASK_KEY từ .env chung, không sửa .env/.env.local chung.
 - Chi tiết: QUICKSTART.md (mục Parallel Story Safety).
 
