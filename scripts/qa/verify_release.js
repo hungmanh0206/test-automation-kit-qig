@@ -137,14 +137,46 @@ function main() {
      * CHỈ chạy `tests/fe/infra` — nó chạy trên fixture local, không chạm UAT, không cần creds.
      */
     if (total > 0) {
+      /*
+       * DỰNG TIỀN ĐỀ như người nhận kit phải làm, TRƯỚC khi chạy suite.
+       *
+       * Gói cố ý không mang `project_context.md` và mấy file cấu hình lớp PROJECT khác — chúng mang tên
+       * và số liệu của một dự án cụ thể. Preflight CHẶN và chỉ luôn lệnh `cp` bản mẫu, và bước 6 ở trên
+       * đã gác chính hành vi đó.
+       *
+       * Nhưng nếu chạy suite ngay lúc đó thì mọi spec gọi `md_to_xlsx` đều đỏ — đo 10/10/2026: 15 test
+       * của `case-type-gate` đỏ vì preflight chặn trước khi tới gate cần đo. Đó là tiền đề chưa dựng,
+       * không phải kit hỏng. Chép bản mẫu đúng như tài liệu dặn, và IN RA đã chép những gì — một bước
+       * dựng ngầm là cách biến "suite xanh" thành một câu không kiểm chứng được.
+       */
+      const daChep = [];
+      for (const f of fs.readdirSync(path.join(root, '.agent', 'config'))) {
+        const m = f.match(/^(.+)\.example(\.[a-z]+)$/);
+        if (!m) continue;
+        const dich = path.join(root, '.agent', 'config', `${m[1]}${m[2]}`);
+        if (fs.existsSync(dich)) continue;
+        fs.copyFileSync(path.join(root, '.agent', 'config', f), dich);
+        daChep.push(`${m[1]}${m[2]}`);
+      }
+      record('dựng tiền đề từ bản mẫu (như người nhận kit)', true,
+        daChep.length ? `chép ${daChep.length} file: ${daChep.join(', ')}` : 'không cần chép gì');
+
       const pwRun = run('npx', ['playwright', 'test', 'tests/fe/infra', '--reporter=dot'],
         { cwd: root, shell: process.platform === 'win32', env: { PROJECT_OUTPUT_DIR: 'outputs/_v', TASK_KEY: 'V-0' } });
       const mm = pwRun.out.match(/(\d+)\s+failed/);
       const doFail = mm ? Number(mm[1]) : 0;
       const mp = pwRun.out.match(/(\d+)\s+passed/);
+      const ms = pwRun.out.match(/(\d+)\s+skipped/);
+      const soSkip = ms ? Number(ms[1]) : 0;
+      /*
+       * ĐẾM CẢ SỐ BỎ QUA, không chỉ đếm xanh. Vài phép kiểm không phán được trong gói (cần `.git`,
+       * hoặc cần tài liệu của repo) nên chúng bỏ qua KÈM LÝ DO — xem `tests/fe/infra/_trong_repo.ts`.
+       * Nhưng một bộ kiểm skip 200 test trông y hệt một bộ kiểm xanh nếu không ai đếm, nên con số này
+       * phải nằm trong báo cáo phát hành.
+       */
       record('tests/fe/infra chạy TRONG gói', pwRun.code === 0 && doFail === 0,
         pwRun.code === 0 && doFail === 0
-          ? `${mp ? mp[1] : '?'} xanh`
+          ? `${mp ? mp[1] : '?'} xanh · ${soSkip} bỏ qua (kèm lý do, xem _trong_repo.ts)`
           : `${doFail} đỏ — ${pwRun.out.split(/\r?\n/).filter((l) => /\u203a.*spec\.ts/.test(l)).slice(0, 2).join(' | ').slice(0, 200)}`);
     }
 

@@ -87,7 +87,11 @@
       "expansionAxes": [
         "persist"
       ]
-    }
+    },
+    "_expansionAxes": "H10 đã duyệt 10/10/2026: độ sâu MỞ RỘNG theo band. Chỉ hàng mở rộng đổi; số lần rerun và luật evidence GIỮ NGUYÊN. Rerun là bộ lọc flaky chứ không phải độ sâu: cắt nó đổi nghĩa của verdict. Ảnh đo được 0,0% khối lượng kết quả tool ở cả bốn lượt chạy task thật, nên cắt evidence không tiết kiệm token nào.",
+    "_UNKNOWN_bang_High": "SUA LAI: UNKNOWN KHONG tu thang High. Da thu, va expansion-oracle.spec.ts do -- no khoa dung hanh vi 'thieu ca hai cot => mong nhat, khong tu cho la High', kem ly do that: tu thang band la tu nhan chi phi mo rong va co the chan oan bo TC cu. Nen van de duoc gac o GATE: `expansion:plan --enforce` TU CHOI chay khi con case thieu band. Khong may nao tu quyet ho, va cung khong case nao lang le tut xuong tang mong nhat.",
+    "_nguon_truc": "Danh sách trục phải KHỚP `PLAN` trong `scripts/lib/expansion/depth.js`. Spec `depth-band-policy.spec.ts` đối chiếu hai bên.",
+    "_lech_voi_bang_H10": "MOT CHO LECH voi bang trong H10_PROPOSAL, co y: bang ghi band Low la \"khong mo rong\", nhung o day Low giu dung MOT truc `persist`. Ly do: bo no tiet kiem gan nhu bang 0 (42/950 case, va `persist` la truc re nhat -- khong can drive lai UI) nhung lam mat tang kiem DUY NHAT o muc ban ghi cho dung nhom case it ai soi. Prompt muc 0.3 cam noi gate de tiet kiem; bo mot truc dang ap la noi. Neu user muon dung bang nguyen van thi doi `PLAN.low` ve [] trong depth.js va o day."
   },
   "dimensionKeywords": {
     "negative": [

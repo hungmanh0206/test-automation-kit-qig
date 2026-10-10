@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { canTaiLieu } from './_trong_repo';
 
 /*
  * @infra — ĐỊNH TUYẾN MODEL THEO LOẠI VIỆC (H6 của token-diet).
@@ -154,6 +155,7 @@ test.describe('@infra subagent — việc máy móc đi model rẻ', () => {
   });
 
   test('kết quả xác minh được GHI LẠI, kèm phần chưa đo được', () => {
+    canTaiLieu(REPO, 'docs/v2.4.1/AGENTS_VERIFY.md', 'biên bản xác minh subagent');
     const p = path.join(REPO, 'docs/v2.4.1/AGENTS_VERIFY.md');
     expect(fs.existsSync(p), 'nối subagent mà không ghi lại bằng chứng đã gọi thử').toBe(true);
     const d = fs.readFileSync(p, 'utf8');

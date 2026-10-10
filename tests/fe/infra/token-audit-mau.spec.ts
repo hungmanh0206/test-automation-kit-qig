@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { canTaiLieu } from './_trong_repo';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const audit = require('../../../scripts/qa/token_audit.js');
@@ -91,6 +92,7 @@ test.describe('@infra token:audit — mẫu lệnh và ngưỡng một lượt',
   });
 
   test('mốc H0 được ghi lại, kèm hai lỗi đo đã mắc', () => {
+    canTaiLieu(REPO, 'docs/v2.4.1/H0_BASELINE.md', 'mốc H0');
     /* Không ghi lỗi đo thì lượt sau rất dễ dựng lại đúng bảng sai đó rồi tin vào nó. */
     const p = path.join(REPO, 'docs/v2.4.1/H0_BASELINE.md');
     expect(fs.existsSync(p)).toBe(true);

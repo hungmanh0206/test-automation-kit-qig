@@ -3,6 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { gateEnv } from './_gate_env';
+import { canRepoGit } from './_trong_repo';
 
 /*
  * Máy kiểm cho luồng phát hành kit (version · package · verify · release) và cho parity hai nền CI.
@@ -97,6 +98,7 @@ test.describe('@infra phát hành kit — gói chỉ mang lớp GENERIC', () => 
   });
 
   test('danh sách gói KHÔNG chứa đường dẫn lớp PROJECT', () => {
+    canRepoGit(REPO, 'danh sách gói không chứa lớp PROJECT');
     /*
      * Đây là luật đắt nhất của file này. Lỗi đã thật: bản đề bài xếp `db.conventions.json` vào GENERIC, mà
      * file đó chứa schema + bản đồ cột↔nhãn ĐO TỪ DB của MỘT dự án. Phát cho dự án khác là đưa họ một oracle
@@ -122,6 +124,7 @@ test.describe('@infra phát hành kit — gói chỉ mang lớp GENERIC', () => 
   });
 
   test('gói mang ĐỦ bản .example để dự án tự khai config', () => {
+    canRepoGit(REPO, 'gói mang đủ bản .example');
     const files: string[] = kit.collect();
     for (const f of ['.env.example', 'profiles/task.env.example',
       '.agent/config/project_context.example.md', '.agent/config/db.conventions.example.json']) {
@@ -130,6 +133,7 @@ test.describe('@infra phát hành kit — gói chỉ mang lớp GENERIC', () => 
   });
 
   test('gói mang đủ file GENERIC bắt buộc để chạy được', () => {
+    canRepoGit(REPO, 'gói mang đủ file GENERIC bắt buộc');
     const files: string[] = kit.collect();
     for (const f of ['package.json', 'package-lock.json', 'playwright.config.js', 'tsconfig.json',
       'eslint.config.js', 'CLAUDE.md', 'RULE_GLOBAL.md', 'CHANGELOG.md',

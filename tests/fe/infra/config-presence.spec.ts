@@ -4,6 +4,7 @@ import os from 'os';
 import path from 'path';
 import { execFileSync, spawnSync } from 'child_process';
 import { gateEnv } from './_gate_env';
+import { canRepoGit } from './_trong_repo';
 
 /*
  * @infra — CONFIG CỦA MỘT GATE PHẢI CÓ MẶT, VÀ THIẾU THÌ PHẢI KÊU.
@@ -77,6 +78,7 @@ function configDuocDoc() {
 
 test.describe('@infra config của gate — phải có mặt, thiếu thì phải kêu', () => {
   test('mọi config GENERIC mà script có đọc đều được git track', () => {
+    canRepoGit(REPO, 'config GENERIC phải được git track');
     const tr = tracked();
     const thieu = configDuocDoc()
       .filter((f) => !(f in LOP_PROJECT))
@@ -85,6 +87,7 @@ test.describe('@infra config của gate — phải có mặt, thiếu thì phả
   });
 
   test('mọi config GENERIC mà script có đọc đều nằm trong danh sách ĐÓNG GÓI', () => {
+    canRepoGit(REPO, 'đối chiếu danh sách đóng gói với `scripts/**`');
     /*
      * Track thôi KHÔNG đủ: `.agent/config/*` là DENY mặc định trong `package_kit.js`. Đây đúng là chỗ
      * 10 file đã rơi, trong đó 3 file `require()` làm gói không nạp nổi `md_to_xlsx.js`.
@@ -164,6 +167,7 @@ test.describe('@infra config của gate — phải có mặt, thiếu thì phả
   });
 
   test('ÂM BẢN: bỏ một config GENERIC khỏi danh sách đóng gói thì spec phải bắt được', () => {
+    canRepoGit(REPO, 'âm bản của phép đối chiếu danh sách đóng gói');
     /*
      * Chứng minh hai test đầu KHÔNG vô nghĩa. Không sửa file thật: dựng lại đúng phép so trên một bản
      * `package_kit.js` đã bị cắt một dòng.
@@ -179,6 +183,7 @@ test.describe('@infra config của gate — phải có mặt, thiếu thì phả
   });
 
   test('`.agent/config/*.project.json` KHÔNG được track và KHÔNG được vào gói', () => {
+    canRepoGit(REPO, 'lớp PROJECT không được track');
     const tr = tracked();
     const lotTrack = [...tr].filter((f) => f.endsWith('.project.json'));
     expect(lotTrack, 'lớp PROJECT mang mã task của dự án — track là phát cho dự án khác').toEqual([]);
