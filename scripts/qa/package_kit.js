@@ -109,6 +109,7 @@ const KEEP_FILES = [
   '.agent/config/handoff.json',
   '.agent/config/tc_review.json',
   '.agent/config/gitlab_strip.json',
+  '.agent/config/deps_allow.json',
 ];
 
 /*

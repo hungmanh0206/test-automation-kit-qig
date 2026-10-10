@@ -3,7 +3,7 @@
 > **SINH TỰ ĐỘNG** bởi `node scripts/qa/gate_index.js --write`. Đừng sửa tay — `--check` sẽ chặn khi
 > bảng lệch source. Cột **Mức** suy từ code: `exit 1` = CHẶN · ghi artifact = SINH · chỉ in = BÁO CÁO.
 
-Tổng **86** máy — **59 CHẶN** · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in).
+Tổng **87** máy — **60 CHẶN** · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in).
 
 SINH/BÁO CÁO **không phải gate bị nới** — chúng không kiểm vi phạm. Ví dụ `bugs:checklist` in brief bug
 lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` §20).
@@ -20,6 +20,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN | `ci:scope` | MÁY ĐỨNG SAU LUẬT "CI generic KHÔNG tự chạm UAT". | `scripts/qa/ci_scope_check.js` | .gitlab-ci.yml · QUICKSTART.md · .github/workflows · tests/fe/infra |
 | CHẶN | `course:maturity`, `course:maturity:check` | sinh khối "Bộ kit của bạn đang ở đâu" cho từng bài giảng. | `scripts/qa/course_maturity.js` | .gitlab-ci.yml · .github/workflows |
 | CHẶN | `course:numbers` | CHẶN "ví dụ trong bài giảng không khớp sản phẩm thực hành". | `scripts/qa/course_numbers.js` | .gitlab-ci.yml · .github/workflows |
+| CHẶN | `deps:check` | MỖI DEPENDENCY PHẢI CÓ NƠI DÙNG, HOẶC CÓ MỘT DÒNG GIẢI THÍCH. | `scripts/qa/deps_check.js` | .github/workflows · tests/fe/infra |
 | CHẶN | `design:gate` | round-3) — Gate CHẤT LƯỢNG THIẾT KẾ testcase (Phase 1), THỰC THI. | `scripts/qa/design_gate.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · scripts/qa/README.md · .agent/workflows · prompt_templates · partial-rerun · .claude/commands · tests/fe/infra |
 | CHẶN | `expansion:audit` | ĐO ĐỘ PHỦ 5 TRỤC trên MỌI task đã execute, để quyết định siết gate bằng SỐ. | `scripts/qa/expansion_audit.js` | RULE_GLOBAL.md · .claude/commands · tests/fe/infra |
 | CHẶN | `json:check` | kiểm MỌI file .json ĐANG ĐƯỢC TRACK có parse được không. | `scripts/qa/json_check.js` | .gitlab-ci.yml · .github/workflows |

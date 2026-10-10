@@ -165,6 +165,13 @@ const TERMS_GATE2 = [
   trap:'Spec theo task thì không track vào repo. Nightly chỉ chạy tests/fe/infra.',
   src:'scripts/qa/ci_scope_check.js', rel:['r-uat','c-non-destructive','r-scope','g-test_inventory_gate'] },
 
+{ id:'g-deps_check', t:'deps_check', cat:'gate',
+  def:'Mỗi dependency phải có nơi dùng, hoặc có một dòng giải thích.',
+  detail:'Bốn phép: không nơi dùng và không miễn trừ ⇒ CHẶN · dep dạng URL mà miễn trừ không có url_ok ⇒ CHẶN · dep URL mà lockfile thiếu integrity ⇒ CHẶN · miễn trừ thừa hoặc thiếu lý do ⇒ cảnh báo. Nơi dùng nhận ba bề mặt: require hoặc import trong file đã track, tên gói trong npm script hoặc CI, và miễn trừ có lý do.',
+  why:'Một lượt rà độc lập kết luận xlsx là dep chết vì chỉ grep scripts và tests — thực tế 11 file trong outputs đang dùng, và gỡ nó là làm gãy automation của một task đang chạy. Cùng lượt rà lại bỏ sót dep chết thật là form-data. Cái thiếu không phải một lần grep rộng hơn, mà là một chỗ khai: dep này dùng ở đâu, vì sao khai bằng URL, và gỡ được khi nào.',
+  cmd:'npm run deps:check',
+  src:'scripts/qa/deps_check.js', rel:['g-json_check','g-secret_scan'] },
+
 { id:'g-json_check', t:'json_check', cat:'gate',
   def:'Kiểm MỌI file .json đang được track có parse được không.',
   detail:'Tự tìm file theo danh sách track của git thay vì đọc một danh sách viết tay.',
