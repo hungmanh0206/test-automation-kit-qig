@@ -1,0 +1,26 @@
+{
+  "_why": "Cấu hình cho nhánh chạy tay (v2.5.0 G1.7). Nhánh `manual-run/` đã có và CHẶT, nhưng khó dùng — và số đo nói thẳng chuyện đó: 10/10/2026 có **524 case `[manual]` riêng biệt** trong bộ TC mà **0 phiên chạy tay** từng được tạo. 524 case đã khai là cần chạy tay và chưa case nào có verdict từ đường đó.",
+
+  "thaoTacPhaHuy": {
+    "signals": ["xóa", "xoá", "duyệt", "gửi", "huỷ", "hủy", "thanh toán", "import", "nhập excel", "khoá", "khóa", "vô hiệu", "reset", "đặt lại"],
+    "_vi_sao": "Trên môi trường DÙNG CHUNG, một thao tác phá huỷ không chỉ ảnh hưởng case đang chạy — nó làm tiền đề của case khác và của task khác biến mất. Nhánh chạy tay không có `RUN_ID` để dọn như automation, nên ở đây phải CHỦ ĐỘNG bỏ qua rồi khai lý do, không phải chạy xong mới dọn.",
+    "_do_duoc": "Đo 10/10/2026 trên bộ TC thật: dấu hiệu này xuất hiện trong bước của case thật (xóa 20 · xoá 24 · duyệt 8 · huỷ 8 lượt ở một bộ). Không phải danh sách phòng xa — nó khớp dữ liệu đang có.",
+    "_khong_tu_dong_chan": "Máy chỉ LIỆT KÊ case nào mang dấu hiệu, để người chạy thấy trước khi bắt đầu. Nó KHÔNG tự hạ verdict: có case mà thao tác xoá chính là thứ phải kiểm, và chặn chúng là chặn đúng phần cần test nhất."
+  },
+
+  "chuoiLoiHaTang": {
+    "nguong": 3,
+    "layers": ["setup_failure", "env_issue", "script_error", "infra"],
+    "_vi_sao": "A dạy 'fail rồi chạy tiếp' thay vì dừng ở case đỏ đầu tiên — đúng, vì dừng sớm làm mất cả lượt. Nhưng chạy tiếp mù thì khi hạ tầng sập, mọi case sau đó đỏ vì cùng một nguyên nhân và lượt chạy thành vô giá trị. Ngưỡng 3 case LIÊN TIẾP cùng tầng hạ tầng là mốc để dừng lại và sửa môi trường.",
+    "_vi_sao_canh_bao_khong_chan": "Máy đọc file kết quả SAU khi lượt đã xong, nên nó không dừng được lượt đang chạy. Việc nó làm được là nói ra: các verdict sau chuỗi đó đáng nghi, đừng dùng để kết luận chất lượng."
+  },
+
+  "tienDoMoiNCase": 8,
+  "_tienDoMoiNCase": "Báo tiến độ mỗi 8 case (dải A khuyên là 5-10). Không báo thì người theo dõi không biết lượt còn sống hay đã treo, và một lượt 50 case im lặng hàng giờ là lý do người ta bỏ nhánh này.",
+
+  "soDuLieu": {
+    "heading": "Sổ dữ liệu đã tạo",
+    "_vi_sao": "Chạy tay KHÔNG có `RUN_ID` để dọn tự động như automation, nên bản ghi tạo ra trong lượt chạy tay sẽ nằm lại UAT vĩnh viễn nếu không ai ghi lại. Sổ này là chỗ duy nhất biết được mình đã tạo gì.",
+    "_may_kiem": "`manual:check` CẢNH BÁO khi có dòng khai đã tạo bản ghi mà cột dọn để trống VÀ không có lý do. Cảnh báo chứ không chặn: có bản ghi cố ý giữ lại làm tiền đề cho lượt sau, và đó là lựa chọn hợp lệ miễn là nói ra."
+  }
+}

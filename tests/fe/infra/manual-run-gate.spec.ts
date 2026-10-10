@@ -46,6 +46,16 @@ const SESSION_OK = [
   '- Môi trường: UAT, https://uat.example.gov.vn',
   '- Build / Version: 2026.10.08-rc2',
   '',
+  /*
+   * Khối "Sổ dữ liệu đã tạo" thuộc KHUÔN session.md từ v2.5.0 G1.7. Sổ RỖNG (có header, không có dòng) là
+   * cách khai tường minh "lượt này không tạo bản ghi nào" — khác với im lặng, vì chạy tay không có
+   * `RUN_ID` để dọn tự động nên bản ghi không ghi vào đây sẽ nằm lại UAT vĩnh viễn.
+   */
+  '## Sổ dữ liệu đã tạo',
+  '',
+  '| TC ID | Bản ghi đã tạo | Đã dọn | Lý do nếu chưa dọn |',
+  '|---|---|---|---|',
+  '',
 ].join('\n');
 
 type Tc = { tcId: string; status: string; comment?: string; evidence?: string[] };

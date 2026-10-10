@@ -113,6 +113,7 @@ const KEEP_FILES = [
   '.agent/config/rule_parity.json',
   '.agent/config/auto_review.json',
   '.agent/config/run_analysis.json',
+  '.agent/config/manual_run.json',
 ];
 
 /*

@@ -26,8 +26,21 @@ Case chưa khai `[manual]` thì **dừng**. Sửa lời khai ở Phase 1 kèm l�
    trước khi chạy chứ không điền sau.
 2. **Lập kế hoạch mở rộng**: `TASK_ENV=profiles/<TASK>/task.env npm run expansion:plan`. Chạy tay **không**
    miễn mục 3 của `CLAUDE.md`. Trục nào không áp được bằng tay thì ghi lý do, đừng bỏ im lặng.
+2b. **Soi trước danh sách thao tác PHÁ HUỶ.** `npm run manual:check` liệt kê case `[manual]` nào có bước
+   xoá, duyệt, gửi, huỷ, import… (dấu hiệu ở `.agent/config/manual_run.json`). Trên môi trường **dùng
+   chung**, chạy tay KHÔNG có `RUN_ID` để dọn như automation, nên một thao tác phá huỷ làm tiền đề của case
+   khác và của task khác biến mất. Với những case đó: **bỏ qua rồi khai lý do**, hoặc nếu phải chạy thì ghi
+   mọi thứ đã tạo/xoá vào sổ dữ liệu ở bước 6b.
+   Máy chỉ **liệt kê**, không tự hạ verdict — có case mà thao tác xoá chính là thứ phải kiểm.
 3. **Chạy từng case**, theo đúng các bước trong ô `Các bước thực hiện`. Mỗi step một ảnh, highlight element
    đang kiểm, mask PII khách. Case nhiều thao tác thì **quay video**.
+3b. **Case đỏ thì chạy tiếp, đừng dừng cả lượt.** Dừng ở case đỏ đầu tiên làm mất cả buổi. Nhưng chạy tiếp
+   mù cũng sai: **3 case LIÊN TIẾP đỏ cùng một tầng hạ tầng** (`setup_failure`, `env_issue`,
+   `script_error`) là dấu hiệu môi trường sập, không phải 3 lỗi khác nhau — dừng, sửa môi trường, rồi chạy
+   lại phần đó. `manual:check` cảnh báo khi thấy chuỗi đó trong file kết quả, và nói rõ các verdict sau đó
+   đáng nghi.
+3c. **Báo tiến độ mỗi 8 case** (`tienDoMoiNCase` trong config): đã chạy bao nhiêu, còn bao nhiêu, bao nhiêu
+   đỏ. Một lượt 50 case im lặng hàng giờ là lý do người theo dõi không biết nó còn sống hay đã treo.
 4. **Kết luận theo oracle của case**, lấy từ ô `Kết quả mong đợi`. Không phán theo cảm nhận, và không lấy
    chính giao diện làm chuẩn đúng sai.
 5. **FAIL thì rerun 2 đến 3 lần** loại flaky và loại lỗi setup, rồi phân tầng `failureLayer`. Chỉ tầng
@@ -36,6 +49,24 @@ Case chưa khai `[manual]` thì **dừng**. Sửa lời khai ở Phase 1 kèm l�
    không có khuôn riêng cho chạy tay. File phải có khối `attestation` ở mức gốc, năm cờ:
    `oracleSource` · `executed` · `allEvidenceAttached` · `failuresClassified` · `rerunDone`. Thiếu khối đó
    thì `output_gate` cảnh báo, vì nó là chỗ người chạy tự khai để gate đối chiếu lại.
+6b. **Ghi NGAY sau mỗi case, không gom cuối lượt.** Verdict và đường dẫn evidence vào
+   `testcase-status.json` ngay khi vừa kết luận case đó. Gom tới cuối thì một lượt bị ngắt giữa đường sẽ
+   mất toàn bộ phần đã chạy — và đã có tiền lệ: một lượt chết cụt không có dòng tổng kết làm mất 12 case,
+   triệu chứng trông y như lỗi app.
+6c. **Sổ dữ liệu đã tạo** — thêm khối này vào `session.md`:
+
+   ```markdown
+   ## Sổ dữ liệu đã tạo
+
+   | TC ID | Bản ghi đã tạo | Đã dọn | Lý do nếu chưa dọn |
+   |---|---|---|---|
+   | CSDL_HS_TC_088 | 1 học sinh mã QA-001 | có | |
+   | CSDL_HS_TC_092 | 1 lớp QA10A1 | chưa | giữ làm tiền đề cho lượt sau, đã thống nhất với chủ dự án |
+   ```
+
+   Chạy tay không có `RUN_ID` để dọn tự động, nên bản ghi không ghi vào đây sẽ nằm lại UAT vĩnh viễn.
+   ⚙️ `manual:check` **cảnh báo** khi có dòng khai đã tạo mà cột dọn trống **và** không có lý do. Giữ lại là
+   lựa chọn hợp lệ — nhưng phải nói ra. Mask PII trong cột mô tả, y như mọi file output khác.
 7. **Kiểm phiên**: `npm run manual:check` để xem trước, rồi `npm run manual:check:enforce` trước khi đẩy.
 8. **Trước finalize**: `npm run self-review:enforce -- --task <TASK_KEY>`.
 9. **Ghi về cột Result**: `node scripts/convert_excel/merge_execution_status.js <xlsx> <status.json>`, đúng

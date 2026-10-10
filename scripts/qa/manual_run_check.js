@@ -37,6 +37,18 @@ const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
 const rules = require(path.resolve(__dirname, 'lib', 'output_rules'));
 const outputGate = require(path.resolve(__dirname, 'output_gate'));
 const canonical = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
+const cfgLoad = require(path.resolve(__dirname, 'lib', 'config_load'));
+
+/*
+ * Cấu hình nhánh chạy tay (v2.5.0 G1.7). Thiếu file ⇒ KÊU rõ phép kiểm nào chưa được gác, rồi dùng mặc
+ * định NGHIÊM hơn (ngưỡng chuỗi lỗi = 3), không phải dễ hơn — xem ba nước của `config_load.js`.
+ */
+const MR = cfgLoad.napConfigGate({
+  duong: path.join(rc.REPO_ROOT, '.agent/config/manual_run.json'),
+  nhan: 'manual_run.json',
+  phepKiem: 'sổ dữ liệu đã tạo · liệt kê thao tác phá huỷ · chuỗi lỗi hạ tầng liên tiếp',
+  khiThieu: null,
+}) || {};
 
 const flag = (n) => process.argv.includes(`--${n}`);
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
@@ -144,6 +156,84 @@ function kiem(taskDir) {
   const chuaCoVerdict = manualTrongBo.filter((id) => !daChay.has(id));
   if (chuaCoVerdict.length) {
     warnings.push(`${chuaCoVerdict.length}/${manualTrongBo.length} case \`[manual]\` CHƯA có lượt chạy tay nào ⇒ chưa có verdict. \`SKIP_SETUP\` là lời khai "chưa chạy", KHÔNG phải kết luận. ${chuaCoVerdict.slice(0, 5).join(', ')}${chuaCoVerdict.length > 5 ? ' …' : ''}`);
+  }
+
+  /*
+   * ③ SỔ DỮ LIỆU ĐÃ TẠO (v2.5.0 G1.7). Chạy tay KHÔNG có `RUN_ID` để dọn tự động như automation, nên bản
+   * ghi tạo ra trong lượt chạy tay nằm lại UAT vĩnh viễn nếu không ai ghi lại.
+   *
+   * CẢNH BÁO chứ không chặn, có chủ đích: có bản ghi cố ý giữ làm tiền đề cho lượt sau, và đó là lựa chọn
+   * HỢP LỆ — miễn là nói ra. Chặn ở đây là phạt cả lựa chọn hợp lệ.
+   */
+  const soCfg = MR.soDuLieu || {};
+  if (soCfg.heading && fs.existsSync(sessionPath)) {
+    const raw = fs.readFileSync(sessionPath, 'utf8').replace(/\r\n?/g, '\n');
+    const dong = raw.split('\n');
+    const i = dong.findIndex((d) => d.includes(soCfg.heading));
+    if (i < 0) {
+      warnings.push(`\`session.md\` chưa có khối "## ${soCfg.heading}" ⇒ phép kiểm "bản ghi đã tạo có được dọn" CHƯA ĐƯỢC GÁC. Chạy tay không có \`RUN_ID\` để dọn tự động, nên không ghi thì bản ghi nằm lại UAT.`);
+    } else {
+      let chuaDon = 0;
+      for (let k = i + 1; k < dong.length; k += 1) {
+        const d = dong[k].trim();
+        if (/^#{2,3}\s/.test(d)) break;
+        if (!d.startsWith('|') || /^\|[\s:|-]+\|$/.test(d)) continue;
+        const o = d.slice(1, -1).split('|').map((x) => x.trim());
+        if (o.length < 3) continue;
+        if (/^(tc id|tc)$/i.test(o[0])) continue;           // dòng header
+        const daTao = o[1];
+        const daDon = o[2];
+        const lyDo = o[3] || '';
+        /* Có khai TẠO mà cột dọn trống VÀ không có lý do ⇒ bản ghi đó không ai biết còn hay mất. */
+        if (daTao && !/^-+$|^$/.test(daTao) && /^(|-+|chưa|không)$/i.test(daDon) && lyDo.length < 8) {
+          chuaDon += 1;
+        }
+      }
+      if (chuaDon) {
+        warnings.push(`\`session.md\` → "${soCfg.heading}": ${chuaDon} dòng khai ĐÃ TẠO bản ghi mà cột dọn trống và KHÔNG có lý do. Giữ lại là lựa chọn hợp lệ, nhưng phải ghi lý do — không ghi thì lượt sau không ai biết dữ liệu đó còn hay mất.`);
+      }
+    }
+  }
+
+  /*
+   * ④ CHUỖI LỖI HẠ TẦNG LIÊN TIẾP (v2.5.0 G1.7). A dạy "fail rồi chạy tiếp" thay vì dừng ở case đỏ đầu
+   * tiên — đúng, vì dừng sớm làm mất cả lượt. Nhưng chạy tiếp MÙ thì khi hạ tầng sập, mọi case sau đó đỏ
+   * vì cùng một nguyên nhân và lượt chạy thành vô giá trị.
+   *
+   * Máy đọc file kết quả SAU khi lượt đã xong nên nó không dừng được lượt đang chạy. Việc nó làm được là
+   * nói ra: các verdict sau chuỗi đó đáng nghi.
+   */
+  const ht = MR.chuoiLoiHaTang || { nguong: 3, layers: ['setup_failure', 'env_issue', 'script_error'] };
+  const laHaTang = (t) => (ht.layers || []).includes(String(t.failureLayer || '').trim());
+  let chuoi = 0;
+  let dinh = 0;
+  let tangDinh = '';
+  for (const t of tests) {
+    if (laHaTang(t)) {
+      chuoi += 1;
+      if (chuoi > dinh) { dinh = chuoi; tangDinh = String(t.failureLayer || ''); }
+    } else chuoi = 0;
+  }
+  if (dinh >= (ht.nguong || 3)) {
+    warnings.push(`có ${dinh} case LIÊN TIẾP cùng tầng \`${tangDinh}\` (ngưỡng ${ht.nguong}) ⇒ dấu hiệu HẠ TẦNG sập, không phải ${dinh} lỗi khác nhau. Các verdict sau chuỗi đó đáng nghi — sửa môi trường rồi chạy lại phần đó, đừng dùng lượt này để kết luận chất lượng.`);
+  }
+
+  /*
+   * ⑤ LIỆT KÊ case mang dấu hiệu THAO TÁC PHÁ HUỶ, để người chạy thấy TRƯỚC khi bắt đầu. Trên môi trường
+   * dùng chung, thao tác phá huỷ làm tiền đề của case khác và của task khác biến mất.
+   *
+   * Chỉ LIỆT KÊ, KHÔNG tự hạ verdict: có case mà thao tác xoá chính là thứ phải kiểm, và chặn chúng là
+   * chặn đúng phần cần test nhất.
+   */
+  const pz = (MR.thaoTacPhaHuy || {}).signals || [];
+  if (pz.length) {
+    const nguyHiem = [...bo.values()].filter(laManual).filter((t) => {
+      const s = `${t.steps || ''} ${t.title || ''}`.toLowerCase();
+      return pz.some((k) => s.includes(String(k).toLowerCase()));
+    }).map((t) => t.tcId);
+    if (nguyHiem.length) {
+      warnings.push(`${nguyHiem.length}/${manualTrongBo.length} case \`[manual]\` mang dấu hiệu THAO TÁC PHÁ HUỶ. Trên môi trường DÙNG CHUNG, chạy tay không có \`RUN_ID\` để dọn — bỏ qua rồi khai lý do, hoặc ghi vào "${(MR.soDuLieu || {}).heading || 'sổ dữ liệu'}" những gì đã tạo/xoá. ${nguyHiem.slice(0, 5).join(', ')}${nguyHiem.length > 5 ? ` … +${nguyHiem.length - 5}` : ''}`);
+    }
   }
 
   // ② ỦY QUYỀN chất lượng output. Evidence mọi case kể cả PASS, video case phức tạp, FAIL phân tầng,
