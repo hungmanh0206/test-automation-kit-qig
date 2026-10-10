@@ -38,7 +38,7 @@
 | 3 | [Inputs](#inputs) | 85-97 | 332 | npm run rule -- 3 |
 | 4 | [Outputs](#outputs) | 98-142 | 743 | npm run rule -- 4 |
 | 5 | &nbsp;&nbsp;[Giọng văn output](#giọng-văn-output) | 110-142 | 451 | npm run rule -- 5 |
-| 6 | [Rules](#rules) | 143-630 | 12155 | npm run rule -- 6 |
+| 6 | [Rules](#rules) | 143-636 | 12273 | npm run rule -- 6 |
 | 7 | &nbsp;&nbsp;[Language](#language) | 145-151 | 80 | npm run rule -- 7 |
 | 8 | &nbsp;&nbsp;[Security](#security) | 152-165 | 498 | npm run rule -- 8 |
 | 9 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 166-177 | 284 | npm run rule -- 9 |
@@ -50,20 +50,20 @@
 | 15 | &nbsp;&nbsp;[Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)](#analysis-ambiguity-gate-phase-1-đọc-kỹ-hỏi-trước-khi-gen) | 257-262 | 500 | npm run rule -- 15 |
 | 16 | &nbsp;&nbsp;[Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)](#chiều-coverage-phase-1-khai-phạm-vi-gắn-tag-có-máy-đếm) | 263-283 | 544 | npm run rule -- 16 |
 | 17 | &nbsp;&nbsp;[Execution Discipline (Kỷ luật thực thi — chạy thông suốt)](#execution-discipline-kỷ-luật-thực-thi-chạy-thông-suốt) | 284-293 | 452 | npm run rule -- 17 |
-| 18 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 294-514 | 4055 | npm run rule -- 18 |
-| 19 | &nbsp;&nbsp;[Execute Results](#execute-results) | 515-534 | 224 | npm run rule -- 19 |
-| 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 535-549 | 307 | npm run rule -- 20 |
-| 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 550-561 | 629 | npm run rule -- 21 |
-| 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 562-573 | 396 | npm run rule -- 22 |
-| 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 574-607 | 530 | npm run rule -- 23 |
-| 24 | &nbsp;&nbsp;[Backlog Bug Gate](#backlog-bug-gate) | 608-617 | 154 | npm run rule -- 24 |
-| 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 618-630 | 397 | npm run rule -- 25 |
-| 26 | [Workflow](#workflow) | 631-644 | 43 | npm run rule -- 26 |
-| 27 | [Cleanup Rules](#cleanup-rules) | 645-672 | 388 | npm run rule -- 27 |
-| 28 | [Examples](#examples) | 673-680 | 80 | npm run rule -- 28 |
-| 29 | [References](#references) | 681-689 | 84 | npm run rule -- 29 |
+| 18 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 294-520 | 4173 | npm run rule -- 18 |
+| 19 | &nbsp;&nbsp;[Execute Results](#execute-results) | 521-540 | 224 | npm run rule -- 19 |
+| 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 541-555 | 307 | npm run rule -- 20 |
+| 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 556-567 | 629 | npm run rule -- 21 |
+| 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 568-579 | 396 | npm run rule -- 22 |
+| 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 580-613 | 530 | npm run rule -- 23 |
+| 24 | &nbsp;&nbsp;[Backlog Bug Gate](#backlog-bug-gate) | 614-623 | 154 | npm run rule -- 24 |
+| 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 624-636 | 397 | npm run rule -- 25 |
+| 26 | [Workflow](#workflow) | 637-650 | 43 | npm run rule -- 26 |
+| 27 | [Cleanup Rules](#cleanup-rules) | 651-678 | 388 | npm run rule -- 27 |
+| 28 | [Examples](#examples) | 679-686 | 80 | npm run rule -- 28 |
+| 29 | [References](#references) | 687-695 | 84 | npm run rule -- 29 |
 
-> Cả file ~15379 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
+> Cả file ~15497 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
 <!-- MỤC-LỤC:KẾT-THÚC -->
 
 ## Purpose
@@ -295,6 +295,12 @@ Bộ testcase có **hai trục**. *Module hoặc màn* trả lời "test **ở �
 
 Bug **không sống theo dòng testcase** mà sống theo **bề mặt** (màn × luồng × trạng thái). Đo trên một task thật:
 69 bug, gần như tất cả do NGƯỜI báo trong khi kit chạy xanh — nguyên nhân là execute chỉ bám đúng chữ trong case.
+
+**Độ sâu đi theo risk band, và THIẾU BAND THÌ CHẶN.** Band khai ở `depthPolicy` của
+`.agent/config/risk_model.json`, một nguồn với `PLAN` trong `scripts/lib/expansion/depth.js`.
+Case không đọc được band từ cả `Mức độ rủi ro` lẫn `Ưu tiên` thì `expansion:plan --enforce` **từ chối
+chạy**. Lý do: `bandOf` trả `low` cho chúng, tức ít trục nhất, và một ô trống không được quyết độ sâu
+kiểm thử. Máy KHÔNG tự thăng band hộ — tự thăng là tự nhân chi phí và chặn oan bộ TC cũ.
 
 1. **Mỗi case đã execute phải được mở rộng theo 5 trục**, mỗi trục có máy riêng:
 

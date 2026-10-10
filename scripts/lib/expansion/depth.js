@@ -26,6 +26,19 @@ const PLAN = {
   low: ['persist'],
 };
 
+/**
+ * Case KHÔNG đọc được band từ cả hai cột. Gate dùng hàm này để KÊU thay vì im lặng xử lý.
+ *
+ * Đo 09/10/2026 trên 950 case thật của 4 task: **950/950 (100%) có ô `Mức độ rủi ro` RỖNG**, vì bộ
+ * canonical không còn cột đó. Nên band hiện suy HOÀN TOÀN từ `Ưu tiên`. Hôm nay chưa cháy (0 giá trị
+ * `Ưu tiên` lạ), nhưng một ô trống là đủ.
+ */
+function thieuBand(tc) {
+  const r = RISK_RANK[String(tc && tc.risk || '').trim().toLowerCase()] || 0;
+  const p = PRIO_RANK[String(tc && tc.priority || '').trim().toLowerCase()] || 0;
+  return r === 0 && p === 0;
+}
+
 /** Trả band 'high' | 'medium' | 'low' từ một testcase canonical. */
 function bandOf(tc) {
   const r = RISK_RANK[String(tc && tc.risk || '').trim().toLowerCase()] || 0;
@@ -33,7 +46,18 @@ function bandOf(tc) {
   const n = Math.max(r, p);
   if (n >= 3) return 'high';
   if (n === 2) return 'medium';
-  return 'low';                                  // gồm cả trường hợp 2 cột đều rỗng: mặc định mỏng nhất
+  /*
+   * HAI CỘT ĐỀU KHÔNG ĐỌC ĐƯỢC ⇒ vẫn trả 'low', **cặp đôi với `thieuBand()`**.
+   *
+   * Đã thử đổi sang 'high' (chiều an toàn hơn cho việc sót bug) và `expansion-oracle.spec.ts` đỏ: nó
+   * khoá đúng hành vi này, kèm lý do "không tự cho là High". Lý lẽ đó có giá trị thật — tự thăng band
+   * nghĩa là tự nhân chi phí mở rộng, và có thể chặn oan bộ TC cũ.
+   *
+   * Hai lý lẽ hoà được, vì vấn đề thật KHÔNG phải chọn band nào: vấn đề là ĐOÁN TRONG IM LẶNG. Nên
+   * mặc định giữ nguyên, và việc gác chuyển sang gate: `expansion:plan --enforce` TỪ CHỐI chạy khi còn
+   * case thiếu band. Không máy nào tự quyết hộ, và cũng không case nào lặng lẽ tụt xuống tầng mỏng nhất.
+   */
+  return 'low';
 }
 
 /** Các trục phải mở rộng cho một case. */
@@ -58,4 +82,4 @@ function estimate(tcs) {
   return { bands, loads, shots, minutes: Math.round((loads * 9) / 60), mb: Math.round(shots * 0.14 * 10) / 10 };
 }
 
-module.exports = { PLAN, bandOf, axesFor, estimate };
+module.exports = { PLAN, bandOf, axesFor, estimate, thieuBand };

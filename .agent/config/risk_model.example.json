@@ -50,26 +50,43 @@
         "boundary",
         "security"
       ],
-      "minCasesPerDimension": 5
+      "minCasesPerDimension": 5,
+      "expansionAxes": [
+        "field",
+        "surface",
+        "persist",
+        "concurrency",
+        "reverse"
+      ]
     },
     "Medium": {
       "minCount": 5,
       "requiredDimensions": [
         "negative"
       ],
-      "minCasesPerDimension": 3
+      "minCasesPerDimension": 3,
+      "expansionAxes": [
+        "persist",
+        "state"
+      ]
     },
     "Low": {
       "minCount": 2,
       "requiredDimensions": [],
-      "minCasesPerDimension": 1
+      "minCasesPerDimension": 1,
+      "expansionAxes": [
+        "persist"
+      ]
     },
     "UNKNOWN": {
       "minCount": 3,
       "requiredDimensions": [
         "negative"
       ],
-      "minCasesPerDimension": 3
+      "minCasesPerDimension": 3,
+      "expansionAxes": [
+        "persist"
+      ]
     }
   },
   "dimensionKeywords": {

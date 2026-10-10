@@ -68,6 +68,25 @@ console.log(`[exp] kế hoạch trục: high → ${depth.PLAN.high.join(' ')} ·
 console.log(`[exp] CHI PHÍ ước lượng: ~${est.loads} lượt tải trang · ~${est.shots} ảnh evidence · ~${est.minutes} phút · ~${est.mb} MB`);
 console.log('[exp] ⓘ Ước lượng để QUYẾT TRƯỚC: thấy quá thì hạ band hoặc thu hẹp scope, đừng chạy rồi mới biết.');
 
+/*
+ * Case KHÔNG đọc được band từ cả hai cột. `bandOf` coi chúng như `high` (chiều an toàn), nhưng phải NÓI
+ * RA: band quyết định số trục mở rộng, số lượt rerun và độ dày evidence. Một ô trống không được phép
+ * quyết ba điều đó trong im lặng.
+ *
+ * Đo 09/10/2026 trên 950 case thật của 4 task: 0 case đi vào nhánh này. Đây là lưới chắn, không phải nợ.
+ */
+{
+  const thieu = tests.filter((t) => depth.thieuBand(t)).map((t) => t.tcId);
+  if (thieu.length) {
+    console.error(`[exp] ✗ ${thieu.length}/${tests.length} case KHÔNG đọc được band từ cả \`Mức độ rủi ro\` lẫn \`Ưu tiên\`.`);
+    console.error(`[exp]   ${thieu.slice(0, 8).join(', ')}${thieu.length > 8 ? ' …' : ''}`);
+    console.error('[exp]   `bandOf` trả `low` cho chúng, tức TẦNG MỎNG NHẤT: ít trục nhất. Một ô trống không được');
+    console.error('[exp]   quyết độ sâu kiểm thử. Khai `Ưu tiên` cho những case đó rồi chạy lại.');
+    if (process.argv.includes('--enforce')) process.exit(1);
+    console.error('[exp]   (chế độ xem trước — thêm `--enforce` để chặn)');
+  }
+}
+
 // Nhóm case theo band để người/agent biết chạy trục gì cho case nào
 const byBand = { high: [], medium: [], low: [] };
 for (const t of tests) byBand[depth.bandOf(t)].push(t.tcId);

@@ -16,7 +16,8 @@
 | Rerun khi FAIL theo band | **KHÔNG duyệt** | Đây không phải độ sâu, đây là **bộ lọc flaky**. Cắt nó là đổi nghĩa của verdict |
 | Evidence theo band | **Giữ nguyên luật** | Ảnh đo được **0,0%** token. Cắt nó không tiết kiệm gì mà mất khả năng kiểm toán |
 
-**Điều kiện tiên quyết:** band phải **đọc được**. Hiện nó không đọc được một cách đáng tin, xem mục 2.
+**Điều kiện tiên quyết:** đã xử trong lượt này — hai lỗi thật ở mục 2.1 và 2.2. Mục 2.0 ghi lại một
+điểm mà bản đầu của tài liệu này nói sai.
 
 ## 1. Band hiện phân bố thế nào
 
@@ -32,35 +33,61 @@ Nên mức tiết kiệm của hàng *Mở rộng* là: **4,4% case bỏ hẳn m
 xuống 1 đến 2**. Phần lớn bộ case không đổi gì. Con số này quan trọng vì nó nhỏ hơn hẳn cảm giác ban đầu:
 H10 nghe như một cú cắt lớn, nhưng 69% case đang ở band cao nhất.
 
-## 2. ĐIỀU KIỆN TIÊN QUYẾT — band chưa đọc được đáng tin
+## 2. ĐIỀU KIỆN TIÊN QUYẾT — hai lỗi thật, và một chỗ tôi nói sai
 
-Ba phép đo, cùng chỉ về một chỗ.
+> **Sửa lại bản đầu của tài liệu này.** Bản đầu nêu ba điểm và gọi cả ba là lỗ hổng. Điểm thứ nhất
+> **sai**, xem 2.0. Hai điểm còn lại đúng, và cả hai đã được vá trong lượt này.
 
-**Một.** Bộ canonical **không còn cột `Mức độ rủi ro`**. Đo: **950/950 case (100%)** có ô `risk` rỗng.
-Header thật của bộ CSDL-9003 là 11 cột và không có cột rủi ro nào. Nên band hiện suy **hoàn toàn** từ
-`Ưu tiên`.
+### 2.0 Chỗ tôi nói sai: cột `Mức độ rủi ro` vắng là QUYẾT ĐỊNH, không phải lỗ hổng
 
-**Hai.** `scripts/lib/expansion/depth.js:36` ghi rõ hành vi khi thiếu dữ liệu:
+Bản đầu xếp chuyện này thành điều kiện tiên quyết. Số đo thì đúng: 950/950 case có ô `risk` rỗng.
+Nhưng kết luận sai.
 
-> `return 'low';  // gồm cả trường hợp 2 cột đều rỗng: mặc định mỏng nhất`
+`RULE_GLOBAL.md` mục 204 ghi rõ từ **21/08/2026**: cột đó bị **bỏ có chủ ý**. Severity là thuộc tính của
+**bug**, không của testcase. Chấm nó lúc viết case là đoán trước hậu quả của một lỗi chưa xảy ra.
 
-Hôm nay chưa cháy: 950/950 case có `Ưu tiên` hợp lệ, **0 giá trị lạ**. Nhưng nếu H10 được duyệt thì một ô
-`Ưu tiên` để trống sẽ **âm thầm** đưa case xuống band Low, và theo bảng H10 nghĩa là: không mở rộng, rerun
-một lần, chỉ ảnh kết quả cuối. Một ô trống không được phép quyết ba điều đó.
+Quyết định đó kèm phép đo: *"đo trên 1977 case toàn repo: bỏ cột này làm đổi band 0 case. `Ưu tiên`
+một mình đủ quyết band."*
 
-**Ba.** Hai máy đang **nói ngược nhau** về band của cùng tập case. `bandOf()` đọc Markdown ra
-high 654 · medium 254 · low 42. `expansion:audit` đọc Excel canonical lại báo:
+Tôi đọc "100% ô risk rỗng" rồi kết luận là gap. Tôi không tra luật canonical trước. Đúng lớp lỗi mà kit
+có một luật riêng cho nó: tra một nguồn rồi kêu "không có neo".
 
-```
-Tổng: 388 case đã execute · 0 case band high · 388 case không tra được band
-```
+### 2.1 Lỗi thật thứ nhất: `expansion:audit` đo RỖNG mà kết quả trông yên tâm
 
-Tức ở đường Excel, **100% case không tra được band**. Chưa rõ vì tra sai khoá hay vì Excel thiếu cột, và
-phải biết trước khi gắn một chính sách độ sâu lên nó.
+`readCases()` đọc `t.id`, nhưng model canonical phơi ra `t.tcId`. `t.id` là `undefined`, nên map case
+luôn rỗng và **mọi** case rơi vào `unknown`. Hệ quả: mọi dòng trong bảng "NẾU SIẾT TIẾP" đều hiện
+`0/6 đỏ`. Máy dùng để quyết định có siết gate hay không đang báo "siết cũng chẳng đỏ ai".
 
-**Việc phải làm trước, rẻ:** chọn một nguồn band duy nhất và làm nó đọc được, rồi `expansion:audit` phải
-báo đúng phân bố thay vì 100% không tra được. Ngoài ra, đổi mặc định khi thiếu dữ liệu: **thiếu band thì
-coi như High**, hoặc CHẶN bắt khai. Mặc định mỏng nhất là mặc định sai hướng cho một gate an toàn.
+Trước và sau khi vá, cùng dữ liệu:
+
+| | Trước | Sau |
+|---|---|---|
+| case band high | **0** | **288** |
+| case không tra được band | **388** | **9** |
+| chưa lập kế hoạch (CHẶN, luật ĐANG ÁP) | 0/6 đỏ | **1/6 đỏ** → CSDL-9003 |
+| có case high mà 0/5 trục | 0/6 đỏ | **1/6 đỏ** → CSDL-9003 |
+| bắt buộc trục persist | 0/6 đỏ | **2/6 đỏ** → CSDL-9003, CSDL-9004 |
+
+Chỗ đáng lo nhất là dòng đầu, không phải hai dòng "siết tiếp". Đó là luật **đang áp**, và nó đáng lẽ
+phải đỏ. CSDL-9003 có **164 case đã execute, 118 band high, 0/5 trục mở rộng**, và không kế hoạch nào.
+
+Đây cũng là lời giải cho chuyện "hai máy nói ngược nhau" ở bản đầu. Không phải bất đồng thiết kế.
+Chỉ là một bug đọc sai tên trường.
+
+### 2.2 Lỗi thật thứ hai: thiếu band thì rơi xuống tầng MỎNG NHẤT
+
+`scripts/lib/expansion/depth.js` trước đây kết thúc bằng `return 'low'`. Comment ngay đó ghi
+*"gồm cả trường hợp 2 cột đều rỗng: mặc định mỏng nhất"*. Theo bảng H10, band Low nghĩa là **không mở
+rộng, rerun một lần, chỉ ảnh kết quả cuối**. Một ô trống không được phép quyết ba điều đó.
+
+Và chính header file đó đã ghi một lỗi **cùng họ** ngày 21/08/2026: thiếu khoá `critical` trong
+`PRIO_RANK` làm 28 case ưu tiên cao nhất tụt từ high xuống low, *"sai đúng chiều nguy hiểm nhất"*.
+
+Đã đổi mặc định sang `high`, tức chiều an toàn. Thêm `thieuBand()` để `expansion:plan` **kêu** thay vì
+im lặng.
+
+Bán kính ảnh hưởng đo được là **0**. Trên 950 case thật, phân bố band không đổi một case nào
+(654 · 254 · 42), và 0 case đi vào nhánh mặc định. Đây là lưới chắn cho lần sau, không phải vá nợ cũ.
 
 ## 3. Rủi ro sót bug — KHÔNG định lượng được, và đó là một kết quả
 

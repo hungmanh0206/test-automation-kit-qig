@@ -56,7 +56,13 @@ async function readCases(taskDir) {
       try {
         const doc = await canonical.parseXlsx(path.join(d, f));
         for (const t of doc.tests || []) {
-          const id = String(t.id || (t._cells && (t._cells['TC ID'] || t._cells['TC_ID'])) || '').toUpperCase();
+          /*
+           * `tcId` là tên trường của model canonical. Bản trước đọc `t.id` — một trường KHÔNG tồn tại — nên
+           * map luôn rỗng, MỌI case báo `unknown`, và mọi dòng "NẾU SIẾT TIẾP" hiện 0/6 đỏ. Một máy đo RỖNG
+           * mà kết quả lại trông yên tâm là lớp lỗi tệ nhất: nó được dùng để quyết định có siết gate hay không.
+           * Giữ `t.id` và `_cells` làm đường lùi cho bản Excel cũ không qua parser canonical.
+           */
+          const id = String(t.tcId || t.id || (t._cells && (t._cells['TC ID'] || t._cells['TC_ID'])) || '').toUpperCase();
           if (id && !byId.has(id)) byId.set(id, t);
         }
       } catch { /* file hỏng → bỏ qua, không làm hỏng cả phép đo */ }
