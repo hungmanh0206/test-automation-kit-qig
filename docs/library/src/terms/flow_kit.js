@@ -12,7 +12,7 @@ const TERMS_FLOW2 = [
 
 { id:'f-gate-catalog', t:'Danh mục gate (tự sinh)', cat:'flow',
   def:'Bảng liệt kê mọi máy của kit kèm mức chặn, sinh tự động từ source.',
-  detail:'Con số hiện tại: 85 máy — 59 CHẶN · 17 SINH (ghi artifact) · 9 BÁO CÁO (chỉ in). Mức được suy từ code chứ không khai tay: exit 1 là CHẶN, ghi artifact là SINH, chỉ in là BÁO CÁO. Bảng còn ghi mỗi máy được gọi từ đâu, và ghi ra .agent/config/GATES.md.',
+  detail:'Con số hiện tại: 86 máy — 59 CHẶN · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in). Mức được suy từ code chứ không khai tay: exit 1 là CHẶN, ghi artifact là SINH, chỉ in là BÁO CÁO. Bảng còn ghi mỗi máy được gọi từ đâu, và ghi ra .agent/config/GATES.md.',
   why:'Luận đề của kit là "luật cần MÁY". Nhưng máy mà không liệt kê được thì không kiểm toán được. Không ai biết một gate đã âm thầm tụt xuống thành cảnh báo, hay đã mất hết nơi gọi và thành mồ côi.',
   how:['Sinh lại: npm run gates:index.','Chặn khi bảng lệch source: npm run gates:index:check.'],
   trap:'SINH và BÁO CÁO không phải gate bị nới. Chúng không kiểm vi phạm, chỉ tạo dữ liệu cho máy khác chặn.',

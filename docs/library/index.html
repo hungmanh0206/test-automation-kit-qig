@@ -862,7 +862,7 @@ body.lropen{overflow:hidden}
 
     <h3 class="subhead"><span class="num">5</span>Lệnh hay dùng</h3>
     <p class="sectip">Danh mục gate của kit là <b>tự sinh từ source</b>, không viết tay — bản hiện tại đếm được
-      <b>85 máy: 59 CHẶN · 17 SINH · 9 BÁO CÁO</b>. Sinh lại bằng <code>npm run gates:index</code>.
+      <b>86 máy: 59 CHẶN · 17 SINH · 10 BÁO CÁO</b>. Sinh lại bằng <code>npm run gates:index</code>.
       Phiên bản kit: <b>2.4.0</b>.</p>
     <div id="cmdList"></div>
 
@@ -994,7 +994,7 @@ body.lropen{overflow:hidden}
       </ul>
 
       <h3>Vì sao cần</h3>
-      <p>Kit có 23 skill, 85 máy kiểm (56 trong đó CHẶN thật) và một bộ từ vựng riêng (oracle độc lập, tautology, failureLayer,
+      <p>Kit có 23 skill, 86 máy kiểm (56 trong đó CHẶN thật) và một bộ từ vựng riêng (oracle độc lập, tautology, failureLayer,
         readiness, TRI, chiều coverage…). Người mới vào phải đọc rải rác nhiều file mới ghép được bức tranh.
         Trang này gom lại một chỗ, giữ nguyên nguồn, và cố tình <b>không</b> diễn giải thêm ngoài những gì repo đã ghi.</p>
 
@@ -1520,6 +1520,13 @@ const TERMS_GATE2 = [
   cmd:'npm run explore:check   ·   npm run explore:check:enforce   ·   npm run explore:close',
   src:'scripts/qa/explore_session.js', rel:['g-explore_charter','r-evidence','c-mask-pii','c-chieu-coverage'] },
 
+{ id:'g-rerun_failed', t:'rerun_failed', cat:'gate',
+  def:'Chạy lại ĐÚNG case đỏ của lượt vừa rồi, bằng một lệnh.',
+  detail:'Đọc results.json, dựng --grep từ case đỏ rồi chạy. Hai chỗ từ chối: không có case đỏ thì KHÔNG chạy gì, và có case đỏ thiếu TC ID thì KHÔNG dựng grep một phần.',
+  why:'Đo trên 4 lượt chạy task thật: `npx playwright test` được gọi 2.076 lần, trong đó 2.070 lần chạy cả file hoặc cả suite và chỉ 6 lần có --grep. Lời dặn "rerun đúng case đỏ" đã nằm trong prompt từ trước, và số đo nói nó không xảy ra — đúng định nghĩa một luật thiếu máy.',
+  cmd:'npm run rerun:failed   ·   npm run rerun:failed -- --dry',
+  src:'scripts/qa/rerun_failed.js', rel:['g-summarize_results','g-token_audit'] },
+
 { id:'g-summarize_results', t:'summarize_results', cat:'gate',
   def:'Bản tóm tắt kết quả test có TRẦN dòng.',
   detail:'Đọc results.json của Playwright rồi in mỗi case đỏ một dòng: TC ID, lỗi rút gọn đã bóc mã màu, đường dẫn ảnh. Cờ --ids dụng sẵn --grep để rerun đúng case đỏ.',
@@ -1630,7 +1637,7 @@ const TERMS_GATE3 = [
   src:'scripts/qa/scope_anchor.js', rel:['g-dimension_coverage','c-canonical','g-preflight_gate'] },
 { id:'g-gate_index', t:'gates:index', cat:'gate',
   def:'Sinh DANH MỤC GATE của kit từ chính source. Trả lời được "kit có bao nhiêu gate, mỗi cái CHẶN gì, gọi ở đâu".',
-  detail:'Quét source rồi suy mức từ code: exit 1 là CHẶN · ghi artifact là SINH · chỉ in là BÁO CÁO. Bảng hiện tại: 85 máy — 59 CHẶN, 17 SINH, 9 BÁO CÁO. Bản --check chặn khi bảng lệch source.',
+  detail:'Quét source rồi suy mức từ code: exit 1 là CHẶN · ghi artifact là SINH · chỉ in là BÁO CÁO. Bảng hiện tại: 86 máy — 59 CHẶN, 17 SINH, 10 BÁO CÁO. Bản --check chặn khi bảng lệch source.',
   why:'Kit có hơn 30 npm script dạng gate và gần 60 file trong scripts/qa/, nhưng không chỗ nào trả lời được câu trên. Hệ quả không phải bất tiện: luận đề của kit là "luật cần MÁY", mà máy không LIỆT KÊ ĐƯỢC thì không kiểm toán được. Không ai biết một gate đã âm thầm tụt thành cảnh báo, hay đã mất nơi gọi.',
   how:['npm run gates:index để sinh lại bảng.','npm run gates:index:check để chặn khi bảng lệch source.'],
   cmd:'npm run gates:index   ·   npm run gates:index:check',
@@ -2841,7 +2848,7 @@ const TERMS_FLOW2 = [
 
 { id:'f-gate-catalog', t:'Danh mục gate (tự sinh)', cat:'flow',
   def:'Bảng liệt kê mọi máy của kit kèm mức chặn, sinh tự động từ source.',
-  detail:'Con số hiện tại: 85 máy — 59 CHẶN · 17 SINH (ghi artifact) · 9 BÁO CÁO (chỉ in). Mức được suy từ code chứ không khai tay: exit 1 là CHẶN, ghi artifact là SINH, chỉ in là BÁO CÁO. Bảng còn ghi mỗi máy được gọi từ đâu, và ghi ra .agent/config/GATES.md.',
+  detail:'Con số hiện tại: 86 máy — 59 CHẶN · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in). Mức được suy từ code chứ không khai tay: exit 1 là CHẶN, ghi artifact là SINH, chỉ in là BÁO CÁO. Bảng còn ghi mỗi máy được gọi từ đâu, và ghi ra .agent/config/GATES.md.',
   why:'Luận đề của kit là "luật cần MÁY". Nhưng máy mà không liệt kê được thì không kiểm toán được. Không ai biết một gate đã âm thầm tụt xuống thành cảnh báo, hay đã mất hết nơi gọi và thành mồ côi.',
   how:['Sinh lại: npm run gates:index.','Chặn khi bảng lệch source: npm run gates:index:check.'],
   trap:'SINH và BÁO CÁO không phải gate bị nới. Chúng không kiểm vi phạm, chỉ tạo dữ liệu cho máy khác chặn.',
@@ -3115,6 +3122,7 @@ const CMD_GROUPS = [
   { g:'Nhánh dò tự do (exploratory)', items:[
     ['npm run explore:charter','Chọn vùng dò bằng dữ liệu, không theo vùng mình quen'],
     ['npm run explore:check  ·  npm run explore:check:enforce','Kiểm ràng buộc của phiên dò'],
+    ['npm run rerun:failed','Chạy lại ĐÚNG case đỏ của lượt vừa rồi. 0 case đỏ thì không chạy gì; thiếu TC ID thì từ chối dựng grep một phần'],
     ['npm run results:summary -- --ids','Đọc kết quả test bằng bản tóm tắt có trần: mỗi case đỏ một dòng, kèm `--grep` để rerun đúng case đỏ'],
     ['npm run prompt:budget  ·  npm run token:audit','Đo chi phí của chính kit: tĩnh là hướng dẫn dài bao nhiêu, động là token thật đã đi đâu'],
     ['npm run manual:check  ·  npm run manual:check:enforce','Lượt chạy tay case Manual-only: gác ranh giới lời khai [manual], ủy quyền chất lượng output cho output_gate'],
@@ -3128,7 +3136,7 @@ const CMD_GROUPS = [
     ['npm run merge:execution-status -- --task <KEY>','Ghép kết quả execute vào bộ canonical']
   ]},
   { g:'Kit: tự kiểm toán & phát hành', items:[
-    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 85 máy, 59 CHẶN; :check chặn khi bảng lệch source'],
+    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 86 máy, 59 CHẶN; :check chặn khi bảng lệch source'],
     ['npm run rule -- <mục>  ·  npm run rule:toc','Tra RULE_GLOBAL theo mục (287 token) thay vì đọc cả file (12,8k)'],
     ['npm run version:check','Chặn phát hành thiếu số phiên bản; kiểm khớp tag'],
     ['npm run package:kit','Đóng gói dist/ CHỈ lớp GENERIC — không để lọt secret hay oracle của dự án khác'],

@@ -3,7 +3,7 @@
 > **SINH TỰ ĐỘNG** bởi `node scripts/qa/gate_index.js --write`. Đừng sửa tay — `--check` sẽ chặn khi
 > bảng lệch source. Cột **Mức** suy từ code: `exit 1` = CHẶN · ghi artifact = SINH · chỉ in = BÁO CÁO.
 
-Tổng **85** máy — **59 CHẶN** · 17 SINH (ghi artifact) · 9 BÁO CÁO (chỉ in).
+Tổng **86** máy — **59 CHẶN** · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in).
 
 SINH/BÁO CÁO **không phải gate bị nới** — chúng không kiểm vi phạm. Ví dụ `bugs:checklist` in brief bug
 lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` §20).
@@ -92,6 +92,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | BÁO CÁO | `docs:budget` | đo TÀI LIỆU đầu vào của task rồi nói rõ: đọc trực tiếp, hay GIAO SUBAGENT trích ra rồi chỉ | `scripts/qa/doc_budget.js` | README.md · prompt_templates |
 | BÁO CÁO | `(không npm — đăng ký ở playwright.config.js)` | Playwright reporter TỰ ĐỘNG thu learning data sau MỖI lần chạy test. | `scripts/qa/learn_reporter.js` | playwright.config.js (tự động) |
 | BÁO CÁO | `quality:decision` | Quality Decision Engine, capstone). Gộp tín hiệu chất lượng → 1 quyết định | `scripts/qa/quality_decision.js` | README.md · scripts/qa/README.md |
+| BÁO CÁO | `rerun:failed` | chạy lại ĐÚNG case đỏ của lượt vừa rồi, bằng MỘT lệnh. | `scripts/qa/rerun_failed.js` | prompt_templates · tests/fe/infra |
 | BÁO CÁO | `select:tests` | Intelligent Test Selection từ git diff. | `scripts/qa/select_tests.js` | README.md · USER_GUIDE.md |
 | BÁO CÁO | `results:summary` | đọc `results.json` của Playwright, in BẢN TÓM TẮT có TRẦN DÒNG. | `scripts/qa/summarize_results.js` | README.md · prompt_templates · tests/fe/infra |
 | BÁO CÁO | `report` | const { spawnSync } = require('child_process'); | `scripts/show_report.js` | .gitlab-ci.yml · RULE_GLOBAL.md · CLAUDE.md · README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .github/workflows · .agent/workflows · .agent/rules · .agent/skills · prompt_templates · exploratory · partial-rerun · manual-run · .claude/commands · tests/fe/infra |

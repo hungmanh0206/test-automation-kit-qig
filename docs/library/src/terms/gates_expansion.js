@@ -104,6 +104,13 @@ const TERMS_GATE2 = [
   cmd:'npm run explore:check   ·   npm run explore:check:enforce   ·   npm run explore:close',
   src:'scripts/qa/explore_session.js', rel:['g-explore_charter','r-evidence','c-mask-pii','c-chieu-coverage'] },
 
+{ id:'g-rerun_failed', t:'rerun_failed', cat:'gate',
+  def:'Chạy lại ĐÚNG case đỏ của lượt vừa rồi, bằng một lệnh.',
+  detail:'Đọc results.json, dựng --grep từ case đỏ rồi chạy. Hai chỗ từ chối: không có case đỏ thì KHÔNG chạy gì, và có case đỏ thiếu TC ID thì KHÔNG dựng grep một phần.',
+  why:'Đo trên 4 lượt chạy task thật: `npx playwright test` được gọi 2.076 lần, trong đó 2.070 lần chạy cả file hoặc cả suite và chỉ 6 lần có --grep. Lời dặn "rerun đúng case đỏ" đã nằm trong prompt từ trước, và số đo nói nó không xảy ra — đúng định nghĩa một luật thiếu máy.',
+  cmd:'npm run rerun:failed   ·   npm run rerun:failed -- --dry',
+  src:'scripts/qa/rerun_failed.js', rel:['g-summarize_results','g-token_audit'] },
+
 { id:'g-summarize_results', t:'summarize_results', cat:'gate',
   def:'Bản tóm tắt kết quả test có TRẦN dòng.',
   detail:'Đọc results.json của Playwright rồi in mỗi case đỏ một dòng: TC ID, lỗi rút gọn đã bóc mã màu, đường dẫn ảnh. Cờ --ids dụng sẵn --grep để rerun đúng case đỏ.',
