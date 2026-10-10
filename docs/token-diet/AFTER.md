@@ -57,12 +57,27 @@ khối lượng kết quả tool, tức giảm tốc độ phình chứ không r
 
 | Phép kiểm | Kết quả |
 |---|---|
-| `tests/fe/infra` | **771/771** xanh trên cây đã track |
+| `tests/fe/infra` | **768 xanh · 1 đỏ · 2 bỏ qua** trên tổng 771 (xem đính chính dưới bảng) |
 | `gate-selftest` + `mutation-check` | 35/35 xanh — gate cũ **vẫn biết đỏ** sau khi sửa |
 | `design:gate` trên bộ 265 case của CSDL-9003 | 0 CHẶN · 35 cảnh báo, **không đổi kiểu** so với trước |
 | `dim:coverage` cùng bộ | 265 testcase · 20 chiều · manifest CÓ, không vi phạm mới |
 | `writing:lint --docs` | 102/102 trong mốc |
 | `gate:policy` · `gates:index:check` · `library:drift` | ĐẠT, đo trong worktree sạch ở HEAD |
+
+> **ĐÍNH CHÍNH 10/10/2026.** Dòng `tests/fe/infra` ở bảng trên từng ghi **"771/771 xanh"**. Sai hai tầng.
+>
+> `771` là TỔNG số test, không phải số xanh. Đo lại trên worktree sạch ở đúng tag `v2.4.0`:
+> **768 xanh · 1 ĐỎ · 2 bỏ qua**. Test đỏ là `dimension-threshold.spec.ts` — gate "lý do n/a đã bị bác"
+> không chặn được vì `.agent/config/na_reasons_rejected.json` chưa bao giờ được `git add`.
+>
+> Vì sao lọt: số cũ đo trên CÂY LÀM VIỆC, nơi file đó đang nằm untracked ngay cạnh nên gate vẫn chạy.
+> Trên bản phát hành thì không có nó. Đây đúng là lớp lỗi mà v2.4.1 đi sửa, và nó xuất hiện ngay trong
+> báo cáo của chính đợt trước đó.
+>
+> Chốt chống tái phát: `release:verify` nay CHẠY THẬT `tests/fe/infra` bên trong gói đã giải nén, và
+> `tests/fe/infra/config-presence.spec.ts` đối chiếu ba nguồn độc lập (cây git · danh sách đóng gói ·
+> `scripts/**`). Số đo sau khi sửa: **15/15 bước release:verify ĐẠT · 716 xanh · 26 bỏ qua · 0 đỏ trong gói**.
+
 
 **Không gate nào bị nới.** Ngược lại, lượt này **thêm** đường chặn: ảnh rỗng ruột, thiếu band, ngân sách
 hướng dẫn, và `n/a` component không lý do.

@@ -7,6 +7,144 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## v2.4.1 — 2026-10-10 — Ba lỗi của bản phát hành, và lỗi thứ tư nằm trong cách đo
+
+Một lượt rà độc lập trên bản zip sạch tìm ra ba lỗi. Đo lại từng cái thì hai trong ba có tiền đề sai,
+và lỗi thật lớn hơn hẳn thứ được báo.
+
+### Lỗi 1 — một gate tắt im lặng trong bản phát hành
+
+Bản rà nói: `.agent/config/na_reasons_rejected.json` chưa bao giờ được `git add`, nên bản phát hành
+không có nó. `dimension_coverage.js` đọc bằng `try { … } catch { return [] }`, nên thiếu file là danh
+sách rỗng, là gate "lý do n/a trùng lập luận ĐÃ BỊ BÁC" không bao giờ chặn — và không một dòng nào báo.
+Trên máy dev thì xanh, vì file đang nằm untracked ngay cạnh.
+
+Đúng. Đã tái hiện: trên worktree sạch ở HEAD, `dimension-threshold.spec.ts:230` ĐỎ.
+
+Nhưng đo tiếp trên CHÍNH BẢN ĐÓNG GÓI thì ra một tầng sâu hơn. `.agent/config/*` là DENY mặc định,
+ALLOW theo danh sách, và danh sách thiếu 10 file mà `scripts/**` có đọc. Ba trong số đó nạp bằng
+`require()`, nên gói KHÔNG NẠP NỔI `md_to_xlsx.js` và `playwright --list` trong gói đếm được **0 test**.
+Cùng phép đo (`comm` giữa `git ls-files` và `tar -tzf`) còn thấy rơi cả nhánh `manual-run/`,
+`.claude/agents/`, `tests/load/`, `LICENSE`.
+
+Cách chữa: `scripts/qa/lib/config_load.js` — một chỗ đọc config gate, ba nước và không có nước thứ tư.
+Có file thì dùng; thiếu thì KÊU rõ phép kiểm nào CHƯA ĐƯỢC GÁC, hoặc rơi về bản `.example` và nói là
+đã rơi; JSON hỏng thì CHẶN. File hỏng không được có cùng hệ quả với một danh sách rỗng hợp lệ.
+
+Quét toàn kit mẫu `catch → giá trị rỗng`: 41 chỗ, bảng đầy đủ ở `docs/v2.4.1/SILENT_CATCH.md`. Sửa thêm
+2 chỗ còn có thể tự tắt gate — `prompt_budget.js` (file khai trong load_map mà thiếu ⇒ 0 token ⇒ ngân
+sách báo ĐẠT oan) và `gate_index.js` (source khai mà thiếu thì rơi khỏi bảng, và vì bảng dựng từ CÙNG
+phép quét nên hai phía cùng co lại và vẫn "khớp source" — phép kiểm tự xác nhận chính mình).
+
+**Vì sao lọt** — đo chứ không đoán: `release:verify` ĐÃ bắt được chuyện này. Chạy lại nó trên gói v2.4.0
+thì `npm ci` ĐẠT và `--list` báo đúng `0 test`. Nó không bị lỗi 2 che. Nó **chưa từng được chạy** cho
+bản v2.4.0.
+
+### Lỗi 2 — `xlsx` lấy từ CDN: tiền đề sai cả hai chiều
+
+Bản rà nói `xlsx` là dependency chết. Grep rộng hơn: **11 file trong `outputs/**` đang dùng**, và bản
+rà chỉ quét `scripts/` với `tests/`. `git log -S` cho biết nó được thêm một ngày trước đó, chính vì
+`typecheck:task` cần nạp được automation có `require('xlsx')`.
+
+Cũng không chuyển về registry npm như gợi ý: registry dừng ở `0.18.5` với hai lỗ đã công bố
+(CVE-2023-30533, CVE-2024-22363), chỉ vá từ `0.19.3`/`0.20.2` và hai bản đó CHỈ có trên CDN. Chuyển về
+là hạ cấp vào hai lỗ đã biết. Lockfile đã khoá băm, nên giữ nguyên và ghi rõ lý do.
+
+Nhưng cùng lượt rà lại BỎ SÓT một dep chết thật: `form-data`. Không ai `require`, và chỗ duy nhất dùng
+`new FormData()` là GLOBAL của Node. Đã gỡ.
+
+Cách chữa gốc không phải một lần grep rộng hơn, mà là một chỗ KHAI: `deps:check` bắt mọi dep không tự
+chứng minh được phải có dòng trong `.agent/config/deps_allow.json` — nơi dùng, lý do, và `go_duoc_khi`.
+Bốn phép kiểm, trong đó dep dạng URL mà lockfile thiếu `integrity` thì CHẶN.
+
+### Lỗi 3 — subagent đã tạo nhưng không ai gọi
+
+`test-runner` và `excel-convert` tồn tại nhưng không workflow nào nhắc. Trước khi nối, phải xác minh —
+và lần xác minh đầu suýt cho kết luận sai: cả hai KHÔNG có trong danh sách agent, và tôi gần như kết
+luận file hỏng. Nguyên nhân thật là THỜI ĐIỂM: hai file được tạo trong chính phiên đó, mà danh sách chỉ
+đọc lúc phiên khởi động. Ghi lại vì nó lặp được: **thiếu trong danh sách khác với file sai**.
+
+Sau khi nạp lại, cả hai được GỌI THẬT trên fixture offline và trả đúng hợp đồng. Kết quả đối chiếu độc
+lập, không tin lời khai: `docs/v2.4.1/AGENTS_VERIFY.md`. Thêm `case-debugger` cho vòng gỡ một case đỏ,
+và nó **cố ý không ghim model** — gỡ case đỏ là suy luận, không phải việc máy móc.
+
+### H0 — đếm SỐ LƯỢT, và số đo làm đổ kế hoạch
+
+`token:audit --mau` đếm theo mẫu lệnh. Hai lỗi đo đã mắc khi dựng bảng, cả hai làm bảng nói dịu hẳn đi:
+gom theo cờ làm `playwright test` vỡ thành hàng chục mẫu, và tiền tố env (`TASK_ENV=…`) thành mẫu lệnh
+nên **822 lượt `playwright test` biến mất khỏi bảng**.
+
+Số đo sau khi vá, trên 5 phiên chạy task thật (11.781 lượt shell):
+
+| Việc | Lượt | Phần |
+|---|---|---|
+| đáng lẽ dùng tool chuyên dụng (`grep`/`sed`/`cat`/`ls`) | 3.334 | **28,3%** |
+| `node -e` một-dòng | 1.442 | 12,2% |
+| `npx playwright test` | 822 | 7,0% |
+| toàn bộ lệnh gate của kit | 248 | **2,1%** |
+
+Dòng cuối làm đổ kế hoạch ban đầu. `BASELINE.md` ghi `output_gate` 354 lượt nên phần H0 định bó gate
+lại; số do AGENT gọi thật là 90. Phần phồng lên đến từ hook `gate_on_write`, mà hook `exit 0` IM LẶNG
+khi đạt nên **không tốn token nào** — debounce hook vì vậy không phải phép giảm token, và đã bỏ khỏi
+danh sách việc thay vì làm cho đủ mục.
+
+`phase1:check`/`phase2:check` vẫn làm, nhưng khai đúng trần 2,1% ngay trong tài liệu và thẻ thư viện.
+Điều kiện sống còn: bó KHÔNG tự kiểm gì, chỉ spawn script gốc rồi gom, nên chạy bó và chạy rời cho cùng
+exit code và cùng tập vi phạm theo cấu trúc.
+
+### MỐC token, và hai lỗi của chính nó
+
+Trần `luong` đặt ngay TRÊN mức hiện tại để không đỏ oan ngày đặt, nên nó còn chỗ trống: phase1 còn 1,2k
+và phase2 còn 1,5k. Trần chặn chuyện phình TO, không chặn chuyện phình DẦN. Thêm `moc`: số ĐÃ ĐO tại
+thời điểm chốt, vượt mốc là CHẶN dù còn xa trần, và muốn thêm chữ thì phải CẮT BÙ trong cùng luồng.
+
+Gate mới này tự mắc hai lỗi, cả hai thuộc loại *xanh mà không gác gì*:
+
+- `tok()` đếm cả ký tự `\r`. Một file 380 dòng mang ~119 token thuần tuý do xuống dòng, nên CÙNG MỘT
+  COMMIT đo ra hai số lệch 175 token giữa worktree (CRLF) và cây làm việc (LF). Mốc như vậy chặn OAN
+  người vừa checkout và KHÔNG chặn người thực sự thêm chữ. `writing_lint.js` đã học đúng bài này từ
+  28/09/2026; gate mới thì chưa.
+- Âm bản của nó hạ `moc` đi 1 rồi đòi CHẶN — nhưng khi một luồng tụt xuống DƯỚI mốc thì không gì bị
+  chặn, và âm bản XANH trong khi nó không đo gì. Nay nó đo số thực trước rồi mới hạ mốc xuống dưới.
+
+Luật này đã ép cắt bù thật, bốn vòng, ở hai luồng: `+47 → +19 → +1`, rồi `+38/+22 → +9/+2`. Kết quả
+cuối: `phase1` −2 và `phase2` bằng mốc, mà vẫn thêm được hàng `rerun:failed` và hàng bó gate.
+
+### Gói chạy được từ con số 0
+
+28 test đỏ trong gói xuống 0, và phần lớn không phải lỗi kit. 16 cái đỏ vì TIỀN ĐỀ chưa dựng — gói cố ý
+không mang config lớp PROJECT, preflight chặn đúng và chỉ luôn lệnh `cp`. Nay `release:verify` làm đúng
+bước khởi tạo của người nhận rồi mới chạy suite, và in ra đã chép những gì. 11 cái KHÔNG PHÁN ĐƯỢC
+trong gói (cần `.git`, hoặc cần tài liệu của repo) nên chuyển sang **bỏ qua kèm lý do**, và
+`release:verify` ĐẾM số bỏ qua — một bộ kiểm skip 200 test trông y hệt một bộ kiểm xanh nếu không ai đếm.
+
+### Đính chính số đo của v2.4.0
+
+`docs/token-diet/REPORT.md` và `AFTER.md` ghi `tests/fe/infra` **771/771 xanh**. Sai hai tầng: `771` là
+TỔNG số test, và đo lại trên worktree sạch ở đúng tag `v2.4.0` cho **768 xanh · 1 ĐỎ · 2 bỏ qua**. Test
+đỏ chính là `dimension-threshold.spec.ts` của lỗi 1. Số cũ đo trên CÂY LÀM VIỆC, nơi file config đang
+nằm untracked ngay cạnh. Cả hai tài liệu nay mang đính chính tại chỗ.
+
+### Số đo cuối
+
+| Phép kiểm | Kết quả |
+|---|---|
+| `release:verify` | **15/15 bước ĐẠT** — bản phát hành chạy được từ con số 0 |
+| `tests/fe/infra` trong GÓI | **716 xanh · 26 bỏ qua · 0 đỏ** |
+| `tests/fe/infra` trong repo | **846/846 xanh** |
+| `prompt:budget --enforce` | ĐẠT — 4/4 luồng ở mức mốc hoặc thấp hơn |
+| `gate:policy` · `gates:index:check` · `library:drift` · `writing:lint` · `deps:check` | ĐẠT |
+| Gate của kit | 86 → **88 máy**, 59 → **61 CHẶN** |
+
+### Còn mở
+
+Số token thật của một lượt chạy task SAU đợt này chưa có. Nó cần một lượt Phase 2 mới theo runbook
+`docs/token-diet/DO-LAI.md`, và lượt đó chạm UAT nên cần người xác nhận. Trước khi có số đó, mọi câu
+"đã giảm bao nhiêu" chỉ là ước tính.
+
+Model thật mà subagent đã chạy cũng chưa đọc lại được: frontmatter khai `haiku` và harness nhận agent,
+nhưng kết quả trả về không mang tên model.
+
 ## v2.4.0 — 2026-10-10 — Đo trước đã, rồi mới biết chỗ tốn không nằm ở nơi ai cũng nghĩ
 
 Đợt này đi giảm token tiêu thụ mỗi lượt chạy. Việc đầu tiên là dựng hai máy đo, và chính chúng bác bỏ
