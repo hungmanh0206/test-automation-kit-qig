@@ -369,6 +369,43 @@ function lintMappingOracle({ title = '', expected = '', comment = '' } = {}) {
   return { level: 'warning', message: 'case mapping/đồng bộ nhưng kết luận không nêu PHÉP ĐỐI CHIẾU hai đầu — trạng thái "sync thành công" KHÔNG chứng minh giá trị bên nhận đúng (sai định dạng/sai đơn vị/nhầm property vẫn báo thành công).' };
 }
 
+/*
+ * ---- CASE DÙNG MOCK CHỈ KẾT LUẬN VỀ FE ----
+ *
+ * VÌ SAO (v2.5.0 G1.6). Mock bằng `page.route` làm FE nhận đúng response ta muốn, nên nó kiểm được FE xử
+ * lý response đó thế nào. Nó KHÔNG kiểm được backend có trả response đó thật hay không — và đó chính là
+ * chỗ mock lệch: hôm nay backend đổi field, mock vẫn trả bản cũ, case vẫn XANH.
+ *
+ * Luật này là GÁC PHÒNG NGỪA, nói thẳng: đo 10/10/2026 thì **0 case trong repo mang tag `[Mock]`**. Nó
+ * chặn một mẫu chưa xuất hiện, chứ không đang dọn nợ. Chi phí nhỏ, và lý do xây bây giờ là `page.route` +
+ * `externalDependencyMock` đã có sẵn nên mẫu đó dùng được ngay khi ai đó muốn.
+ *
+ * Phân biệt với `lintBeVsFeLayer`: cái kia hỏi "gán tầng FE/BE có chứng minh chưa"; cái này hỏi "case đã
+ * tự khai là dùng mock thì có đang phán về backend không". Hai câu khác nhau.
+ */
+const MOCK_TAG = /\[mock\]/i;
+/** Kết luận chạm BACKEND: dữ liệu đã lưu, API thật trả gì, DB có gì. */
+const KET_LUAN_BE = /\b((?:đã )?(?:lưu|ghi)(?: thành công| được)?\s*(?:vào|xuống|lên|tới)?\s*(?:db|database|cơ sở dữ liệu)|backend (?:trả|xử lý) đúng|api (?:thật )?trả đúng|server (?:đã )?(?:lưu|xử lý)|dữ liệu (?:đã )?persist|bản ghi (?:đã )?được tạo trong (?:db|database))/i;
+/*
+ * Bản đầu đòi `lưu (thành công|được) …` nên nó BỎ SÓT đúng cách viết phổ biến nhất: "đã lưu vào DB".
+ * Một luật chống mock lệch mà không bắt được câu người ta hay viết nhất thì nó chỉ gác trên giấy.
+ */
+
+/**
+ * Case có tag `[Mock]` mà kết luận lại phán về backend ⇒ CHẶN.
+ *
+ * @returns {{level:'problem', message:string}|null}
+ */
+function lintMockScope({ title = '', tag = '', comment = '' } = {}) {
+  if (!MOCK_TAG.test(`${title} ${tag}`)) return null;
+  const hit = KET_LUAN_BE.exec(comment);
+  if (!hit) return null;
+  return {
+    level: 'problem',
+    message: `case khai tag [Mock] nhưng kết luận phán về BACKEND ("${hit[0]}") — mock bằng \`page.route\` làm FE nhận response ta tự đặt, nên nó KHÔNG chứng minh backend trả response đó thật. Case [Mock] chỉ được kết luận về hành vi FE; phần backend cần một case API/Database thật.`,
+  };
+}
+
 // ---- Quan sát BẤT THƯỜNG phải có NƠI ĐẾN ----
 // Vì sao: rà một task thật thấy có anomaly đã được NHÌN THẤY và ghi lại trong kết luận ("nghi thiếu cấu hình
 // X", "không đúng như mong đợi") nhưng case vẫn PASS và ghi chú đó không thành bug, không thành câu hỏi BA,
@@ -642,6 +679,7 @@ module.exports = {
   lintSqlCell, lintDbPersistHasQuery,
   lintTagDepth, TAG_EVIDENCE,
   isMappingCase, hasComparedPair, lintMappingOracle, lintStrayAnomaly, lintBugRealism, lintBugProvenance,
+  lintMockScope, MOCK_TAG,
   lintBeVsFeLayer,
   isVisualEvidence, isVideoEvidence, VISUAL_EXT, VIDEO_EXT, extListText, MIME_BY_EXT, mimeOf,
   hasDebugTokens, looksRunOn, splitIdeas, looksComplex,

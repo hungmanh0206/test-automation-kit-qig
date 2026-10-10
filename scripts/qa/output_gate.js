@@ -107,6 +107,12 @@ function gateTestExecution(doc, { fix = false } = {}) {
     const sa = rules.lintStrayAnomaly({ status: t.status, comment: t.comment });
     if (sa) problems.push(`${id}: ${sa.message}`);
 
+    // 1d) Case [Mock] chỉ được kết luận về FE (v2.5.0 G1.6). Mock làm FE nhận response ta tự đặt, nên nó
+    // KHÔNG chứng minh backend trả response đó thật — hôm nay BE đổi field thì mock vẫn trả bản cũ và case
+    // vẫn xanh. Gác PHÒNG NGỪA: đo 10/10/2026 là 0 case trong repo mang tag [Mock].
+    const ms = rules.lintMockScope({ title: t.title, tag: t.tag, comment: t.comment });
+    if (ms) problems.push(`${id}: ${ms.message}`);
+
     // 2) Evidence: gộp case + step.
     // Kể cả shortcut `failedStep` + `failedStepEvidence` mà template Phase 2 dạy: đó là đường HỢP LỆ để
     // khai evidence của bước lỗi (merge_execution_status.js đọc field này). Trước đây

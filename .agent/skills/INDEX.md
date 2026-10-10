@@ -19,6 +19,7 @@
 | `qa_automation_engineer` | phase2 | `.agent/skills/phase2/qa_automation_engineer/SKILL.md` | Generate, update và execute Playwright UI/API automation cho Phase 2. |
 | `security_check` | phase2 | `.agent/skills/phase2/security_check/SKILL.md` | Kiểm security BASIC non-destructive (headers/cookie, unauth, authz/IDOR 2 tài khoản, exposure) qua GET read-only trên UAT. Control → PASS/FAIL; exposure → finding (mask PII). Never-auto, cần xác nhận non-prod. |
 | `ui_debug_agent` | phase2 | `.agent/skills/phase2/ui_debug_agent/SKILL.md` | Khám phá DOM thật của một màn để tìm locator bền và neo nhãn UI ↔ cột DB — dùng khi màn mới, khi locator vỡ, hoặc khi debug script_error. |
+| `ui_mocking` | phase2 | `.agent/skills/phase2/ui_mocking/SKILL.md` | Chặn response bằng page.route để cô lập dependency ngoài scope hoặc inject fault (5xx/timeout/abort), rồi kiểm FE xử lý response đó thế nào. Dùng khi dependency ngoài không sẵn, hoặc cần dựng nhánh lỗi không tạo được thật. KHÔNG dùng để mock chính logic đang kiểm thử, và KHÔNG dùng case mock để kết luận về backend. |
 | `backlog_bug_reporter` | shared | `.agent/skills/shared/backlog_bug_reporter/SKILL.md` | Log Backlog sub-bug từ testcase FAIL đã xác nhận sau Phase 2. |
 | `backlog_integration` | shared | `.agent/skills/shared/backlog_integration/SKILL.md` | Fetch/read Backlog và source liên quan khi workflow yêu cầu context từ Backlog/Figma. (tài liệu nguồn tạm ngoài phạm vi — chờ chuyển sang Google Docs/Sheet.) |
 | `backlog_testcase_publisher` | shared | `.agent/skills/shared/backlog_testcase_publisher/SKILL.md` | Publish testcase từ Excel canonical lên **Google Sheet** sau Phase 1 (qua Drive MCP: search_files/create_file/update_file). |
@@ -30,4 +31,4 @@
 | `system_mapper` | shared | `.agent/skills/shared/system_mapper/SKILL.md` | Ghi bản đồ HỆ THỐNG đã xác nhận vào knowledge/system/ (state machine · ma trận phân quyền · surface dùng chung) để trả lời được "hành vi này là bug hay đúng thiết kế" và "sửa chỗ này phải regression đâu" mà không suy từ app. |
 | `test_data_generator` | shared | `.agent/skills/shared/test_data_generator/SKILL.md` | Sinh test data cụ thể, unique, traceable và rollback được cho Phase 1/Phase 2. |
 
-> 24 skill. Thiếu description: 0.
+> 25 skill. Thiếu description: 0.

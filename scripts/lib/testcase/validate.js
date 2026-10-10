@@ -130,6 +130,24 @@ function validate(doc) {
       warnings.push(`${id}: tag chiều gợi \`${mapped[0]}\` nhưng \`Loại case\` khai \`${ct}\`. Không nhất thiết sai — xem mục "không chọn khi" của \`${mapped[0]}\` trong \`.agent/config/case_types.json\`; nếu vẫn giữ \`${ct}\` thì nói rõ lý do ở \`Assumptions\`.`);
     }
 
+    /*
+     * `[Mock]` + `Loại case` = API|Database ⇒ CHẶN (v2.5.0 G1.6).
+     *
+     * Mock bằng `page.route` làm FE nhận response ta TỰ ĐẶT. Một case như vậy kiểm được FE xử lý response
+     * đó thế nào, nhưng KHÔNG kiểm được backend có trả response đó thật hay không — nên khai nó là loại
+     * `API` hoặc `Database` là nói sai về chính thứ nó đo. Và đó là cách mock lệch sống sót: hôm nay BE
+     * đổi field, mock vẫn trả bản cũ, case vẫn XANH ở một loại nghe như đã kiểm backend.
+     *
+     * CHẶN chứ không cảnh báo, khác với luật tag↔loại ở trên: ở đó có những ca chồng lấn HỢP LỆ, còn ở
+     * đây thì không có ca nào hợp lệ — mock không bao giờ là bằng chứng về backend.
+     *
+     * Gác PHÒNG NGỪA, nói thẳng: đo 10/10/2026 thì 0 case trong repo mang tag `[Mock]`.
+     */
+    const coMock = (tc.dimensions || []).some((x) => /^mock$/i.test(String(x).trim()));
+    if (coMock && ['api', 'database'].includes(ctLow)) {
+      problems.push(`${id}: có tag \`[Mock]\` nhưng \`Loại case\` = "${ct}" — mock làm FE nhận response ta TỰ ĐẶT, nên case này KHÔNG chứng minh được gì về backend. Đổi \`Loại case\` thành \`UI\` (hoặc \`Functional\`) và tách một case \`${ct}\` RIÊNG chạy thật, không mock.`);
+    }
+
     if (p && SEVERITY_ONLY.test(p)) problems.push(`${id}: \`Ưu tiên\` = "${p}" là giá trị SEVERITY, đặt sai cột — \`Ưu tiên\` nhận Critical|High|Medium|Low|Lowest; Blocker/Major/Minor/Trivial thuộc cột \`Severity\`. (\`Critical\` hợp lệ ở CẢ hai cột: nó là đỉnh thang ưu tiên VÀ một mức severity.)`);
   }
   // 2c) CONSISTENCY — 2 cột không được nói ngược nhau. Cảnh báo (không chặn) vì vẫn có ngoại lệ hợp lý,
