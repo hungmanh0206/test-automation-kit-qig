@@ -262,11 +262,19 @@ Backlog comment:
   - 1 dòng tiêu đề trạng thái, vd `QA re-verify (build staging <ngày>): ✅ Đã fix` hoặc `⚠️ Chưa fix hẳn`.
   - **Gạch đầu dòng cho từng ý**; nếu vừa có phần đúng vừa có phần lỗi thì tách 2 nhóm ("Đã đúng:" / "Còn lỗi (<màn>):"), mỗi nhóm 1-3 bullet ngắn.
   - Tag người cần xử lý: Backlog dùng mention `@<tên đăng nhập>` trong nội dung comment (khác cú pháp `[~accountid:...]` của Backlog). CHƯA VERIFY cú pháp chính xác trên space `enetviet.backlog.com` — kiểm bằng comment thử trước khi dùng thật.
-  - **Nhúng ảnh evidence trong comment**: Backlog có cơ chế đính kèm riêng (không dùng cú pháp nhúng `!filename|width=900!`). CHƯA VERIFY cú pháp — trước mắt đính kèm ảnh dưới dạng attachment của comment (`attachmentId[]` qua `POST /api/v2/issues/:id/comments`) và ghi rõ trong comment "xem ảnh đính kèm", không cố nhúng inline cho tới khi verify được cú pháp thật.
+  - **Nhúng ảnh evidence trong comment**: cú pháp nhúng đúng là `![image][tên]` (project đang ở
+    `textFormattingRule = markdown`) — xác minh từ tài liệu Nulab, không phải `!filename|width=900!`.
+    ĐÃ ÁP DỤNG cho **description** (reporter tự sinh). Còn **comment** thì CHƯA ĐO: ảnh phải là attachment
+    của chính comment đó mới phân giải được, và chưa ai thử. Nên comment vẫn đính kèm
+    (`attachmentId[]` qua `POST /api/v2/issues/:id/comments`) kèm chữ "xem ảnh đính kèm".
 
 Evidence attachment:
 - Evidence không phải là một section trong description.
 - Không ghi dòng `Evidence`, `Evidance`, `Evidence summary` hoặc link/file evidence trong description.
+- **Ảnh tự hiện inline ở DƯỚI CÙNG description** — reporter sinh dòng nhúng, bạn KHÔNG dán tay.
+  Cú pháp theo `textFormattingRule` của project (`markdown` ⇒ `![image][tên]`, `backlog` ⇒ `#image(tên)`),
+  reporter đọc cờ đó từ API chứ không ghi cứng. Video không nhúng được, chỉ là attachment.
+  Dán markdown ảnh vào ô tiền điều kiện/bước/KQ là nhân đôi ảnh và phá luật 4 mục.
 - Upload screenshot hoặc video từ `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/artifacts/` hoặc `<PROJECT_OUTPUT_DIR>/tasks/<TASK_KEY>/test-results/runs/<RUN_ID>/artifacts/` dưới dạng Backlog attachment riêng.
 - Backlog attachment chỉ được là ảnh hoặc video, ví dụ `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.mp4`, `.webm`.
 - Không upload `.md`, `.txt`, `.log`, `.json`, `.zip`, `trace.zip`, `error-context.md`, execution summary hoặc bất kỳ file text/diagnostic nào lên Backlog.

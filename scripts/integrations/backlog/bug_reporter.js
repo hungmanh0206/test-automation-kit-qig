@@ -380,16 +380,54 @@ function saveBacklogCache(cache) {
   fs.writeFileSync(BACKLOG_CACHE_PATH, JSON.stringify(cache, null, 2), 'utf8');
 }
 
+/*
+ * Quy tắc định dạng chữ của project — ĐO từ API, không đoán.
+ *
+ * Vì sao phải đo: cú pháp nhúng ảnh ĐỔI THEO cờ này. `textFormattingRule = markdown` thì ảnh là
+ * `![image][tên]`; đổi sang `backlog` thì thành `#image(tên)`. Tài liệu Nulab nói rõ: đổi cờ thì ảnh VẪN còn
+ * đính kèm nhưng ĐOẠN MÃ HIỂN THỊ ẢNH NGẮNG CHẠY. Ghi cứng một trong hai là nhận một ngày mọi bug mất ảnh
+ * mà không máy nào kêu — cùng họ với lỗi `**đậm**` đã từng tin suông (xem `buildBugDescription`).
+ */
+let QUY_TAC_CHU = '';
+
+const ANH_NHUNG_DUOC = /\.(png|jpe?g|webp|gif)$/i;
+
+/** Ảnh nào NHÚNG được vào mô tả. Video (.mp4/.webm) KHÔNG render inline ở Backlog — nó vẫn là attachment
+ *  bình thường, nhưng nhúng nó chỉ in ra một dòng mã hỏng, nên ở đây loại thẳng. */
+function nhungDuocInline(ten) {
+  return ANH_NHUNG_DUOC.test(String(ten || ''));
+}
+
+let daKeuQuyTac = false;
+
+/** Một dòng nhúng ảnh, theo ĐÚNG quy tắc định dạng mà project đang dùng. */
+function dongAnh(ten) {
+  if (QUY_TAC_CHU === 'backlog') return `#image(${ten})`;
+  if (QUY_TAC_CHU !== 'markdown' && !daKeuQuyTac) {
+    daKeuQuyTac = true;
+    console.warn(`WARN: ch\u01b0a \u0111\u1ecdc \u0111\u01b0\u1ee3c textFormattingRule c\u1ee7a project (th\u1ea5y "${QUY_TAC_CHU || '(r\u1ed7ng)'}") \u2014 nh\u00fang \u1ea3nh theo c\u00fa ph\u00e1p markdown.`);
+    console.warn('  Sai cờ thì ảnh ra mã thô chứ không ra ảnh. Mở 1 bug trên web UI kiểm một lần.');
+  }
+  return `![image][${ten}]`;
+}
+
 /** BACKLOG_PROJECT_KEY (text) → id số của project, cache lại (đọc 1 lần/máy). */
 async function resolveProjectId() {
   const cache = getBacklogCache();
-  if (cache.projectId?.[PROJECT_KEY]) return cache.projectId[PROJECT_KEY];
+  /* ĐÒI CẢ HAI mới dùng cache: cache cũ (trước 10/10/2026) chỉ có projectId, và lấy nó không thôi
+   * thì `QUY_TAC_CHU` rỗng — nhúng ảnh sẽ phải đoán. Thiếu cờ thì đọc lại API ĐÚNG MỘT lượt. */
+  if (cache.projectId?.[PROJECT_KEY] && cache.quyTacChu?.[PROJECT_KEY]) {
+    QUY_TAC_CHU = cache.quyTacChu[PROJECT_KEY];
+    return cache.projectId[PROJECT_KEY];
+  }
 
   const response = await withRetry(() => backlogRequest('GET', `/api/v2/projects/${encodeURIComponent(PROJECT_KEY)}`));
   const id = response.data?.id;
   if (!id) fail(`Backlog project not found: ${PROJECT_KEY}`);
+  QUY_TAC_CHU = String(response.data?.textFormattingRule || '');
 
   cache.projectId = { ...(cache.projectId || {}), [PROJECT_KEY]: id };
+  cache.quyTacChu = { ...(cache.quyTacChu || {}), [PROJECT_KEY]: QUY_TAC_CHU };
   saveBacklogCache(cache);
   return id;
 }
@@ -557,7 +595,10 @@ function copyMilestoneAndCategory(body, parentIssue) {
 }
 
 /** Upload evidence lên Backlog: 2 bước (`POST /space/attachment` rồi gắn `attachmentId[]` vào issue) —
- * khác Backlog (1 bước multipart thẳng vào issue). Trả về attachmentId (hoặc null nếu lỗi). */
+ * khác Backlog (1 bước multipart thẳng vào issue).
+ *
+ * Trả về `{ id, name }`, không còn trả riêng id. `name` là TÊN BACKLOG THỰC LƯU, và nhúng ảnh phải dùng
+ * đúng nó: basename local có thể lệch (Backlog đổi tên khi trùng), và nhúng theo tên lệch thì ra mã thô. */
 async function uploadAttachmentFile(filePath) {
   if (!filePath || !fs.existsSync(filePath)) return null;
   if (!isBugEvidenceAttachment(filePath)) {
@@ -572,7 +613,8 @@ async function uploadAttachmentFile(filePath) {
     const response = await withRetry(() =>
       backlogRequest('POST', '/api/v2/space/attachment', { formData: form, timeout: 60000 }),
     );
-    return response.data?.id || null;
+    const d = response.data || {};
+    return d.id ? { id: d.id, name: String(d.name || path.basename(filePath)) } : null;
   } catch (error) {
     console.warn(`WARN: Attachment upload failed for ${path.basename(filePath)}: ${formatApiError(error)}`);
     return null;
@@ -592,6 +634,28 @@ async function layTenFileDaDinhKem(issueIdOrKey) {
     console.warn(`WARN: không đọc được danh sách attachment của ${issueIdOrKey}: ${formatApiError(error)}`);
     return new Set();
   }
+}
+
+/*
+ * HẬU KIỂM dòng nhúng ảnh. Một `![image][tên]` chỉ ra ảnh nếu CÓ attachment đúng tên đó trên issue;
+ * thiếu một cái là người đọc thấy mã thô nằm giữa bug.
+ *
+ * Phải hậu kiểm vì ngay trên còn một giả định CHƯA ĐO được: PATCH `attachmentId[]` có thể THAY THẾ cả
+ * set thay vì cộng dồn. Nếu đúng vậy thì lượt update đạp mất ảnh cũ, và chính các dòng nhúng trỏ về ảnh cũ
+ * sẽ hỏng. Đọc lại danh sách thật rồi đối chiếu biến giả định đó thành một phép đo.
+ */
+async function canhBaoAnhThieu(issueIdOrKey, tenAnh) {
+  const canCo = [...new Set((tenAnh || []).filter(nhungDuocInline))];
+  if (!canCo.length) return;
+  const thucCo = await layTenFileDaDinhKem(issueIdOrKey);
+  if (!thucCo.size) {
+    console.warn(`WARN: không xác nhận được ${canCo.length} ảnh nhúng trên ${issueIdOrKey} — danh sách attachment đọc ra RỖNG.`);
+    return;
+  }
+  const thieu = canCo.filter((t) => !thucCo.has(t));
+  if (!thieu.length) return;
+  console.warn(`WARN: ${thieu.length}/${canCo.length} ảnh được NHÚNG trong mô tả nhưng KHÔNG có trên issue ${issueIdOrKey}: ${thieu.join(', ')}`);
+  console.warn('  Những dòng đó sẽ hiện ra mã thô chứ không ra ảnh — mở bug trên web UI kiểm.');
 }
 
 async function attachIssueAttachments(issueId, attachmentIds) {
@@ -665,6 +729,24 @@ function buildBugDescription(payload) {
     if (payload.layer) dau.push(`Tầng: [${String(payload.layer).toUpperCase()}]`);
     parts.push(dau.join(' · '));
   }
+
+  /*
+   * ẢNH NHÚNG INLINE, ở DƯỚI CÙNG. Yêu cầu 10/10/2026: ảnh evidence phải hiện ngay trong bug, không
+   * bắt người đọc bấm sang khung attachment rồi tự ghép lại xem ảnh nào ứng bước nào.
+   *
+   * KHÔNG có tiêu đề in đậm cho khối này — CỐ Ý, và là điều kiện để nó không phá hai luật đang có:
+   * prompt 08 §Description CẤM thêm mục `Evidence`, và `lintBugHeadings` chặn description khác 4 mục.
+   * Ảnh trần vừa đúng yêu cầu vừa không đếm thành mục thứ 5.
+   *
+   * ĐẶT SAU marker TC được, vì `searchExistingBug` tìm marker bằng `.includes()` chứ không đòi nó
+   * đứng cuối — đã kiểm lại trước khi chuyển, chứ không tin vào chữ "để ở CUỐI" trong ghi chú cũ.
+   */
+  const anh = (payload.anh || []).map(String).filter(nhungDuocInline);
+  if (anh.length) {
+    parts.push('');
+    for (const ten of anh) parts.push(dongAnh(ten));
+  }
+
   return parts.join('\n');
 }
 
@@ -1409,16 +1491,12 @@ async function main() {
        * kiện của đơn vị khác). Preview không đọc được thì nó không phải preview.
        */
       console.log(`  TITLE: ${summary}`);
-      console.log(buildBugDescription({
-        preconditions: override.preconditions || tcInfo.preconditions || '(không có thông tin tiền điều kiện)',
-        steps: override.steps?.length ? override.steps : (tcInfo.steps?.length ? tcInfo.steps : testCase.steps),
-        actualResult,
-        expectedResult: override.expectedResult || tcInfo.expectedResult || '(xem file test case gốc)',
-        foundBy: foundBySource(),
-        tcId: testCase.tcId,
-        layer,
-      }).split('\n').map((l) => `  | ${l}`).join('\n'));
+      /* Dry-run nhúng theo BASENAME local: chưa upload thì chưa có tên Backlog. Hai tên này thường
+       * trùng, nhưng không đảm bảo — nói ra để ai đọc preview không tưởng đã chứng thực được tên. */
+      console.log(moTa(attachmentsPreview.map((a) => path.basename(a))).split('\n').map((l) => `  | ${l}`).join('\n'));
       console.log(`  ĐÍNH KÈM: ${attachmentsPreview.length ? attachmentsPreview.map((a) => path.basename(a)).join(', ') : '(KHÔNG CÓ — gate sẽ chặn)'}`);
+      const anhDryRun = attachmentsPreview.map((a) => path.basename(a)).filter(nhungDuocInline);
+      console.log(`  NHÚNG INLINE: ${anhDryRun.length}/${attachmentsPreview.length} file (video không nhúng được) · tên thật lấy từ Backlog lúc upload`);
       rows.push({
         tcId: testCase.tcId,
         issueKey: UPDATE_ISSUE_KEY || 'DRY-RUN',
@@ -1436,7 +1514,11 @@ async function main() {
       continue;
     }
 
-    const description = buildBugDescription({
+    /*
+     * MÔ TẢ LÀ HÀM, không còn là chuỗi dựng sẵn — vì nó cần TÊN ẢNH, mà tên ảnh chỉ biết được SAU khi upload.
+     * Đó cũng là lý do hai nhánh dưới đây đảo thứ tự: upload trước, ghi chữ sau.
+     */
+    const moTa = (tenAnh) => buildBugDescription({
       preconditions: override.preconditions || tcInfo.preconditions || '(không có thông tin tiền điều kiện)',
       steps: override.steps?.length ? override.steps : (tcInfo.steps?.length ? tcInfo.steps : testCase.steps),
       actualResult,
@@ -1444,6 +1526,7 @@ async function main() {
       foundBy: foundBySource(),
       tcId: testCase.tcId,
       layer,
+      anh: tenAnh,
     });
 
     if (UPDATE_ISSUE_KEY) {
@@ -1453,29 +1536,33 @@ async function main() {
          * trên issue đã đúng nội dung. Đó KHÔNG phải lỗi: coi là không-có-gì-để-sửa rồi đi tiếp sang
          * đính kèm. Để nó ném ra thì một bug đã log đúng chữ sẽ vĩnh viễn không bổ sung được ảnh.
          */
-        try {
-          await updateIssue(UPDATE_ISSUE_KEY, { summary, description, priority, parentIssue });
-        } catch (error) {
-          if (!/No comment content/i.test(formatApiError(error))) throw error;
-          console.log('  nội dung đã đúng sẵn, không cần sửa chữ — đi tiếp phần đính kèm.');
-        }
         /*
          * Update cũng phải mang evidence. Trước đây nhánh này KHÔNG upload gì, nên sửa mô tả bug mà
          * ảnh vẫn là bộ cũ — mô tả và bằng chứng lệch nhau mà không ai báo.
          * Bỏ qua file đã đính kèm (so theo tên) để chạy lại không nhân bản ảnh.
+         *
+         * UPLOAD ĐỨNG TRƯỚC `updateIssue`: dòng nhúng ảnh cần tên Backlog lưu, mà tên đó chỉ có sau upload.
          */
         const daCo = await layTenFileDaDinhKem(UPDATE_ISSUE_KEY);
-        const canThem = attachmentsPreview.filter((f) => !daCo.has(path.basename(f)));
-        if (canThem.length) {
-          const ids = [];
-          for (const f of canThem) {
-            const id = await uploadAttachmentFile(f);
-            console.log(`  attachment ${path.basename(f)}: ${id ? 'OK' : 'WARN'}`);
-            if (id) ids.push(id);
-          }
-          if (ids.length) await attachIssueAttachments(UPDATE_ISSUE_KEY, ids);
+        const tenAnh = [];
+        const idMoi = [];
+        for (const f of attachmentsPreview) {
+          const base = path.basename(f);
+          if (daCo.has(base)) { tenAnh.push(base); continue; }
+          const up = await uploadAttachmentFile(f);
+          console.log(`  attachment ${base}: ${up ? 'OK' : 'WARN'}`);
+          if (up) { idMoi.push(up.id); tenAnh.push(up.name); }
         }
-        console.log(`  evidence: ${daCo.size} file đã có · thêm ${canThem.length} file`);
+        if (idMoi.length) await attachIssueAttachments(UPDATE_ISSUE_KEY, idMoi);
+        console.log(`  evidence: ${daCo.size} file đã có · thêm ${idMoi.length} file`);
+
+        try {
+          await updateIssue(UPDATE_ISSUE_KEY, { summary, description: moTa(tenAnh), priority, parentIssue });
+        } catch (error) {
+          if (!/No comment content/i.test(formatApiError(error))) throw error;
+          console.log('  nội dung đã đúng sẵn, không cần sửa chữ.');
+        }
+        await canhBaoAnhThieu(UPDATE_ISSUE_KEY, tenAnh);
         rows.push({
           tcId: testCase.tcId,
           issueKey: UPDATE_ISSUE_KEY,
@@ -1510,10 +1597,27 @@ async function main() {
     }
 
     try {
+      /*
+       * UPLOAD TRƯỚC KHI TẠO ISSUE. Làm được vì `POST /space/attachment` là API CẤP SPACE, không cần
+       * issue id. Nhờ vậy description sinh ra đã mang đúng tên Backlog lưu, không phải sửa issue thêm
+       * một lượt — và không có cửa sổ nào mà bug đã tồn tại với dòng nhúng trỏ vào hư không.
+       *
+       * DÙNG LẠI `attachmentsPreview` — đúng danh sách gate đã duyệt và dry-run đã in ra.
+       * Trước đây chỗ này dựng LẠI danh sách từ `artifactInfo`, nên preview nói 3 file mà thực tế chỉ
+       * upload 1: preview và hành động là hai nhánh code khác nhau thì preview không bảo chứng gì cả.
+       */
+      const tenAnh = [];
+      const attachmentIds = [];
+      for (const attachment of attachmentsPreview) {
+        const up = await uploadAttachmentFile(attachment);
+        console.log(`  attachment ${path.basename(attachment)}: ${up ? 'OK' : 'WARN'}`);
+        if (up) { attachmentIds.push(up.id); tenAnh.push(up.name); }
+      }
+
       const created = await createIssue({
         tcId: testCase.tcId,
         summary,
-        description,
+        description: moTa(tenAnh),
         assigneeId,
         priority,
         parentIssue,
@@ -1521,22 +1625,8 @@ async function main() {
         issueTypeId,
       });
 
-      /*
-       * DÙNG LẠI `attachmentsPreview` — đúng danh sách gate đã duyệt và dry-run đã in ra.
-       * Trước đây chỗ này dựng LẠI danh sách từ `artifactInfo`, nên preview nói 3 file mà thực tế chỉ
-       * upload 1: preview và hành động là hai nhánh code khác nhau thì preview không bảo chứng gì cả.
-       */
-      const attachments = attachmentsPreview;
-
-      if (attachments.length) {
-        const attachmentIds = [];
-        for (const attachment of attachments) {
-          const id = await uploadAttachmentFile(attachment);
-          console.log(`  attachment ${path.basename(attachment)}: ${id ? 'OK' : 'WARN'}`);
-          if (id) attachmentIds.push(id);
-        }
-        if (attachmentIds.length) await attachIssueAttachments(created.id, attachmentIds);
-      }
+      if (attachmentIds.length) await attachIssueAttachments(created.id, attachmentIds);
+      await canhBaoAnhThieu(created.issueKey, tenAnh);
 
       rows.push({
         tcId: testCase.tcId,
@@ -1583,7 +1673,13 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-main().catch((error) => {
-  console.error(`Fatal: ${formatApiError(error)}`);
-  process.exit(1);
-});
+/* Chỉ tự chạy khi gọi trực tiếp. Trước đây `require` file này là NỔ ra một lượt log bug thật, nên
+ * không spec nào dám chạm vào — đó là lý do `buildBugDescription` sống tới giờ mà không có test. */
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(`Fatal: ${formatApiError(error)}`);
+    process.exit(1);
+  });
+}
+
+module.exports = { buildBugDescription, dongAnh, nhungDuocInline, datQuyTacChu: (v) => { QUY_TAC_CHU = String(v || ''); } };
