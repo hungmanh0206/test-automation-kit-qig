@@ -226,6 +226,8 @@ npm run gates:index          # sinh .agent/config/GATES.md — CHẶN / SINH / B
 npm run gates:index:check    # CI chặn khi bảng lệch source (một gate bị nới thành cảnh báo = bắt được)
 npm run prompt:budget        # mỗi điểm vào bảo AI đọc bao nhiêu token; --json ghi mốc, --dup soi đoạn trùng
 npm run token:audit -- --list # transcript nào là lượt CHẠY TASK; rồi --transcript <file> để xem token đi đâu
+npm run prompt:budget -- --enforce  # CHẶN khi hướng dẫn phình quá ngân sách (có trong CI cả hai remote)
+npm run results:summary -- --ids    # bản tóm tắt kết quả test, kèm --grep để rerun đúng case đỏ
 ```
 
 Hai lệnh cuối đo chi phí của chính kit. `prompt:budget` đo TĨNH (hướng dẫn dài bao nhiêu), `token:audit` đo

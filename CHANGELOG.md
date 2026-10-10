@@ -7,6 +7,83 @@
 > `.agent/**`, `tests/support/**` đều là **shared change** (xem `RULE_GLOBAL.md` §Shared Change Gate) —
 > ảnh hưởng mọi story đang chạy. Mỗi mục ghi **vấn đề → cách chữa**, không chỉ liệt kê tính năng.
 
+## v2.4.0 — 2026-10-10 — Đo trước đã, rồi mới biết chỗ tốn không nằm ở nơi ai cũng nghĩ
+
+Đợt này đi giảm token tiêu thụ mỗi lượt chạy. Việc đầu tiên là dựng hai máy đo, và chính chúng bác bỏ
+phần lớn kế hoạch ban đầu.
+
+### Hai máy đo, và số liệu nói ngược kế hoạch
+
+`prompt:budget` đo TĨNH: mỗi điểm vào bảo AI đọc bao nhiêu, tách bắt buộc với có điều kiện. `token:audit`
+đo ĐỘNG từ transcript phiên thật, chỉ ghi số đếm chứ không ghi nội dung.
+
+Đo trên **4 lượt chạy task thật** (CSDL-9001 đến 9004):
+
+- `Read` vào tài liệu của kit: **0 đến 4 lượt**, trên tổng 117 đến 405 lượt `Read`.
+- Ảnh và video: **0,0%** khối lượng kết quả tool, ở cả bốn lượt.
+- File prompt nặng chỉ **1% dòng** mang dấu hiệu lý-do.
+- Thứ tốn thật là kết quả lệnh shell: **62 đến 75%**. Và nó nhân lên theo số message, vì cache-hit 98,5
+  đến 99,0% với context trung bình 494 đến 515k mỗi message.
+
+Nên ba hạng mục trong kế hoạch gốc nhắm vào chỗ gần như không tốn. H7 (tách phần "vì sao" ra khỏi prompt)
+có trần **3,4k**; H8 (bỏ lớp trùng) có trần **3k**. Cả hai bị hoãn, và lý do ghi trong
+`docs/token-diet/BASELINE.md`.
+
+Ba lần đo đầu đều sai, và cách sai cũng được ghi lại: lần một gộp phiên sửa kit với phiên chạy task; lần
+hai phân loại phiên bằng "có đọc prompt không" (sai, vì phiên chạy task hầu như không đọc prompt); lần ba
+dùng hệ số 3,6 ký tự mỗi token trong khi kit dùng 3,2.
+
+### Chỗ cắt được, và số trước sau
+
+`--compact` cho gate: mỗi vi phạm một dòng `MÃ · TC ID · ý chính`. Đo trên bộ 265 case thật của CSDL-9003:
+**10.696 byte xuống 1.811 byte, giảm 83%**. Nó là lớp TRÌNH BÀY chứ không phải lớp lọc — spec khoá rằng
+hai chế độ phải cùng exit code và cùng tập (mã, TC ID), và dòng gộp liệt kê đủ TC ID còn lại.
+
+`results:summary` đọc `results.json` rồi in mỗi case đỏ một dòng, kèm `--grep` để rerun đúng case đỏ. Kit
+đã làm một nửa việc này từ 19/09/2026 khi đổi reporter sang `dot`; đây là nửa phía agent.
+
+Bàn giao giữa phase bằng file `handoff/<phase>.md` dưới 1k token, rồi `/clear`. Đây là hạng mục duy nhất
+đụng tới nhân tử `context × số message`, tức nhân tử chi phối.
+
+### Ba lỗ hổng ĐÚNG-SAI tìm thấy khi đi đo
+
+Không phải lỗ hổng chi phí, và đều nghiêm trọng hơn chuyện token.
+
+**Ảnh evidence rỗng ruột.** "Có file ảnh" và "ảnh đúng màn" là hai chuyện, không máy nào phân biệt. Hai ca
+thật, đã mở mắt kiểm: `CSDL_HSTRUONG_TC_138/step-01-passed.png` **trắng hoàn toàn** (1280×720, 4 KB) của
+một step chấm `passed`; `CSDL_NHANSU_TC_121/step-01-failed.png` là **trang lỗi HTTP 503**. Nay đo bằng byte
+trên pixel, ngưỡng 0,02 lấy từ phân bố của 1.935 ảnh thật, nằm giữa một khoảng trống rõ (0,0095 so với
+0,0289).
+
+**`expansion:audit` đo RỖNG.** Nó đọc `t.id`, một trường không tồn tại; model phơi ra `t.tcId`. Map luôn
+rỗng nên MỌI case báo `unknown`, và mọi dòng "NẾU SIẾT TIẾP" hiện 0/6 đỏ. Một máy đo rỗng mà kết quả trông
+yên tâm, trong khi nó là máy dùng để quyết có siết gate hay không. Sau khi vá: 0 lên **288 case band high**,
+và luật ĐANG ÁP "chưa lập kế hoạch" từ 0/6 lên 1/6 đỏ, chỉ đúng CSDL-9003 với 164 case execute, 118 band
+high, 0/5 trục.
+
+**Thiếu band thì rơi xuống tầng mỏng nhất.** `depth.js` mặc định `low` khi cả hai cột rỗng. Mặc định giữ
+nguyên vì một spec có sẵn khoá đúng hành vi đó kèm lý do thật, nhưng việc gác chuyển sang gate:
+`expansion:plan --enforce` nay TỪ CHỐI chạy khi còn case thiếu band.
+
+### Chống trôi
+
+`prompt:budget --enforce` vào static-check của cả hai CI, ngưỡng ở `.agent/config/prompt_budget.json`. Đo
+theo lời khai `bat_buoc` trong `load_map.json`, không theo heuristic của chính nó. Ngưỡng đặt **trên** mức
+hiện tại chứ không ở mức mong muốn: H9 là chốt chống trôi, không phải roi dọn nợ, và một ngưỡng đã đỏ ngay
+hôm đặt sẽ bị tắt.
+
+### Số đo tĩnh TĂNG, và đó là kết quả đúng
+
+Chuỗi tĩnh của `/phase1` đi từ 142,4k lên **143,4k**. Vì đợt này **thêm** hướng dẫn và **không cắt chữ** —
+hai hạng mục duy nhất làm việc cắt đã hoãn. Chuỗi tĩnh chưa bao giờ là đòn bẩy; đo lại chỉ để xác nhận.
+
+Chi phí một lượt chạy thật **chưa đo lại**: lượt đó chạm UAT nên cần xác nhận trước. Mốc cũ đã nằm sẵn
+trong `baseline.dynamic.json`.
+
+### Số đo
+
+85 máy kiểm (59 CHẶN) · 23 skill · 67 spec được track · 771 test hạ tầng · 513 file được track.
+
 ## v2.3.0 — 2026-10-09 — Sáu luật của gói RBT thành máy, và hai luật của nó bị bỏ
 
 Đợt này nhập một gói tài liệu QA bên ngoài vào kit. Việc khó không phải là chép vào — là quyết **chỗ nào

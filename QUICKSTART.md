@@ -143,6 +143,10 @@ Mỗi luồng có một slash command trong `.claude/commands/`. Gõ trong Claud
 /partial-rerun <TASK_KEY>   # requirement đổi (review trước, apply sau)
 /explore <phạm vi>          # exploratory session có charter
 /manual-run <TASK_KEY>      # chạy tay case khai [manual] cho có verdict
+
+# Giữa hai phase: đọc bàn giao ở handoff/<phase>.md rồi `/clear`. Đo trên 4 lượt task thật, context
+# trung bình mỗi message là 494 đến 515k token, và cache-hit 98,5% nghĩa là nó được đọc lại ở MỌI
+# message. Giữ một phiên cho cả hai phase là bắt phase sau trả tiền cho hội thoại của phase trước.
 /ui-debug <màn>             # khám phá DOM tìm locator bền
 /gates <TASK_KEY>           # bó gate trước khi finalize
 /publish <TASK_KEY>         # đẩy Google Sheet qua Drive MCP (review trước khi ghi đè)

@@ -1,0 +1,2480 @@
+{
+  "_doc": "Đo TĨNH SAU khi làm H1..H10. Sinh bằng `npm run prompt:budget -- --json` rồi đổi tên. So với baseline.static.json.",
+  "_he_so": "3.2 ký tự/token, cùng hệ số doc_budget.js",
+  "_canh_bao": "Cột \"chưa rõ\" là file máy KHÔNG phân loại được, không phải file bắt buộc. Soi tay rồi khai vào load_map.",
+  "doAt": "2026-10-10",
+  "luatNen": {
+    "files": [
+      "CLAUDE.md",
+      ".agent/rules/core_rules.md"
+    ],
+    "tok": 5395
+  },
+  "diemVao": {
+    "/explore": {
+      "soFile": 4,
+      "batBuoc": 5582,
+      "coDieuKien": 0,
+      "chuaRo": 4645,
+      "nguoiDoc": 120,
+      "tong": 10227,
+      "files": [
+        {
+          "file": "exploratory/tours.md",
+          "tok": 2410,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "exploratory/reference.md",
+          "tok": 1120,
+          "nguoiDoc": 120,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "exploratory/run_exploratory_session.md",
+          "tok": 1115,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".claude/commands/explore.md",
+          "tok": 187,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        }
+      ]
+    },
+    "/gates": {
+      "soFile": 1,
+      "batBuoc": 5686,
+      "coDieuKien": 0,
+      "chuaRo": 0,
+      "nguoiDoc": 0,
+      "tong": 5686,
+      "files": [
+        {
+          "file": ".claude/commands/gates.md",
+          "tok": 291,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        }
+      ]
+    },
+    "/manual-run": {
+      "soFile": 7,
+      "batBuoc": 5704,
+      "coDieuKien": 0,
+      "chuaRo": 9915,
+      "nguoiDoc": 169,
+      "tong": 15619,
+      "files": [
+        {
+          "file": ".agent/skills/shared/precondition_setup_planner/SKILL.md",
+          "tok": 2838,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "exploratory/tours.md",
+          "tok": 2410,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "manual-run/run_manual_execution.md",
+          "tok": 1313,
+          "nguoiDoc": 49,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "exploratory/reference.md",
+          "tok": 1120,
+          "nguoiDoc": 120,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "manual-run/reference.md",
+          "tok": 1119,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "exploratory/run_exploratory_session.md",
+          "tok": 1115,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".claude/commands/manual-run.md",
+          "tok": 309,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        }
+      ]
+    },
+    "/partial-rerun": {
+      "soFile": 47,
+      "batBuoc": 5612,
+      "coDieuKien": 31476,
+      "chuaRo": 85917,
+      "nguoiDoc": 2631,
+      "tong": 123005,
+      "files": [
+        {
+          "file": "prompt_templates/phase1/02_gen_testcases.md",
+          "tok": 13923,
+          "nguoiDoc": 853,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/run_phase2_template.md",
+          "tok": 13353,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/04_execute_fe_playwright.md",
+          "tok": 11608,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md) | **BẮT BUỘC** khi có case UI | **Bước 3–5** — kỷ luật execute FE: phản xạ điều tra",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase2/08_log_bug_backlog.md",
+          "tok": 8068,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase2/05_execute_api_playwright.md",
+          "tok": 6463,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/05_execute_api_playwright.md`](phase2/05_execute_api_playwright.md) | **BẮT BUỘC** khi có case API | **Bước 3–5** — kỷ luật execute API: verify GIÁ T",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/02b_output_format.md",
+          "tok": 5033,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/rules/core_rules.md",
+          "tok": 4530,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "partial-rerun/run_requirement_apply_approved.md",
+          "tok": 4229,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "3. `partial-rerun/run_requirement_apply_approved.md` — **chỉ khi user đã duyệt bản review**",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/23_db_persistence.md",
+          "tok": 4000,
+          "nguoiDoc": 797,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/workflows/phase2_04_report_and_backlog_gate.md",
+          "tok": 3453,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| 4 | [phase2_04_report_and_backlog_gate.md](phase2_04_report_and_backlog_gate.md) | Ghi execution summary, shared change log, promotion status và log Backlog c",
+          "sau": 4
+        },
+        {
+          "file": ".agent/rules/qa_instincts.md",
+          "tok": 3082,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/13_business_logic.md",
+          "tok": 3007,
+          "nguoiDoc": 716,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "partial-rerun/reference.md",
+          "tok": 2358,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/12_display.md",
+          "tok": 2232,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "partial-rerun/run_requirement_prepare_review.md",
+          "tok": 2179,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase1/04_auto_publish_backlog.md",
+          "tok": 2106,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/workflows/phase2_02_generate_or_update_automation.md",
+          "tok": 1898,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/03_field_validation.md",
+          "tok": 1853,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/22_inbound_callback.md",
+          "tok": 1409,
+          "nguoiDoc": 265,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/workflows/phase1_01_prepare_context.md",
+          "tok": 1371,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/rules/locator_strategy.md",
+          "tok": 1320,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/04_ui.md",
+          "tok": 1288,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/14_be_conformance.md",
+          "tok": 1218,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase2_03_execute_and_auto_heal.md",
+          "tok": 1173,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/workflows/phase2_01_prepare_execution.md",
+          "tok": 1163,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/workflows/phase1_04_auto_publish_backlog.md",
+          "tok": 1126,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "- Nếu testcase CHƯA từng publish lên Sheet → bỏ qua bước này (chạy `TESTCASE_SOURCE=excel`), hoặc publish lần đầu theo `.agent/workflows/phase1_04_auto_publish_",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase2_execute.md",
+          "tok": 1122,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "**Chi tiết từng bước** (định dạng execution summary, Shared Change Log, Automation Promotion Status, checklist Backlog gate): [`.agent/workflows/phase2_execute.",
+          "sau": 3
+        },
+        {
+          "file": ".agent/rules/locator_healing_policy.md",
+          "tok": 1089,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "- Nếu FAIL do locator không tìm thấy element **và** `LOCATOR_HEAL=1`: áp dụng `.agent/rules/locator_healing_policy.md` (skill `locator_healing_agent`, threshold",
+          "sau": 5
+        },
+        {
+          "file": "partial-rerun/run_testcase_cleanup.md",
+          "tok": 1045,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "4. `partial-rerun/run_testcase_cleanup.md` (khi cần dọn case cũ)",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/15_security.md",
+          "tok": 988,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/19_ordering.md",
+          "tok": 925,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/17_change_impact.md",
+          "tok": 863,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/21_accessibility.md",
+          "tok": 853,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/16_perf.md",
+          "tok": 819,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/20_bug_history.md",
+          "tok": 791,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/05_api.md",
+          "tok": 760,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase2/07_triage_flaky.md",
+          "tok": 674,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/07_triage_flaky.md`](phase2/07_triage_flaky.md) | khi cần | Case FAIL **không ổn định** giữa các lần chạy — phân biệt flaky vs bug thật trước khi log",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase2/06_triage_review.md",
+          "tok": 667,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/06_triage_review.md`](phase2/06_triage_review.md) | khi cần | Sau generate/heal, muốn **review nhanh automation code** để soi rủi ro. Suite đã pass ổ",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/10_guard.md",
+          "tok": 640,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/11_design.md",
+          "tok": 569,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/rules/playwright_api.md",
+          "tok": 557,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/rules/playwright_fe.md",
+          "tok": 497,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/07_export_import.md",
+          "tok": 338,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/09_side_effect.md",
+          "tok": 301,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/08_resilience.md",
+          "tok": 256,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".claude/commands/partial-rerun.md",
+          "tok": 217,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/06_e2e.md",
+          "tok": 196,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        }
+      ]
+    },
+    "/phase1": {
+      "soFile": 56,
+      "batBuoc": 5763,
+      "coDieuKien": 13513,
+      "chuaRo": 124127,
+      "nguoiDoc": 3445,
+      "tong": 143403,
+      "files": [
+        {
+          "file": "prompt_templates/phase1/02_gen_testcases.md",
+          "tok": 13923,
+          "nguoiDoc": 853,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/run_phase2_template.md",
+          "tok": 13353,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase2/04_execute_fe_playwright.md",
+          "tok": 11608,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/run_phase1_template.md",
+          "tok": 8583,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase2/08_log_bug_backlog.md",
+          "tok": 8068,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase2/05_execute_api_playwright.md",
+          "tok": 6463,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/02b_output_format.md",
+          "tok": 5033,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/rules/core_rules.md",
+          "tok": 4530,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "partial-rerun/run_requirement_apply_approved.md",
+          "tok": 4229,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/23_db_persistence.md",
+          "tok": 4000,
+          "nguoiDoc": 797,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase2_04_report_and_backlog_gate.md",
+          "tok": 3453,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| 4 | [phase2_04_report_and_backlog_gate.md](phase2_04_report_and_backlog_gate.md) | Ghi execution summary, shared change log, promotion status và log Backlog c",
+          "sau": 6
+        },
+        {
+          "file": ".agent/rules/qa_instincts.md",
+          "tok": 3082,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/13_business_logic.md",
+          "tok": 3007,
+          "nguoiDoc": 716,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/05_manual_quick.md",
+          "tok": 2787,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "partial-rerun/reference.md",
+          "tok": 2358,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/12_display.md",
+          "tok": 2232,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "2b. **UI Conformance Catalog (BẮT BUỘC nếu scope có màn UI)**: với mỗi màn/bảng/danh sách/field trong scope, trích **NGUYÊN VĂN từ FS/Figma** ra `<PROJECT_OUTPU",
+          "sau": 2
+        },
+        {
+          "file": "partial-rerun/run_requirement_prepare_review.md",
+          "tok": 2179,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/04_auto_publish_backlog.md",
+          "tok": 2106,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase1_03_validate_export_report.md",
+          "tok": 1952,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase2_02_generate_or_update_automation.md",
+          "tok": 1898,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 6
+        },
+        {
+          "file": "prompt_templates/phase1/01_setup_engine_fetch_docs.md",
+          "tok": 1862,
+          "nguoiDoc": 814,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/03_field_validation.md",
+          "tok": 1853,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/22_inbound_callback.md",
+          "tok": 1409,
+          "nguoiDoc": 265,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase1_01_prepare_context.md",
+          "tok": 1371,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".agent/rules/locator_strategy.md",
+          "tok": 1320,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/workflows/phase1_generate_tc.md",
+          "tok": 1314,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/04_ui.md",
+          "tok": 1288,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/14_be_conformance.md",
+          "tok": 1218,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| §14 | BE Response Data Conformance Coverage | `[BEData]` | mọi màn/endpoint có dữ liệu từ BE — BẮT BUỘC nếu có mapping field | [`14_be_conformance.md`](dimens",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase2_03_execute_and_auto_heal.md",
+          "tok": 1173,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 6
+        },
+        {
+          "file": ".agent/workflows/phase2_01_prepare_execution.md",
+          "tok": 1163,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 6
+        },
+        {
+          "file": ".agent/workflows/phase1_04_auto_publish_backlog.md",
+          "tok": 1126,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase2_execute.md",
+          "tok": 1122,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "**Chi tiết từng bước** (định dạng execution summary, Shared Change Log, Automation Promotion Status, checklist Backlog gate): [`.agent/workflows/phase2_execute.",
+          "sau": 5
+        },
+        {
+          "file": ".agent/rules/locator_healing_policy.md",
+          "tok": 1089,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "- Nếu FAIL do locator không tìm thấy element **và** `LOCATOR_HEAL=1`: áp dụng `.agent/rules/locator_healing_policy.md` (skill `locator_healing_agent`, threshold",
+          "sau": 7
+        },
+        {
+          "file": ".agent/workflows/phase1_00_scope_planning.md",
+          "tok": 1062,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "partial-rerun/run_testcase_cleanup.md",
+          "tok": 1045,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "- Testcase cleanup: KHÔNG cleanup trong prompt này. Sheet tự phản ánh đúng Excel ở mỗi lần re-publish (ghi đè toàn workbook) — không cần bước lifecycle riêng. N",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/15_security.md",
+          "tok": 988,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/19_ordering.md",
+          "tok": 925,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/03_gen_test_data.md",
+          "tok": 902,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase1/03_gen_test_data.md`](phase1/03_gen_test_data.md) | khi cần | Cần **bảng test data riêng** + `DataGenerator` cho Phase 2 (4 nhóm data, đặt tên tracea",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase1_02_generate_testcases.md",
+          "tok": 893,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| 2 | [phase1_02_generate_testcases.md](phase1_02_generate_testcases.md) | Sinh testcase theo template 11 cột, phân nhóm và risk. **KHÔNG vào bước này nếu `AMBI",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/06_cross_module.md",
+          "tok": 892,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase1/06_cross_module.md`](phase1/06_cross_module.md) | khi cần | Scope chạm nhiều module/hệ thống, cần ma trận tổ hợp (skill `combinatorial_matrix` cũng g",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/17_change_impact.md",
+          "tok": 863,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/21_accessibility.md",
+          "tok": 853,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/16_perf.md",
+          "tok": 819,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/20_bug_history.md",
+          "tok": 791,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/05_api.md",
+          "tok": 760,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase2/07_triage_flaky.md",
+          "tok": 674,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase2/06_triage_review.md",
+          "tok": 667,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/06_triage_review.md`](phase2/06_triage_review.md) | khi cần | Sau generate/heal, muốn **review nhanh automation code** để soi rủi ro. Suite đã pass ổ",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/10_guard.md",
+          "tok": 640,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/11_design.md",
+          "tok": 569,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/rules/playwright_api.md",
+          "tok": 557,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 6
+        },
+        {
+          "file": ".agent/rules/playwright_fe.md",
+          "tok": 497,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".claude/commands/phase1.md",
+          "tok": 368,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/07_export_import.md",
+          "tok": 338,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/09_side_effect.md",
+          "tok": 301,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/08_resilience.md",
+          "tok": 256,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/06_e2e.md",
+          "tok": 196,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        }
+      ]
+    },
+    "/phase2": {
+      "soFile": 43,
+      "batBuoc": 5802,
+      "coDieuKien": 25080,
+      "chuaRo": 82502,
+      "nguoiDoc": 2631,
+      "tong": 113384,
+      "files": [
+        {
+          "file": "prompt_templates/phase1/02_gen_testcases.md",
+          "tok": 13923,
+          "nguoiDoc": 853,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/run_phase2_template.md",
+          "tok": 13353,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase2/04_execute_fe_playwright.md",
+          "tok": 11608,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md) | **BẮT BUỘC** khi có case UI | **Bước 3–5** — kỷ luật execute FE: phản xạ điều tra",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/08_log_bug_backlog.md",
+          "tok": 8068,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/05_execute_api_playwright.md",
+          "tok": 6463,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/05_execute_api_playwright.md`](phase2/05_execute_api_playwright.md) | **BẮT BUỘC** khi có case API | **Bước 3–5** — kỷ luật execute API: verify GIÁ T",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/02b_output_format.md",
+          "tok": 5033,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/rules/core_rules.md",
+          "tok": 4530,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/23_db_persistence.md",
+          "tok": 4000,
+          "nguoiDoc": 797,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase2_04_report_and_backlog_gate.md",
+          "tok": 3453,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| 4 | [phase2_04_report_and_backlog_gate.md](phase2_04_report_and_backlog_gate.md) | Ghi execution summary, shared change log, promotion status và log Backlog c",
+          "sau": 2
+        },
+        {
+          "file": ".agent/rules/qa_instincts.md",
+          "tok": 3082,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/13_business_logic.md",
+          "tok": 3007,
+          "nguoiDoc": 716,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/12_display.md",
+          "tok": 2232,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/04_auto_publish_backlog.md",
+          "tok": 2106,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase2_02_generate_or_update_automation.md",
+          "tok": 1898,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/03_field_validation.md",
+          "tok": 1853,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/22_inbound_callback.md",
+          "tok": 1409,
+          "nguoiDoc": 265,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/workflows/phase1_01_prepare_context.md",
+          "tok": 1371,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/rules/locator_strategy.md",
+          "tok": 1320,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/04_ui.md",
+          "tok": 1288,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/14_be_conformance.md",
+          "tok": 1218,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase2_03_execute_and_auto_heal.md",
+          "tok": 1173,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase2_01_prepare_execution.md",
+          "tok": 1163,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase1_04_auto_publish_backlog.md",
+          "tok": 1126,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "Agent `mcp__claude_ai_Google_Drive__download_file_content` file Sheet theo `GOOGLE_SHEET_URL` trong `profiles/[TASK_KEY]/task.env` → ghi `test-cases/from-sheet/",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase2_execute.md",
+          "tok": 1122,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".agent/rules/locator_healing_policy.md",
+          "tok": 1089,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "- Nếu FAIL do locator không tìm thấy element **và** `LOCATOR_HEAL=1`: áp dụng `.agent/rules/locator_healing_policy.md` (skill `locator_healing_agent`, threshold",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/15_security.md",
+          "tok": 988,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/19_ordering.md",
+          "tok": 925,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/17_change_impact.md",
+          "tok": 863,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/21_accessibility.md",
+          "tok": 853,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/16_perf.md",
+          "tok": 819,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/20_bug_history.md",
+          "tok": 791,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/05_api.md",
+          "tok": 760,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase2/07_triage_flaky.md",
+          "tok": 674,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/07_triage_flaky.md`](phase2/07_triage_flaky.md) | khi cần | Case FAIL **không ổn định** giữa các lần chạy — phân biệt flaky vs bug thật trước khi log",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/06_triage_review.md",
+          "tok": 667,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/06_triage_review.md`](phase2/06_triage_review.md) | khi cần | Sau generate/heal, muốn **review nhanh automation code** để soi rủi ro. Suite đã pass ổ",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/10_guard.md",
+          "tok": 640,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/11_design.md",
+          "tok": 569,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/rules/playwright_api.md",
+          "tok": 557,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/rules/playwright_fe.md",
+          "tok": 497,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".claude/commands/phase2.md",
+          "tok": 407,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/07_export_import.md",
+          "tok": 338,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/09_side_effect.md",
+          "tok": 301,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/08_resilience.md",
+          "tok": 256,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/06_e2e.md",
+          "tok": 196,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        }
+      ]
+    },
+    "/preflight": {
+      "soFile": 1,
+      "batBuoc": 5623,
+      "coDieuKien": 0,
+      "chuaRo": 0,
+      "nguoiDoc": 0,
+      "tong": 5623,
+      "files": [
+        {
+          "file": ".claude/commands/preflight.md",
+          "tok": 228,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        }
+      ]
+    },
+    "/publish": {
+      "soFile": 14,
+      "batBuoc": 5969,
+      "coDieuKien": 0,
+      "chuaRo": 45239,
+      "nguoiDoc": 0,
+      "tong": 51208,
+      "files": [
+        {
+          "file": "prompt_templates/phase2/04_execute_fe_playwright.md",
+          "tok": 11608,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/08_log_bug_backlog.md",
+          "tok": 8068,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/05_execute_api_playwright.md",
+          "tok": 6463,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/rules/core_rules.md",
+          "tok": 4530,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/phase2_04_report_and_backlog_gate.md",
+          "tok": 3453,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".agent/rules/qa_instincts.md",
+          "tok": 3082,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/04_auto_publish_backlog.md",
+          "tok": 2106,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".agent/skills/shared/backlog_testcase_publisher/SKILL.md",
+          "tok": 1755,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".agent/rules/locator_strategy.md",
+          "tok": 1320,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase1_04_auto_publish_backlog.md",
+          "tok": 1126,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase2/07_triage_flaky.md",
+          "tok": 674,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".claude/commands/publish.md",
+          "tok": 574,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        },
+        {
+          "file": ".agent/rules/playwright_api.md",
+          "tok": 557,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/rules/playwright_fe.md",
+          "tok": 497,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        }
+      ]
+    },
+    "/rerun": {
+      "soFile": 48,
+      "batBuoc": 5888,
+      "coDieuKien": 34952,
+      "chuaRo": 80599,
+      "nguoiDoc": 2631,
+      "tong": 121439,
+      "files": [
+        {
+          "file": "prompt_templates/phase1/02_gen_testcases.md",
+          "tok": 13923,
+          "nguoiDoc": 853,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/run_phase2_template.md",
+          "tok": 13353,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/04_execute_fe_playwright.md",
+          "tok": 11608,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "**Prompt execute**: rerun vẫn chạy test thật nên kỷ luật execute áp y như Phase 2 — mở [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/08_log_bug_backlog.md",
+          "tok": 8068,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "1. **Chụp lại evidence và ANNOTATE**: khoanh vùng + nhãn ngắn, **xanh lá = điểm đã đúng/đã fix** (đối chiếu tài liệu). Nếu đang cập nhật lại evidence cũ → **xóa",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/05_execute_api_playwright.md",
+          "tok": 6463,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "**Prompt execute**: rerun vẫn chạy test thật nên kỷ luật execute áp y như Phase 2 — mở [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/run_phase_re-run_template.md",
+          "tok": 5359,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase1/02b_output_format.md",
+          "tok": 5033,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/rules/core_rules.md",
+          "tok": 4530,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/23_db_persistence.md",
+          "tok": 4000,
+          "nguoiDoc": 797,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/workflows/phase2_04_report_and_backlog_gate.md",
+          "tok": 3453,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| 4 | [phase2_04_report_and_backlog_gate.md](phase2_04_report_and_backlog_gate.md) | Ghi execution summary, shared change log, promotion status và log Backlog c",
+          "sau": 4
+        },
+        {
+          "file": ".agent/rules/qa_instincts.md",
+          "tok": 3082,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/13_business_logic.md",
+          "tok": 3007,
+          "nguoiDoc": 716,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/12_display.md",
+          "tok": 2232,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/04_auto_publish_backlog.md",
+          "tok": 2106,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase2_02_generate_or_update_automation.md",
+          "tok": 1898,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/03_field_validation.md",
+          "tok": 1853,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/22_inbound_callback.md",
+          "tok": 1409,
+          "nguoiDoc": 265,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/workflows/phase1_01_prepare_context.md",
+          "tok": 1371,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/rules/locator_strategy.md",
+          "tok": 1320,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/04_ui.md",
+          "tok": 1288,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/14_be_conformance.md",
+          "tok": 1218,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase2_03_execute_and_auto_heal.md",
+          "tok": 1173,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/workflows/phase2_01_prepare_execution.md",
+          "tok": 1163,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 4
+        },
+        {
+          "file": ".agent/workflows/phase1_04_auto_publish_backlog.md",
+          "tok": 1126,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "Agent `mcp__claude_ai_Google_Drive__download_file_content` file Sheet theo `GOOGLE_SHEET_URL` trong `profiles/[TASK_KEY]/task.env` → ghi `test-cases/from-sheet/",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/phase2_execute.md",
+          "tok": 1122,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "**Chi tiết từng bước** (định dạng execution summary, Shared Change Log, Automation Promotion Status, checklist Backlog gate): [`.agent/workflows/phase2_execute.",
+          "sau": 3
+        },
+        {
+          "file": ".agent/rules/locator_healing_policy.md",
+          "tok": 1089,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "- Nếu FAIL do locator không tìm thấy element **và** `LOCATOR_HEAL=1`: áp dụng `.agent/rules/locator_healing_policy.md` (skill `locator_healing_agent`, threshold",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/15_security.md",
+          "tok": 988,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/19_ordering.md",
+          "tok": 925,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/17_change_impact.md",
+          "tok": 863,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/21_accessibility.md",
+          "tok": 853,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/16_perf.md",
+          "tok": 819,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/workflows/rerun_02_rerun_and_verify.md",
+          "tok": 813,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/workflows/rerun.md",
+          "tok": 802,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/20_bug_history.md",
+          "tok": 791,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/05_api.md",
+          "tok": 760,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/workflows/rerun_03_update_backlog_and_report.md",
+          "tok": 682,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| 3 | [rerun_03_update_backlog_and_report.md](rerun_03_update_backlog_and_report.md) | Cập nhật Backlog Done khi PASS thật hoặc ghi blocker/fail nếu chưa đạt. |",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/07_triage_flaky.md",
+          "tok": 674,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "**Prompt execute**: rerun vẫn chạy test thật nên kỷ luật execute áp y như Phase 2 — mở [`phase2/04_execute_fe_playwright.md`](phase2/04_execute_fe_playwright.md",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/06_triage_review.md",
+          "tok": 667,
+          "nguoiDoc": 0,
+          "loai": "có điều kiện",
+          "viSao": "| [`phase2/06_triage_review.md`](phase2/06_triage_review.md) | khi cần | Sau generate/heal, muốn **review nhanh automation code** để soi rủi ro. Suite đã pass ổ",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/10_guard.md",
+          "tok": 640,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/11_design.md",
+          "tok": 569,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/rules/playwright_api.md",
+          "tok": 557,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/rules/playwright_fe.md",
+          "tok": 497,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".claude/commands/rerun.md",
+          "tok": 493,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/07_export_import.md",
+          "tok": 338,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": ".agent/workflows/rerun_01_map_bug_to_testcase.md",
+          "tok": 313,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/09_side_effect.md",
+          "tok": 301,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/08_resilience.md",
+          "tok": 256,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/06_e2e.md",
+          "tok": 196,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 5
+        }
+      ]
+    },
+    "/ui-debug": {
+      "soFile": 12,
+      "batBuoc": 5613,
+      "coDieuKien": 0,
+      "chuaRo": 37443,
+      "nguoiDoc": 1329,
+      "tong": 43056,
+      "files": [
+        {
+          "file": "prompt_templates/phase2/04_execute_fe_playwright.md",
+          "tok": 11608,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": "prompt_templates/phase2/05_execute_api_playwright.md",
+          "tok": 6463,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/rules/core_rules.md",
+          "tok": 4530,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": "prompt_templates/phase1/dimensions/23_db_persistence.md",
+          "tok": 4000,
+          "nguoiDoc": 797,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/skills/phase2/ui_debug_agent/SKILL.md",
+          "tok": 3623,
+          "nguoiDoc": 532,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".agent/rules/qa_instincts.md",
+          "tok": 3082,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".agent/rules/locator_strategy.md",
+          "tok": 1320,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".agent/rules/locator_healing_policy.md",
+          "tok": 1089,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": "prompt_templates/phase2/07_triage_flaky.md",
+          "tok": 674,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 2
+        },
+        {
+          "file": ".agent/rules/playwright_api.md",
+          "tok": 557,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 3
+        },
+        {
+          "file": ".agent/rules/playwright_fe.md",
+          "tok": 497,
+          "nguoiDoc": 0,
+          "loai": "chưa rõ",
+          "viSao": "",
+          "sau": 1
+        },
+        {
+          "file": ".claude/commands/ui-debug.md",
+          "tok": 218,
+          "nguoiDoc": 0,
+          "loai": "bắt buộc",
+          "viSao": "",
+          "sau": 0
+        }
+      ]
+    }
+  },
+  "trungY": [
+    {
+      "tok": 22,
+      "soFile": 15,
+      "files": [
+        "prompt_templates/phase1/dimensions/12_display.md",
+        "prompt_templates/phase1/dimensions/14_be_conformance.md",
+        "prompt_templates/phase1/dimensions/15_security.md",
+        "prompt_templates/phase1/dimensions/10_guard.md",
+        "prompt_templates/phase1/dimensions/08_resilience.md",
+        "prompt_templates/phase1/dimensions/16_perf.md",
+        "prompt_templates/phase1/dimensions/03_field_validation.md",
+        "prompt_templates/phase1/dimensions/04_ui.md",
+        "prompt_templates/phase1/dimensions/05_api.md",
+        "prompt_templates/phase1/dimensions/06_e2e.md",
+        "prompt_templates/phase1/dimensions/07_export_import.md",
+        "prompt_templates/phase1/dimensions/09_side_effect.md",
+        "prompt_templates/phase1/dimensions/11_design.md",
+        "prompt_templates/phase1/dimensions/13_business_logic.md",
+        "prompt_templates/phase1/dimensions/17_change_impact.md"
+      ],
+      "cau": "tách khỏi [ 02 gen testcases.md ](../02 gen testcases.md) 14/08/2026."
+    },
+    {
+      "tok": 34,
+      "soFile": 7,
+      "files": [
+        "prompt_templates/phase1/dimensions/15_security.md",
+        "prompt_templates/phase1/dimensions/08_resilience.md",
+        "prompt_templates/phase1/dimensions/16_perf.md",
+        "prompt_templates/phase1/dimensions/05_api.md",
+        "prompt_templates/phase1/dimensions/06_e2e.md",
+        "prompt_templates/phase1/dimensions/07_export_import.md",
+        "prompt_templates/phase1/dimensions/11_design.md"
+      ],
+      "cau": "chiều khác tham chiếu trong bài thì mở file tương ứng ở cùng thư mục — danh sách đủ ở bảng điều hướng của 02 ."
+    },
+    {
+      "tok": 27,
+      "soFile": 7,
+      "files": [
+        "prompt_templates/phase2/05_execute_api_playwright.md",
+        "prompt_templates/phase2/06_triage_review.md",
+        "prompt_templates/phase2/07_triage_flaky.md",
+        "prompt_templates/phase2/08_log_bug_backlog.md",
+        "prompt_templates/phase1/04_auto_publish_backlog.md",
+        "prompt_templates/run_phase1_template.md",
+        "prompt_templates/phase1/05_manual_quick.md"
+      ],
+      "cau": "chỉ mở rule global.md ở đúng mục cần , vì mỗi gạch đầu dòng của digest đã ghi sẵn § ."
+    },
+    {
+      "tok": 22,
+      "soFile": 8,
+      "files": [
+        "prompt_templates/phase1/dimensions/12_display.md",
+        "prompt_templates/phase1/dimensions/14_be_conformance.md",
+        "prompt_templates/phase1/dimensions/10_guard.md",
+        "prompt_templates/phase1/dimensions/03_field_validation.md",
+        "prompt_templates/phase1/dimensions/04_ui.md",
+        "prompt_templates/phase1/dimensions/09_side_effect.md",
+        "prompt_templates/phase1/dimensions/13_business_logic.md",
+        "prompt_templates/phase1/dimensions/17_change_impact.md"
+      ],
+      "cau": "chiều khác tham chiếu trong bài thì mở file tương ứng ở cùng thư mục."
+    },
+    {
+      "tok": 38,
+      "soFile": 5,
+      "files": [
+        "partial-rerun/run_requirement_prepare_review.md",
+        "partial-rerun/run_requirement_apply_approved.md",
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/run_phase1_template.md",
+        "prompt_templates/run_phase_re-run_template.md"
+      ],
+      "cau": "nếu yêu cầu hiện tại của user không nêu rõ task key , không dùng task key từ .env hoặc context cũ để chạy; phải hỏi lại."
+    },
+    {
+      "tok": 30,
+      "soFile": 6,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase1/02_gen_testcases.md",
+        "prompt_templates/phase1/01_setup_engine_fetch_docs.md",
+        "prompt_templates/phase1/03_gen_test_data.md",
+        "prompt_templates/phase1/06_cross_module.md"
+      ],
+      "cau": "chỉ mở rule global.md ở đúng mục cần (mỗi gạch đầu dòng của digest có ghi § ) — đừng nạp cả file."
+    },
+    {
+      "tok": 21,
+      "soFile": 5,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/phase2/08_log_bug_backlog.md",
+        "prompt_templates/phase1/04_auto_publish_backlog.md",
+        "prompt_templates/run_phase1_template.md",
+        "prompt_templates/run_phase_re-run_template.md"
+      ],
+      "cau": "không sửa .env hoặc .env.local chung khi có session khác đang chạy."
+    },
+    {
+      "tok": 75,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "cách dựng precondition lấy từ tag [<method ] ở đầu cell tiền điều kiện ; chi tiết (endpoint/payload/fixture id · verific"
+    },
+    {
+      "tok": 35,
+      "soFile": 3,
+      "files": [
+        ".agent/workflows/phase2_01_prepare_execution.md",
+        ".agent/workflows/phase1_01_prepare_context.md",
+        ".agent/workflows/rerun_01_map_bug_to_testcase.md"
+      ],
+      "cau": "nếu yêu cầu hiện tại không nêu rõ task key , không dùng task key từ .env hoặc context cũ để chạy; phải hỏi lại."
+    },
+    {
+      "tok": 68,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "reuse setup layer dùng chung tests/support/setup/ (factories/hooks/fixtures/cleanup/contracts); phần đặc thù story tạo t"
+    },
+    {
+      "tok": 31,
+      "soFile": 3,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/run_phase1_template.md",
+        "prompt_templates/run_phase_re-run_template.md"
+      ],
+      "cau": "494 đến 515k token, và cache hit 98,5 đến 99,0% nghĩa là cả context đó được đọc lại ở mọi message."
+    },
+    {
+      "tok": 62,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "read only verify/chẩn đoán trên uat db được phép qua guarded client tests/support/setup/db/uatdbclient.ts (chỉ lib maste"
+    },
+    {
+      "tok": 30,
+      "soFile": 3,
+      "files": [
+        ".claude/commands/phase2.md",
+        ".claude/commands/publish.md",
+        ".claude/commands/rerun.md"
+      ],
+      "cau": "lượt trước không phải nguồn — nó không qua gate nào, và sau một lần nén thì chính nó cũng mất chi"
+    },
+    {
+      "tok": 57,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "nguồn & scope. task key + project output dir có; đọc testcase canonical local (tải mới nhất từ google sheet qua drive mc"
+    },
+    {
+      "tok": 27,
+      "soFile": 3,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/run_phase1_template.md",
+        "prompt_templates/run_phase_re-run_template.md"
+      ],
+      "cau": "giữ một phiên cho cả hai phase là bắt phase sau trả tiền cho hội thoại của phase trước."
+    },
+    {
+      "tok": 54,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "với mỗi selected tc, lấy setup method từ tag [<method ] ở đầu cell tiền điều kiện (bộ cũ chưa có tag thì đọc preconditio"
+    },
+    {
+      "tok": 27,
+      "soFile": 3,
+      "files": [
+        ".claude/commands/phase2.md",
+        ".claude/commands/publish.md",
+        ".claude/commands/rerun.md"
+      ],
+      "cau": "chưa có file bàn giao thì preflight gate sẽ kêu; đọc reports/ của phase trước thay thế."
+    },
+    {
+      "tok": 53,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "knowledge/system/ type data model — test implication cho biết mô hình dữ liệu bắt test phải làm khác đi thế nào (vd sau "
+    },
+    {
+      "tok": 50,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase1/02b_output_format.md",
+        "prompt_templates/run_phase1_template.md"
+      ],
+      "cau": "trace requirement, step executable, expected cụ thể, assertion đúng business rule, phụ thuộc data/env, flaky risk, dupli"
+    },
+    {
+      "tok": 47,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "🧩 helper (tuỳ chọn) — scripts/utils/test context.js : automation standalone có thể const ctx = createtestcontext({ task"
+    },
+    {
+      "tok": 46,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "verify state có thể dùng read only uat db qua guarded client tests/support/setup/db/uatdbclient.ts (read only, chỉ selec"
+    },
+    {
+      "tok": 46,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "không dùng direct db connection, test db , test database url , database url , pg hoặc backend source inspection để làm t"
+    },
+    {
+      "tok": 44,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "nếu precondition chỉ có thể dựng bằng db hoặc backend internal state → manual only / blocked setup + manual steps (không"
+    },
+    {
+      "tok": 42,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/phase2/08_log_bug_backlog.md"
+      ],
+      "cau": "node scripts/integrations/backlog/bug reporter.js task [task key] story [backlog story key] project output [project outp"
+    },
+    {
+      "tok": 21,
+      "soFile": 3,
+      "files": [
+        "prompt_templates/phase1/02b_output_format.md",
+        "prompt_templates/run_phase1_template.md",
+        ".agent/workflows/phase1_03_validate_export_report.md"
+      ],
+      "cau": "node scripts/convert excel/md to xlsx.js <testcase.md <testcase.xlsx"
+    },
+    {
+      "tok": 21,
+      "soFile": 3,
+      "files": [
+        ".claude/commands/phase1.md",
+        ".claude/commands/phase2.md",
+        ".claude/commands/rerun.md"
+      ],
+      "cau": "[ .agent/config/load map.json ](../../.agent/config/load map.json)."
+    },
+    {
+      "tok": 41,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "🛑 checklist 6 khối — xác nhận trước khi execute (forcing function; output gate sẽ chặn nếu output vi phạm — đọc & làm, "
+    },
+    {
+      "tok": 41,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "khi có run id , không sửa testcase markdown/excel chính trong lúc execute; ghi status/actual/evidence vào run scoped rep"
+    },
+    {
+      "tok": 40,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/run_phase1_template.md"
+      ],
+      "cau": "truyền task env=profiles/[task key]/task.env cho mọi command; không đọc task key từ .env chung, không sửa .env/.env.loca"
+    },
+    {
+      "tok": 40,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/phase2/08_log_bug_backlog.md"
+      ],
+      "cau": "node scripts/integrations/backlog/bug reporter.js task [task key] story [backlog story key] project output [project outp"
+    },
+    {
+      "tok": 39,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "sau khi chạy xong (pass/fail), cleanup theo cleanup/rollback , scope theo run id ; ghi rõ data đã dọn / lý do không dọn "
+    },
+    {
+      "tok": 19,
+      "soFile": 3,
+      "files": [
+        "partial-rerun/reference.md",
+        "partial-rerun/run_requirement_apply_approved.md",
+        "prompt_templates/phase2/08_log_bug_backlog.md"
+      ],
+      "cau": "<project output dir /tasks/<task key /reports/runs/<run id /"
+    },
+    {
+      "tok": 19,
+      "soFile": 3,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/run_phase1_template.md",
+        "prompt_templates/run_phase_re-run_template.md"
+      ],
+      "cau": "[ .agent/config/handoff.json ](../.agent/config/handoff.json):"
+    },
+    {
+      "tok": 19,
+      "soFile": 3,
+      "files": [
+        ".claude/commands/phase2.md",
+        ".claude/commands/preflight.md",
+        ".claude/commands/rerun.md"
+      ],
+      "cau": "node scripts/qa/preflight gate.js mode phase2 task $arguments"
+    },
+    {
+      "tok": 37,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "vấp xong mà kho chưa có record thì ghi thêm ( npm run howto:check → howto:index ) — đó là lúc thông tin còn tươi nhất."
+    },
+    {
+      "tok": 37,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase1/02_gen_testcases.md",
+        ".agent/workflows/phase1_02_generate_testcases.md"
+      ],
+      "cau": "tc id loại case tag module trường hợp kiểm thử tiền điều kiện dữ liệu test các bước thực hiện kết quả mong đợi ưu tiên"
+    },
+    {
+      "tok": 35,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "readiness=needs hook mà capability (hook/mock/sandbox) chưa có → blocked setup + nêu missing capability cụ thể."
+    },
+    {
+      "tok": 35,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "không upload .md , .txt , .log , .json , .zip , trace.zip , error context.md hoặc execution summary lên backlog."
+    },
+    {
+      "tok": 34,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/run_phase1_template.md"
+      ],
+      "cau": "nếu không có task key , dừng và yêu cầu user cung cấp; không dùng fallback từ backlog story key hoặc task cũ."
+    },
+    {
+      "tok": 33,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "đọc selected tc từ nguồn canonical local test cases/from sheet/ .xlsx (đã tải từ google sheet ở bước 0)."
+    },
+    {
+      "tok": 33,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "nếu có run id , chỉ cập nhật run scoped report/status, không ghi trực tiếp testcase markdown/excel chính."
+    },
+    {
+      "tok": 33,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "mọi lệch khỏi kịch bản phải ghi sổ. khi bị chặn, xu hướng tự nhiên là làm cho nó chạy — chờ thêm, retry,"
+    },
+    {
+      "tok": 33,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "điều kiện sống còn — không có oracle thì không kết luận. mở rộng mà không có nguồn thì agent sẽ mặc định"
+    },
+    {
+      "tok": 33,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/08_log_bug_backlog.md",
+        "prompt_templates/phase1/04_auto_publish_backlog.md"
+      ],
+      "cau": "không in password, api key, cookie hoặc private key ra console, markdown, testcase output, report hoặc log."
+    },
+    {
+      "tok": 32,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/run_phase2_template.md",
+        "prompt_templates/run_phase1_template.md"
+      ],
+      "cau": "(lấy từ profile của task — profiles/[task key].env; chỉ điền trực tiếp ở đây khi muốn override profile)"
+    },
+    {
+      "tok": 32,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "📋 attestation (g6) — sau execute, ghi vào testcase status.json : field attestation = { \"oraclesource\":"
+    },
+    {
+      "tok": 32,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "không thêm db client/db query mới (chỉ dùng guarded client db/uatdbclient.ts cho read only verify uat)."
+    },
+    {
+      "tok": 32,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "chạy precondition resolution pass (section ở trên) cho toàn bộ selected tc trước khi generate/execute."
+    },
+    {
+      "tok": 32,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "newledger(tcid).note('extra wait', 'lý do') ( scripts/lib/expansion/deviation.js ); pass sau khi lệch ⇒"
+    },
+    {
+      "tok": 31,
+      "soFile": 2,
+      "files": [
+        "prompt_templates/phase2/04_execute_fe_playwright.md",
+        "prompt_templates/phase2/05_execute_api_playwright.md"
+      ],
+      "cau": "tín hiệu môi trường — assert, đừng chỉ dùng khi đã fail. trang/api đã mở rồi nên nghe thêm không tốn"
+    }
+  ]
+}
