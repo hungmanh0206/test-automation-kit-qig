@@ -3,7 +3,7 @@
 > Chạy: `Đọc file này và chạy với TASK_KEY=<TASK_KEY>`. Rule non-negotiables ở `CLAUDE.md`, đã auto-load. Digest ở `.agent/rules/core_rules.md`.
 > Chỉ mở `RULE_GLOBAL.md` **ở đúng mục cần**, vì mỗi gạch đầu dòng của digest đã ghi sẵn `§`. Đừng nạp cả file.
 
-Dùng prompt này để collect context và sinh/cập nhật testcase. Đây là template dùng chung, phải thay các placeholder trước khi chạy. Không execute automation trong Phase 1.
+Dùng prompt này để collect context và sinh hoặc cập nhật testcase. Đây là template dùng chung, phải thay các placeholder trước khi chạy. Không execute automation trong Phase 1.
 
 ## Bản đồ prompt Phase 1 — file này là ĐIỂM VÀO DUY NHẤT
 
@@ -26,7 +26,7 @@ Riêng [`phase1_00_scope_planning.md`](../.agent/workflows/phase1_00_scope_plann
 
 ## Gate bắt buộc chạy trong Phase 1
 
-Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`** mà file điểm-vào này không trỏ tới ⇒ ai theo đúng `run_phase1` thì không bao giờ chạy chúng. Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
+Lệnh chỉ nằm ở `.agent/workflows/` thì không ai chạy. Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
 
 | Khi nào | Lệnh | Nó chặn/sinh ra gì |
 |---|---|---|
@@ -46,6 +46,7 @@ Trước đây các lệnh này **chỉ nằm trong `.agent/workflows/phase1_*`*
 | Sau export | `npm run trace:matrix` | Sinh `reports/traceability-matrix.md` — REQ ↔ TC, lộ requirement chưa có case nào |
 | Trước khi kết thúc phase | `npm run gate:policy` | Rule/skill/prompt mồ côi, lệch tên, lệch danh sách đuôi evidence |
 | **Ngay khi có bộ testcase + đã viết summary** | `npm run scope:anchor:enforce` | **CHẶN khi mẫu số chưa neo**: `dimension_manifest.json` thiếu `reviewed_by` (agent tự khai `n/a` = tự thu hẹp phạm vi) · "Tổng requirement in-scope" không khớp `scope_inventory.md` · `ui_catalog` lấy từ build mà không đánh `"oracle": "OBSERVATION"` · **số case đổi ≥10% so lượt trước mà danh mục KHÔNG đổi** (⇒ lượt trước sinh thiếu, phải ghi `knowledge/bugs/`) · kết luận `PASS` khi chưa neo. `--record` ghi sổ để lượt sau so được |
+| **Cuối phase** | `npm run phase1:check -- --task <TASK_KEY>` | Bó 4 gate trên thành một lượt |
 | **Trước khi finalize — gate gộp CÓ RĂNG** | `npm run self-review:enforce -- --task <TASK_KEY>` | Gộp preflight + design + row-quality + **neo mẫu số** → **exit 1 khi còn CHẶN**. Trước đây câu này **chỉ có ở `run_phase2`**, nên Phase 1 không có gate gộp nào có răng: đó là lý do một bộ case kết luận được `CONDITIONAL PASS` trong khi mẫu số coverage do chính nó tự đặt |
 | Khi bộ case có chiều **hiển thị/UI** | `TASK_ENV=... npm run ui:conformance` | Đối chiếu **field thật trên build** với danh mục màn (`ui_catalog.json`) — lộ field bịa, field thiếu, nhãn lệch. Đây là thứ duy nhất kiểm "case hiển thị có khớp màn thật" trước khi ai đó execute |
 | **Cuối phase — BÁO CÁO ĐÃ HỌC GÌ** | `npm run learn:report -- --task <TASK_KEY> --write` | Sinh `reports/learning-summary.md` (đã học + CHƯA học). Phase 1 học ít record hơn Phase 2 nhưng **đúng loại quý nhất**: câu trả lời của BA sau Ambiguity Gate là business truth vừa được xác nhận |

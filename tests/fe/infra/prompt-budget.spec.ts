@@ -211,8 +211,21 @@ test.describe('@infra prompt:budget --enforce', () => {
      */
     const d = fs.mkdtempSync(path.join(os.tmpdir(), 'moc-'));
     const f = path.join(d, 'budget.json');
+
+    /*
+     * ĐO TRƯỚC RỒI MỚI HẠ MỐC, không hạ từ số đã ghi.
+     *
+     * Bản đầu làm `moc.phase1 - 1`, và nó im lặng ngừng đo ngay khi luồng đó tụt xuống DƯỚI mốc: hạ mốc
+     * đi 1 vẫn còn cao hơn số thực nên không có gì bị chặn, và âm bản XANH trong khi nó không đo gì cả.
+     * Đúng lần cắt bù ở v2.4.1 phần D thì phase1 xuống dưới mốc, và test này đỏ — may là nó đỏ.
+     */
+    const dq = spawnSync(process.execPath, [BUDGET, '--moc'], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+    const mm = `${dq.stdout || ''}`.match(/\{[\s\S]*?\}/);
+    expect(mm, '`--moc` phải in được số đo hiện tại').toBeTruthy();
+    const doDuoc = JSON.parse(mm![0]);
+
     const nan = JSON.parse(JSON.stringify(CFG));
-    nan.moc.phase1 = CFG.moc.phase1 - 1;
+    nan.moc.phase1 = doDuoc.phase1 - 1;   // thấp hơn số THỰC đúng 1 token
     fs.writeFileSync(f, JSON.stringify(nan, null, 2), 'utf8');
     try {
       const r = spawnSync(process.execPath, [BUDGET, '--enforce', '--cfg', f], { cwd: REPO, encoding: 'utf8', env: gateEnv() });

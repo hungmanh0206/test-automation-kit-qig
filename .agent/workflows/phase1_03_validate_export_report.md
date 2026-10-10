@@ -15,6 +15,11 @@
 Nó **chỉ ghi cột `Result`** và **không tự upload lên Drive** — đẩy lên Sheet là việc của luồng chính, sau
 khi người xem lại bản merge. Xác minh hợp đồng: `docs/v2.4.1/AGENTS_VERIFY.md`.
 
+## Bó gate cuối phase
+
+`npm run phase1:check -- --task <TASK_KEY>` chạy preflight, scope:anchor, dim:coverage và self-review
+trong một lượt. Nó gọi đúng script gốc rồi gom kết quả, không tự kiểm gì.
+
 ## Workflow
 
 1. Validate từng testcase:

@@ -73,6 +73,23 @@ Ghi lại vì cả hai đều làm bảng nói dịu hẳn đi, và cả hai đ�
 
 1528 mẫu khác nhau trên 11781 lượt — trung bình mỗi mẫu lặp 7.7 lần.
 
+## Một đính chính: lệnh của kit KHÔNG phải chỗ tốn
+
+`docs/token-diet/BASELINE.md` từng ghi `output_gate` 354 lượt và `md_to_xlsx` 119 lượt trên 4 task, và
+tôi đã định bó chúng lại. Đo lại bằng chính `--mau` thì con số do AGENT gọi là **90** và **51**. Cộng
+toàn bộ lệnh của kit lại được **248 lượt trong 11.781, tức 2,1%**.
+
+Hai chỗ số cũ phóng lên:
+
+- Hook `gate_on_write.js` tự chạy `output_gate` sau mỗi lần ghi, và số đó bị cộng vào. Nhưng hook
+  `exit 0` IM LẶNG khi đạt, nên nó **không tốn token nào** của context chính. Nó chỉ tốn thời gian máy.
+  Debounce hook vì vậy KHÔNG phải một phép giảm token, và đã bỏ khỏi danh sách việc.
+- Số cũ đếm trên 4 phiên với cách gom khác, không bóc tiền tố env nên một phần lượt bị xếp nhầm chỗ.
+
+Kết luận ngược với dự định ban đầu: **bó gate lại không phải đòn bẩy chính.** Vẫn làm `phase2:check` vì
+nó bớt 4 message ở đúng chỗ ai cũng chạy, và vì chạy rời rất dễ chạy thiếu một bước rồi tưởng đã kiểm
+hết. Nhưng trần của nó là 2,1%, và tài liệu này nói thẳng con số đó.
+
 ## Đọc bảng này ra việc gì
 
 | Hạng mục | Lượt | Cách chữa | Trạng thái |
@@ -83,6 +100,7 @@ Ghi lại vì cả hai đều làm bảng nói dịu hẳn đi, và cả hai đ�
 | `python` một-dòng | 662 (5,6%) | **Bó** — như `node -e` | chưa làm |
 | `for`/`until` vòng lặp shell | 948 (8,0%) | **Gộp** — lệnh nhận `--dir` thay vì lặp từng file | một phần (`output_gate --dir`) |
 | `npx tsc` | 339 (2,9%) | **Bó** — gộp vào một lệnh kiểm chung | chưa làm |
+| lệnh gate của kit | 248 (2,1%) | **Bó** — `npm run phase2:check` gộp 5 bước thành 1 | xong |
 
 Con số đáng làm nhất là dòng đầu: **28,3% số lượt shell là việc đã có tool chuyên dụng**. Đây không
 phải chuyện kiểu cách — mỗi lượt shell là một message kèm cả context, nên đi vòng qua Bash không rẻ

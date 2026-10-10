@@ -6,6 +6,16 @@
 
 Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, không upload evidence sai loại lên Backlog và không âm thầm đưa task automation vào regression suite chung.
 
+## Bó gate cuối phase
+
+`npm run phase2:check -- --task <TASK_KEY>` chạy cả năm bước trong một lượt: preflight, gate:output,
+ledger:check, self-review, results:summary. Bước nào CHẶN thì nó in nguyên output của bước đó.
+
+Nó KHÔNG tự kiểm gì. Nó gọi đúng những script kia rồi gom kết quả, nên chạy bó và chạy rời cho cùng
+exit code và cùng tập vi phạm. `tests/fe/infra/phase-check.spec.ts` gác điều kiện đó.
+
+Dùng `--full` khi muốn xem nguyên output của mọi bước, kể cả bước đạt.
+
 ## Workflow
 
 0. **SELF-REVIEW (G9), lượt 2 TRƯỚC finalize, bản advisory.** Chạy `npm run self-review -- --task <TASK_KEY>` để có checklist GỘP trong 1 báo cáo: preflight, design, row-quality, execution output và attestation.
