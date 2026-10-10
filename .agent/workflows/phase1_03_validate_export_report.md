@@ -23,7 +23,7 @@ trong một lượt. Nó gọi đúng script gốc rồi gom kết quả, không
 ## Workflow
 
 1. Validate từng testcase:
-   - Đủ 11 cột.
+   - Đủ **10 cột canonical** (nguồn số: `CANONICAL_COLS` trong `scripts/lib/testcase/model.js`). Excel SAU publish có nhiều cột hơn vì exporter thêm `Nhóm chức năng`, `Result`, `Note` — đó là bản xuất, không phải template.
    - Step rõ và executable.
    - Expected result cụ thể.
    - Test data không placeholder.

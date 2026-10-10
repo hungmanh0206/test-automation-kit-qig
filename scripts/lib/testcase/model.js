@@ -62,6 +62,27 @@ function normalizeHeader(text) {
 }
 
 // ---- matcher cột testcase (normalized) ----
+/*
+ * CỘT CANONICAL CỦA BẢN MARKDOWN — NGUỒN DUY NHẤT cho con số "N cột".
+ *
+ * VÌ SAO PHẢI KHAI Ở ĐÂY. Tài liệu của kit đã trôi: `phase1_03_validate_export_report.md` ghi "Đủ 11 cột"
+ * và `phase1_generate_tc.md` ghi "template 11 cột", trong khi bản Markdown canonical có 10. Muốn có máy gác
+ * chuyện đó thì phải có MỘT nơi giữ con số.
+ *
+ * `COL` ngay dưới KHÔNG dùng được cho việc này: nó là bảng KHỚP TÊN cột (12 khoá, gồm cả `risk` của bộ
+ * cũ đã bỏ), không phải danh sách cột có thứ tự. Gate đọc `Object.keys(COL).length` sẽ ra 12 và tự nó sai.
+ *
+ * Nguồn chữ: header trong `prompt_templates/phase1/02_gen_testcases.md`. Đổi template thì đổi ở CẢ HAI,
+ * và `tests/fe/infra/column-count.spec.ts` đối chiếu hai nơi đó với nhau.
+ *
+ * Excel SAU publish có nhiều cột hơn (exporter thêm `Nhóm chức năng`, `Result`, `Note`…) — đó là BẢN XUẤT,
+ * không phải template canonical. Lẫn hai thứ này chính là gốc của con số 11 sai.
+ */
+const CANONICAL_COLS = [
+  'TC ID', 'Loại case', 'Tag', 'Module', 'Trường hợp kiểm thử',
+  'Tiền điều kiện', 'Dữ liệu Test', 'Các bước thực hiện', 'Kết quả mong đợi', 'Ưu tiên',
+];
+
 const COL = {
   // `id tc` = "ID_TC" normalized (template QA export mới, xem md_to_xlsx.js FUNC_HEADERS) — thêm bên cạnh
   // "TC ID"/"ID" cũ, không thay thế (bộ TC cũ dùng "TC ID" vẫn phải khớp nguyên).
@@ -337,7 +358,7 @@ function buildSetup(headers, cells) {
   };
 }
 
-module.exports = {
+module.exports = { CANONICAL_COLS,
   stripEmoji, cleanCell, splitMarkdownRow, normalizeHeader,
   COL, SETUP_COL, isTestCaseHeader, isSetupContractHeader, colIndex,
   splitNumbered, groupNumbered, dimensionsOf, oracleRefsOf, tagNamesOf, buildTestCase,

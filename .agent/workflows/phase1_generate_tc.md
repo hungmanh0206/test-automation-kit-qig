@@ -51,7 +51,7 @@ Sinh bộ testcase chi tiết, có trace requirement, có phân nhóm chức nă
 | Thứ tự | Step file | Mục tiêu |
 |---:|---|---|
 | 1 | [phase1_01_prepare_context.md](phase1_01_prepare_context.md) | Xác nhận scope, đọc artifact local, fetch tài liệu còn thiếu, và chạy **Ambiguity Gate**. |
-| 2 | [phase1_02_generate_testcases.md](phase1_02_generate_testcases.md) | Sinh testcase theo template 11 cột, phân nhóm và risk. **KHÔNG vào bước này nếu `AMBIGUITY_GATE` chưa `RESOLVED`.** |
+| 2 | [phase1_02_generate_testcases.md](phase1_02_generate_testcases.md) | Sinh testcase theo template **10 cột canonical**, phân nhóm và risk. **KHÔNG vào bước này nếu `AMBIGUITY_GATE` chưa `RESOLVED`.** |
 | 3 | [phase1_03_validate_export_report.md](phase1_03_validate_export_report.md) | Validate chất lượng, export Excel và ghi report Phase 1. |
 | 4 | [phase1_04_auto_publish_backlog.md](phase1_04_auto_publish_backlog.md) | Sau khi QA xác nhận, đọc Excel canonical và publish testcase lên Backlog. |
 
