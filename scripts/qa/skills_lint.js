@@ -93,10 +93,17 @@ function jaccard(a, b) {
  *  · `` `đường/dẫn.ext` `` — đường dẫn file trong repo.
  */
 /**
- * Thư mục gốc của REPO. Mọi thứ khác (`reports/`, `requirements/`, `test-cases/`, `test-results/`,
- * `evidence/`, `automation/`) là đường dẫn tương đối với `<TASK_OUTPUT_DIR>` — không kiểm ở đây.
+ * Thư mục gốc của REPO **và được git track**. Mọi thứ khác không kiểm ở đây:
+ *
+ *  · `reports/`, `requirements/`, `test-cases/`, `test-results/`, `evidence/`, `automation/` — tương đối
+ *    với `<TASK_OUTPUT_DIR>`, không tồn tại trong repo và KHÔNG nên tồn tại;
+ *  · `knowledge/**` — dữ liệu lớp PROJECT, **bị gitignore**. Bản đầu có `knowledge` trong danh sách này và
+ *    nó CHẶN trên worktree sạch (5 ca: `knowledge/index.json`,
+ *    `knowledge/locators/qemis-login__*.json`) trong khi xanh trên cây làm việc — tức gate đúng ở một máy
+ *    và sai ở máy khác, đúng lớp lỗi mà bước "kiểm trên cây sạch" tồn tại để bắt. Skill trỏ tới
+ *    `knowledge/**` là ĐÚNG; chỉ là không kiểm được sự tồn tại của nó.
  */
-const GOC_REPO = /^(?:scripts|tests|\.agent|prompt_templates|docs|manual-run|knowledge|partial-rerun|\.claude|\.github)\//;
+const GOC_REPO = /^(?:scripts|tests|\.agent|prompt_templates|docs|manual-run|partial-rerun|\.claude|\.github)\//;
 
 function conTroChet(f, src, tenSkill) {
   const xau = [];

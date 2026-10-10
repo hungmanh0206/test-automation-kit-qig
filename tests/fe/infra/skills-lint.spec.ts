@@ -116,6 +116,15 @@ test.describe('@infra skills:lint — tiêu chí CHẶN', () => {
     const vanXuoi = chay({ a: FM(DESC_OK, '\n- Ba file đã gỡ: `ops-transactions.load/.stress/.soak.js`.\n') });
     expect(vanXuoi.code, `văn xuôi không phải đường dẫn:\n${vanXuoi.out}`).toBe(0);
     fs.rmSync(vanXuoi.d, { recursive: true, force: true });
+
+    /*
+     * `knowledge/**` KHÔNG kiểm: nó là dữ liệu lớp PROJECT và bị gitignore. Bản đầu kiểm nó và gate CHẶN
+     * trên worktree sạch (5 ca) trong khi xanh trên cây làm việc — gate đúng ở một máy, sai ở máy khác.
+     * Chỉ bước "kiểm trên cây sạch" bắt được chuyện này, và đó là lý do bước đó tồn tại.
+     */
+    const know = chay({ a: FM(DESC_OK, '\n- Kho: `knowledge/index.json` và `knowledge/locators/x.json`.\n') });
+    expect(know.code, `đường dẫn knowledge/ bị gitignore, không kiểm được:\n${know.out}`).toBe(0);
+    fs.rmSync(know.d, { recursive: true, force: true });
   });
 });
 
