@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { docCfg } from './_cfg';
 
 /*
  * @infra — ĐỘ SÂU MỞ RỘNG THEO BAND (H10, phần đã được duyệt).
@@ -24,7 +25,7 @@ const REPO = path.resolve(__dirname, '..', '..', '..');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const depth = require(path.join(REPO, 'scripts/lib/expansion/depth.js'));
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const RISK = require(path.join(REPO, '.agent/config/risk_model.json'));
+const RISK = docCfg(REPO, 'risk_model.json');
 
 const BANDS = ['high', 'medium', 'low'] as const;
 

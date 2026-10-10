@@ -8,6 +8,7 @@ import { proveReadOnlyFromGrants, assertReadOnly, assertReadOnlyQuery, assertHos
 import { assertReadOnlySql } from '../../support/setup/db/uatDbClient';
 import { loadConventions, softDeleteFor, loadConnection } from '../../support/setup/db/config';
 import { DbGuardError, type GrantRow } from '../../support/setup/db/types';
+import { docCfg } from './_cfg';
 
 /*
  * @infra — TẦNG KIỂM DỮ LIỆU DB, giai đoạn 1–2 (không cần kết nối).
@@ -282,7 +283,7 @@ test.describe('@infra config — conventions commit được, creds thì không'
      * trạng thái đó ĐỒNG THỜI bắt buộc phải có `_why_requireReadonlyUser` — tắt một chốt an toàn mà không
      * ghi lý do thì gate này đỏ. Xin được login chỉ SELECT thì đổi lại `true`.
      */
-    const rawConv = JSON.parse(fs.readFileSync(path.join(REPO, '.agent/config/db.conventions.json'), 'utf8'));
+    const rawConv = docCfg(REPO, 'db.conventions.json');
     expect(conv.safety.requireReadonlyUser).toBe(false);
     expect(
       String(rawConv.safety._why_requireReadonlyUser || '').length,

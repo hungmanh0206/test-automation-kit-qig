@@ -127,6 +127,27 @@ function main() {
     record('playwright --list thấy suite', total > 0,
       total > 0 ? `${total} test` : `0 test — ${pwErr.slice(0, 220)}`);
 
+    /*
+     * 7b) CHẠY THẬT bộ infra trong gói.
+     *
+     * `--list` ở trên chỉ bắt được lỗi lúc COLLECT (vd `require` một config không được đóng gói). Nó
+     * KHÔNG biết một test đỏ. Đo 10/10/2026: gói v2.4.0 có `dimension-threshold.spec.ts:230` đỏ vì
+     * thiếu `na_reasons_rejected.json`, mà `--list` vẫn đếm đủ test nên không ai biết.
+     *
+     * CHỈ chạy `tests/fe/infra` — nó chạy trên fixture local, không chạm UAT, không cần creds.
+     */
+    if (total > 0) {
+      const pwRun = run('npx', ['playwright', 'test', 'tests/fe/infra', '--reporter=dot'],
+        { cwd: root, shell: process.platform === 'win32', env: { PROJECT_OUTPUT_DIR: 'outputs/_v', TASK_KEY: 'V-0' } });
+      const mm = pwRun.out.match(/(\d+)\s+failed/);
+      const doFail = mm ? Number(mm[1]) : 0;
+      const mp = pwRun.out.match(/(\d+)\s+passed/);
+      record('tests/fe/infra chạy TRONG gói', pwRun.code === 0 && doFail === 0,
+        pwRun.code === 0 && doFail === 0
+          ? `${mp ? mp[1] : '?'} xanh`
+          : `${doFail} đỏ — ${pwRun.out.split(/\r?\n/).filter((l) => /\u203a.*spec\.ts/.test(l)).slice(0, 2).join(' | ').slice(0, 200)}`);
+    }
+
     // 8) version:check phải chạy được từ gói (không git, không tag)
     const vc = run('npm', ['run', '--silent', 'version:check'], { cwd: root, shell: process.platform === 'win32' });
     record('version:check (không .git)', vc.code === 0, vc.code === 0 ? '' : vc.out.split('\n').slice(-3).join(' | ').slice(0, 180));

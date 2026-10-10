@@ -48,11 +48,19 @@ const SURFACE_FILES = [
 const SURFACE_EXCLUDE = /(^|\/)GATES\.md$/;
 
 const readSafe = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
+/*
+ * `readSafe` trả rỗng khi thiếu file, và `push` bên dưới chỉ thêm vào bảng khi `t` có nội dung. Nghĩa là
+ * một source biến mất sẽ lặng lẽ rớt khỏi danh mục gate — và vì `gates:index:check` đối chiếu bảng với
+ * CÙNG phép quét đó, hai phía cùng co lại nên vẫn "khớp". Kiểm đối chiếu tự xác nhận chính mình thì
+ * không còn là phép kiểm. Nên ở đây đường dẫn ĐÃ KHAI mà thiếu thì phải KÊU.
+ */
+const thieuSource = [];
+const readKhai = (p) => { const t = readSafe(p); if (!t) thieuSource.push(path.relative(REPO, p).replace(/\\/g, '/')); return t; };
 
 /** Toàn bộ văn bản của các bề mặt, kèm nhãn ngắn để in "gọi từ đâu". */
 function corpus() {
   const out = [];
-  const push = (abs, label) => { const t = readSafe(abs); if (t) out.push({ label, txt: t }); };
+  const push = (abs, label) => { const t = readKhai(abs); if (t) out.push({ label, txt: t }); };
   for (const f of SURFACE_FILES) push(path.join(REPO, f), f);
   for (const d of SURFACE_DIRS) {
     const abs = path.join(REPO, d);
@@ -244,6 +252,18 @@ const md = render(data);
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(data, null, 2));
 } else if (process.argv.includes('--check')) {
+  /*
+   * Source ĐÃ KHAI mà thiếu thì phải chặn TRƯỚC phép đối chiếu bảng. Vì bảng được DỰNG từ cùng phép
+   * quét này, một source biến mất làm cả HAI phía cùng co lại — rồi `--check` báo "khớp source".
+   * Đó là phép kiểm tự xác nhận chính mình, không còn là phép kiểm.
+   */
+  if (thieuSource.length) {
+    const d = [...new Set(thieuSource)];
+    console.error(`[gate-index] CHẶN: ${d.length} source khai trong danh mục nhưng KHÔNG có trên đĩa:`);
+    d.forEach((x) => console.error(`  - ${x}`));
+    console.error('  Bảng dựng từ chính phép quét này, nên thiếu source là hai phía cùng co lại và vẫn "khớp".');
+    process.exit(1);
+  }
   const cur = readSafe(OUT);
   if (!cur) {
     console.error('[gate-index] CHẶN: thiếu .agent/config/GATES.md — chạy `npm run gates:index`.');

@@ -32,6 +32,17 @@ const REPO = path.resolve(__dirname, '..', '..');
 const KEEP_DIRS = [
   '.agent/rules', '.agent/skills', '.agent/workflows',
   'scripts', 'prompt_templates', 'partial-rerun', 'exploratory',
+  /*
+   * BỔ SUNG 10/10/2026 — đo bằng `comm` giữa `git ls-files` và `tar -tzf` của chính gói, không đọc code
+   * mà đoán. Ba nhánh `partial-rerun`/`exploratory` có trong danh sách từ đầu, nhưng `manual-run` (thêm ở
+   * v2.3.0) thì không — nên `gate:policy` trong gói ĐỎ: branch_parity không tìm được `expansion:plan` ở
+   * nhánh đó, vì cả nhánh không có trong gói. Thêm một nhánh mà quên danh sách này là lỗi lặp được,
+   * nên `tests/fe/infra/config-presence.spec.ts` giờ đối chiếu luôn cả nhánh.
+   *
+   * `.claude/agents`: định nghĩa subagent là NỘI DUNG CỦA KIT — chính `.gitignore` đã mở ngoại lệ cho nó
+   * vì lý do đó, nhưng gói lại không mang. Người nhận kit sẽ không có subagent nào.
+   */
+  'manual-run', '.claude/agents', 'tests/load',
   'tests/support', 'tests/fe/infra', 'tests/fe/fixtures', 'tests/fe/pages', 'tests/fe/visual', 'tests/fixtures',
   '.claude/commands', '.github/workflows',
   /*
@@ -45,6 +56,8 @@ const KEEP_FILES = [
   '.gitlab-ci.yml', 'playwright.config.js', 'package.json', 'package-lock.json',
   'tsconfig.json', 'eslint.config.js', '.nvmrc', '.gitignore', '.env.example',
   'profiles/task.env.example', 'knowledge/SCHEMA.md',
+  /* `LICENSE` thiếu thì gói phát đi không có giấy phép. `AUDIT_REFERENCES.md` là chỉ mục tra cứu của kit. */
+  'LICENSE', '.agent/AUDIT_REFERENCES.md',
   'README.md', 'QUICKSTART.md', 'USER_GUIDE.md', 'RULE_GLOBAL.md', 'CHANGELOG.md', 'CLAUDE.md',
   /*
    * Danh mục 80 máy của kit. Hai lý do phải mang theo, cả hai đo được:
@@ -74,6 +87,28 @@ const KEEP_FILES = [
   '.agent/config/bug_claim.json',
   '.agent/config/retention.json',
   '.agent/config/library-drift.allow.json',
+  /*
+   * BỔ SUNG 10/10/2026 — đo trên chính bản đóng gói, không phải đọc code mà đoán.
+   *
+   * Ba file đầu được nạp bằng `require()`, nên thiếu chúng là gói KHÔNG NẠP NỔI `md_to_xlsx.js`
+   * và `npx playwright test tests/fe/infra` chết ngay lúc collect:
+   *   Cannot find module '../../../.agent/config/design_techniques.json'
+   * Số còn lại đọc bằng try/catch nên không nổ — chúng TẮT PHÉP KIỂM rồi đi tiếp, tệ hơn hẳn.
+   *
+   * Cả nhóm đã soi: catalogue kỹ thuật/loại field, mã vi phạm, nghịch lý ngân sách prompt, bản đồ nạp
+   * tài liệu, rubric chấm case — không chứa host, bảng DB, credential hay PII.
+   * `tests/fe/infra/config-presence.spec.ts` giờ đối chiếu danh sách này với chính `scripts/**`.
+   */
+  '.agent/config/design_techniques.json',
+  '.agent/config/ui_components.json',
+  '.agent/config/checklist_types.json',
+  '.agent/config/gate_codes.json',
+  '.agent/config/na_reasons_rejected.json',
+  '.agent/config/load_map.json',
+  '.agent/config/prompt_budget.json',
+  '.agent/config/handoff.json',
+  '.agent/config/tc_review.json',
+  '.agent/config/gitlab_strip.json',
 ];
 
 /*

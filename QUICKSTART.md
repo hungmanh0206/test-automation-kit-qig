@@ -42,9 +42,9 @@ vào file đó, đừng gỡ tay.
 
 | | GitHub | GitLab |
 |---|---|---|
-| file được track | 520 | 520 |
-| `npx playwright test tests/fe/infra` | **781 test · 0 đỏ** | **781 test · 0 đỏ** |
-| `npm run ci:scope` đếm | 69 spec | 69 spec |
+| file được track | 524 | 524 |
+| `npx playwright test tests/fe/infra` | **810 test · 0 đỏ** | **810 test · 0 đỏ** |
+| `npm run ci:scope` đếm | 70 spec | 70 spec |
 
 **Số của bạn khác bảng này là có gì đó sai** — đừng bỏ qua. Test bỏ qua đều tự khai lý do khi chạy.
 

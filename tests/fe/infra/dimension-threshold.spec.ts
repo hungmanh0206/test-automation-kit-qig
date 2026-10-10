@@ -4,6 +4,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { gateEnv } from './_gate_env';
+import { docCfg } from './_cfg';
 
 /*
  * @infra — ĐO ĐỘ PHỦ PHẢI ĐỊNH LƯỢNG, KHÔNG NHỊ PHÂN.
@@ -89,7 +90,7 @@ test.describe('@infra dim:coverage — ngưỡng theo risk band', () => {
     expect(src).toContain('minCasesPerDimension');
     expect(src, 'phải lấy từ risk_model.json — cùng nguồn với risk_gate').toMatch(/risk_model\.json/);
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const rm = require(path.join(REPO, '.agent/config/risk_model.json'));
+    const rm = docCfg(REPO, 'risk_model.json');
     for (const band of ['High', 'Medium', 'Low', 'UNKNOWN']) {
       expect(rm.depthPolicy[band].minCasesPerDimension, `band ${band} phải khai ngưỡng`).toBeGreaterThan(0);
     }

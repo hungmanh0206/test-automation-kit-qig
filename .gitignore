@@ -150,6 +150,12 @@ artifacts/
 !*.env.example
 .agent/config/*.local.md
 
+# Lop PROJECT nam trong thu muc GENERIC: dan chung theo task cua du an dang dung kit.
+# Lap luan PHO QUAT thi o ban khong hau to (vd `na_reasons_rejected.json`) va PHAI duoc track —
+# do 10/10/2026: chinh viec `na_reasons_rejected.json` chua bao gio duoc `git add` da lam gate
+# "ly do n/a da bi bac" tat im lang trong ban phat hanh.
+.agent/config/*.project.json
+
 # Per-project run profiles — KHÔNG commit BẤT CỨ THỨ GÌ trừ file mẫu.
 # Trước đây chỉ ignore `task.env`, nên mọi artifact khác trong thư mục task vẫn commit được. Đo 13/08/2026:
 # 6 file đang ở trạng thái commit-được, gồm `profiles/<TASK_KEY>/detail-review.csv` có cột `full_name`,

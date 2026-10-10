@@ -70,7 +70,21 @@ const NGUOI_DOC = [
   /^\*{0,2}(vì sao|đo \d{2}\/\d{2}|đo thật|bài học|lịch sử)/i,
 ];
 
+/*
+ * Đọc một file prompt. Thiếu file ⇒ TRẢ RỖNG, và rỗng nghĩa là 0 token.
+ *
+ * Chỗ này từng là một đường tự tắt: file KHAI trong `load_map.json` mà không có trên đĩa thì luồng đó
+ * cộng được ít token hơn thực tế, và ngân sách báo ĐẠT trong khi đúng ra phải báo thiếu file. Nên `docKhai`
+ * (dùng cho đường dẫn ĐÃ KHAI) KÊU; `doc` trần vẫn im lặng cho các lượt quét theo glob, nơi file vắng
+ * mặt là bình thường.
+ */
 const doc = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
+const thieuKhai = [];
+const docKhai = (p) => {
+  const t = doc(p);
+  if (!t) thieuKhai.push(path.relative(REPO, p).replace(/\\/g, '/'));
+  return t;
+};
 const tok = (s) => s.length / CHARS_PER_TOK;
 const rel = (p) => path.relative(REPO, p).replace(/\\/g, '/');
 
@@ -283,8 +297,8 @@ function main() {
       const nguong = (cfg.luong || {})[ten];
       if (!nguong || !l.bat_buoc) continue;
       let n = tokNen;
-      if (l.diem_vao) n += tok(doc(path.join(REPO, l.diem_vao)));
-      for (const f of l.bat_buoc) n += tok(doc(path.join(REPO, f)));
+      if (l.diem_vao) n += tok(docKhai(path.join(REPO, l.diem_vao)));
+      for (const f of l.bat_buoc) n += tok(docKhai(path.join(REPO, f)));
       n = Math.round(n);
       console.log(`[prompt-budget] ${ten.padEnd(10)} bắt buộc ${k(n).padStart(7)} / ngưỡng ${k(nguong)}`);
       if (n > nguong) loi.push(`luồng ${ten}: bắt buộc ${k(n)} vượt ngưỡng ${k(nguong)}`);
@@ -295,6 +309,19 @@ function main() {
       if (!fs.existsSync(abs)) { loi.push(`thẻ chạy khai trong ngân sách mà KHÔNG tồn tại: ${f}`); continue; }
       const t = Math.round(tok(doc(abs)));
       if (t > nguong) loi.push(`${f}: ${k(t)} vượt ngưỡng thẻ chạy ${k(nguong)}`);
+    }
+
+    /*
+      * File ĐÃ KHAI mà không có trên đĩa là lỗi, không phải "0 token". Phải báo TRƯỚC phần ngưỡng:
+      * thiếu file thì con số ngưỡng bên dưới đã không đúng nữa, nên "ĐẠT" ở đó không có nghĩa gì.
+      */
+    if (thieuKhai.length) {
+      const d = [...new Set(thieuKhai)];
+      console.error(`\n[prompt-budget] ✗ ${d.length} file KHAI trong load_map.json nhưng KHÔNG có trên đĩa:`);
+      d.forEach((x) => console.error(`  - ${x}`));
+      console.error('  Thiếu file ⇒ luồng đó cộng được ít token hơn thực tế, nên NGÂN SÁCH CHƯA ĐƯỢC GÁC.');
+      console.error('  Hoặc thêm file, hoặc gỡ nó khỏi load_map.json — đừng để bản khai và cây thật nói ngược nhau.');
+      process.exit(1);
     }
 
     if (loi.length) {

@@ -1,0 +1,39 @@
+{
+  "_purpose": "Những LẬP LUẬN khai `n/a` đã bị bác bỏ. Không có file này thì việc bác bỏ chỉ sống trong task nơi nó xảy ra, và cùng một câu sống lại ở task kế tiếp: đo được trên 4 task liên tiếp — lý do n/a của `accessibility` bị rút lại ở ba task đầu, task thứ tư vẫn khai y nguyên câu đó và mọi gate vẫn xanh, vì gate chỉ hỏi \"chiều required có case chưa\", không hỏi \"lý do n/a có đứng vững không\".",
+  "_how": "`dimension_coverage.js` đối chiếu từng `na_reasons.<chiều>` trong dimension_manifest.json với `pattern` dưới đây (so trên bản đã bỏ dấu, thường hoá). Khớp ⇒ CHẶN ở `--enforce`. Muốn giữ lý do đó thì phải phản bác `vi_sao_bac` bằng chứng cứ mới và ghi vào `dimension_manifest.json` mục `_revisions`, rồi thêm `id` vào `manifest.na_reasons_exempt` kèm lý do.",
+  "_luu_y": "`pattern` là regex chạy trên chuỗi ĐÃ BỎ DẤU và viết thường. Viết hẹp thôi: bắt oan một lý do đúng thì gate mất uy tín nhanh hơn là bỏ sót.",
+  "_lop": "GENERIC — ship kèm kit (xem `.agent/config/kit-layers.md`). Lập luận ở đây phổ quát, KHÔNG mang tên task/hệ thống của dự án nào. Dẫn chứng \"bị bác ở task nào\" nằm ở `na_reasons_rejected.project.json` (lớp PROJECT, không ship); thiếu file đó thì gate vẫn chặn đủ, chỉ là thông báo không dẫn được ca cụ thể.",
+  "rejected": [
+    {
+      "id": "dac-ta-khong-neu-yeu-cau",
+      "ap_dung_cho": [
+        "accessibility",
+        "security",
+        "resilience",
+        "perf"
+      ],
+      "pattern": "khong co (yeu cau|tieu chuan|quy dinh)[^.]{0,60}(trong dac ta|o dac ta)|dac ta khong (neu|nhac|co)[^.]{0,40}(yeu cau|tieu chuan|quy dinh)",
+      "vi_sao_bac": "Bốn chiều này có oracle NGOÀI ứng dụng: WCAG cho a11y, bất biến an toàn phổ quát cho security (XSS, SQL injection, giả mạo tham số, cờ cookie). Đặc tả im lặng không có nghĩa tiêu chuẩn không tồn tại. Bắt cả cách nói đảo chữ (\"Dac ta khong neu nguong SLA, khong neu yeu cau dong thoi\") — đó là cùng một lập luận, chỉ khác chỗ đặt chữ, và chính kiểu đảo chữ này đã lọt lưới một lần ở chiều resilience.",
+      "lam-gi-thay-the": "Khai `required` và neo oracle vào chuẩn ngoài: tag `[WCAG-2.4.7]` cho a11y, rule `knowledge/domain/` có `source` ghi rõ là bất biến phổ quát cho security."
+    },
+    {
+      "id": "khong-co-nguong-sla",
+      "ap_dung_cho": [
+        "perf",
+        "resilience"
+      ],
+      "pattern": "khong (co|neu) (nguong|sla)[^.]{0,80}(khong co oracle|khong du de dung oracle|khong phan duoc|khong cham duoc)|khong co nguong thi khong co oracle|khong du de dung oracle cho case (concurrency|dong thoi|tai)",
+      "vi_sao_bac": "Thiếu ngưỡng chỉ khiến case thành OBSERVATION, hoặc dùng ngưỡng GIẢ ĐỊNH ghi rõ là giả định và bắt ghi số ĐO ĐƯỢC vào evidence để BA chốt sau — nó không khiến cả chiều thành n/a.",
+      "lam-gi-thay-the": "Khai `required`, viết case với ngưỡng GIẢ ĐỊNH có đơn vị và câu \"ghi số giây thực vào evidence\"."
+    },
+    {
+      "id": "chi-mot-ve-cua-chieu",
+      "ap_dung_cho": [
+        "security"
+      ],
+      "pattern": "khong (du|co) (de dung|dung duoc)? ?ma tran (role|phan quyen)|chi (co )?mot dong role",
+      "vi_sao_bac": "Lý do đúng cho vế \"role × action\" nhưng QUÁ RỘNG: XSS, SQL injection, giả mạo tham số URL sang đơn vị khác, cờ bảo vệ cookie đều không cần ma trận phân quyền nào.",
+      "lam-gi-thay-the": "Khai `required` cho phần không cần ma trận; nếu muốn loại riêng vế role × action thì ghi rõ trong `na_reasons` là loại VẾ đó, đừng loại cả chiều."
+    }
+  ]
+}

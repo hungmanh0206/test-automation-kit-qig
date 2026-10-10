@@ -34,6 +34,9 @@ const fs = require('fs');
 const { getTestcaseDirs } = require('../utils/runtime_config');
 const path = require('path');
 const rc = require(path.resolve(__dirname, '..', 'utils', 'runtime_config'));
+/* Dat o DAU file, khong dat canh cho dung: `getRiskModel` goi no tu dong 392, nen khai o duoi la
+ * ReferenceError TDZ. Da dinh dung loi do 10/10/2026 va no lam 11 test do. */
+const cfgLoad = require(path.join(__dirname, 'lib', 'config_load'));
 const canonical = require(path.resolve(__dirname, '..', 'lib', 'testcase'));
 
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
@@ -389,7 +392,16 @@ if (MODE === 'label') {
  * "required"/"n/a" cũ vẫn chạy nguyên.
  */
 const RISK_MODEL = (() => {
-  try { return JSON.parse(fs.readFileSync(path.join(rc.REPO_ROOT, '.agent', 'config', 'risk_model.json'), 'utf8')); } catch (e) { return {}; }
+  /* Thiếu `risk_model.json` thì RƠI VỀ bản `.example` chứ không trả `{}`: hai bản cùng cấu trúc và
+   * `depthPolicy` giống nhau, nên phần chung vẫn gác được. Trả `{}` là tắt ngưỡng độ sâu mà không
+   * một dòng nào báo — đúng lỗi đã đo được trên bản đóng gói 10/10/2026. */
+  return cfgLoad.napConfigGate({
+    duong: path.join(rc.REPO_ROOT, '.agent', 'config', 'risk_model.json'),
+    duPhong: path.join(rc.REPO_ROOT, '.agent', 'config', 'risk_model.example.json'),
+    nhan: '`.agent/config/risk_model.json`',
+    phepKiem: 'ngưỡng độ sâu theo band (`depthPolicy`)',
+    khiThieu: {},
+  }) || {};
 })();
 const bandOfTask = (() => {
   try {
@@ -478,11 +490,43 @@ if (manifest && manifest.dimensions) {
  * của `accessibility` bị rút lại ở BA task liên tiếp mà task thứ tư vẫn khai y nguyên câu đó, và mọi
  * gate vẫn xanh — vì gate chỉ hỏi "chiều required có case chưa", không hỏi "lý do n/a có đứng vững không".
  */
+/*
+ * ĐỌC HAI LỚP, và KHÔNG ĐƯỢC IM LẶNG KHI THIẾU.
+ *
+ * BẢN CŨ TRẢ `[]` TRONG `catch` — và đó là một lỗi thật, đã tái hiện 10/10/2026: file config này chưa
+ * bao giờ được `git add`, nên BẢN PHÁT HÀNH KHÔNG CÓ NÓ. Thiếu file ⇒ danh sách rỗng ⇒ phép kiểm
+ * "lý do n/a trùng lập luận đã bị bác" KHÔNG BAO GIỜ chặn, và không một dòng nào báo. Trên máy dev thì
+ * xanh vì file đang nằm untracked — đúng kiểu lỗi mà "đo trên cây làm việc" không thể thấy.
+ *
+ * Nay: thiếu file ⇒ KÊU rõ là CHƯA ĐƯỢC GÁC. JSON hỏng ⇒ CHẶN hẳn, vì một file hỏng không được phép
+ * có cùng hệ quả với một danh sách rỗng hợp lệ.
+ */
+const DUONG_NA = path.join(rc.REPO_ROOT, '.agent', 'config', 'na_reasons_rejected.json');
+const DUONG_NA_DA = path.join(rc.REPO_ROOT, '.agent', 'config', 'na_reasons_rejected.project.json');
+
 const REJECTED_NA = (() => {
-  try {
-    const j = JSON.parse(fs.readFileSync(path.join(rc.REPO_ROOT, '.agent', 'config', 'na_reasons_rejected.json'), 'utf8'));
-    return Array.isArray(j.rejected) ? j.rejected : [];
-  } catch (e) { return []; }
+  const j = cfgLoad.napConfigGate({
+    duong: DUONG_NA,
+    nhan: '`.agent/config/na_reasons_rejected.json`',
+    phepKiem: 'lý do n/a trùng lập luận ĐÃ BỊ BÁC',
+    khiThieu: { rejected: [] },
+  });
+  if (!Array.isArray(j && j.rejected)) {
+    if (j && j.rejected !== undefined) {
+      console.error('[dim] ✗ na_reasons_rejected.json không có mảng `rejected`.');
+      process.exit(1);
+    }
+    return [];
+  }
+  return j.rejected;
+})();
+
+/* Lớp PROJECT: thiếu là BÌNH THƯỜNG (theo thiết kế nó không ship) nên KHÔNG kêu — đây là chỗ im
+ * lặng CÓ CHỦ Ý duy nhất trong khối này. Hỏng JSON thì vẫn chặn. */
+const BANG_CHUNG_NA = (() => {
+  const r = cfgLoad.doc(DUONG_NA_DA);
+  if (r.hong) { console.error(`[dim] ✗ na_reasons_rejected.project.json HỎNG JSON: ${r.hong}`); process.exit(1); }
+  return (r.data && r.data.bang_chung) || {};
 })();
 /** Bỏ dấu + thường hoá, để pattern viết bằng ASCII khớp được câu tiếng Việt có dấu. */
 const boDau = (x) => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
@@ -507,6 +551,8 @@ if (naRejected.length) {
   console.error(`\n[dim] ✗ ${naRejected.length} chiều khai n/a bằng LẬP LUẬN ĐÃ BỊ BÁC ở task khác:`);
   for (const { dim, r } of naRejected) {
     console.error(`  - ${dim} — trúng "${r.id}". ${r.vi_sao_bac}`);
+    const bc = BANG_CHUNG_NA[r.id];
+    if (Array.isArray(bc) && bc.length) console.error(`    Đã bị bác ở: ${bc.join(' · ')}`);
     console.error(`    Thay bằng: ${r['lam-gi-thay-the']}`);
     console.error(`    Muốn giữ thì phải phản bác bằng chứng cứ MỚI, ghi vào _revisions rồi thêm "${r.id}" vào na_reasons_exempt.`);
   }
