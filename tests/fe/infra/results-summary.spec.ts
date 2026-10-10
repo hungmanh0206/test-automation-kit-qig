@@ -143,6 +143,43 @@ test.describe('@infra results:summary — tóm tắt có trần, nhưng KHÔNG m
     expect(`${r.stdout}${r.stderr}`).toMatch(/không thấy results\.json/);
   });
 
+  test('tìm `results.json` của lượt MỚI NHẤT, kể cả khi nó nằm trong `runs/<id>/`', () => {
+    /*
+     * LỖI THẬT, phát hiện khi chạy trên UAT ngày 10/10/2026. `playwright.task.config.js` của task ghi
+     * kết quả vào `test-results/runs/<RUN_ID>/results.json`, KHÔNG phải `test-results/results.json`.
+     * Bản đầu chỉ tìm ở đường thứ hai, nên nó đọc một kết quả CŨ (82 giây trước) mà không báo gì —
+     * đúng lớp lỗi tệ nhất: trả lời tự tin bằng dữ liệu của lượt khác.
+     *
+     * Chọn theo mtime chứ không theo tên, vì RUN_ID do người đặt và không sắp thứ tự được.
+     */
+    const pod = fs.mkdtempSync(path.join(os.tmpdir(), 'rs-pod-'));
+    const tr = path.join(pod, 'tasks', 'T-1', 'test-results');
+    fs.mkdirSync(path.join(tr, 'runs', 'luot-cu'), { recursive: true });
+    fs.mkdirSync(path.join(tr, 'runs', 'luot-moi'), { recursive: true });
+
+    // Bản ở gốc và bản trong `runs/luot-cu` đều CŨ; bản `runs/luot-moi` là mới nhất.
+    fs.writeFileSync(path.join(tr, 'results.json'), dungJson([{ title: 'A_TC_900 cu o goc', ok: false }]), 'utf8');
+    fs.writeFileSync(path.join(tr, 'runs', 'luot-cu', 'results.json'), dungJson([{ title: 'A_TC_901 cu', ok: false }]), 'utf8');
+    fs.writeFileSync(path.join(tr, 'runs', 'luot-moi', 'results.json'), dungJson([{ title: 'A_TC_902 moi', ok: false }]), 'utf8');
+    const gio = Date.now();
+    fs.utimesSync(path.join(tr, 'results.json'), gio / 1000 - 600, gio / 1000 - 600);
+    fs.utimesSync(path.join(tr, 'runs', 'luot-cu', 'results.json'), gio / 1000 - 300, gio / 1000 - 300);
+
+    try {
+      const r = spawnSync(process.execPath, [SUM], {
+        cwd: REPO,
+        encoding: 'utf8',
+        env: { ...gateEnv(), PROJECT_OUTPUT_DIR: pod, TASK_KEY: 'T-1' } as NodeJS.ProcessEnv,
+      });
+      const out = `${r.stdout || ''}${r.stderr || ''}`;
+      expect(out, 'phải đọc lượt MỚI NHẤT').toContain('A_TC_902');
+      expect(out, 'không được đọc bản cũ ở gốc').not.toContain('A_TC_900');
+      expect(out, 'không được đọc lượt cũ trong runs/').not.toContain('A_TC_901');
+    } finally {
+      fs.rmSync(pod, { recursive: true, force: true });
+    }
+  });
+
   test('prompt execute DẠY đọc bản tóm tắt, và cấm đọc JSON thô', () => {
     const p = fs.readFileSync(path.join(REPO, 'prompt_templates/phase2/04_execute_fe_playwright.md'), 'utf8');
     expect(p).toContain('npm run results:summary');

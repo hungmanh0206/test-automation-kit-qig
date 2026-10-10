@@ -59,13 +59,42 @@ function evidenceCua(attachments) {
   try { return path.relative(rc.REPO_ROOT, a.path).replace(/\\/g, '/'); } catch (e) { return a.path; }
 }
 
+/**
+ * Tìm `results.json` của lượt GẦN NHẤT.
+ *
+ * Phát hiện khi chạy thật trên UAT: `playwright.task.config.js` của task ghi kết quả vào
+ * `test-results/runs/<RUN_ID>/results.json`, KHÔNG phải `test-results/results.json`. Bản đầu chỉ tìm ở
+ * đường thứ hai, nên nó đọc một kết quả CŨ mà không báo gì — đúng lớp lỗi tệ nhất: trả lời tự tin bằng
+ * dữ liệu của lượt khác.
+ *
+ * Nên: quét cả cây `test-results/` rồi lấy file MỚI NHẤT theo mtime.
+ */
 function timFile() {
   const n = arg('file', '');
   if (n) return n;
   const pod = process.env.PROJECT_OUTPUT_DIR;
   const task = process.env.TASK_KEY;
   if (!pod || !task) return '';
-  return path.resolve(rc.REPO_ROOT, pod, 'tasks', task, 'test-results', 'results.json');
+  const goc = path.resolve(rc.REPO_ROOT, pod, 'tasks', task, 'test-results');
+  if (!fs.existsSync(goc)) return '';
+
+  const thay = [];
+  const di = (d, sau) => {
+    if (sau > 3) return;
+    let es;
+    try { es = fs.readdirSync(d, { withFileTypes: true }); } catch (e) { return; }
+    for (const e of es) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) di(p, sau + 1);
+      else if (e.name === 'results.json') {
+        try { thay.push({ p, at: fs.statSync(p).mtimeMs }); } catch (e2) { /* bỏ qua */ }
+      }
+    }
+  };
+  di(goc, 0);
+  if (!thay.length) return path.join(goc, 'results.json');
+  thay.sort((a, b) => b.at - a.at);
+  return thay[0].p;
 }
 
 function main() {
@@ -153,6 +182,6 @@ function main() {
   process.exit(0);
 }
 
-module.exports = { phang, tcIdCua, loiGon, evidenceCua };
+module.exports = { phang, tcIdCua, loiGon, evidenceCua, timFile };
 
 if (require.main === module) main();

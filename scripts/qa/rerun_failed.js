@@ -60,14 +60,9 @@ function caseDo(file) {
   return { ids: [...new Set(ids)], khongId, tong: ids.length + khongId.length };
 }
 
-function timFile() {
-  const n = arg('file', '');
-  if (n) return n;
-  const pod = process.env.PROJECT_OUTPUT_DIR;
-  const task = process.env.TASK_KEY;
-  if (!pod || !task) return '';
-  return path.resolve(rc.REPO_ROOT, pod, 'tasks', task, 'test-results', 'results.json');
-}
+/* Dùng CHUNG `timFile` của summarize_results — hai bản chép tay thì sớm muộn tìm hai chỗ khác nhau,
+ * và đó đúng là lỗi vừa phải vá: lượt task-scoped ghi vào `test-results/runs/<RUN_ID>/results.json`. */
+const timFile = () => (arg('file', '') || sum.timFile());
 
 function main() {
   const file = timFile();
