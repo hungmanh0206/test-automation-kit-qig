@@ -270,7 +270,9 @@ function main() {
     console.log(`\n[prompt-budget] đã ghi ${rel(p)}`);
   }
 
-  if (flag('enforce')) {
+  /* `--moc` vào cùng nhánh với `--enforce`: để ĐỌC được số đo thì không nên bắt ai bật chế độ chặn.
+   * Riêng việc CHẶN vẫn chỉ xảy ra khi có `--enforce` (xem chỗ thoát ở cuối nhánh). */
+  if (flag('enforce') || flag('moc')) {
     /*
      * ĐO THEO LỜI KHAI, KHÔNG THEO HEURISTIC CỦA CHÍNH MÁY NÀY.
      *
@@ -281,7 +283,12 @@ function main() {
      * Nguồn đúng là `.agent/config/load_map.json`: ở đó NGƯỜI khai file nào bắt buộc, file nào có điều
      * kiện. H2 dựng lời khai đó; H9 chỉ đặt ngưỡng lên nó.
      */
-    const cfgPath = path.join(REPO, '.agent', 'config', 'prompt_budget.json');
+    /* `--cfg <duong>` de AM BAN chay duoc ma khong sua config that. Khong co no thi am ban buoc
+     * phai ha `moc` trong file that roi hoan lai, va hong giua duong la de lai mot moc sai. */
+    const iCfg = process.argv.indexOf('--cfg');
+    const cfgPath = iCfg >= 0 && process.argv[iCfg + 1]
+      ? path.resolve(process.argv[iCfg + 1])
+      : path.join(REPO, '.agent', 'config', 'prompt_budget.json');
     const mapPath = path.join(REPO, '.agent', 'config', 'load_map.json');
     for (const p of [cfgPath, mapPath]) {
       if (!fs.existsSync(p)) {
@@ -293,6 +300,20 @@ function main() {
     const map = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
     const loi = [];
 
+/*
+     * HAI PHÉP SO, không phải một.
+     *
+     * `luong` là TRẦN: đặt ngay trên mức hiện tại để không đỏ oan ngày đặt. Nhưng chính vì vậy nó còn
+     * chỗ trống: đo 10/10/2026, phase1 còn 1,2k và phase2 còn 1,5k dưới trần. Tức một đợt thêm chữ vẫn đi
+     * qua gate mà vẫn làm mọi phiên đắt hơn. Trần chặn chuyện phình TO; nó không chặn chuyện phình DẦN.
+     *
+     * `moc` là MỐC: số ĐÃ ĐO tại thời điểm chốt. Phần bắt buộc TĂNG so với mốc là CHẶN, dù vẫn dưới trần.
+     * Muốn thêm chữ vào phần bắt buộc thì phải CẮT BÙ trong CÙNG luồng. Hạ mốc thì cập nhật số ở đây —
+     * đó là một việc thấy được trong diff, không phải một con số trôi đi trong im lặng.
+     */
+    const moc = cfg.moc || {};
+    const soDo = {};
+
     for (const [ten, l] of Object.entries(map.luong || {})) {
       const nguong = (cfg.luong || {})[ten];
       if (!nguong || !l.bat_buoc) continue;
@@ -300,8 +321,31 @@ function main() {
       if (l.diem_vao) n += tok(docKhai(path.join(REPO, l.diem_vao)));
       for (const f of l.bat_buoc) n += tok(docKhai(path.join(REPO, f)));
       n = Math.round(n);
-      console.log(`[prompt-budget] ${ten.padEnd(10)} bắt buộc ${k(n).padStart(7)} / ngưỡng ${k(nguong)}`);
+      soDo[ten] = n;
+      const m = moc[ten];
+      const soSanh = typeof m === 'number'
+        ? (n > m ? `TĂNG +${n - m} so với mốc ${k(m)}` : (n < m ? `giảm ${n - m} so với mốc ${k(m)}` : 'bằng mốc'))
+        : 'CHƯA CÓ MỐC';
+      console.log(`[prompt-budget] ${ten.padEnd(10)} bắt buộc ${k(n).padStart(7)} / ngưỡng ${k(nguong)} · ${soSanh}`);
       if (n > nguong) loi.push(`luồng ${ten}: bắt buộc ${k(n)} vượt ngưỡng ${k(nguong)}`);
+      if (typeof m === 'number' && n > m) {
+        loi.push(`luồng ${ten}: phần bắt buộc TĂNG ${n - m} token so với mốc (${m} → ${n}).`
+          + ' Thêm chữ vào phần bắt buộc thì phải CẮT BÙ trong cùng luồng.');
+      }
+      if (typeof m !== 'number') {
+        loi.push(`luồng ${ten}: CHƯA CÓ MỐC trong \`moc\` ⇒ phép kiểm "không được tăng" CHƯA ĐƯỢC GÁC.`
+          + ` Chốt mốc: thêm \`"${ten}": ${n}\` vào \`moc\` trong .agent/config/prompt_budget.json.`);
+      }
+    }
+
+    /* Mốc khai cho một luồng không còn tồn tại là mốc chết — nó làm bảng số nói dối mà không ai biết. */
+    for (const ten of Object.keys(moc)) {
+      if (!(ten in soDo)) loi.push(`\`moc.${ten}\`: luồng này không có trong load_map — xoá mốc chết đi.`);
+    }
+
+    if (flag('moc')) {
+      console.log('\n[prompt-budget] số đo hiện tại, dán vào `moc`:');
+      console.log(JSON.stringify(soDo, null, 2));
     }
 
     for (const [f, nguong] of Object.entries(cfg.the_chay || {})) {
@@ -329,7 +373,8 @@ function main() {
       loi.forEach((x) => console.error(`  - ${x}`));
       console.error('\n  CẮT NỘI DUNG, hoặc chuyển phần "vì sao" sang docs/rationale/. KHÔNG nới số trong');
       console.error('  .agent/config/prompt_budget.json — nới ngưỡng để cho xanh biến gate thành đồ trang trí.');
-      process.exit(1);
+      if (flag('enforce')) process.exit(1);
+      console.error('  (chỉ `--moc` nên KHÔNG chặn — thêm `--enforce` để chặn.)');
     }
     console.log('\n[prompt-budget] ✓ ĐẠT — mọi luồng và thẻ chạy trong ngưỡng.');
   }

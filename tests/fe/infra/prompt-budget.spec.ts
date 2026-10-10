@@ -155,7 +155,14 @@ test.describe('@infra prompt:budget --enforce', () => {
      * Không ghi mức hiện tại thì lần sau không ai biết ngưỡng được đặt cao hơn thực tế bao nhiêu, và
      * việc nới ngưỡng sẽ trông như việc bình thường.
      */
-    expect(CFG._luong_hien_tai, 'thiếu mức hiện tại của từng luồng').toMatch(/phase1/);
+    /*
+     * ĐỒI NGUỒN, không nới phép kiểm. Mức hiện tại từng nằm trong một CÂU VĂN (`_luong_hien_tai`), và
+     * câu đó đã lệch thật: nó ghi phase2 30,4k trong khi số đo là 30.519. Hai chỗ khai cùng một con số
+     * thì sớm muộn lệch nhau. Nay mức hiện tại nằm ở `moc` — MÁY ĐỌC ĐƯỢC và chính gate so vào nó —
+     * nên đối chiếu vào đó chặt hơn là đòi một câu văn có chứa chứ "phase1".
+     */
+    expect(Object.keys(CFG.moc || {}), 'thiếu mức hiện tại của từng luồng').toContain('phase1');
+    expect(String(CFG._luong_hien_tai), 'phải trỏ về `moc` thay vì ghi lại số lần thứ hai').toMatch(/moc/);
     expect(CFG._the_chay_hien_tai, 'thiếu mức hiện tại của từng thẻ chạy').toMatch(/core_rules/);
     expect(CFG._nguong_dat_o_dau, 'phải ghi vì sao đặt trên mức hiện tại').toMatch(/chống trôi/);
     expect(CFG._khong_noi_nguong, 'phải cấm nới ngưỡng, bằng chữ').toMatch(/KHÔNG nới/);
@@ -169,4 +176,77 @@ test.describe('@infra prompt:budget --enforce', () => {
       expect(t, `${ten} CI không gọi prompt:budget --enforce`).toMatch(/prompt:budget -- --enforce/);
     }
   });
+
+  /*
+   * ── MỐC: phần nạp BẮT BUỘC không được TĂNG ────────────────────────────────────────────────────
+   *
+   * Trần (`luong`) đặt ngay TRÊN mức hiện tại để không đỏ oan ngày đặt. Nhưng chính vì vậy nó còn
+   * chỗ trống: đo 10/10/2026, phase1 còn 1,2k và phase2 còn 1,5k dưới trần. Một đợt thêm chữ vẫn đi qua
+   * gate mà vẫn làm MỊI phiên đắt hơn. Trần chặn chuyện phình TO; nó không chặn chuyện phình DẦN.
+   */
+  test('MỐC: mọi luồng trong load_map đều có mốc — thiếu một cái là luồng đó chưa được gác', () => {
+    const luong = Object.keys(MAP.luong || {}).filter((t) => (MAP.luong as any)[t].bat_buoc);
+    const thieu = luong.filter((t) => typeof (CFG.moc || {})[t] !== 'number');
+    expect(thieu, 'luồng không có mốc thì phép kiểm "không được tăng" không áp được vào nó').toEqual([]);
+  });
+
+  test('MỐC phải là số ĐÃ ĐO, không phải số mong muốn — đứng dưới trần và khớp số thực', () => {
+    /*
+     * Mốc đặt cao hơn số thực là cho sẵn chỗ để phình — đúng thứ mốc sinh ra để chặn. Đặt thấp hơn số
+     * thực thì gate đỏ ngay hôm đặt, và một gate đỏ sẵn là tiếng ồn rồi bị tắt.
+     */
+    const r = spawnSync(process.execPath, [BUDGET, '--enforce'], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+    const out = `${r.stdout || ''}${r.stderr || ''}`;
+    expect(r.status, out).toBe(0);
+    for (const t of Object.keys(CFG.moc || {})) {
+      expect((CFG.moc as any)[t], `mốc ${t} phải dưới trần`).toBeLessThanOrEqual((CFG.luong as any)[t]);
+    }
+    expect(out, 'phải in rõ đang so với mốc, không chỉ so với trần').toContain('mốc');
+  });
+
+  test('ÂM BẢN: phần bắt buộc vượt mốc 1 token ⇒ CHẶN, dù còn xa trần', () => {
+    /*
+     * Hạ mốc đi 1 token trên một BẢN COPY của config — tương đương việc thêm đúng 1 token vào phần bắt
+     * buộc. Dùng `--cfg` chứ không sửa file thật: sửa rồi hoàn lại mà hỏng giữa đường là để lại một mốc sai.
+     */
+    const d = fs.mkdtempSync(path.join(os.tmpdir(), 'moc-'));
+    const f = path.join(d, 'budget.json');
+    const nan = JSON.parse(JSON.stringify(CFG));
+    nan.moc.phase1 = CFG.moc.phase1 - 1;
+    fs.writeFileSync(f, JSON.stringify(nan, null, 2), 'utf8');
+    try {
+      const r = spawnSync(process.execPath, [BUDGET, '--enforce', '--cfg', f], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+      const out = `${r.stdout || ''}${r.stderr || ''}`;
+      expect(r.status, out).toBe(1);
+      expect(out).toContain('TĂNG');
+      expect(out, 'phải chỉ đường ra, không chỉ báo sai').toContain('CẮT BÙ');
+      expect(out, 'lỗi phải nói về luồng bị đụng, không nói chung chung').toContain('phase1');
+    } finally { fs.rmSync(d, { recursive: true, force: true }); }
+  });
+
+  test('ÂM BẢN: mốc chết (luồng không còn trong load_map) ⇒ CHẶN', () => {
+    /* Một mốc trỏ tới luồng đã bỏ làm bảng số nói dối mà không ai biết. */
+    const d = fs.mkdtempSync(path.join(os.tmpdir(), 'moc-chet-'));
+    const f = path.join(d, 'budget.json');
+    const nan = JSON.parse(JSON.stringify(CFG));
+    nan.moc['luong-khong-ton-tai'] = 1000;
+    fs.writeFileSync(f, JSON.stringify(nan, null, 2), 'utf8');
+    try {
+      const r = spawnSync(process.execPath, [BUDGET, '--enforce', '--cfg', f], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+      const out = `${r.stdout || ''}${r.stderr || ''}`;
+      expect(r.status, out).toBe(1);
+      expect(out).toContain('luong-khong-ton-tai');
+      expect(out).toContain('mốc chết');
+    } finally { fs.rmSync(d, { recursive: true, force: true }); }
+  });
+
+  test('`--moc` in được số đo hiện tại để chốt lại — không bắt ai tự đếm', () => {
+    const r = spawnSync(process.execPath, [BUDGET, '--moc'], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+    const out = `${r.stdout || ''}${r.stderr || ''}`;
+    for (const t of Object.keys(MAP.luong || {})) {
+      if (!(MAP.luong as any)[t].bat_buoc) continue;
+      expect(out, `phải in số đo của ${t}`).toContain(`"${t}"`);
+    }
+  });
+
 });

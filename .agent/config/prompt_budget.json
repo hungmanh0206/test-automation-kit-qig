@@ -14,7 +14,20 @@
     "rerun": 12000
   },
 
-  "_luong_hien_tai": "Đo 10/10/2026: phase1 29,8k · phase2 30,4k · publish 8,1k · rerun 10,8k.",
+  "_moc_la_gi": "MỐC = số token của phần NẠP BẮT BUỘC ĐÃ ĐO tại thời điểm chốt. Trần (`luong`) chặn chuyện phình TO; mốc chặn chuyện phình DẦN. Đo 10/10/2026: phase1 còn 1,2k và phase2 còn 1,5k chỗ trống dưới trần, tức một đợt thêm chữ vẫn đi qua gate mà vẫn làm mọi phiên đắt hơn. Phần bắt buộc TĂNG so với mốc là CHẶN, dù còn dưới trần.",
+
+  "_muon_them_chu_thi_sao": "CẮT BÙ trong CÙNG luồng. Nguồn bù chính là `.agent/rules/core_rules.md` (4,5k token, nạp mọi phiên) — rút về mỗi mục một dòng cộng con trỏ §, chi tiết giữ ở RULE_GLOBAL.md. Hạ mốc thì sửa số ở đây: đó là một việc thấy được trong diff, không phải một con số trôi đi trong im lặng.",
+
+  "_cach_chot_lai_moc": "node scripts/qa/prompt_budget.js --moc  (in số đo hiện tại dưới dạng JSON để dán vào đây).",
+
+  "moc": {
+    "phase1": 29763,
+    "phase2": 30519,
+    "publish": 8074,
+    "rerun": 10753
+  },
+
+  "_luong_hien_tai": "Số chính xác nằm ở `moc` ngay trên — đừng ghi lại số ở đây nữa. Hai chỗ khai cùng một con số thì sớm muộn lệch nhau, và dòng này đã lệch thật: nó ghi phase2 30,4k trong khi số đo là 30.519.",
 
   "the_chay": {
     "prompt_templates/run_phase1_template.md": 9500,
