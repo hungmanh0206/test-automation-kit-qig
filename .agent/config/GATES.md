@@ -3,7 +3,7 @@
 > **SINH TỰ ĐỘNG** bởi `node scripts/qa/gate_index.js --write`. Đừng sửa tay — `--check` sẽ chặn khi
 > bảng lệch source. Cột **Mức** suy từ code: `exit 1` = CHẶN · ghi artifact = SINH · chỉ in = BÁO CÁO.
 
-Tổng **87** máy — **60 CHẶN** · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in).
+Tổng **88** máy — **61 CHẶN** · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in).
 
 SINH/BÁO CÁO **không phải gate bị nới** — chúng không kiểm vi phạm. Ví dụ `bugs:checklist` in brief bug
 lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` §20).
@@ -60,10 +60,11 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | CHẶN (có cờ --enforce) | `manual:check`, `manual:check:enforce` | MÁY cho nhánh `manual-run/`: lượt CHẠY TAY của case `Manual-only`. | `scripts/qa/manual_run_check.js` | README.md · manual-run · .claude/commands |
 | CHẶN (có cờ --enforce) | `mutation:check`, `proof:nightly` | NEGATIVE CONTROL: cố ý tiêm lỗi rồi xem máy kiểm có ĐỎ không. | `scripts/qa/mutation_check.js` | .gitlab-ci.yml · RULE_GLOBAL.md · README.md · .github/workflows · .agent/workflows · .agent/rules · prompt_templates · .claude/commands · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `probe:persist` | TRỤC 3: chuỗi lưu trữ `form → payload → đọc lại (API) → UI`. | `scripts/qa/persistence_probe.js` | RULE_GLOBAL.md · README.md · .agent/rules · prompt_templates |
+| CHẶN (có cờ --enforce) | `phase1:check`, `phase2:check` | BÓ các gate của một phase vào MỘT lượt gọi. | `scripts/qa/phase_check.js` | .agent/workflows · prompt_templates |
 | CHẶN (có cờ --enforce) | `prompt:budget` | ĐO TĨNH: mỗi điểm vào bảo AI đọc bao nhiêu token hướng dẫn. | `scripts/qa/prompt_budget.js` | .gitlab-ci.yml · RULE_GLOBAL.md · README.md · .github/workflows · .claude/commands · tests/fe/infra |
-| CHẶN (có cờ --enforce) | `ledger:check`, `ledger:check:enforce`, `ledger:snapshot` | Chống MẤT KẾT QUẢ ÂM THẦM trong Excel canonical. | `scripts/qa/result_ledger.js` | prompt_templates |
+| CHẶN (có cờ --enforce) | `ledger:check`, `ledger:check:enforce`, `ledger:snapshot` | Chống MẤT KẾT QUẢ ÂM THẦM trong Excel canonical. | `scripts/qa/result_ledger.js` | .agent/workflows · prompt_templates |
 | CHẶN (có cờ --enforce) | `risk:gate`, `risk:gate:enforce` | ép Risk-Based Testing: đối chiếu testcase với depthPolicy theo band trong risk-register. | `scripts/qa/risk_gate.js` | README.md · USER_GUIDE.md · QUICKSTART.md · .github/workflows · .agent/workflows · .agent/skills · prompt_templates · .claude/commands |
-| CHẶN (có cờ --enforce) | `scope:anchor`, `scope:anchor:enforce`, `scope:anchor:init` | NEO MẪU SỐ của Phase 1. | `scripts/qa/scope_anchor.js` | prompt_templates |
+| CHẶN (có cờ --enforce) | `scope:anchor`, `scope:anchor:enforce`, `scope:anchor:init` | NEO MẪU SỐ của Phase 1. | `scripts/qa/scope_anchor.js` | .agent/workflows · prompt_templates |
 | CHẶN (có cờ --enforce) | `self-review`, `self-review:enforce` | Lượt 2: đối chiếu CHECKLIST trước finalize (ADVISORY). | `scripts/qa/self_review.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · scripts/qa/README.md · .agent/workflows · prompt_templates · manual-run · .claude/commands · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `spec:gap` | CHIỀU NGƯỢC: build CÓ mà tài liệu KHÔNG NHẮC (B3 của chương trình chống lọt bug). | `scripts/qa/spec_gap_report.js` | RULE_GLOBAL.md · CLAUDE.md · README.md · .agent/workflows · .agent/rules · prompt_templates · tests/fe/infra |
 | CHẶN (có cờ --enforce) | `system:check`, `system:index` | quản lý `knowledge/system/`: bản đồ HỆ THỐNG đã được xác nhận. | `scripts/qa/system_map.js` | README.md · USER_GUIDE.md · .agent/workflows · .agent/skills · prompt_templates · partial-rerun |
@@ -95,5 +96,5 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | BÁO CÁO | `quality:decision` | Quality Decision Engine, capstone). Gộp tín hiệu chất lượng → 1 quyết định | `scripts/qa/quality_decision.js` | README.md · scripts/qa/README.md |
 | BÁO CÁO | `rerun:failed` | chạy lại ĐÚNG case đỏ của lượt vừa rồi, bằng MỘT lệnh. | `scripts/qa/rerun_failed.js` | RULE_GLOBAL.md · .agent/workflows · prompt_templates · tests/fe/infra |
 | BÁO CÁO | `select:tests` | Intelligent Test Selection từ git diff. | `scripts/qa/select_tests.js` | README.md · USER_GUIDE.md |
-| BÁO CÁO | `results:summary` | đọc `results.json` của Playwright, in BẢN TÓM TẮT có TRẦN DÒNG. | `scripts/qa/summarize_results.js` | README.md · prompt_templates · tests/fe/infra |
+| BÁO CÁO | `results:summary` | đọc `results.json` của Playwright, in BẢN TÓM TẮT có TRẦN DÒNG. | `scripts/qa/summarize_results.js` | README.md · .agent/workflows · prompt_templates · tests/fe/infra |
 | BÁO CÁO | `report` | const { spawnSync } = require('child_process'); | `scripts/show_report.js` | .gitlab-ci.yml · RULE_GLOBAL.md · CLAUDE.md · README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .github/workflows · .agent/workflows · .agent/rules · .agent/skills · prompt_templates · exploratory · partial-rerun · manual-run · .claude/commands · tests/fe/infra |

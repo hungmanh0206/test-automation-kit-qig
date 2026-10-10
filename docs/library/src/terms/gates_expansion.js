@@ -165,6 +165,13 @@ const TERMS_GATE2 = [
   trap:'Spec theo task thì không track vào repo. Nightly chỉ chạy tests/fe/infra.',
   src:'scripts/qa/ci_scope_check.js', rel:['r-uat','c-non-destructive','r-scope','g-test_inventory_gate'] },
 
+{ id:'g-phase_check', t:'phase_check', cat:'gate',
+  def:'Bó các gate của một phase vào MỘT lượt gọi.',
+  detail:'Phase 1 bó 4 bước, phase 2 bó 5 bước. Nó KHÔNG tự kiểm gì — chỉ spawn đúng script gốc rồi gom kết quả, nên chạy bó và chạy rời cho cùng exit code và cùng tập vi phạm theo cấu trúc. Bước BÁO CÁO không làm đỏ cả bó.',
+  why:'Đo 5 phiên chạy task thật: toàn bộ lệnh của kit chỉ chiếm 248 trên 11.781 lượt shell, tức 2,1%. Nên đây KHÔNG phải đòn bẩy token chính, và tầng này nói thẳng con số đó. Giá trị thật nằm chỗ khác: cuối mỗi phase có bốn đến năm lệnh luôn đi cùng nhau, và chạy rời rất dễ chạy thiếu một cái rồi tưởng đã kiểm hết.',
+  cmd:'npm run phase2:check -- --task <TASK_KEY>   ·   npm run phase1:check -- --task <TASK_KEY>',
+  src:'scripts/qa/phase_check.js', rel:['g-deps_check','g-summarize_results'] },
+
 { id:'g-deps_check', t:'deps_check', cat:'gate',
   def:'Mỗi dependency phải có nơi dùng, hoặc có một dòng giải thích.',
   detail:'Bốn phép: không nơi dùng và không miễn trừ ⇒ CHẶN · dep dạng URL mà miễn trừ không có url_ok ⇒ CHẶN · dep URL mà lockfile thiếu integrity ⇒ CHẶN · miễn trừ thừa hoặc thiếu lý do ⇒ cảnh báo. Nơi dùng nhận ba bề mặt: require hoặc import trong file đã track, tên gói trong npm script hoặc CI, và miễn trừ có lý do.',
