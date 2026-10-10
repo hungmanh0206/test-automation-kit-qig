@@ -119,7 +119,7 @@ Prompt cho phép đề xuất thứ tự khác nếu số đo động nói khác
 | 4 | **H10** độ sâu theo band | số lượt chạy và rerun | Gián tiếp nhưng lớn | Checkpoint riêng, cần duyệt. Ít trục mở rộng nghĩa là ít lượt shell |
 | 5 | **H2** `load_map.json` | `Read file` 4,9% | ~39k | Giá trị chính **không phải** token: nó biến 123,3k "chưa phân loại" thành lời khai máy đọc được |
 | 6 | **H9** gate ngân sách token | chống trôi về sau | 0 ngay | Giữ lại thành quả, đáng làm dù không giảm gì hôm nay |
-| 7 | **H3** máy chụp và kiểm evidence | ảnh: **0,0% token** | **~0 token** | Vẫn nên làm, nhưng **vì lý do khác**: hiện agent phải tự viết code chụp, và `screenshot: 'only-on-failure'` trái luật 4 của `CLAUDE.md`. Đó là lỗi đúng-sai, không phải lỗi token |
+| 7 | **H3** máy chụp và kiểm evidence | ảnh: **0,0% token** | **~0 token** | Vẫn nên làm, nhưng **vì lý do khác**: không máy nào kiểm ảnh có RỖNG RUỘT hay không. Xem đính chính ở mục 3b |
 | 8 | **H6** chọn model theo việc | giá, không phải số token | Chưa đo | Cần kiểm cú pháp `.claude/agents/` của bản Claude Code đang dùng trước |
 | 9 | **H7** tách thẻ chạy và tài liệu lý do | đoạn "người đọc" 3,4k | **~3,4k** | **Đề xuất HOÃN.** Trần 3,4k, mà cái giá là `rule_parity.js` cộng rủi ro mất luật khi tách 5 file nặng |
 | 10 | **H8** bỏ lớp trùng | bản sao 2,96k | **~3k** | **Đề xuất thu hẹp**: chỉ gộp vài chỗ trùng thật (tag `[<method>]`, setup layer), không tái cấu trúc cả bốn lớp |
@@ -150,6 +150,27 @@ Ba việc cụ thể đo được ngay:
 Hạng mục này cùng họ với H4 nên gộp vào H4 được. Điều kiện là phạm vi H4 phải mở rõ ra, không chỉ
 "tóm tắt kết quả test".
 
+### 3b. Đính chính về H3
+
+Bản đầu của tài liệu này viết: *"`screenshot: 'only-on-failure'` trái luật 4 của `CLAUDE.md`"*. **Sai.**
+Tôi lặp lại tiền đề trong prompt gốc mà không kiểm.
+
+Cơ chế của luật 4 là `scripts/utils/evidence_recorder.js`, và header của nó ghi rõ mục đích: *"chuẩn hoá
+evidence Phase 2 để MỌI case (PASS/FAIL) và MỌI step đều có ảnh"*. Dòng `screenshot: 'only-on-failure'`
+trong `playwright.config.js` là ảnh tự động **của Playwright** khi test fail — một lưới chắn thêm, không
+phải cơ chế của luật 4. Không có mâu thuẫn nào.
+
+**Lý do đúng để giữ H3** tìm thấy khi đi kiểm: *"có file ảnh"* và *"ảnh đúng màn"* là hai chuyện, và
+không máy nào phân biệt. Hai ca thật trong repo, đã mở mắt kiểm cả hai:
+
+| Ảnh | Kích thước | Nội dung thật |
+|---|---|---|
+| `CSDL_HSTRUONG_TC_138/step-01-passed.png` | 1280×720, 4 KB | **Trắng hoàn toàn**, của một step chấm `passed` |
+| `CSDL_NHANSU_TC_121/step-01-failed.png` | 1280×720, 9 KB | **Trang lỗi HTTP 503**, không phải màn đang kiểm |
+
+Commit `a39c7df` ghi thêm một ca thứ ba: *"ảnh evidence của nó là popup trắng đang quay spinner"*, trên
+một case vẫn PASS.
+
 ## 4. Giới hạn của chính phép đo này
 
 Nói trước, để không ai dùng số sai chỗ.
@@ -169,6 +190,5 @@ tool. Đã chạy `npm run secret:scan` sau khi ghi.
 
 1. **Thứ tự mới** ở mục 3, đặc biệt việc hoãn H7 và việc thu hẹp H8.
 2. **Mở phạm vi H4** thành "giảm số lượt shell", gộp H0 ở trên vào.
-3. **Giữ H3** dù trần token bằng 0, vì nó sửa một chỗ trái luật 4 của `CLAUDE.md`
-   (`screenshot: 'only-on-failure'`).
+3. **Giữ H3** dù trần token bằng 0. Lý do đúng ở mục 3b, không phải lý do ghi ở bản đầu.
 4. Task mốc để đo lại sau khi sửa: **CSDL-9003**. Lượt đo lại sẽ chạm UAT nên sẽ xin xác nhận riêng.

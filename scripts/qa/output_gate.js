@@ -32,6 +32,7 @@ const MODE = arg('mode', 'test-execution');
  * mọi vi phạm vẫn xuất hiện, kể cả loại không khớp mã nào (nhận `KHAC`). Xem lib/gate_engine.js. */
 const COMPACT = process.argv.includes('--compact');
 const engine = require(path.resolve(__dirname, 'lib', 'gate_engine'));
+const evq = require(path.resolve(__dirname, 'lib', 'evidence_quality'));
 const STATUS = arg('status', '');
 const FIX = has('fix');
 const QA_APPROVED = has('qa-approved');
@@ -123,6 +124,23 @@ function gateTestExecution(doc, { fix = false } = {}) {
     const nonVisual = allEv.filter((e) => !rules.isVisualEvidence(e));
     // Danh sách đuôi SINH RA từ chính regex đang chặn — viết tay lại là in ra danh sách khác với luật thật.
     if (nonVisual.length) problems.push(`${id}: evidence KHÔNG phải ảnh/video: ${nonVisual.map((e) => e.split(/[\\/]/).pop()).join(', ')} (chỉ nhận ${rules.extListText()})`);
+
+    /*
+     * 2b) ẢNH CÓ MẶT nhưng RỖNG RUỘT. "Có file ảnh" và "ảnh đúng màn" là hai chuyện, và cho tới nay
+     * không máy nào phân biệt — nên một case PASS kèm ảnh trắng đi qua mọi cửa.
+     *
+     * Hai ca THẬT trong repo: `CSDL_HSTRUONG_TC_138/step-01-passed.png` trắng hoàn toàn (1280×720, 4 KB),
+     * và `CSDL_NHANSU_TC_121/step-01-failed.png` là trang lỗi HTTP 503. Cả hai đều được dùng làm evidence.
+     *
+     * Chỉ đo được khi file CÓ TRÊN ĐĨA. Đường dẫn tương đối tính từ gốc repo; không tìm thấy thì bỏ qua
+     * im lặng — thiếu file đã có luật khác lo, và báo hai lần cho cùng một chuyện là tiếng ồn.
+     */
+    for (const e of [...new Set(allEv.filter(rules.isVisualEvidence))]) {
+      const abs = path.isAbsolute(e) ? e : path.resolve(process.cwd(), e);
+      if (!fs.existsSync(abs)) continue;
+      const r = evq.anhNgheo(abs);
+      if (r.ngheo) problems.push(`${id}: evidence RỖNG RUỘT ${e.split(/[\\/]/).pop()} — ${r.ly_do}`);
+    }
 
     // 3) Step status: mọi step phải có status (không để trống → "TO DO" rối).
     const stepsNoStatus = steps.filter((s) => !String(s.status || '').trim()).length;
