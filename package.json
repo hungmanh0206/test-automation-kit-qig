@@ -89,6 +89,8 @@
     "backlog:bug-report:dry-run": "node scripts/integrations/backlog/bug_reporter.js --dry-run",
     "lint:locator": "node scripts/qa/locator_lint.js",
     "lint:locator:enforce": "node scripts/qa/locator_lint.js --enforce",
+    "matrix:coverage": "node scripts/qa/matrix_coverage.js",
+    "matrix:coverage:enforce": "node scripts/qa/matrix_coverage.js --enforce",
     "auto:review": "node scripts/qa/automation_review.js",
     "auto:review:enforce": "node scripts/qa/automation_review.js --enforce",
     "domain:check": "node scripts/qa/domain_rules.js",

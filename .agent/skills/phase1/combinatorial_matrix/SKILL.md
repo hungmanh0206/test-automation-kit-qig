@@ -18,6 +18,29 @@ Kit ưu tiên "theo tỉ lệ", KHÔNG nhân bừa (đồng bộ mục 13 dropdo
 - **Full Cartesian CHỈ khi**: số chiều nhỏ + tổ hợp ít + rủi ro cao rõ ràng, và **ghi lý do**. Không dùng làm mặc định.
 - **Constraints để loại bộ vô nghĩa**: cặp giá trị không thể xảy ra cùng nhau (vd `payment=Free` ⇒ không có `installment`) phải khai báo để loại khỏi ma trận, tránh sinh bộ rác.
 
+## Pairwise phủ CẶP GIÁ TRỊ, KHÔNG phủ KẾT QUẢ (BẮT BUỘC, có máy kiểm)
+
+Pairwise bảo đảm mọi cặp giá trị giữa hai chiều bất kỳ xuất hiện ít nhất một lần. Nó **không** bảo đảm mọi **lớp kết quả** xuất hiện — mà lớp kết quả mới là thứ người đọc quan tâm. Ví dụ: chức năng có 3 kết quả theo spec (lưu được · chặn vì sai định dạng · chặn vì trùng mã), ma trận pairwise 9 bộ hoàn toàn có thể chỉ chạm 2 trong 3. Lúc đó coverage vẫn báo "pairwise 100%" trong khi một nhánh nghiệp vụ chưa ai test.
+
+Nên mỗi file ma trận phải khai **lớp kết quả** rồi truy từng bộ về lớp:
+
+```md
+## Lớp kết quả
+
+| Mã | Lớp kết quả | oracle_ref |
+|---|---|---|
+| OC-1 | Lưu thành công | BR-HS-001 |
+| OC-2 | Chặn vì sai định dạng email | BR-HS-012 |
+| OC-3 | Chặn vì trùng mã định danh | BR-HS-016 |
+```
+
+Rồi bảng ma trận thêm cột `Lớp kết quả` mang **mã** (`OC-1`…), không mang chữ mô tả.
+
+- ⚙️ `npm run matrix:coverage:enforce` **CHẶN** khi: một lớp đã khai không có bộ nào phủ · một lớp thiếu `oracle_ref` · bảng ma trận dùng mã chưa khai · đã khai mà bảng không có cột `Lớp kết quả`.
+- **Khớp theo MÃ, không dò chữ** — cố ý. "Chặn" và "không cho lưu" là cùng một lớp, còn "lưu thành công" và "lưu thành công nhưng cảnh báo" là hai lớp khác nhau; máy không phân biệt được bằng từ khoá, nên dò chữ sẽ là một gate đoán.
+- **`oracle_ref` bắt buộc**: không có neo thì chính danh sách lớp là do người viết tự nghĩ ra, và gate sẽ đi gác một mẫu số tự khai.
+- Lớp cố ý **không** phủ thì ghi lý do ở `phase1-summary.md` §Coverage Gaps — không im lặng bỏ.
+
 ## Inputs
 
 | Input | Nguồn |

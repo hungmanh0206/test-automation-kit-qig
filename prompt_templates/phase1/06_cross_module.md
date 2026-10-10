@@ -31,6 +31,8 @@
 | Ma trận tổ hợp + expected | `<TASK_OUTPUT_DIR>/test-cases/<basename>_matrix.md` |
 | Ghi chú strategy + mức cắt giảm | Đầu file matrix + Coverage Gaps của `phase1-summary.md` |
 
+File matrix phải khai khối `## Lớp kết quả`. Mỗi lớp có mã `OC-…` và `oracle_ref`. Bảng ma trận thêm cột `Lớp kết quả` mang MÃ. ⚙️ `npm run matrix:coverage:enforce` **CHẶN** khi một lớp đã khai không có bộ nào phủ. Lý do: **pairwise phủ cặp giá trị, KHÔNG phủ kết quả**. Xem `combinatorial_matrix`.
+
 Mỗi hàng ma trận = 1 testcase → export Excel bằng script hiện có (`scripts/convert_excel/md_to_xlsx.js`) rồi publish lên Google Sheet qua Drive MCP, vào đúng nhóm chức năng. Sau đó validate bằng `tc_validator` như testcase thường.
 
 # Rules
