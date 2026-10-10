@@ -212,6 +212,10 @@ Yêu cầu testcase output:
 - `task.md`, testcase Markdown và Phase 1 report phải viết bằng tiếng Việt chuẩn có dấu; technical terms, endpoint, command, enum/status có thể giữ nguyên tiếng Anh.
 - Không execute automation trong Phase 1.
 
+Nạp file theo [`.agent/config/load_map.json`](../.agent/config/load_map.json), không nạp cả chuỗi.
+Chiều coverage mở ĐÚNG chiều mà `requirements/dimension_manifest.json` khai `required`, ánh xạ khoá
+sang file ở mục `phase1_chieu_coverage.anh_xa` của bản đồ đó.
+
 Điều kiện dừng:
 - **Dừng sớm nếu Ambiguity Gate PENDING**: nếu có mơ hồ Critical/High, dừng ngay sau khi xuất `reports/phase1-clarifications.md` + `AMBIGUITY_GATE: PENDING`; KHÔNG sinh testcase cho tới khi QA/BA resolve.
 - Dừng sau khi sinh/cập nhật testcase Markdown, export Excel, sinh/cập nhật Phase 1 report và cập nhật task log.

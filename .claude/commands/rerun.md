@@ -4,6 +4,10 @@ description: Chạy lại các case liên quan tới bug đã fix và cập nh�
 
 Task: **$ARGUMENTS**
 
+> **Nạp file nào, và nạp khi nào: [`.agent/config/load_map.json`](../../.agent/config/load_map.json).**
+> Đừng nạp cả chuỗi. Đo bằng `npm run prompt:budget`: chuỗi của `/phase1` là 56 file, 143k token nếu
+> đọc hết, mà chỉ 5,7k trong đó là bắt buộc. File có điều kiện thì chờ đúng điều kiện mới mở.
+
 > Chỉ truyền đúng `<TASK_KEY>`, **không kèm bug key** — `$ARGUMENTS` đi thẳng vào
 > `preflight_gate.js --task`, thêm chữ là gate nhận sai task rồi chặn. Bug/case cần rerun thì nói ở
 > câu tiếp theo ("rerun bug CSDL-1234"), hoặc dùng prompt mẫu ở USER_GUIDE Mục 9.2.
