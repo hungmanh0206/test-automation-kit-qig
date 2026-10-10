@@ -121,4 +121,17 @@ test.describe('@infra token:audit — mẫu lệnh và ngưỡng một lượt',
     expect(d, 'phải ghi cách đo khi có điều kiện').toContain('--model');
   });
 
+
+  test('`--so` TỪ CHỐI so một phiên SỬA KIT với mốc của phiên CHẠY TASK', () => {
+    /*
+     * Đây đúng là lỗi đã làm hỏng lần đo mốc thứ nhất: gộp phiên bảo trì kit với phiên chạy task cho ra
+     * con số sai hẳn một bậc. Trừ tay giữa hai bảng số là cách dễ nhất để ra một con số "đã giảm" mà
+     * không ai kiểm lại được, nên phép so phải nằm trong máy, và máy phải biết từ chối.
+     */
+    const src = fs.readFileSync(path.join(REPO, 'scripts/qa/token_audit.js'), 'utf8');
+    expect(src, 'phải có chế độ so với mốc').toContain('soVoiMoc');
+    expect(src, 'phải từ chối khi phiên không phải CHẠY TASK').toMatch(/TỪ CHỐI so|TỪ CHỐI so/);
+    expect(src, 'phải từ chối khi không có mốc nào').toContain('baseline.dynamic.json');
+  });
+
 });

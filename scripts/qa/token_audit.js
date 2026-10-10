@@ -427,6 +427,62 @@ async function inTheoModel(file) {
   console.log('được cho subagent khi hai mốc ÔM SÁT lượt gọi, và khi model hiện ra là model mà phiên cha KHÔNG dùng.');
 }
 
+/*
+ * `--so <transcript>` — ĐO MỘT LƯỢT MỚI RỒI SO THẬNG VỚI MỐC.
+ *
+ * VÌ SAO CẦN, và đây là một lỗi đã mắc chứ không phải lo xa: trừ tay giữa hai bảng số là cách dễ nhất
+ * để ra một con số "đã giảm" mà không ai kiểm lại được. Máy này đọc mốc từ `baseline.dynamic.json`, chỉ
+ * lấy phiên đã được xếp là `CHẠY TASK`, rồi in hiệu.
+ *
+ * HAI CHỖ TỪ CHỐI, cả hai cố ý:
+ *   ① Phiên mới KHÔNG phải `CHẠY TASK` ⇒ TỪ CHỐI so. So một phiên bảo trì với mốc của phiên chạy task
+ *     là đúng lỗi đã làm hỏng lần đo mốc thứ nhất.
+ *   ② Không có mốc nào ⇒ TỪ CHỐI, vì "giảm bao nhiêu" không có nghĩa khi không có số trước.
+ */
+async function soVoiMoc(file) {
+  const moi = await doMotPhien(file);
+  if (moi.loai !== 'CHẠY TASK') {
+    console.error(`[token-audit] ✗ TỪ CHỐI so: phiên này được xếp là "${moi.loai}" (ghi vào outputs/tasks: ${moi.ghiVaoTask} lượt).`);
+    console.error('  Mốc là của phiên CHẠY TASK. So một phiên bảo trì với nó cho ra con số sai hẳn một bậc,');
+    console.error('  và đó đúng là lỗi đã làm hỏng lần đo mốc thứ nhất.');
+    process.exit(2);
+  }
+
+  let moc;
+  try { moc = JSON.parse(fs.readFileSync(path.join(OUT_DIR, 'baseline.dynamic.json'), 'utf8')); } catch (e) { moc = null; }
+  const cu = Object.values((moc && moc.phien) || {}).filter((r) => r.loai === 'CHẠY TASK' && r.file !== moi.file);
+  if (!cu.length) {
+    console.error('[token-audit] ✗ TỪ CHỐI so: không có phiên CHẠY TASK nào trong baseline.dynamic.json.');
+    console.error('  "Giảm bao nhiêu" không có nghĩa khi không có số trước.');
+    process.exit(2);
+  }
+
+  const ctx = (r) => (r.message ? (r.inputTok + r.cacheRead + r.cacheCreate) / r.message : 0);
+  const shell = (r) => Object.entries(r.toolCalls || {}).filter(([x]) => /^(Bash|PowerShell)$/.test(x)).reduce((a, b) => a + b[1], 0);
+  const tb = (f) => cu.reduce((a, r) => a + f(r), 0) / cu.length;
+
+  const hang = [
+    ['message', moi.message, tb((r) => r.message)],
+    ['lượt shell', shell(moi), tb(shell)],
+    ['context TB mỗi message', Math.round(ctx(moi)), Math.round(tb(ctx))],
+    ['lượt Read', (moi.toolCalls || {}).Read || 0, tb((r) => (r.toolCalls || {}).Read || 0)],
+  ];
+
+  console.log(`[token-audit] so phiên ${moi.file.slice(0, 8)} với mốc (${cu.length} phiên CHẠY TASK)`);
+  console.log('');
+  console.log('| Chỉ số | Mốc (TB) | Lượt này | Thay đổi |');
+  console.log('|---|---|---|---|');
+  for (const [ten, nay, truoc] of hang) {
+    const d = truoc ? ((nay - truoc) / truoc) * 100 : 0;
+    const dau = d > 0 ? '+' : '';
+    console.log(`| ${ten} | ${Math.round(truoc).toLocaleString('vi-VN')} | ${Math.round(nay).toLocaleString('vi-VN')} | **${dau}${d.toFixed(1)}%** |`);
+  }
+  console.log('');
+  console.log('Đọc bảng: chỉ số đáng nhìn nhất là **lượt shell** và **message** — chi phí tỉ lệ với (context mỗi');
+  console.log('message) × (số message), còn context TB gần như không đổi được vì nó là trần của cửa sổ.');
+  console.log('Một lượt task khác nhau về phạm vi thì số khác nhau — nói rõ phạm vi khi báo kết quả.');
+}
+
 async function main() {
   const dir = thuMucTranscript();
 
@@ -443,6 +499,14 @@ async function main() {
       console.log(`| ${r.file.slice(0, 8)} | ${r.loai} | ${r.message} | ${r.ghiVaoTask} | ~${k(r.message ? tongVao / r.message : 0)} | \`${r.file}\` |`);
     }
     console.log('\nPhiên `CHẠY TASK` mới dùng được làm mốc. `SỬA KIT` là phiên bảo trì kit, chi phí của nó KHÔNG phải chi phí của task.');
+    return;
+  }
+
+  if (flag('so')) {
+    const t0 = arg('so', '') || arg('transcript', '');
+    const f0 = t0 && (fs.existsSync(t0) ? t0 : (dir ? path.join(dir, t0) : ''));
+    if (!f0 || !fs.existsSync(f0)) { console.error('[token-audit] cần --so <transcript.jsonl>'); process.exit(2); }
+    await soVoiMoc(f0);
     return;
   }
 

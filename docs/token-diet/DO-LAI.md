@@ -41,6 +41,10 @@ npm run token:audit -- --list
 #    Tìm phiên vừa chạy, xác nhận cột "Loại" là CHẠY TASK rồi mới đo nó:
 npm run token:audit -- --transcript <phien-vua-roi>.jsonl --json
 npm run secret:scan
+
+# 4. So THANG voi moc, thay vi tru tay giua hai bang so:
+npm run token:audit -- --so <phien-vua-roi>.jsonl
+#    No TU CHOI so neu phien khong phai CHAY TASK, hoac neu khong co moc nao.
 ```
 
 Nếu cột `Loại` **không** phải `CHẠY TASK` thì dừng: hoặc lượt chạy chưa ghi vào `outputs/*/tasks/`, hoặc
