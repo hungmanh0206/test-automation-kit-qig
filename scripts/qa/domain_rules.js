@@ -42,7 +42,19 @@ const ID_RE = /^BR-[A-Z0-9]+-\d{3}$/;
  *               phải bị REVIEW LẠI — không phải chỉ chạy lại: chạy lại theo oracle sai thì vẫn sai.
  * Trước đó chỉ sửa được bằng tay (đổi status hoặc xoá file) ⇒ không có vết ai gỡ và vì sao.
  */
-const STATUSES = ['active', 'superseded', 'deprecated', 'invalid'];
+/*
+ * `draft` thêm 10/10/2026 (v2.5.0 G2.3) — và nó lấp một lỗ làm cả hạng mục này bất khả thi trước đó.
+ *
+ * Trước đây KHÔNG có cách nào ghi một bản ghi "chưa ai xác nhận": `status` chỉ nhận
+ * `active|superseded|deprecated|invalid`, và `confirmed_by` thì BẮT BUỘC ∈ `BA|Dev|QA-Lead|PO`. Nghĩa là
+ * một khung mới dựng — thứ chưa hỏi BA — không thể tồn tại trong kho. Hệ quả: dự án mới có `knowledge/`
+ * rỗng thì nó ở lại rỗng, vì bước đầu tiên đã bị chặn.
+ *
+ * `draft` là trạng thái CHƯA PHẢI ORACLE. Nó được phép thiếu `confirmed_by` và thiếu `rule`, nhưng ĐỔI
+ * LẠI nó bị cấm mọi đường trở thành căn cứ kết luận (xem `kiemDraft`). Đây cũng là nền mà v2.6.0 và
+ * v2.8.0 cần: cả hai đều nói "bản ghi ở `draft`, có `confirmed_by` mới thành `active`".
+ */
+const STATUSES = ['draft', 'active', 'superseded', 'deprecated', 'invalid'];
 const CONFIRMERS = ['BA', 'Dev', 'QA-Lead', 'PO'];
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 
@@ -187,6 +199,29 @@ function validate(r) {
   const d = r.data || {};
   const at = (m) => `${path.basename(r.file)}: ${m}`;
   if (d.__err) return { problems: [at(`JSON lỗi — ${d.__err}`)], warnings };
+
+  /*
+   * BẢN GHI `draft` — CHƯA PHẢI ORACLE, và phải không bao giờ trở thành căn cứ kết luận.
+   *
+   * Nó được MIỄN hai thứ (vì theo định nghĩa nó chưa có): `confirmed_by` và `rule`. Đổi lại nó bị CHẶN
+   * mọi đường dùng làm oracle:
+   *   · `covered_by` phải RỖNG — có TC trỏ vào một rule chưa ai chốt là case đó đang dùng oracle chưa
+   *     tồn tại, đúng lớp lỗi mà `PM-*` mức `unknown` vừa vá ở G1.3;
+   *   · phải có `todo` — nói RÕ phải hỏi ai cái gì. Một khung không có câu hỏi thì nó chỉ là rác chiếm
+   *     chỗ, và lần sau không ai biết nó đang chờ gì.
+   * Trả về sớm: không bắt draft đủ trường của một rule đã chốt — bắt vậy thì không ai dựng khung nữa, và
+   * ta quay lại đúng chỗ cũ là kho rỗng mãi.
+   */
+  if (d.status === 'draft') {
+    if (!ID_RE.test(String(d.id || ''))) problems.push(at(`\`id\` "${d.id}" sai format (cần BR-<MODULE>-<NNN>)`));
+    if (!String(d.module || '').trim()) problems.push(at('draft vẫn phải có `module` — không có nó thì khung này không thuộc về đâu'));
+    if (!String(d.todo || '').trim()) problems.push(at('`status: draft` PHẢI có `todo` — phải hỏi AI cái GÌ để chốt. Khung không có câu hỏi thì chỉ là rác chiếm chỗ.'));
+    if (Array.isArray(d.covered_by) && d.covered_by.length) {
+      problems.push(at(`\`status: draft\` mà \`covered_by\` có ${d.covered_by.length} TC — rule CHƯA ai chốt thì KHÔNG được làm oracle. Case đó đang dùng một oracle chưa tồn tại. Chốt rule (đặt \`confirmed_by\` + \`status: active\`) trước, hoặc bỏ TC khỏi \`covered_by\`.`));
+    }
+    if (String(d.content_sha || '').trim()) problems.push(at('`draft` KHÔNG được seal `content_sha` — seal là để khoá một bản ghi đã chốt, còn draft thì còn phải sửa.'));
+    return { problems, warnings };
+  }
 
   if (!ID_RE.test(String(d.id || ''))) problems.push(at(`\`id\` "${d.id}" sai format (cần BR-<MODULE>-<NNN>, vd BR-PAYMENT-004)`));
   if (!String(d.module || '').trim()) problems.push(at('thiếu `module` (phải khớp cột Module của testcase để tra cứu/risk gom đúng)'));
@@ -476,6 +511,15 @@ if (flag('trace-back')) {
     for (const t of withRef) {
       for (const ref of t.oracleRefs) {
         if (ref.startsWith('BR-') && !byId.has(ref)) warnings.push(`${t.tcId}: trỏ \`${ref}\` nhưng knowledge/domain KHÔNG có rule id này (oracle ma).`);
+        /*
+         * Trỏ vào một rule `draft` TỆ HƠN oracle ma, nên nó CHẶN chứ không cảnh báo: oracle ma thì người
+         * viết biết ngay là thiếu, còn draft thì rule CÓ THẬT trong kho — nó chỉ chưa ai chốt. Case đó sẽ
+         * đọc như đã có neo, và verdict từ nó sẽ được tin.
+         */
+        const r0 = byId.get(ref);
+        if (r0 && (r0.data || r0).status === 'draft') {
+          problems.push(`${t.tcId}: trỏ \`${ref}\` đang ở \`status: draft\` — rule CHƯA ai chốt thì KHÔNG phải oracle. Chốt nó (\`confirmed_by\` + \`status: active\`) trước khi dùng, hoặc đổi \`oracle_ref\` sang neo khác.`);
+        }
       }
     }
 

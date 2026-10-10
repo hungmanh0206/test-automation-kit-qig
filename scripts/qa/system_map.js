@@ -46,7 +46,14 @@ const TYPES = ['state_machine', 'permission_matrix', 'shared_surface', 'data_mod
 const PREFIX = { state_machine: 'SM', permission_matrix: 'PM', shared_surface: 'SS', data_model: 'DM', ui_contract: 'UI' };
 const KINDS = ['api', 'component', 'table', 'job', 'config', 'library'];
 const ID_RE = /^(SM|PM|SS|DM|UI)-[A-Z0-9]+-\d{3}$/;
-const STATUSES = ['active', 'superseded', 'deprecated'];
+/*
+ * `draft` thêm 10/10/2026 (v2.5.0 G2.3), cùng lý do như ở `domain_rules.js`: trước đó không có cách nào
+ * ghi một bản ghi CHƯA ai xác nhận, nên một bản đồ hệ thống mới dựng không thể tồn tại trong kho.
+ *
+ * Đây cũng là nền mà v2.6.0 và v2.8.0 cần: cả hai nói "ứng viên `SM-*`/`PM-*`/`SS-*` ở dạng `draft`, chỉ
+ * thành `active` khi có `confirmed_by`".
+ */
+const STATUSES = ['draft', 'active', 'superseded', 'deprecated'];
 const CONFIRMERS = ['BA', 'Dev', 'QA-Lead', 'PO'];
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 const PHONE_RE = /\b0\d{8,10}\b/;
@@ -64,6 +71,20 @@ const pairKey = (a, b) => `${a} → ${b}`;
 
 /** Governance chung cho cả 3 type (giống `domain/` để chỉ có 1 mô hình trong đầu). */
 function validateCommon(d, at, problems, warnings) {
+  /*
+   * Bản ghi `draft` — CHƯA PHẢI ORACLE. Miễn `confirmed_by`/`confirmed_at` (theo định nghĩa chưa có),
+   * nhưng đổi lại bị CHẶN mọi đường dùng làm căn cứ: `covered_by` phải rỗng, và phải có `todo` nói rõ
+   * phải hỏi ai cái gì. Cùng khuôn với `domain_rules.js` để chỉ có MỘT mô hình trong đầu.
+   */
+  if (d.status === 'draft') {
+    if (!TYPES.includes(String(d.type || ''))) problems.push(at(`\`type\` phải ∈ ${TYPES.join('|')}`));
+    if (!Array.isArray(d.modules) || !d.modules.length) problems.push(at('draft vẫn phải có `modules`'));
+    if (!String(d.todo || '').trim()) problems.push(at('`status: draft` PHẢI có `todo` — phải hỏi AI cái GÌ để chốt.'));
+    const cb = d.covered_by;
+    const nCb = Array.isArray(cb) ? cb.length : Object.keys(cb || {}).length;
+    if (nCb) problems.push(at(`\`status: draft\` mà \`covered_by\` có ${nCb} mục — bản đồ CHƯA ai chốt thì KHÔNG được làm oracle.`));
+    return;
+  }
   if (!TYPES.includes(String(d.type || ''))) problems.push(at(`\`type\` phải ∈ ${TYPES.join('|')}`));
   else if (!ID_RE.test(String(d.id || '')) || String(d.id).split('-')[0] !== PREFIX[d.type]) {
     problems.push(at(`\`id\` "${d.id}" sai format — cần ${PREFIX[d.type]}-<SLUG>-<NNN> (vd ${PREFIX[d.type]}-ORDER-001) khớp với type`));
@@ -93,6 +114,12 @@ function validate(r) {
   const at = (m) => `${path.basename(r.file)}: ${m}`;
   if (d.__err) return { problems: [at(`JSON lỗi — ${d.__err}`)], warnings };
   validateCommon(d, at, problems, warnings);
+  /*
+   * `draft` dừng ở đây: nhánh theo TYPE bên dưới đòi đủ `roles`/`actions`/`allow`/`deny_expected` —
+   * những thứ một khung CHƯA hỏi BA chưa thể có. Bản đầu tôi chỉ chặn trong `validateCommon` nên nhánh
+   * type vẫn chạy và draft bị đòi 4 trường, tức `draft` vẫn bất khả thi đúng như trước khi có nó.
+   */
+  if (d.status === 'draft') return { problems, warnings };
 
   if (d.type === 'state_machine') {
     const states = Array.isArray(d.states) ? d.states.map(String) : [];
@@ -125,7 +152,11 @@ function validate(r) {
     const actions = Array.isArray(d.actions) ? d.actions.map(String) : [];
     if (!roles.length) problems.push(at('thiếu `roles`'));
     if (!actions.length) problems.push(at('thiếu `actions`'));
-    if (!d.allow || typeof d.allow !== 'object' || Array.isArray(d.allow)) problems.push(at('`allow` phải là object {role: [action,…]} — ô KHÔNG khai = deny (phải bị chặn)'));
+    /*
+     * Thông điệp này SỬA 10/10/2026: bản cũ ghi "ô KHÔNG khai = deny (phải bị chặn)" — đúng câu encode
+     * lỗ thiết kế mà G1.3 đã bỏ. Ô không khai nay là `unknown`, KHÔNG phải deny.
+     */
+    if (!d.allow || typeof d.allow !== 'object' || Array.isArray(d.allow)) problems.push(at('`allow` phải là object {role: [action,…]} — ô không khai ở đâu cả là mức `unknown`, KHÔNG phải deny; muốn khai deny thì dùng `deny_verified`/`deny_inferred`'));
     else {
       for (const [role, acts] of Object.entries(d.allow)) {
         if (!roles.includes(role)) problems.push(at(`\`allow\` có role "${role}" không khai trong \`roles\``));

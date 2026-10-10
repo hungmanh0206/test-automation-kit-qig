@@ -94,6 +94,31 @@ npm run knowledge:backup -- --restore <bundle.json>    # CHỈ ghi file còn THI
 - Bundle là **dữ liệu nội bộ** (business rule + kết luận nội bộ) — giữ ở nơi riêng tư, đừng đưa lên repo public.
 - Nghiệm thu 14/08/2026: backup 15 file → verify KHỚP → xoá 2 file (rule + `bug_tc_map`) → verify **exit 1 và nêu đúng tên** → restore → verify KHỚP, nội dung **giống từng byte**; sửa file trên đĩa rồi restore → **không bị đè**.
 
+## `status: draft` — CHƯA PHẢI ORACLE (thêm 10/10/2026, v2.5.0 G2.3)
+
+Trước đợt này **không có cách nào ghi một bản ghi chưa ai xác nhận**: `status` chỉ nhận
+`active|superseded|deprecated|invalid`, và `confirmed_by` thì bắt buộc ∈ `BA|Dev|QA-Lead|PO`. Nghĩa là một
+khung mới dựng — thứ chưa hỏi BA — không thể tồn tại trong kho. Hệ quả: dự án mới có `knowledge/` rỗng thì
+nó **ở lại rỗng**, vì bước đầu tiên đã bị chặn.
+
+`draft` được **miễn** `confirmed_by`/`confirmed_at` và (với `domain/`) miễn cả `rule` — theo định nghĩa nó
+chưa có. Đổi lại nó bị chặn mọi đường trở thành căn cứ kết luận:
+
+| Luật | Mức |
+|---|---|
+| `covered_by` phải RỖNG | **CHẶN** — có TC trỏ vào rule chưa ai chốt là case đó dùng oracle chưa tồn tại |
+| phải có `todo` (hỏi AI cái GÌ để chốt) | **CHẶN** — khung không có câu hỏi thì chỉ là rác chiếm chỗ |
+| một case khai `oracle_ref` trỏ rule `draft` | **CHẶN** — tệ hơn "oracle ma": rule CÓ THẬT trong kho, chỉ chưa ai chốt, nên case sẽ đọc như đã có neo |
+| `draft` không được seal `content_sha` | **CHẶN** — seal là để khoá bản đã chốt |
+
+Dựng khung: `npm run knowledge:bootstrap -- --task <K>` (dry-run in **danh sách việc**; ghi thật phải kèm
+`--top <n>` hoặc `--module "<tên>"`). Nó **không sinh nội dung rule** — sinh câu rule từ text Backlog hay
+từ app là chế oracle, đúng thứ `domain:check` đã chặn. Nó chỉ dựng khung rỗng kèm câu hỏi.
+
+> Vì sao `--apply` đòi chọn phạm vi: đo trên CSDL-9003 có **44 module chưa có rule**. Dồn hết vào tầng
+> oracle là tạo 44 file rỗng phải bảo trì và một `domain:index` đầy ô trắng — chưa chắc tốt hơn kho rỗng.
+> Phần giá trị của bộ này là **danh sách việc**, còn file khung chỉ nên dựng cho phần sắp làm.
+
 ## Nguyên tắc
 
 - **Chỉ ghi fact đã qua gate.** Bug chỉ ghi sau khi qua Backlog gate ở

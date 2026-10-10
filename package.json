@@ -134,6 +134,7 @@
     "docs:index": "node scripts/phase1/docs_index.js --write",
     "docs:cite": "node scripts/phase1/docs_index.js --cite",
     "knowledge:backup": "node scripts/qa/knowledge_backup.js",
+    "knowledge:bootstrap": "node scripts/qa/knowledge_bootstrap.js",
     "domain:trace-back": "node scripts/qa/domain_rules.js --trace-back",
     "howto:find": "node scripts/qa/howto_store.js --find",
     "merge:execution-status": "node scripts/convert_excel/merge_execution_status.js",
