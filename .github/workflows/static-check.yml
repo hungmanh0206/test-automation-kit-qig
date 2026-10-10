@@ -43,6 +43,12 @@ jobs:
       - name: Danh mục gate khớp source (bảng lệch = một gate đã đổi mức CHẶN/CẢNH BÁO mà không ai ghi)
         run: npm run gates:index:check
 
+      # Ngân sách token cho hướng dẫn của chính kit. Ngưỡng ở .agent/config/prompt_budget.json, đo theo
+      # lời khai bat_buoc trong load_map.json. Chốt chống trôi: tài liệu phình lại bằng cách mỗi lần
+      # thêm vài dòng hợp lý, và không gì ghi lại việc đó.
+      - name: Ngân sách token hướng dẫn (prompt:budget --enforce)
+        run: npm run prompt:budget -- --enforce
+
       - name: INDEX.md khớp nguồn SKILL.md (artifact sinh trôi khỏi nguồn = không ai thấy)
         run: npm run skills:index:check
 

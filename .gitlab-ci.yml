@@ -32,6 +32,8 @@ static-check:
       t "gate:policy" npm run gate:policy
       t "gates:index" npm run gates:index:check
       t "skills:index" npm run skills:index:check
+      # Ngân sách token hướng dẫn của chính kit — chốt chống trôi, chỉ đọc file trong repo.
+      t "prompt:budget" npm run prompt:budget -- --enforce
       # Trang docs/library/ + tài liệu hướng dẫn là lớp DẪN XUẤT. Trước đây chỉ chạy khi có người
       # nhớ gõ lệnh, tức là chưa gác cổng. Rẻ và tất định: chỉ đọc file trong repo.
       t "library:drift" npm run library:drift

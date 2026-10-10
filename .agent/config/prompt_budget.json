@@ -1,0 +1,33 @@
+{
+  "_doc": "Ngân sách token cho hướng dẫn của chính kit. `npm run prompt:budget -- --enforce` CHẶN khi vượt. NGUỒN DUY NHẤT của ngưỡng.",
+
+  "_vi_sao": "H1 đến H5 cắt được chi phí một lượt chạy, nhưng không gì giữ lại thành quả đó. Tài liệu phình trở lại là chuyện của vài tuần, và nó phình bằng cách mỗi lần thêm vài dòng hợp lý. Gate này biến 'đừng để phình' thành một con số.",
+
+  "_cach_do": "Ngân sách một luồng = nền auto-load (`CLAUDE.md` cộng `core_rules.md`) cộng điểm vào cộng mọi file khai `bat_buoc` trong `.agent/config/load_map.json`. KHÔNG tính file `co_dieu_kien`, vì đúng nghĩa của chúng là chỉ nạp khi gặp điều kiện. Hệ số 3,2 ký tự mỗi token, cùng `doc_budget.js`.",
+
+  "_nguong_dat_o_dau": "Đặt ngay TRÊN mức hiện tại, không đặt ở mức mong muốn. Lý do: H9 là cái chốt chống trôi, không phải cái roi dọn nợ. Một ngưỡng đã đỏ ngay hôm đặt thì nó là tiếng ồn, và tiếng ồn thì bị tắt. Mức mong muốn của prompt gốc là Phase 1 và Phase 2 mỗi luồng 18k; đạt được nó cần H7 (tách thẻ chạy và tài liệu lý do), mà H7 đã HOÃN có lý do đo được — xem docs/token-diet/BASELINE.md mục 3.",
+
+  "luong": {
+    "phase1": 31000,
+    "phase2": 32000,
+    "publish": 9000,
+    "rerun": 12000
+  },
+
+  "_luong_hien_tai": "Đo 10/10/2026: phase1 29,8k · phase2 30,4k · publish 8,1k · rerun 10,8k.",
+
+  "the_chay": {
+    "prompt_templates/run_phase1_template.md": 9500,
+    "prompt_templates/run_phase2_template.md": 14500,
+    "prompt_templates/run_phase_re-run_template.md": 6000,
+    "prompt_templates/phase1/02_gen_testcases.md": 15000,
+    "prompt_templates/phase2/04_execute_fe_playwright.md": 12500,
+    "prompt_templates/phase2/08_log_bug_backlog.md": 9000,
+    "prompt_templates/phase2/05_execute_api_playwright.md": 7000,
+    ".agent/rules/core_rules.md": 5000
+  },
+
+  "_the_chay_hien_tai": "Đo 10/10/2026: run_phase1 8,6k · run_phase2 13,4k · re-run 5,4k · 02_gen_testcases 13,9k · 04_execute_fe 11,6k · 08_log_bug 8,1k · 05_execute_api 6,5k · core_rules 4,5k.",
+
+  "_khong_noi_nguong": "Vượt ngưỡng thì CẮT NỘI DUNG, hoặc chuyển phần 'vì sao' sang `docs/rationale/`. KHÔNG nới số trong file này. Nới ngưỡng để cho xanh là đúng cái prompt gốc mục 0.3 cấm, và nó biến gate thành đồ trang trí."
+}

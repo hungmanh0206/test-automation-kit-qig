@@ -31,7 +31,17 @@
 const fs = require('fs');
 const path = require('path');
 
-const REPO = path.resolve(__dirname, '..', '..');
+/*
+ * `--root <dir>`: đo trên một cây KHÁC thay vì repo này. Chỉ để KIỂM-ÂM: hai phép kiểm của H9 phải
+ * chứng minh gate đỏ khi tài liệu phình, mà làm việc đó bằng cách sửa file thật thì spec khác đọc cùng
+ * file trong lúc nó đang phình sẽ đỏ ngẫu nhiên (Playwright chạy song song theo file).
+ */
+function goc() {
+  const i = process.argv.indexOf('--root');
+  if (i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--')) return path.resolve(process.argv[i + 1]);
+  return path.resolve(__dirname, '..', '..');
+}
+const REPO = goc();
 const CHARS_PER_TOK = 3.2;          // cùng hệ số doc_budget.js — 1 nguồn, không khai lại
 const OUT_DIR = path.join(REPO, 'docs', 'token-diet');
 
@@ -247,25 +257,51 @@ function main() {
   }
 
   if (flag('enforce')) {
+    /*
+     * ĐO THEO LỜI KHAI, KHÔNG THEO HEURISTIC CỦA CHÍNH MÁY NÀY.
+     *
+     * Cột `batBuoc` ở bảng trên suy từ dấu hiệu văn bản, và nó chỉ nhận được file ở depth 0 — nên nó ra
+     * ~5,6k cho MỌI điểm vào, tức gần như chỉ có nền auto-load. Chặn theo con số đó là chặn theo một phép
+     * đo mà chính máy này đã tuyên bố là không đáng tin (xem cột "chưa phân loại").
+     *
+     * Nguồn đúng là `.agent/config/load_map.json`: ở đó NGƯỜI khai file nào bắt buộc, file nào có điều
+     * kiện. H2 dựng lời khai đó; H9 chỉ đặt ngưỡng lên nó.
+     */
     const cfgPath = path.join(REPO, '.agent', 'config', 'prompt_budget.json');
-    if (!fs.existsSync(cfgPath)) {
-      console.error(`\n[prompt-budget] ✗ TỪ CHỐI --enforce: chưa có ${rel(cfgPath)} nên không có ngưỡng nào để so.`);
-      process.exit(2);
+    const mapPath = path.join(REPO, '.agent', 'config', 'load_map.json');
+    for (const p of [cfgPath, mapPath]) {
+      if (!fs.existsSync(p)) {
+        console.error(`\n[prompt-budget] ✗ TỪ CHỐI --enforce: chưa có ${rel(p)}.`);
+        process.exit(2);
+      }
     }
     const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+    const map = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
     const loi = [];
-    for (const [ten, v] of Object.entries(ketQua)) {
+
+    for (const [ten, l] of Object.entries(map.luong || {})) {
       const nguong = (cfg.luong || {})[ten];
-      if (nguong && v.batBuoc > nguong) loi.push(`${ten}: bắt buộc ${k(v.batBuoc)} vượt ngưỡng ${k(nguong)}`);
+      if (!nguong || !l.bat_buoc) continue;
+      let n = tokNen;
+      if (l.diem_vao) n += tok(doc(path.join(REPO, l.diem_vao)));
+      for (const f of l.bat_buoc) n += tok(doc(path.join(REPO, f)));
+      n = Math.round(n);
+      console.log(`[prompt-budget] ${ten.padEnd(10)} bắt buộc ${k(n).padStart(7)} / ngưỡng ${k(nguong)}`);
+      if (n > nguong) loi.push(`luồng ${ten}: bắt buộc ${k(n)} vượt ngưỡng ${k(nguong)}`);
     }
+
     for (const [f, nguong] of Object.entries(cfg.the_chay || {})) {
-      const t = tok(doc(path.join(REPO, f)));
+      const abs = path.join(REPO, f);
+      if (!fs.existsSync(abs)) { loi.push(`thẻ chạy khai trong ngân sách mà KHÔNG tồn tại: ${f}`); continue; }
+      const t = Math.round(tok(doc(abs)));
       if (t > nguong) loi.push(`${f}: ${k(t)} vượt ngưỡng thẻ chạy ${k(nguong)}`);
     }
+
     if (loi.length) {
       console.error('\n[prompt-budget] ✗ VƯỢT NGƯỠNG:');
       loi.forEach((x) => console.error(`  - ${x}`));
-      console.error('\n  Cắt nội dung, hoặc chuyển phần "vì sao" sang docs/rationale/. KHÔNG nới ngưỡng.');
+      console.error('\n  CẮT NỘI DUNG, hoặc chuyển phần "vì sao" sang docs/rationale/. KHÔNG nới số trong');
+      console.error('  .agent/config/prompt_budget.json — nới ngưỡng để cho xanh biến gate thành đồ trang trí.');
       process.exit(1);
     }
     console.log('\n[prompt-budget] ✓ ĐẠT — mọi luồng và thẻ chạy trong ngưỡng.');
