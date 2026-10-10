@@ -326,11 +326,24 @@ Lệnh này đọc `test-results/results.json` rồi in **mỗi case đỏ một
 
 Ba luật đi kèm, cả ba đều là chuyện chi phí:
 
-1. **KHÔNG `Read` thẳng `results.json`.** File đó của một suite thật là hàng trăm KB, và phần lớn là stdout
-   của case ĐÃ PASS. Reporter của kit đã là `dot` chứ không phải `list` (đo 19/09/2026: 143.542 byte xuống
-   10.646 byte), nên bản tóm tắt là nửa còn lại của cùng một việc.
-2. **Rerun ĐÚNG case đỏ**, bằng `--grep` mà `--ids` in ra, hoặc `--last-failed`. Chạy lại cả suite chỉ đúng
-   khi lỗi chạm `tests/support/**`, vì lúc đó case xanh cũng có thể đã sai theo.
+1. **KHÔNG `Read` thẳng `results.json`.** File đó của một suite thật là hàng trăm KB, phần lớn là stdout
+   của case ĐÃ PASS. Reporter của kit đã là `dot` chứ không phải `list`, đo 19/09/2026: 143.542 byte
+   xuống 10.646 byte. Bản tóm tắt là nửa còn lại của cùng một việc.
+2. **Rerun ĐÚNG case đỏ** bằng một lệnh:
+
+   ```bash
+   npm run rerun:failed
+   ```
+
+   Nó đọc `results.json`, dựng `--grep` từ case đỏ, rồi chạy. Hai chỗ nó TỪ CHỐI, cả hai cố ý. Không
+   có case đỏ thì **không chạy gì**. Có case đỏ mà thiếu TC ID thì **không dựng grep một phần**, vì
+   grep thiếu sẽ cho bạn màu xanh của một tập con.
+
+   Chạy lại cả suite chỉ đúng khi lỗi chạm `tests/support/**`, vì lúc đó case xanh cũng có thể đã sai theo.
+
+   Vì sao cần hẳn một lệnh: đo trên 4 lượt chạy task thật, `npx playwright test` được gọi **2.076 lần**.
+   Trong đó **2.070 lần chạy cả file hoặc cả suite**, và chỉ **6 lần** có `--grep`. Lời dặn "rerun đúng
+   case đỏ" đã nằm ở đây từ trước. Số đo nói nó không xảy ra.
 3. **KHÔNG mở ảnh evidence ra xem** để tự kiểm. Ảnh là bằng chứng cho người đọc và cho
    `output_gate --mode test-execution`; agent chỉ mở khi đang triage một case FAIL cụ thể, hoặc khi gate
    báo ảnh nghi sai màn.

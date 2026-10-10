@@ -115,6 +115,7 @@
     "prompt:budget": "node scripts/qa/prompt_budget.js",
     "token:audit": "node scripts/qa/token_audit.js",
     "results:summary": "node scripts/qa/summarize_results.js",
+    "rerun:failed": "node scripts/qa/rerun_failed.js",
     "docs:health": "node scripts/phase1/docs_health.js",
     "docs:index": "node scripts/phase1/docs_index.js --write",
     "docs:cite": "node scripts/phase1/docs_index.js --cite",
