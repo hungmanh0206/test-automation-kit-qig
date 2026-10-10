@@ -96,8 +96,9 @@ Ghi lại vì mỗi lần đều để lại một test, và test đó mới là
 
 ## 9. Còn lại
 
-1. **Chạy lại task mốc CSDL-9003** rồi `token:audit` — cần xác nhận vì chạm UAT. Đây là số duy nhất còn
-   thiếu để nói "giảm bao nhiêu phần trăm mỗi lượt".
+1. **Chạy lại task mốc CSDL-9003** rồi `token:audit`. Đây là số duy nhất còn thiếu để nói "giảm bao
+   nhiêu phần trăm mỗi lượt". Runbook ở [`DO-LAI.md`](DO-LAI.md). Phải chạy ở **phiên mới**: phiên làm
+   đợt này được chính `token:audit` xếp là `SỬA KIT`, 7.327 message, context 519,4k mỗi message.
 2. **Xác minh subagent** bằng `/agents` ở một phiên mới.
 3. **H7** quyết lại bằng số sau bước 1.
 4. **Tag** `v2.3.0` và `v2.4.0`, và gộp hai nhánh vào `main`.

@@ -43,6 +43,8 @@ Prompt mục 4.2 yêu cầu chạy lại **cùng task mốc** rồi `token:audit
 Lý do là một ràng buộc, không phải quên: lượt đó **chạm UAT**, và `CLAUDE.md` mục 2 đòi xác nhận trước
 mỗi lượt chạm. Chưa có xác nhận thì chưa chạy.
 
+Runbook đầy đủ ở [`DO-LAI.md`](DO-LAI.md), kèm lý do nó phải chạy ở một **phiên mới**.
+
 Nên bảng trước-sau cho `context trung bình mỗi message` và `cache read` hiện **để trống có chủ ý**.
 Mốc cũ đã có trong `baseline.dynamic.json`: 4 lượt, context 494 đến 515k mỗi message. Chạy lại chỉ
 cần một lệnh.
