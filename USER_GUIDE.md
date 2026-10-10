@@ -923,6 +923,28 @@ Từ 04/09/2026 mỗi luồng có một **slash command** làm điểm vào. Gõ
 | `/explore <phạm vi>` | Phiên exploratory có charter | Chưa khai charter thì không chạy |
 | `/ui-debug <màn>` | Khám phá DOM tìm locator bền | **Never-auto** — mở browser vào UAT nên phải xác nhận |
 | `/manual-run <TASK_KEY>` | Chạy tay case khai `[manual]` | Case chưa khai `[manual]` thì **dừng** — không phải đường lách automation |
+
+### Việc nào chạy model nào
+
+Việc **máy móc** giao cho subagent ở [`.claude/agents/`](.claude/agents/) với model rẻ. Việc cần **suy
+luận nghiệp vụ** thì KHÔNG giao. Đó là phân tích spec, Ambiguity Gate, dựng oracle, triage FAIL, và
+Bug Claim.
+
+| Subagent | Việc | Model |
+|---|---|---|
+| `test-runner` | Chạy spec rồi trả bản tóm tắt kết quả. Không chấm verdict | `haiku` |
+| `excel-convert` | Markdown sang Excel, và ghi cột `Result`. Không đụng ô nào khác | `haiku` |
+
+Vì sao chỉ hai việc đó: cả hai có **hợp đồng vào-ra là đường dẫn file**, nên sai thì thấy ngay. Một
+subagent model rẻ mà được giao việc cần suy luận sẽ đưa ra kết luận. Kết luận đó trông y hệt kết luận
+của model mạnh. Rẻ đi một chút, sai đi rất nhiều.
+
+> **Chưa xác minh end-to-end.** Claude Code nạp định nghĩa agent lúc **phiên mới** bắt đầu. File thêm
+> giữa phiên không xuất hiện. Mở một **phiên mới** rồi kiểm bằng `/agents`. Bản 2.1.285 có lệnh
+> `claude agents`, nhưng đó là lệnh quản background agent, không kiểm được chỗ này.
+>
+> Đo bằng `npm run token:audit` thì H6 ảnh hưởng **giá**, không ảnh hưởng số token trong context. Nó
+> không cùng nhóm với H1, H4, H5.
 | `/gates <TASK_KEY>` | Bó gate trước khi finalize | Còn dòng CHẶN thì sửa nội dung, **không nới ngưỡng** |
 | `/publish <TASK_KEY>` | Đẩy Google Sheet | Review nội dung local trước, `update_file`/`create_file` qua Drive MCP sau |
 

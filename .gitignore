@@ -209,6 +209,10 @@ dist/
 # đường dẫn con bên trong một THƯ MỤC bị ignore sẽ không có tác dụng.
 .claude/*
 !.claude/commands/
+# NGOẠI LỆ cho `agents/`: định nghĩa subagent là NỘI DUNG CỦA KIT — nó khai việc nào chạy model nào và
+# ranh giới của từng việc. Để per-máy thì mỗi teammate tự tạo lại, và họ sẽ tạo khác nhau — cùng lý lẽ với
+# ngoại lệ `settings.json` ngay dưới.
+!.claude/agents/
 # NGOẠI LỆ 2: .claude/settings.json ĐƯỢC COMMIT — nó đăng ký HOOK, mà hook là forcing function ở tầng
 # harness (chạy tự động, không phụ thuộc agent nhớ gọi). Để nó per-máy thì mỗi teammate phải tự bật, tức
 # lớp chặn mạnh nhất của kit lại là lớp DỄ KHÔNG CÓ NHẤT — đúng lỗi đã xảy ra: hook viết từ round-3 nhưng
