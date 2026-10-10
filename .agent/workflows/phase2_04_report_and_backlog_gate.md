@@ -61,6 +61,9 @@ Tạo report Phase 2 rõ ràng, không log bug sai do setup/prompt/test data, kh
    - Actual result có evidence rõ.
 4b. **Gate chất lượng output là THỰC THI và tự chạy, không phải kiểm bằng mắt.**
    - Test Execution: `npm run gate:output -- --status <testcase-status.json>` **tự chạy `scripts/qa/output_gate.js`** → CHẶN khi comment run-on/dính debug `key=value`, step thiếu status/evidence, evidence không phải ảnh/video, hoặc case phức tạp thiếu video (thêm `--fix` để tự dọn comment).
+   - Đơn vị đã đo: `npm run unit:stamp`, bản chặn là `unit:stamp:enforce`. Mọi verdict ĐÃ CHẠY phải
+     khai đơn vị nào đã đo. Đo trên CSDL-9003: một task trải trên bốn đơn vị. Kỳ vọng rút ở đơn vị này
+     được dùng chấm case ở đơn vị khác. Case vẫn PASS, và không máy nào thấy.
    - **Gate CHẶN → TỰ SỬA trong session rồi chạy lại tới khi PASS**; KHÔNG ghi kèm vi phạm, KHÔNG chờ user nhắc. Chỉ `--qa-approved` khi QA có lý do rõ (được log).
    - **Bắt buộc tạo bug và ghi kết quả execute QUA script kit**: `bug_reporter.js` cho bug, `merge_execution_status.js` cho status.
      KHÔNG sửa tay cột Result trên Sheets rồi coi như đã ghi. Sửa tay là bỏ qua gate, dẫn tới sai 4 phần, sai evidence, sai comment.

@@ -30,6 +30,7 @@ Luôn truyền `TASK_ENV=profiles/<TASK_KEY>/task.env`.
 | Khi nào | Lệnh | Nó chặn/sinh ra gì |
 |---|---|---|
 | **Bước 0 — trước MỌI thứ** | `node scripts/qa/preflight_gate.js --mode phase2 --task <TASK_KEY>` | **G1** CHẶN khi thiếu input/config hỏng/testcase canonical chưa có. Chạy trước để không execute trên nền sai |
+| Sau khi có kết quả execute | `npm run unit:stamp` | Mọi verdict ĐÃ CHẠY phải khai ĐƠN VỊ đã đo. Một task trải trên nhiều đơn vị thì kỳ vọng của đơn vị này không chấm được case của đơn vị khác |
 | Sau khi có kết quả execute | `npm run gate:output` | **G2** CHẶN output sai chuẩn: FAIL thiếu tầng lỗi, oracle rỗng/tautology, evidence không phải ảnh/video, kết luận mapping ở mức "có dữ liệu" |
 | Trước khi log bug | `npm run decisions:check` | Tra `knowledge/decisions/` — triệu chứng này đã từng bị kết luận *không phải bug* chưa? Chống log lại đúng thứ đã Rejected |
 | Khi log bug | `node scripts/qa/output_gate.js --mode bug --preview <bugs.json>` | Repro phải trích từ lần chạy thật; cấm suy đoán trong description; cảnh báo gán tầng FE/BE mà thiếu dấu vết API |
