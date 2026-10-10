@@ -171,6 +171,82 @@ test.describe('@infra db guard — lint câu truy vấn + host', () => {
     }
   });
 
+  /*
+   * LỖ GHI THẬT, đo 10/10/2026 (chạm non-negotiable §2 "DB chỉ đọc"). `EXEC` không có trong
+   * `DANGEROUS_TOKEN` của `guard.ts`, và `;` ở giữa câu không phải hàng rào đủ vì **T-SQL nối hai statement
+   * KHÔNG cần `;`**. Hai payload dưới đây đi qua sạch trước khi vá.
+   *
+   * Vì sao lỗ sống sót lâu: `SELECT 1 EXECUTE('DROP TABLE dbo.x')` vẫn ĐỎ — nhưng đỏ nhờ chữ `DROP`. Nhìn
+   * vào ca đó thì tưởng `EXEC` đã bị gác, nên không ai đi kiểm payload không mang từ khoá DDL.
+   */
+  test('ÂM BẢN: `EXEC` nối sau SELECT mà KHÔNG có `;` — hai payload từng lọt', () => {
+    /*
+     * Khai LUÔN từ khoá phải bắt, cho từng payload. Không có cột đó thì payload vẫn xanh khi ai đó chặn nó
+     * bằng một luật khác (ví dụ "có dấu `+` trong chuỗi") và lỗ `EXEC` lặng lẽ mở lại.
+     *
+     * Payload 2 bị bắt ở `DECLARE`, không ở `EXEC` — vì `DANGEROUS_TOKEN` trả từ khoá ĐẦU TIÊN gặp trong
+     * chuỗi. Nên có payload 3: `EXEC` đứng một mình, không kèm `declare`/`set`, để chứng minh chính `exec`
+     * gác được chứ không phải nhờ chữ khác đi cùng.
+     */
+    const lot: [string, RegExp][] = [
+      ["SELECT 1 EXEC('DEL'+'ETE FROM dbo.t WHERE 1=0')", /exec/i],
+      ["SELECT 1 DECLARE @s NVARCHAR(99) SET @s='x' EXEC(@s)", /declare/i],
+      ['SELECT 1 EXEC(@s)', /exec/i],
+    ];
+    for (const [sql, tuKhoa] of lot) {
+      expect(() => assertReadOnlyQuery(sql), `payload này TỪNG LỌT: ${sql}`).toThrow(DbGuardError);
+      expect(() => assertReadOnlyQuery(sql), `phải chặn vì ĐÚNG lý do (${tuKhoa})`).toThrow(tuKhoa);
+    }
+  });
+
+  test('HAI bản lint phải chặn cùng một payload — chúng đã trôi khỏi nhau một lần', () => {
+    /*
+     * `uatDbClient.assertReadOnlySql` (đường chính, 174 file) vốn ĐÃ có `exec|execute`; `guard.ts` (đường
+     * `dbVerify`, 4 file) thì không. Hai bản lint cùng một luật là nguồn trôi, và đây là lần nó đã xảy ra
+     * thật. Gộp hai bản làm một nguồn là việc của v2.8.0 §0b; test này gác phần đo được ngay bây giờ.
+     */
+    for (const sql of [
+      "SELECT 1 EXEC('DEL'+'ETE FROM dbo.t WHERE 1=0')",
+      "SELECT 1 DECLARE @s NVARCHAR(99) SET @s='x' EXEC(@s)",
+      "SELECT 1 EXECUTE('DROP TABLE dbo.x')",
+      'SELECT 1 UPDATE dbo.t SET a=1',
+    ]) {
+      expect(() => assertReadOnlyQuery(sql), `guard.ts phải chặn: ${sql}`).toThrow();
+      expect(() => assertReadOnlySql(sql), `uatDbClient phải chặn: ${sql}`).toThrow();
+    }
+  });
+
+  test('POSITIVE CONTROL: câu đọc hợp lệ KHÔNG bị `exec`/`set` báo oan', () => {
+    /*
+     * Thêm `exec|declare|set` vào danh sách từ khoá là đổi dễ gây báo oan nhất của bản vá. `\b` không bắt
+     * chúng khi nằm trong tên có dấu `_` (dấu `_` là ký tự từ) hay nối liền chữ khác — nên câu đọc DMV và
+     * cột tên `data_set` vẫn phải chạy. Không có test này thì lần sau có người gặp đỏ oan rồi TẮT gate.
+     */
+    for (const ok of [
+      'SELECT session_id FROM sys.dm_exec_requests',
+      'SELECT a FROM dbo.data_set',
+      'SELECT x FROM t ORDER BY y OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY',
+      'SELECT charset FROM dbo.cfg',
+    ]) {
+      expect(() => assertReadOnlyQuery(ok), `không được báo oan: ${ok}`).not.toThrow();
+    }
+  });
+
+  test('câu `GRANTS_SQL` THẬT của adapter vẫn đi qua lint vừa siết', () => {
+    /*
+     * Đây là câu DUY NHẤT của kit đi qua `assertReadOnlyQuery` lúc chạy production (`readGrants`), và nó
+     * chỉ chạy khi có kết nối DB — nghĩa là nếu bản vá chặn oan nó thì KHÔNG test offline nào đỏ, chỉ có
+     * tầng `dbVerify` chết lúc dùng thật. `mssql.ts:243` đã ghi sẵn luật "không nới lint để câu của chính
+     * mình đi qua", nên chiều ngược lại — siết lint rồi quên câu của chính mình — phải có người gác.
+     *
+     * Đọc literal TỪ MÃ NGUỒN chứ không chép lại: chép là dựng nguồn thứ hai, và nó sẽ trôi.
+     */
+    const src = fs.readFileSync(path.join(REPO, 'tests/support/setup/db/adapters/mssql.ts'), 'utf8');
+    const m = src.match(/GRANTS_SQL\s*=\s*`([\s\S]*?)`/);
+    expect(m, 'không trích được GRANTS_SQL từ mssql.ts — test này mất tác dụng, sửa phép trích').toBeTruthy();
+    expect(() => assertReadOnlyQuery(m![1]), 'lint vừa siết chặn oan câu của chính kit').not.toThrow();
+  });
+
   test('host: allowlist + deny-pattern (prod)', () => {
     const cfg = { allowedHosts: ['db-uat.example'], denyHostPatterns: ['prod', 'live'] };
     expect(() => assertHostAllowed({ host: 'db-uat.example', database: 'app-platform-uat' }, cfg)).not.toThrow();

@@ -97,7 +97,27 @@ const READ_HEAD = /^\s*(select|with|explain|show|table)\b/i;
  * dưới đây phải phủ cả họ thủ tục hệ thống của SQL Server (`xp_*`, `sp_*`), đường ghi file (`openrowset`,
  * `bulk insert`, `opendatasource`), và `into` của `SELECT … INTO <bảng mới>` (tạo bảng thật).
  */
-const DANGEROUS_TOKEN = /\b(insert|update|delete|truncate|drop|alter|create|grant|revoke|deny|copy|vacuum|reindex|call|do|merge|replace|backup|restore|shutdown|reconfigure|checkpoint|dbcc|waitfor|load_file|outfile|dumpfile|openrowset|opendatasource|openquery|openxml|bulk\s+insert|xp_[a-z_]+|sp_[a-z_]+|fn_trace_[a-z_]+)\b/i;
+/*
+ * `exec`/`execute` THIẾU ở bản này cho tới 10/10/2026, và đó là lỗ ghi thật — đo được, không suy luận:
+ *
+ *   LỌT   SELECT 1 EXEC('DEL'+'ETE FROM dbo.t WHERE 1=0')
+ *   LỌT   SELECT 1 DECLARE @s NVARCHAR(99) SET @s='x' EXEC(@s)
+ *   CHẶN  SELECT 1 EXECUTE('DROP TABLE dbo.x')      ← chặn nhờ chữ DROP, KHÔNG nhờ EXEC
+ *
+ * Ca thứ ba là chỗ lỗ sống sót được: nó đỏ, nên nhìn vào thì tưởng `EXEC` đã bị gác. Thực ra chỉ `DROP`
+ * bị bắt, và một payload không mang từ khoá DDL nào (`EXEC` + chuỗi ghép) thì đi qua sạch.
+ *
+ * GỐC CỦA LỖ: `;` ở giữa câu đã bị chặn ngay bên dưới, nhưng **T-SQL không cần `;` để nối hai statement** —
+ * `SELECT 1 EXEC(…)` là hai lệnh hợp lệ. Nên phép chặn stacked-query chỉ là MỘT NỬA hàng rào, và nửa còn
+ * lại là danh sách này phải phủ ĐỦ mọi statement ghi. Bản ở `uatDbClient.ts` (đường chính, 174 file) vốn đã
+ * có `exec|execute`; bản này là đường `dbVerify` và đã trôi khỏi nó.
+ *
+ * `declare`/`set` tự chúng không ghi được gì, nhưng là cách lắp SQL động để né danh sách từ khoá. Đã kiểm
+ * trước khi thêm: không câu đọc hợp lệ nào trong kit dùng hai chữ này (dbVerify tham số hoá bằng `@p`), nên
+ * thêm vào KHÔNG báo oan. `\b` cũng không bắt chúng trong `sys.dm_exec_requests` hay `data_set` (dấu `_` là
+ * ký tự từ), nên câu đọc DMV vẫn chạy — có positive control cho đúng chuyện này trong spec.
+ */
+const DANGEROUS_TOKEN = /\b(insert|update|delete|truncate|drop|alter|create|grant|revoke|deny|copy|vacuum|reindex|call|do|merge|replace|backup|restore|shutdown|reconfigure|checkpoint|dbcc|waitfor|execute|exec|declare|set|writetext|updatetext|setuser|revert|load_file|outfile|dumpfile|openrowset|opendatasource|openquery|openxml|bulk\s+insert|xp_[a-z_]+|sp_[a-z_]+|fn_trace_[a-z_]+)\b/i;
 /** `SELECT … INTO <bảng>` tạo bảng mới — READ_HEAD không bắt được vì câu vẫn bắt đầu bằng SELECT. */
 const SELECT_INTO = /\binto\s+(?!@)[\[#a-z_]/i;
 
