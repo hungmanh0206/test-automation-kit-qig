@@ -1,0 +1,36 @@
+{
+  "_doc": "Mã ổn định cho từng HỌ vi phạm của gate. NGUỒN DUY NHẤT — `gate_engine.js` dùng để in chế độ `--compact`.",
+
+  "_vi_sao": "Đo bằng `npm run token:audit` trên 4 lượt chạy task thật: `output gate` chiếm 4,3 đến 8,9% khối lượng kết quả tool, khoảng 54k token mỗi lượt. Phần lớn là lời giải thích DÀI lặp lại cho từng case vi phạm. Lời giải thích đó cần thiết lần đầu; từ lần thứ hai nó là bản sao.",
+
+  "_cach_lam_va_vi_sao_KHONG_sua_thong_diep": "Mã được gán bằng cách KHỚP vào thông điệp hiện có, không phải bằng cách viết lại thông điệp. Lý do: hàng chục spec đang khớp theo chữ trong thông điệp, và sửa thông điệp để thêm mã sẽ làm đỏ chúng hàng loạt — một thay đổi trình bày không được phép kéo theo rủi ro đó. Chế độ đầy đủ giữ nguyên từng chữ.",
+
+  "_khong_khop_thi_KHAC": "Thông điệp không khớp mã nào thì nhận mã `KHAC` và vẫn được in. TUYỆT ĐỐI không bỏ dòng nào: `--compact` là cách in khác, không phải cách lọc. Spec tương đương khoá đúng chuyện đó.",
+
+  "nguong_gop": 5,
+  "_nguong_gop": "Cùng một mã xuất hiện quá ngưỡng này thì gộp phần còn lại thành một dòng \"và X case cùng lỗi\". Danh sách TC ID vẫn in đủ ở dòng gộp, nên không mất case nào.",
+
+  "codes": [
+    { "code": "EVID_THIEU", "khop": "thiếu evidence|không có (ảnh|evidence)|evidence rỗng", "y": "Case đã execute mà thiếu ảnh hoặc video" },
+    { "code": "EVID_SAI_LOAI", "khop": "không phải (ảnh|video)|đuôi .* không được dùng làm evidence|\\.(json|md|txt|log|html|csv)\\b.*evidence", "y": "Dùng file không phải ảnh hoặc video làm evidence" },
+    { "code": "EVID_VIDEO", "khop": "cần video|phải có video|case phức tạp", "y": "Case nhiều thao tác mà chỉ có ảnh tĩnh" },
+    { "code": "STEP_THIEU", "khop": "step .*(thiếu|chưa)|mọi step|từng step", "y": "Step chưa có trạng thái hoặc chưa có ảnh riêng" },
+    { "code": "FAIL_CHUA_PHAN_TANG", "khop": "failureLayer|chưa phân tầng|phân tầng lỗi", "y": "FAIL không nêu tầng lỗi nên không route được owner" },
+    { "code": "RERUN_THIEU", "khop": "rerun|chạy lại .* lần", "y": "FAIL chưa rerun đủ ngưỡng để loại flaky" },
+    { "code": "COMMENT_RAC", "khop": "comment|run-on|debug key=value|key=value", "y": "Comment lẫn chuỗi debug hoặc dồn nhiều ý một dòng" },
+    { "code": "VERDICT_LA", "khop": "không thuộc verdict taxonomy|status \".*\" không", "y": "Verdict ngoài `verdict_taxonomy.json`" },
+    { "code": "ORACLE_TAUTOLOGY", "khop": "tautolog|app ?== ?app|build ?== ?build|lấy từ chính (app|build)", "y": "Expected lấy từ chính hệ đang kiểm" },
+    { "code": "ORACLE_THIEU_NEO", "khop": "oracle_ref|thiếu neo|không có neo|oracle ma", "y": "Kết luận mở rộng mà không có neo oracle" },
+    { "code": "O_LOI_RONG", "khop": "rỗng|để trống|bỏ trống", "y": "Ô lõi của testcase bị rỗng" },
+    { "code": "COT_CANONICAL", "khop": "cột canonical|thiếu cột|đủ \\d+ cột", "y": "Bảng testcase không đủ cột canonical" },
+    { "code": "TAG_THIEU", "khop": "THIẾU tag|thiếu tag|tag kỹ thuật|tag chiều", "y": "Case thiếu tag mà quy ước đòi" },
+    { "code": "TAG_LA", "khop": "KHÔNG có trong|mã .* lạ|không thuộc", "y": "Tag hoặc mã không có trong danh mục" },
+    { "code": "PII", "khop": "PII|email khách|số điện thoại|mask", "y": "Dữ liệu cá nhân chưa mask" },
+    { "code": "SQL_CAM", "khop": "chỉ `?SELECT|SQL|câu lệnh ghi", "y": "Câu SQL trong testcase vi phạm luật read-only" },
+    { "code": "UI_CATALOG", "khop": "ui_catalog", "y": "Bộ có case hiển thị mà thiếu kiểm kê field hoặc cột" },
+    { "code": "NEEDS_VERIFY", "khop": "NeedsVerify", "y": "Case chưa có nguồn chống lưng, không được publish" },
+    { "code": "QUY_MO", "khop": "vượt ngưỡng|vượt mốc|dưới ngưỡng", "y": "Số lượng vượt hoặc dưới ngưỡng đã khai" },
+    { "code": "KHAI_THIEU", "khop": "CHƯA KHAI|chưa khai|thiếu khai|na_reasons", "y": "Thiếu lời khai bắt buộc trong manifest" },
+    { "code": "XUNG_DOT", "khop": "XUNG ĐỘT|trái artifact|chống nhau", "y": "Lời khai trái với artifact có thật" }
+  ]
+}

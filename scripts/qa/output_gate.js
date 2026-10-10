@@ -28,6 +28,10 @@ const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 
 const has = (n) => process.argv.includes(`--${n}`);
 
 const MODE = arg('mode', 'test-execution');
+/* `--compact`: in gọn mỗi vi phạm một dòng `MÃ · TC ID · ý chính`. Lớp TRÌNH BÀY, không lọc:
+ * mọi vi phạm vẫn xuất hiện, kể cả loại không khớp mã nào (nhận `KHAC`). Xem lib/gate_engine.js. */
+const COMPACT = process.argv.includes('--compact');
+const engine = require(path.resolve(__dirname, 'lib', 'gate_engine'));
 const STATUS = arg('status', '');
 const FIX = has('fix');
 const QA_APPROVED = has('qa-approved');
@@ -344,11 +348,18 @@ function mainGenTestcase() {
     }
   }
   console.log(`[gate] gen-testcase · ${fileCount} file · ${rowCount} testcase · ${problems.length} CHẶN · ${warnings.length} cảnh báo${STRICT_SEMI ? ' (--strict)' : ''}.`);
-  if (warnings.length) { console.log('\n[gate] ⚠ Cảnh báo (nên sửa, không chặn — thêm --strict để chặn):'); warnings.slice(0, 40).forEach((p) => console.log(`  ~ ${p}`)); if (warnings.length > 40) console.log(`  … +${warnings.length - 40} nữa`); }
+  if (warnings.length) {
+    console.log('\n[gate] ⚠ Cảnh báo (nên sửa, không chặn — thêm --strict để chặn):');
+    if (COMPACT) engine.inGon(warnings, { nhan: '~' });
+    else { warnings.slice(0, 40).forEach((p) => console.log(`  ~ ${p}`)); if (warnings.length > 40) console.log(`  … +${warnings.length - 40} nữa`); }
+  }
   if (!problems.length) { console.log('\n[gate] ✓ ĐẠT (không lỗi CHẶN) — KQ mong đợi khớp bước, không gộp range, không chung chung.'); process.exit(0); }
   console.log('\n[gate] ✗ VI PHẠM CHẶN (RULE_GLOBAL + prompt 02 §6):');
-  problems.forEach((p) => console.log(`  - ${p}`));
-  console.log('\n  Nhắc: mỗi bước 1 số + 1 kết quả tương ứng (ngăn <br>); cấm gộp "1-2."; không ghi trơ "thành công/đúng".');
+  if (COMPACT) engine.inGon(problems, { nhan: '-' });
+  else {
+    problems.forEach((p) => console.log(`  - ${p}`));
+    console.log('\n  Nhắc: mỗi bước 1 số + 1 kết quả tương ứng (ngăn <br>); cấm gộp "1-2."; không ghi trơ "thành công/đúng".');
+  }
   if (QA_APPROVED) { console.log('\n[gate] [--qa-approved] bỏ qua → exit 0.'); process.exit(0); }
   console.log('\n[gate] BLOCK.'); process.exit(1);
 }
@@ -372,12 +383,19 @@ function main() {
   }
 
   console.log(`[gate] test-execution · ${executed} case đã execute · ${problems.length} vi phạm chặn · ${warnings.length} cảnh báo.`);
-  if (warnings.length) { console.log('\n[gate] ⚠ Cảnh báo (nên sửa, không chặn):'); warnings.forEach((w) => console.log(`  ~ ${w}`)); }
+  if (warnings.length) {
+    console.log('\n[gate] ⚠ Cảnh báo (nên sửa, không chặn):');
+    if (COMPACT) engine.inGon(warnings, { nhan: '~' });
+    else warnings.forEach((w) => console.log(`  ~ ${w}`));
+  }
   if (!problems.length) { console.log('\n[gate] ✓ ĐẠT — comment gọn, evidence/step/video đủ, FAIL đã phân tầng.'); process.exit(0); }
 
   console.log('\n[gate] ✗ VI PHẠM (RULE_GLOBAL — sửa cho đúng rồi chạy lại, đừng push):');
-  problems.forEach((p) => console.log(`  - ${p}`));
-  console.log('\n  Nhắc: comment mỗi ý 1 dòng "- …", không debug key=value; mọi step PASS/FAIL + ảnh riêng; case phức tạp cần video.');
+  if (COMPACT) engine.inGon(problems, { nhan: '-' });
+  else {
+    problems.forEach((p) => console.log(`  - ${p}`));
+    console.log('\n  Nhắc: comment mỗi ý 1 dòng "- …", không debug key=value; mọi step PASS/FAIL + ảnh riêng; case phức tạp cần video.');
+  }
   if (QA_APPROVED) { console.log('\n[gate] [--qa-approved] QA cố ý bỏ qua → exit 0 (đã ghi log vi phạm ở trên).'); process.exit(0); }
   console.log('\n[gate] BLOCK: chưa được push. (Muốn bỏ qua có chủ đích: --qa-approved.)');
   process.exit(1);

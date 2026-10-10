@@ -26,8 +26,11 @@ if (!fp) process.exit(0);
 const norm = String(fp).replace(/\\/g, '/');
 
 let args = null;
-if (/testcase-status\.json$/i.test(norm)) args = ['--mode', 'test-execution', '--status', fp];
-else if (/\/test-cases\/[^/]+\.md$/i.test(norm)) args = ['--mode', 'gen-testcase', '--file', fp];
+/* `--compact` ở ĐÂY là chỗ đáng nhất trong kit: output của hook đi THẲNG vào context của agent qua
+ * `reason`, mỗi lần ghi file. Đo trên bộ 265 case thật: 10.696 byte xuống 1.870 byte, giảm 82%. Và
+ * `--compact` là lớp trình bày, không lọc — mọi vi phạm vẫn có mặt, xem compact-mode.spec.ts. */
+if (/testcase-status\.json$/i.test(norm)) args = ['--mode', 'test-execution', '--status', fp, '--compact'];
+else if (/\/test-cases\/[^/]+\.md$/i.test(norm)) args = ['--mode', 'gen-testcase', '--file', fp, '--compact'];
 if (!args) process.exit(0);           // không phải artifact cần gate
 if (!fs.existsSync(fp)) process.exit(0);
 

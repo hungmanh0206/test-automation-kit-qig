@@ -33,6 +33,11 @@ const fs = require('fs');
 const path = require('path');
 const outputGate = require(path.resolve(__dirname, 'output_gate'));
 const testcaseModel = require(path.resolve(__dirname, '..', 'lib', 'testcase')); // #1: parser canonical DUY NHẤT
+const engine = require(path.resolve(__dirname, 'lib', 'gate_engine'));
+/* `--compact`: in gọn mỗi vi phạm một dòng `MÃ · TC ID · ý chính`. Lớp TRÌNH BÀY, không lọc.
+ * Phạm vi MODULE chứ không trong `main()`: nhánh `chayChecklist` cũng dùng, và khai trong main là
+ * ReferenceError lúc chạy nhánh đó. Lint bắt được lần này; lần sau thì chưa chắc. */
+const COMPACT = process.argv.includes('--compact');
 
 // #1 (formalize): gateDesign DELEGATE canonical.validate (structural + completeness + dimension) —
 // KHÔNG còn giữ logic riêng. validate() là superset đã dựng ở #1 GĐ1a; 1 nguồn kiểm thiết kế.
@@ -82,7 +87,11 @@ function chayChecklist(files, { QA_APPROVED }) {
 
   console.log(`[design] mode CHECKLIST — ${fileCount} file · ${itemCount} mục · ${problems.length} CHẶN · ${warnings.length} cảnh báo.`);
   loai.forEach((l) => console.log(`  · ${l}`));
-  if (warnings.length) { console.log('\n[design] ⚠ Cảnh báo (nên sửa, không chặn):'); warnings.slice(0, 40).forEach((p) => console.log(`  ~ ${p}`)); if (warnings.length > 40) console.log(`  … +${warnings.length - 40} nữa`); }
+  if (warnings.length) {
+    console.log('\n[design] ⚠ Cảnh báo (nên sửa, không chặn):');
+    if (COMPACT) engine.inGon(warnings, { nhan: '~' });
+    else { warnings.slice(0, 40).forEach((p) => console.log(`  ~ ${p}`)); if (warnings.length > 40) console.log(`  … +${warnings.length - 40} nữa`); }
+  }
   if (!problems.length) {
     if (!fileCount) { console.log('\n[design] không có checklist nào để kiểm.'); process.exit(0); }
     console.log('\n[design] ✓ ĐẠT — 4 tiêu chí checklist: verify được · luồng sống còn có P1 · component khai đủ · đúng quy mô.');
@@ -195,11 +204,16 @@ function main() {
   }
 
   console.log(`[design] ${fileCount} file · ${rowCount} testcase · ${problems.length} CHẶN · ${warnings.length} cảnh báo${WITH_ROWS ? ' (kèm row-quality)' : ''}.`);
-  if (warnings.length) { console.log('\n[design] ⚠ Cảnh báo (nên sửa, không chặn):'); warnings.slice(0, 40).forEach((p) => console.log(`  ~ ${p}`)); if (warnings.length > 40) console.log(`  … +${warnings.length - 40} nữa`); }
+  if (warnings.length) {
+    console.log('\n[design] ⚠ Cảnh báo (nên sửa, không chặn):');
+    if (COMPACT) engine.inGon(warnings, { nhan: '~' });
+    else { warnings.slice(0, 40).forEach((p) => console.log(`  ~ ${p}`)); if (warnings.length > 40) console.log(`  … +${warnings.length - 40} nữa`); }
+  }
   if (!problems.length) { console.log('\n[design] ✓ ĐẠT — đủ cột canonical, không rỗng ô lõi.'); process.exit(0); }
 
   console.log('\n[design] ✗ VI PHẠM CHẶN (thiết kế testcase dở — sửa rồi chạy lại):');
-  problems.forEach((p) => console.log(`  - ${p}`));
+  if (COMPACT) engine.inGon(problems, { nhan: '-' });
+  else problems.forEach((p) => console.log(`  - ${p}`));
   console.log('\n  Nhắc: đủ 8 cột canonical (TC ID/Module/Trường hợp/Tiền điều kiện/Các bước/Kết quả mong đợi/Ưu tiên/Mức độ rủi ro); không rỗng ô lõi. Depth per-module: risk:gate:enforce.');
   if (QA_APPROVED) { console.log('\n[design] [--qa-approved] bỏ qua → exit 0 (đã log).'); process.exit(0); }
   console.log('\n[design] BLOCK.');
