@@ -85,7 +85,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | SINH | `security` | biến phần deterministic của mục 15 thành ĐO THẬT. | `scripts/qa/security_check.js` | .gitlab-ci.yml · RULE_GLOBAL.md · README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .github/workflows · .agent/workflows · .agent/rules · .agent/skills · prompt_templates · exploratory · tests/fe/infra |
 | SINH | `spec:extract` | bảng field trong FSD (markdown) → `screens.json` → (tuỳ chọn) `ui_catalog.json`. | `scripts/qa/spec_extract.js` | RULE_GLOBAL.md · README.md · .agent/rules · prompt_templates |
 | SINH | `inventory:gate` | Chống "CI false green" (F1). | `scripts/qa/test_inventory_gate.js` | README.md |
-| SINH | `token:audit` | ĐO ĐỘNG: một lượt chạy thật đã tiêu token vào đâu. | `scripts/qa/token_audit.js` | README.md · tests/fe/infra |
+| SINH | `token:audit` | ĐO ĐỘNG: một lượt chạy thật đã tiêu token vào đâu. | `scripts/qa/token_audit.js` | README.md · USER_GUIDE.md · tests/fe/infra |
 | BÁO CÁO | `docs:health` | trả lời "tài liệu tôi đang đọc có còn đúng không" bằng MỘT LỆNH. | `scripts/phase1/docs_health.js` | prompt_templates |
 | BÁO CÁO | `bug:tc-match` | ĐỀ XUẤT (không tự ghi) TC canonical cho bug đang `module: "(unmapped)"`. | `scripts/qa/bug_tc_matcher.js` | README.md · .claude/commands |
 | BÁO CÁO | `bugs:checklist` | biến `knowledge/bugs/` thành CHECKLIST lúc SINH CASE (chiều §20 Error Guessing). | `scripts/qa/bugs_checklist.js` | .agent/workflows · prompt_templates · .claude/commands · tests/fe/infra |
