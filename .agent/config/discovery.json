@@ -1,0 +1,91 @@
+{
+  "_doc": "Cấu hình Bước 0 — Khám phá hệ thống (v2.6.0). NGUỒN DUY NHẤT cho: tường lửa ghi, danh sách nút cấm bấm, nhận diện prod, giới hạn lượt bò, từ điển dấu hiệu lỗi SQL. Thiết kế: docs/v2.6.0/DISCOVERY_DESIGN.md.",
+  "_vi_sao_mot_nguon": "Ba chỗ cùng cần những danh sách này: `write_firewall` (chặn lúc bò), `dim:coverage` (chấm phủ injection), và oracle của case injection. Khai ba chỗ thì sớm muộn lệch nhau, và lệch ở đây nghĩa là một hàng rào an toàn im lặng yếu đi.",
+
+  "_tuong_lua_la_gi": "Mọi request có method NGOÀI `method_cho_phep` bị `abort` ở tầng `page.route`, tức chặn TRƯỚC khi ra mạng. Không có cờ nào tắt được nó — đó là điều kiện để được phép chạm UAT.",
+  "tuong_lua": {
+    "method_cho_phep": ["GET", "HEAD", "OPTIONS"],
+    "_vi_sao_co_options": "Preflight CORS là OPTIONS và nó không ghi gì. Chặn OPTIONS làm vỡ mọi lệnh gọi API chéo origin, rồi lượt bò báo 'API lỗi' trong khi lỗi là do chính tường lửa.",
+    "endpoint_dang_nhap_cho_phep": [
+      "**/login**",
+      "**/signin**",
+      "**/dang-nhap**",
+      "**/oauth/token**",
+      "**/refresh**",
+      "**/Account/Login**"
+    ],
+    "_vi_sao_mo_dang_nhap": "Đăng nhập là POST. Không mở thì không bò được gì sau màn login. Đây là ngoại lệ DUY NHẤT, và nó khai tường minh theo khuôn đường dẫn chứ không theo 'request nào trông giống đăng nhập'.",
+    "chan_tai_file": true,
+    "chan_cua_so_ngoai_domain": true
+  },
+
+  "_nut_cam_bam_la_gi": "Khớp theo accessible name (nhãn người đọc được), KHÔNG theo selector — selector đổi theo build, nhãn thì không. So sánh sau khi chuẩn hoá NFC + bỏ dấu + hạ chữ thường, vì nhãn tiếng Việt trong DOM có cả dạng tổ hợp và dạng dựng sẵn.",
+  "nut_cam_bam": [
+    "lưu", "ghi", "ghi lại", "cập nhật", "xác nhận", "đồng ý",
+    "xoá", "xóa", "loại bỏ", "huỷ", "hủy", "huỷ bỏ",
+    "duyệt", "phê duyệt", "từ chối", "gửi", "gửi duyệt", "trình",
+    "thanh toán", "nộp", "đăng xuất", "thoát",
+    "import", "nhập excel", "nhập từ excel", "tải lên", "upload",
+    "save", "submit", "delete", "remove", "approve", "reject", "send",
+    "pay", "logout", "sign out", "confirm", "apply", "update"
+  ],
+  "_vi_sao_co_ngoai_le": "\"ghi\" phai nam trong danh sach: QEMIS co nut \"Ghi\" o CA 5 cap hoc, do la nut luu that. Nhung \"ghi\" cung dung thanh tu rieng trong nhung nhan CHI-DOC (\"Ghi chu\", \"Ghi nhan\"), nen khop theo ranh gioi tu se chan oan va lam luot bo MAT MAN. Do duoc khi viet ham: 1/8 nhan chi-doc bi chan oan. Neu bo \"ghi\" thi mat nut luu that o 5 cap — nen giu, va khai ngoai le tuong minh o day.",
+  "_ngoai_le_co_an_toan_khong": "Co, vi day la LOP THU HAI. Mot nhan trong danh sach ngoai le ma hoa ra co ghi du lieu thi request ghi cua no VAN bi lop thu nhat (abort theo method) chan. Gia cua ngoai le la mat do phu luot bo, khong phai mat an toan.",
+  "nhan_chi_doc_khong_chan": ["ghi chú", "ghi nhận", "lưu ý", "xem và ghi chú"],
+  "_vi_sao_co_ca_tieng_anh": "Kit chạy cả app Việt lẫn app Anh. Nhưng đừng coi danh sách này là đủ: nó là lớp thứ HAI. Lớp thứ nhất là tường lửa method — nút lạ không có trong danh sách mà bấm trúng thì request ghi của nó vẫn bị abort.",
+  "_nut_ghi_phat_hien_duoc": "Request bị tường lửa chặn được ghi lại KÈM nút đã gây ra nó. Đó không chỉ là log an toàn — đó là DỮ LIỆU: nút này ghi dữ liệu. Dùng để đề xuất bổ sung `nut_cam_bam` và để biết màn nào có hành vi ghi.",
+
+  "_nhan_dien_prod": "Kit TRƯỚC v2.6.0 không có nhận diện prod — chỉ có cờ `--confirm-nonprod` ở `security_check.js:58` và `load_check.js:46`. Với discovery thì cờ một mình là không đủ: nó BÒ cả app, nên gõ sai host một lần là duyệt hàng trăm trang trên hệ thống thật. Nên có HAI lớp: dấu hiệu non-prod phải khớp, VÀ dấu hiệu prod phải không khớp, VÀ phải có cờ.",
+  "nhan_dien_prod": {
+    "dau_hieu_non_prod": ["uat", "test", "staging", "stg", "dev", "sandbox", "demo", "localhost", "127.0.0.1"],
+    "dau_hieu_prod": ["prod", "production", "www."],
+    "_khong_ro_thi_sao": "Host không khớp dấu hiệu nào ⇒ TỪ CHỐI, không đoán. 'Không phán được' không thành 'được phép' — cùng luật với verdict.",
+    "can_co_co": "--confirm-nonprod",
+    "bien_moi_truong": "DISCOVERY_CONFIRM"
+  },
+
+  "gioi_han_luot_bo": {
+    "so_trang_toi_da": 120,
+    "do_sau_toi_da": 4,
+    "so_luong_song_song": 2,
+    "_vi_sao_2_luong": "Bò 1 luồng thì lượt `system` quá lâu; bò nhiều luồng trên UAT dùng chung thì làm chậm người khác và dễ bị coi là tải bất thường. 2 là mức đã dùng cho `load_check` ở chế độ thăm dò.",
+    "do_tre_giua_thao_tac_ms": 250,
+    "thoi_gian_toi_da_phut": 20,
+    "_het_gioi_han_thi_sao": "DỪNG và ghi phần chưa tới vào `crawl_completeness.khong_toi_duoc.budget`. KHÔNG báo 100%."
+  },
+
+  "_tu_dien_loi_sql_la_gi": "Dấu hiệu MÁY ĐỌC ĐƯỢC của việc back-end để lọt lỗi cơ sở dữ liệu ra ngoài. Dùng ở oracle case injection (A9.3) và ở `dim:coverage`. Một dòng khớp = FAIL, không cần suy luận thêm: thông báo lỗi SQL lọt ra UI/response đã là lỗ thông tin, bất kể có inject được hay không.",
+  "dau_hieu_loi_sql": [
+    "incorrect syntax near",
+    "unclosed quotation mark",
+    "conversion failed when converting",
+    "invalid column name",
+    "invalid object name",
+    "must declare the scalar variable",
+    "the multi-part identifier",
+    "arithmetic overflow error converting",
+    "cannot insert the value null into column",
+    "violation of primary key constraint",
+    "violation of unique key constraint",
+    "system.data.sqlclient",
+    "microsoft.data.sqlclient",
+    "sqlexception",
+    "at system.data.sqlclient.sqlconnection"
+  ],
+  "_dau_hieu_rieng_sql_server": "Danh sách nghiêng về SQL Server vì back-end dự án này là SQL Server. Thêm dấu hiệu của DBMS khác thì thêm vào đây, đừng thêm vào code.",
+
+  "nhom_diem_nhap": {
+    "sort": "critical",
+    "import_file": "critical",
+    "api_path": "high",
+    "api_body": "high",
+    "second_order": "high",
+    "filter": "high",
+    "search": "high",
+    "date_range": "high",
+    "export_filter": "medium",
+    "paging": "medium"
+  },
+  "_vi_sao_sort_critical": "`ORDER BY` là chỗ khó tham số hoá nhất — thư viện ORM nhận tham số cho giá trị nhưng không nhận cho TÊN CỘT, nên đường sort hay được ghép chuỗi. Xếp nó ngang với `import_file` (nội dung Excel đi thẳng vào DB) chứ không xếp dưới ô tìm kiếm.",
+  "_uu_tien_co_the_ha": "Hạ được, nhưng phải ghi lý do CỤ THỂ vào chính dòng điểm nhập (ví dụ: cột sort là enum cố định phía server). Hạ hàng loạt bằng cách sửa file này là nới gate — đúng thứ bị cấm."
+}

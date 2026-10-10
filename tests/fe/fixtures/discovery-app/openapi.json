@@ -1,0 +1,44 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "QA Discovery Fixture API",
+    "version": "1.0.0",
+    "description": "CỐ Ý THIẾU `/api/loi-sql` — endpoint đó UI thật có gọi (ở màn /bao-cao). Đây là bẫy để kiểm `api_inventory` đối chiếu HAI CHIỀU: endpoint UI gọi mà spec không có, và endpoint spec có mà không UI nào gọi. Và cố ý KHAI THÊM `/api/giao-vien` — endpoint không UI nào gọi, để kiểm chiều còn lại."
+  },
+  "paths": {
+    "/api/truong": {
+      "get": {
+        "summary": "Danh sách trường",
+        "parameters": [
+          { "name": "sort", "in": "query", "schema": { "type": "string" }, "description": "Chuỗi tự do — KHÔNG kiểm phía server" },
+          { "name": "q", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "summary": "Thêm trường",
+        "responses": { "201": { "description": "Đã tạo" } }
+      }
+    },
+    "/api/truong/{id}": {
+      "get": { "summary": "Chi tiết trường", "responses": { "200": { "description": "OK" }, "404": { "description": "Không thấy" } } },
+      "delete": { "summary": "Xoá trường", "responses": { "200": { "description": "OK" } } }
+    },
+    "/api/lop": {
+      "get": {
+        "summary": "Danh sách lớp",
+        "parameters": [
+          { "name": "sort", "in": "query", "schema": { "type": "string", "enum": ["ten", "khoi", "id"] }, "description": "ENUM CỐ ĐỊNH — server từ chối giá trị ngoài enum (400)" }
+        ],
+        "responses": { "200": { "description": "OK" }, "400": { "description": "sort ngoài enum" } }
+      }
+    },
+    "/api/giao-vien": {
+      "get": {
+        "summary": "Danh sách giáo viên — KHAI TRONG SPEC NHƯNG KHÔNG UI NÀO GỌI",
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  }
+}

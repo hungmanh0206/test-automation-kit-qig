@@ -40,6 +40,12 @@ tab**, ba thứ KHÔNG có code trong file đó. Quyết định cần duyệt �
 (`scope_anchor.js:159`), không phải config của kit. Mọi gate §B3 nối vào đó phải theo hai tầng, vì task cũ
 không có file này (`scope_anchor.js:164` đang cảnh báo đúng chuyện đó).
 
+**⑤ (thêm 11/10, lúc làm §A3) Kit không có nhận diện prod — câu ở §3 bản đầu nói quá.** Tôi viết "tái dùng nhận diện prod của
+`security_check`/`load_check`". Thực tế hai file đó **chỉ** đọc cờ `--confirm-nonprod`
+(`security_check.js:58`, `load_check.js:46`); grep toàn repo không có heuristic hostname nào. Với một lệnh
+kiểm đơn lẻ thì cờ là đủ; với discovery thì không, vì nó **BÒ cả app** — gõ sai host một lần là duyệt
+hàng trăm trang trên hệ thống thật. Đã làm thật trong `write_firewall.kiemTarget()`, và §3 đã sửa.
+
 ## 1. Kiến trúc
 
 ### 1.1. Luồng dữ liệu
@@ -153,7 +159,7 @@ phải tự rút gọn theo thứ tự ưu tiên khi vượt: giữ vùng mù v�
 |---|---|---|
 | **Tường lửa ghi** | `page.route('**/*')`: method ∉ `GET/HEAD/OPTIONS` ⇒ `abort`, trừ endpoint đăng nhập/refresh khai trong config. Mỗi request bị chặn ghi lại kèm nút gây ra nó | Spec: fixture có nút Xoá + form Lưu ⇒ **0 request ghi lọt**, bản ghi fixture không đổi |
 | **Danh sách nút cấm bấm** | Theo accessible name: Lưu/Ghi · Xoá · Duyệt · Gửi · Thanh toán · Đăng xuất · Import · Huỷ + biến thể EN. Chặn cả tải file và mở cửa sổ ngoài domain | Spec: crawler đi qua màn có đủ 8 nút ⇒ không bấm nút nào trong danh sách |
-| **Chặn prod** | Tái dùng nhận diện prod của `security_check.js`/`load_check.js`. Bắt buộc `--confirm-nonprod` | Spec: chạy không có cờ ⇒ **từ chối**, exit ≠ 0 |
+| **Chặn prod** | **SỪA 11/10: kit KHÔNG có nhận diện prod** — `security_check.js:58` và `load_check.js:46` chỉ đọc cờ `--confirm-nonprod`, grep toàn repo không có heuristic hostname nào. Nên làm thật, HAI chiều: phải khớp dấu hiệu non-prod **VÀ** không khớp dấu hiệu prod **VÀ** có cờ. Host không khớp dấu hiệu nào ⇒ TỪ CHỐI | Spec: chạy không có cờ ⇒ **từ chối**, exit ≠ 0 |
 | **Giới hạn lượt bò** | Config: số trang tối đa, độ sâu, 1–2 luồng, độ trễ, thời gian tối đa | Spec: hết giới hạn giữa chừng ⇒ báo đúng phần chưa tới, **không** báo 100% |
 | **Captcha/OTP** | Dừng nhánh đó, ghi `needs_account` / `manual_inherent` | Đã biết: captcha QEMIS mỗi lượt, và profile dùng chung giữa task làm login trượt chéo |
 | **Không chạm UAT khi phát triển** | Mọi spec chạy trên fixture offline `tests/fe/fixtures/discovery-app/` | §D3 |
