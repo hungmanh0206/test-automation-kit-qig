@@ -102,7 +102,11 @@ const RULES = [
   {
     id: 'cred-literal',
     sev: 'P0',
-    re: /\b(?:password|passwd|pwd|secret|api[_-]?key|apikey|token|bearer)\b\s*[:=]\s*['"`][^'"`\s]{4,}['"`]/i,
+    /*
+     * Ruột chuỗi ĐÃ bị làm trắng trước khi quét, nên mẫu phải khớp "CÓ một chuỗi dài ≥4" chứ không khớp
+     * NỘI DUNG chuỗi: `[^'"`]{4,}` thay cho `[^'"`\s]{4,}`. Giữ mẫu cũ thì luật này không bao giờ nổ.
+     */
+    re: /\b(?:password|passwd|pwd|secret|api[_-]?key|apikey|token|bearer)\b\s*[:=]\s*['"`][^'"`]{4,}['"`]/i,
     not: /process\.env|\.example|placeholder|\bxxx+\b|\bfake\b|\bdummy\b|<[^>]*>|\$\{/i,
     /*
      * VÌ SAO CẦN, dù đã có `secret:scan`: `secret_scan.js` chỉ quét file ĐƯỢC TRACK. Automation theo task
@@ -196,7 +200,7 @@ const laSpec = (rel) => /\.spec\.(ts|js|mjs)$/.test(rel);
  * Phân biệt regex với phép chia bằng ký tự có nghĩa ĐỨNG TRƯỚC: `/` mở regex khi trước nó không phải một
  * giá trị kết thúc (`identifier`, số, `)`, `]`). Đây là heuristic chuẩn của mọi bộ tô màu cú pháp.
  */
-function xoaRuotChuoi(src) {
+function xoaRuotChuoi(src, giuRegex = false) {
   const ra = src.split('');
   let i = 0;
   const n = src.length;
@@ -208,15 +212,24 @@ function xoaRuotChuoi(src) {
     if (c === '/' && c2 === '/') { i += 2; while (i < n && src[i] !== '\n') { trang(i); i += 1; } continue; }
     if (c === '/' && c2 === '*') { i += 2; while (i < n && !(src[i] === '*' && src[i + 1] === '/')) { trang(i); i += 1; } i += 2; continue; }
     if (c === '/' && !/[\w$)\]]/.test(truoc)) {
-      // REGEX LITERAL: nhảy tới `/` đóng, bỏ qua `\/` và `/` nằm trong lớp ký tự `[...]`.
+      /*
+       * REGEX LITERAL: nhảy tới `/` đóng, bỏ qua `\/` và `/` nằm trong lớp ký tự `[...]`.
+       *
+       * `giuRegex` quyết định có LÀM TRẮNG ruột regex hay không, và hai bên cần hai hành vi khác nhau:
+       *  · `testKhongAssert` → làm trắng (ruột regex không chứa test nào, xoá đi vô hại);
+       *  · luật theo dòng → GIỮ, vì `vacuous-url` phải đọc được chính `/./` trong `toHaveURL(/./)`.
+       * Dù chọn bên nào thì vẫn phải NHẬN RA regex, nếu không một dấu nháy trong `/^['"]/` sẽ làm bộ quét
+       * vào trạng thái chuỗi rồi nuốt hàng chục dòng phía sau.
+       */
       i += 1;
       let trongLop = false;
       while (i < n && src[i] !== '\n') {
-        if (src[i] === '\\') { trang(i); i += 1; if (i < n) trang(i); i += 1; continue; }
+        if (src[i] === '\\') { if (!giuRegex) { trang(i); trang(i + 1); } i += 2; continue; }
         if (src[i] === '[') trongLop = true;
         else if (src[i] === ']') trongLop = false;
         else if (src[i] === '/' && !trongLop) break;
-        trang(i); i += 1;
+        if (!giuRegex) trang(i);
+        i += 1;
       }
       i += 1;
       truoc = '/';
@@ -327,13 +340,24 @@ function mainCli() {
     const tang = scope === 'task' ? 'task'
       : (track === null || track.has(rel) ? 'track' : 'wip');
     const lines = src.split(/\r?\n/);
+    /*
+     * LUẬT THEO DÒNG chạy trên bản ĐÃ LÀM TRẮNG RUỘT CHUỖI (giữ regex), không trên dòng thô.
+     *
+     * Vì sao: `automation-review.spec.ts` chứa FIXTURE là chuỗi — `waitForTimeout(2000)`,
+     * `password = '…'` — và ngay khi nó được git track, gate bắt chính những chuỗi đó rồi tự đỏ. Đây là
+     * tình huống `ci_scope_check.js` giải bằng `selfTestExempt`, nhưng miễn trừ là cửa hậu phải khoá số
+     * lượng; phán trên phần LÀ CODE thì chính xác hơn và không cần miễn trừ nào.
+     *
+     * Dòng THÔ chỉ còn dùng để IN ra cho người đọc.
+     */
+    const codeLines = xoaRuotChuoi(src, true).split(/\r?\n/);
 
     for (let i = 0; i < lines.length; i += 1) {
       if (/auto-review-disable-next-line\s+\S/.test(lines[i - 1] || '')) continue;
       for (const r of RULES) {
         if (r.sharedOnly && scope !== 'shared') continue;
-        if (r.not && r.not.test(lines[i])) continue;
-        const m = r.re.exec(lines[i]);
+        if (r.not && r.not.test(codeLines[i])) continue;
+        const m = r.re.exec(codeLines[i]);
         if (!m) continue;
         if (r.ok && r.ok(m)) continue;
         findings.push({ file: rel, line: i + 1, scope, tang, rule: r, code: lines[i].trim().slice(0, 88) });
