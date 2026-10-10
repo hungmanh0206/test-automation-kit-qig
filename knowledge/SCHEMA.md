@@ -307,8 +307,34 @@ chứng minh hệ thống chặn. `system_map.js` in ma trận + liệt kê cặ
 }
 ```
 
-`allow` là **whitelist**: ô role×action không có trong `allow` = **deny** → phải có case guard với oracle
-`deny_expected`. `covered_by` khoá dạng `"role:action"`.
+#### Ba mức bằng chứng — sửa 10/10/2026 (v2.5.0 G1.3)
+
+Bản trước ghi: *"`allow` là whitelist: ô role×action không có trong `allow` = **deny** → phải có case guard
+với oracle `deny_expected`"*. **Câu đó gộp hai thứ khác hẳn nhau vào một**, và đó là một lỗ thiết kế:
+
+| Ô | Thực chất | Hệ quả nếu gộp |
+|---|---|---|
+| BA đã nói là **cấm** | `deny` LÀ oracle → case 403 là đúng | — |
+| **Chưa ai hỏi tới** | KHÔNG có oracle nào | Case 403 ở đó là **tự bịa ra một yêu cầu**; app cho phép thì log bug là log một bug BỊA |
+
+Nên nay có **ba mức**, đúng mô hình của `qig-qa-automation`:
+
+| Trường | Mức | Dùng làm oracle? |
+|---|---|---|
+| `allow` | đã xác nhận **được phép** | có |
+| `deny_verified` | đã xác nhận **bị cấm** (tài liệu / BA / dev) | có — `deny_expected` là oracle |
+| `deny_inferred` | **suy từ màn cấu hình quyền**, kèm `inferred_from` bắt buộc | có, nhưng phải ghi rõ là suy |
+| *(không khai)* | **`unknown`** — chưa có căn cứ | **KHÔNG.** Đưa vào câu hỏi Ambiguity Gate |
+
+⚙️ `npm run system:check` **CHẶN** khi: một ô khai ở cả `allow` và `deny_*` · `deny_inferred` thiếu
+`inferred_from` · `covered_by` trỏ vào một ô đang ở mức `unknown` (case đó đang dùng oracle KHÔNG TỒN TẠI).
+**CẢNH BÁO** và liệt kê khi còn ô `unknown`.
+
+> Vì sao luật này đáng tiền: đã có lần suýt log một bug sản phẩm **dựng ra từ tình huống không tồn tại**
+> (`feedback_tien_de_mot_nua_la_ket_luan_sai`). "Chưa có căn cứ" làm tròn thành "không có quyền" là đúng
+> con đường dẫn tới đó.
+
+`covered_by` khoá dạng `"role:action"`.
 
 ### `type: "shared_surface"` — id `SS-<SLUG>-<NNN>`
 

@@ -38,6 +38,71 @@ Chuyển Backlog/tài liệu nguồn/Figma/Swagger/local artifact thành require
 | Setup source candidates | Endpoint/payload/fixture từ Swagger phục vụ Setup Strategy contract |
 | Open questions | `task.md` hoặc Phase 1 summary |
 
+## Thứ tự ưu tiên khi hai nguồn nói ngược nhau
+
+Hai nguồn mâu thuẫn thì **không chọn bừa, và cũng không lấy app ra phân xử**. Thứ tự:
+
+| # | Nguồn | Ghi chú |
+|---|---|---|
+| 1 | **BA/PO xác nhận** (có ngày, ghi vào `knowledge/domain`) | Thắng mọi nguồn khác, kể cả tài liệu |
+| 2 | **Văn bản pháp quy / quy định gốc** | TT32/2018, TT28/2020… — nguồn ngoài dự án, không ai sửa được cho tiện |
+| 3 | **FSD/BRD bản mới nhất** | Ghi rõ phiên bản và mục; bản cũ không dùng để phản bác bản mới |
+| 4 | **Figma / UI spec** | Chỉ là oracle cho **hiển thị**, không cho nghiệp vụ |
+| 5 | **Bộ testcase chuẩn của hệ thống** | Dùng để tìm vùng SÓT, **không** để lấy expected |
+| ⛔ | **App đang chạy** | **KHÔNG BAO GIỜ là oracle.** Xem mục dưới |
+
+Mâu thuẫn chưa phân xử được thì nó là **câu hỏi Blocking** ở `reports/phase1-clarifications.md`, không phải
+một lựa chọn im lặng.
+
+## "UI thực tế" là SỰ THẬT QUAN SÁT, không phải oracle
+
+Đây là chỗ kit khác `qig-qa-automation` về nguyên tắc: A cho phép requirement lấy từ "UI thực tế" đi thẳng
+vào test case. Ở đây thì **không** — app không bao giờ là chuẩn đúng-sai của chính nó, vì so app với app
+luôn PASS, kể cả khi app sai.
+
+Đường đi đúng của một quan sát: **quan sát → câu hỏi Ambiguity Gate → BA/tài liệu chốt → `knowledge/domain`
+có `confirmed_by` → mới thành oracle.**
+
+⚙️ `npm run domain:check` **CHẶN** rule khai `source` lấy app làm nguồn ("quan sát trên app", "theo app
+hiện tại", "UI thực tế", "như app đang hiển thị"). Đo 10/10/2026: 0 trong 118 rule thật mắc lỗi này, nên
+luật xanh ngay — nó chặn đường lùi, không dọn nợ.
+
+## "Không đề cập" KHÁC "không áp dụng"
+
+Hai câu nghe giống nhau và hệ quả ngược nhau:
+
+- **"Tài liệu không đề cập"** = chưa có căn cứ. KHÔNG kết luận được gì, kể cả kết luận "không cần test".
+- **"Không áp dụng"** = đã có căn cứ rằng chuyện đó không tồn tại trong phạm vi này.
+
+Rule khai đặc tả im lặng vẫn hợp lệ — **nếu nêu được một neo độc lập**: thuộc tính toàn vẹn phổ quát, văn
+bản pháp quy, BA/dev xác nhận, hoặc bộ testcase chuẩn của hệ thống. Dừng ở "đặc tả không đề cập" thì rule
+chỉ còn là suy đoán.
+⚙️ `domain:check` cảnh báo đúng ca đó. Bốn rule trong repo khai đặc tả im lặng và cả bốn đều nêu neo —
+chúng là mẫu đúng, và danh sách dấu hiệu của gate được lấy từ chính chúng.
+
+## Ba mức bằng chứng cho phân quyền
+
+Khi dựng ma trận quyền (`PM-*` của [[system_mapper]]), mỗi ô `role × action` phải mang một trong ba mức:
+**đã kiểm chứng** (`allow` / `deny_verified`) · **suy từ màn cấu hình** (`deny_inferred` + `inferred_from`)
+· **chưa có căn cứ** (`unknown`).
+
+**Ô `unknown` KHÔNG được làm tròn thành "không có quyền".** Khẳng định 403 ở một ô chưa ai chốt là tự bịa
+ra một yêu cầu, và nếu app cho phép thì bug log ra là **bug bịa**. Chi tiết và máy gác:
+`knowledge/SCHEMA.md` §`permission_matrix`.
+
+## Bản đồ phủ tài liệu
+
+Mỗi vùng của tài liệu phải rơi vào một trong bốn ô, và **ô nào cũng phải có người đọc** — không ô nào được
+im lặng:
+
+| | Có trong tài liệu | Không có trong tài liệu |
+|---|---|---|
+| **Có TC** | phủ đủ | TC dựa trên gì? Nếu là quan sát app ⇒ chưa có oracle |
+| **Không có TC** | **vùng SÓT** — mẫu số của `scope:anchor` | vùng mù: phải hỏi BA |
+
+Mẫu số của vùng sót lấy từ `npm run scope:anchor`, không tự liệt kê — số tự khai thì "đủ" chỉ còn nghĩa
+"tôi thấy đủ".
+
 ## Decision Rules
 
 - Ưu tiên artifact local/snapshot trước khi fetch raw source lớn.

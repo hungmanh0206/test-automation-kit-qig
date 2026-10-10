@@ -193,6 +193,42 @@ function validate(r) {
   if (!String(d.rule || '').trim()) problems.push(at('thiếu `rule` (phát biểu rule kiểm được)'));
   // `source` rỗng = rule không truy nguyên được → chính là cửa cho rule tự bịa.
   if (!String(d.source || '').trim()) problems.push(at('thiếu `source` — rule KHÔNG truy nguyên được thì không được ghi vào knowledge (chống rule tự bịa)'));
+
+  /*
+   * "UI THỰC TẾ" KHÔNG ĐƯỢC LÀM ORACLE (v2.5.0 G1.3 — chỗ B CHỈNH bản chất so với A).
+   *
+   * A cho phép requirement lấy từ "UI thực tế" đi thẳng vào test case. Với B thì không: app không bao giờ
+   * là chuẩn đúng-sai của chính nó. Kit đã CẤM chuyện này bằng chữ ở nhiều nơi, nhưng đo 10/10/2026 thì
+   * `domain:check` CHỈ đòi `source` khác rỗng — một rule khai `source: "quan sát trên app"` đi qua sạch,
+   * rồi từ đó mọi case trỏ tới nó đều là tautology mà không gate nào biết.
+   *
+   * CHẶN, không hai tầng: đo 118 rule thật thì **0 rule** lấy app làm nguồn (toàn Vault, bộ testcase
+   * chuẩn, TT32/2018, văn bản gốc, BA xác nhận). Luật này xanh ngay, nên không có nợ cũ để nương.
+   */
+  const src = String(d.source || '');
+  const hitApp = /\b(quan sát (?:trên|từ) (?:app|ứng dụng|build|màn)|theo (?:app|ứng dụng|build) hiện tại|lấy từ (?:app|ứng dụng|build|UI)|UI thực tế|như app đang (?:làm|chạy|hiển thị)|observed (?:on|from) (?:app|build))/i.exec(src);
+  if (hitApp) {
+    problems.push(at(`\`source\` lấy APP làm nguồn ("${hitApp[0]}") — app KHÔNG bao giờ là chuẩn đúng-sai của chính nó. Mọi case trỏ tới rule này sẽ là tautology (so app với app). Quan sát trên app là SỰ THẬT QUAN SÁT: ghi nó thành câu hỏi cho Ambiguity Gate, chờ BA/tài liệu chốt, rồi mới thành rule.`));
+  }
+
+  /*
+   * "KHÔNG ĐỀ CẬP" KHÁC "KHÔNG ÁP DỤNG" (G1.3). Một rule khai thẳng là đặc tả KHÔNG nói gì về chuyện này
+   * thì nó vẫn hợp lệ — nhưng chỉ khi nêu được một NEO ĐỘC LẬP. Dừng ở "đặc tả không đề cập" là chưa có
+   * neo nào, và lúc đó rule chỉ còn là suy đoán hoặc quan sát từ app.
+   *
+   * DANH SÁCH DẤU HIỆU NEO LẤY TỪ DỮ LIỆU THẬT, không tự nghĩ: 4 rule trong repo khai "KHÔNG có trong đặc
+   * tả" và cả 4 đều nêu neo — "thuộc tính toàn vẹn PHỔ QUÁT, độc lập với ứng dụng" (br-hslop-029/030),
+   * "đối chiếu bộ testcase hệ thống" (028), "BA XÁC NHẬN 08/10/2026 … văn bản gốc TT28/2020" (031). Bốn
+   * rule đó là MẪU ĐÚNG của luật này, nên luật được dựng để chúng đi qua.
+   *
+   * CẢNH BÁO chứ không chặn: nhận neo bằng cách đọc chữ thì cách viết khác đi là báo oan, và thông điệp
+   * nói rõ phải thêm gì.
+   */
+  const specIm = /\bKH[ÔO]NG (?:c[óo] trong|l[ấa]y t[ừu]|n[ằa]m trong) (?:đ[ặa]c t[ảa]|FSD|t[àa]i li[ệe]u)|đ[ặa]c t[ảa] (?:kh[ôo]ng (?:khai|n[óo]i|đ[ềe] c[ậa]p)|im l[ặa]ng)/i.test(src);
+  const coNeo = /BA X[ÁA]C NH[ẬA]N|v[ăa]n b[ảa]n g[ốo]c|\bTT\s?\d+\/?\d*|ph[ổo] qu[áa]t|đ[ộo]c l[ậa]p v[ớo]i [ứu]ng d[ụu]ng|b[ộo] testcase (?:h[ệe] th[ốo]ng|chu[ẩa]n)|dev x[áa]c nh[ậa]n/i.test(src);
+  if (specIm && !coNeo) {
+    warnings.push(at('`source` khai đặc tả KHÔNG đề cập, nhưng không nêu NEO ĐỘC LẬP nào. "Không đề cập" KHÁC "không áp dụng": dừng ở đó thì rule chỉ còn là suy đoán hoặc quan sát từ app. Nêu rõ neo — thuộc tính toàn vẹn phổ quát, văn bản pháp quy, BA/dev xác nhận, hoặc bộ testcase chuẩn của hệ thống.'));
+  }
   if (!CONFIRMERS.includes(String(d.confirmed_by || ''))) problems.push(at(`\`confirmed_by\` phải ∈ ${CONFIRMERS.join('|')} (ai CHỐT rule này)`));
   if (!DATE_RE.test(String(d.confirmed_at || ''))) problems.push(at('`confirmed_at` phải là ISO date YYYY-MM-DD (dùng để phát hiện TC stale)'));
   if (!Number.isInteger(d.version) || d.version < 1) problems.push(at('`version` phải là số nguyên ≥ 1'));
