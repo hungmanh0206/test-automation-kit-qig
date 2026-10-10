@@ -6,9 +6,22 @@
 
 Giảm skip/fail giả, đảm bảo case pass thật sự validate đúng behavior và fail còn lại được phân loại rõ.
 
+## Giao việc cho subagent (giảm số lượt trong context chính)
+
+Mỗi lượt gọi tool trong context chính là một message kèm cả context (~510k token). Hai vòng lặp tốn
+nhiều lượt nhất của bước này được đẩy ra ngoài:
+
+| Bước | Giao cho | Đầu vào | Chờ đầu ra |
+| --- | --- | --- | --- |
+| Chạy spec, và rerun đúng case đỏ | `test-runner` | `TASK_KEY`, `PROJECT_OUTPUT_DIR`, tập spec | 3 phần: dòng tổng, mỗi case đỏ một dòng, lệnh rerun |
+| Gỡ MỘT case đỏ (bước 4 bên dưới) | `case-debugger` | TC ID, đường dẫn spec, thông báo lỗi | Tối đa 15 dòng: nguyên nhân, tầng lỗi, đã sửa gì, kết quả rerun, có nghi bug sản phẩm không |
+
+Cả hai đều **không chấm verdict**. Verdict do `output_gate --mode test-execution` chấm theo
+`verdict_taxonomy.json`. Xác minh hợp đồng của chúng: `docs/v2.4.1/AGENTS_VERIFY.md`.
+
 ## Workflow
 
-1. Chạy targeted test theo scope đã xác nhận.
+1. Chạy targeted test theo scope đã xác nhận. Giao `test-runner`, đừng tự chạy rồi tự đọc kết quả thô.
 2. Lưu result/evidence dưới task output hoặc run-scoped folder.
 3. Phân loại từng case:
    - PASS
@@ -18,8 +31,8 @@ Giảm skip/fail giả, đảm bảo case pass thật sự validate đúng behav
    - `setup_failure`: fail ở bước setup/verify precondition (Precondition Resolution Pass) — sửa setup rồi rerun, KHÔNG kết luận product bug, KHÔNG log Backlog.
    - `BLOCKED_SETUP` / `SKIP_SETUP`: precondition chưa đủ Definition of Ready (thiếu capability API/hook/mock/sandbox/fixture hoặc contract chưa đủ) — ghi missing capability cụ thể, không connect DB, không phải product bug, không log Backlog.
 4. Với FAIL/SKIP do automation/setup/data/auth/timeout/dependency:
-   - Sửa root cause.
-   - Rerun targeted.
+   - Sửa root cause. Mỗi case một lượt `case-debugger`, đừng gộp nhiều case vào một lượt gỡ.
+   - Rerun targeted bằng `npm run rerun:failed`. Nó chạy đúng case đỏ, không chạy lại cả suite.
    - Không đổi expected result khi chưa có bằng chứng requirement sai.
    - Nếu FAIL do locator không tìm thấy element **và** `LOCATOR_HEAL=1`: áp dụng `.agent/rules/locator_healing_policy.md` (skill `locator_healing_agent`, threshold-gated). Chỉ heal locator bước ACTION/điều hướng với confidence cao (accessible name exact + role + vùng DOM) → ghi `locator_auto_healed: true` vào Auto-heal notes + lịch sử `knowledge/locators/`. Locator bước ASSERTION hoặc confidence thấp → KHÔNG heal, phân loại `setup_failure`/escalate như `BLOCKED_SETUP`.
 5. Với fail nghi product bug:

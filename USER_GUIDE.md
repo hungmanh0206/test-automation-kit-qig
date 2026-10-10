@@ -930,21 +930,32 @@ Việc **máy móc** giao cho subagent ở [`.claude/agents/`](.claude/agents/) 
 luận nghiệp vụ** thì KHÔNG giao. Đó là phân tích spec, Ambiguity Gate, dựng oracle, triage FAIL, và
 Bug Claim.
 
-| Subagent | Việc | Model |
-|---|---|---|
-| `test-runner` | Chạy spec rồi trả bản tóm tắt kết quả. Không chấm verdict | `haiku` |
-| `excel-convert` | Markdown sang Excel, và ghi cột `Result`. Không đụng ô nào khác | `haiku` |
+| Subagent | Việc | Model | Gọi từ |
+|---|---|---|---|
+| `test-runner` | Chạy spec rồi trả bản tóm tắt kết quả. Không chấm verdict | `haiku` | `phase2_03` bước 1 |
+| `excel-convert` | Markdown sang Excel, và ghi cột `Result`. Không đụng ô nào khác | `haiku` | `phase1_03`, `phase1_04` |
+| `case-debugger` | Gỡ MỘT case đỏ: đọc log và ảnh, soi DOM, sửa locator, chạy lại chính case đó | **mặc định** | `phase2_03` bước 4 |
 
-Vì sao chỉ hai việc đó: cả hai có **hợp đồng vào-ra là đường dẫn file**, nên sai thì thấy ngay. Một
-subagent model rẻ mà được giao việc cần suy luận sẽ đưa ra kết luận. Kết luận đó trông y hệt kết luận
-của model mạnh. Rẻ đi một chút, sai đi rất nhiều.
+Hai việc đầu đi model rẻ vì cả hai có **hợp đồng vào-ra là đường dẫn file**, nên sai thì thấy ngay.
 
-> **Chưa xác minh end-to-end.** Claude Code nạp định nghĩa agent lúc **phiên mới** bắt đầu. File thêm
-> giữa phiên không xuất hiện. Mở một **phiên mới** rồi kiểm bằng `/agents`. Bản 2.1.285 có lệnh
-> `claude agents`, nhưng đó là lệnh quản background agent, không kiểm được chỗ này.
+`case-debugger` thì **cố ý KHÔNG ghim model**. Gỡ một case đỏ là đọc DOM rồi đoán nguyên nhân. Đó là
+suy luận, không phải việc máy móc. Một subagent model rẻ được giao việc cần suy luận vẫn sẽ đưa ra kết
+luận, và kết luận đó trông y hệt kết luận của model mạnh. Rẻ đi một chút, sai đi rất nhiều.
+
+Vì sao vẫn đẩy nó ra khỏi context chính dù không ghim model rẻ: đo 10/10/2026 trên 5 phiên chạy task
+thật, 1.442 lượt `node -e` và 825 lượt `sed`. Phần lớn là dò DOM và đọc log cho đúng một case. Mỗi lượt
+đó là một message kèm cả context. Giao ra ngoài thì context chính chỉ nhận 15 dòng tóm tắt.
+
+> **Đã xác minh 10/10/2026**, xem `docs/v2.4.1/AGENTS_VERIFY.md`. `test-runner` và `excel-convert` được
+> gọi thật trên fixture offline và trả đúng hợp đồng. Kết quả đối chiếu độc lập, không tin lời khai.
 >
-> Đo bằng `npm run token:audit` thì H6 ảnh hưởng **giá**, không ảnh hưởng số token trong context. Nó
-> không cùng nhóm với H1, H4, H5.
+> **Định nghĩa agent chỉ nạp lúc phiên BẮT ĐẦU.** File thêm giữa phiên không xuất hiện trong danh sách.
+> Chuyện đó đã suýt bị chẩn đoán nhầm thành "frontmatter hỏng". Thiếu trong danh sách thì kiểm THỜI
+> ĐIỂM trước, đừng sửa file. Mở phiên mới rồi gõ `/agents`.
+>
+> **Chưa đọc lại được model thật đã chạy.** Frontmatter khai `haiku` và harness nhận agent, nhưng kết quả
+> trả về không mang tên model. Nên câu "việc máy móc đã đi model rẻ" hiện dựa vào KHAI BÁO, không dựa vào
+> phép đo.
 | `/gates <TASK_KEY>` | Bó gate trước khi finalize | Còn dòng CHẶN thì sửa nội dung, **không nới ngưỡng** |
 | `/publish <TASK_KEY>` | Đẩy Google Sheet | Review nội dung local trước, `update_file`/`create_file` qua Drive MCP sau |
 

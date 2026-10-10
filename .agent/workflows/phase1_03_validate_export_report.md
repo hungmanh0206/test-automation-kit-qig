@@ -6,6 +6,15 @@
 
 Đảm bảo testcase không chỉ nhiều về số lượng mà còn đạt chất lượng kiểm thử, có coverage rõ và đủ artifact để Phase 2 chạy được.
 
+## Giao việc cho subagent
+
+| Bước | Giao cho | Đầu vào | Chờ đầu ra |
+| --- | --- | --- | --- |
+| Convert Markdown sang Excel, và ghi kết quả vào cột `Result` | `excel-convert` | đường dẫn `.md`, `.xlsx`, và `testcase-status.json` nếu có | đường dẫn file đã ghi · số dòng · nguyên văn cảnh báo của script |
+
+Nó **chỉ ghi cột `Result`** và **không tự upload lên Drive** — đẩy lên Sheet là việc của luồng chính, sau
+khi người xem lại bản merge. Xác minh hợp đồng: `docs/v2.4.1/AGENTS_VERIFY.md`.
+
 ## Workflow
 
 1. Validate từng testcase:

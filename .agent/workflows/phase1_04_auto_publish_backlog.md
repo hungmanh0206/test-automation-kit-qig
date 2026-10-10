@@ -18,6 +18,12 @@
 | Google Drive MCP đã kết nối trong phiên chat | Có |
 | Review nội dung `.xlsx` local trước khi ghi đè Sheet | **Bắt buộc** (Drive MCP không "sửa 1 ô" — ghi đè là ghi đè cả file) |
 
+## Giao việc cho subagent
+
+Bước convert Markdown sang Excel trước khi publish giao `excel-convert` (đầu vào: đường dẫn `.md` và
+`.xlsx`; đầu ra: đường dẫn file đã ghi, số dòng, nguyên văn cảnh báo). Nó **không tự upload lên Drive** —
+đẩy lên Sheet là việc của luồng chính, sau khi người xem lại. Xác minh: `docs/v2.4.1/AGENTS_VERIFY.md`.
+
 ## Workflow
 
 1. Echo scope:

@@ -5,15 +5,18 @@ import path from 'path';
 /*
  * @infra — ĐỊNH TUYẾN MODEL THEO LOẠI VIỆC (H6 của token-diet).
  *
- * GIỚI HẠN PHẢI ĐỌC TRƯỚC, vì nó quyết định test này kiểm được gì:
+ * ĐÃ XÁC MINH ĐƯỢC (10/10/2026) — đính chính ghi chú cũ ở chính chỗ này.
  *
- *   KHÔNG xác minh được end-to-end trong phiên hiện tại. Danh sách agent được nạp vào system prompt lúc
- *   PHIÊN BẮT ĐẦU, nên file thêm giữa phiên không xuất hiện. `claude agents` của bản 2.1.285 quản
- *   BACKGROUND agent, là tính năng khác, nên cũng không dùng để kiểm được.
+ *   Bản trước viết "KHÔNG xác minh được end-to-end", và lúc đó đúng: danh sách agent nạp vào system
+ *   prompt lúc PHIÊN BẮT ĐẦU, nên file thêm GIỮA phiên không xuất hiện. Nhưng đó là vấn đề THỜI ĐIỂM
+ *   chứ không phải vấn đề của file — và nó suýt bị chẩn đoán nhầm thành "frontmatter hỏng".
  *
- *   Vậy test này kiểm thứ kiểm được: KHUÔN của file, và LỜI HỨA trong đó có khớp thứ repo thật sự có
- *   hay không. Phần "Claude Code có nhận agent này không" phải xác nhận bằng một phiên mới, và việc đó
- *   ghi trong USER_GUIDE chứ không giả vờ đã kiểm ở đây.
+ *   Sau khi harness nạp lại, cả hai agent xuất hiện và đã được GỌI THẬT trên fixture offline:
+ *   `test-runner` trả đúng hợp đồng 3 phần (18 PASS, khớp 11+7 khi đối chiếu độc lập), `excel-convert`
+ *   ghi đúng 2 case vào `.xlsx` và trả NGUYÊN VĂN cảnh báo của script. Chi tiết, và phần CHƯA đo được
+ *   (model thật đã chạy là gì), nằm ở `docs/v2.4.1/AGENTS_VERIFY.md`.
+ *
+ *   Test này vẫn kiểm KHUÔN và LỜI HỨA — đó là thứ một spec offline kiểm được ở MỌI lượt chạy.
  *
  * VÌ SAO H6 ĐỨNG GẦN CUỐI: đo bằng `token:audit` cho thấy nó ảnh hưởng GIÁ, không ảnh hưởng số token
  * trong context. Nó không nằm trong nhóm có trần đo được như H1, H4, H5.
@@ -46,11 +49,16 @@ test.describe('@infra subagent — việc máy móc đi model rẻ', () => {
     const list = docAgents();
     expect(list.length, 'chưa có agent nào thì H6 chưa làm gì').toBeGreaterThan(0);
     for (const a of list) {
-      for (const k of ['name', 'description', 'model', 'tools']) {
+      for (const k of ['name', 'description', 'tools']) {
         expect(String(a.fm[k] || '').length, `${a.file}: thiếu khoá \`${k}\``).toBeGreaterThan(0);
       }
       expect(a.fm.name, `${a.file}: \`name\` phải khớp tên file`).toBe(a.file.replace(/\.md$/, ''));
-      expect(a.fm.model, `${a.file}: model "${a.fm.model}" lạ`).toMatch(MODEL_RE);
+      /*
+       * `model` là TUỲ CHỌN, cố ý. Việc máy móc đi model rẻ; việc cần suy luận — gỡ một case đỏ, đọc
+       * DOM, đoán nguyên nhân — thì KHÔNG được ghim model rẻ, để trống để nó thừa kế model mặc định.
+       * Ghim `haiku` cho việc suy luận là rẻ đi một chút, sai đi rất nhiều.
+       */
+      if (a.fm.model) expect(a.fm.model, `${a.file}: model "${a.fm.model}" lạ`).toMatch(MODEL_RE);
       expect(String(a.fm.description).length, `${a.file}: description phải nói rõ KHI NÀO dùng`)
         .toBeGreaterThan(40);
     }
@@ -95,4 +103,62 @@ test.describe('@infra subagent — việc máy móc đi model rẻ', () => {
     for (const a of docAgents()) expect(ug, `USER_GUIDE thiếu agent ${a.fm.name}`).toContain(a.fm.name);
     expect(ug, 'phải ghi rõ cần phiên mới mới nạp được định nghĩa agent').toMatch(/phiên mới/);
   });
+
+  test('KHÔNG có subagent mồ côi — mỗi agent phải được NHẮC ở ít nhất một workflow hoặc command', () => {
+    /*
+     * Một định nghĩa subagent không ai gọi thì nó chỉ chạy khi Claude TỰ chọn theo mô tả — tức là may
+     * rủi, không phải quy trình. Đúng tình trạng của `test-runner` và `excel-convert` ở v2.4.0:
+     * `REPORT.md` lúc đó ghi "chưa xác minh", và không workflow nào nhắc tới chúng.
+     *
+     * Nối ở WORKFLOW chứ không ở điểm vào: `.agent/workflows/**` không nằm trong phần nạp bắt buộc nên
+     * tốn 0 token, còn `.claude/commands/publish.md` là điểm vào của luồng publish — thêm chữ vào đó là
+     * vượt `moc` trong prompt_budget.json.
+     */
+    const noi = [
+      ...fs.readdirSync(path.join(REPO, '.agent/workflows')).map((f) => path.join(REPO, '.agent/workflows', f)),
+      ...fs.readdirSync(path.join(REPO, '.claude/commands')).map((f) => path.join(REPO, '.claude/commands', f)),
+    ].filter((f) => f.endsWith('.md')).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
+
+    const moCoi = docAgents().filter((a) => !noi.includes(a.fm.name));
+    expect(moCoi.map((a) => a.file), 'subagent không ai gọi thì chỉ chạy khi Claude tự chọn — may rủi, không phải quy trình').toEqual([]);
+  });
+
+  test('`load_map.json` khai subagent nào dùng ở bước nào, và bước đó phải CÓ THẬT', () => {
+    /* Lời khai trỏ vào một file không tồn tại là một bước ma: nhìn thì có quy trình, chạy thì không. */
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const map = require(path.join(REPO, '.agent/config/load_map.json'));
+    expect(map.subagent, '`load_map.json` chưa khai mục `subagent`').toBeTruthy();
+
+    for (const a of docAgents()) {
+      const k = map.subagent[a.fm.name];
+      expect(k, `load_map thiếu khai cho subagent ${a.fm.name}`).toBeTruthy();
+      expect(String(k.khong_lam || '').length, `${a.fm.name}: khai thiếu \`khong_lam\` — ranh giới phải đọc được bằng máy`).toBeGreaterThan(10);
+      for (const b of k.dung_o_buoc || []) {
+        const f = String(b).split(' ')[0];
+        expect(fs.existsSync(path.join(REPO, f)), `${a.fm.name}: khai dùng ở "${f}" mà file đó không tồn tại`).toBe(true);
+      }
+    }
+  });
+
+  test('việc CẦN SUY LUẬN không được ghim model rẻ', () => {
+    /*
+     * `case-debugger` đọc DOM và đoán nguyên nhân — đó là suy luận, không phải việc máy móc. Nó cố ý
+     * KHÔNG khai `model` để thừa kế mặc định. Ai đó ghim `haiku` vào đây để tiết kiệm thì test này đỏ.
+     */
+    const cd = docAgents().find((a) => a.fm.name === 'case-debugger');
+    expect(cd, 'thiếu subagent case-debugger — vòng gỡ một case đỏ vẫn nằm trong context chính').toBeTruthy();
+    expect(cd!.fm.model, 'case-debugger phải để trống `model` để thừa kế mặc định').toBeFalsy();
+    expect(cd!.body, 'phải cấm nới assertion — đây là chỗ dễ gian lận nhất khi gỡ case đỏ')
+      .toMatch(/KHÔNG n\u1edbi assertion|KHÔNG nới assertion/);
+    expect(cd!.body, 'phải cấm log Backlog').toMatch(/KHÔNG log Backlog/);
+  });
+
+  test('kết quả xác minh được GHI LẠI, kèm phần chưa đo được', () => {
+    const p = path.join(REPO, 'docs/v2.4.1/AGENTS_VERIFY.md');
+    expect(fs.existsSync(p), 'nối subagent mà không ghi lại bằng chứng đã gọi thử').toBe(true);
+    const d = fs.readFileSync(p, 'utf8');
+    expect(d, 'phải nói rõ còn chưa đo được gì').toContain('Giới hạn');
+    expect(d, 'model thật đã chạy là phần chưa đọc lại được — không được khai là đã kiểm').toMatch(/kh\u00f4ng \u0111\u1ecdc l\u1ea1i \u0111\u01b0\u1ee3c|không đọc lại được/);
+  });
+
 });

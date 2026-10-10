@@ -1,12 +1,8 @@
 {
   "_doc": "Mỗi bước của mỗi luồng nạp FILE NÀO, và file nào chỉ nạp KHI NÀO. NGUỒN DUY NHẤT — slash command và workflow trỏ vào đây thay vì tự liệt kê lại.",
-
   "_vi_sao": "Đo bằng `npm run prompt:budget`: chuỗi của `/phase1` có 56 file, tổng 143,2k token nếu đọc hết. Trong đó chỉ 5,7k là bắt buộc và 13,5k khai điều kiện rõ; còn **124k rơi vào cột chưa-phân-loại** vì câu chứa con trỏ không viết điều kiện ra. Máy không đọc được điều kiện thì agent phải đoán, và đoán rộng tay là nạp hết.",
-
   "_khong_phai_de_giam_token_truoc_tien": "Đo động cho thấy một lượt chạy task thật chỉ `Read` 0 đến 4 file tài liệu của kit, nên giá trị token trực tiếp của file này nhỏ. Giá trị thật là biến 124k chưa-phân-loại thành LỜI KHAI máy kiểm được: ai thêm file prompt mà không khai điều kiện nạp thì gate bắt được.",
-
   "_dieu_kien_viet_the_nao": "Trường `khi` là câu tiếng Việt cho người đọc. Trường `may_kiem` (nếu có) là dấu hiệu máy đo được — artifact tồn tại, hoặc khoá trong manifest. Không có `may_kiem` nghĩa là điều kiện này hiện chỉ người kiểm được, và nói thẳng ra thay vì giả vờ đã gác.",
-
   "luong": {
     "phase1": {
       "diem_vao": "prompt_templates/run_phase1_template.md",
@@ -15,13 +11,24 @@
         "prompt_templates/phase1/02_gen_testcases.md"
       ],
       "co_dieu_kien": [
-        { "file": "prompt_templates/phase1/02b_output_format.md", "khi": "Cuối lượt, lúc viết Summary Report và xuất Excel. KHÔNG nạp ở đầu lượt." },
-        { "file": "prompt_templates/phase1/03_gen_test_data.md", "khi": "Task cần bộ dữ liệu test sinh riêng, không dùng dữ liệu có sẵn." },
-        { "file": "prompt_templates/phase1/06_cross_module.md", "khi": "Scope chạm từ hai module trở lên." },
-        { "file": "prompt_templates/phase1/05_manual_quick.md", "khi": "Chạy nhánh Manual QUICK hoặc sub-mode CHECKLIST, KHÔNG phải pipeline chính." }
+        {
+          "file": "prompt_templates/phase1/02b_output_format.md",
+          "khi": "Cuối lượt, lúc viết Summary Report và xuất Excel. KHÔNG nạp ở đầu lượt."
+        },
+        {
+          "file": "prompt_templates/phase1/03_gen_test_data.md",
+          "khi": "Task cần bộ dữ liệu test sinh riêng, không dùng dữ liệu có sẵn."
+        },
+        {
+          "file": "prompt_templates/phase1/06_cross_module.md",
+          "khi": "Scope chạm từ hai module trở lên."
+        },
+        {
+          "file": "prompt_templates/phase1/05_manual_quick.md",
+          "khi": "Chạy nhánh Manual QUICK hoặc sub-mode CHECKLIST, KHÔNG phải pipeline chính."
+        }
       ]
     },
-
     "phase1_chieu_coverage": {
       "_doc": "20 chiều ở `prompt_templates/phase1/dimensions/`. Mở ĐÚNG chiều mà task khai `required`, không nạp cả 20.",
       "may_kiem": "requirements/dimension_manifest.json — khoá nào `required` thì mở file chiều đó",
@@ -48,7 +55,6 @@
         "db_persistence": "prompt_templates/phase1/dimensions/23_db_persistence.md"
       }
     },
-
     "publish": {
       "diem_vao": ".claude/commands/publish.md",
       "bat_buoc": [
@@ -56,30 +62,75 @@
       ],
       "co_dieu_kien": []
     },
-
     "phase2": {
       "diem_vao": "prompt_templates/run_phase2_template.md",
       "bat_buoc": [
         "prompt_templates/phase2/04_execute_fe_playwright.md"
       ],
       "co_dieu_kien": [
-        { "file": "prompt_templates/phase2/05_execute_api_playwright.md", "khi": "Bộ TC có case API.", "may_kiem": "dimension_manifest.dimensions.api = required, hoặc có case mang tag [API]" },
-        { "file": "prompt_templates/phase2/06_triage_review.md", "khi": "Có case FAIL cần triage." },
-        { "file": "prompt_templates/phase2/07_triage_flaky.md", "khi": "Có case xanh-đỏ không ổn định giữa các lượt rerun." },
-        { "file": "prompt_templates/phase2/08_log_bug_backlog.md", "khi": "Đã có bug qua Bug Claim Gate. KHÔNG nạp khi chưa có bug nào." }
+        {
+          "file": "prompt_templates/phase2/05_execute_api_playwright.md",
+          "khi": "Bộ TC có case API.",
+          "may_kiem": "dimension_manifest.dimensions.api = required, hoặc có case mang tag [API]"
+        },
+        {
+          "file": "prompt_templates/phase2/06_triage_review.md",
+          "khi": "Có case FAIL cần triage."
+        },
+        {
+          "file": "prompt_templates/phase2/07_triage_flaky.md",
+          "khi": "Có case xanh-đỏ không ổn định giữa các lượt rerun."
+        },
+        {
+          "file": "prompt_templates/phase2/08_log_bug_backlog.md",
+          "khi": "Đã có bug qua Bug Claim Gate. KHÔNG nạp khi chưa có bug nào."
+        }
       ]
     },
-
     "rerun": {
       "diem_vao": "prompt_templates/run_phase_re-run_template.md",
       "bat_buoc": [],
       "co_dieu_kien": [
-        { "file": "prompt_templates/phase2/04_execute_fe_playwright.md", "khi": "Case cần rerun là case FE." },
-        { "file": "prompt_templates/phase2/05_execute_api_playwright.md", "khi": "Case cần rerun là case API." },
-        { "file": "prompt_templates/phase2/08_log_bug_backlog.md", "khi": "Lượt rerun phát hiện bug mới, hoặc cần cập nhật bug cũ." }
+        {
+          "file": "prompt_templates/phase2/04_execute_fe_playwright.md",
+          "khi": "Case cần rerun là case FE."
+        },
+        {
+          "file": "prompt_templates/phase2/05_execute_api_playwright.md",
+          "khi": "Case cần rerun là case API."
+        },
+        {
+          "file": "prompt_templates/phase2/08_log_bug_backlog.md",
+          "khi": "Lượt rerun phát hiện bug mới, hoặc cần cập nhật bug cũ."
+        }
       ]
     }
   },
-
-  "_bay_da_biet": "Một file nằm trong `co_dieu_kien` của luồng này vẫn có thể là `bat_buoc` của luồng khác — `04_execute_fe_playwright.md` bắt buộc ở phase2 nhưng có điều kiện ở rerun. Spec kiểm theo TỪNG luồng, không gộp."
+  "_bay_da_biet": "Một file nằm trong `co_dieu_kien` của luồng này vẫn có thể là `bat_buoc` của luồng khác — `04_execute_fe_playwright.md` bắt buộc ở phase2 nhưng có điều kiện ở rerun. Spec kiểm theo TỪNG luồng, không gộp.",
+  "_subagent_la_gi": "Việc máy móc được giao cho subagent để vòng lặp đọc-kết-quả không nằm trong context chính. Mỗi lượt gọi tool ở context chính là một message kèm cả context (~510k token, đo 10/10/2026); subagent chạy trong context riêng rồi trả về vài trăm token tóm tắt. Định nghĩa ở `.claude/agents/`. Kết quả xác minh hợp đồng: `docs/v2.4.1/AGENTS_VERIFY.md`.",
+  "subagent": {
+    "test-runner": {
+      "dung_o_buoc": [
+        ".agent/workflows/phase2_03_execute_and_auto_heal.md bước 1"
+      ],
+      "viec": "Chạy spec của task, trả bản tóm tắt 3 phần.",
+      "khong_lam": "Không chấm verdict, không đọc results.json thô, không mở ảnh."
+    },
+    "case-debugger": {
+      "dung_o_buoc": [
+        ".agent/workflows/phase2_03_execute_and_auto_heal.md bước 4"
+      ],
+      "viec": "Gỡ MỘT case đỏ: đọc log và ảnh, soi DOM, sửa spec hoặc locator, chạy lại chính case đó.",
+      "khong_lam": "Không chấm verdict cuối, không log Backlog, không nới assertion, không sửa file shared."
+    },
+    "excel-convert": {
+      "dung_o_buoc": [
+        ".agent/workflows/phase1_03_validate_export_report.md",
+        ".agent/workflows/phase1_04_auto_publish_backlog.md"
+      ],
+      "viec": "Convert Markdown sang Excel, và ghi kết quả execute vào cột Result.",
+      "khong_lam": "Chỉ ghi cột Result; không upload Drive; không sửa Markdown nguồn; không chấm verdict.",
+      "_vi_sao_khong_khai_o_publish_md": "`.claude/commands/publish.md` là ĐIỂM VÀO của luồng publish, tức nằm trong phần nạp BẮT BUỘC. Thêm chữ vào đó là vượt `moc` trong prompt_budget.json và bị CHẶN. Nối ở workflow tương ứng thay vì ở điểm vào: workflow không nằm trong phần bắt buộc nên tốn 0 token."
+    }
+  }
 }

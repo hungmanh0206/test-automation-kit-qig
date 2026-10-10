@@ -13,7 +13,7 @@
   "_muon_them_chu_thi_sao": "CẮT BÙ trong CÙNG luồng. Nguồn bù chính là `.agent/rules/core_rules.md` (4,5k token, nạp mọi phiên) — rút về mỗi mục một dòng cộng con trỏ §, chi tiết giữ ở RULE_GLOBAL.md. Hạ mốc thì sửa số ở đây: đó là một việc thấy được trong diff, không phải một con số trôi đi trong im lặng.",
   "_cach_chot_lai_moc": "node scripts/qa/prompt_budget.js --moc  (in số đo hiện tại dưới dạng JSON để dán vào đây).",
   "moc": {
-    "phase1": 29763,
+    "phase1": 29589,
     "phase2": 30519,
     "publish": 8074,
     "rerun": 10753
@@ -42,5 +42,6 @@
     ".agent/rules/core_rules.md": 5000
   },
   "_the_chay_hien_tai": "Đo 10/10/2026: run_phase1 8,6k · run_phase2 13,4k · re-run 5,4k · 02_gen_testcases 13,9k · 04_execute_fe 11,6k · 08_log_bug 8,1k · 05_execute_api 6,5k · core_rules 4,5k.",
-  "_khong_noi_nguong": "Vượt ngưỡng thì CẮT NỘI DUNG, hoặc chuyển phần 'vì sao' sang `docs/rationale/`. KHÔNG nới số trong file này. Nới ngưỡng để cho xanh là đúng cái prompt gốc mục 0.3 cấm, và nó biến gate thành đồ trang trí."
+  "_khong_noi_nguong": "Vượt ngưỡng thì CẮT NỘI DUNG, hoặc chuyển phần 'vì sao' sang `docs/rationale/`. KHÔNG nới số trong file này. Nới ngưỡng để cho xanh là đúng cái prompt gốc mục 0.3 cấm, và nó biến gate thành đồ trang trí.",
+  "_moc_do_tu_dau": "Số đo trên WORKTREE SẠCH ở HEAD (`git worktree add --detach`), không đo trên cây làm việc. Bản ghi đầu (phase1 29763, phase2 30519, publish 8074, rerun 10753) đo trên cây làm việc khi `tok()` CÒN ĐẾM CẢ KÝ TỰ CRLF. Cùng một commit đo ra hai số lệch 175 token, vì `git worktree` trên Windows checkout ra CRLF còn vài file trong cây làm việc là LF. Một mốc như vậy chặn oan người checkout mới, và KHÔNG chặn người thực sự thêm chữ. Đã vá `tok()`: chuẩn hoá `\\r\\n` trước khi đếm, cùng cách `writing_lint.js` đã làm từ 28/09/2026."
 }

@@ -85,7 +85,17 @@ const docKhai = (p) => {
   if (!t) thieuKhai.push(path.relative(REPO, p).replace(/\\/g, '/'));
   return t;
 };
-const tok = (s) => s.length / CHARS_PER_TOK;
+/*
+ * CHUAN HOA XUONG DONG TRUOC KHI DEM. Repo dung CRLF, va mot file 380 dong mang theo 380 byte ``
+ * thuan tuy do xuong dong -- khoang 119 token.
+ *
+ * Day la loi that cua chinh gate nay, bat duoc 10/10/2026: `moc` ghi tu cay lam viec (mot so file LF)
+ * trong khi `git worktree add` tren Windows checkout ra CRLF, nen cung MOT commit do ra hai so lech
+ * 175 token. Mot moc nhu vay chan oan nguoi checkout moi, va KHONG chan nguoi that su them chu.
+ *
+ * `writing_lint.js` da hoc dung bai nay tu 28/09/2026 (xem ghi chu trong `prose()`).
+ */
+const tok = (s) => String(s).replace(/\r\n?/g, '\n').length / CHARS_PER_TOK;
 const rel = (p) => path.relative(REPO, p).replace(/\\/g, '/');
 
 const trongDocRoot = (r) => DOC_ROOTS.some((d) => r === d || r.startsWith(`${d}/`));

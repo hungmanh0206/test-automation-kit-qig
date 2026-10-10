@@ -36,7 +36,7 @@ Framework:
 - Testcase output: cập nhật `Status` = PASS/FAIL/SKIP và `Actual Result` sau execution.
 
 Input:
-- Test Cases: nguồn canonical local `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-sheet/*.xlsx`. Agent tải bản MỚI NHẤT về từ Google Sheet qua Drive MCP ở Bước 0, TRƯỚC mỗi lượt execute. Không còn khái niệm mirror cũ hay mới như công cụ trước: luôn tải lại. Execute đọc file local — không gọi Drive/Backlog cho từng case.
+- Test Cases: nguồn canonical local `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-cases/from-sheet/*.xlsx`. Agent tải bản MỚI NHẤT về từ Google Sheet qua Drive MCP ở Bước 0, TRƯỚC mỗi lượt execute. Luôn tải lại. Execute đọc file local — không gọi Drive/Backlog cho từng case.
 - URL: [URL staging]
 - Credentials: lấy từ env variables, không hardcode credential.
   - **Login helper dùng chung**: mỗi app 1 helper ở `tests/fe/support/<app>Login.ts` (+ `support/auth/` cho reuse-session). Login ĐÚNG 1 LẦN/worker rồi cache/reuse — nhiều hệ thống khoá theo SỐ LẦN đăng nhập (throttle/lockout).

@@ -249,4 +249,50 @@ test.describe('@infra prompt:budget --enforce', () => {
     }
   });
 
+
+  test('XUỐNG DÒNG không được làm đổi số đo — CRLF và LF phải ra cùng một con số', () => {
+    /*
+     * LỖI THẬT của chính gate này, bắt được 10/10/2026.
+     *
+     * `tok()` đếm cả ký tự `\r`. Một file 380 dòng mang theo 380 byte thuần tuý do xuống dòng, khoảng
+     * 119 token. `git worktree add` trên Windows checkout ra CRLF, còn vài file trong cây làm việc là LF,
+     * nên CÙNG MỘT COMMIT đo ra hai số lệch 175 token.
+     *
+     * Hậu quả đúng kiểu tệ nhất: mốc chặn OAN người vừa checkout, và KHÔNG chặn người thực sự thêm chữ.
+     * `writing_lint.js` đã học đúng bài này từ 28/09/2026 (ghi chú trong `prose()`), gate này thì chưa.
+     */
+    const noiDung = Array.from({ length: 200 }, (_, i) => `dòng số ${i} có nội dung`).join('\n');
+    const d = fs.mkdtempSync(path.join(os.tmpdir(), 'eol-'));
+    const aLf = path.join(d, 'lf.md');
+    const bCrlf = path.join(d, 'crlf.md');
+    fs.writeFileSync(aLf, noiDung, 'utf8');
+    fs.writeFileSync(bCrlf, noiDung.replace(/\n/g, '\r\n'), 'utf8');
+
+    try {
+      /* Gọi thẳng `tok` qua một tiến trình con — đo ĐÚNG hàm gate dùng, không dựng lại phép đếm ở đây. */
+      const js = `
+        const fs = require('fs');
+        const CHARS_PER_TOK = 3.2;
+        const src = fs.readFileSync(${JSON.stringify(BUDGET)}, 'utf8');
+        const m = src.match(/const tok = ([^;]+);/);
+        if (!m) { console.log('KHONG TIM THAY tok'); process.exit(3); }
+        const tok = eval(m[1]);
+        const a = tok(fs.readFileSync(${JSON.stringify(aLf)}, 'utf8'));
+        const b = tok(fs.readFileSync(${JSON.stringify(bCrlf)}, 'utf8'));
+        console.log(JSON.stringify({ lf: a, crlf: b }));
+      `;
+      const r = spawnSync(process.execPath, ['-e', js], { cwd: REPO, encoding: 'utf8', env: gateEnv() });
+      const out = `${r.stdout || ''}`.trim();
+      expect(out, `${r.stderr || ''}`).toMatch(/^\{/);
+      const { lf, crlf } = JSON.parse(out);
+      expect(crlf, 'CRLF và LF phải ra cùng số — khác nhau là mốc chặn oan theo kiểu checkout').toBe(lf);
+    } finally { fs.rmSync(d, { recursive: true, force: true }); }
+  });
+
+  test('MỐC phải đo trên worktree SẠCH, và config phải nói rõ điều đó', () => {
+    /* Mốc đo trên cây làm việc là mốc của một cây không ai khác có — đúng lỗi đã mắc một lần ở đây. */
+    expect(String(CFG._moc_do_tu_dau || ''), 'config phải khai mốc đo ở đâu').toMatch(/worktree/i);
+    expect(String(CFG._moc_do_tu_dau || ''), 'phải ghi lại cả lần đo sai, không xoá dấu vết').toMatch(/CRLF/);
+  });
+
 });
