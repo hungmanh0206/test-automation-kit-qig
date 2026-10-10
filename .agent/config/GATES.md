@@ -3,7 +3,7 @@
 > **SINH TỰ ĐỘNG** bởi `node scripts/qa/gate_index.js --write`. Đừng sửa tay — `--check` sẽ chặn khi
 > bảng lệch source. Cột **Mức** suy từ code: `exit 1` = CHẶN · ghi artifact = SINH · chỉ in = BÁO CÁO.
 
-Tổng **94** máy — **67 CHẶN** · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in).
+Tổng **95** máy — **67 CHẶN** · 18 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in).
 
 SINH/BÁO CÁO **không phải gate bị nới** — chúng không kiểm vi phạm. Ví dụ `bugs:checklist` in brief bug
 lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` §20).
@@ -84,6 +84,7 @@ lịch sử, còn việc CHẶN nằm ở `dim:coverage` (chiều `bug_history` 
 | SINH | `explore:charter` | CHỌN VÙNG DÒ BẰNG DỮ LIỆU, không bằng cảm tính. | `scripts/qa/explore_charter.js` | exploratory · .claude/commands |
 | SINH | `ui:contract` | biến DESIGN thành ORACLE MÁY ĐỌC ĐƯỢC (`knowledge/system/UI-*.json`). | `scripts/qa/figma_to_ui_contract.js` | RULE_GLOBAL.md · README.md · .agent/rules |
 | SINH | `knowledge:backup` | sao lưu / khôi phục các store knowledge KHÔNG NẠP LẠI ĐƯỢC. | `scripts/qa/knowledge_backup.js` | .gitlab-ci.yml · README.md · QUICKSTART.md · .github/workflows · .agent/workflows · prompt_templates · tests/fe/infra |
+| SINH | `knowledge:bootstrap` | DỰNG KHUNG `domain/` ở trạng thái `draft`, để kho không ở lại rỗng. | `scripts/qa/knowledge_bootstrap.js` | tests/fe/infra |
 | SINH | `learn:report` | trả lời câu "chạy task này thì đã HỌC được gì?". | `scripts/qa/learn_report.js` | README.md · prompt_templates |
 | SINH | `learn`, `learn:backfill` | MẮT XÍCH HỌC còn thiếu: biến kết quả execute của 1 task thành learning data. | `scripts/qa/learn_task.js` | RULE_GLOBAL.md · README.md · USER_GUIDE.md · QUICKSTART.md · scripts/qa/README.md · .agent/workflows · .agent/skills · prompt_templates |
 | SINH | `metrics:collect` | thu KPI mỗi lần chạy test → knowledge/metrics/ (tích luỹ theo thời gian). | `scripts/qa/metrics_collect.js` | README.md |
