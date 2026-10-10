@@ -165,6 +165,13 @@ const TERMS_GATE2 = [
   trap:'Spec theo task thì không track vào repo. Nightly chỉ chạy tests/fe/infra.',
   src:'scripts/qa/ci_scope_check.js', rel:['r-uat','c-non-destructive','r-scope','g-test_inventory_gate'] },
 
+{ id:'g-rule_parity', t:'rule_parity', cat:'gate',
+  def:'Rút gọn core_rules.md mà không được làm mất luật nào.',
+  detail:'Hai phép: tên luật không biến mất so với mốc, và MỖI luật phải có con trỏ GIẢI ĐƯỢC tới nơi giữ chi tiết — một mục có thật trong RULE_GLOBAL, hoặc một file có thật. Phép thứ hai mới là phép thật: giữ cái tên rồi xoá sạch nội dung vẫn qua được phép thứ nhất.',
+  why:'core_rules.md auto-load mọi phiên nên nó là chỗ đắt nhất của kit, nhưng rút một file luật là thao tác dễ mất mát nhất và mất mát không tự lộ ra. Dựng máy trước khi cắt thì thấy ngay 7 trong 35 luật trỏ tới mục RULE_GLOBAL không tồn tại — sai từ trước, và rút gọn chúng lúc đó là xoá luật.',
+  cmd:'npm run rule:parity   ·   npm run rule:parity:enforce   ·   --lock để chốt mốc',
+  src:'scripts/qa/rule_parity.js', rel:['g-phase_check','g-prompt_budget'] },
+
 { id:'g-phase_check', t:'phase_check', cat:'gate',
   def:'Bó các gate của một phase vào MỘT lượt gọi.',
   detail:'Phase 1 bó 4 bước, phase 2 bó 5 bước. Nó KHÔNG tự kiểm gì — chỉ spawn đúng script gốc rồi gom kết quả, nên chạy bó và chạy rời cho cùng exit code và cùng tập vi phạm theo cấu trúc. Bước BÁO CÁO không làm đỏ cả bó.',

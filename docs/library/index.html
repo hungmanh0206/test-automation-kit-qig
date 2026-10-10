@@ -862,7 +862,7 @@ body.lropen{overflow:hidden}
 
     <h3 class="subhead"><span class="num">5</span>Lệnh hay dùng</h3>
     <p class="sectip">Danh mục gate của kit là <b>tự sinh từ source</b>, không viết tay — bản hiện tại đếm được
-      <b>88 máy: 61 CHẶN · 17 SINH · 10 BÁO CÁO</b>. Sinh lại bằng <code>npm run gates:index</code>.
+      <b>89 máy: 62 CHẶN · 17 SINH · 10 BÁO CÁO</b>. Sinh lại bằng <code>npm run gates:index</code>.
       Phiên bản kit: <b>2.4.0</b>.</p>
     <div id="cmdList"></div>
 
@@ -994,7 +994,7 @@ body.lropen{overflow:hidden}
       </ul>
 
       <h3>Vì sao cần</h3>
-      <p>Kit có 23 skill, 88 máy kiểm (58 trong đó CHẶN thật) và một bộ từ vựng riêng (oracle độc lập, tautology, failureLayer,
+      <p>Kit có 23 skill, 89 máy kiểm (59 trong đó CHẶN thật) và một bộ từ vựng riêng (oracle độc lập, tautology, failureLayer,
         readiness, TRI, chiều coverage…). Người mới vào phải đọc rải rác nhiều file mới ghép được bức tranh.
         Trang này gom lại một chỗ, giữ nguyên nguồn, và cố tình <b>không</b> diễn giải thêm ngoài những gì repo đã ghi.</p>
 
@@ -1581,6 +1581,13 @@ const TERMS_GATE2 = [
   trap:'Spec theo task thì không track vào repo. Nightly chỉ chạy tests/fe/infra.',
   src:'scripts/qa/ci_scope_check.js', rel:['r-uat','c-non-destructive','r-scope','g-test_inventory_gate'] },
 
+{ id:'g-rule_parity', t:'rule_parity', cat:'gate',
+  def:'Rút gọn core_rules.md mà không được làm mất luật nào.',
+  detail:'Hai phép: tên luật không biến mất so với mốc, và MỖI luật phải có con trỏ GIẢI ĐƯỢC tới nơi giữ chi tiết — một mục có thật trong RULE_GLOBAL, hoặc một file có thật. Phép thứ hai mới là phép thật: giữ cái tên rồi xoá sạch nội dung vẫn qua được phép thứ nhất.',
+  why:'core_rules.md auto-load mọi phiên nên nó là chỗ đắt nhất của kit, nhưng rút một file luật là thao tác dễ mất mát nhất và mất mát không tự lộ ra. Dựng máy trước khi cắt thì thấy ngay 7 trong 35 luật trỏ tới mục RULE_GLOBAL không tồn tại — sai từ trước, và rút gọn chúng lúc đó là xoá luật.',
+  cmd:'npm run rule:parity   ·   npm run rule:parity:enforce   ·   --lock để chốt mốc',
+  src:'scripts/qa/rule_parity.js', rel:['g-phase_check','g-prompt_budget'] },
+
 { id:'g-phase_check', t:'phase_check', cat:'gate',
   def:'Bó các gate của một phase vào MỘT lượt gọi.',
   detail:'Phase 1 bó 4 bước, phase 2 bó 5 bước. Nó KHÔNG tự kiểm gì — chỉ spawn đúng script gốc rồi gom kết quả, nên chạy bó và chạy rời cho cùng exit code và cùng tập vi phạm theo cấu trúc. Bước BÁO CÁO không làm đỏ cả bó.',
@@ -1651,7 +1658,7 @@ const TERMS_GATE3 = [
   src:'scripts/qa/scope_anchor.js', rel:['g-dimension_coverage','c-canonical','g-preflight_gate'] },
 { id:'g-gate_index', t:'gates:index', cat:'gate',
   def:'Sinh DANH MỤC GATE của kit từ chính source. Trả lời được "kit có bao nhiêu gate, mỗi cái CHẶN gì, gọi ở đâu".',
-  detail:'Quét source rồi suy mức từ code: exit 1 là CHẶN · ghi artifact là SINH · chỉ in là BÁO CÁO. Bảng hiện tại: 88 máy — 61 CHẶN, 17 SINH, 10 BÁO CÁO. Bản --check chặn khi bảng lệch source.',
+  detail:'Quét source rồi suy mức từ code: exit 1 là CHẶN · ghi artifact là SINH · chỉ in là BÁO CÁO. Bảng hiện tại: 89 máy — 62 CHẶN, 17 SINH, 10 BÁO CÁO. Bản --check chặn khi bảng lệch source.',
   why:'Kit có hơn 30 npm script dạng gate và gần 60 file trong scripts/qa/, nhưng không chỗ nào trả lời được câu trên. Hệ quả không phải bất tiện: luận đề của kit là "luật cần MÁY", mà máy không LIỆT KÊ ĐƯỢC thì không kiểm toán được. Không ai biết một gate đã âm thầm tụt thành cảnh báo, hay đã mất nơi gọi.',
   how:['npm run gates:index để sinh lại bảng.','npm run gates:index:check để chặn khi bảng lệch source.'],
   cmd:'npm run gates:index   ·   npm run gates:index:check',
@@ -2862,7 +2869,7 @@ const TERMS_FLOW2 = [
 
 { id:'f-gate-catalog', t:'Danh mục gate (tự sinh)', cat:'flow',
   def:'Bảng liệt kê mọi máy của kit kèm mức chặn, sinh tự động từ source.',
-  detail:'Con số hiện tại: 88 máy — 61 CHẶN · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in). Mức được suy từ code chứ không khai tay: exit 1 là CHẶN, ghi artifact là SINH, chỉ in là BÁO CÁO. Bảng còn ghi mỗi máy được gọi từ đâu, và ghi ra .agent/config/GATES.md.',
+  detail:'Con số hiện tại: 89 máy — 62 CHẶN · 17 SINH (ghi artifact) · 10 BÁO CÁO (chỉ in). Mức được suy từ code chứ không khai tay: exit 1 là CHẶN, ghi artifact là SINH, chỉ in là BÁO CÁO. Bảng còn ghi mỗi máy được gọi từ đâu, và ghi ra .agent/config/GATES.md.',
   why:'Luận đề của kit là "luật cần MÁY". Nhưng máy mà không liệt kê được thì không kiểm toán được. Không ai biết một gate đã âm thầm tụt xuống thành cảnh báo, hay đã mất hết nơi gọi và thành mồ côi.',
   how:['Sinh lại: npm run gates:index.','Chặn khi bảng lệch source: npm run gates:index:check.'],
   trap:'SINH và BÁO CÁO không phải gate bị nới. Chúng không kiểm vi phạm, chỉ tạo dữ liệu cho máy khác chặn.',
@@ -3150,7 +3157,7 @@ const CMD_GROUPS = [
     ['npm run merge:execution-status -- --task <KEY>','Ghép kết quả execute vào bộ canonical']
   ]},
   { g:'Kit: tự kiểm toán & phát hành', items:[
-    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 88 máy, 61 CHẶN; :check chặn khi bảng lệch source'],
+    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 89 máy, 62 CHẶN; :check chặn khi bảng lệch source'],
     ['npm run rule -- <mục>  ·  npm run rule:toc','Tra RULE_GLOBAL theo mục (287 token) thay vì đọc cả file (12,8k)'],
     ['npm run version:check','Chặn phát hành thiếu số phiên bản; kiểm khớp tag'],
     ['npm run package:kit','Đóng gói dist/ CHỈ lớp GENERIC — không để lọt secret hay oracle của dự án khác'],
