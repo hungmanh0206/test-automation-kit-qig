@@ -222,15 +222,14 @@ Trước khi execute, phải rà soát prompt/template/executor hiện tại và
    - Fail/skip đến từ product bug, automation/harness, test data, setup/environment, dependency, mock/stub, timeout, flaky hay prompt chưa rõ.
 9. Nếu FAIL/SKIP do setup, dữ liệu test, mock, timeout, dependency, auth, locator, cleanup hoặc execute flow, phải sửa và rerun.
 10. Nếu FAIL còn lại là product/API contract issue, phải rerun testcase fail ít nhất 2-3 lần hoặc đủ để loại trừ flaky/setup trước khi kết luận.
-10b. **Bug Claim Gate — kiểm chứng đi TRƯỚC lời nói** (RULE_GLOBAL §Bug Claim Gate). Trước khi dùng
-    chữ "bug" trong hội thoại, viết claim rồi cho máy kiểm:
+10b. **Bug Claim Gate — kiểm chứng đi TRƯỚC lời nói** (RULE_GLOBAL §Bug Claim Gate). Trước khi nói chữ "bug", viết claim rồi cho máy kiểm:
     `npm run bug:claim:new -- --new <TC_ID>` tạo nháp → điền đủ → `npm run bug:claim`.
-    Claim phải có oracle độc lập kèm trích nguyên văn, expected và actual là giá trị, rerun ổn định,
-    tầng FE hay BE kèm phép đo, và ba phản chứng: tài liệu cũ hơn build, dụng cụ đọc sai, fixture
-    dựng không tự nhiên. Mỗi phản chứng phải dẫn một phép đo.
+    Claim cần oracle độc lập có trích nguyên văn, expected/actual là GIÁ TRỊ, rerun ổn định, tầng kèm phép
+    đo, ba phản chứng mỗi cái dẫn một phép đo — gate tự gọi tên trường thiếu.
     Chưa qua máy thì gọi là **quan sát bất thường**, và câu hỏi cho user là "có log không", không
-    phải "có phải bug không". Rút claim thì ghi `status: withdrawn` kèm `withdrawn_by_check` và hạ
-    verdict trong `testcase-status.json` cho khớp. Đếm bằng `npm run bug:claim:report`.
+    phải "có phải bug không". Rút claim: `status: withdrawn` + `withdrawn_by_check`, và hạ verdict trong
+    `testcase-status.json` cho khớp. Đếm bằng `npm run bug:claim:report`.
+    **Retest bug cũ:** ghi `retest[]`, lượt đầu `npm run bug:claim:chot`; `CANNOT_VERIFY` KHÔNG đóng bug.
 11. Lưu Playwright JSON/HTML/evidence dưới:
     `<PROJECT_OUTPUT_DIR>/tasks/[TASK_KEY]/test-results/`
 11b. **Cổng review hiển thị/visual (BẮT BUỘC nếu scope có UI)**: sau khi có screenshot, với MỖI màn đối chiếu (a) DOM-extract toàn bộ tên cột/label/format và (b) ảnh full-page vs `requirements/ui_catalog.md` + Figma/FS; liệt kê **MỌI deviation** (tên cột sai, format sai, thiếu/thừa/sai thứ tự cột, thiếu field, spacing/màu/radius/font lệch). Chụp full-page/scroll ngang để không sót cột. **KHÔNG tự lọc "lỗi nhỏ"**; mỗi deviation là 1 finding ứng viên, map về TC Conformance/Design tương ứng và ghi FAIL nếu lệch spec. Text-step automation không "nhìn" được toàn cảnh — nếu có vision-model/visual-diff thì dùng; nếu không, review ảnh có cấu trúc theo từng dòng của catalog (không bỏ dòng nào).

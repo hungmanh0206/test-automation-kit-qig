@@ -120,5 +120,34 @@
     ],
     "evidence": "Bug so sánh hai nơi phải có evidence GHÉP cả hai (Ops vs Checkout, form vs payload) trong cùng một ảnh, khoanh vùng từng bên.",
     "why": "Gán sai tầng làm ticket đi nhầm người, dev bounce lại, mất một vòng lặp."
+  },
+  "retest": {
+    "_why": "Vòng đời RETEST của một BUG, nhận của A (qig-qa-automation) ở v2.5.0 G1.8. Khác hẳn statuses ở trên: statuses là verdict của một CASE trong một lượt chạy, còn đây là kết quả kiểm lại một bug ĐÃ LOG trên một build mới. Trước đợt này kit không có khái niệm này, nên \"đã fix chưa\" được trả lời bằng chữ trong hội thoại, không có trạng thái nào máy đọc được.",
+    "_luat_goc_cua_A": "Lịch sử retest là phần DUY NHẤT được thêm vào một bug sau khi đã log. Mọi mục khác (expected, actual, tầng, evidence, phép phản chứng) là bằng chứng TẠI THỜI ĐIỂM PHÁT HIỆN — sửa chúng cho khớp build mới là xoá dấu vết của chính thứ đã được báo. Máy gác: bug_claim.js chốt băm của khối bằng chứng khi retest đầu tiên xuất hiện.",
+    "states": {
+      "FIXED": {
+        "coTheDong": true,
+        "meaning": "Kiểm lại trên build mới: hành vi đã đúng theo ĐÚNG oracle của bug gốc, không phải theo một oracle khác."
+      },
+      "NOT_FIXED": {
+        "coTheDong": false,
+        "meaning": "Lỗi còn nguyên. Không log bug mới — ghi thêm một lượt retest vào bug cũ."
+      },
+      "PARTIAL": {
+        "coTheDong": false,
+        "meaning": "Một phần đã đúng, phần còn lại chưa. Phải ghi RÕ phần nào còn sai, vì \"đã fix một phần\" mà không nói phần nào thì lượt sau không ai kiểm được."
+      },
+      "CANNOT_VERIFY": {
+        "coTheDong": false,
+        "meaning": "Không dựng lại được tình huống trên build này (thiếu dữ liệu, thiếu quyền, màn đổi). KHÔNG phải FIXED, và KHÔNG được dùng để đóng bug — đúng nguyên tắc \"không phán được KHÔNG thành PASS\"."
+      }
+    },
+    "bat_buoc_moi_luot": [
+      "at",
+      "build",
+      "result",
+      "evidence"
+    ],
+    "_bat_buoc_vi_sao": "build bắt buộc vì một retest không ghi build là một câu không kiểm lại được: cùng một bug cho hai kết quả khác nhau trên hai build là chuyện thường. evidence theo non-negotiable §4 — ảnh hoặc video, không nhận .json/.md/.txt/.log/.html/.csv."
   }
 }

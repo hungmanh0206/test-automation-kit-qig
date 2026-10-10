@@ -38,12 +38,12 @@
 | 3 | [Inputs](#inputs) | 90-102 | 332 | npm run rule -- 3 |
 | 4 | [Outputs](#outputs) | 103-147 | 743 | npm run rule -- 4 |
 | 5 | &nbsp;&nbsp;[Giọng văn output](#giọng-văn-output) | 115-147 | 451 | npm run rule -- 5 |
-| 6 | [Rules](#rules) | 148-692 | 13033 | npm run rule -- 6 |
+| 6 | [Rules](#rules) | 148-723 | 13649 | npm run rule -- 6 |
 | 7 | &nbsp;&nbsp;[Language](#language) | 150-156 | 80 | npm run rule -- 7 |
 | 8 | &nbsp;&nbsp;[Security](#security) | 157-170 | 498 | npm run rule -- 8 |
 | 9 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 171-182 | 284 | npm run rule -- 9 |
 | 10 | &nbsp;&nbsp;[Parallel Story Safety](#parallel-story-safety) | 183-199 | 260 | npm run rule -- 10 |
-| 11 | &nbsp;&nbsp;[Phase-Separated Story Execution](#phase-separated-story-execution) | 200-226 | 1975 | npm run rule -- 11 |
+| 11 | &nbsp;&nbsp;[Phase-Separated Story Execution](#phase-separated-story-execution) | 200-226 | 2062 | npm run rule -- 11 |
 | 12 | &nbsp;&nbsp;[Task-Scoped Automation Code](#task-scoped-automation-code) | 227-237 | 314 | npm run rule -- 12 |
 | 13 | &nbsp;&nbsp;[Shared Change Gate](#shared-change-gate) | 238-252 | 391 | npm run rule -- 13 |
 | 14 | &nbsp;&nbsp;[Automation Promote Review](#automation-promote-review) | 253-261 | 160 | npm run rule -- 14 |
@@ -55,20 +55,20 @@
 | 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 546-560 | 307 | npm run rule -- 20 |
 | 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 561-572 | 629 | npm run rule -- 21 |
 | 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 573-584 | 396 | npm run rule -- 22 |
-| 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 585-618 | 530 | npm run rule -- 23 |
-| 24 | &nbsp;&nbsp;[Backlog Bug Gate](#backlog-bug-gate) | 619-628 | 154 | npm run rule -- 24 |
-| 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 629-641 | 397 | npm run rule -- 25 |
-| 26 | &nbsp;&nbsp;[Automation quality](#automation-quality) | 642-655 | 215 | npm run rule -- 26 |
-| 27 | &nbsp;&nbsp;[Reporting](#reporting) | 656-666 | 170 | npm run rule -- 27 |
-| 28 | &nbsp;&nbsp;[Setup Strategy](#setup-strategy) | 667-680 | 207 | npm run rule -- 28 |
-| 29 | &nbsp;&nbsp;[Push execution](#push-execution) | 681-692 | 167 | npm run rule -- 29 |
-| 30 | [Workflow](#workflow) | 693-706 | 43 | npm run rule -- 30 |
-| 31 | [Chi phí một lượt chạy — đếm SỐ LƯỢT, không đếm độ dài](#chi-phí-một-lượt-chạy-đếm-số-lượt-không-đếm-độ-dài) | 707-737 | 477 | npm run rule -- 31 |
-| 32 | [Cleanup Rules](#cleanup-rules) | 738-765 | 388 | npm run rule -- 32 |
-| 33 | [Examples](#examples) | 766-773 | 80 | npm run rule -- 33 |
-| 34 | [References](#references) | 774-782 | 84 | npm run rule -- 34 |
+| 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 585-649 | 1059 | npm run rule -- 23 |
+| 24 | &nbsp;&nbsp;[Backlog Bug Gate](#backlog-bug-gate) | 650-659 | 154 | npm run rule -- 24 |
+| 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 660-672 | 397 | npm run rule -- 25 |
+| 26 | &nbsp;&nbsp;[Automation quality](#automation-quality) | 673-686 | 215 | npm run rule -- 26 |
+| 27 | &nbsp;&nbsp;[Reporting](#reporting) | 687-697 | 170 | npm run rule -- 27 |
+| 28 | &nbsp;&nbsp;[Setup Strategy](#setup-strategy) | 698-711 | 207 | npm run rule -- 28 |
+| 29 | &nbsp;&nbsp;[Push execution](#push-execution) | 712-723 | 167 | npm run rule -- 29 |
+| 30 | [Workflow](#workflow) | 724-737 | 43 | npm run rule -- 30 |
+| 31 | [Chi phí một lượt chạy — đếm SỐ LƯỢT, không đếm độ dài](#chi-phí-một-lượt-chạy-đếm-số-lượt-không-đếm-độ-dài) | 738-768 | 477 | npm run rule -- 31 |
+| 32 | [Cleanup Rules](#cleanup-rules) | 769-796 | 388 | npm run rule -- 32 |
+| 33 | [Examples](#examples) | 797-804 | 80 | npm run rule -- 33 |
+| 34 | [References](#references) | 805-813 | 84 | npm run rule -- 34 |
 
-> Cả file ~16865 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
+> Cả file ~17481 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
 <!-- MỤC-LỤC:KẾT-THÚC -->
 
 ## Purpose
@@ -615,6 +615,37 @@ Máy: `npm run bug:claim` chặn hai chiều. Chiều xuôi là claim thiếu tr
 Giới hạn cần biết: máy đếm được ba phản chứng nhưng không đọc được ý định. `npm run bug:claim:report`
 đếm tỉ lệ claim bị rút và phép kiểm nào bắt được nhiều nhất. Con số đó mới nói được kỷ luật có thật hay
 chỉ là thủ tục.
+
+#### Retest một bug đã log (thêm 10/10/2026, v2.5.0 G1.8)
+
+Bốn trạng thái, nguồn duy nhất ở `.agent/config/verdict_taxonomy.json` → `retest.states`:
+
+- **`FIXED`** — hành vi đã đúng theo ĐÚNG oracle của bug gốc, không phải theo một oracle khác. Trạng thái
+  DUY NHẤT được dùng để đóng bug.
+- **`NOT_FIXED`** — lỗi còn nguyên. **Không log bug mới**: ghi thêm một lượt retest vào bug cũ.
+- **`PARTIAL`** — một phần đúng, phần còn lại chưa. Bắt buộc ghi `con_sai`, vì "đã fix một phần" mà không
+  nói phần nào thì lượt sau không ai kiểm được.
+- **`CANNOT_VERIFY`** — không dựng lại được tình huống trên build này. **KHÔNG phải FIXED và không đóng
+  được bug**, đúng nguyên tắc "không phán được KHÔNG thành PASS".
+
+Mỗi lượt retest bắt buộc có `at` · `build` · `result` · `evidence` (ảnh hoặc video — non-negotiable §4).
+`build` bắt buộc vì cùng một bug cho hai kết quả khác nhau trên hai build là chuyện thường, nên một lượt
+retest không ghi build là một câu không kiểm lại được.
+
+**Lịch sử retest là phần DUY NHẤT được thêm vào một bug sau khi đã log.** Mọi mục khác — `expected`,
+`actual`, tầng, phép phản chứng — là bằng chứng TẠI THỜI ĐIỂM PHÁT HIỆN; sửa chúng cho khớp build mới là
+xoá dấu vết của chính thứ đã được báo. Máy gác bằng băm: `npm run bug:claim:chot` chốt khối bằng chứng một
+lần cho mỗi bug, sau đó `bug:claim` CHẶN nếu khối đó đổi. Chốt là lệnh RIÊNG, không gộp vào `--check`: một
+bộ kiểm tự sửa file nó đang kiểm thì lần sau không ai tin nó đã kiểm cái gì.
+
+Trường `build` của chính claim (lần phát hiện) hiện ở mức **cảnh báo**, theo cờ `requireBuild` trong
+`bug_claim.json` — đo 10/10/2026 là 0 trong 107 claim đang có khai trường này, nên chặn ngay sẽ làm đỏ 105
+claim đang sống rồi gate bị tắt. Cờ đó có đường siết, và khi còn ở mức cảnh báo thì gate phải nói ra là
+luật chưa được gác.
+
+Kit **không có** đường nào đổi trạng thái issue Backlog — nó chỉ ĐỌC (lọc `statusId: [1, 2]` để chống
+trùng). Nên luật "`CANNOT_VERIFY` không bao giờ chuyển Backlog sang Done" hiện được bảo đảm bằng CẤU TRÚC;
+`tests/fe/infra/bug-retest.spec.ts` khoá cấu trúc đó, và ai thêm đường đóng issue sẽ làm test đó đỏ.
 
 ### Backlog Bug Gate
 

@@ -53,5 +53,9 @@
     "minLayerProbeChars": 20
   },
 
+  "requireBuild": "warn",
+  "_requireBuild_vi_sao": "Mức CHẶN cho trường `build` của claim (v2.5.0 G1.8). Đo 10/10/2026: 0 trong 107 claim đang có mang trường này, nên bật `block` ngay là làm đỏ 105 claim đang sống rồi gate bị tắt — đúng lớp lỗi 'gate báo oan thì người ta tắt nó, chứ không sửa theo nó'. Ở mức `warn` gate PHẢI nói ra là luật chưa được gác, không im lặng.",
+  "_requireBuild_cach_siet": "Khi các claim đang mở đã khai `build` (đếm bằng `npm run bug:claim:report`), đổi thành \"block\". RIÊNG claim có `retest` thì `build` luôn bắt buộc và KHÔNG qua cờ này — một lượt retest không ghi build là một câu không kiểm lại được, và đo được là 0/107 claim có `retest` nên luật đó không làm đỏ claim cũ nào.",
+
   "_gioi_han": "Gate này KHÔNG phán được phản chứng có thật lòng hay không. Nó chỉ ép có mặt và ép dẫn phép đo. Phần còn lại là kỷ luật, và phần đó đo bằng --report: tỉ lệ claim bị rút cùng tên phép kiểm đã bắt được."
 }
