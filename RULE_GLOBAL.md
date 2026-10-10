@@ -648,6 +648,37 @@ Validate status/evidence/report
 Clean temporary files
 ```
 
+## Chi phí một lượt chạy — đếm SỐ LƯỢT, không đếm độ dài
+
+Chi phí một lượt tỉ lệ với (context mỗi message) × (số message). Mỗi lượt gọi tool là một message, và mỗi
+message kéo theo cả context. Đo 10/10/2026 trên 5 phiên chạy task thật: **11.781 lượt shell**, context trung
+bình **~510k token mỗi message**, cache-hit 98,5%.
+
+Hệ quả thực dụng: một lệnh in ra 5 dòng và một lệnh in ra 500 dòng tốn **gần như nhau**. Cắt độ dài output là
+tối ưu đúng chỗ không tốn. Muốn giảm thật thì phải giảm **số lượt**.
+
+**Dùng tool chuyên dụng thay cho shell khi có.** Đo trên cùng 5 phiên: **3.334 lượt, tức 28,3% số lượt shell**,
+là việc đã có tool riêng — `grep` đã có Grep, `sed -n`/`cat`/`head`/`tail` đã có Read với `offset`/`limit`,
+`ls`/`find` đã có Glob. Đi vòng qua Bash không rẻ hơn, chỉ khó đếm hơn. Ngoại lệ hợp lệ: cần pipe, cần đếm,
+hoặc cần đúng hành vi của lệnh đó.
+
+**Ba cách giảm, theo thứ tự hiệu quả:**
+
+1. **Đổi tool** — như trên. Không tốn gì để làm, và là phần lớn nhất.
+2. **Gộp** — một lệnh chạy cả thư mục thay vì lặp từng file (`output_gate --dir`), rerun đúng case đỏ thay vì
+   chạy lại cả suite (`npm run rerun:failed`).
+3. **Bó** — việc nào lặp lại thì thành npm script, đừng viết lại `node -e` mỗi lượt. Đo được 1.442 lượt
+   `node -e` và 662 lượt `python` một-dòng.
+
+**Máy đo:** `npm run token:audit -- --mau` in top mẫu lệnh theo số lượt, kèm số "đáng lẽ dùng tool chuyên
+dụng". `npm run token:audit -- --transcript <file>` cảnh báo khi một lượt vượt ngưỡng trong
+`.agent/config/prompt_budget.json` mục `nguong_mot_luot`. Đây là CẢNH BÁO chứ không CHẶN: nó đo một lượt đã
+chạy xong, chặn lúc đó không cứu được gì. Mốc và cách đọc bảng: `docs/v2.4.1/H0_BASELINE.md`.
+
+**Phần nạp bắt buộc không được tăng.** `npm run prompt:budget -- --enforce` so với `moc` trong
+`.agent/config/prompt_budget.json`, không chỉ so với trần. Muốn thêm chữ vào phần bắt buộc thì phải cắt bù
+trong cùng luồng.
+
 ## Cleanup Rules
 
 Trước khi kết thúc task, scan workspace root và subfolder cấp 1 để dọn file tạm và file debug rõ ràng. Không xóa deliverable hoặc dữ liệu người dùng chưa được phép xóa.

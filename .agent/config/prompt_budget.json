@@ -1,34 +1,36 @@
 {
   "_doc": "Ngân sách token cho hướng dẫn của chính kit. `npm run prompt:budget -- --enforce` CHẶN khi vượt. NGUỒN DUY NHẤT của ngưỡng.",
-
   "_vi_sao": "H1 đến H5 cắt được chi phí một lượt chạy, nhưng không gì giữ lại thành quả đó. Tài liệu phình trở lại là chuyện của vài tuần, và nó phình bằng cách mỗi lần thêm vài dòng hợp lý. Gate này biến 'đừng để phình' thành một con số.",
-
   "_cach_do": "Ngân sách một luồng = nền auto-load (`CLAUDE.md` cộng `core_rules.md`) cộng điểm vào cộng mọi file khai `bat_buoc` trong `.agent/config/load_map.json`. KHÔNG tính file `co_dieu_kien`, vì đúng nghĩa của chúng là chỉ nạp khi gặp điều kiện. Hệ số 3,2 ký tự mỗi token, cùng `doc_budget.js`.",
-
   "_nguong_dat_o_dau": "Đặt ngay TRÊN mức hiện tại, không đặt ở mức mong muốn. Lý do: H9 là cái chốt chống trôi, không phải cái roi dọn nợ. Một ngưỡng đã đỏ ngay hôm đặt thì nó là tiếng ồn, và tiếng ồn thì bị tắt. Mức mong muốn của prompt gốc là Phase 1 và Phase 2 mỗi luồng 18k; đạt được nó cần H7 (tách thẻ chạy và tài liệu lý do), mà H7 đã HOÃN có lý do đo được — xem docs/token-diet/BASELINE.md mục 3.",
-
   "luong": {
     "phase1": 31000,
     "phase2": 32000,
     "publish": 9000,
     "rerun": 12000
   },
-
   "_moc_la_gi": "MỐC = số token của phần NẠP BẮT BUỘC ĐÃ ĐO tại thời điểm chốt. Trần (`luong`) chặn chuyện phình TO; mốc chặn chuyện phình DẦN. Đo 10/10/2026: phase1 còn 1,2k và phase2 còn 1,5k chỗ trống dưới trần, tức một đợt thêm chữ vẫn đi qua gate mà vẫn làm mọi phiên đắt hơn. Phần bắt buộc TĂNG so với mốc là CHẶN, dù còn dưới trần.",
-
   "_muon_them_chu_thi_sao": "CẮT BÙ trong CÙNG luồng. Nguồn bù chính là `.agent/rules/core_rules.md` (4,5k token, nạp mọi phiên) — rút về mỗi mục một dòng cộng con trỏ §, chi tiết giữ ở RULE_GLOBAL.md. Hạ mốc thì sửa số ở đây: đó là một việc thấy được trong diff, không phải một con số trôi đi trong im lặng.",
-
   "_cach_chot_lai_moc": "node scripts/qa/prompt_budget.js --moc  (in số đo hiện tại dưới dạng JSON để dán vào đây).",
-
   "moc": {
     "phase1": 29763,
     "phase2": 30519,
     "publish": 8074,
     "rerun": 10753
   },
-
+  "_nguong_mot_luot_la_gi": "Ngưỡng cho MỘT LƯỢT CHẠY TASK, đo bằng `npm run token:audit`. Khác hẳn `moc`: `moc` đo HƯỚNG DẪN (tĩnh, đếm được trước khi chạy), còn đây đo CÁCH CHẠY (động, chỉ biết sau khi chạy xong). Nên đây là CẢNH BÁO chứ không CHẶN — chặn một lượt đã chạy xong thì không cứu được gì.",
+  "_nguong_dat_tu_dau": "Đo 10/10/2026 trên 5 phiên CHẠY TASK: 11.780 lượt shell, trung bình 2.356 lượt một phiên, context trung bình ~510k token mỗi message. Ngưỡng đặt xấp xỉ mức trung bình đó, để lượt nào đắt hơn bình thường thì kêu. Hạ dần sau mỗi đợt cắt, đừng nâng.",
+  "nguong_mot_luot": {
+    "so_luot_shell": 2400,
+    "context_tb_moi_message": 520000,
+    "de_xuat": [
+      "Tách phiên: mỗi phase một phiên, bàn giao bằng file (`.agent/config/handoff.json`).",
+      "Giao việc máy móc cho subagent model rẻ (chạy spec, convert Excel) — context chính chỉ nhận bản tóm tắt.",
+      "Dùng Grep/Read/Glob thay cho grep/sed/cat/ls qua Bash — xem bảng \"ĐÁNG LẼ DÙNG TOOL CHUYÊN DỤNG\".",
+      "Rerun đúng case đỏ bằng `npm run rerun:failed`, đừng chạy lại cả suite."
+    ]
+  },
   "_luong_hien_tai": "Số chính xác nằm ở `moc` ngay trên — đừng ghi lại số ở đây nữa. Hai chỗ khai cùng một con số thì sớm muộn lệch nhau, và dòng này đã lệch thật: nó ghi phase2 30,4k trong khi số đo là 30.519.",
-
   "the_chay": {
     "prompt_templates/run_phase1_template.md": 9500,
     "prompt_templates/run_phase2_template.md": 14500,
@@ -39,8 +41,6 @@
     "prompt_templates/phase2/05_execute_api_playwright.md": 7000,
     ".agent/rules/core_rules.md": 5000
   },
-
   "_the_chay_hien_tai": "Đo 10/10/2026: run_phase1 8,6k · run_phase2 13,4k · re-run 5,4k · 02_gen_testcases 13,9k · 04_execute_fe 11,6k · 08_log_bug 8,1k · 05_execute_api 6,5k · core_rules 4,5k.",
-
   "_khong_noi_nguong": "Vượt ngưỡng thì CẮT NỘI DUNG, hoặc chuyển phần 'vì sao' sang `docs/rationale/`. KHÔNG nới số trong file này. Nới ngưỡng để cho xanh là đúng cái prompt gốc mục 0.3 cấm, và nó biến gate thành đồ trang trí."
 }
