@@ -39,6 +39,27 @@ Tài liệu requirement/BA KHÔNG còn fetch bằng script: tài liệu nay so�
 | Requirement artifact | `<TASK_OUTPUT_DIR>/requirements/backlog/` |
 | Fetch summary | `task.md` hoặc `reports/phase1-summary.md` |
 
+## Khi dùng / KHÔNG dùng
+
+| Dùng | KHÔNG dùng |
+|---|---|
+| Cần nội dung issue/story làm context cho Phase 1 | **Log bug** — đó là `backlog_bug_reporter` |
+| Cần lấy issue con của một issue cha | Publish testcase — testcase đi **Google Sheet**, không đi Backlog |
+| Artifact local đã cũ hơn issue thật | Artifact local đã đủ: fetch lại là tốn lượt mà không thêm gì |
+
+⚠️ **Ảnh dán trong description KHÔNG ra ở API attachments.** Đo được: ảnh paste trực tiếp vào mô tả issue
+không xuất hiện trong danh sách attachment mà API trả về — muốn xem phải mở web UI. Kết luận "issue không
+có ảnh" từ API là kết luận sai.
+
+## Máy kiểm
+
+- `npm run integration:check` — kiểm cấu hình (không gọi mạng). `npm run integration:check:live` — kiểm
+  kết nối thật. Chạy cái đầu trước: thiếu biến môi trường thì lỗi mạng chỉ là triệu chứng.
+- `npm run gate:policy` — gác NO-LEGACY-TOOLS. Backlog là công cụ SỐNG của kit nên nó KHÔNG nằm trong
+  danh sách công cụ đã bỏ; đừng suy ngược rằng vì vậy mọi việc đều đi Backlog. (Danh sách đó không chép
+  lại ở đây: chính `gate:policy` chặn mọi bề mặt của kit nhắc tên chúng, kể cả một câu đang giải thích
+  luật — đã dính thật khi viết dòng này.)
+
 ## Decision Rules
 
 - Dùng local artifact nếu đã đủ thay vì fetch lại.

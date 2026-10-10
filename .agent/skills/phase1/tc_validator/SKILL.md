@@ -37,6 +37,31 @@ Kiểm tra testcase sau khi sinh/cập nhật để đảm bảo đủ chi tiế
 | Validation findings | Phase 1 summary hoặc `task.md` |
 | Required fixes | TC ID, issue, severity, recommendation |
 
+## Khi dùng / KHÔNG dùng
+
+| Dùng | KHÔNG dùng |
+|---|---|
+| Đã sinh xong bộ TC, trước khi publish | Chấm CHẤT LƯỢNG từng dòng case — đó là `tc_reviewer` |
+| Cần biết bộ đã đủ cột và đủ chiều chưa | Chấm verdict sau khi execute — đó là `gate:output` |
+| Cần biết module risk cao có bị nông không | Khi chưa neo MẪU SỐ (`scope:anchor`): % trên mẫu số tự khai là vô nghĩa |
+
+⚠️ **Mẫu số phải neo TRƯỚC.** Không có `requirements/scope_inventory.md` thì "coverage 95%" chỉ là 95% của
+danh mục do chính agent đặt ra, và "đủ" chỉ còn nghĩa "tôi thấy đủ". `npm run scope:anchor:init` đi trước
+mọi con số ở skill này.
+
+## Máy kiểm
+
+- `npm run design:gate` — chặn bộ TC kém trước khi publish.
+- `npm run dim:coverage -- --enforce` — chiều nào `required` mà chưa có case thì CHẶN; chiều khai `n/a`
+  phải kèm lý do, và lý do đã bị bác ở task trước thì không dùng lại được.
+- `npm run tc:review:enforce` — chấm chất lượng từng dòng, việc KHÁC với skill này.
+- `npm run scope:anchor` — mẫu số. Đọc nó trước khi tin bất kỳ tỉ lệ nào.
+
+> **Số cột canonical là 10, không phải 11.** Nguồn duy nhất: `CANONICAL_COLS` trong
+> `scripts/lib/testcase/model.js`. Excel SAU publish có nhiều cột hơn (exporter thêm `Nhóm chức năng`,
+> `Result`, `Note`…) — lẫn "bản xuất" với "template" là cách con số sai sống sót, và nó đã sống trong hai
+> workflow tới 10/10/2026.
+
 ## Decision Rules
 
 - Requirement coverage = covered requirements / total in-scope requirements * 100%.

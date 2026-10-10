@@ -132,12 +132,17 @@ test.describe('@infra skills:lint — nợ khoá theo số lượng', () => {
   });
 
   test('nợ VƯỢT số khai ⇒ CHẶN (nợ không được phình âm thầm)', () => {
-    /* Cây tạm dùng config THẬT (nợ 15/15/13), nên 16 skill thiếu là vượt. */
+    /*
+     * Số nợ đọc TỪ CONFIG, không hardcode. Bản đầu viết "nợ 15/15/13" vào test, và nó đỏ ngay khi G2.1
+     * trả được nợ xuống 12/11/9 — tức một test PHẠT đúng việc tiến bộ. Con số nào được thiết kế để thay
+     * đổi thì test phải đọc nó, đừng chép nó.
+     */
+    const khai = JSON.parse(fs.readFileSync(path.join(REPO, '.agent/config/skills_lint.json'), 'utf8')).no.thieuKhiDung;
     const nhieu: Record<string, string> = {};
-    for (let i = 0; i < 16; i += 1) nhieu[`s${i}`] = FM(`Mô tả thứ ${i} đủ dài để qua ngưỡng tám mươi ký tự nhưng cố ý không nói rõ dùng lúc nào cả.`);
+    for (let i = 0; i < khai + 1; i += 1) nhieu[`s${i}`] = FM(`Mô tả thứ ${i} đủ dài để qua ngưỡng tám mươi ký tự nhưng cố ý không nói rõ dùng lúc nào cả.`);
     const r = chay(nhieu);
     expect(r.code, r.out).toBe(1);
-    expect(r.out).toMatch(/nợ khai 15 ⇒ 1 cái MỚI/);
+    expect(r.out).toMatch(new RegExp(`nợ khai ${khai} ⇒ 1 cái MỚI`));
     fs.rmSync(r.d, { recursive: true, force: true });
   });
 
@@ -153,7 +158,7 @@ test.describe('@infra skills:lint — nợ khoá theo số lượng', () => {
 
   test('nợ GIẢM ⇒ nhắc hạ số, để con số không nằm lại cao hơn thực tế', () => {
     const r = chay({ a: FM(DESC_OK, '\n- Máy: `npm run skills:lint`.\n') });
-    expect(r.out).toMatch(/đã sạch \(khai 1[35]\) ⇒ hạ về 0|nợ đã GIẢM/);
+    expect(r.out, 'khớp theo HÌNH DẠNG, không theo con số cụ thể của nợ').toMatch(/đã sạch \(khai \d+\) ⇒ hạ về 0|nợ đã GIẢM/);
     fs.rmSync(r.d, { recursive: true, force: true });
   });
 });
@@ -177,6 +182,40 @@ test.describe('@infra skills:lint — repo thật và giới hạn đã nói', (
     expect(r.out).toMatch(/KHÔNG phán được/);
     expect(r.out).toMatch(/không phải đạt/);
     fs.rmSync(r.d, { recursive: true, force: true });
+  });
+
+  test('G2.1: 5 skill mỏng đã nâng cấp và KHÔNG được tụt lại', () => {
+    /*
+     * Khoá kết quả của G2.1. Đo lúc đầu (10/10/2026): `flaky_test_analyzer` 1.987 B ·
+     * `test_data_generator` 2.532 B · `backlog_integration` 2.551 B · `security_check` 3.667 B ·
+     * `tc_validator` 3.846 B · `requirements_analyzer` 2.840 B. Nâng cấp là THÊM ranh giới "khi dùng /
+     * KHÔNG dùng" và con trỏ máy kiểm — không phải nhồi chữ, nên test kiểm đúng hai thứ đó.
+     */
+    const nam = [
+      'phase2/flaky_test_analyzer', 'shared/test_data_generator', 'shared/backlog_integration',
+      'phase1/tc_validator', 'phase2/security_check', 'phase1/requirements_analyzer',
+    ];
+    for (const s of nam) {
+      const src = fs.readFileSync(path.join(REPO, '.agent/skills', s, 'SKILL.md'), 'utf8');
+      const n = path.basename(s);
+      expect(src, `${n}: phải có ranh giới "khi dùng"`).toMatch(/dùng khi|Khi dùng/i);
+      expect(src, `${n}: phải nói rõ KHÔNG dùng khi nào`).toMatch(/KHÔNG dùng/);
+      expect(src, `${n}: phải TRỎ tới máy kiểm có thật, không dặn suông`).toMatch(/npm run [a-z0-9:_-]+/);
+      /* Và vẫn dưới trần 2,5k token — nâng cấp không được biến skill thành tài liệu dài. */
+      const tok = src.replace(/\r\n?/g, '\n').length / 3.2;
+      expect(tok, `${n} ~${Math.round(tok)} token, trần 2500`).toBeLessThan(2500);
+    }
+  });
+
+  test('G2.1: nợ đã GIẢM thật, và dãy số được ghi lại', () => {
+    /*
+     * Con số nợ giảm là thứ dễ bị nới thay vì sửa. Ghi lại dãy trong config để lần sau phân biệt được
+     * "nợ giảm vì có người nâng cấp skill" với "ai đó nới số cho gate xanh".
+     */
+    const cfg = JSON.parse(fs.readFileSync(path.join(REPO, '.agent/config/skills_lint.json'), 'utf8'));
+    expect(cfg.no.thieuKhiDung, 'bắt đầu 17, nay phải thấp hơn').toBeLessThan(17);
+    expect(cfg.no.thieuMayKiem).toBeLessThan(13);
+    expect(JSON.stringify(cfg), 'phải ghi dãy số đã hạ, kèm vì sao').toMatch(/17\/16\/13/);
   });
 
   test('config ghi SỐ ĐO làm căn cứ cho từng mức, và `skills_lint.json` vào ALLOW', () => {

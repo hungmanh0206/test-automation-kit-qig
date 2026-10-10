@@ -39,6 +39,33 @@ Catalog: block `security` — `requiredHeaders`, `protectedEndpoints`, `highPriv
 |---|---|
 | Security report | `<TASK_OUTPUT_DIR>/reports/security-report.md` + `security-report.json` |
 
+## Khi dùng / KHÔNG dùng
+
+| Dùng | KHÔNG dùng |
+|---|---|
+| Scope có auth, phân quyền, hoặc dữ liệu cá nhân | Môi trường chưa khai rõ là non-prod (thiếu `--confirm-nonprod` ⇒ TỪ CHỐI) |
+| Có đủ **hai** tài khoản test (low + high) | Chỉ có một tài khoản ⇒ authz/IDOR là `NEEDS_ACCOUNT`, KHÔNG phải FAIL |
+| Cần kiểm header, cookie, unauth, IDOR ở mức cơ bản | Pentest sâu, fuzzing, brute-force, DoS — Manual-only, opt-in, có người duyệt |
+
+⚠️ **Never-auto.** Skill này chạm UAT nên theo non-negotiable §2 phải **xác nhận với user trước MỖI lượt**.
+Không có lượt "chạy thử cho nhanh".
+
+⚠️ **`NEEDS_ACCOUNT` không phải FAIL, và cũng không phải PASS.** Thiếu tài khoản thì phép đo chưa xảy ra —
+đúng nguyên tắc "không phán được KHÔNG thành PASS". Route nó qua `precondition_setup_planner` như một
+capability còn thiếu.
+
+## Máy kiểm
+
+- `npm run security` — bộ kiểm cơ bản, chỉ GET read-only, cần `--confirm-nonprod`.
+- `npm run dim:coverage -- --enforce` — chiều `security` khai `n/a` mà scope có auth/quyền thì CHẶN.
+- `npm run system:check` — ô `role × action` trong `PM-*` đang ở mức `unknown` thì **KHÔNG được dùng làm
+  oracle**: khẳng định 403 ở một ô chưa ai chốt là tự bịa ra một yêu cầu, và bug log ra là bug bịa.
+- `npm run gate:output` — exposure finding phải mask PII trước khi vào report.
+
+> **Phát hiện có sẵn trong môi trường thì đừng nhân bản nó.** Đã đo một lần: payload XSS lưu trữ nằm trong
+> UAT hơn một năm, nên mọi case XSS chạy sau đó đều "phát hiện" lại cùng một thứ. Một phát hiện, một bug —
+> không phải một bug mỗi case.
+
 ## Decision Rules
 
 - Headers PASS/FAIL so **tập header khai trong catalog** (không hardcode universal — tránh false-positive SPA/API).

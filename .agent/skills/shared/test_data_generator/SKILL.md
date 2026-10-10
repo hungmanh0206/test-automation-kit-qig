@@ -36,6 +36,28 @@ Tạo hoặc đề xuất test data phục vụ testcase và automation, đảm 
 | Cleanup plan | Actual result/report khi execute |
 | Cách dựng input | Tag `[<method>]` của từng TC (`api`/`factory`/`test_hook`/`ui`/`pre_existing`/`manual`) |
 
+## Khi dùng / KHÔNG dùng
+
+| Dùng | KHÔNG dùng |
+|---|---|
+| Case cần bản ghi MỚI, chưa có trong môi trường | State dựng được từ dữ liệu sẵn có đã verify tồn tại |
+| Cần biến thể theo kỹ thuật (biên, rỗng, ký tự đặc biệt) | Dựng state bằng **DB** — non-negotiable §2, DB chỉ đọc |
+| Cần dữ liệu unique để hai lượt chạy không giẫm nhau | Chọn *phương pháp* setup — đó là `precondition_setup_planner` |
+
+⚠️ **Không bao giờ sinh file chứa email hoặc số điện thoại khách thật**, từ bất kỳ nguồn nào — kể cả export
+có sẵn. Đây là quy định tổ chức (non-negotiable §1): được yêu cầu xuất file thì phải TỪ CHỐI.
+
+## Máy kiểm
+
+- `npm run secret:scan` — chặn secret bị commit. ⚠️ Nó chỉ quét file ĐƯỢC TRACK, nên dữ liệu sinh ra trong
+  `outputs/**` (gitignore) **ngoài tầm nó**.
+- `npm run auto:review:enforce` — rule `cred-literal` lấp đúng chỗ đó: credential viết thẳng trong spec,
+  kể cả spec ở `outputs/**`.
+- `npm run gate:output` — mask PII trong comment và evidence, dùng `PII_PATTERNS` của
+  `scripts/qa/lib/output_rules.js`. Đừng khai lại mẫu PII ở đây: một nguồn.
+- `RUN_ID` là mắt xích dọn dẹp. Thiếu nó thì dữ liệu hai lượt trùng nhau, và đó là nguồn flaky khó tìm
+  nhất — `npm run reliability` chỉ thấy "case chập chờn", không thấy nguyên nhân.
+
 ## Decision Rules
 
 - Mỗi testcase phải có data cụ thể hoặc reference rõ tới fixture cụ thể.

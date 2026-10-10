@@ -38,6 +38,14 @@ Chuyển Backlog/tài liệu nguồn/Figma/Swagger/local artifact thành require
 | Setup source candidates | Endpoint/payload/fixture từ Swagger phục vụ Setup Strategy contract |
 | Open questions | `task.md` hoặc Phase 1 summary |
 
+## Khi dùng / KHÔNG dùng
+
+| Dùng | KHÔNG dùng |
+|---|---|
+| Đầu Phase 1, cần chuyển tài liệu thành scope + rule + câu hỏi | Khám phá hệ thống bằng cách bò UI (v2.6.0, chưa có) |
+| Tài liệu mâu thuẫn và cần biết nguồn nào thắng | Chốt một rule — rule chỉ vào `knowledge/domain` khi có `confirmed_by` |
+| Cần biết vùng nào tài liệu không phủ | Thay cho `scope:anchor` — mẫu số lấy từ đó, không tự liệt kê |
+
 ## Thứ tự ưu tiên khi hai nguồn nói ngược nhau
 
 Hai nguồn mâu thuẫn thì **không chọn bừa, và cũng không lấy app ra phân xử**. Thứ tự:

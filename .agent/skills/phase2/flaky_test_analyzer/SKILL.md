@@ -34,6 +34,34 @@ Xử lý testcase lúc pass lúc fail, timeout không ổn định, race conditi
 | Fix scoped | File spec/helper liên quan |
 | Rerun result | PASS/FAIL/SKIP + số vòng rerun |
 
+## Khi dùng / KHÔNG dùng
+
+| Dùng | KHÔNG dùng |
+|---|---|
+| Case lúc pass lúc fail giữa các lượt, cùng một build | Case FAIL **ổn định** — rerun chỉ loại flaky, KHÔNG loại được sai-element (xem dưới) |
+| Timeout không đều, race condition, data conflict | Case chưa chạy lần nào (chưa có gì để so pattern) |
+| Nghi dependency ngoài scope gây nhiễu | Để làm một case đỏ thành xanh (đó là nới assertion, non-negotiable §6) |
+
+⚠️ **FAIL lặp lại ổn định KHÔNG đồng nghĩa product bug, và cũng không đồng nghĩa flaky.** Rerun loại được
+nhiễu thời gian; nó KHÔNG loại được "script bấm/đọc nhầm đối tượng" — lỗi đó sai **ổn định**. Trước khi
+kết luận, phải chứng minh đã thao tác đúng element (`lint:locator` + evidence highlight). Đây là chỗ phân
+biệt skill này với `case-debugger`: skill này hỏi "có nhiễu không", `case-debugger` hỏi "sai ở đâu".
+
+## Máy kiểm
+
+- `npm run reliability` — chỉ số tin cậy (TRI) theo từng case, dựng từ `knowledge/metrics/tc-history.jsonl`.
+  Đây là chỗ biết một case có thật sự chập chờn hay chỉ đỏ một lần.
+- `npm run rerun:failed` — chạy lại ĐÚNG case đỏ, không chạy cả suite. Không có TC ID trong tiêu đề thì nó
+  TỪ CHỐI dựng `--grep` một phần, thay vì chạy bừa.
+- `npm run run:analysis` — 3 case LIÊN TIẾP đỏ cùng tầng hạ tầng là dấu hiệu môi trường sập, không phải 3
+  ca flaky khác nhau.
+- Ngưỡng rerun là **một nguồn**: `.agent/config/verdict_taxonomy.json` → `rerun`. Đừng chép số vào đây.
+
+> ⚠️ Giới hạn của TRI, đo 23/08/2026 trên kho thật: `metrics_collect` **cố ý KHÔNG ghi** record `skipped`
+> vào `tc-history`. Lý do: một lượt có 1548 record thì 1537 là `skipped`, và nếu tính chúng thì TRI của
+> 500+ test bị kéo về 0 — tức chỉ số nói "cả bộ chập chờn" trong khi chúng chỉ chưa chạy. Skip KHÔNG nói
+> gì về độ tin cậy; số skip vẫn giữ ở mức RUN, chỗ nó có nghĩa.
+
 ## Decision Rules
 
 - Đọc đúng failure entry trước, không mở full report nếu chưa cần.
