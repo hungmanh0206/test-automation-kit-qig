@@ -105,6 +105,8 @@
     "gates:index:check": "node scripts/qa/gate_index.js --check",
     "rule": "node scripts/qa/rule_lookup.js",
     "rule:toc": "node scripts/qa/rule_lookup.js --toc-write",
+    "rule:parity": "node scripts/qa/rule_parity.js",
+    "rule:parity:enforce": "node scripts/qa/rule_parity.js --enforce",
     "howto:check": "node scripts/qa/howto_store.js",
     "howto:index": "node scripts/qa/howto_store.js --index",
     "explore:check": "node scripts/qa/explore_session.js",

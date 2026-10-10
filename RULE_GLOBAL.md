@@ -33,38 +33,42 @@
 
 | # | Mục | Dòng | ~token | Tra nhanh |
 |---|---|---|---|---|
-| 1 | [Purpose](#purpose) | 70-73 | 30 | npm run rule -- 1 |
-| 2 | [When To Use](#when-to-use) | 74-85 | 61 | npm run rule -- 2 |
-| 3 | [Inputs](#inputs) | 86-98 | 332 | npm run rule -- 3 |
-| 4 | [Outputs](#outputs) | 99-143 | 743 | npm run rule -- 4 |
-| 5 | &nbsp;&nbsp;[Giọng văn output](#giọng-văn-output) | 111-143 | 451 | npm run rule -- 5 |
-| 6 | [Rules](#rules) | 144-637 | 12273 | npm run rule -- 6 |
-| 7 | &nbsp;&nbsp;[Language](#language) | 146-152 | 80 | npm run rule -- 7 |
-| 8 | &nbsp;&nbsp;[Security](#security) | 153-166 | 498 | npm run rule -- 8 |
-| 9 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 167-178 | 284 | npm run rule -- 9 |
-| 10 | &nbsp;&nbsp;[Parallel Story Safety](#parallel-story-safety) | 179-195 | 260 | npm run rule -- 10 |
-| 11 | &nbsp;&nbsp;[Phase-Separated Story Execution](#phase-separated-story-execution) | 196-222 | 1975 | npm run rule -- 11 |
-| 12 | &nbsp;&nbsp;[Task-Scoped Automation Code](#task-scoped-automation-code) | 223-233 | 314 | npm run rule -- 12 |
-| 13 | &nbsp;&nbsp;[Shared Change Gate](#shared-change-gate) | 234-248 | 391 | npm run rule -- 13 |
-| 14 | &nbsp;&nbsp;[Automation Promote Review](#automation-promote-review) | 249-257 | 160 | npm run rule -- 14 |
-| 15 | &nbsp;&nbsp;[Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)](#analysis-ambiguity-gate-phase-1-đọc-kỹ-hỏi-trước-khi-gen) | 258-263 | 500 | npm run rule -- 15 |
-| 16 | &nbsp;&nbsp;[Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)](#chiều-coverage-phase-1-khai-phạm-vi-gắn-tag-có-máy-đếm) | 264-284 | 544 | npm run rule -- 16 |
-| 17 | &nbsp;&nbsp;[Execution Discipline (Kỷ luật thực thi — chạy thông suốt)](#execution-discipline-kỷ-luật-thực-thi-chạy-thông-suốt) | 285-294 | 452 | npm run rule -- 17 |
-| 18 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 295-521 | 4173 | npm run rule -- 18 |
-| 19 | &nbsp;&nbsp;[Execute Results](#execute-results) | 522-541 | 224 | npm run rule -- 19 |
-| 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 542-556 | 307 | npm run rule -- 20 |
-| 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 557-568 | 629 | npm run rule -- 21 |
-| 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 569-580 | 396 | npm run rule -- 22 |
-| 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 581-614 | 530 | npm run rule -- 23 |
-| 24 | &nbsp;&nbsp;[Backlog Bug Gate](#backlog-bug-gate) | 615-624 | 154 | npm run rule -- 24 |
-| 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 625-637 | 397 | npm run rule -- 25 |
-| 26 | [Workflow](#workflow) | 638-651 | 43 | npm run rule -- 26 |
-| 27 | [Chi phí một lượt chạy — đếm SỐ LƯỢT, không đếm độ dài](#chi-phí-một-lượt-chạy-đếm-số-lượt-không-đếm-độ-dài) | 652-682 | 477 | npm run rule -- 27 |
-| 28 | [Cleanup Rules](#cleanup-rules) | 683-710 | 388 | npm run rule -- 28 |
-| 29 | [Examples](#examples) | 711-718 | 80 | npm run rule -- 29 |
-| 30 | [References](#references) | 719-727 | 84 | npm run rule -- 30 |
+| 1 | [Purpose](#purpose) | 74-77 | 30 | npm run rule -- 1 |
+| 2 | [When To Use](#when-to-use) | 78-89 | 61 | npm run rule -- 2 |
+| 3 | [Inputs](#inputs) | 90-102 | 332 | npm run rule -- 3 |
+| 4 | [Outputs](#outputs) | 103-147 | 743 | npm run rule -- 4 |
+| 5 | &nbsp;&nbsp;[Giọng văn output](#giọng-văn-output) | 115-147 | 451 | npm run rule -- 5 |
+| 6 | [Rules](#rules) | 148-692 | 13033 | npm run rule -- 6 |
+| 7 | &nbsp;&nbsp;[Language](#language) | 150-156 | 80 | npm run rule -- 7 |
+| 8 | &nbsp;&nbsp;[Security](#security) | 157-170 | 498 | npm run rule -- 8 |
+| 9 | &nbsp;&nbsp;[Project And Output](#project-and-output) | 171-182 | 284 | npm run rule -- 9 |
+| 10 | &nbsp;&nbsp;[Parallel Story Safety](#parallel-story-safety) | 183-199 | 260 | npm run rule -- 10 |
+| 11 | &nbsp;&nbsp;[Phase-Separated Story Execution](#phase-separated-story-execution) | 200-226 | 1975 | npm run rule -- 11 |
+| 12 | &nbsp;&nbsp;[Task-Scoped Automation Code](#task-scoped-automation-code) | 227-237 | 314 | npm run rule -- 12 |
+| 13 | &nbsp;&nbsp;[Shared Change Gate](#shared-change-gate) | 238-252 | 391 | npm run rule -- 13 |
+| 14 | &nbsp;&nbsp;[Automation Promote Review](#automation-promote-review) | 253-261 | 160 | npm run rule -- 14 |
+| 15 | &nbsp;&nbsp;[Analysis & Ambiguity Gate (Phase 1 — đọc kỹ, hỏi trước khi gen)](#analysis-ambiguity-gate-phase-1-đọc-kỹ-hỏi-trước-khi-gen) | 262-267 | 500 | npm run rule -- 15 |
+| 16 | &nbsp;&nbsp;[Chiều coverage (Phase 1 — khai phạm vi, gắn tag, có máy đếm)](#chiều-coverage-phase-1-khai-phạm-vi-gắn-tag-có-máy-đếm) | 268-288 | 544 | npm run rule -- 16 |
+| 17 | &nbsp;&nbsp;[Execution Discipline (Kỷ luật thực thi — chạy thông suốt)](#execution-discipline-kỷ-luật-thực-thi-chạy-thông-suốt) | 289-298 | 452 | npm run rule -- 17 |
+| 18 | &nbsp;&nbsp;[5 trục mở rộng quanh case + luật đóng vòng (Phase 2 — có máy đứng sau)](#5-trục-mở-rộng-quanh-case-luật-đóng-vòng-phase-2-có-máy-đứng-sau) | 299-525 | 4173 | npm run rule -- 18 |
+| 19 | &nbsp;&nbsp;[Execute Results](#execute-results) | 526-545 | 224 | npm run rule -- 19 |
+| 20 | &nbsp;&nbsp;[Phân tầng lỗi FE hay BE — bắt buộc kiểm API trước khi kết luận](#phân-tầng-lỗi-fe-hay-be-bắt-buộc-kiểm-api-trước-khi-kết-luận) | 546-560 | 307 | npm run rule -- 20 |
+| 21 | &nbsp;&nbsp;[Evidence — Quy chuẩn bắt buộc](#evidence-quy-chuẩn-bắt-buộc) | 561-572 | 629 | npm run rule -- 21 |
+| 22 | &nbsp;&nbsp;[Comment kết quả (Test Execution) — Quy chuẩn trình bày](#comment-kết-quả-test-execution-quy-chuẩn-trình-bày) | 573-584 | 396 | npm run rule -- 22 |
+| 23 | &nbsp;&nbsp;[Bug Claim Gate — kiểm chứng phải đi TRƯỚC lời nói](#bug-claim-gate-kiểm-chứng-phải-đi-trước-lời-nói) | 585-618 | 530 | npm run rule -- 23 |
+| 24 | &nbsp;&nbsp;[Backlog Bug Gate](#backlog-bug-gate) | 619-628 | 154 | npm run rule -- 24 |
+| 25 | &nbsp;&nbsp;[Executable QA capabilities (autonomy & safety)](#executable-qa-capabilities-autonomy-safety) | 629-641 | 397 | npm run rule -- 25 |
+| 26 | &nbsp;&nbsp;[Automation quality](#automation-quality) | 642-655 | 215 | npm run rule -- 26 |
+| 27 | &nbsp;&nbsp;[Reporting](#reporting) | 656-666 | 170 | npm run rule -- 27 |
+| 28 | &nbsp;&nbsp;[Setup Strategy](#setup-strategy) | 667-680 | 207 | npm run rule -- 28 |
+| 29 | &nbsp;&nbsp;[Push execution](#push-execution) | 681-692 | 167 | npm run rule -- 29 |
+| 30 | [Workflow](#workflow) | 693-706 | 43 | npm run rule -- 30 |
+| 31 | [Chi phí một lượt chạy — đếm SỐ LƯỢT, không đếm độ dài](#chi-phí-một-lượt-chạy-đếm-số-lượt-không-đếm-độ-dài) | 707-737 | 477 | npm run rule -- 31 |
+| 32 | [Cleanup Rules](#cleanup-rules) | 738-765 | 388 | npm run rule -- 32 |
+| 33 | [Examples](#examples) | 766-773 | 80 | npm run rule -- 33 |
+| 34 | [References](#references) | 774-782 | 84 | npm run rule -- 34 |
 
-> Cả file ~16013 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
+> Cả file ~16865 token. Tra MỘT mục thay vì đọc cả file: npm run rule -- <số|từ khoá>
 <!-- MỤC-LỤC:KẾT-THÚC -->
 
 ## Purpose
@@ -634,6 +638,57 @@ Các năng lực chạy thật trong `scripts/qa/` + `exploratory/` phải khai 
 
   Vi phạm thì CHẶN, và agent tự sửa trong session chứ không chờ nhắc. `--qa-approved` bỏ qua có chủ đích và được log lại. Bug cùng Test Execution **bắt buộc qua script kit**, không tạo tay bằng MCP hay API.
 - **Không thêm dependency nặng**: axe-core (npm) đủ cho a11y; k6 là binary ngoài (Docker/PATH, không vào deps), thiếu → skip sạch.
+
+### Automation quality
+
+> Chi tiết chuyển về đây 10/10/2026. Trước đó nó chỉ sống trong `core_rules.md`, và con trỏ
+> `§"Automation quality"` trỏ vào một mục KHÔNG TỒN TẠI — `rule_parity` bắt được lúc chuẩn bị rút gọn.
+
+- **Test độc lập.** Mỗi test tự dựng tiền đề và tự dọn; không test nào được dựa vào thứ test khác để lại.
+  Chạy một mình hay chạy cả bộ đều phải ra cùng kết quả.
+- **Có setup và cleanup.** State dựng qua capability an toàn, dọn theo `RUN_ID`.
+- **Assertion thật.** Không xoá assertion, không nới assertion, không đổi expected để cho pass. Đây là
+  non-negotiable §6 của `CLAUDE.md`, và `auto:review` gác phần đo được.
+- **Không hardcode dữ liệu task-specific** vào template dùng chung. Dữ liệu riêng của một task thì ở
+  trong task đó.
+- **Test data unique và rollback được.** Dữ liệu trùng giữa hai lượt chạy là nguồn flaky khó tìm nhất.
+
+### Reporting
+
+> Chi tiết chuyển về đây 10/10/2026, cùng lý do như mục trên: `§Reporting` được trỏ tới nhưng chưa bao
+> giờ tồn tại. Dòng "Tiếng Việt chuẩn có dấu, UTF-8" ở `## Outputs` là mảnh duy nhất từng có.
+
+- **Tiếng Việt có dấu, UTF-8.** Không viết tắt kiểu chat, không trộn tiếng Anh khi tiếng Việt đủ chữ.
+- **FAIL phải ghi đủ:** step nào · expected · actual · thông báo lỗi · evidence CỦA ĐÚNG BƯỚC LỖI. Thiếu
+  một trong năm thứ đó thì người đọc không dựng lại được, và bug sẽ bị trả về.
+- **SKIP phải ghi:** TC ID · lý do cụ thể · điều kiện để chạy được. "Chưa chạy" không phải lý do.
+- Số và tiền viết dạng người đọc. Không dán dump trạng thái hay regex vào báo cáo.
+
+### Setup Strategy
+
+> Chi tiết chuyển về đây 10/10/2026. Con trỏ `§"Setup Strategy"` trỏ vào mục không tồn tại.
+
+- **Precondition là MỘT TRƯỜNG của testcase**, không phải một đoạn văn kể lể: ô `Tiền điều kiện` bắt đầu
+  bằng `[<method>]` với method thuộc `api｜factory｜test_hook｜ui｜pre_existing｜manual`.
+- **Dựng state theo đúng method đã khai**, qua capability an toàn (UI, API, factory, hook, fixture).
+  **KHÔNG dựng bằng DB** — DB chỉ đọc, và không phải evidence.
+- **Verify state trước khi assert.** Dựng xong mà không kiểm thì một setup hỏng sẽ hiện ra dưới dạng
+  "FAIL nghiệp vụ", và tầng lỗi bị gán sai.
+- Thiếu capability thì `BLOCKED_SETUP` hoặc `SKIP_SETUP` kèm Blocker Root Cause, không phải FAIL.
+- Chi tiết theo task ghi ở `### Setup Readiness` của `phase1-summary`; recipe tái dùng ở
+  `knowledge/setup_recipes/`.
+
+### Push execution
+
+> Chi tiết chuyển về đây 10/10/2026. Con trỏ `§"Push execution"` trỏ vào mục không tồn tại, và không có
+> chữ nào về việc này trong `RULE_GLOBAL.md` trước đó.
+
+- Chỉ đẩy khi cycle đã **conclusive**. Đang dở thì không đẩy.
+- Chạy `node scripts/convert_excel/merge_execution_status.js` ghi kết quả vào `.xlsx` **local** trước.
+- **Người soi lại bản merge** rồi mới `update_file` qua Drive MCP đè lên Sheet thật. Không có đường nào
+  ghi thẳng lên Sheet mà không qua bước soi.
+- Case `carriedOver` hoặc không có verdict thì **không ghi đè** — đè lên một ô đã có kết quả cũ là làm
+  mất kết quả, và chuyện đó đã xảy ra một lần (xem `result_ledger`).
 
 ## Workflow
 

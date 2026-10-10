@@ -110,6 +110,7 @@ const KEEP_FILES = [
   '.agent/config/tc_review.json',
   '.agent/config/gitlab_strip.json',
   '.agent/config/deps_allow.json',
+  '.agent/config/rule_parity.json',
 ];
 
 /*
