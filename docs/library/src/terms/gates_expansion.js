@@ -104,6 +104,28 @@ const TERMS_GATE2 = [
   cmd:'npm run explore:check   ·   npm run explore:check:enforce   ·   npm run explore:close',
   src:'scripts/qa/explore_session.js', rel:['g-explore_charter','r-evidence','c-mask-pii','c-chieu-coverage'] },
 
+{ id:'g-summarize_results', t:'summarize_results', cat:'gate',
+  def:'Bản tóm tắt kết quả test có TRẦN dòng.',
+  detail:'Đọc results.json của Playwright rồi in mỗi case đỏ một dòng: TC ID, lỗi rút gọn đã bóc mã màu, đường dẫn ảnh. Cờ --ids dụng sẵn --grep để rerun đúng case đỏ.',
+  why:'Reporter của kit đã đổi list sang dot (143.542 byte xuống 10.646). Nửa còn thiếu là phía agent: sau khi chạy nó vẫn phải tự biết case nào đỏ, và cách duy nhất là đọc results.json thô — hàng trăm KB, phần lớn là stdout của case ĐÃ PASS.',
+  how:['Trần được phép CẮT nhưng phải nói đã cắt bao nhiêu; TỔNG số FAIL luôn đúng.','Case đỏ không có TC ID thì --grep bỏ sót nó, và máy KÊU đúng chuyện đó.'],
+  cmd:'npm run results:summary -- --ids',
+  src:'scripts/qa/summarize_results.js', rel:['g-token_audit'] },
+
+{ id:'g-probe_to_page', t:'probe_to_page', cat:'gate',
+  def:'Biến artifact khám phá thành bản đồ field dùng được cho spec.',
+  detail:'Sinh bản đồ field từ _probe/*.fields.json, và cờ --doi-chieu so bảng gõ tay với phép đo. File sinh ra tự khai ngày chụp và đơn vị của từng cấp, và hét khi bản đồ trộn nhiều đơn vị.',
+  why:'Bản đồ field của form hồ sơ học sinh được gõ tay 36 ô, trong khi artifact khám phá đã đo sẵn 114 ô. Mẫu số gõ tay là mẫu số do chính người khai ra.',
+  cmd:'npm run probe:page',
+  src:'scripts/qa/probe_to_page.js', rel:['g-unit_stamp_check'] },
+
+{ id:'g-unit_stamp_check', t:'unit_stamp_check', cat:'gate',
+  def:'Mọi verdict đã chạy phải khai ĐƠN VỊ đã đo.',
+  detail:'Đòi verdict ghi lại đơn vị nơi case được chạy. Bản chặn là unit:stamp:enforce.',
+  why:'Artifact của MỘT task trải trên ít nhất bốn đơn vị khác nhau mà không máy nào thấy: kỳ vọng rút ra ở đơn vị này được dùng chấm case chạy ở đơn vị khác, nơi form có số trường bắt buộc khác hẳn. Case vẫn PASS.',
+  cmd:'npm run unit:stamp   ·   npm run unit:stamp:enforce',
+  src:'scripts/qa/unit_stamp_check.js', rel:['g-probe_to_page','r-evidence'] },
+
 { id:'g-prompt_budget', t:'prompt_budget', cat:'gate',
   def:'Mỗi điểm vào bảo AI đọc bao nhiêu token hướng dẫn.',
   detail:'Lần theo chuỗi slash command, workflow, template, sub-prompt, rule của từng điểm vào. Tách ba loại: bắt buộc, có điều kiện, và đoạn chỉ để người đọc. Còn báo đoạn trùng ý giữa các lớp. Có --enforce để chặn khi vượt ngưỡng.',

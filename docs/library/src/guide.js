@@ -239,6 +239,7 @@ const CMD_GROUPS = [
   { g:'Nhánh dò tự do (exploratory)', items:[
     ['npm run explore:charter','Chọn vùng dò bằng dữ liệu, không theo vùng mình quen'],
     ['npm run explore:check  ·  npm run explore:check:enforce','Kiểm ràng buộc của phiên dò'],
+    ['npm run results:summary -- --ids','Đọc kết quả test bằng bản tóm tắt có trần: mỗi case đỏ một dòng, kèm `--grep` để rerun đúng case đỏ'],
     ['npm run prompt:budget  ·  npm run token:audit','Đo chi phí của chính kit: tĩnh là hướng dẫn dài bao nhiêu, động là token thật đã đi đâu'],
     ['npm run manual:check  ·  npm run manual:check:enforce','Lượt chạy tay case Manual-only: gác ranh giới lời khai [manual], ủy quyền chất lượng output cho output_gate'],
     ['npm run explore:close','Đóng vòng học của phiên dò']
@@ -251,7 +252,7 @@ const CMD_GROUPS = [
     ['npm run merge:execution-status -- --task <KEY>','Ghép kết quả execute vào bộ canonical']
   ]},
   { g:'Kit: tự kiểm toán & phát hành', items:[
-    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 82 máy, 57 CHẶN; :check chặn khi bảng lệch source'],
+    ['npm run gates:index  ·  npm run gates:index:check','Danh mục gate tự sinh — 85 máy, 59 CHẶN; :check chặn khi bảng lệch source'],
     ['npm run rule -- <mục>  ·  npm run rule:toc','Tra RULE_GLOBAL theo mục (287 token) thay vì đọc cả file (12,8k)'],
     ['npm run version:check','Chặn phát hành thiếu số phiên bản; kiểm khớp tag'],
     ['npm run package:kit','Đóng gói dist/ CHỈ lớp GENERIC — không để lọt secret hay oracle của dự án khác'],
