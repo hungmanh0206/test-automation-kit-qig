@@ -4,6 +4,10 @@ import { queryUatReadonly, isUatDbConfigured } from './uatDbClient';
 import { loadConventions } from './config';
 
 /*
+ * @auto-review-probe: bản DÒ dữ liệu, không phải spec phán verdict — việc của nó là IN ra cột nào còn
+ * treo và có bản ghi tự phân biệt hay không, để NGƯỜI quyết định neo. Cố ý không có assertion: ở đây
+ * chưa có oracle nào để so, và `expect` cắm vào đây sẽ là `expect` so app với chính app.
+ *
  * TÌM ỨNG VIÊN NEO — bước TRƯỚC khi nghĩ đến fixture.
  *
  * Lý do tồn tại: một cột bị ghi "chưa neo" thường chỉ vì trong dăm bản ghi mở tay, giá trị của nó trùng cột

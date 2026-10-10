@@ -1,0 +1,14 @@
+{
+  "_why": "Nợ ĐÃ CÓ của `auto:review` (v2.5.0 G1.4), khai theo SỐ LƯỢNG mỗi file. Một gate mới mà chặn ngay vào code đang chạy thì nó bị tắt trong một tuần, chứ không được sửa theo. Nhưng 'tạm bỏ qua' không có số thì nợ phình âm thầm — nên khai bằng ĐẾM, và đếm bị khoá: nhiều hơn số khai = CHẶN.",
+
+  "hardSleepDebt": {
+    "tests/fe/support/opsLogin.ts": 6,
+    "tests/fe/support/auth/tokenBroker.ts": 1
+  },
+  "_hardSleepDebt_why": "7 lần ngủ cứng 1–5s trong hai helper DÙNG CHUNG, đo 10/10/2026 lúc dựng gate. Vì sao KHÔNG sửa luôn: cả hai chờ postback của Telerik và vòng captcha của QEMIS — tôi không viết chúng và KHÔNG biết lý do của từng dòng, nên thay bằng `waitForCondition` là đoán. Và vì sao không dán `// auto-review-disable-next-line <lý do>`: marker đó BẮT BUỘC có lý do, mà lý do tôi ghi sẽ là lý do BỊA. Khai thành nợ có số thì nó hiện ra trong mọi lượt chạy gate, không biến mất.",
+  "_hardSleepDebt_cach_go": "Mỗi lần ai đó thay một dòng ngủ bằng chờ điều kiện (hoặc ghi được lý do THẬT vào marker), hạ số ở đây đi 1. Gate CẢNH BÁO khi số thực nhỏ hơn số khai, để con số không nằm lại cao hơn thực tế.",
+
+  "probeMarker": "@auto-review-probe:",
+  "_probeMarker_why": "Spec DÒ DỮ LIỆU (dump ứng viên, chẩn đoán) vốn không có assertion, và đó là đúng việc của nó — `fieldmap.candidates.spec.ts` in ra cột nào còn treo để NGƯỜI đọc. Luật `no-assert` nói đúng về hình dạng nhưng sai về ý định, nên file như vậy khai ngay TRONG file bằng marker kèm lý do. Khai trong file chứ không trong config này: 'file này là bản dò' là thuộc tính của chính file, và đặt lời khai cạnh code thì nó không trôi khi file bị đổi tên hay xoá.",
+  "_probeMarker_rang_buoc": "Marker phải có LÝ DO sau dấu hai chấm. Marker trống không được tính, y như `locator-lint-disable-next-line` không lý do."
+}

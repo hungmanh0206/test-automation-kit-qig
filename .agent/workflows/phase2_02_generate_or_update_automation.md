@@ -43,6 +43,7 @@ Chạy pass này cho toàn bộ selected TC trước khi sinh/cập nhật spec.
 
 7. **GATE CHẤT LƯỢNG CODE — chạy TRƯỚC khi execute, không phải sau khi vỡ:**
    `npm run lint:locator` (soi mới) → `npm run lint:locator:enforce` (CHẶN nếu phát sinh P0 mới so với baseline).
+   Rồi `npm run auto:review:enforce` (6 chiều lint trên KHÔNG gác — bảng ở điểm vào `run_phase2_template`).
    Phase 1 có `design_gate` chặn testcase kém. Khâu sinh CODE trước đây KHÔNG có gate tương đương, nên code
    brittle chỉ lộ ra lúc chạy, và lúc đó nó lộ ra dưới dạng "FAIL" trông như bug sản phẩm.
 
